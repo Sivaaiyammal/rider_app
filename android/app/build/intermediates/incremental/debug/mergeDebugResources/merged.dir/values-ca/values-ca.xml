@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2" xmlns:ns2="http://schemas.android.com/tools">
+    <plurals name="mtrl_badge_content_description">
+    <item quantity="one">%d notificació nova</item>
+    <item quantity="other">%d notificacions noves</item>
+  </plurals>
+    <string msgid="5976598919945601918" name="abc_action_bar_home_description">"Navega fins a la pàgina d\'inici"</string>
+    <string msgid="8388173803310557296" name="abc_action_bar_up_description">"Navega cap amunt"</string>
+    <string msgid="3937310113216875497" name="abc_action_menu_overflow_description">"Més opcions"</string>
+    <string msgid="4692188335987374352" name="abc_action_mode_done">"Fet"</string>
+    <string msgid="1189761859438369441" name="abc_activity_chooser_view_see_all">"Mostra-ho tot"</string>
+    <string msgid="2165779757652331008" name="abc_activitychooserview_choose_application">"Selecciona una aplicació"</string>
+    <string msgid="4215997306490295099" name="abc_capital_off">"DESACTIVA"</string>
+    <string msgid="884982626291842264" name="abc_capital_on">"ACTIVA"</string>
+    <string msgid="8833365367933412986" name="abc_menu_alt_shortcut_label">"Alt+"</string>
+    <string msgid="2223301931652355242" name="abc_menu_ctrl_shortcut_label">"Ctrl+"</string>
+    <string msgid="838001238306846836" name="abc_menu_delete_shortcut_label">"Supr"</string>
+    <string msgid="7986526966204849475" name="abc_menu_enter_shortcut_label">"Retorn"</string>
+    <string msgid="375214403600139847" name="abc_menu_function_shortcut_label">"Funció+"</string>
+    <string msgid="4192209724446364286" name="abc_menu_meta_shortcut_label">"Meta+"</string>
+    <string msgid="4741552369836443843" name="abc_menu_shift_shortcut_label">"Maj+"</string>
+    <string msgid="5473865519181928982" name="abc_menu_space_shortcut_label">"Espai"</string>
+    <string msgid="6180552449598693998" name="abc_menu_sym_shortcut_label">"Sym+"</string>
+    <string msgid="5520303668377388990" name="abc_prepend_shortcut_label">"Menú+"</string>
+    <string msgid="7208076849092622260" name="abc_search_hint">"Cerca…"</string>
+    <string msgid="3741173234950517107" name="abc_searchview_description_clear">"Esborra la consulta"</string>
+    <string msgid="693312494995508443" name="abc_searchview_description_query">"Consulta de cerca"</string>
+    <string msgid="3417662926640357176" name="abc_searchview_description_search">"Cerca"</string>
+    <string msgid="1486535517437947103" name="abc_searchview_description_submit">"Envia la consulta"</string>
+    <string msgid="2293578557972875415" name="abc_searchview_description_voice">"Cerca per veu"</string>
+    <string msgid="8875138169939072951" name="abc_shareactionprovider_share_with">"Comparteix amb"</string>
+    <string msgid="9055268688411532828" name="abc_shareactionprovider_share_with_application">"Comparteix amb <ns1:g id="APPLICATION_NAME">%s</ns1:g>"</string>
+    <string msgid="1656852541809559762" name="abc_toolbar_collapse_description">"Replega"</string>
+    <string name="auto_theme">Automàtic</string>
+    <string name="banner_instruction_continue">continuar</string>
+    <string name="bottomsheet_action_collapse">Replega el full inferior</string>
+    <string name="bottomsheet_action_expand">Desplega el full inferior</string>
+    <string name="bottomsheet_action_expand_halfway">Desplega fins a la meitat</string>
+    <string name="bottomsheet_drag_handle_clicked">Has fet doble toc a l\'ansa per arrossegar</string>
+    <string name="bottomsheet_drag_handle_content_description">Ansa per arrossegar</string>
+    <string name="cali_good">Bé</string>
+    <string name="cali_high">Alt</string>
+    <string name="cali_low">baix</string>
+    <string name="cali_medium">Mitjana</string>
+    <string name="cali_text_0">Cal calibratge</string>
+    <string name="cali_text_1">Calibració recomanada</string>
+    <string name="cali_text_2">Pot ser que calgui la calibració</string>
+    <string name="cali_text_3">No cal calibrar</string>
+    <string name="cali_text_4">Ben calibrat</string>
+    <string name="cali_unreliable">Poc fiable</string>
+    <string name="cancel_label">Cancel · lar</string>
+    <string name="category_atm_type">Caix?</string>
+    <string name="category_cash_type">Fer efectiu</string>
+    <string name="category_food_type">Menjar</string>
+    <string name="category_fuel_type">Combustible</string>
+    <string name="category_health_type">Salut</string>
+    <string name="category_hospital_type">Hospital</string>
+    <string name="category_leisure_type">Oci</string>
+    <string name="category_parking_type">Aparcament</string>
+    <string name="category_services_type">Serveis</string>
+    <string name="category_shopping_type">Compres</string>
+    <string name="category_sleeping_type">Dorment</string>
+    <string name="category_toilets_type">Lavabo</string>
+    <string name="character_counter_content_description">Caràcters introduïts: %1$d de %2$d</string>
+    <string name="character_counter_overflowed_content_description">S\'ha superat el límit de caràcters (%1$d de %2$d)</string>
+    <string name="clear_text_end_icon_content_description">Esborra el text</string>
+    <string name="color_theme">Tema del color</string>
+    <string msgid="2523291102206661146" name="common_google_play_services_enable_button">Activa</string>
+    <string msgid="227660514972886228" name="common_google_play_services_enable_text">%1$s no funcionarà si no actives Serveis de Google Play.</string>
+    <string msgid="5122002158466380389" name="common_google_play_services_enable_title">Activa Serveis de Google Play</string>
+    <string msgid="7153882981874058840" name="common_google_play_services_install_button">Instal·la</string>
+    <string name="common_google_play_services_install_text">%1$s no s\'executarà si Serveis de Google Play no està instal·lat al dispositiu.</string>
+    <string msgid="7215213145546190223" name="common_google_play_services_install_title">Obtén Serveis de Google Play</string>
+    <string name="common_google_play_services_notification_channel_name">Disponibilitat de serveis de Google Play</string>
+    <string name="common_google_play_services_notification_ticker">Error de Serveis de Google Play</string>
+    <string name="common_google_play_services_unknown_issue">%1$s té problemes amb Serveis de Google Play. Torna-ho a provar.</string>
+    <string name="common_google_play_services_unsupported_text">%1$s no es pot executar sense Serveis de Google Play, que no és compatible amb el teu dispositiu.</string>
+    <string msgid="6556509956452265614" name="common_google_play_services_update_button">Actualitza</string>
+    <string msgid="9053896323427875356" name="common_google_play_services_update_text">%1$s no s\'executarà si no actualitzes Serveis de Google Play.</string>
+    <string msgid="6006316683626838685" name="common_google_play_services_update_title">Actualitza Serveis de Google Play</string>
+    <string name="common_google_play_services_updating_text">%1$s no s\'executarà sense Serveis de Google Play, que s\'està actualitzant en aquest moment.</string>
+    <string name="common_google_play_services_wear_update_text">Cal una nova versió de Serveis de Google Play. S\'actualitzarà automàticament aviat.</string>
+    <string name="common_open_on_phone">Obre al telèfon</string>
+    <string name="common_signin_button_text">Inicia sessió</string>
+    <string name="common_signin_button_text_long">Inicia la sessió amb Google</string>
+    <string name="day">Dia</string>
+    <string name="destination">Destinació</string>
+    <string name="dropoff_dialog_negative_text">Cancel · lar</string>
+    <string name="dropoff_dialog_positive_text">Comença el següent</string>
+    <string name="dropoff_dialog_text">Voleu navegar a la propera destinació?</string>
+    <string name="error_icon_content_description">Error</string>
+    <string name="exit">Abandonar</string>
+    <string name="exposed_dropdown_menu_content_description">Mostra el menú desplegable</string>
+    <string name="feedback_bad_route">Bad \n Ruta</string>
+    <string name="feedback_confusing_instruction">Instrucció confusa \n</string>
+    <string name="feedback_general_issue">Un altre problema del mapa \n</string>
+    <string name="feedback_missing_exit">Falta \n sortida</string>
+    <string name="feedback_missing_road">Falta \n Carretera</string>
+    <string name="feedback_not_allowed">No \n permès</string>
+    <string name="feedback_report_traffic">Informe \n Trànsit</string>
+    <string name="feedback_road_closure">Carretera \n tancada</string>
+    <string name="feedback_screenshot">Captura de pantalla de comentaris</string>
+    <string name="feedback_screenshot_info">Fer captura de pantalla per obtenir comentaris</string>
+    <string name="feedback_submitted">Comentaris enviats</string>
+    <string name="icon_content_description">Icona del quadre de diàleg</string>
+    <string name="initialize_failed_file_download_retry_message">Alguns fitxers que s\'han de descarregar per inicialitzar el mapa.</string>
+    <string name="initialize_failed_internet_error_message">Assegureu-vos que teniu una connexió a Internet que funcioni o torneu-ho a provar més tard!</string>
+    <string name="initialize_failed_title">No s\'ha pogut connectar al servidor</string>
+    <string name="item_view_role_description">Tabulador</string>
+    <string name="material_clock_toggle_content_description">Selecciona a. m. o p. m.</string>
+    <string name="material_hour_24h_suffix">%1$s hores</string>
+    <string name="material_hour_selection">Seleccioneu l\'hora</string>
+    <string name="material_hour_suffix">%1$s en punt</string>
+    <string name="material_minute_selection">Selecciona els minuts</string>
+    <string name="material_minute_suffix">%1$s minuts</string>
+    <string name="material_timepicker_am">a. m.</string>
+    <string name="material_timepicker_clock_mode_description">Canvia al mode de rellotge per introduir l\'hora.</string>
+    <string name="material_timepicker_hour">Hora</string>
+    <string name="material_timepicker_minute">Minut</string>
+    <string name="material_timepicker_pm">p. m.</string>
+    <string name="material_timepicker_select_time">Selecció de l\'hora</string>
+    <string name="material_timepicker_text_input_mode_description">Canvia al mode d\'introducció de text per introduir l\'hora.</string>
+    <string name="max_speed_alert_sound">So de l\'alerta de velocitat màxima</string>
+    <string name="mtrl_badge_numberless_content_description">Notificació nova</string>
+    <string name="mtrl_chip_close_icon_content_description">Suprimeix %1$s</string>
+    <string name="mtrl_exceed_max_badge_number_content_description" ns2:ignore="PluralsCandidate">Més de %1$d notificacions noves</string>
+    <string name="mtrl_picker_a11y_next_month">Canvia al mes següent</string>
+    <string name="mtrl_picker_a11y_prev_month">Canvia al mes anterior</string>
+    <string name="mtrl_picker_announce_current_selection">Selecció actual: %1$s</string>
+    <string name="mtrl_picker_cancel">Cancel·la</string>
+    <string name="mtrl_picker_confirm">D’acord</string>
+    <string name="mtrl_picker_date_header_selected">%1$s</string>
+    <string name="mtrl_picker_date_header_title">Selecciona una data</string>
+    <string name="mtrl_picker_date_header_unselected">Data seleccionada</string>
+    <string name="mtrl_picker_day_of_week_column_header">Columna de dies: %1$s</string>
+    <string name="mtrl_picker_invalid_format">El format no és vàlid.</string>
+    <string name="mtrl_picker_invalid_format_example">Exemple: %1$s</string>
+    <string name="mtrl_picker_invalid_format_use">Utilitza: %1$s</string>
+    <string name="mtrl_picker_invalid_range">L\'interval no és vàlid.</string>
+    <string name="mtrl_picker_navigate_to_year_description">Canvia a l\'any %1$s</string>
+    <string name="mtrl_picker_out_of_range">La data està fora de l\'interval: %1$s</string>
+    <string name="mtrl_picker_range_header_only_end_selected">Data d\'inici - %1$s</string>
+    <string name="mtrl_picker_range_header_only_start_selected">%1$s - data de finalització</string>
+    <string name="mtrl_picker_range_header_selected">%1$s - %2$s</string>
+    <string name="mtrl_picker_range_header_title">Selecciona un interval</string>
+    <string name="mtrl_picker_range_header_unselected">Data d\'inici - data de finalització</string>
+    <string name="mtrl_picker_save">Desa</string>
+    <string name="mtrl_picker_text_input_date_hint">Data</string>
+    <string name="mtrl_picker_text_input_date_range_end_hint">Data de finalització</string>
+    <string name="mtrl_picker_text_input_date_range_start_hint">Data d\'inici</string>
+    <string name="mtrl_picker_text_input_day_abbr">d</string>
+    <string name="mtrl_picker_text_input_month_abbr">m</string>
+    <string name="mtrl_picker_text_input_year_abbr">a</string>
+    <string name="mtrl_picker_toggle_to_calendar_input_mode">Canvia al mode d\'introducció de dades del calendari</string>
+    <string name="mtrl_picker_toggle_to_day_selection">Toca per canviar a la selecció del dia</string>
+    <string name="mtrl_picker_toggle_to_text_input_mode">Canvia al mode d\'introducció de text</string>
+    <string name="mtrl_picker_toggle_to_year_selection">Toca per canviar a la selecció de l\'any</string>
+    <string name="mtrl_timepicker_cancel">Cancel·la</string>
+    <string name="mtrl_timepicker_confirm">D’acord</string>
+    <string name="muted">Silenciada</string>
+    <string msgid="6301633601645100427" name="nav_app_bar_navigate_up_description">"Navega cap amunt"</string>
+    <string msgid="7456070600745802113" name="nav_app_bar_open_drawer_description">"Obre el tauler de navegació"</string>
+    <string name="navigation_cancel_message">Voleu acabar amb la navegació?</string>
+    <string name="night">Nit</string>
+    <string name="offline_configuration_failed">La configuració del mapa fora de línia ha fallat. Si us plau, comproveu l\'actualització</string>
+    <string name="ok_label">D\'acord</string>
+    <string name="password_toggle_content_description">Mostra la contrasenya</string>
+    <string name="re_center">Tornar a centrar-se</string>
+    <string name="report_problem">Problema informe</string>
+    <string name="rerouting">Retrocant ...</string>
+    <string name="retry_label">Torna-ho a provar</string>
+    <string msgid="6264217191555673260" name="search_menu_title">"Cerca"</string>
+    <string name="sensor_accuracy_no_contact">Sensor no disponible</string>
+    <string name="settext_Downloading">Descarregant ...</string>
+    <string name="settext_Downloading_percentage">Descarregant ... (%1$s%)</string>
+    <string name="settext_navigationend">La navegació va acabar</string>
+    <string name="settext_reached_destination">Heu arribat al vostre destí</string>
+    <string name="snap_to_route">Agafeu la ruta</string>
+    <string msgid="6277540029070332960" name="status_bar_notification_info_overflow">"999+"</string>
+    <string name="text_Schoolzone">Zona escolar</string>
+    <string name="text_add_stop">Afegiu parada</string>
+    <string name="text_added_stop_title">Afegit a la ruta</string>
+    <string name="text_alert_waypoint_reached">Va arribar Waypoint</string>
+    <string name="text_cancel">Cancel · lar</string>
+    <string name="text_clear_results">Resultats clars</string>
+    <string name="text_dropped_pin">Pin caigut</string>
+    <string name="text_enter_feedback">Introduïu el retrocés (opcional)</string>
+    <string name="text_feedback">Comentaris</string>
+    <string name="text_feedback_title">Títol de comentaris</string>
+    <string name="text_no_search_results">Sense resultats de la cerca</string>
+    <string name="text_searching">Cercament</string>
+    <string name="text_send_feedback">Enviar comentaris</string>
+    <string name="text_speed_unit_kmph">km/h</string>
+    <string name="text_speed_unit_miph">mi/h</string>
+    <string name="text_then">Llavors</string>
+    <string name="text_unzip_bundle">Extreure</string>
+    <string name="text_zone_accident">Accident</string>
+    <string name="text_zone_alert_reroute">Revertir</string>
+    <string name="text_zone_hospital">Hospital</string>
+    <string name="text_zone_road_closure">Tancament de la carretera</string>
+    <string name="text_zone_school">Escola</string>
+    <string name="text_zone_warning">Advertència</string>
+    <string name="unmuted">No mut</string>
+    <string name="voice_instruction_1km">en 1 quilòmetre %1$s</string>
+    <string name="voice_instruction_1mile">en 1 milla %1$s</string>
+    <string name="voice_instruction_400m">a 400 metres %1$s</string>
+    <string name="voice_instruction_quater_mile">en un quart de milla %1$s</string>
+    <string name="you_have_arrived">Has arribat</string>
+</resources>

@@ -1,0 +1,36 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.itc.app-mergeDebugResources-58:/values-port/values-port.xml",
+            "map": [
+                {
+                    "source": "/home/raja-palani/.gradle/caches/transforms-3/2262e18c2215afd82fb5e557948585ff/transformed/jetified-libandroid-navigation-ui/res/values-port/values-port.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6",
+                        "startColumns": "4,4,4,4,4",
+                        "startOffsets": "55,112,173,238,296",
+                        "endColumns": "56,60,64,57,50",
+                        "endOffsets": "107,168,233,291,342"
+                    },
+                    "to": {
+                        "startLines": "3,4,5,6,7",
+                        "startColumns": "4,4,4,4,4",
+                        "startOffsets": "111,168,229,294,352",
+                        "endColumns": "56,60,64,57,50",
+                        "endOffsets": "163,224,289,347,398"
+                    }
+                },
+                {
+                    "source": "/home/raja-palani/.gradle/caches/transforms-3/b3627ca143232ec2ceb6e319eb18971d/transformed/appcompat-1.6.1/res/values-port/values-port.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "55",
+                        "endOffsets": "106"
+                    }
+                }
+            ]
+        }
+    ]
+}

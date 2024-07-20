@@ -1,0 +1,38 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.itc.app-mergeDebugResources-58:/values-hdpi-v4/values-hdpi-v4.xml",
+            "map": [
+                {
+                    "source": "/home/raja-palani/.gradle/caches/transforms-3/b3627ca143232ec2ceb6e319eb18971d/transformed/appcompat-1.6.1/res/values-hdpi-v4/values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "6",
+                        "endColumns": "13",
+                        "endOffsets": "327"
+                    },
+                    "to": {
+                        "startLines": "4",
+                        "startColumns": "4",
+                        "startOffsets": "156",
+                        "endLines": "8",
+                        "endColumns": "13",
+                        "endOffsets": "428"
+                    }
+                },
+                {
+                    "source": "/home/raja-palani/.gradle/caches/transforms-3/2262e18c2215afd82fb5e557948585ff/transformed/jetified-libandroid-navigation-ui/res/values-hdpi-v4/values-hdpi-v4.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,103",
+                        "endColumns": "47,52",
+                        "endOffsets": "98,151"
+                    }
+                }
+            ]
+        }
+    ]
+}

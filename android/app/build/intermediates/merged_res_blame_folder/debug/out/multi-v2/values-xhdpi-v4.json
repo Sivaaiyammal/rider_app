@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.itc.app-mergeDebugResources-58:/values-xhdpi-v4/values-xhdpi-v4.xml",
+            "map": [
+                {
+                    "source": "/home/raja-palani/.gradle/caches/transforms-3/2262e18c2215afd82fb5e557948585ff/transformed/jetified-libandroid-navigation-ui/res/values-xhdpi-v4/values-xhdpi-v4.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,103",
+                        "endColumns": "47,52",
+                        "endOffsets": "98,151"
+                    }
+                }
+            ]
+        }
+    ]
+}
