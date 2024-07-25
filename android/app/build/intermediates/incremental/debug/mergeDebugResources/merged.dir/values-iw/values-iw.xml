@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2" xmlns:ns2="http://schemas.android.com/tools">
+<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
     <plurals name="mtrl_badge_content_description">
     <item quantity="one">התראה חדשה אחת (%d)</item>
     <item quantity="two">%d התראות חדשות</item>
@@ -36,11 +36,7 @@
     <string gender="unknown" name="alert_description">התראה</string>
     <string name="auto_theme">אוטומטי</string>
     <string name="banner_instruction_continue">לְהַמשִׁיך</string>
-    <string name="bottomsheet_action_collapse">כיווץ הגיליון התחתון</string>
-    <string name="bottomsheet_action_expand">הרחבת הגיליון התחתון</string>
     <string name="bottomsheet_action_expand_halfway">הרחבה עד האמצע</string>
-    <string name="bottomsheet_drag_handle_clicked">בוצעה הקשה כפולה על נקודת האחיזה לגרירה</string>
-    <string name="bottomsheet_drag_handle_content_description">נקודת אחיזה לגרירה</string>
     <string name="cali_good">טוֹב</string>
     <string name="cali_high">גָבוֹהַ</string>
     <string name="cali_low">נָמוּך</string>
@@ -52,8 +48,6 @@
     <string name="cali_text_4">מכויל היטב</string>
     <string name="cali_unreliable">לֹא מְהֵימָן</string>
     <string name="cancel_label">לְבַטֵל</string>
-    <string gender="unknown" name="catalyst_dev_menu_header">תפריט מקומי למפתחים (%1$s)</string>
-    <string gender="unknown" name="catalyst_dev_menu_sub_header">%1$s בפעילות</string>
     <string name="category_atm_type">כַּספּוֹמָט</string>
     <string name="category_cash_type">כסף מזומן</string>
     <string name="category_food_type">מזון</string>
@@ -118,16 +112,15 @@
     <string name="item_view_role_description">מקש Tab</string>
     <string gender="unknown" name="link_description">קישור</string>
     <string name="material_clock_toggle_content_description">יש לבחור ב-AM או ב-PM</string>
-    <string name="material_hour_24h_suffix">%1$s שעות</string>
     <string name="material_hour_selection">בחר שעה</string>
     <string name="material_hour_suffix">השעה %1$s</string>
     <string name="material_minute_selection">בחר דקות</string>
     <string name="material_minute_suffix">%1$s דקות</string>
-    <string name="material_timepicker_am">AM</string>
+    <string name="material_timepicker_am">לפנה\"צ</string>
     <string name="material_timepicker_clock_mode_description">העבר למצב שעון לצורך הזנת השעה</string>
     <string name="material_timepicker_hour">שעה</string>
     <string name="material_timepicker_minute">דקה</string>
-    <string name="material_timepicker_pm">PM</string>
+    <string name="material_timepicker_pm">אחה\"צ</string>
     <string name="material_timepicker_select_time">בחר שעה</string>
     <string name="material_timepicker_text_input_mode_description">העבר למצב קלט טקסט לצורך הזנת השעה</string>
     <string name="max_speed_alert_sound">צליל התראה מקסימום מהירות</string>
@@ -136,12 +129,11 @@
     <string gender="unknown" name="menuitem_description">פריט בתפריט</string>
     <string name="mtrl_badge_numberless_content_description">התראה חדשה</string>
     <string name="mtrl_chip_close_icon_content_description">הסרה של %1$s</string>
-    <string name="mtrl_exceed_max_badge_number_content_description" ns2:ignore="PluralsCandidate">יותר מ-%1$d התראות חדשות</string>
+    <string name="mtrl_exceed_max_badge_number_content_description">יותר מ-%1$d התראות חדשות</string>
     <string name="mtrl_picker_a11y_next_month">מעבר לחודש הבא</string>
     <string name="mtrl_picker_a11y_prev_month">מעבר לחודש הקודם</string>
     <string name="mtrl_picker_announce_current_selection">הבחירה הנוכחית: %1$s</string>
-    <string name="mtrl_picker_cancel">ביטול</string>
-    <string name="mtrl_picker_confirm">אישור</string>
+    <string name="mtrl_picker_confirm">@android:string/ok</string>
     <string name="mtrl_picker_date_header_selected">%1$s</string>
     <string name="mtrl_picker_date_header_title">יש לבחור תאריך</string>
     <string name="mtrl_picker_date_header_unselected">התאריך הנבחר</string>
@@ -168,8 +160,6 @@
     <string name="mtrl_picker_toggle_to_day_selection">יש להקיש כדי להחליף לבחירת יום</string>
     <string name="mtrl_picker_toggle_to_text_input_mode">החלפה לשיטת קלט של טקסט</string>
     <string name="mtrl_picker_toggle_to_year_selection">יש להקיש כדי להחליף לבחירת שנה</string>
-    <string name="mtrl_timepicker_cancel">ביטול</string>
-    <string name="mtrl_timepicker_confirm">אישור</string>
     <string name="muted">מושתק</string>
     <string msgid="6301633601645100427" name="nav_app_bar_navigate_up_description">"ניווט למעלה"</string>
     <string msgid="7456070600745802113" name="nav_app_bar_open_drawer_description">"פתיחת חלונית ההזזה לניווט"</string>

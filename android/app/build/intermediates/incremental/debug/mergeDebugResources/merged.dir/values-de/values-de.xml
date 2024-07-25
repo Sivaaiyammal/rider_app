@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2" xmlns:ns2="http://schemas.android.com/tools">
+<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
     <plurals name="mtrl_badge_content_description">
     <item quantity="one">%d neue Benachrichtigung</item>
     <item quantity="other">%d neue Benachrichtigungen</item>
@@ -34,11 +34,7 @@
     <string gender="unknown" name="alert_description">Warnhinweis</string>
     <string name="auto_theme">Auto</string>
     <string name="banner_instruction_continue">weitermachen</string>
-    <string name="bottomsheet_action_collapse">Ansicht am unteren Rand minimieren</string>
-    <string name="bottomsheet_action_expand">Ansicht am unteren Rand maximieren</string>
     <string name="bottomsheet_action_expand_halfway">Zur Hälfte maximieren</string>
-    <string name="bottomsheet_drag_handle_clicked">Auf Ziehpunkt doppelt getippt</string>
-    <string name="bottomsheet_drag_handle_content_description">Ziehpunkt</string>
     <string name="cali_good">Gut</string>
     <string name="cali_high">Hoch</string>
     <string name="cali_low">Niedrig</string>
@@ -113,7 +109,6 @@
     <string name="initialize_failed_title">Es konnte keine Verbindung zum Server hergestellt werden</string>
     <string name="item_view_role_description">Tab</string>
     <string name="material_clock_toggle_content_description">Vormittags oder Nachmittags auswählen</string>
-    <string name="material_hour_24h_suffix">%1$s Stunden</string>
     <string name="material_hour_selection">Stunde auswählen</string>
     <string name="material_hour_suffix">%1$s Uhr</string>
     <string name="material_minute_selection">Minuten auswählen</string>
@@ -131,12 +126,11 @@
     <string gender="unknown" name="menuitem_description">Menüpunkt</string>
     <string name="mtrl_badge_numberless_content_description">Neue Benachrichtigung</string>
     <string name="mtrl_chip_close_icon_content_description">%1$s entfernen</string>
-    <string name="mtrl_exceed_max_badge_number_content_description" ns2:ignore="PluralsCandidate">Mehr als %1$d neue Benachrichtigungen</string>
+    <string name="mtrl_exceed_max_badge_number_content_description">Mehr als %1$d neue Benachrichtigungen</string>
     <string name="mtrl_picker_a11y_next_month">Zum nächsten Monat wechseln</string>
     <string name="mtrl_picker_a11y_prev_month">Zum vorherigen Monat wechseln</string>
     <string name="mtrl_picker_announce_current_selection">Aktuelle Auswahl: %1$s</string>
-    <string name="mtrl_picker_cancel">Abbrechen</string>
-    <string name="mtrl_picker_confirm">OK</string>
+    <string name="mtrl_picker_confirm">@android:string/ok</string>
     <string name="mtrl_picker_date_header_selected">%1$s</string>
     <string name="mtrl_picker_date_header_title">Datum auswählen</string>
     <string name="mtrl_picker_date_header_unselected">Ausgewähltes Datum</string>
@@ -163,8 +157,6 @@
     <string name="mtrl_picker_toggle_to_day_selection">Tippen, um zur Tagesauswahl zu wechseln</string>
     <string name="mtrl_picker_toggle_to_text_input_mode">In den Texteingabemodus wechseln</string>
     <string name="mtrl_picker_toggle_to_year_selection">Tippen, um zur Jahresauswahl zu wechseln</string>
-    <string name="mtrl_timepicker_cancel">Abbrechen</string>
-    <string name="mtrl_timepicker_confirm">OK</string>
     <string name="muted">Gedämpft</string>
     <string msgid="6301633601645100427" name="nav_app_bar_navigate_up_description">"Nach oben"</string>
     <string msgid="7456070600745802113" name="nav_app_bar_open_drawer_description">"Navigationsleiste öffnen"</string>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2" xmlns:ns2="http://schemas.android.com/tools">
+<resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
     <plurals name="mtrl_badge_content_description">
     <item quantity="one">การแจ้งเตือนใหม่ %d รายการ</item>
     <item quantity="other">การแจ้งเตือนใหม่ %d รายการ</item>
@@ -34,11 +34,7 @@
     <string gender="unknown" name="alert_description">การแจ้งเตือน</string>
     <string name="auto_theme">รถยนต์</string>
     <string name="banner_instruction_continue">ดำเนินการต่อ</string>
-    <string name="bottomsheet_action_collapse">ยุบ Bottom Sheet</string>
-    <string name="bottomsheet_action_expand">ขยาย Bottom Sheet</string>
     <string name="bottomsheet_action_expand_halfway">ขยายรายการครึ่งหนึ่ง</string>
-    <string name="bottomsheet_drag_handle_clicked">แตะแฮนเดิลการลากสองครั้ง</string>
-    <string name="bottomsheet_drag_handle_content_description">แฮนเดิลการลาก</string>
     <string name="cali_good">ดี</string>
     <string name="cali_high">สูง</string>
     <string name="cali_low">ต่ำ</string>
@@ -50,8 +46,6 @@
     <string name="cali_text_4">ปรับเทียบอย่างดี</string>
     <string name="cali_unreliable">ไม่น่าเชื่อถือ</string>
     <string name="cancel_label">ยกเลิก</string>
-    <string gender="unknown" name="catalyst_dev_menu_header">แสดงความรู้สึกต่อเมนูผู้พัฒนาแบบเนทีฟ (%1$s)</string>
-    <string gender="unknown" name="catalyst_dev_menu_sub_header">กำลังเผยแพร่ %1$s</string>
     <string name="category_atm_type">ATM</string>
     <string name="category_cash_type">เงินสด</string>
     <string name="category_food_type">อาหาร</string>
@@ -116,7 +110,6 @@
     <string name="item_view_role_description">แท็บ</string>
     <string gender="unknown" name="link_description">ลิงก์</string>
     <string name="material_clock_toggle_content_description">เลือก AM หรือ PM</string>
-    <string name="material_hour_24h_suffix">%1$s ชั่วโมง</string>
     <string name="material_hour_selection">เลือกชั่วโมง</string>
     <string name="material_hour_suffix">%1$s นาฬิกา</string>
     <string name="material_minute_selection">เลือกนาที</string>
@@ -134,12 +127,11 @@
     <string gender="unknown" name="menuitem_description">รายการในเมนู</string>
     <string name="mtrl_badge_numberless_content_description">การแจ้งเตือนใหม่</string>
     <string name="mtrl_chip_close_icon_content_description">นำ %1$s ออก</string>
-    <string name="mtrl_exceed_max_badge_number_content_description" ns2:ignore="PluralsCandidate">การแจ้งเตือนใหม่มากกว่า %1$d รายการ</string>
+    <string name="mtrl_exceed_max_badge_number_content_description">การแจ้งเตือนใหม่มากกว่า %1$d รายการ</string>
     <string name="mtrl_picker_a11y_next_month">เปลี่ยนไปที่เดือนถัดไป</string>
     <string name="mtrl_picker_a11y_prev_month">เปลี่ยนไปที่เดือนก่อนหน้า</string>
     <string name="mtrl_picker_announce_current_selection">การเลือกในปัจจุบัน: %1$s</string>
-    <string name="mtrl_picker_cancel">ยกเลิก</string>
-    <string name="mtrl_picker_confirm">ตกลง</string>
+    <string name="mtrl_picker_confirm">@android:string/ok</string>
     <string name="mtrl_picker_date_header_selected">%1$s</string>
     <string name="mtrl_picker_date_header_title">เลือกวันที่</string>
     <string name="mtrl_picker_date_header_unselected">วันที่ที่เลือก</string>
@@ -166,8 +158,6 @@
     <string name="mtrl_picker_toggle_to_day_selection">แตะเพื่อสลับไปใช้การเลือกวัน</string>
     <string name="mtrl_picker_toggle_to_text_input_mode">สลับไปใช้โหมดป้อนข้อมูลข้อความ</string>
     <string name="mtrl_picker_toggle_to_year_selection">แตะเพื่อสลับไปใช้การเลือกปี</string>
-    <string name="mtrl_timepicker_cancel">ยกเลิก</string>
-    <string name="mtrl_timepicker_confirm">ตกลง</string>
     <string name="muted">ปิดเสียง</string>
     <string msgid="6301633601645100427" name="nav_app_bar_navigate_up_description">"นำทางขึ้น"</string>
     <string msgid="7456070600745802113" name="nav_app_bar_open_drawer_description">"เปิดลิ้นชักการนำทาง"</string>

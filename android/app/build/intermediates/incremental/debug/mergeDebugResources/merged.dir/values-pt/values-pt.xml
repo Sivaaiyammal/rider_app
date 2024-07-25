@@ -41,8 +41,6 @@
     <string name="cali_text_4">Bem calibrado</string>
     <string name="cali_unreliable">Não confiável</string>
     <string name="cancel_label">Cancelar</string>
-    <string gender="unknown" name="catalyst_dev_menu_header">Menu de desenvolvedor de reações nativas (%1$s)</string>
-    <string gender="unknown" name="catalyst_dev_menu_sub_header">%1$s em veiculação</string>
     <string name="category_atm_type">Atm</string>
     <string name="category_cash_type">Dinheiro</string>
     <string name="category_food_type">Comida</string>
