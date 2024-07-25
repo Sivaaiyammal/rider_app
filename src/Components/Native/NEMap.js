@@ -156,6 +156,7 @@ class NEMap extends Component {
               ]
               : null
           }
+          mode={this.props.mode}
           geometries={this.state.mapLoaded ? this.props.geometries : null}
           findRoute={
             this.state.mapLoaded && this.props.findRoute?.length !== 0

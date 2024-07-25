@@ -10,7 +10,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import {componentStyle} from '../Styles/ComponentStyles';
 
 const InputContainer = props => {
-  const {placeholder, onChange, value, onCancelPress} = props;
+  const {placeholder, onChange, value, onCancelPress, onFocus} = props;
 
   return (
     <View style={componentStyle.inputContainer}>
@@ -26,6 +26,7 @@ const InputContainer = props => {
           style={componentStyle.input}
           onChangeText={onChange}
           value={value}
+          onFocus={onFocus}
         />
 
         {/* Mic Icon  */}

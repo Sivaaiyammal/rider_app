@@ -227,6 +227,16 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         return mapView;
     }
 
+    @ReactProp(name = "mode")
+    public void setMode(MapView mapView, String mode) {
+        if (mapController != null) {
+            String mapStyleString = mode.equals("light") ? "DAY2" : "NIGHT2";
+            MapController.MapStyle mapStyle = MapController.MapStyle.valueOf(mapStyleString);
+            Log.d("AJIN", "mapStyle " + mapStyle);
+            mapController.setMapStyle(mapStyle);
+        }
+    }
+
     @ReactProp(name = "homeLocation")
     public void setHomeLocation(MapView mapView, ReadableArray location) {
         if (mapController != null && location != null) {

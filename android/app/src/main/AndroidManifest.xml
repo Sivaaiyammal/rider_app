@@ -36,7 +36,7 @@
             android:value="false" />
         <meta-data
             android:name="ne.sdk.SDK_BASE"
-            android:value="VM" />
+            android:value="NE" />
         <meta-data
             android:name="com.dieam.reactnativepushnotification.notification_foreground"
             android:value="false" /> <!-- Change the resource name to your App's accent color - or any other color you want -->

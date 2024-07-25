@@ -17,7 +17,7 @@ import com.facebook.react.bridge.UIManager;
 import com.facebook.react.fabric.ComponentFactory;
 import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.EmptyReactNativeConfig;
-import com.facebook.react.fabric.FabricJSIModuleProvider;
+//import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.uimanager.ViewManagerRegistry;
 import com.itc.BuildConfig;
 import com.itc.newarchitecture.components.MainComponentsRegistry;
@@ -69,7 +69,7 @@ public class MainApplicationReactNativeHost extends ReactNativeHost {
     return new MainApplicationTurboModuleManagerDelegate.Builder();
   }
 
-  @Override
+//  @Override
   protected JSIModulePackage getJSIModulePackage() {
     return new JSIModulePackage() {
       @Override
@@ -80,36 +80,36 @@ public class MainApplicationReactNativeHost extends ReactNativeHost {
 
         // Here we provide a new JSIModuleSpec that will be responsible of providing the
         // custom Fabric Components.
-        specs.add(
-            new JSIModuleSpec() {
-              @Override
-              public JSIModuleType getJSIModuleType() {
-                return JSIModuleType.UIManager;
-              }
+//        specs.add(
+//            new JSIModuleSpec() {
+//              @Override
+//              public JSIModuleType getJSIModuleType() {
+//                return JSIModuleType.UIManager;
+//              }
 
-              @Override
-              public JSIModuleProvider<UIManager> getJSIModuleProvider() {
-                final ComponentFactory componentFactory = new ComponentFactory();
-                CoreComponentsRegistry.register(componentFactory);
+//              @Override
+//              public JSIModuleProvider<UIManager> getJSIModuleProvider() {
+//                final ComponentFactory componentFactory = new ComponentFactory();
+//                CoreComponentsRegistry.register(componentFactory);
+//
+//                // Here we register a Components Registry.
+//                // The one that is generated with the template contains no components
+//                // and just provides you the one from React Native core.
+//                MainComponentsRegistry.register(componentFactory);
+//
+//                final ReactInstanceManager reactInstanceManager = getReactInstanceManager();
+//
+//                ViewManagerRegistry viewManagerRegistry =
+//                    new ViewManagerRegistry(
+//                        reactInstanceManager.getOrCreateViewManagers(reactApplicationContext));
 
-                // Here we register a Components Registry.
-                // The one that is generated with the template contains no components
-                // and just provides you the one from React Native core.
-                MainComponentsRegistry.register(componentFactory);
-
-                final ReactInstanceManager reactInstanceManager = getReactInstanceManager();
-
-                ViewManagerRegistry viewManagerRegistry =
-                    new ViewManagerRegistry(
-                        reactInstanceManager.getOrCreateViewManagers(reactApplicationContext));
-
-                return new FabricJSIModuleProvider(
-                    reactApplicationContext,
-                    componentFactory,
-                    new EmptyReactNativeConfig(),
-                    viewManagerRegistry);
-              }
-            });
+//                return new FabricJSIModuleProvider(
+//                    reactApplicationContext,
+//                    componentFactory,
+//                    new EmptyReactNativeConfig(),
+//                    viewManagerRegistry);
+//              }
+//            });
         return specs;
       }
     };

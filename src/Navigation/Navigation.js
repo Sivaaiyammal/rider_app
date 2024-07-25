@@ -7,6 +7,7 @@ import HomeScreen from '../Screens/HomeScreen';
 import SearchScreen from '../Screens/SearchScreen';
 import SplashReactScreen from '../Screens/splashScreen';
 import LanguageScreen from '../Screens/languageScreen';
+import MainScreen from '../Screens/MainScreen';
 
 const Navigation = () => {
 
@@ -25,11 +26,7 @@ const Navigation = () => {
         <Stack.Screen name="LanguageScreen" component={LanguageScreen} />
         <Stack.Screen 
           name="Home" 
-          component={HomeScreen}
-        />
-        <Stack.Screen 
-          name="SearchScreen" 
-          component={SearchScreen} 
+          component={MainScreen}
         />
       </Stack.Navigator>
     </GestureHandlerRootView>

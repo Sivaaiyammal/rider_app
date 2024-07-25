@@ -2,27 +2,29 @@ import { ScrollView, StyleSheet, View, TouchableOpacity, BackHandler } from 'rea
 import React, { useEffect, useState } from 'react';
 
 import InputContainer from '../Components/InputContainer';
-import SavedAddress from '../Components/SavedAddress';
-import RecentSearch from '../Components/RecentSearch';
-import NearBy from '../Components/NearBy';
-import SearchResult from '../Components/SearchResult';
 import DraggableBottomSheet from '../Components/BottomSheet';
-import Map from './Map';
 import { IconButton } from 'react-native-paper';
+import { useStackScreenStore } from '../Store/useStackScreen';
+import useMapStore from '../Store/useMapStore';
 
 import CurrentLocationIcon from '../Assets/Icons/currentLocation.svg';
 import DirectionsIcon from '../Assets/Icons/direction.svg';
+import CustomTabBar from '../Components/CustomTabBar/CustomTabBar';
+import POIScreen from './POIScreen';
+import SettingsScreen from './SettingsScreen';
 
-const HomeScreen = ({ navigation }) => {
-  const [searchText, setSearchText] = useState('');
+const HomeScreen = ({ }) => {
+  const { setStackScreen } = useStackScreenStore();
+  const { mode, setMode } = useMapStore();
 
   const clearText = () => {
     setSearchText('');
   };
 
-  const handleSearch = value => {
-    setSearchText(value);
-  };
+  const handleFocus = () => {
+    console.log('Focused');
+    setStackScreen('Search');
+  }
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -67,19 +69,11 @@ const HomeScreen = ({ navigation }) => {
           <View style={styles.screenContainer}>
             <InputContainer
               placeholder={'Search'}
-              onChange={value => handleSearch(value)}
-              value={searchText}
+              onFocus={handleFocus}
+              value={''}
               onCancelPress={() => clearText()}
             />
-            {searchText?.length !== 0 ? (
-              <SearchResult searchTxt={searchText} />
-            ) : (
-              <ScrollView>
-                <SavedAddress />
-                <RecentSearch />
-                <NearBy />
-              </ScrollView>
-            )}
+            <POIScreen />
           </View>
         }
       />
@@ -88,8 +82,30 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <>
-      <Map />
-      <BottomSheet />
+      <CustomTabBar 
+        menus={[
+          {
+            icon: 'home',
+            name: 'Home',
+            component: <BottomSheet />,
+          }, {
+            icon: 'moon',
+            name: 'Mode',
+            component: <View />,
+            callBack: () => {
+              setMode(mode === 'light' ? 'dark' : 'light');
+            },
+          }, {
+            icon: 'language',
+            name: 'Language',
+            component: <View />,
+          }, {
+            icon: 'sun',
+            name: 'Settings',
+            component: <SettingsScreen />,
+          }
+        ]}
+      />
     </>
   );
 };
