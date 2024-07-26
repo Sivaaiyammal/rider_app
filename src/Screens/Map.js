@@ -1,60 +1,61 @@
-import { useEffect } from "react";
-import NEMap from "../Components/Native/NEMap";
-import useMapStore from "../Store/useMapStore";
-import { View } from "react-native";
-// import useUserStore from "../store/userStore";
-import { DataStore } from "../Constants/DataStore";
-import FullScreenLoader from "../Components/Loaders/FullScreenLoader";
+import React, { useEffect, useState } from 'react'
+import { View, StyleSheet } from 'react-native'
+import { useNavigation } from '@react-navigation/native';
+
+import useMapStore from '../Store/useMapStore';
+import NEMap from '../Components/Native/NEMap'
+import Loaders from '../Components/Loaders/FullScreenLoader';
 
 
-export default function Map() {
-    const { showMap, mapHeight, directionPoints, startNavigation, setMapReady, mapReady, setDirectionReady, markers,setClickedLocation } = useMapStore()
-    // const { setCurrentLocation } = useUserStore()
+const MapContainer = ({ mapStyle }) => {
+    const { mode, mapMarkers, geometries,directionPoints, mapLocation, mapDblclickCallback, markerClickCallback, setMapReady, mapReady, mapClickCallback, startNavigation } = useMapStore();
+    
+    console.log(startNavigation, "markers")
+    
+    return (
+        <View style={[styles.mapContainer]}>
+            {
+                !mapReady && <Loaders message="Setting up Map" />
+            }
+            <NEMap
+                mapStyle={mapStyle ? mapStyle : styles.mapStyles}
+                homeLocation={mapLocation}
+                onMapReady={() => { setMapReady(true) }}
+                markers={mapMarkers}
+                mode={mode}
+                onMarkerClick={markerClickCallback}
+                onMapClick={mapClickCallback}
+                geometries={geometries}
+                findRoute={directionPoints}
+                onMapDblclick={mapDblclickCallback}
+                navigation={startNavigation}
+            />
+        </View>
+    );
+};
 
+export default MapContainer;
 
-    useEffect(() => {
-        DataStore.loadData('currentLocation').then(res => {
-            if (res.status) setCurrentLocation(res.data)
-        }).catch(() => { })
-    }, [])
+const styles = StyleSheet.create({
+    mapContainer: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        zIndex: -1,
+    },
+    mapStyles: {
+        width: '100%',
+        height: '100%',
+        zIndex: 1,
+    },
+    gradientContainer: {
+        zIndex: 2,
+        position: 'absolute',
+        height: 100,
+        width: '100%',
+    },
+    LinearGradient: {
+        flex: 1,
+    },
+});
 
-    const onUserLocationChange = async (data) => {
-        const location = [data.latitude, data.longitude]
-        // setCurrentLocation(location)
-        DataStore.storeData('currentLocation', location)
-    }
-
-    const onMapReady = async () => {
-        setMapReady(true)
-    }
-
-    const mapStyle = {
-        ...{
-            width: "100%",
-            height: showMap ? mapHeight : 1,
-            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1
-        },
-    }
-
-    const onMapClick = (data) =>{
-        console.log('onmapclick')
-        setClickedLocation(data)
-    }
-
-    return <View style={{ position: 'relative' }}>
-        {
-            !mapReady && <FullScreenLoader showBG={false} message="Setting Up Map" />
-        }
-
-        <NEMap
-            mapStyle={mapStyle}
-            findRoute={directionPoints}
-            navigation={startNavigation}
-            onUserLocationChange={onUserLocationChange}
-            onDirectionReady={() => setDirectionReady(true)}
-            onMapReady={onMapReady}
-            markers={markers}
-            onMapClick={onMapClick}
-        />
-    </View>
-}

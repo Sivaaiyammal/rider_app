@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
-import { View } from 'react-native';
-import {ProgressBar} from '@react-native-community/progress-bar-android';
+import { View, Image, Text } from 'react-native';
+import { ProgressBar } from '@react-native-community/progress-bar-android';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 
-import SplashImage from '../Assets/splash/splash.svg';
+import SplashScreenIcon from '../Assets/splash/splashScreen.jpg';
 import { DataStore } from '../Constants/DataStore';
 
 const SplashScreen = () => {
@@ -26,17 +26,45 @@ const SplashScreen = () => {
 
     return (
         <View style={{
-            flex: 1, 
-            justifyContent: 'flex-end', 
+            flex: 1,
+            justifyContent: 'flex-end',
             alignItems: 'center',
             backgroundColor: '#fff',
-            paddingBottom: 20
+            paddingBottom: 20,
         }}>
-            <SplashImage />
-            <ProgressBar 
-                styleAttr="Horizontal" 
-                indeterminate={true} 
-                color="blue" 
+            <View style={{
+                position: 'absolute',
+                top: 100,
+                alignItems: 'center'
+            }}>
+                <Text style={{
+                    fontSize: 20,
+                    fontWeight: 'bold',
+                    color: '#000'
+                }}>ITC</Text>
+                <Text style={{
+                    fontSize: 16,
+                    color: '#666',
+                    marginTop: 10
+                }}>
+                    Version 1.0.0
+                </Text>
+            </View>
+            {/* <View> */}
+                <Image
+                    source={SplashScreenIcon}
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        resizeMode: 'contain'
+                    }}
+                />
+
+            {/* </View> */}
+            <ProgressBar
+                styleAttr="Horizontal"
+                indeterminate={true}
+                color="blue"
                 style={{
                     width: '100%',
                     height: 10

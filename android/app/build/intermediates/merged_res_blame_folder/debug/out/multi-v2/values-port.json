@@ -4,7 +4,7 @@
             "outputFile": "com.itc.app-mergeDebugResources-58:/values-port/values-port.xml",
             "map": [
                 {
-                    "source": "/home/raja-palani/.gradle/caches/transforms-3/2262e18c2215afd82fb5e557948585ff/transformed/jetified-libandroid-navigation-ui/res/values-port/values-port.xml",
+                    "source": "C:\\Users\\ADMIN\\.gradle\\caches\\transforms-3\\60f9d95e1f8606b71080abdd4d8f2097\\transformed\\jetified-libandroid-navigation-ui\\res\\values-port\\values-port.xml",
                     "from": {
                         "startLines": "2,3,4,5,6",
                         "startColumns": "4,4,4,4,4",
@@ -21,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "/home/raja-palani/.gradle/caches/transforms-3/b3627ca143232ec2ceb6e319eb18971d/transformed/appcompat-1.6.1/res/values-port/values-port.xml",
+                    "source": "C:\\Users\\ADMIN\\.gradle\\caches\\transforms-3\\951aa6d6caef0c3e4ad2547f0b54cae4\\transformed\\appcompat-1.6.1\\res\\values-port\\values-port.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

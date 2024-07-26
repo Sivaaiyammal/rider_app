@@ -1,5 +1,13 @@
 R_DEF: Internal format may change without notice
 local
+drawable car_green
+drawable car_red
+drawable car_yellow
+drawable marker_car
+drawable marker_end
+drawable marker_selected_car
+drawable marker_start
+drawable marker_waypoint
 drawable rn_edit_text_material
 integer react_native_dev_server_port
 mipmap ic_launcher

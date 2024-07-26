@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {View, Text, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
-import {search_data} from '../Constants/DummyData';
+// import {search_data} from '../Constants/DummyData';
 
 // icons
 import Feather from 'react-native-vector-icons/Feather';
@@ -22,7 +22,7 @@ const Item = ({title, searchKeyword}) => {
       <View style={styles.resultSearchIcon}>
         <Fontisto name="search" size={14} />
       </View>
-      <TouchableOpacity style={styles.m5}>
+      <View style={styles.m5}>
         <Text style={AddressCards.resultName}>{title.name}</Text>
         <View style={AddressCards.flexRow}>
           {title.duration && (
@@ -39,15 +39,15 @@ const Item = ({title, searchKeyword}) => {
             </Text>
           )}
         </View>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.upArrow}>
+      </View>
+      <View style={styles.upArrow}>
         <Feather name="arrow-up-left" size={22} />
-      </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
-const Header = ({title, onPress, isCollapsed, searchKeyword}) => (
+const Header = ({title, onPress, isCollapsed, searchKeyword, search_data, selectedCallBack}) => (
   <View>
     <TouchableOpacity
       style={[styles.contentList, styles.borderDashed]}
@@ -80,13 +80,17 @@ const Header = ({title, onPress, isCollapsed, searchKeyword}) => (
       search_data
         .find(item => item.title === title)
         .data.map((dataItem, index) => (
-          <Item key={index} title={dataItem} searchKeyword={searchKeyword} />
+          <TouchableOpacity key={index} onPress={() => {
+            selectedCallBack(dataItem);
+          }}>
+            <Item key={index} title={dataItem} searchKeyword={searchKeyword} />
+          </TouchableOpacity>
         ))}
   </View>
 );
 
 const SearchResult = props => {
-  const {searchTxt} = props;
+  const {searchTxt, search_data, selectedCallBack} = props;
   const [collapsedHeaders, setCollapsedHeaders] = useState([]);
 
   const toggleHeader = title => {
@@ -118,6 +122,8 @@ const SearchResult = props => {
             onPress={() => toggleHeader(item.title)}
             isCollapsed={collapsedHeaders.includes(item.title)}
             searchKeyword={searchTxt}
+            search_data={search_data}
+            selectedCallBack={selectedCallBack}
           />
         </View>
       )}

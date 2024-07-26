@@ -10,6 +10,7 @@ export const componentStyle = StyleSheet.create({
     margin: 5,
     alignItems: 'center',
     justifyContent: 'space-between',
+    position: 'relative',
   },
   inputBox: {
     flexDirection: 'row',

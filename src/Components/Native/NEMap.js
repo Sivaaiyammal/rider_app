@@ -65,6 +65,22 @@ class NEMap extends Component {
       this.triggerResize();
     });
 
+    this.navigationReadyListener = DeviceEventEmitter.addListener("onNavigationReady", () => {
+      this.props.onMapReady ? this.props.onMapReady() : null
+      // Set Map loaded to true
+      setTimeout(() => {
+        this.setState(prevState => ({
+          ...prevState,
+          mapLoaded: true
+        }));
+        this.triggerResizeNav()
+      }, 100)
+
+      console.log("Navigation, Map LOADED TRUE")
+
+
+    });
+
     this.mapClickListener = DeviceEventEmitter.addListener(
       'onMapClick',
       data => {

@@ -1,5 +1,6 @@
-import {TextInput, TouchableOpacity, View} from 'react-native';
+import { TextInput, TouchableOpacity, View } from 'react-native';
 import React from 'react';
+import { ProgressBar } from '@react-native-community/progress-bar-android';
 
 // icons
 import Fontisto from 'react-native-vector-icons/Fontisto';
@@ -7,10 +8,10 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 
 // styles
-import {componentStyle} from '../Styles/ComponentStyles';
+import { componentStyle } from '../Styles/ComponentStyles';
 
 const InputContainer = props => {
-  const {placeholder, onChange, value, onCancelPress, onFocus} = props;
+  const { placeholder, onChange, value, onCancelPress, onFocus, loading, autoFocus } = props;
 
   return (
     <View style={componentStyle.inputContainer}>
@@ -27,8 +28,8 @@ const InputContainer = props => {
           onChangeText={onChange}
           value={value}
           onFocus={onFocus}
+          autoFocus={autoFocus || false}
         />
-
         {/* Mic Icon  */}
         <TouchableOpacity
           style={componentStyle.inputIcons}
@@ -36,6 +37,20 @@ const InputContainer = props => {
           <FontAwesome name="microphone" size={20} />
         </TouchableOpacity>
       </View>
+
+      {loading && <ProgressBar
+        styleAttr="Horizontal"
+        indeterminate={true}
+        color="blue"
+        style={{
+          // width: '100%',
+          height: 10,
+          position: 'absolute',
+          // top: 0,
+          bottom: -2,
+          left: 18,
+          right: 72,
+        }} />}
 
       {/* CancelBtn  */}
       <TouchableOpacity

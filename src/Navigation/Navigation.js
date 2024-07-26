@@ -3,8 +3,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SplashScreen from 'react-native-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import HomeScreen from '../Screens/HomeScreen';
-import SearchScreen from '../Screens/SearchScreen';
 import SplashReactScreen from '../Screens/splashScreen';
 import LanguageScreen from '../Screens/languageScreen';
 import MainScreen from '../Screens/MainScreen';
