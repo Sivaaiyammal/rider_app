@@ -22,7 +22,7 @@ import SearchResult from "../../../Components/SearchResult";
 const MultiStopStartEndLocation = ({ route }) => {
   const [screen, setScreen] = useState("Direction");
   const [searchText, setSearchText] = useState("");
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState('car');
   const [selectedInputIndex, setSelectedInputIndex] = useState(0);
   const [searchData, setSearchData] = useState([]);
   const [isFocused, setIsFocused] = React.useState(false);
@@ -126,7 +126,7 @@ const MultiStopStartEndLocation = ({ route }) => {
         };
       }
     });
-    setDirectionPoints(directionPoints);
+    setDirectionPoints({locations: directionPoints, type: selectedTab});
     if (directionPoints.length > 0) {
       setScreen("Navigation");
     }
@@ -205,16 +205,19 @@ const MultiStopStartEndLocation = ({ route }) => {
             </DragAndDropCard>
           ))}
           <View style={styles.tabContainer}>
-            {["bus", "car", "running"].map((item, index) => (
+            {[{icon:"car", name:"car"}, {icon:"bicycle", name:"bike"}, {icon:"train", name:"train"}].map((item, index) => (
               <TouchableOpacity
                 key={index}
                 style={[
                   styles.tabItem,
-                  index === selectedTab ? styles.selectedTab : null,
+                  selectedTab === item.name ? styles.selectedTab : null,
                 ]}
-                onPress={() => setSelectedTab(index)}
+                onPress={() => {
+                  setSelectedTab(item.name);
+                  setDirectionPoints({locations: directionPoints.locations, type: item.name});
+                }}
               >
-                <Icon name={item} size={20} color="#212121" />
+                <Icon name={item.icon} size={20} color="#212121" />
               </TouchableOpacity>
             ))}
           </View>
