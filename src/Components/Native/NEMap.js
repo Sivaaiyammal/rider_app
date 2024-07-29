@@ -108,7 +108,8 @@ class NEMap extends Component {
     this.directionReadyListener = DeviceEventEmitter.addListener(
       'direction-ready',
       data => {
-        this.props.onDirectionReady ? this.props.onDirectionReady(true) : null;
+        this.props.onDirectionReady ? this.props.onDirectionReady(data) : null;
+        console.log('hari-->>direction--Ready-->>', data)
       },
     );
     this.directionInitListener = DeviceEventEmitter.addListener(
