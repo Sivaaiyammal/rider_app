@@ -18,6 +18,7 @@ import java.util.List;
 
 import com.dot.nenativemap.TouchInput;
 import com.dot.nenativemap.annotations.PolylineOptions;
+import com.dot.nenativemap.directions.RouteElementInstructionsDisplay;
 import com.dot.nenativemap.directions.RouteResponse;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.uimanager.ViewGroupManager;
@@ -50,6 +51,9 @@ import com.dot.nenativemap.directions.RouteCallback;
 import com.dot.nenativemap.directions.RouteCount;
 import com.dot.nenativemap.directions.RouteInstructionsDisplay;
 import com.dot.nenativemap.directions.VHRoutingRequest;
+import com.dot.nenativemap.directions.RouteElementInstructionsDisplay;
+import com.facebook.react.bridge.WritableNativeArray;
+import com.facebook.react.bridge.WritableMap;
 
 import com.nenative.services.android.navigation.ui.v5.NENativeNavigationFragment;
 import com.nenative.services.android.navigation.ui.v5.NavigationEndListener;
@@ -478,10 +482,11 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             }
         }
     }
-
     @ReactProp(name = "findRoute")
-    public void findRoute(MapView mapView, ReadableArray locationArray) {
-        if (mapView != null && locationArray != null && mapController != null) {
+    public void findRoute(MapView mapView, ReadableMap routeData) {
+        if (mapView != null && routeData != null && mapController != null) {
+            ReadableArray locationArray = routeData.getArray("locations");
+            String type = routeData.getString("type");
 
             if (routeInstructionsDisplay != null && mapView != null) {
                 try {
@@ -489,23 +494,19 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     directions.getInstance().clearRoute();
                     routeInstructionsDisplay = null;
                     directions.getInstance().onDestroy();
-
                 } catch (Exception e) {
                     routeInstructionsDisplay = null;
                     directions.getInstance().onDestroy();
                     Log.e("routeLOG", "inside remove 2");
                     return;
-
                 }
-
             }
             Log.e("routeLOG", "called find route");
 
             WritableNativeMap eventData = new WritableNativeMap();
-            eventData.putString("message", "caled navigation" + reactNativeContext + ",");
+            eventData.putString("message", "called navigation" + reactNativeContext + ",");
 
             directions = new Directions();
-//            navigator = new Navigator();
             reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                     .emit("navigation", eventData);
             showGetRouteProgress();
@@ -513,7 +514,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
             directions.getInstance().init(reactNativeContext, "southIndia", "southIndia", mapController.mapPointer);
 
-            Log.e("crossaeas", "crosses direction instance ");
+            Log.e("crossareas", "crosses direction instance ");
             ArrayList<VHRoutingRequest.Location> locations = new ArrayList<>();
             for (int i = 0; i < locationArray.size(); i++) {
                 ReadableMap locationObject = locationArray.getMap(i);
@@ -544,6 +545,15 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             autooptions.put("use_tolls", 0.5);
             autooptions.put("use_ferry", 0.5);
             autooptions.put("use_living_street", 0.1);
+
+            String profile = DirectionsCriteria.PROFILE_CAR;
+
+            if (type.equals("bike")) {
+                profile = DirectionsCriteria.PROFILE_BICYCLE;
+            } else if (type.equals("train")) {
+                profile = DirectionsCriteria.PROFILE_PEDESTRIAN;
+            }
+
             VHRoutingRequest.CostingOptions costingOptions = VHRoutingRequest.CostingOptions
                     .builder()
                     .auto(autooptions)
@@ -552,7 +562,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     .build();
             VHRoutingRequest request = VHRoutingRequest.builder()
                     .locations(locations)
-                    .costing(DirectionsCriteria.PROFILE_CAR)
+                    .costing(profile)
                     .costing_options(costingOptions)
                     .alternates(2)
                     .language("en-US")
@@ -562,7 +572,6 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             double currBearingInDegrees = 0;
             directions.getInstance().getRouteAsync(reactNativeContext, request, currBearingInDegrees);
 
-
         } else {
             Log.e("routeLOG", "inside remove 1");
 
@@ -571,17 +580,13 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     mapView.getMapController().removeAll();
                     directions.getInstance().clearRoute();
                     routeInstructionsDisplay = null;
-
                 } catch (Exception e) {
                     routeInstructionsDisplay = null;
-
                 }
-
             }
-
         }
 
-        if(locationArray == null && mapController!=null){
+        if (routeData == null && mapController != null) {
             mapController.setCurrentLocationEnabled(true);
         }
     }
@@ -596,11 +601,43 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         public void onSuccess(RouteResponse routeResponse) {
             Log.e("Success", "Res Success message");
             handleResponse(routeResponse);
+            
+            RouteCount routeCount = Directions.getInstance().getPrimaryRoute();
+            int index = (int) routeCount.getPrimaryRouteIndex() + 1;
+            if (index == routeCount.getRouteCount())
+                index = 0;
+
+            Directions.getInstance().selectRoute(index);
+            routeInstructionsDisplay = Directions.getInstance().getRouteInstructions(index);
+            if (routeInstructionsDisplay == null) {
+                Log.e("RouteError", "Failed to get route instructions");
+                return;
+            }
+            // Ensure we're not just getting the default toString() representation
+            List<RouteElementInstructionsDisplay> routeInstructions = routeInstructionsDisplay.getRouteElementInstructions();
+
+
             WritableNativeMap eventData = new WritableNativeMap();
             eventData.putString("message", "success");
+            eventData.putInt("selectedRouteIndex", index);
+            eventData.putInt("totalRoutes", routeCount.getRouteCount());
+            
+            WritableNativeArray routeInstructionsArray = new WritableNativeArray();
+            for (RouteElementInstructionsDisplay instruction : routeInstructions) {
+                WritableMap instructionMap = new WritableNativeMap();
+                instructionMap.putString("text", instruction.getInstruction());
+                // Add more properties of the instruction as needed
+                routeInstructionsArray.pushMap(instructionMap);
+            }
+            eventData.putArray("routeInstructions", routeInstructionsArray);
+
+            // You might want to add more route information to the eventData here
+            // For example:
+            // eventData.putDouble("distance", route.getTotalDistance());
+            // eventData.putDouble("duration", route.getTotalDuration());
+
             reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                     .emit("direction-ready", eventData);
-
         }
 
         @Override
