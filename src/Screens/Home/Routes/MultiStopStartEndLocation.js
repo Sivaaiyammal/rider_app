@@ -8,7 +8,12 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { IconButton } from "react-native-paper";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import YourLoc from "../../../Assets/Icons/yourloc.svg";
+import Flag from "../../../Assets/Icons/flag.svg";
+import EndLoc from "../../../Assets/Icons/endLoc.svg";
 import Icon from "react-native-vector-icons/FontAwesome5";
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 
 import useMapStore from "../../../Store/useMapStore";
 import { useStackScreenStore } from "../../../Store/useStackScreen";
@@ -18,15 +23,19 @@ import DraggbleImg from "../../../Assets/Icons/Drag.svg";
 import InputContainer from "../../../Components/InputContainer";
 import { SearchAPI } from "../../../Constants/NEMap/Search";
 import SearchResult from "../../../Components/SearchResult";
+import { addLocation } from "../../../Styles/AnimatedTextinputStyles";
+import { Colors } from "../../../Constants/Contants";
+import Routes from '../../../Assets/Icons/routes.svg';
 
 const MultiStopStartEndLocation = ({ route }) => {
   const [screen, setScreen] = useState("Direction");
   const [searchText, setSearchText] = useState("");
-  const [selectedTab, setSelectedTab] = useState('car');
+  const [selectedTab, setSelectedTab] = useState("car");
   const [selectedInputIndex, setSelectedInputIndex] = useState(0);
   const [searchData, setSearchData] = useState([]);
   const [isFocused, setIsFocused] = React.useState(false);
   const [loading, setLoading] = useState(false);
+  const [showOptions, setShowOptions] = useState(false)
   const [directions, setDirections] = useState([
     {
       id: 1,
@@ -59,24 +68,29 @@ const MultiStopStartEndLocation = ({ route }) => {
     };
   }, []);
 
-  const Header = () => (
-    <View style={styles.header}>
-      <IconButton
-        icon="arrow-left"
-        size={20}
-        color="#212121"
-        onPress={() => setStackScreen("Home")}
-      />
-      <Text>Directions</Text>
-      <View />
-    </View>
-  );
+  const onBackPress = () => {
+    setStackScreen("Home")
+    setDirections([
+      {
+        id: 1,
+        name: "Start",
+        location: [],
+        locationName: "",
+      },
+      { id: 2, name: "Waypoint", location: [], locationName: "" },
+      { id: 3, name: "End", location: [], locationName: "" },
+    ])
+  }
+ 
+  const itemHeight = 80;
 
-  const moveItem = (dragIndex, hoverIndex) => {
-    const newDirections = [...directions];
-    const [removed] = newDirections.splice(dragIndex, 1);
-    newDirections.splice(hoverIndex, 0, removed);
-    setDirections(newDirections);
+  const moveItem = (fromIndex, toIndex) => {
+    if (fromIndex !== toIndex) {
+      const newDirections = [...directions];
+      const [movedItem] = newDirections.splice(fromIndex, 1);
+      newDirections.splice(toIndex, 0, movedItem);
+      setDirections(newDirections);
+    }
   };
 
   const handleSearchTextChange = (value) => {
@@ -116,9 +130,7 @@ const MultiStopStartEndLocation = ({ route }) => {
   };
 
   const setUpDirectionPoints = () => {
-   
     const directionPoints = directions.map((direction) => {
-      console.log(direction, "direction");
       if (direction.location.length > 0) {
         return {
           lat: direction.location[1],
@@ -126,99 +138,88 @@ const MultiStopStartEndLocation = ({ route }) => {
         };
       }
     });
-    setDirectionPoints({locations: directionPoints, type: selectedTab});
-    if (directionPoints.length > 0) {
-      setScreen("Navigation");
+    // console.log("direction-->>new-->>", directionPoints);
+    setDirectionPoints({ locations: directionPoints, type: selectedTab });
+    if (directionPoints.length > 0 && directionPoints[0] && directionPoints[directionPoints.length - 1]) {
+      setDirectionPoints({ locations: directionPoints, type: selectedTab });
+      setShowOptions(true)
+    } else {
+      console.warn("Start and End locations are required.");
     }
   };
 
   const onStartNavigationPress = async () => {
-  //    let _directionPoints = [
-  //     {
-  //         lat:76.9628425,
-  //         lon: 11.0018115
-  //     },
-  //     {
-  //         lat:80.270186 ,
-  //         lon:13.0836939 
-  //     },
-  //     {
-  //       lat:80.270186 ,
-  //       lon:13.0836939
-  //   }
-  // ]
-  // setDirectionPoints(_directionPoints)
-  // console.log('hari-->>directions-->>', directionPoints)
-      setStartNavigation(true);
+    setStartNavigation(true);
   };
 
-  console.log('hari-->>startLocation-->>', directionPoints)
+  const onRoutesPress = () => {
+    setStackScreen('SetRouteScreen')
+  }
+
+  const getLocationIcon = (id) => {
+    switch (id) {
+      case 0:
+        return {
+          icon: <YourLoc />,
+          name: "Your Location",
+        };
+      case 1:
+        return {
+          icon: <Flag width={15} height={15} />,
+          name: "Add Waypoint",
+        };
+      case 2:
+        return {
+          icon: <EndLoc width={15} height={15} />,
+          name: "Destination",
+        };
+    }
+  };
 
   return (
     <>
       {screen === "Direction" && (
-        <View style={styles.container}>
-          <Header />
-          {directions.map((direction, index) => (
-            <DragAndDropCard
-              key={direction.id}
-              index={index}
-              onDragEnd={(dragIndex, hoverIndex, isMoved) => {
-                moveItem(dragIndex, hoverIndex);
-                if (isMoved && inputRefs.current[hoverIndex]) {
-                  inputRefs.current[hoverIndex].focus();
-                }
-              }}
-            >
-              <View style={styles.cardContent}>
-                <View style={styles.iconContainer}>
-                  {index === 0 && (
-                    <View style={styles.iconStartContainer}></View>
-                  )}
-                  {index === 1 && (
-                    <Icon name={"map-marker-alt"} size={18} color="#212121" />
-                  )}
-                  {index === 2 && (
-                    <Icon name={"map-marker-alt"} size={18} color="red" />
-                  )}
-                </View>
-                <TextInput
-                  ref={(el) => (inputRefs.current[index] = el)}
-                  style={[
-                    styles.input,
-                  ]}
-                  placeholder={`${direction.name} location`}
-                  value={direction.locationName}
-                  onFocus={() => {
-                    setScreen("Search");
-                    setSelectedInputIndex(index);
-                    setIsFocused(true);
-                  }}
-                  onChangeText={(value) => {
-                    const newDirections = [...directions];
-                    newDirections[index].locationName = value;
-                    setDirections(newDirections);
-                  }}
-                />
-                <DraggbleImg style={styles.dragIcon} />
-              </View>
-            </DragAndDropCard>
-          ))}
-          <View style={styles.tabContainer}>
-            {[{icon:"car", name:"car"}, {icon:"bicycle", name:"bike"}, {icon:"train", name:"train"}].map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.tabItem,
-                  selectedTab === item.name ? styles.selectedTab : null,
-                ]}
-                onPress={() => {
-                  setSelectedTab(item.name);
-                  setDirectionPoints({locations: directionPoints.locations, type: item.name});
+        <View style={addLocation.container}>
+          <TouchableOpacity onPress={()=>onBackPress()} style={addLocation.backButton}>
+            <Ionicons name="arrow-back" size={20} color={Colors.black} />
+          </TouchableOpacity>
+          <View style={addLocation.addLocationContainer}>
+            {directions.map((direction, index) => (
+              <DragAndDropCard
+                key={direction.id}
+                index={index}
+                length={directions.length}
+                itemHeight={itemHeight}
+                topOffset={0}
+                onDragEnd={(dragIndex, hoverIndex, isMoved) => {
+                  console.log(`Dragged from ${dragIndex} to ${hoverIndex}`);
+                  moveItem(dragIndex, hoverIndex);
+                  if (isMoved && inputRefs.current[hoverIndex]) {
+                    inputRefs.current[hoverIndex].focus();
+                  }
                 }}
               >
-                <Icon name={item.icon} size={20} color="#212121" />
-              </TouchableOpacity>
+                <View style={addLocation.draggableCard}>
+                  {getLocationIcon(index).icon}
+                  <TextInput
+                    ref={(el) => (inputRefs.current[index] = el)}
+                    style={addLocation.draggableInput}
+                    placeholder={getLocationIcon(index).name}
+                    value={direction.locationName}
+                    onFocus={() => {
+                      setScreen("Search");
+                      setSelectedInputIndex(index);
+                      setIsFocused(true);
+                    }}
+                    onChangeText={(value) => {
+                      const newDirections = [...directions];
+                      newDirections[index].locationName = value;
+                      setDirections(newDirections);
+                    }}
+                  />
+                  <DraggbleImg style={addLocation.dragIcon} />
+                </View>
+              </DragAndDropCard>
             ))}
           </View>
         </View>
@@ -253,12 +254,51 @@ const MultiStopStartEndLocation = ({ route }) => {
               style={styles.navigationIcon}
               onPress={() => {
                 console.log("Start Navigation");
-                onStartNavigationPress()
+                onStartNavigationPress();
               }}
             />
           </View>
         </View>
       )}
+       {showOptions && 
+      <View style={addLocation.bottomContainer}>
+        <View style={addLocation.directionType}>
+        {[
+              { icon: "car", name: "car" },
+              { icon: "bicycle", name: "bike" },
+              { icon: "train", name: "train" },
+            ].map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.tabItem,
+                  selectedTab === item.name ? styles.selectedTab : null,
+                ]}
+                onPress={() => {
+                  setSelectedTab(item.name);
+                  setDirectionPoints({
+                    locations: directionPoints.locations,
+                    type: item.name,
+                  });
+                }}
+              >
+                <Icon name={item.icon} size={20} color="#212121" />
+              </TouchableOpacity>
+            ))}
+        </View>
+          <View style={addLocation.optionBtnsContainer}>
+          <Text style={addLocation.optionBtnTxt}>30min<Text style={{fontSize:10}}>{' '}(3km)</Text></Text>
+          <TouchableOpacity style={addLocation.optionBtn} onPress={()=>onRoutesPress()}>
+           <Routes />
+          <Text style={addLocation.optionBtnTxt}>Routes</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={addLocation.optionBtn}>
+           <MaterialCommunityIcons name="navigation" color={Colors.blue} size={16}/>
+          <Text style={addLocation.optionBtnTxt}>Start</Text>
+          </TouchableOpacity>
+         </View>
+      </View>
+       }
     </>
   );
 };
@@ -306,12 +346,16 @@ const styles = StyleSheet.create({
     shadowRadius: 0.5,
     elevation: 5,
   },
+  cardContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   input: {
-    height: 40,
-    paddingLeft: 10,
-    width: "75%",
+    flex: 1,
+    padding: 10,
+    borderColor: "#ddd",
+    borderWidth: 1,
     borderRadius: 5,
-    borderWidth: 0.3,
   },
   dragIcon: {
     position: "absolute",
