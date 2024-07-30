@@ -135,7 +135,7 @@ class NEMap extends Component {
     this.searchResultsListener = DeviceEventEmitter.addListener(
       'onSearchResults',
       (data) => {
-        console.log("searchResults", data)
+        // console.log("searchResults", data)
         this.props.onSearchResults ? this.props.onSearchResults(data) : null;
       }
     )

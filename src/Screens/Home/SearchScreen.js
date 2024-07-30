@@ -8,11 +8,13 @@ import SavedAddress from '../../Components/SavedAddress';
 import RecentSearch from '../../Components/RecentSearch';
 import NearBy from '../../Components/NearBy';
 import SearchInput from './searchInput';
+import useMapStore from '../../Store/useMapStore';
 
 const SearchScreen = () => {
   const [searchText, setSearchText] = useState('');
   const [searchData, setSearchData] = useState([]);
   const { setStackScreen } = useStackScreenStore();
+  const {searchResults} = useMapStore();
 
   const selectedCallBack = (data) => {
     setStackScreen('TargetLocation', data);
@@ -29,7 +31,7 @@ const SearchScreen = () => {
       {searchText?.length !== 0 ? (
         <SearchResult 
           searchTxt={searchText} 
-          search_data={searchData} 
+          search_data={searchResults?.searchResults} 
           selectedCallBack={selectedCallBack}
         />
       ) : (

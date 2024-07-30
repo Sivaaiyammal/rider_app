@@ -36,6 +36,8 @@ const MultiStopStartEndLocation = ({ route }) => {
   const [isFocused, setIsFocused] = React.useState(false);
   const [loading, setLoading] = useState(false);
   const [showOptions, setShowOptions] = useState(false)
+  const {searchResults, setSearchUnit} = useMapStore();
+  const {  } = useMapStore();
   const [directions, setDirections] = useState([
     {
       id: 1,
@@ -94,28 +96,28 @@ const MultiStopStartEndLocation = ({ route }) => {
 
   const handleSearchTextChange = (value) => {
     setSearchText(value);
-    reverseGeocode(value);
+    setSearchUnit(value);
   };
 
-  const reverseGeocode = async (value) => {
-    const response = await search.search(value);
-    const formattedData = response.features.map((feature) => ({
-      catId: feature.properties.osm_id,
-      title: feature.properties.type,
-      data: [
-        {
-          id: feature.properties.osm_id,
-          name: feature.properties.name,
-          address: `${feature.properties.street}, ${feature.properties.city}, ${feature.properties.state} ${feature.properties.postcode}`,
-          duration: `${(feature.score * 10).toFixed(0)}m away`,
-          coordinates: feature.geometry.coordinates,
-        },
-      ],
-    }));
+  // const reverseGeocode = async (value) => {
+  //   const response = await search.search(value);
+  //   const formattedData = response.features.map((feature) => ({
+  //     catId: feature.properties.osm_id,
+  //     title: feature.properties.type,
+  //     data: [
+  //       {
+  //         id: feature.properties.osm_id,
+  //         name: feature.properties.name,
+  //         address: `${feature.properties.street}, ${feature.properties.city}, ${feature.properties.state} ${feature.properties.postcode}`,
+  //         duration: `${(feature.score * 10).toFixed(0)}m away`,
+  //         coordinates: feature.geometry.coordinates,
+  //       },
+  //     ],
+  //   }));
 
-    setSearchData(formattedData);
-    setLoading(false);
-  };
+  //   setSearchData(formattedData);
+  //   setLoading(false);
+  // };
 
   const selectedCallBack = (item) => {
     const newDirections = [...directions];
@@ -235,7 +237,7 @@ const MultiStopStartEndLocation = ({ route }) => {
           {searchText.length > 0 && (
             <SearchResult
               searchTxt={searchText}
-              search_data={searchData}
+              search_data={searchResults?.searchResults}
               selectedCallBack={selectedCallBack}
             />
           )}

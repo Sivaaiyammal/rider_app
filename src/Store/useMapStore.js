@@ -12,8 +12,11 @@ const useMapStore = create((set) => ({
     searchUnit: "",
     setSearchUnit: searchUnit => set({ searchUnit }),
 
-    startNavigation: false,
-    setStartNavigation: (startNavigation) => set({ startNavigation }),
+    searchUnit: "",
+    setSearchUnit: searchUnit => set({ searchUnit }),
+
+    searchResults: false,
+    setOnSearchResults: (searchResults) => set({ searchResults }),
 
     devices: [],
     setDevices: devices => set({ devices: [...devices] }),

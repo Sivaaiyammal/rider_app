@@ -14,9 +14,15 @@ import { Colors } from "../Constants/Contants";
 import { addLocation } from "../Styles/AnimatedTextinputStyles";
 import useMapStore from "../Store/useMapStore";
 import Feather from "react-native-vector-icons/Feather";
+import { useStackScreenStore } from "../Store/useStackScreen";
 
 const SetRouteScreen = () => {
   const { directionReadyCallback } = useMapStore();
+  const {goBack} = useStackScreenStore()
+
+  const onRoutesPress = () => {
+    goBack();
+  }
 
   const getDirectionIcon = (text) => {
     if (text.includes("Drive north")) {
