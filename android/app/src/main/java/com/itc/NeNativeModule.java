@@ -55,6 +55,18 @@ import com.dot.nenativemap.directions.RouteElementInstructionsDisplay;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableMap;
 
+import com.dot.nenativemap.search.Search;
+import com.dot.nenativemap.search.SearchResultCallback;
+import com.dot.nenativemap.search.SearchResponse;
+import com.dot.nenativemap.search.SearchData;
+import com.itc.VMSearchData;
+import com.dot.nenativemap.search.PlaceName;
+import com.dot.nenativemap.search.AreaName;
+import com.dot.nenativemap.search.Coordinates;
+import com.dot.nenativemap.search.Postcode;
+import com.dot.nenativemap.search.StreetName;
+import com.itc.AutocompleteResultType;
+
 import com.nenative.services.android.navigation.ui.v5.NENativeNavigationFragment;
 import com.nenative.services.android.navigation.ui.v5.NavigationEndListener;
 import com.nenative.services.android.navigation.ui.v5.NavigationRateListener;
@@ -88,6 +100,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     private RouteInstructionsDisplay routeInstructionsDisplay;
     private Navigator navigator;
     boolean isNavMode = false;
+
+    private Search search;
     // Handler navHandler;
     Runnable navRunnable;
     private Location currentLocation;
@@ -207,6 +221,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                             public void onSceneReady(int sceneId, SceneError sceneError) {
                                 Log.e("AJIN", "" + sceneId);
                                 mapLoaded = 1;
+                                initSearch("southern-zone", "India Southern Zone");
                                 reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                                         .emit("onMapReady", new WritableNativeMap());
                             }
@@ -237,10 +252,273 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         return mapView;
     }
 
+    public void initSearch(String mapUnit, String mapUnitName) {
+        Log.e("Error initSearch", " " + search + " " + mapController);
+       if (mapController != null) {
+            search = new Search();
+            String pathPrefix = reactNativeContext.getFilesDir().getAbsolutePath();
+            HashMap<String, String> searchFilePaths = new HashMap<>();
+            if(!mapUnit.isEmpty() && !mapUnitName.isEmpty()) {
+                searchFilePaths.put(mapUnit, mapUnitName);
+            }
+            Log.e("Search", "load" + " " +mapController + " " + pathPrefix + searchFilePaths);
+            search.getInstance().init(mapController, pathPrefix, searchFilePaths);
+       } else {
+           Log.e("Search", "Error in initSearch: search or mapController is null");
+       }
+    }
+
+    private List<VMSearchData> getResults(SearchResponse result) {
+        List<VMSearchData> vmSearchData = new ArrayList<>();
+        SearchData data = result.getSearchData();
+        List<String> cityNames = new ArrayList<>(); // List to store city names
+        if (data.getPlaceName() != null && !data.getPlaceName().isEmpty()) {
+            for (PlaceName placeName : data.getPlaceName()) {
+                String address = "";
+                for (String place_address : placeName.getAddress()) {
+                    address = place_address.isEmpty() ? address : address.isEmpty() ? place_address : address + ", " + place_address;
+                }
+                LngLat position = new LngLat(placeName.getPos().get(0), placeName.getPos().get(1));
+                String name = placeName.getPlaceName().get(placeName.getPlaceName().size() - 1);
+                if (name.isEmpty()) {
+                    name = placeName.getPlaceName().get(0);
+                }
+                name = capitalizeFirstLetter(name);
+                address = capitalizeFirstLetter(address);
+                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_ADDRESS, position, "", "", "");
+                vmSearchData.add(vmsearchData);
+            }
+        }
+        if (data.getStreetName() != null && !data.getStreetName().isEmpty()) {
+            for (StreetName streetName : data.getStreetName()) {
+                String address = "";
+                if(streetName.getAddress() != null) {
+                    for (String street_address : streetName.getAddress()) {
+                        address = street_address.isEmpty() ? address : address.isEmpty() ? street_address : address + ", " + street_address;
+                    }
+                }
+                String name = streetName.getName().get(streetName.getName().size() - 1);
+                if (name.isEmpty()) {
+                    name = streetName.getName().get(0);
+                }
+                LngLat lngLat = new LngLat(streetName.getPos().get(0), streetName.getPos().get(1));
+                name = capitalizeFirstLetter(name);
+                address = capitalizeFirstLetter(address);
+                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_STREET, lngLat, "", "", "");
+                vmSearchData.add(vmsearchData);
+            }
+        }
+        if (data.getAreaName() != null && !data.getAreaName().isEmpty()) {
+            for (AreaName areaName : data.getAreaName()) {
+                String address = "";
+                if(areaName.getAddress() != null) {
+                    for (String area_address : areaName.getAddress()) {
+                        address = area_address.isEmpty() ? address : address.isEmpty() ? area_address : address + ", " + area_address;
+                    }
+                }
+                String name = areaName.getName().get(areaName.getName().size() - 1);
+                if (name.isEmpty()) {
+                    name = areaName.getName().get(0);
+                }
+                LngLat lngLat = new LngLat(areaName.getPos().get(0), areaName.getPos().get(1));
+                name = capitalizeFirstLetter(name);
+                address = capitalizeFirstLetter(address);
+                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_LOCATIONS, lngLat, "", "", "");
+                vmSearchData.add(vmsearchData);
+            }
+        }
+        if (data.getCity() != null && !data.getCity().isEmpty()) {
+            for (AreaName city : data.getCity()) {
+                String address = "";
+                if(city.getAddress() != null) {
+                    for (String city_address : city.getAddress()) {
+                        address = city_address.isEmpty() ? address : address.isEmpty() ? city_address : address + ", " + city_address;
+                    }
+                }
+                String name = city.getName().get(city.getName().size() - 1);
+                if (name.isEmpty()) {
+                    name = city.getName().get(0);
+                }
+                cityNames.add(name);
+                LngLat lngLat = new LngLat(city.getPos().get(0), city.getPos().get(1));
+                name = capitalizeFirstLetter(name);
+                address = capitalizeFirstLetter(address);
+                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_LOCATIONS, lngLat, "", "", "");
+                vmSearchData.add(vmsearchData);
+            }
+        }
+        if (data.getDistrict() != null && !data.getDistrict().isEmpty()) {
+            for (AreaName district : data.getDistrict()) {
+                String address = "";
+                if(district.getAddress() != null) {
+                    for (String district_address : district.getAddress()) {
+                        address = district_address.isEmpty() ? address : address.isEmpty() ? district_address : address + ", " + district_address;
+                    }
+                }
+                String name = district.getName().get(district.getName().size() - 1);
+                if (name.isEmpty()) {
+                    name = district.getName().get(0);
+                }
+                if(cityNames.contains(name)) {
+                    continue;
+                }
+                LngLat lngLat = new LngLat(district.getPos().get(0), district.getPos().get(1));
+                name = capitalizeFirstLetter(name);
+                address = capitalizeFirstLetter(address);
+                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_LOCATIONS, lngLat, "", "", "");
+                vmSearchData.add(vmsearchData);
+            }
+        }
+        if (data.getState() != null && !data.getState().isEmpty()) {
+            for (AreaName state : data.getState()) {
+                String address = "";
+                if(state.getAddress() != null) {
+                    for (String state_address : state.getAddress()) {
+                        address = state_address.isEmpty() ? address : address.isEmpty() ? state_address : address + ", " + state_address;
+                    }
+                }
+                String name = state.getName().get(state.getName().size() - 1);
+                if (name.isEmpty()) {
+                    name = state.getName().get(0);
+                }
+                LngLat lngLat = new LngLat(state.getPos().get(0), state.getPos().get(1));
+                name = capitalizeFirstLetter(name);
+                address = capitalizeFirstLetter(address);
+                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_LOCATIONS, lngLat, "", "", "");
+                vmSearchData.add(vmsearchData);
+            }
+        }
+        if (data.getPostcode() != null && !data.getPostcode().isEmpty()) {
+            for (Postcode postCode : data.getPostcode()) {
+                String name = postCode.getPcode();
+                LngLat lngLat = new LngLat(postCode.getPos().get(0), postCode.getPos().get(1));
+                name = capitalizeFirstLetter(name);
+                VMSearchData vmsearchData = new VMSearchData(name, "", "", AutocompleteResultType.TYPE_LOCATIONS, lngLat, "", "", "");
+                vmSearchData.add(vmsearchData);
+            }
+        }
+        if (data.getCoords() != null && !data.getCoords().isEmpty()) {
+            for (Coordinates coord : data.getCoords()) {
+                String name = coord.getPos().get(1) + "," + coord.getPos().get(0);
+                LngLat lngLat = new LngLat(coord.getPos().get(0), coord.getPos().get(1));
+                VMSearchData vmsearchData = new VMSearchData(name, "", "", AutocompleteResultType.TYPE_LOCATIONS, lngLat, "", "", "");
+                vmSearchData.add(vmsearchData);
+            }
+        }
+
+        return vmSearchData;
+    }
+
+    private String capitalizeFirstLetter(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+        return input.substring(0, 1).toUpperCase() + input.substring(1);
+    }
+
+    @ReactProp(name="searchUnit")
+    public void setSearchUnit(MapView mapView, String searchUnit) {
+        if (mapController == null || search == null) {
+            Log.e("NeNativeModule", "mapController or search is null in setSearchUnit");
+            return;
+        }
+
+        try {
+            SearchResultCallback searchResultCallback = new SearchResultCallback() {
+                @Override
+                public void onSuccess(SearchResponse result) {
+                    if (result != null) {
+                        List<VMSearchData> searchData = getResults(result);
+                        // Process and emit the search results to React Native
+                        WritableArray searchResultsArray = Arguments.createArray();
+                        for (VMSearchData data : searchData) {
+                            WritableMap dataMap = Arguments.createMap();
+                            dataMap.putString("name", data.getName());
+                            dataMap.putString("address", data.getAddress());
+                            dataMap.putString("countryCode", data.getCountyCode());
+                            dataMap.putString("type", data.getType().toString());
+                            dataMap.putDouble("longitude", data.getLngLat().longitude);
+                            dataMap.putDouble("latitude", data.getLngLat().latitude);
+                            dataMap.putString("line", data.getLine());
+                            dataMap.putString("parking", data.getParking());
+                            dataMap.putString("area_hl", data.getArea_hl());
+                            dataMap.putDouble("distance", data.getDistance());
+                            searchResultsArray.pushMap(dataMap);
+                        }
+                        WritableMap eventData = Arguments.createMap();
+                        eventData.putArray("searchResults", searchResultsArray);
+                        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                .emit("onSearchResults", eventData);
+                    } else {
+                        Log.w("NeNativeModule", "Search success, but result is null");
+                        WritableNativeMap eventData = new WritableNativeMap();
+                        eventData.putString("searchResults", "null");
+                        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                .emit("onSearchResults", eventData);
+                    }
+                }
+
+                @Override
+                public void onFailure(SearchResponse error) {
+                    if (error != null) {
+                        Log.e("NeNativeModule", "Search error: " + error.getErrMessage());
+                        WritableNativeMap eventData = new WritableNativeMap();
+                        eventData.putString("searchResults", error.getErrMessage());
+                        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                .emit("onSearchResults", eventData);
+                    } else {
+                        Log.e("NeNativeModule", "Search failed with null error");
+                        WritableNativeMap eventData = new WritableNativeMap();
+                        eventData.putString("searchResults", "null");
+                        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                .emit("onSearchResults", eventData);
+                    }
+                    // TODO: Emit error to React Native
+                }
+            };
+
+            HashMap<String, String> searchFilters = new HashMap<>();
+            String query = search.getInstance().buildSearchRequest(
+                "southern-zone",
+                searchUnit,
+                80.2707,
+                13.082,
+                "[\"all\"]",
+                "en",
+                "[\"place_name\", \"street_name\", \"area_name\", \"postcode\"]",
+                searchFilters,
+                5,
+                false
+            );
+
+            if (query == null || query.isEmpty()) {
+                throw new IllegalArgumentException("Generated query is null or empty");
+            }
+
+            search.getInstance().getSearchAsync(query, true, searchResultCallback);
+        } catch (IllegalArgumentException e) {
+            Log.e("NeNativeModule", "Invalid argument in setSearchUnit: " + e.getMessage());
+            // TODO: Emit error to React Native
+        } catch (Exception e) {
+            Log.e("NeNativeModule", "Unexpected error in setSearchUnit: " + e.getMessage());
+            e.printStackTrace();
+            // TODO: Emit error to React Native
+        }
+    }
+
     @ReactProp(name="navMode")
     public void setNavMode(MapView mapView, String mode) {
         if (mapController != null) {
             navMode = mode;
+        }
+    }
+
+    @ReactProp(name = "mode")
+    public void setMode(MapView mapView, String mode) {
+        if (mapController != null) {
+            String mapStyleString = mode.equals("light") ? "DAY2" : "NIGHT2";
+            MapController.MapStyle mapStyle = MapController.MapStyle.valueOf(mapStyleString);
+            mapController.setMapStyle(mapStyle);
         }
     }
 

@@ -8,9 +8,9 @@ import Loaders from '../Components/Loaders/FullScreenLoader';
 
 
 const MapContainer = ({ mapStyle }) => {
-    const { mode, mapMarkers, geometries,directionPoints, mapLocation, mapDblclickCallback, markerClickCallback, setMapReady, mapReady, mapClickCallback, startNavigation, setDirectionReadyCallback, directionReadyCallback } = useMapStore();
+    const { mode, mapMarkers,searchUnit, geometries,directionPoints,setOnSearchResults, mapLocation, mapDblclickCallback, markerClickCallback, setMapReady, mapReady, mapClickCallback, startNavigation, setDirectionReadyCallback, directionReadyCallback } = useMapStore();
     
-    console.log(directionReadyCallback,startNavigation, "markers")
+    console.log(searchUnit, "markers")
     
     return (
         <View style={[styles.mapContainer]}>
@@ -22,6 +22,8 @@ const MapContainer = ({ mapStyle }) => {
                 homeLocation={mapLocation}
                 onMapReady={() => { setMapReady(true) }}
                 markers={mapMarkers}
+                searchUnit={searchUnit}
+                onSearchResults={setOnSearchResults}
                 mode={mode}
                 onMarkerClick={markerClickCallback}
                 onMapClick={mapClickCallback}

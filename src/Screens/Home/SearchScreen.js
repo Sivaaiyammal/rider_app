@@ -7,9 +7,11 @@ import SearchResult from '../../Components/SearchResult';
 import SavedAddress from '../../Components/SavedAddress';
 import RecentSearch from '../../Components/RecentSearch';
 import NearBy from '../../Components/NearBy';
+import SearchInput from './searchInput';
 
-const SearchScreen = ({searchText, searchData, setCurrentScreen}) => {
-
+const SearchScreen = () => {
+  const [searchText, setSearchText] = useState('');
+  const [searchData, setSearchData] = useState([]);
   const { setStackScreen } = useStackScreenStore();
 
   const selectedCallBack = (data) => {
@@ -18,6 +20,12 @@ const SearchScreen = ({searchText, searchData, setCurrentScreen}) => {
 
   return (
     <View style={styles.screenContainer}>
+      <SearchInput 
+        searchText={searchText} 
+        setSearchText={setSearchText} 
+        setSearchData={setSearchData}
+        focused={false}
+      />
       {searchText?.length !== 0 ? (
         <SearchResult 
           searchTxt={searchText} 

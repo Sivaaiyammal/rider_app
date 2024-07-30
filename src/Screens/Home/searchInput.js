@@ -2,15 +2,18 @@ import React, { useState } from "react";
 
 import InputContainer from "../../Components/InputContainer";
 import { SearchAPI } from "../../Constants/NEMap/Search";
+import useMapStore from "../../Store/useMapStore";
 
-const SearchInput = ({searchText, setCurrentScreen, setDragHeight, setSearchText, setSearchData }) => {
+const SearchInput = ({searchText, setCurrentScreen, focused, setSearchText, setSearchData }) => {
     const [loading, setLoading] = useState(false);
+    const { setSearchUnit } = useMapStore();
     const search = new SearchAPI();
 
     const handleSearch = (value) => {
         setLoading(true);
         setSearchText(value);
-        reverseGeocode(value);
+        setSearchUnit(value);
+        // reverseGeocode(value);
     }
 
     const reverseGeocode = async (value) => {
@@ -33,6 +36,7 @@ const SearchInput = ({searchText, setCurrentScreen, setDragHeight, setSearchText
 
     const clearText = () => {
         setSearchText('');
+        setLoading(false);
     };
 
     return (
@@ -40,12 +44,13 @@ const SearchInput = ({searchText, setCurrentScreen, setDragHeight, setSearchText
             placeholder={'Search'}
             onFocus={() => {
                 // setDragHeight(800);
-                setCurrentScreen('Search');
+                if(focused) setCurrentScreen('Search');
             }}
             value={searchText}
             loading={loading}
             onChange={handleSearch}
             onCancelPress={() => clearText()}
+            autoFocus={!focused}
         />
     )
 }
