@@ -1,4 +1,10 @@
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React from "react";
 import MultiStopStartEndLocation from "./Home/Routes/MultiStopStartEndLocation";
 import { setRouteStyles } from "../Styles/setRouteStyles";
@@ -6,59 +12,15 @@ import BottomSheet from "../Components/BottomSheet";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { Colors } from "../Constants/Contants";
 import { addLocation } from "../Styles/AnimatedTextinputStyles";
+import useMapStore from "../Store/useMapStore";
+import Feather from "react-native-vector-icons/Feather";
 
 const SetRouteScreen = () => {
-  const dummyData = [
-    {
-      text: "Drive north.",
-    },
-    {
-      text: "Turn right.",
-    },
-    {
-      text: "Turn left.",
-    },
-    {
-      text: "Turn left.",
-    },
-    {
-      text: "Turn left onto Yellandu Road.",
-    },
-    {
-      text: "Enter the roundabout and take the 3rd exit onto NH365BB/Khammam Bypass.",
-    },
-    {
-      text: "Exit the roundabout onto NH365BB/Khammam Bypass. Continue on NH365BB.",
-    },
-    {
-      text: "Enter the roundabout and take the 2nd exit onto NH365A/365BB.",
-    },
-    {
-      text: "Exit the roundabout onto NH365A/365BB.",
-    },
-    {
-      text: "Turn left to stay on NH365A/365BB.",
-    },
-    {
-      text: "Enter the roundabout and take the 2nd exit onto NH365A/365BB.",
-    },
-    {
-      text: "Exit the roundabout onto NH365A/365BB.",
-    },
-    {
-      text: "Enter the roundabout and take the 1st exit onto NH365A/Kodad-Khammam.",
-    },
-    {
-      text: "Exit the roundabout onto NH365A/Kodad-Khammam.",
-    },
-    {
-      text: "Turn left to stay on NH365A.",
-    },
-  ];
+  const { directionReadyCallback } = useMapStore();
 
   const getDirectionIcon = (text) => {
     if (text.includes("Drive north")) {
-      return "arrow-left-top"; // Example icon for north direction
+      return "arrow-left-top";
     } else if (text.includes("Turn right")) {
       return "arrow-right-top";
     } else if (text.includes("Turn left")) {
@@ -68,47 +30,71 @@ const SetRouteScreen = () => {
     } else if (text.includes("exit")) {
       return "arrow-left-top";
     } else {
-      return "md-pin"; // Default icon
+      return "md-pin";
     }
   };
 
   const renderItem = ({ item }) => (
     <View style={setRouteStyles.item}>
-      <MaterialCommunityIcons name={getDirectionIcon(item.text)} size={24} color={Colors.black} style={setRouteStyles.icon} />
+      <MaterialCommunityIcons
+        name={getDirectionIcon(item.text)}
+        size={24}
+        color={Colors.black}
+        style={setRouteStyles.icon}
+      />
       <Text style={setRouteStyles.text}>{item.text}</Text>
     </View>
   );
 
   return (
     <View style={setRouteStyles.screen}>
-      <BottomSheet minHeight={150} maxHeight={300}>
+      <BottomSheet minHeight={300} maxHeight={500}>
         <View>
           <Text style={setRouteStyles.title}>Routes</Text>
           <FlatList
-            data={dummyData}
+            data={directionReadyCallback?.routeInstructions}
             renderItem={renderItem}
             keyExtractor={(item, index) => index.toString()}
             initialNumToRender={10}
+            contentContainerStyle={{paddingBottom:100}}
           />
         </View>
-        {/* <View style={[addLocation.optionBtnsContainer,{position:'absolute', bottom:0, width:'100%', height:100, backgroundColor:Colors.green, }]}>
-         <Text style={addLocation.optionBtnTxt}>30min<Text style={{fontSize:10}}>{' '}(3km)</Text></Text>
-         <TouchableOpacity style={addLocation.optionBtn} onPress={()=>onRoutesPress()}>
-          <Routes />
-         <Text style={addLocation.optionBtnTxt}>Map</Text>
-         </TouchableOpacity>
-         <TouchableOpacity style={addLocation.optionBtn}>
-          <MaterialCommunityIcons name="navigation" color={Colors.blue} size={16}/>
-         <Text style={addLocation.optionBtnTxt}>Start</Text>
-         </TouchableOpacity>
-        </View> */}
       </BottomSheet>
+      <View
+        style={[
+          addLocation.optionBtnsContainer,
+          {
+            position: "absolute",
+            bottom: 0,
+            width: "100%",
+            height: 80,
+            backgroundColor: Colors.grey_light,
+            zIndex: 99999,
+            borderTopRightRadius:20,
+            borderTopLeftRadius:20
+          },
+        ]}
+      >
+        <TouchableOpacity
+          style={addLocation.optionBtn}
+          onPress={() => onRoutesPress()}
+        >
+          <Feather name="map" color={Colors.black} />
+          <Text style={addLocation.optionBtnTxt}>Map</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={addLocation.optionBtn}>
+          <MaterialCommunityIcons
+            name="navigation"
+            color={Colors.blue}
+            size={16}
+          />
+          <Text style={addLocation.optionBtnTxt}>Start</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 export default SetRouteScreen;
 
-const styles = StyleSheet.create({
-
-});
+const styles = StyleSheet.create({});

@@ -71,7 +71,12 @@ export const addLocation = StyleSheet.create({
   directionType:{
     flexDirection:'row',
     marginTop:20,
-    justifyContent:'space-around'
+    justifyContent:'space-around',
+    borderBottomWidth:1,
+    paddingBottom:12,
+    width:'90%',
+    alignSelf:'center',
+    borderBottomColor:Colors.grey_light
   },
   optionBtnsContainer:{
     flexDirection:'row',

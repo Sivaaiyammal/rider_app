@@ -46,7 +46,7 @@ const MultiStopStartEndLocation = ({ route }) => {
     { id: 2, name: "Waypoint", location: [], locationName: "" },
     { id: 3, name: "End", location: [], locationName: "" },
   ]);
-  const { setStackScreen } = useStackScreenStore();
+  const { setStackScreen, goBack } = useStackScreenStore();
   const {
     directionPoints,
     setDirectionPoints,
@@ -58,8 +58,7 @@ const MultiStopStartEndLocation = ({ route }) => {
 
   useEffect(() => {
     BackHandler.addEventListener("hardwareBackPress", () => {
-      setScreen("Direction");
-      setStackScreen("Home");
+      onBackPress()
       return true;
     });
 
@@ -69,7 +68,7 @@ const MultiStopStartEndLocation = ({ route }) => {
   }, []);
 
   const onBackPress = () => {
-    setStackScreen("Home")
+    goBack()
     setDirections([
       {
         id: 1,
@@ -82,7 +81,7 @@ const MultiStopStartEndLocation = ({ route }) => {
     ])
   }
  
-  const itemHeight = 80;
+  const itemHeight = 100;
 
   const moveItem = (fromIndex, toIndex) => {
     if (fromIndex !== toIndex) {
@@ -138,7 +137,6 @@ const MultiStopStartEndLocation = ({ route }) => {
         };
       }
     });
-    // console.log("direction-->>new-->>", directionPoints);
     setDirectionPoints({ locations: directionPoints, type: selectedTab });
     if (directionPoints.length > 0 && directionPoints[0] && directionPoints[directionPoints.length - 1]) {
       setDirectionPoints({ locations: directionPoints, type: selectedTab });
@@ -260,7 +258,7 @@ const MultiStopStartEndLocation = ({ route }) => {
           </View>
         </View>
       )}
-       {showOptions && 
+       {(screen !== 'Search' && showOptions) && 
       <View style={addLocation.bottomContainer}>
         <View style={addLocation.directionType}>
         {[
@@ -287,7 +285,7 @@ const MultiStopStartEndLocation = ({ route }) => {
             ))}
         </View>
           <View style={addLocation.optionBtnsContainer}>
-          <Text style={addLocation.optionBtnTxt}>30min<Text style={{fontSize:10}}>{' '}(3km)</Text></Text>
+          {/* <Text style={addLocation.optionBtnTxt}>30min<Text style={{fontSize:10}}>{' '}(3km)</Text></Text> */}
           <TouchableOpacity style={addLocation.optionBtn} onPress={()=>onRoutesPress()}>
            <Routes />
           <Text style={addLocation.optionBtnTxt}>Routes</Text>

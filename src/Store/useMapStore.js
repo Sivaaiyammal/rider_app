@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { WINDOW_HEIGHT } from '../Constants/utils';
 
 const useMapStore = create((set) => ({
     key: 1,
