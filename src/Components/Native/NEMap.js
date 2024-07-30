@@ -131,6 +131,14 @@ class NEMap extends Component {
         this.props.onMapDblclick ? this.props.onMapDblclick(data) : null;
       }
     )
+
+    this.searchResultsListener = DeviceEventEmitter.addListener(
+      'onSearchResults',
+      (data) => {
+        console.log("searchResults", data)
+        this.props.onSearchResults ? this.props.onSearchResults(data) : null;
+      }
+    )
   }
 
   componentWillUnmount() {
@@ -173,6 +181,7 @@ class NEMap extends Component {
               : null
           }
           mode={this.props.mode}
+          searchUnit={this.props.searchUnit}
           geometries={this.state.mapLoaded ? this.props.geometries : null}
           findRoute={
             this.state.mapLoaded && this.props.findRoute?.length !== 0

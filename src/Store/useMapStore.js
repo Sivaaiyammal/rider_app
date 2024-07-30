@@ -9,6 +9,9 @@ const useMapStore = create((set) => ({
     mapMarkers: [],
     setMapMarkers: markers => set({ mapMarkers: markers }),
 
+    searchUnit: "",
+    setSearchUnit: searchUnit => set({ searchUnit }),
+
     startNavigation: false,
     setStartNavigation: (startNavigation) => set({ startNavigation }),
 
