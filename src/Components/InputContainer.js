@@ -51,11 +51,13 @@ const InputContainer = props => {
         }} />}
 
       {/* CancelBtn  */}
-      <TouchableOpacity
-        style={componentStyle.searchCancelBtn}
-        onPress={onCancelPress}>
-        <AntDesign name="close" size={22} />
-      </TouchableOpacity>
+      {onCancelPress && (
+        <TouchableOpacity
+          style={componentStyle.searchCancelBtn}
+          onPress={onCancelPress}>
+          <AntDesign name="close" size={22} />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

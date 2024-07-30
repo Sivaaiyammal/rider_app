@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, TouchableOpacity, BackHandler } from 'react-native';
+import { ScrollView, StyleSheet, View, TouchableOpacity, BackHandler, PermissionsAndroid } from 'react-native';
 import React, { useEffect, useState } from 'react';
 
 import DraggableBottomSheet from '../../Components/BottomSheet';
@@ -10,10 +10,13 @@ import DirectionsIcon from '../../Assets/Icons/direction.svg';
 import CustomTabBar from '../../Components/CustomTabBar/CustomTabBar';
 import SettingsScreen from '../SettingsScreen';
 import ContentScreen from './content';
+import SearchInput from './searchInput';
+import { useStackScreenStore } from '../../Store/useStackScreen';
 
 const HomeScreen = ({ }) => {
   const [dragHeight, setDragHeight] = useState(300);
   const { mode, setMode, setMapMarkers } = useMapStore();
+  const { setStackScreen } = useStackScreenStore();
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -29,11 +32,38 @@ const HomeScreen = ({ }) => {
     };
   }, []);
 
+  const handleCurrentScreen = () => {
+    setStackScreen('Search');
+  }
 
+  const handleCurrentLocation = () => {
+
+    let permission = [
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, 
+      PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION
+    ]
+
+    let granted = PermissionsAndroid.requestMultiple(permission)
+
+    if(granted['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED){
+
+
+
+    }
+
+  }
 
   const BottomSheet = () => (
-    <View style={{ flex: 1 }}>
-      <View style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000 }}>
+    <View style={{ flex: 1, marginTop: 10 }}>
+      <View style={{
+        // position: 'absolute',
+        // top: 10, left: 10,
+        // zIndex: 1000,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        width: '100%'
+      }}>
         <IconButton
           icon="menu"
           size={24}
@@ -43,10 +73,21 @@ const HomeScreen = ({ }) => {
             console.log('Pressed');
           }}
         />
+        {/* <View style={{ width: '100%' }}> */}
+          <SearchInput
+            searchText={''}
+            setCurrentScreen={handleCurrentScreen}
+            focused={true}
+            closeBtn={false}
+          />
+        {/* </View> */}
+
       </View>
 
-      <View style={{ position: 'absolute', top: 10, right: 0, zIndex: 1000 }}>
-        <TouchableOpacity onPress={() => console.log('Pressed')}>
+      <View style={{ position: 'absolute', right: -10 }}>
+        <TouchableOpacity onPress={() => {
+          handleCurrentLocation()
+        }}>
           <CurrentLocationIcon />
         </TouchableOpacity>
         <TouchableOpacity style={{ marginLeft: 12 }} onPress={() => console.log('Pressed')}>
@@ -54,12 +95,12 @@ const HomeScreen = ({ }) => {
         </TouchableOpacity>
       </View>
 
-      <DraggableBottomSheet
+      {/* <DraggableBottomSheet
         minHeight={dragHeight}
         children={
           <ContentScreen setDragHeight={setDragHeight} />
         }
-      />
+      /> */}
     </View>
   );
 
@@ -72,11 +113,12 @@ const HomeScreen = ({ }) => {
             name: 'Home',
             component: <BottomSheet />,
           }, {
-            icon: 'moon',
+            icon: 'lightbulb',
             name: 'Mode',
             component: <View />,
-            callBack: () => {
-              setMode(mode === 'light' ? 'dark' : 'light');
+            callBack: (icon) => {
+              console.log('Mode pressed', icon);
+              setMode(icon === 'lightbulb' ? 'dark' : 'light');
             },
           }, {
             icon: 'language',

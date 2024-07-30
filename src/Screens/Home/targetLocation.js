@@ -16,6 +16,7 @@ const TargetLocation = ({ data }) => {
 
     const closeBottomSheet = () => {
         setMapMarkers([]);
+        setStackScreen('Home')
     }
 
     useEffect(() => {

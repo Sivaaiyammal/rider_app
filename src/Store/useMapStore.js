@@ -12,11 +12,13 @@ const useMapStore = create((set) => ({
     searchUnit: "",
     setSearchUnit: searchUnit => set({ searchUnit }),
 
-    searchUnit: "",
-    setSearchUnit: searchUnit => set({ searchUnit }),
+    onSearchResults: null,
+    setOnSearchResults: onSearchResults => {
+        set({ onSearchResults });
+    },
 
-    searchResults: false,
-    setOnSearchResults: (searchResults) => set({ searchResults }),
+    startNavigation: false,
+    setStartNavigation: (startNavigation) => set({ startNavigation }),
 
     devices: [],
     setDevices: devices => set({ devices: [...devices] }),
@@ -49,7 +51,10 @@ const useMapStore = create((set) => ({
     setMapDblclickCallback: callback => set({ mapDblclickCallback: callback }),
 
     mode: 'light',
-    setMode: mode => set({ mode }),
+    setMode: mode => {
+        set({ mode })
+        console.log('Mode set', mode)
+    },
 
     removeMarker: (id) => {
         set(state => {

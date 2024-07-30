@@ -36,8 +36,7 @@ const MultiStopStartEndLocation = ({ route }) => {
   const [isFocused, setIsFocused] = React.useState(false);
   const [loading, setLoading] = useState(false);
   const [showOptions, setShowOptions] = useState(false)
-  const {searchResults, setSearchUnit} = useMapStore();
-  const {  } = useMapStore();
+  const {onSearchResults, setSearchUnit} = useMapStore();
   const [directions, setDirections] = useState([
     {
       id: 1,
@@ -81,6 +80,7 @@ const MultiStopStartEndLocation = ({ route }) => {
       { id: 2, name: "Waypoint", location: [], locationName: "" },
       { id: 3, name: "End", location: [], locationName: "" },
     ])
+    setDirectionPoints(null)
   }
  
   const itemHeight = 100;
@@ -237,7 +237,7 @@ const MultiStopStartEndLocation = ({ route }) => {
           {searchText.length > 0 && (
             <SearchResult
               searchTxt={searchText}
-              search_data={searchResults?.searchResults}
+              search_data={onSearchResults?.searchResults}
               selectedCallBack={selectedCallBack}
             />
           )}
@@ -292,7 +292,7 @@ const MultiStopStartEndLocation = ({ route }) => {
            <Routes />
           <Text style={addLocation.optionBtnTxt}>Routes</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={addLocation.optionBtn}>
+          <TouchableOpacity style={addLocation.optionBtn} onPress={()=>onStartNavigationPress()}>
            <MaterialCommunityIcons name="navigation" color={Colors.blue} size={16}/>
           <Text style={addLocation.optionBtnTxt}>Start</Text>
           </TouchableOpacity>

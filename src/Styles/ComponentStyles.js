@@ -5,7 +5,7 @@ import {reponsiveFont} from '../Constants/Metrics';
 export const componentStyle = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
-    width: '96%',
+    // width: '100%',
     alignSelf: 'center',
     margin: 5,
     alignItems: 'center',
@@ -19,6 +19,7 @@ export const componentStyle = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 20,
     borderWidth: 0.3,
+    backgroundColor: '#fafafa',
   },
   input: {
     width: '74%',

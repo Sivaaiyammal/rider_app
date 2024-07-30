@@ -14,8 +14,9 @@ const SearchScreen = () => {
   const [searchText, setSearchText] = useState('');
   const [searchData, setSearchData] = useState([]);
   const { setStackScreen } = useStackScreenStore();
-  const {searchResults} = useMapStore();
+  const {onSearchResults} = useMapStore();
 
+  console.log("hari-->>searchData-->>", onSearchResults);
   const selectedCallBack = (data) => {
     setStackScreen('TargetLocation', data);
   }
@@ -27,11 +28,12 @@ const SearchScreen = () => {
         setSearchText={setSearchText} 
         setSearchData={setSearchData}
         focused={false}
+        closeBtn={true}
       />
       {searchText?.length !== 0 ? (
         <SearchResult 
           searchTxt={searchText} 
-          search_data={searchResults?.searchResults} 
+          search_data={onSearchResults?.searchResults} 
           selectedCallBack={selectedCallBack}
         />
       ) : (

@@ -53,12 +53,13 @@ const styles = StyleSheet.create({
   }
 });
 
-export default function CustomTabBar({ menus }) {
+export default function CustomTabBar({ menus = [] }) {
+  const [tab, setTab] = useState(menus)
   const [showBottomTabs, setShowBottomTabs] = useState(true)
   const [currentScreen, setCurrentScreen] = useState('Home')
   const activeIndex = menus.findIndex(menu => menu.name === currentScreen);
 
-  const onMenuClick = (name, callBack) => {
+  const onMenuClick = (name, callBack, icon) => {
     // setCurrentScreen(name);
     if(name === 'Home') {
       setCurrentScreen('Home')
@@ -66,15 +67,20 @@ export default function CustomTabBar({ menus }) {
       setCurrentScreen('Settings')
     }
     if(callBack) {
-      callBack();
+      callBack(icon);
+      setTab(tab.map(menu => 
+        menu.name === name 
+          ? {...menu, icon: icon === 'moon' ? 'lightbulb' : 'moon'} 
+          : menu
+      ))
     }
   };
 
   return (
     <>
-      {menus[activeIndex].component && menus[activeIndex].component}
+      {tab[activeIndex].component && tab[activeIndex].component}
       <View style={styles.bottomBar}>
-        {menus.map(menu => {
+        {tab.map(menu => {
           if (menu.hidden) {
             return null;
           }
@@ -85,7 +91,7 @@ export default function CustomTabBar({ menus }) {
                   style={[styles.menu, {alignItems: 'center', justifyContent: 'center', gap: 5}]}
                   key={menu.id}
                   testID={menu.name}
-                  onPress={() => onMenuClick(menu.name, menu.callBack)}>
+                  onPress={() => onMenuClick(menu.name, menu.callBack, menu.icon)}>
                   <Icon
                     name={menu.icon}
                     size={18}
@@ -109,8 +115,4 @@ CustomTabBar.propTypes = {
       component: PropTypes.element.isRequired,
     }),
   ).isRequired,
-};
-
-CustomTabBar.defaultProps = {
-  menus: [],
 };
