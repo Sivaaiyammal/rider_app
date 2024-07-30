@@ -1,5 +1,7 @@
 import React, {useRef, useState, useMemo} from 'react';
 import {StyleSheet, PanResponder, Animated} from 'react-native';
+import { Colors } from '../Constants/Contants';
+import { HEIGHT } from '../Constants/Metrics';
 
 const DragAndDropCard = ({
   index,
@@ -8,6 +10,7 @@ const DragAndDropCard = ({
   children,
   length,
   topOffset,
+  itemHeight
 }) => {
   // Create a ref to store the position of the card
   const position = useRef(new Animated.ValueXY()).current;
@@ -15,36 +18,14 @@ const DragAndDropCard = ({
   // State to track if the card is being dragged
   const [dragging, setDragging] = useState(false);
 
-  const calculateDropIndex = (
-    gestureState,
-    itemHeight,
-    dataLength,
-    topOffset = 20,
-  ) => {
-    // You need to adjust this calculation based on your layout
+  const calculateDropIndex = (gestureState, itemHeight, dataLength, topOffset = 0) => {
     const dragY = gestureState.moveY - topOffset;
-
-    // Calculate the approximate index based on the item's height
-    let estimatedIndex = Math.floor(dragY / itemHeight);
-
-    // Clamp the index between 0 and the length of the data array - 1
+    const middlePointOffset = itemHeight / 3;
+    let estimatedIndex = Math.floor((dragY + middlePointOffset) / itemHeight);
     estimatedIndex = Math.max(0, Math.min(estimatedIndex, dataLength - 1));
-
-    console.log(
-      'estimatedIndex',
-      estimatedIndex,
-      dragY,
-      gestureState.moveY,
-      gestureState.dy,
-    );
-    const dropIndex = Math.floor(gestureState.dy / itemHeight);
-
-    console.log('dropIndex', dropIndex);
-
     return estimatedIndex;
   };
 
-  // Create a pan responder to handle touch events
   const panResponder = useMemo(
     () =>
       PanResponder.create({
@@ -58,80 +39,65 @@ const DragAndDropCard = ({
               dy: position.y,
             },
           ],
-          {useNativeDriver: false},
+          { useNativeDriver: false },
         ),
+        onPanResponderGrant: () => {
+          setDragging(true);
+        },
         onPanResponderRelease: (e, gestureState) => {
           setDragging(false);
-
-          // Calculate the drop index based on the gestureState
           const dropIndex = calculateDropIndex(
             gestureState,
-            40,
+            itemHeight,
             length,
             topOffset,
           );
-
-          console.log('dropIndex', dropIndex, index);
-
-          // to check whether the drag is happend minimum
           const movedSlightly = Math.abs(gestureState.dy) < 10;
-
           onDragEnd(index, dropIndex, movedSlightly);
-
-          // Reset position to zero
           Animated.spring(position, {
-            toValue: {x: 0, y: 0},
+            toValue: { x: 0, y: 0 },
             useNativeDriver: false,
           }).start();
         },
       }),
-    [index, onDragEnd],
+    [index, onDragEnd, length, itemHeight, topOffset],
   );
 
   return (
     <Animated.View
-      style={[
-        {
-          transform: position.getTranslateTransform(),
-          opacity: dragging ? 0.8 : 1,
-        },
-      ]}
-      {...panResponder.panHandlers}>
-      {children}
-    </Animated.View>
+    style={[
+      styles.card,
+      {
+        transform: position.getTranslateTransform(),
+        opacity: dragging ? 0.4 : 1,
+        zIndex: dragging ? 1 : 0,
+      },
+    ]}
+    {...panResponder.panHandlers}>
+    {children}
+  </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-  },
   cardContainer: {
     marginTop: 20,
   },
   card: {
-    width: '90%',
-    height: 100,
-    backgroundColor: '#FFF',
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 10,
-    marginBottom: 10,
+    borderRadius: 5,
+    height: HEIGHT * 0.06,
+    alignItems:'center',
+    justifyContent:'center',
+    marginVertical:5,
+    backgroundColor:Colors.white,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
     elevation: 5,
-  },
-  heading: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: 'green',
-    marginBottom: 6,
-  },
-  paragraph: {
-    fontSize: 14,
   },
 });
 export default DragAndDropCard;

@@ -43,10 +43,8 @@ const InputContainer = props => {
         indeterminate={true}
         color="blue"
         style={{
-          // width: '100%',
           height: 10,
           position: 'absolute',
-          // top: 0,
           bottom: -2,
           left: 18,
           right: 72,
