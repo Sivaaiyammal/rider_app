@@ -33,8 +33,6 @@ const MainScreen = () => {
         return <SettingsScreen />;
       case "Directions":
         return <MultiStopStartEndLocation  route={currentScreen.params} />;
-      case "SetRouteScreen":
-        return <SetRouteScreen  route={currentScreen.params} />;
       default:
         return <HomeScreen />;
     }

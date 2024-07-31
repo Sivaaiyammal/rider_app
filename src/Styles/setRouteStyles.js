@@ -36,4 +36,13 @@ export const setRouteStyles = StyleSheet.create({
     color: Colors.black,
     width: "90%",
   },
+  iconsBg:{
+    width:'15%',
+    backgroundColor:Colors.grey_light,
+    aspectRatio:1,
+    alignItems:'center',
+    justifyContent:'center',
+    borderRadius:50,
+    marginRight:10
+  }
 });

@@ -91,7 +91,7 @@ export const addLocation = StyleSheet.create({
     alignItems:'center',
     borderRadius:40,
     paddingVertical:5,
-    paddingHorizontal:10,
+    paddingHorizontal:15,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

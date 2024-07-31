@@ -13,7 +13,7 @@ import YourLoc from "../../../Assets/Icons/yourloc.svg";
 import Flag from "../../../Assets/Icons/flag.svg";
 import EndLoc from "../../../Assets/Icons/endLoc.svg";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 import useMapStore from "../../../Store/useMapStore";
 import { useStackScreenStore } from "../../../Store/useStackScreen";
@@ -26,7 +26,9 @@ import { SearchAPI } from "../../../Constants/NEMap/Search";
 import SearchResult from "../../../Components/SearchResult";
 import { addLocation } from "../../../Styles/AnimatedTextinputStyles";
 import { Colors } from "../../../Constants/Contants";
-import Routes from '../../../Assets/Icons/routes.svg';
+import Routes from "../../../Assets/Icons/routes.svg";
+import SetRouteScreen from "../../SetRouteScreen";
+import StartNavigation from "../../StartNavigation";
 
 const MultiStopStartEndLocation = ({ route }) => {
   const [screen, setScreen] = useState("Direction");
@@ -64,7 +66,7 @@ const MultiStopStartEndLocation = ({ route }) => {
 
   useEffect(() => {
     BackHandler.addEventListener("hardwareBackPress", () => {
-      onBackPress()
+      onBackPress();
       return true;
     });
 
@@ -87,7 +89,7 @@ const MultiStopStartEndLocation = ({ route }) => {
   }, []);
 
   const onBackPress = () => {
-    goBack()
+    goBack();
     setDirections([
       {
         id: 1,
@@ -97,10 +99,10 @@ const MultiStopStartEndLocation = ({ route }) => {
       },
       { id: 2, name: "Waypoint", location: [], locationName: "" },
       { id: 3, name: "End", location: [], locationName: "" },
-    ])
-    setDirectionPoints(null)
-  }
- 
+    ]);
+    setDirectionPoints(null);
+  };
+
   const itemHeight = 100;
 
   const moveItem = (fromIndex, toIndex) => {
@@ -138,21 +140,26 @@ const MultiStopStartEndLocation = ({ route }) => {
       }
     });
     setDirectionPoints({ locations: directionPoints, type: selectedTab });
-    if (directionPoints.length > 0 && directionPoints[0] && directionPoints[directionPoints.length - 1]) {
+    if (
+      directionPoints.length > 0 &&
+      directionPoints[0] &&
+      directionPoints[directionPoints.length - 1]
+    ) {
       setDirectionPoints({ locations: directionPoints, type: selectedTab });
-      setShowOptions(true)
+      setShowOptions(true);
     } else {
       console.warn("Start and End locations are required.");
     }
   };
 
   const onStartNavigationPress = async () => {
+    setScreen("Navigation");
     setStartNavigation(true);
   };
 
   const onRoutesPress = () => {
-    setStackScreen('SetRouteScreen')
-  }
+    setScreen("Routes");
+  };
 
   const getLocationIcon = (id) => {
     switch (id) {
@@ -178,7 +185,10 @@ const MultiStopStartEndLocation = ({ route }) => {
     <>
       {screen === "Direction" && (
         <View style={addLocation.container}>
-          <TouchableOpacity onPress={()=>onBackPress()} style={addLocation.backButton}>
+          <TouchableOpacity
+            onPress={() => onBackPress()}
+            style={addLocation.backButton}
+          >
             <Ionicons name="arrow-back" size={20} color={Colors.black} />
           </TouchableOpacity>
           <View style={addLocation.addLocationContainer}>
@@ -241,27 +251,26 @@ const MultiStopStartEndLocation = ({ route }) => {
           )}
         </View>
       )}
-      {screen === "Navigation" && (
-        <View style={styles.navigationContainer}>
-          <View style={styles.selectLocationContainer}>
-            <Text style={styles.navigationText}>Start Navigation</Text>
-            <IconButton
-              icon="navigation"
-              size={30}
-              iconColor="#fff"
-              style={styles.navigationIcon}
-              onPress={() => {
-                console.log("Start Navigation");
-                onStartNavigationPress();
-              }}
-            />
-          </View>
-        </View>
+      {screen === "Routes" && (
+        <SetRouteScreen
+          goBack={() => setScreen("Direction")}
+          onStartPress={() => {
+            onStartNavigationPress();
+          }}
+        />
       )}
-       {(screen !== 'Search' && showOptions) && 
-      <View style={addLocation.bottomContainer}>
-        <View style={addLocation.directionType}>
-        {[
+      {screen === "Navigation" && (
+        <StartNavigation
+          goBack={() => {
+            setStartNavigation(false);
+            setScreen("Direction");
+          }}
+        />
+      )}
+      {screen !== "Search" && showOptions && (
+        <View style={addLocation.bottomContainer}>
+          <View style={addLocation.directionType}>
+            {[
               { icon: "car", name: "car" },
               { icon: "bicycle", name: "bike" },
               { icon: "train", name: "train" },
@@ -283,20 +292,30 @@ const MultiStopStartEndLocation = ({ route }) => {
                 <Icon name={item.icon} size={20} color="#212121" />
               </TouchableOpacity>
             ))}
-        </View>
+          </View>
           <View style={addLocation.optionBtnsContainer}>
-          {/* <Text style={addLocation.optionBtnTxt}>30min<Text style={{fontSize:10}}>{' '}(3km)</Text></Text> */}
-          <TouchableOpacity style={addLocation.optionBtn} onPress={()=>onRoutesPress()}>
-           <Routes />
-          <Text style={addLocation.optionBtnTxt}>Routes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={addLocation.optionBtn} onPress={()=>onStartNavigationPress()}>
-           <MaterialCommunityIcons name="navigation" color={Colors.blue} size={16}/>
-          <Text style={addLocation.optionBtnTxt}>Start</Text>
-          </TouchableOpacity>
-         </View>
-      </View>
-       }
+            {/* <Text style={addLocation.optionBtnTxt}>30min<Text style={{fontSize:10}}>{' '}(3km)</Text></Text> */}
+            <TouchableOpacity
+              style={addLocation.optionBtn}
+              onPress={() => onRoutesPress()}
+            >
+              <Routes />
+              <Text style={addLocation.optionBtnTxt}>Routes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={addLocation.optionBtn}
+              onPress={() => onStartNavigationPress()}
+            >
+              <MaterialCommunityIcons
+                name="navigation"
+                color={Colors.blue}
+                size={16}
+              />
+              <Text style={addLocation.optionBtnTxt}>Start</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </>
   );
 };
