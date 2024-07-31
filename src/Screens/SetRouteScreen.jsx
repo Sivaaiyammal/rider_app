@@ -17,7 +17,7 @@ import useMapStore from "../Store/useMapStore";
 import Feather from "react-native-vector-icons/Feather";
 import { useStackScreenStore } from "../Store/useStackScreen";
 
-const SetRouteScreen = ({goBack}) => {
+const SetRouteScreen = ({goBack, onStartPress}) => {
   const { directionReadyCallback } = useMapStore();
   // const {goBack} = useStackScreenStore()
 
@@ -34,6 +34,10 @@ const SetRouteScreen = ({goBack}) => {
 
   const onRoutesPress = () => {
     goBack();
+  }
+
+  const _onStartPress = () => {
+    onStartPress()
   }
 
   const getDirectionIcon = (text) => {
@@ -54,12 +58,13 @@ const SetRouteScreen = ({goBack}) => {
 
   const renderItem = ({ item }) => (
     <View style={setRouteStyles.item}>
+      <View style={setRouteStyles.iconsBg}>
       <MaterialCommunityIcons
         name={getDirectionIcon(item.text)}
         size={24}
         color={Colors.black}
-        style={setRouteStyles.icon}
       />
+      </View>
       <Text style={setRouteStyles.text}>{item.text}</Text>
     </View>
   );
@@ -100,7 +105,8 @@ const SetRouteScreen = ({goBack}) => {
           <Feather name="map" color={Colors.black} />
           <Text style={addLocation.optionBtnTxt}>Map</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={addLocation.optionBtn}>
+        <TouchableOpacity style={addLocation.optionBtn}
+         onPress={()=>_onStartPress()}>
           <MaterialCommunityIcons
             name="navigation"
             color={Colors.blue}

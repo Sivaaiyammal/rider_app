@@ -140,7 +140,6 @@ const MultiStopStartEndLocation = ({ route }) => {
   };
 
   const onRoutesPress = () => {
-    // setStackScreen('SetRouteScreen')
     setScreen("Routes");
   };
 
@@ -235,7 +234,12 @@ const MultiStopStartEndLocation = ({ route }) => {
         </View>
       )}
       {screen === "Routes" && (
-        <SetRouteScreen goBack={() => setScreen("Direction")} />
+        <SetRouteScreen
+          goBack={() => setScreen("Direction")}
+          onStartPress={() => {
+            onStartNavigationPress();
+          }}
+        />
       )}
       {screen === "Navigation" && (
         <StartNavigation
