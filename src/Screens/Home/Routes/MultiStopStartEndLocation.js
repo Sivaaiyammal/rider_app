@@ -17,6 +17,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 
 import useMapStore from "../../../Store/useMapStore";
 import { useStackScreenStore } from "../../../Store/useStackScreen";
+import useLocationStore from "../../../Store/useLocationStore";
 
 import DragAndDropCard from "../../../Components/DragDrop";
 import DraggbleImg from "../../../Assets/Icons/Drag.svg";
@@ -37,17 +38,21 @@ const MultiStopStartEndLocation = ({ route }) => {
   const [searchData, setSearchData] = useState([]);
   const [isFocused, setIsFocused] = React.useState(false);
   const [loading, setLoading] = useState(false);
-  const [showOptions, setShowOptions] = useState(false);
-  const { onSearchResults, setSearchUnit } = useMapStore();
+  const [showOptions, setShowOptions] = useState(false)
+  const {onSearchResults, setSearchUnit} = useMapStore();
+  const { location } = useLocationStore();
   const [directions, setDirections] = useState([
     {
       id: 1,
       name: "Start",
+      location: location || [],
+      locationName: location ? location.reverse().join(', ') : "",
+    },
+    { id: 2, name: "Waypoint", location: [], locationName: "" },
+    { id: 3, name: "End", 
       location: route?.coordinates || [],
       locationName: route?.name || "",
     },
-    { id: 2, name: "Waypoint", location: [], locationName: "" },
-    { id: 3, name: "End", location: [], locationName: "" },
   ]);
   const { setStackScreen, goBack } = useStackScreenStore();
   const {
@@ -64,6 +69,19 @@ const MultiStopStartEndLocation = ({ route }) => {
       onBackPress();
       return true;
     });
+
+    const directionPoints = directions
+      .filter(direction => direction.location.length > 0)
+      .map(direction => ({
+        lat: direction.location[1],
+        lon: direction.location[0]
+      }));
+
+    if(directionPoints.length == 2){
+      setMapMarkers([])
+      setDirectionPoints({ locations: directionPoints, type: selectedTab });
+      setShowOptions(true)
+    }
 
     return () => {
       BackHandler.removeEventListener("hardwareBackPress", () => {});

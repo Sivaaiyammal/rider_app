@@ -138,6 +138,14 @@ class NEMap extends Component {
         this.props.onSearchResults ? this.props.onSearchResults(data) : null;
       }
     )
+
+    this.searchPOIErrorListener = DeviceEventEmitter.addListener(
+      'onSearchPOIResults',
+      (data) => {
+        console.log("SEARCH POI RESULTS", data)
+        this.props.onSearchPOIResults ? this.props.onSearchPOIResults(data) : null;
+      }
+    )
   }
 
   componentWillUnmount() {
@@ -179,6 +187,7 @@ class NEMap extends Component {
               ]
               : null
           }
+          autoPOISearch={this.props.autoPOISearch}
           mode={this.props.mode}
           searchUnit={this.props.searchUnit}
           geometries={this.state.mapLoaded ? this.props.geometries : null}

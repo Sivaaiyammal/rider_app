@@ -1,9 +1,10 @@
-import { ScrollView, StyleSheet, View, TouchableOpacity, BackHandler, PermissionsAndroid } from 'react-native';
+import { ScrollView, StyleSheet, View, TouchableOpacity, BackHandler, PermissionsAndroid, Alert } from 'react-native';
 import React, { useEffect, useState } from 'react';
 
 import DraggableBottomSheet from '../../Components/BottomSheet';
 import { IconButton } from 'react-native-paper';
 import useMapStore from '../../Store/useMapStore';
+import Geolocation from 'react-native-geolocation-service';
 
 import CurrentLocationIcon from '../../Assets/Icons/currentLocation.svg';
 import DirectionsIcon from '../../Assets/Icons/direction.svg';
@@ -12,11 +13,13 @@ import SettingsScreen from '../SettingsScreen';
 import ContentScreen from './content';
 import SearchInput from './searchInput';
 import { useStackScreenStore } from '../../Store/useStackScreen';
+import useLocationStore from '../../Store/useLocationStore';
 
 const HomeScreen = ({ }) => {
   const [dragHeight, setDragHeight] = useState(300);
-  const { mode, setMode, setMapMarkers } = useMapStore();
+  const { mode, setMode, setMapMarkers, setMapLocation } = useMapStore();
   const { setStackScreen } = useStackScreenStore();
+  const { setLocation, location } = useLocationStore();
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -24,6 +27,16 @@ const HomeScreen = ({ }) => {
       return true;
     };
 
+    const checkLocationPermission = async () => {
+      const locationPermissionCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+  
+      if (locationPermissionCheck) {
+        getLocation();
+        return true
+      }
+    }
+
+    checkLocationPermission();
     setMapMarkers([]);
 
     BackHandler.addEventListener('hardwareBackPress', handleBackPress);
@@ -32,23 +45,71 @@ const HomeScreen = ({ }) => {
     };
   }, []);
 
-  const handleCurrentScreen = () => {
-    setStackScreen('Search');
+  const getLocation = () => {
+    Geolocation.getCurrentPosition(
+      (position) => {
+        setLocation([position.coords.longitude, position.coords.latitude]);
+        setMapLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          zoom: 25,
+        });
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 10000,
+      }
+    );
   }
 
-  const handleCurrentLocation = () => {
+  const handleCurrentLocation = async () => {
+    try {
+      const locationPermissionCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
 
-    let permission = [
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, 
-      PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION
-    ]
+      if (locationPermissionCheck) {
+        getLocation();
+        return true
+      }
 
-    let granted = PermissionsAndroid.requestMultiple(permission)
+      const grantedLocation = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+      ]);
 
-    if(granted['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED){
+      if (grantedLocation['android.permission.ACCESS_FINE_LOCATION'] !== PermissionsAndroid.RESULTS.GRANTED) {
+        console.log("One or more permissions denied");
 
+        if (grantedLocation['android.permission.ACCESS_FINE_LOCATION'] === 'never_ask_again') {
+          Alert.alert(
+            "Permission Required",
+            "Location permission is required. Please enable it in the app settings.",
+            [
+              { text: "Open Settings", onPress: () => Linking.openSettings() }
+            ]
+          );
+        } else {
+          Alert.alert(
+            "Permission Denied",
+            "Location permission is required. Please enable it in the app settings.",
+            [
+              { text: "Open Settings", onPress: () => Linking.openSettings() }
+            ]
+          );
+        }
+        return false
+      } else {
+        console.log("Location permissions granted");
+        getLocation();
+        return true
+      }
 
-
+    } catch (err) {
+      console.warn(err);
+      setLocation(false);
+      return false
     }
 
   }
@@ -56,9 +117,6 @@ const HomeScreen = ({ }) => {
   const BottomSheet = () => (
     <View style={{ flex: 1, marginTop: 10 }}>
       <View style={{
-        // position: 'absolute',
-        // top: 10, left: 10,
-        // zIndex: 1000,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -73,21 +131,11 @@ const HomeScreen = ({ }) => {
             console.log('Pressed');
           }}
         />
-        {/* <View style={{ width: '100%' }}> */}
-          <SearchInput
-            searchText={''}
-            setCurrentScreen={handleCurrentScreen}
-            focused={true}
-            closeBtn={false}
-          />
-        {/* </View> */}
 
       </View>
 
       <View style={{ position: 'absolute', right: -10 }}>
-        <TouchableOpacity onPress={() => {
-          handleCurrentLocation()
-        }}>
+        <TouchableOpacity onPress={handleCurrentLocation}>
           <CurrentLocationIcon />
         </TouchableOpacity>
         <TouchableOpacity style={{ marginLeft: 12 }} onPress={() => console.log('Pressed')}>
@@ -95,12 +143,12 @@ const HomeScreen = ({ }) => {
         </TouchableOpacity>
       </View>
 
-      {/* <DraggableBottomSheet
+      <DraggableBottomSheet
         minHeight={dragHeight}
         children={
           <ContentScreen setDragHeight={setDragHeight} />
         }
-      /> */}
+      />
     </View>
   );
 

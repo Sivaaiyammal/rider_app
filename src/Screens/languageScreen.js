@@ -6,7 +6,7 @@ import { useNavigation, CommonActions } from "@react-navigation/native";
 import { DataStore } from "../Constants/DataStore";
 
 const LanguageScreen = () => {
-  const languages = ["English", "Spanish", "French", "German", "Chinese"];
+  const languages = ["English", "Arabic"];
   const [selectedLanguage, setSelectedLanguage] = useState("English");
   const navigation = useNavigation();
 
