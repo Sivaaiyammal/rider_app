@@ -36,7 +36,6 @@ const groupByType = (data) => {
 const SearchResult = (props) => {
   const { searchTxt, search_data, selectedCallBack } = props;
 
-  console.log("hari-->>searchData-->>", search_data);
   const groupedData = groupByType(search_data);
 
   const renderSectionHeader = ({ section: { title } }) => {

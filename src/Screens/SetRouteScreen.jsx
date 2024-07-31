@@ -1,11 +1,12 @@
 import {
+  BackHandler,
   FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import MultiStopStartEndLocation from "./Home/Routes/MultiStopStartEndLocation";
 import { setRouteStyles } from "../Styles/setRouteStyles";
 import BottomSheet from "../Components/BottomSheet";
@@ -16,9 +17,20 @@ import useMapStore from "../Store/useMapStore";
 import Feather from "react-native-vector-icons/Feather";
 import { useStackScreenStore } from "../Store/useStackScreen";
 
-const SetRouteScreen = () => {
+const SetRouteScreen = ({goBack}) => {
   const { directionReadyCallback } = useMapStore();
-  const {goBack} = useStackScreenStore()
+  // const {goBack} = useStackScreenStore()
+
+  useEffect(() => {
+    BackHandler.addEventListener("hardwareBackPress", () => {
+      goBack();
+      return true;
+    });
+
+    return () => {
+      BackHandler.removeEventListener("hardwareBackPress", () => {});
+    };
+  }, []);
 
   const onRoutesPress = () => {
     goBack();
