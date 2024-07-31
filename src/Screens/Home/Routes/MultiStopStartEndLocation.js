@@ -29,6 +29,7 @@ import { Colors } from "../../../Constants/Contants";
 import Routes from "../../../Assets/Icons/routes.svg";
 import SetRouteScreen from "../../SetRouteScreen";
 import StartNavigation from "../../StartNavigation";
+import LocationOptions from '../../../Components/Locations/LocationOptions.jsx'
 
 const MultiStopStartEndLocation = ({ route }) => {
   const [screen, setScreen] = useState("Direction");
@@ -54,6 +55,7 @@ const MultiStopStartEndLocation = ({ route }) => {
       locationName: route?.name || "",
     },
   ]);
+
   const { setStackScreen, goBack } = useStackScreenStore();
   const {
     directionPoints,
@@ -62,7 +64,6 @@ const MultiStopStartEndLocation = ({ route }) => {
     setStartNavigation,
   } = useMapStore();
   const inputRefs = useRef([]);
-  const search = new SearchAPI();
 
   useEffect(() => {
     BackHandler.addEventListener("hardwareBackPress", () => {
@@ -293,27 +294,7 @@ const MultiStopStartEndLocation = ({ route }) => {
               </TouchableOpacity>
             ))}
           </View>
-          <View style={addLocation.optionBtnsContainer}>
-            {/* <Text style={addLocation.optionBtnTxt}>30min<Text style={{fontSize:10}}>{' '}(3km)</Text></Text> */}
-            <TouchableOpacity
-              style={addLocation.optionBtn}
-              onPress={() => onRoutesPress()}
-            >
-              <Routes />
-              <Text style={addLocation.optionBtnTxt}>Routes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={addLocation.optionBtn}
-              onPress={() => onStartNavigationPress()}
-            >
-              <MaterialCommunityIcons
-                name="navigation"
-                color={Colors.blue}
-                size={16}
-              />
-              <Text style={addLocation.optionBtnTxt}>Start</Text>
-            </TouchableOpacity>
-          </View>
+          <LocationOptions directions={directions} onRoutesPress={onRoutesPress} onStartNavigationPress={onStartNavigationPress}/>
         </View>
       )}
     </>

@@ -8,7 +8,6 @@ import HomeScreen from "./Home/HomeScreen";
 import SettingsScreen from "./SettingsScreen";
 import TargetLocation from "./Home/targetLocation";
 import MultiStopStartEndLocation from "./Home/Routes/MultiStopStartEndLocation";
-import SetRouteScreen from "./SetRouteScreen";
 
 const MainScreen = () => {
   const { stackScreen } = useStackScreenStore();

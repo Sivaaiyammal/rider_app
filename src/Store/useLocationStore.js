@@ -1,8 +1,8 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 const useLocationStore = create((set) => ({
-    savedRoute: [],
-    setSavedRoute: savedRoute => set({ savedRoute }),
+  location: null,
+  setLocation: (location) => set({ location }),
 }));
 
 export default useLocationStore;
