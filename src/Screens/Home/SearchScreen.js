@@ -39,7 +39,7 @@ const SearchScreen = () => {
       ) : (
         <ScrollView>
           <SavedAddress />
-          <RecentSearch />
+          {/* <RecentSearch /> */}
           <NearBy />
         </ScrollView>
       )}

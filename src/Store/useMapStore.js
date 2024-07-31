@@ -12,10 +12,16 @@ const useMapStore = create((set) => ({
     searchUnit: "",
     setSearchUnit: searchUnit => set({ searchUnit }),
 
+    searchPOI: null,
+    setSearchPOI: searchPOI => set({ searchPOI }),
+
     onSearchResults: null,
     setOnSearchResults: onSearchResults => {
         set({ onSearchResults });
     },
+
+    searchPOIResults: null,
+    setSearchPOIResults: searchPOIResults => set({ searchPOIResults }),
 
     startNavigation: false,
     setStartNavigation: (startNavigation) => set({ startNavigation }),

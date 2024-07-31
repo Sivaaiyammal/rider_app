@@ -22,7 +22,11 @@ const MapContainer = ({ mapStyle }) => {
     mapClickCallback,
     startNavigation,
     setDirectionReadyCallback,
+    searchPOI,
+    setSearchPOIResults,
   } = useMapStore();
+
+  console.log("SEARCH POI", searchPOI)
 
   return (
     <View style={[styles.mapContainer]}>
@@ -35,7 +39,9 @@ const MapContainer = ({ mapStyle }) => {
         }}
         markers={mapMarkers}
         searchUnit={searchUnit}
+        autoPOISearch={searchPOI}
         onSearchResults={setOnSearchResults}
+        onSearchPOIResults={setSearchPOIResults}
         mode={mode}
         onMarkerClick={markerClickCallback}
         onMapClick={mapClickCallback}

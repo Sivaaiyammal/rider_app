@@ -33,15 +33,10 @@ const ContentScreen = ({ setDragHeight }) => {
                     searchText={''}
                     setCurrentScreen={handleCurrentScreen}
                     focused={true}
+                    closeBtn={true}
                 />
             )}
             {currentScreen === 'Home' && <POIScreen />}
-            {/* {currentScreen === 'Search' && (
-                <SearchScreen
-                    searchText={searchText}
-                    searchData={searchData}
-                />
-            )} */}
         </View>
     )
 }

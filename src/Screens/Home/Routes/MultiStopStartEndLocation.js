@@ -17,6 +17,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 
 import useMapStore from "../../../Store/useMapStore";
 import { useStackScreenStore } from "../../../Store/useStackScreen";
+import useLocationStore from "../../../Store/useLocationStore";
 
 import DragAndDropCard from "../../../Components/DragDrop";
 import DraggbleImg from "../../../Assets/Icons/Drag.svg";
@@ -37,15 +38,19 @@ const MultiStopStartEndLocation = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [showOptions, setShowOptions] = useState(false)
   const {onSearchResults, setSearchUnit} = useMapStore();
+  const { location } = useLocationStore();
   const [directions, setDirections] = useState([
     {
       id: 1,
       name: "Start",
+      location: location || [],
+      locationName: location ? location.reverse().join(', ') : "",
+    },
+    { id: 2, name: "Waypoint", location: [], locationName: "" },
+    { id: 3, name: "End", 
       location: route?.coordinates || [],
       locationName: route?.name || "",
     },
-    { id: 2, name: "Waypoint", location: [], locationName: "" },
-    { id: 3, name: "End", location: [], locationName: "" },
   ]);
   const { setStackScreen, goBack } = useStackScreenStore();
   const {
@@ -62,6 +67,19 @@ const MultiStopStartEndLocation = ({ route }) => {
       onBackPress()
       return true;
     });
+
+    const directionPoints = directions
+      .filter(direction => direction.location.length > 0)
+      .map(direction => ({
+        lat: direction.location[1],
+        lon: direction.location[0]
+      }));
+
+    if(directionPoints.length == 2){
+      setMapMarkers([])
+      setDirectionPoints({ locations: directionPoints, type: selectedTab });
+      setShowOptions(true)
+    }
 
     return () => {
       BackHandler.removeEventListener("hardwareBackPress", () => {});
@@ -98,26 +116,6 @@ const MultiStopStartEndLocation = ({ route }) => {
     setSearchText(value);
     setSearchUnit(value);
   };
-
-  // const reverseGeocode = async (value) => {
-  //   const response = await search.search(value);
-  //   const formattedData = response.features.map((feature) => ({
-  //     catId: feature.properties.osm_id,
-  //     title: feature.properties.type,
-  //     data: [
-  //       {
-  //         id: feature.properties.osm_id,
-  //         name: feature.properties.name,
-  //         address: `${feature.properties.street}, ${feature.properties.city}, ${feature.properties.state} ${feature.properties.postcode}`,
-  //         duration: `${(feature.score * 10).toFixed(0)}m away`,
-  //         coordinates: feature.geometry.coordinates,
-  //       },
-  //     ],
-  //   }));
-
-  //   setSearchData(formattedData);
-  //   setLoading(false);
-  // };
 
   const selectedCallBack = (item) => {
     const newDirections = [...directions];
