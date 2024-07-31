@@ -112,7 +112,6 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
             color="#fff"
             iconColor="#fff"
             onPress={() => {
-
               if(item.poiID){
                 console.log(item.poiID);
                 setSearchPOI({
@@ -120,6 +119,7 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
                   latitude: location[1],
                   longitude: location[0],
                 });
+                setStackScreen('POIresult')
               } else {
                 setStackScreen('Search');
               } 

@@ -12,9 +12,12 @@ import { addLocation } from "../../Styles/AnimatedTextinputStyles";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Routes from "../../Assets/Icons/routes.svg";
 import { Colors, Fonts } from "../../Constants/Contants";
+import useLocationStore from "../../Store/useLocationStore";
 
 const LocationOptions = (props) => {
   const { onRoutesPress, onStartNavigationPress, directions } = props;
+
+  const {savedRoutes,setSavedRoutes} = useLocationStore();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [routeName, setRouteName] = useState("");
@@ -24,25 +27,13 @@ const LocationOptions = (props) => {
     if (routeName.length === 0) {
       setRouteNameErr("Please Enter Route Name");
     } else {
-        console.log('hari-->>directions-->>',directions)
       const savedAddress = {
         routeName: routeName,
-        locations: [
-          {
-            name: "start",
-            coordinates: [],
-          },
-          {
-            name: "end",
-            coordinateds: [],
-          },
-          {
-            name: "waypoint",
-            coordinates: [],
-          },
-        ],
+        locations: directions
       };
+      setSavedRoutes(savedAddress)
       setRouteNameErr("");
+      setModalVisible(false)
     }
   };
 

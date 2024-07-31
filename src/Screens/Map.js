@@ -24,6 +24,7 @@ const MapContainer = ({ mapStyle }) => {
     setDirectionReadyCallback,
     searchPOI,
     setSearchPOIResults,
+    setUserLocation
   } = useMapStore();
 
   console.log("SEARCH POI", searchPOI)
@@ -50,6 +51,7 @@ const MapContainer = ({ mapStyle }) => {
         onMapDblclick={mapDblclickCallback}
         navigation={startNavigation}
         onDirectionReady={setDirectionReadyCallback}
+        onUserLocationChange={(location)=>setUserLocation([location.latitude, location.longitude])}
       />
     </View>
   );
