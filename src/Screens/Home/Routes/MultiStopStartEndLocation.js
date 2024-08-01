@@ -6,6 +6,7 @@ import {
   TextInput,
   BackHandler,
   TouchableOpacity,
+  NativeModules
 } from "react-native";
 import { IconButton } from "react-native-paper";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -30,6 +31,9 @@ import Routes from "../../../Assets/Icons/routes.svg";
 import SetRouteScreen from "../../SetRouteScreen";
 import StartNavigation from "../../StartNavigation";
 import LocationOptions from '../../../Components/Locations/LocationOptions.jsx'
+
+
+const { NeNativeModule } = NativeModules;
 
 const MultiStopStartEndLocation = ({ route }) => {
   const [screen, setScreen] = useState("Direction");
@@ -265,6 +269,7 @@ const MultiStopStartEndLocation = ({ route }) => {
         <StartNavigation
           goBack={() => {
             setStartNavigation(false);
+            NeNativeModule.endNavigation();
             setScreen("Direction");
           }}
         />

@@ -1,7 +1,9 @@
-import { BackHandler, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { BackHandler, StyleSheet, Text, TouchableOpacity, NativeModules } from "react-native";
 import React, { useEffect } from "react";
 import BottomSheet from "../Components/BottomSheet";
 import useMapStore from "../Store/useMapStore";
+
+const { NeNativeModule } = NativeModules;
 
 const StartNavigation = ({ goBack }) => {
 const {setStartNavigation} = useMapStore();
@@ -19,6 +21,7 @@ const {setStartNavigation} = useMapStore();
 
   const onPressEvent = () => {
     setStartNavigation(false);
+    NeNativeModule.endNavigation();
   }
 
   return (

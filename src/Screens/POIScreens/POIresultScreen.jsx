@@ -52,9 +52,9 @@ const POIresultScreen = () => {
   const onResultSelect = (item) => {
     const marker = new Marker(
       String(new Date().getTime() + Math.random()),
-      item.name,
-      item.longitude,
-      item.latitude,
+      item?.name || Math.random().toString(),
+      item?.longitude,
+      item?.latitude,
       "marker_start",
       36,
       true
