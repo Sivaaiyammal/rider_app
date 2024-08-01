@@ -559,7 +559,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     @ReactProp(name = "autoPOISearch")
     public void setAutoPOISearch(MapView mapView, ReadableMap POIData) {
-        if (mapController == null || POIData.getInt("poiID") == 0) {
+        if (mapController == null || POIData == null || POIData.getInt("poiID") == 0) {
             Log.e("NeNativeModule", "mapController is null in setAutoPOISearch");
             return;
         }
