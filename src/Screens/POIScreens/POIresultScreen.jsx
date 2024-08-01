@@ -11,6 +11,8 @@ import {useStackScreenStore} from '../../Store/useStackScreen'
 const POIresultScreen = () => {
   const { searchPOIResults, setMapMarkers, setMapLocation } = useMapStore();
 
+  // console.log('hari-->>searchPOIResults-->>', searchPOIResults)
+
   const {goBack, setStackScreen} = useStackScreenStore();
 
   const [index, setIndex] = useState(0);
@@ -62,8 +64,8 @@ const POIresultScreen = () => {
     marker.setFocus(true);
     setMapMarkers([marker]);
     setMapLocation({
-      lat: item.latitude,
-      lng: item.longitude,
+      lat: item?.latitude,
+      lng: item?.longitude,
       maxZoom: 16,
       zoom: 16,
     });
