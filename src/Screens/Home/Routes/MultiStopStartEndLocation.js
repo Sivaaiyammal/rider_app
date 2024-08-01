@@ -47,7 +47,7 @@ const MultiStopStartEndLocation = ({ route }) => {
       id: 1,
       name: "Start",
       location: location || [],
-      locationName: location ? location.reverse().join(', ') : "",
+      locationName: location ? location.join(', ') : "",
     },
     { id: 2, name: "Waypoint", location: [], locationName: "" },
     { id: 3, name: "End", 
@@ -79,6 +79,7 @@ const MultiStopStartEndLocation = ({ route }) => {
       }));
 
     if(directionPoints.length == 2){
+      console.log("directionPoints", directionPoints)
       setMapMarkers([])
       setDirectionPoints({ locations: directionPoints, type: selectedTab });
       setShowOptions(true)

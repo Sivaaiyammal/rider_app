@@ -4,8 +4,10 @@ import useMapStore from "../../Store/useMapStore";
 import NavBar from "../../Components/NavBar";
 import { FlatList } from "react-native-gesture-handler";
 import Marker from "../../Constants/NEMap/Marker";
+import { useStackScreenStore } from "../../Store/useStackScreen";
 
 const POIresultScreen = () => {
+  const { setStackScreen } = useStackScreenStore();
   const { searchPOIResults, setMapMarkers, setMapLocation } = useMapStore();
 
   const onResultSelect = (item) => {
@@ -41,7 +43,7 @@ const POIresultScreen = () => {
 
   return (
     <>
-      <NavBar title={"POI Results"} withBg/>
+      <NavBar title={"POI Results"} withBg onBackPress={() => setStackScreen("Home")} />
       <View style={styles.horizontalList}>
         <FlatList
           horizontal
