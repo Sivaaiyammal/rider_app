@@ -1,7 +1,6 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import PropTypes from 'prop-types';
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -107,12 +106,3 @@ export default function CustomTabBar({ menus = [] }) {
   );
 }
 
-CustomTabBar.propTypes = {
-  menus: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      icon: PropTypes.string.isRequired,
-      component: PropTypes.element.isRequired,
-    }),
-  ).isRequired,
-};

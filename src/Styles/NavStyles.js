@@ -23,9 +23,9 @@ export const navStyles = StyleSheet.create({
     alignItems: 'center',
   },
   leftBtn: {
-    borderRadius: 100,
+    borderRadius: 50,
     backgroundColor: Colors.white,
-    padding: 8,
+    // padding: 8,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -33,6 +33,10 @@ export const navStyles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    width:50,
+    aspectRatio:1,
+    alignItems:'center',
+    justifyContent:'center'
   },
   rightIcon: {
     width: '20%',

@@ -17,6 +17,7 @@ import DirectionIcon from "../../Assets/Icons/directionIcon.svg";
 import { useStackScreenStore } from "../../Store/useStackScreen";
 import BottomSheet from "../../Components/BottomSheet";
 import { Colors, Fonts } from "../../Constants/Contants";
+import NavBar from "../../Components/NavBar";
 
 const TargetLocation = ({ data }) => {
   const [locationDetails, setLocationDetails] = useState([]);
@@ -78,6 +79,8 @@ const TargetLocation = ({ data }) => {
   const saveLocation = () => {};
 
   return (
+    <>
+    <NavBar onBackPress={closeBottomSheet} />
     <BottomSheet minHeight={200}>
       <View style={styles.container}>
         <View style={styles.locationContainer}>
@@ -125,6 +128,7 @@ const TargetLocation = ({ data }) => {
         </View>
       </View>
     </BottomSheet>
+    </>
   );
 };
 

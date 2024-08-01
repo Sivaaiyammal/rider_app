@@ -1,19 +1,28 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, FlatList, Dimensions } from "react-native";
 import React, { useCallback, useRef, useState } from "react";
 import useMapStore from "../../Store/useMapStore";
 import NavBar from "../../Components/NavBar";
-import { FlatList } from "react-native-gesture-handler";
 import Marker from "../../Constants/NEMap/Marker";
 import { WIDTH } from "../../Constants";
 import { Colors, Fonts } from "../../Constants/Contants";
-import {useStackScreenStore} from '../../Store/useStackScreen'
+import {useStackScreenStore} from '../../Store/useStackScreen';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import Entypo from 'react-native-vector-icons/Entypo';
+
+const { width } = Dimensions.get("window");
+
+const SPACING = 4;
+const ITEM_LENGTH = width * 0.9;
+const BORDER_RADIUS = 0;
 
 const POIresultScreen = () => {
   const { searchPOIResults, setMapMarkers, setMapLocation } = useMapStore();
 
-  // console.log('hari-->>searchPOIResults-->>', searchPOIResults)
-
   const {goBack, setStackScreen} = useStackScreenStore();
+
+  const data = searchPOIResults?.searchPOIResults
+  ? searchPOIResults?.searchPOIResults
+  : [];
 
   const [index, setIndex] = useState(0);
   const indexRef = useRef(index);
@@ -32,12 +41,13 @@ const POIresultScreen = () => {
 
     if (roundIndex !== indexRef.current && !isNoMansLand) {
       setIndex(roundIndex);
-     
-      const filteredPOI = searchPOIResults?.searchPOIResults?.find((_, id) => id === roundIndex);
-      onResultSelect(filteredPOI)
-      console.log('hari-->>index-->>', roundIndex, filteredPOI)
+
+      const filteredPOI = data?.filter((_, id) => id === roundIndex);
+      if (filteredPOI.length !== 0) {
+        onResultSelect(filteredPOI[0])
+      }
     }
-  }, []);
+  }, [data]);
 
   const onBackPress = () => {
     goBack()
@@ -45,8 +55,8 @@ const POIresultScreen = () => {
 
   const onDirectionsPress = (item) => {
     const location = {
-      address : item.address, name : item.name, 
-      coordinates: [item.longitude, item.latitude], 
+      address : item.address, name : item.name,
+      coordinates: [item.longitude, item.latitude],
     }
     setStackScreen("Directions", location)
   }
@@ -73,13 +83,20 @@ const POIresultScreen = () => {
 
   const renderItem = useCallback(function renderItem({ item }) {
     return (
-          <View style={styles.slide}>
-          <Text style={styles.slideTitle}>{item.name}</Text>
+        <View style={{ width: ITEM_LENGTH, }}>
+        <View
+          style={[
+            styles.itemContent,
+          ]}
+        >
+          <Text style={styles.slideTitle}><Entypo name="location" size={16}/>{' '}{item.name}</Text>
           <Text style={styles.slideSubtitle}>{item.address}</Text>
           <TouchableOpacity style={styles.directionBtn} onPress={()=>onDirectionsPress(item)}>
+            <FontAwesome5 name="directions" color={Colors.white} size={16}/>
           <Text style={styles.directionBtnTxt}>Directions</Text>
           </TouchableOpacity>
         </View>
+      </View>
     );
   }, []);
 
@@ -89,8 +106,7 @@ const POIresultScreen = () => {
       <View style={styles.horizontalList}>
         <FlatList
           ref={flatListRef}
-          data={searchPOIResults?.searchPOIResults}
-          style={styles.carousel}
+          data={data}
           renderItem={renderItem}
           pagingEnabled
           horizontal
@@ -110,6 +126,7 @@ const POIresultScreen = () => {
             }),
             []
           )}
+          snapToInterval={ITEM_LENGTH}
         />
       </View>
     </>
@@ -119,9 +136,6 @@ const POIresultScreen = () => {
 export default POIresultScreen;
 
 const styles = StyleSheet.create({
-  carousel: { 
-    flex: 1, 
-  },
   container: {
     flex: 1,
   },
@@ -139,12 +153,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
   },
-  slide: {
-    width: WIDTH ,
-    alignItems: 'center',
-    minHeight:130,
+  itemContent: {
+    marginHorizontal: SPACING * 2,
+    borderRadius: BORDER_RADIUS + SPACING * 2,
+    minHeight:140,
+    padding:10,
     backgroundColor:Colors.white,
-    borderRadius:10,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -153,7 +167,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    padding:5
   },
   slideTitle:{
     fontFamily:Fonts.medium,
@@ -175,11 +188,28 @@ const styles = StyleSheet.create({
     borderRadius:5,
     backgroundColor:Colors.blue,
     position:'absolute',
-    bottom:0
+    bottom:0,
+    flexDirection:'row',
+    gap:10,
+    alignItems:'center',
+    right:10
   },
   directionBtnTxt:{
     fontFamily:Fonts.medium,
     color:Colors.white,
-   
-  }
+
+  },
+  arrowBtnText: {
+    fontSize: 42,
+    fontWeight: "600",
+  },
+  item: {},
+  itemText: {
+    fontSize: 24,
+    position: "absolute",
+    bottom: SPACING * 2,
+    right: SPACING * 2,
+    color: "black",
+    fontWeight: "600",
+  },
 });

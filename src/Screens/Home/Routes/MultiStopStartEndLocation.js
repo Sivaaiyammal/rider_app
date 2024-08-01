@@ -274,7 +274,7 @@ const MultiStopStartEndLocation = ({ route }) => {
           }}
         />
       )}
-      {screen !== "Search" && showOptions && (
+      {screen !== "Search" && showOptions && screen !== "Navigation" &&(
         <View style={addLocation.bottomContainer}>
           <View style={addLocation.directionType}>
             {[

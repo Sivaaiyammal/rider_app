@@ -10,6 +10,8 @@ import { useStackScreenStore } from "../../Store/useStackScreen";
 import useMapStore from "../../Store/useMapStore";
 import useLocationStore from "../../Store/useLocationStore";
 import AlertModal from "../../Components/AlertModal";
+import { Fonts } from "../../Constants";
+import { Colors } from "../../Constants/Contants";
 
 const POIScreen = ({ setDragHeight, currentScreen }) => {
   const { setStackScreen } = useStackScreenStore();
@@ -82,15 +84,15 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
     <View>
       <View style={styles.container}>
         <View style={[styles.header, { backgroundColor: "#00b0ff" }]}>
-          <Icon name="home" size={20} color="#fff" />
+          <Icon name="home" size={18} color="#fff" />
           <Text style={styles.title}>Home</Text>
         </View>
         <View style={[styles.header, { backgroundColor: "#31bc92" }]}>
-          <Icon name="briefcase" size={20} color="#fff" />
+          <Icon name="briefcase" size={18} color="#fff" />
           <Text style={styles.title}>Work</Text>
         </View>
         <View style={[styles.header, { backgroundColor: "#ed8a19" }]}>
-          <Icon name="star-half-alt" size={20} color="#fff" />
+          <Icon name="star-half-alt" size={18} color="#fff" />
           <Text style={styles.title}>Saved</Text>
         </View>
       </View>
@@ -100,7 +102,7 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
           { name: "Food", icon: "food", color: "#FF6B6B", poiID: 2 },
           { name: "Health", icon: "hospital-box", color: "#4ECDC4", poiID: 40 },
           { name: "Shopping", icon: "shopping", color: "#45B7D1", poiID: 309 },
-          { name: "Leisure", icon: "bed-clock", color: "#FFA07A", poiID: 183 },
+          { name: "Leisure", icon: "bed", color: "#FFA07A", poiID: 183 },
           { name: "Cash", icon: "cash-marker", color: "#98D8C8", poiID: 32 },
           { name: "Public", icon: "bank", color: "#F7B731", poiID: 14 },
           {
@@ -111,6 +113,7 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
           },
           { name: "More", icon: "dots-horizontal", color: "#A3CB38" },
         ].map((item, index) => (
+          <View>
           <IconButton
             key={index}
             icon={item.icon}
@@ -126,6 +129,8 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
               },
             ]}
           />
+          <Text style={styles.iconTxt}>{item.name}</Text>
+          </View>
         ))}
       </View>
       {alertModal && renderAlertModal()}
@@ -144,16 +149,23 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    padding: 10,
     gap: 10,
-    backgroundColor: "red",
     borderRadius: 25,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    paddingHorizontal:10,
+    paddingVertical:8
   },
   title: {
     fontSize: 16,
-    fontWeight: "bold",
     color: "white",
+    fontFamily:Fonts.semi_bold
   },
   communityByContainer: {
     flexDirection: "column",
@@ -201,6 +213,9 @@ const styles = StyleSheet.create({
     margin: 10,
     borderWidth: 1,
     borderColor: "#eeeeee",
+    width:'90%',
+    alignSelf:'center',
+    justifyContent:'space-evenly'
   },
   poiItem: {
     width: 50,
@@ -208,7 +223,21 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
+  iconTxt:{
+    textAlign:'center',
+    fontSize:14,
+    fontFamily:Fonts.medium,
+    color:Colors.black
+  }
 });
 
 export default POIScreen;

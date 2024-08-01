@@ -1,7 +1,9 @@
-import { BackHandler, StyleSheet, Text, TouchableOpacity, NativeModules } from "react-native";
+import {View, BackHandler, StyleSheet, Text, TouchableOpacity, NativeModules } from "react-native";
 import React, { useEffect } from "react";
 import BottomSheet from "../Components/BottomSheet";
 import useMapStore from "../Store/useMapStore";
+import { Fonts } from "../Constants";
+import { Colors } from "../Constants/Contants";
 
 const { NeNativeModule } = NativeModules;
 
@@ -22,17 +24,29 @@ const {setStartNavigation} = useMapStore();
   const onPressEvent = () => {
     setStartNavigation(false);
     NeNativeModule.endNavigation();
+    goBack();
   }
 
   return (
-    <BottomSheet minHeight={150}>
-        <TouchableOpacity onPress={()=>onPressEvent()}>
-        <Text>Stop Navigation</Text>
-        </TouchableOpacity>
-    </BottomSheet>
+    <TouchableOpacity style={styles.stopBtn} onPress={()=>onPressEvent()}>
+      <Text style={styles.stopBtnTxt}>Stop Navigation</Text>
+    </TouchableOpacity>
   );
 };
 
 export default StartNavigation;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  stopBtn:{
+    position:'absolute',
+    bottom:40,
+    alignSelf:'center',
+    backgroundColor:Colors.black,
+    paddingVertical:10,
+    paddingHorizontal:15
+  },
+  stopBtnTxt:{
+    fontFamily:Fonts.semi_bold,
+    color:Colors.white
+  }
+});
