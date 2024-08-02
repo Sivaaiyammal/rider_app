@@ -13,6 +13,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import Routes from "../../Assets/Icons/routes.svg";
 import { Colors, Fonts } from "../../Constants/Contants";
 import useLocationStore from "../../Store/useLocationStore";
+import { useTranslation } from "react-i18next";
 
 const LocationOptions = (props) => {
   const { onRoutesPress, onStartNavigationPress, directions } = props;
@@ -22,6 +23,8 @@ const LocationOptions = (props) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [routeName, setRouteName] = useState("");
   const [routeNameErr, setRouteNameErr] = useState("");
+
+  const {t} = useTranslation()
 
   const saveLocation = () => {
     if (routeName.length === 0) {
@@ -51,8 +54,8 @@ const LocationOptions = (props) => {
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-              <Text style={styles.title}>Save Location</Text>
-              <Text style={styles.inputTitle}>Route Name</Text>
+              <Text style={styles.title}>{t('save_loc')}</Text>
+              <Text style={styles.inputTitle}>{t('route_name')}</Text>
               <TextInput
                 onChangeText={(e) => setRouteName(e)}
                 placeholder="Route Name"
@@ -63,13 +66,13 @@ const LocationOptions = (props) => {
               ) : (
                 <></>
               )}
-              <Text style={styles.inputTitle}>Start Location</Text>
+              <Text style={styles.inputTitle}>{t('your_location')}</Text>
               <TextInput
                 editable={false}
                 placeholder={directions[0].locationName}
                 style={styles.input}
               />
-              <Text style={styles.inputTitle}>End Location</Text>
+              <Text style={styles.inputTitle}>{t('end_location')}</Text>
               <TextInput
                 editable={false}
                 placeholder={directions[2].locationName}
@@ -81,14 +84,14 @@ const LocationOptions = (props) => {
                   onPress={() => setModalVisible(false)}
                 >
                   <Text style={[styles.saveLocBtnTxt, { color: Colors.black }]}>
-                    Cancel
+                  {t('cancel')}
                   </Text>
                 </Pressable>
                 <Pressable
                   style={styles.saveLocBtn}
                   onPress={() => saveLocation()}
                 >
-                  <Text style={styles.saveLocBtnTxt}>Save Location</Text>
+                  <Text style={styles.saveLocBtnTxt}>{t('save_loc')}</Text>
                 </Pressable>
               </View>
             </View>
@@ -107,7 +110,7 @@ const LocationOptions = (props) => {
           onPress={() => onRoutesPress()}
         >
           <Routes />
-          <Text style={addLocation.optionBtnTxt}>Routes</Text>
+          <Text style={addLocation.optionBtnTxt}>{t('routes')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={addLocation.optionBtn}
@@ -118,7 +121,7 @@ const LocationOptions = (props) => {
             color={Colors.blue}
             size={16}
           />
-          <Text style={addLocation.optionBtnTxt}>Save</Text>
+          <Text style={addLocation.optionBtnTxt}>{t('save')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={addLocation.optionBtn}
@@ -129,7 +132,7 @@ const LocationOptions = (props) => {
             color={Colors.blue}
             size={16}
           />
-          <Text style={addLocation.optionBtnTxt}>Start</Text>
+          <Text style={addLocation.optionBtnTxt}>{t('start')}</Text>
         </TouchableOpacity>
       </View>
       {saveLocModal()}

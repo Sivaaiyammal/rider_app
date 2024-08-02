@@ -18,12 +18,15 @@ import { useStackScreenStore } from "../../Store/useStackScreen";
 import BottomSheet from "../../Components/BottomSheet";
 import { Colors, Fonts } from "../../Constants/Contants";
 import NavBar from "../../Components/NavBar";
+import { useTranslation } from "react-i18next";
 
 const TargetLocation = ({ data }) => {
   const [locationDetails, setLocationDetails] = useState([]);
   const { setMapMarkers, setMapLocation } = useMapStore();
   const { setStackScreen } = useStackScreenStore();
   const { address, name, coordinates, distance } = data;
+
+  const {t} = useTranslation()
 
   const closeBottomSheet = () => {
     setMapMarkers([]);
@@ -106,14 +109,14 @@ const TargetLocation = ({ data }) => {
             onPress={() => setStackScreen("Directions", data)}
           >
             <DirectionIcon />
-            <Text style={styles.locationActionTxt}>Direction</Text>
+            <Text style={styles.locationActionTxt}>{t('direction')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.locationAction, { borderColor: "#3087eb" }]}
           >
             <Icon name="bookmark-o" size={20} color="#3087eb" />
             <Text style={[styles.locationActionTxt, { color: "#3087eb" }]}>
-              Saved
+              {t('saved')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -122,7 +125,7 @@ const TargetLocation = ({ data }) => {
           >
             <Icon name="share" size={20} color="#3087eb" />
             <Text style={[styles.locationActionTxt, { color: "#3087eb" }]}>
-              Share
+            {t('share')}
             </Text>
           </TouchableOpacity>
         </View>

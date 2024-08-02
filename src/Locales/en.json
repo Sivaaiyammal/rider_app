@@ -1,16 +1,29 @@
 {
-    "translation": {
-      "saved":"Saved",
-      "home":"Home",
-      "work":"Work",
-      "leisure":"Leisure",
-      "shopping": "Shopping",
-      "health" : "Health",
-      "food" : "Food",
-      "more":"More",
-      "airport":"Airport",
-      "public":"Public",
-      "cash" : "Cash",
-      "search" : "Search"
-    }
+  "translation": {
+    "saved": "Saved",
+    "home": "Home",
+    "work": "Work",
+    "leisure": "Leisure",
+    "shopping": "Shopping",
+    "health": "Health",
+    "food": "Food",
+    "more": "More",
+    "airport": "Airport",
+    "public": "Public",
+    "cash": "Cash",
+    "search": "Search",
+    "direction": "Direction",
+    "share": "Share",
+    "your_location": "Your Location",
+    "add_waypoint": "Add Waypoint",
+    "end_location": "End Location",
+    "start": "Start",
+    "save": "Save",
+    "routes": "Routes",
+    "save_loc": "Save Location",
+    "route_name": "Route Name",
+    "cancel": "Cancel",
+    "map": "Map",
+    "stop_navigation": "Stop Navigation"
+  }
 }

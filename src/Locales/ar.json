@@ -1,16 +1,29 @@
 {
-    "translation": {
-      "saved":"أنقذ",
-      "home":"بيت",
-      "work":"عمل",
-      "leisure":"فراغ",
-      "shopping": "التسوق",
-      "health" : "صحة",
-      "food" : "طعام",
-      "more":"أكثر",
-      "airport":"مطار",
-      "public":"عام",
-      "cash" : "نقدي",
-      "search" : "يبحث"
-    }
+  "translation": {
+    "saved": "أنقذ",
+    "home": "بيت",
+    "work": "عمل",
+    "leisure": "فراغ",
+    "shopping": "التسوق",
+    "health": "صحة",
+    "food": "طعام",
+    "more": "أكثر",
+    "airport": "مطار",
+    "public": "عام",
+    "cash": "نقدي",
+    "search": "يبحث",
+    "direction": "اتجاه",
+    "share": "يشارك",
+    "your_location": "موقعك",
+    "add_waypoint": "أضف نقطة الطريق",
+    "end_location": "موقع النهاية",
+    "start": "يبدأ",
+    "save": "يحفظ",
+    "routes": "الطرق",
+    "save_loc": "حفظ الموقع",
+    "route_name": "اسم الطريق",
+    "cancel": "يلغي",
+    "map": "خريطة",
+    "stop_navigation": "إيقاف الملاحة"
+  }
 }

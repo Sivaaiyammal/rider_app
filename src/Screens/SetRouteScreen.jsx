@@ -16,10 +16,13 @@ import { addLocation } from "../Styles/AnimatedTextinputStyles";
 import useMapStore from "../Store/useMapStore";
 import Feather from "react-native-vector-icons/Feather";
 import { useStackScreenStore } from "../Store/useStackScreen";
+import { useTranslation } from "react-i18next";
 
 const SetRouteScreen = ({goBack, onStartPress}) => {
   const { directionReadyCallback } = useMapStore();
   // const {goBack} = useStackScreenStore()
+
+  const {t} = useTranslation()
 
   useEffect(() => {
     BackHandler.addEventListener("hardwareBackPress", () => {
@@ -72,8 +75,8 @@ const SetRouteScreen = ({goBack, onStartPress}) => {
   return (
     <View style={setRouteStyles.screen}>
       <BottomSheet minHeight={300} maxHeight={500}>
-        <View>
-          <Text style={setRouteStyles.title}>Routes</Text>
+        <View style={{width:'90%', alignSelf:'center'}}>
+          <Text style={setRouteStyles.title}>{t('routes')}</Text>
           <FlatList
             data={directionReadyCallback?.routeInstructions}
             renderItem={renderItem}
@@ -103,7 +106,7 @@ const SetRouteScreen = ({goBack, onStartPress}) => {
           onPress={() => onRoutesPress()}
         >
           <Feather name="map" color={Colors.black} />
-          <Text style={addLocation.optionBtnTxt}>Map</Text>
+          <Text style={addLocation.optionBtnTxt}>{t('map')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={addLocation.optionBtn}
          onPress={()=>_onStartPress()}>
@@ -112,7 +115,7 @@ const SetRouteScreen = ({goBack, onStartPress}) => {
             color={Colors.blue}
             size={16}
           />
-          <Text style={addLocation.optionBtnTxt}>Start</Text>
+          <Text style={addLocation.optionBtnTxt}>{t('start')}</Text>
         </TouchableOpacity>
       </View>
     </View>

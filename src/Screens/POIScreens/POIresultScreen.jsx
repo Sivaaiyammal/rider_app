@@ -8,6 +8,7 @@ import { Colors, Fonts } from "../../Constants/Contants";
 import {useStackScreenStore} from '../../Store/useStackScreen';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Entypo from 'react-native-vector-icons/Entypo';
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get("window");
 
@@ -19,6 +20,8 @@ const POIresultScreen = () => {
   const { searchPOIResults, setMapMarkers, setMapLocation } = useMapStore();
 
   const {goBack, setStackScreen} = useStackScreenStore();
+
+  const {t} = useTranslation()
 
   const data = searchPOIResults?.searchPOIResults
   ? searchPOIResults?.searchPOIResults
@@ -93,7 +96,7 @@ const POIresultScreen = () => {
           <Text style={styles.slideSubtitle}>{item.address}</Text>
           <TouchableOpacity style={styles.directionBtn} onPress={()=>onDirectionsPress(item)}>
             <FontAwesome5 name="directions" color={Colors.white} size={16}/>
-          <Text style={styles.directionBtnTxt}>Directions</Text>
+          <Text style={styles.directionBtnTxt}>{t('direction')}</Text>
           </TouchableOpacity>
         </View>
       </View>

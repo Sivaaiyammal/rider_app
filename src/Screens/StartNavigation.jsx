@@ -4,11 +4,14 @@ import BottomSheet from "../Components/BottomSheet";
 import useMapStore from "../Store/useMapStore";
 import { Fonts } from "../Constants";
 import { Colors } from "../Constants/Contants";
+import { useTranslation } from "react-i18next";
 
 const { NeNativeModule } = NativeModules;
 
 const StartNavigation = ({ goBack }) => {
 const {setStartNavigation} = useMapStore();
+
+const {t} = useTranslation()
 
   useEffect(() => {
     BackHandler.addEventListener("hardwareBackPress", () => {
@@ -29,7 +32,7 @@ const {setStartNavigation} = useMapStore();
 
   return (
     <TouchableOpacity style={styles.stopBtn} onPress={()=>onPressEvent()}>
-      <Text style={styles.stopBtnTxt}>Stop Navigation</Text>
+      <Text style={styles.stopBtnTxt}>{t('stop_navigation')}</Text>
     </TouchableOpacity>
   );
 };

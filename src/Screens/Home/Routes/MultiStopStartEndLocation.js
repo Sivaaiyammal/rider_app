@@ -31,6 +31,7 @@ import Routes from "../../../Assets/Icons/routes.svg";
 import SetRouteScreen from "../../SetRouteScreen";
 import StartNavigation from "../../StartNavigation";
 import LocationOptions from '../../../Components/Locations/LocationOptions.jsx'
+import { useTranslation } from "react-i18next";
 
 
 const { NeNativeModule } = NativeModules;
@@ -59,6 +60,8 @@ const MultiStopStartEndLocation = ({ route }) => {
       locationName: route?.name || "",
     },
   ]);
+
+  const {t} = useTranslation()
 
   const { setStackScreen, goBack } = useStackScreenStore();
   const {
@@ -172,17 +175,17 @@ const MultiStopStartEndLocation = ({ route }) => {
       case 0:
         return {
           icon: <YourLoc />,
-          name: "Your Location",
+          name: t('your_location'),
         };
       case 1:
         return {
           icon: <Flag width={15} height={15} />,
-          name: "Add Waypoint",
+          name: t('add_waypoint'),
         };
       case 2:
         return {
           icon: <EndLoc width={15} height={15} />,
-          name: "Destination",
+          name: t('destination'),
         };
     }
   };
