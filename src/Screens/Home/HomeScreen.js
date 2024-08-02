@@ -172,6 +172,9 @@ const HomeScreen = ({ }) => {
             icon: 'language',
             name: 'Language',
             component: <View />,
+            callBack: (icon) => {
+              console.log('Lan pressed', icon);
+            },
           }, {
             icon: 'sun',
             name: 'Settings',

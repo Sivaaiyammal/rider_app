@@ -20,6 +20,8 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.dot.nenativemap.security.NENative;
 import com.virtualmaze.services_core.utils.NEApiServices;
 
+import com.facebook.react.modules.i18nmanager.I18nUtil;
+
 public class MainApplication extends Application implements ReactApplication {
 
   private ReactApplicationContext mReactApplicationContext;
@@ -63,10 +65,11 @@ public class MainApplication extends Application implements ReactApplication {
     mReactApplicationContext = new ReactApplicationContext(getApplicationContext());
     NEApiServices.initialize(this);
     NENative.getInstance(mReactApplicationContext, NEApiServices.getAccessToken());
-
     // If you opted-in for the New Architecture, we enable the TurboModule system
     ReactFeatureFlags.useTurboModules = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
     SoLoader.init(this, /* native exopackage */ false);
+    I18nUtil sharedI18nUtilInstance = I18nUtil.getInstance();
+    sharedI18nUtilInstance.allowRTL(getApplicationContext(), true);
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
 
   }

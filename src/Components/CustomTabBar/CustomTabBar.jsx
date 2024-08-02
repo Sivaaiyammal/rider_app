@@ -1,6 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, I18nManager } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import '../../Locales/IMLocalize';
+import RNRestart from "react-native-restart";
+import {useTranslation} from 'react-i18next';
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -58,6 +61,20 @@ export default function CustomTabBar({ menus = [] }) {
   const [currentScreen, setCurrentScreen] = useState('Home')
   const activeIndex = menus.findIndex(menu => menu.name === currentScreen);
 
+  const {t, i18n} = useTranslation();
+
+
+const changeLanguage = () => {
+  i18n.changeLanguage(i18n.language === 'ar' ? 'en' : 'ar')
+  .then(() => {
+    I18nManager.forceRTL(i18n.language === 'ar');
+    RNRestart.Restart();
+  })
+  .catch(err => {
+    console.log('something went wrong while applying RTL', err);
+  });
+}
+
   const onMenuClick = (name, callBack, icon) => {
     // setCurrentScreen(name);
     if(name === 'Home') {
@@ -67,11 +84,15 @@ export default function CustomTabBar({ menus = [] }) {
     }
     if(callBack) {
       callBack(icon);
-      setTab(tab.map(menu => 
-        menu.name === name 
-          ? {...menu, icon: icon === 'moon' ? 'lightbulb' : 'moon'} 
-          : menu
-      ))
+      if (name == 'Mode') {
+        setTab(tab.map(menu => 
+          menu.name === name 
+            ? {...menu, icon: icon === 'moon' ? 'lightbulb' : 'moon'} 
+            : menu
+        ))
+      } else {
+        changeLanguage()
+      }
     }
   };
 
