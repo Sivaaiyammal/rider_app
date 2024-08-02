@@ -12,11 +12,14 @@ import useLocationStore from "../../Store/useLocationStore";
 import AlertModal from "../../Components/AlertModal";
 import { Fonts } from "../../Constants";
 import { Colors } from "../../Constants/Contants";
+import { useTranslation } from "react-i18next";
 
 const POIScreen = ({ setDragHeight, currentScreen }) => {
   const { setStackScreen } = useStackScreenStore();
   const { setSearchPOI } = useMapStore();
   const { location } = useLocationStore();
+
+  const {t} = useTranslation();
 
   const [alertModal, setAlertModal] = useState(false);
 
@@ -85,33 +88,33 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
       <View style={styles.container}>
         <View style={[styles.header, { backgroundColor: "#00b0ff" }]}>
           <Icon name="home" size={18} color="#fff" />
-          <Text style={styles.title}>Home</Text>
+          <Text style={styles.title}>{t('home')}</Text>
         </View>
         <View style={[styles.header, { backgroundColor: "#31bc92" }]}>
           <Icon name="briefcase" size={18} color="#fff" />
-          <Text style={styles.title}>Work</Text>
+          <Text style={styles.title}>{t('work')}</Text>
         </View>
         <View style={[styles.header, { backgroundColor: "#ed8a19" }]}>
           <Icon name="star-half-alt" size={18} color="#fff" />
-          <Text style={styles.title}>Saved</Text>
+          <Text style={styles.title}>{t('saved')}</Text>
         </View>
       </View>
 
       <View style={styles.poiContainer}>
         {[
-          { name: "Food", icon: "food", color: "#FF6B6B", poiID: 2 },
-          { name: "Health", icon: "hospital-box", color: "#4ECDC4", poiID: 40 },
-          { name: "Shopping", icon: "shopping", color: "#45B7D1", poiID: 309 },
-          { name: "Leisure", icon: "bed", color: "#FFA07A", poiID: 183 },
-          { name: "Cash", icon: "cash-marker", color: "#98D8C8", poiID: 32 },
-          { name: "Public", icon: "bank", color: "#F7B731", poiID: 14 },
+          { name: t('food'), icon: "food", color: "#FF6B6B", poiID: 2 },
+          { name: t('health'), icon: "hospital-box", color: "#4ECDC4", poiID: 40 },
+          { name: t('shopping'), icon: "shopping", color: "#45B7D1", poiID: 309 },
+          { name: t('leisure'), icon: "bed", color: "#FFA07A", poiID: 183 },
+          { name:  t('cash'), icon: "cash-marker", color: "#98D8C8", poiID: 32 },
+          { name:  t('public'), icon: "bank", color: "#F7B731", poiID: 14 },
           {
-            name: "Airport",
+            name:  t('airport'),
             icon: "airplane-marker",
             color: "#6A89CC",
             poiID: 71,
           },
-          { name: "More", icon: "dots-horizontal", color: "#A3CB38" },
+          { name:  t('more'), icon: "dots-horizontal", color: "#A3CB38" },
         ].map((item, index) => (
           <View>
           <IconButton
