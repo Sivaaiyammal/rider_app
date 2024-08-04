@@ -11,6 +11,7 @@ const MapContainer = ({ mapStyle }) => {
     mode,
     mapMarkers,
     searchUnit,
+    onMapCenterChanged,
     geometries,
     directionPoints,
     setOnSearchResults,
@@ -24,10 +25,10 @@ const MapContainer = ({ mapStyle }) => {
     setDirectionReadyCallback,
     searchPOI,
     setSearchPOIResults,
-    setUserLocation
+    setUserLocation,
+    setMapMoving
   } = useMapStore();
 
-  console.log("SEARCH POI", searchPOI)
 
   return (
     <View style={[styles.mapContainer]}>
@@ -38,6 +39,7 @@ const MapContainer = ({ mapStyle }) => {
         onMapReady={() => {
           setMapReady(true);
         }}
+        onMapMoving={setMapMoving}
         markers={mapMarkers}
         searchUnit={searchUnit}
         autoPOISearch={searchPOI}
@@ -45,13 +47,14 @@ const MapContainer = ({ mapStyle }) => {
         onSearchPOIResults={setSearchPOIResults}
         mode={mode}
         onMarkerClick={markerClickCallback}
+        onMapCenterChanged={onMapCenterChanged}
         onMapClick={mapClickCallback}
         geometries={geometries}
         findRoute={directionPoints}
         onMapDblclick={mapDblclickCallback}
         navigation={startNavigation}
         onDirectionReady={setDirectionReadyCallback}
-        onUserLocationChange={(location)=>setUserLocation([location.latitude, location.longitude])}
+        onUserLocationChange={(location) => setUserLocation([location.latitude, location.longitude])}
       />
     </View>
   );

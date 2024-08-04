@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.dot.nenativemap.MapChangeListener;
 import com.dot.nenativemap.TouchInput;
 import com.dot.nenativemap.annotations.PolylineOptions;
 import com.dot.nenativemap.directions.RouteElementInstructionsDisplay;
@@ -30,7 +31,6 @@ import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactMethod;
 import com.dot.nenativemap.CameraPosition;
 import com.dot.nenativemap.MapView;
@@ -51,7 +51,6 @@ import com.dot.nenativemap.directions.RouteCallback;
 import com.dot.nenativemap.directions.RouteCount;
 import com.dot.nenativemap.directions.RouteInstructionsDisplay;
 import com.dot.nenativemap.directions.VHRoutingRequest;
-import com.dot.nenativemap.directions.RouteElementInstructionsDisplay;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableMap;
 
@@ -59,13 +58,11 @@ import com.dot.nenativemap.search.Search;
 import com.dot.nenativemap.search.SearchResultCallback;
 import com.dot.nenativemap.search.SearchResponse;
 import com.dot.nenativemap.search.SearchData;
-import com.itc.VMSearchData;
 import com.dot.nenativemap.search.PlaceName;
 import com.dot.nenativemap.search.AreaName;
 import com.dot.nenativemap.search.Coordinates;
 import com.dot.nenativemap.search.Postcode;
 import com.dot.nenativemap.search.StreetName;
-import com.itc.AutocompleteResultType;
 import com.dot.nenativemap.search.SearchPOIConstant;
 
 import org.json.JSONArray;
@@ -79,9 +76,7 @@ import com.nenative.services.android.navigation.ui.v5.utils.Coordinate;
 import com.nenative.services.android.navigation.ui.v5.utils.RoutePointData;
 import com.nenative.services.android.navigation.v5.routeprogress.ProgressChangeListener;
 import com.virtualmaze.ne_location_management.location.ProviderType;
-import com.dot.nenativemap.CameraUpdate;
 import com.dot.nenativemap.CameraUpdateFactory;
-import com.nenative.services.android.navigation.v5.utils.LocaleUtils;
 import com.dot.nenativemap.OnMarkerCreateListener;
 import com.dot.nenativemap.annotations.StyleType;
 import java.util.Collections;
@@ -205,6 +200,43 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                         // set click listener
                         mapController.getTouchInput().setTapResponder(tapResponder);
 
+                        mapController.enable3dBuildingsVisibility(false);
+                        mapController.enableExtrusionsVisibility(false);
+
+                        mapController.setMapChangeListener(new MapChangeListener() {
+                            @Override
+                            public void onViewComplete() {
+
+                            }
+
+                            @Override
+                            public void onRegionWillChange(boolean b) {
+
+                                LngLat mapCenter = new LngLat(
+                                        mapController.getCameraPosition().latitude,
+                                        mapController.getCameraPosition().longitude);
+
+                                double latitude = mapCenter.latitude;
+                                double longitude = mapCenter.longitude;
+
+                                WritableMap eventData = Arguments.createMap();
+                                eventData.putDouble("latitude", latitude);
+                                eventData.putDouble("longitude", longitude);
+                                eventData.putBoolean("moving", b);
+                                reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                        .emit("onMapCenterChanged", eventData);
+                            }
+
+                            @Override
+                            public void onRegionIsChanging() {
+                            }
+
+                            @Override
+                            public void onRegionDidChange(boolean b) {
+
+                            }
+                        });
+
                         // Map is ready, perform any necessary operations
                         Log.e("MAP LOADING DONE", mapCtrler.toString());
                         mapCtrler.setMinimumZoomLevel(4.0f);
@@ -253,6 +285,15 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         );
         SharedDirections.setSharedMapView(mapView);
         return mapView;
+    }
+
+    @ReactProp(name = "enable3D")
+    public void set3DVisibility(MapView mapView, boolean enable) {
+        if(mapController != null) {
+            mapController.enable3dBuildingsVisibility(enable);
+            mapController.enableExtrusionsVisibility(false);
+//            mapView.getMapAsync;
+        }
     }
 
     public void initSearch(String mapUnit, String mapUnitName) {
@@ -538,14 +579,14 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 }
                 String address = addressBuilder.toString();
 
-                String name = placeName.getPlaceName().isEmpty() ? "" : 
-                              placeName.getPlaceName().get(placeName.getPlaceName().size() - 1);
+                String name = placeName.getPlaceName().isEmpty() ? ""
+                        : placeName.getPlaceName().get(placeName.getPlaceName().size() - 1);
                 if (name.isEmpty() && !placeName.getPlaceName().isEmpty()) {
                     name = placeName.getPlaceName().get(0);
                 }
 
                 LngLat position = new LngLat(placeName.getPos().get(0), placeName.getPos().get(1));
-                
+
                 name = capitalizeFirstLetter(name);
                 address = capitalizeFirstLetter(address);
 
@@ -613,7 +654,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         try {
             search = new Search();
             HashMap<String, String> searchFilters = new HashMap<>();
-            String poiFilters = getOnlinePOICategoryFilter(SearchPOIConstant.getOnlinePOIFilter(POIData.getInt("poiID"))).toString();
+            String poiFilters = getOnlinePOICategoryFilter(
+                    SearchPOIConstant.getOnlinePOIFilter(POIData.getInt("poiID"))).toString();
             String query = search.getInstance().buildPOISearchRequest(
                     "southern-zone",
                     CURRENT_LATITUDE,
@@ -715,6 +757,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         }
         if (markers.size() == 0) {
             mapController.removeAllMarkers();
+            mapController.setCurrentLocationEnabled(true);
             synchronized (addedMarkers) {
                 addedMarkers.clear();
             }

@@ -59,6 +59,12 @@ const useMapStore = create((set) => ({
     mapDblclickCallback: null,
     setMapDblclickCallback: callback => set({ mapDblclickCallback: callback }),
 
+    onMapCenterChanged: null,
+    setOnMapCenterChanged: callback => set({ onMapCenterChanged: callback }),
+
+    mapMoving: true,
+    setMapMoving: mapMoving => set({ mapMoving }),
+
     mode: 'light',
     setMode: mode => {
         set({ mode })

@@ -6,6 +6,8 @@ import { IconButton } from 'react-native-paper';
 import useMapStore from '../../Store/useMapStore';
 import Geolocation from 'react-native-geolocation-service';
 
+import Marker from '../../Constants/NEMap/Marker';
+
 import CurrentLocationIcon from '../../Assets/Icons/currentLocation.svg';
 import DirectionsIcon from '../../Assets/Icons/direction.svg';
 import CustomTabBar from '../../Components/CustomTabBar/CustomTabBar';
@@ -14,10 +16,14 @@ import ContentScreen from './content';
 import SearchInput from './searchInput';
 import { useStackScreenStore } from '../../Store/useStackScreen';
 import useLocationStore from '../../Store/useLocationStore';
+import PositionBasedView from '../../Components/positingView';
 
 const HomeScreen = ({ }) => {
+  const [centerPoints, setCenterPoints] = useState(null);
+  const [latLng, setLatLng] = useState({ lat: 37.7749, lng: -122.4194 });
+  const [positioningView, setPositioningView] = useState(false);
   const [dragHeight, setDragHeight] = useState(300);
-  const { mode, setMode, setMapMarkers, setMapLocation } = useMapStore();
+  const { mapMoving, setMapMoving, setOnMapCenterChanged, setMode, setMapMarkers, setMapLocation } = useMapStore();
   const { setStackScreen } = useStackScreenStore();
   const { setLocation, location } = useLocationStore();
 
@@ -29,7 +35,7 @@ const HomeScreen = ({ }) => {
 
     const checkLocationPermission = async () => {
       const locationPermissionCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-  
+
       if (locationPermissionCheck) {
         getLocation();
         return true
@@ -38,6 +44,7 @@ const HomeScreen = ({ }) => {
 
     checkLocationPermission();
     setMapMarkers([]);
+    setOnMapCenterChanged(mapCenterChanged);
 
     BackHandler.addEventListener('hardwareBackPress', handleBackPress);
     return () => {
@@ -114,6 +121,51 @@ const HomeScreen = ({ }) => {
 
   }
 
+  const mapCenterChanged = (data) => {
+
+    if (!centerPoints && data.latitude && data.longitude) {
+
+      // const marker = new Marker(
+      //   "centerPoints-1",
+      //   "Home",
+      //   data.latitude,
+      //   data.longitude,
+      //   "location_pin",
+      //   36,
+      //   true
+      // )
+
+      // setCenterPoints(marker)
+      // setMapMarkers([...mapMarkers, marker])
+      setLatLng({ lat: data.longitude, lng: data.latitude })
+      setPositioningView(data.moving)
+      setMapMoving(data.moving);
+    }
+
+    if (centerPoints && data.latitude && data.longitude) {
+
+      // const updatedMarker = new Marker(
+      //   "centerPoints-1",
+      //   "Home",
+      //   data.latitude,
+      //   data.longitude,
+      //   "location_pin",
+      //   36,
+      //   true
+      // )
+
+      // setCenterPoints(updatedMarker)
+      // setMapMarkers(mapMarkers.map(marker =>
+      //   marker.id === "centerPoints-1" ? updatedMarker : marker
+      // ))
+
+      setLatLng({ lat: data.longitude, lng: data.latitude })
+      setPositioningView(data.moving)
+      setMapMoving(data.moving);
+    }
+
+  }
+
   const BottomSheet = () => (
     <View style={{ flex: 1, marginTop: 10 }}>
       <View style={{
@@ -154,6 +206,7 @@ const HomeScreen = ({ }) => {
 
   return (
     <>
+      {positioningView && <PositionBasedView latLng={latLng} setPositioningView={setPositioningView} />}
       <CustomTabBar
         menus={[
           {

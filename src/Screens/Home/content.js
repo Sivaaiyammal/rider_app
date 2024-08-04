@@ -33,7 +33,7 @@ const ContentScreen = ({ setDragHeight }) => {
                     searchText={''}
                     setCurrentScreen={handleCurrentScreen}
                     focused={true}
-                    closeBtn={true}
+                    closeBtn={false}
                 />
             )}
             {currentScreen === 'Home' && <POIScreen />}

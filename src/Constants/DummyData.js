@@ -49,14 +49,17 @@ export const find_nearby = [
   {
     id: 1,
     name: 'Petrol Bunks',
+    POIID: ''
   },
   {
     id: 2,
     name: 'Resturants',
+    POIID: 0
   },
   {
     id: 3,
     name: 'Shooping',
+    POIID: 309
   },
   {
     id: 4,

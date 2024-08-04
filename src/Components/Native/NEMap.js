@@ -146,6 +146,20 @@ class NEMap extends Component {
         this.props.onSearchPOIResults ? this.props.onSearchPOIResults(data) : null;
       }
     )
+
+    this.mapCenterListener = DeviceEventEmitter.addListener(
+      'onMapCenterChanged',
+      (data) => {
+        this.props.onMapCenterChanged ? this.props.onMapCenterChanged(data) : null;
+      }
+    )
+
+    this.mapMovingListener = DeviceEventEmitter.addListener(
+      'onMapMoving',
+      (data) => {
+        this.props.onMapMoving ? this.props.onMapMoving(data) : null;
+      }
+    )
   }
 
   componentWillUnmount() {

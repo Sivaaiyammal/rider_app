@@ -6,7 +6,7 @@ import { Colors } from "../Constants/Contants";
 import { useStackScreenStore } from '../Store/useStackScreen';
 
 const SettingsScreen = ({ navigation }) => {
-  const { setStackScreen } = useStackScreenStore();
+  const { goBack } = useStackScreenStore();
 
   const settingsOptions = [
     {
@@ -35,7 +35,9 @@ const SettingsScreen = ({ navigation }) => {
     return (
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => setStackScreen("Home")}
+          onPress={() => {
+            goBack();
+          }}
           style={styles.backButton}
         >
           <Ionicons name="arrow-back" size={20} color={Colors.black} />
