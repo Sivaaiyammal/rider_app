@@ -7,14 +7,11 @@ import {
   TouchableOpacity,
   SectionList,
 } from "react-native";
-// import {search_data} from '../Constants/DummyData';
 
 // icons
-import Feather from "react-native-vector-icons/Feather";
-import AntDesign from "react-native-vector-icons/AntDesign";
-import Fontisto from "react-native-vector-icons/Fontisto";
 import { Colors, Fonts, Icons } from "../Constants/Contants";
 import { AddressCards } from "../Styles/ComponentStyles";
+import NoDataFound from '../Components/NoDataFound';
 
 const groupByType = (data) => {
   if (!data) return [];
@@ -36,10 +33,12 @@ const groupByType = (data) => {
 const SearchResult = (props) => {
   const { searchTxt, search_data, selectedCallBack } = props;
 
-  const groupedData = groupByType(search_data);
+  const groupedData = Array.isArray(search_data)
+    ? groupByType(search_data)
+    : [];
 
   const renderSectionHeader = ({ section: { title } }) => {
-    const titleTxt = title.split('_')[1]
+    const titleTxt = title.split("_")[1];
     return (
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionHeaderText}>{titleTxt}</Text>
@@ -49,13 +48,13 @@ const SearchResult = (props) => {
 
   const setSelectedItem = (item) => {
     const newItem = {
-      name :item.name,
-      coordinates : [item.longitude, item.latitude],
+      name: item.name,
+      coordinates: [item.longitude, item.latitude],
       address: item.address,
-      distance: item.distance
-    }
-    selectedCallBack(newItem)
-  }
+      distance: item.distance,
+    };
+    selectedCallBack(newItem);
+  };
 
   const renderItem = ({ item }) => {
     return (
@@ -70,6 +69,7 @@ const SearchResult = (props) => {
   };
 
   return (
+    groupedData.length === 0 ? <NoDataFound message={"no_data_found"}/> : 
     <SectionList
       stickySectionHeadersEnabled
       sections={groupedData}
@@ -86,9 +86,9 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   sectionHeaderText: {
-    fontFamily:Fonts.bold,
-    fontSize:16,
-    color:Colors.black
+    fontFamily: Fonts.bold,
+    fontSize: 16,
+    color: Colors.black,
   },
   item: {
     padding: 10,

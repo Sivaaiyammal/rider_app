@@ -9,6 +9,7 @@ import RecentSearch from '../../Components/RecentSearch';
 import NearBy from '../../Components/NearBy';
 import SearchInput from './searchInput';
 import useMapStore from '../../Store/useMapStore';
+import SearchTabs from '../../Components/SearchTabs/SearchTabs';
 
 const SearchScreen = () => {
   const [searchText, setSearchText] = useState('');
@@ -36,11 +37,11 @@ const SearchScreen = () => {
           selectedCallBack={selectedCallBack}
         />
       ) : (
-        <ScrollView>
-          <SavedAddress />
-          {/* <RecentSearch /> */}
-          <NearBy />
-        </ScrollView>
+        // <ScrollView>
+        //   <SavedAddress />
+        //   <NearBy />
+        // </ScrollView>
+        <SearchTabs />
       )}
     </View>
   );

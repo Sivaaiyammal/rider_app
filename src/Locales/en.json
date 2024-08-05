@@ -24,6 +24,9 @@
     "route_name": "Route Name",
     "cancel": "Cancel",
     "map": "Map",
-    "stop_navigation": "Stop Navigation"
+    "stop_navigation": "Stop Navigation",
+    "loc_name": "Location Name",
+    "enter_location_name": "Enter Location Name",
+    "please_enter_location_name":"Please Enter Location Name"
   }
 }

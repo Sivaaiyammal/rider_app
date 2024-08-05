@@ -9,6 +9,7 @@ import {useStackScreenStore} from '../../Store/useStackScreen';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Entypo from 'react-native-vector-icons/Entypo';
 import { useTranslation } from "react-i18next";
+import FullScreenLoader from "../../Components/Loaders/FullScreenLoader";
 
 const { width } = Dimensions.get("window");
 
@@ -101,10 +102,11 @@ const POIresultScreen = () => {
         </View>
       </View>
     );
-  }, []);
+  }, [data]);
 
   return (
     <>
+      {!searchPOIResults && <FullScreenLoader />}
       <NavBar onBackPress={()=>onBackPress()} title={"POI Results"} withBg />
       <View style={styles.horizontalList}>
         <FlatList
