@@ -118,6 +118,13 @@ class NEMap extends Component {
       },
     );
 
+    this.distanceListner = DeviceEventEmitter.addListener(
+      'navigationLocation',
+      data => {
+        this.props.distanceListner ? this.props.distanceListner(data) : null
+      },
+    );
+
     this.markerClickListener = DeviceEventEmitter.addListener(
       'onMarkerClick',
       (data) => {

@@ -28,6 +28,9 @@ const useMapStore = create((set) => ({
 
     startNavigation: false,
     setStartNavigation: (startNavigation) => set({ startNavigation }),
+     
+    disduration: null,
+    setDisduration: (disduration) => set({ disduration }),
 
     devices: [],
     setDevices: devices => set({ devices: [...devices] }),

@@ -24,7 +24,7 @@ const MainScreen = () => {
       case "Home":
         return <HomeScreen />;
       case "Search":
-        return <SearchScreen />;
+        return <SearchScreen data={currentScreen.params}/>;
       case "Map":
         return <Map />;
       case "TargetLocation":

@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
 
 import InputContainer from "../../Components/InputContainer";
@@ -19,7 +25,7 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
   const { setSearchPOI } = useMapStore();
   const { location } = useLocationStore();
 
-  const {t} = useTranslation();
+  const { t } = useTranslation();
 
   const [alertModal, setAlertModal] = useState(false);
 
@@ -51,9 +57,9 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
   };
 
   const onIconPress = (item) => {
-    if (location === null){
-      setAlertModal(true)
-    }else {
+    if (location === null) {
+      setAlertModal(true);
+    } else {
       if (item.poiID) {
         console.log(item.poiID);
         setSearchPOI({
@@ -63,7 +69,7 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
         });
         setStackScreen("POIresult");
       } else {
-        setStackScreen("Search");
+        setStackScreen("Search", "poi");
       }
     }
   };
@@ -74,11 +80,11 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
       onClose={() => {
         setAlertModal(false);
       }}
-      leftBtnTxt={'Cancel'}
+      leftBtnTxt={"Cancel"}
       successMessage={"Current Location Not Available"}
-      SubText={'Please enable location permission'}
+      SubText={"Please enable location permission"}
       onRightPress={() => Linking.openSettings()}
-      rightBtnText={'Go To Settings'}
+      rightBtnText={"Go To Settings"}
       animationType={"slide"}
     />
   );
@@ -86,53 +92,72 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
   return (
     <View>
       <View style={styles.container}>
-        <View style={[styles.header, { backgroundColor: "#00b0ff" }]}>
+        <TouchableOpacity
+          onPress={() => setStackScreen("Search", "saved")}
+          style={[styles.header, { backgroundColor: "#00b0ff" }]}
+        >
           <Icon name="home" size={18} color="#fff" />
-          <Text style={styles.title}>{t('home')}</Text>
-        </View>
-        <View style={[styles.header, { backgroundColor: "#31bc92" }]}>
+          <Text style={styles.title}>{t("home")}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setStackScreen("Search", "saved")}
+          style={[styles.header, { backgroundColor: "#31bc92" }]}
+        >
           <Icon name="briefcase" size={18} color="#fff" />
-          <Text style={styles.title}>{t('work')}</Text>
-        </View>
-        <View style={[styles.header, { backgroundColor: "#ed8a19" }]}>
+          <Text style={styles.title}>{t("work")}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setStackScreen("Search", "saved")}
+          style={[styles.header, { backgroundColor: "#ed8a19" }]}
+        >
           <Icon name="star-half-alt" size={18} color="#fff" />
-          <Text style={styles.title}>{t('saved')}</Text>
-        </View>
+          <Text style={styles.title}>{t("saved")}</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.poiContainer}>
         {[
-          { name: t('food'), icon: "food", color: "#FF6B6B", poiID: 2 },
-          { name: t('health'), icon: "hospital-box", color: "#4ECDC4", poiID: 40 },
-          { name: t('shopping'), icon: "shopping", color: "#45B7D1", poiID: 309 },
-          { name: t('leisure'), icon: "bed", color: "#FFA07A", poiID: 183 },
-          { name:  t('cash'), icon: "cash-marker", color: "#98D8C8", poiID: 32 },
-          { name:  t('public'), icon: "bank", color: "#F7B731", poiID: 14 },
+          { name: t("food"), icon: "food", color: "#FF6B6B", poiID: 2 },
           {
-            name:  t('airport'),
+            name: t("health"),
+            icon: "hospital-box",
+            color: "#4ECDC4",
+            poiID: 40,
+          },
+          {
+            name: t("shopping"),
+            icon: "shopping",
+            color: "#45B7D1",
+            poiID: 309,
+          },
+          { name: t("leisure"), icon: "bed", color: "#FFA07A", poiID: 183 },
+          { name: t("cash"), icon: "cash-marker", color: "#98D8C8", poiID: 32 },
+          { name: t("public"), icon: "bank", color: "#F7B731", poiID: 14 },
+          {
+            name: t("airport"),
             icon: "airplane-marker",
             color: "#6A89CC",
             poiID: 71,
           },
-          { name:  t('more'), icon: "dots-horizontal", color: "#A3CB38" },
+          { name: t("more"), icon: "dots-horizontal", color: "#A3CB38" },
         ].map((item, index) => (
           <View>
-          <IconButton
-            key={index}
-            icon={item.icon}
-            size={20}
-            color="#fff"
-            iconColor="#fff"
-            onPress={() => onIconPress(item)}
-            style={[
-              styles.poiItem,
-              {
-                backgroundColor: item.color,
-                borderColor: item.color,
-              },
-            ]}
-          />
-          <Text style={styles.iconTxt}>{item.name}</Text>
+            <IconButton
+              key={index}
+              icon={item.icon}
+              size={20}
+              color="#fff"
+              iconColor="#fff"
+              onPress={() => onIconPress(item)}
+              style={[
+                styles.poiItem,
+                {
+                  backgroundColor: item.color,
+                  borderColor: item.color,
+                },
+              ]}
+            />
+            <Text style={styles.iconTxt}>{item.name}</Text>
           </View>
         ))}
       </View>
@@ -154,7 +179,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     borderRadius: 25,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -162,13 +187,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    paddingHorizontal:10,
-    paddingVertical:8
+    paddingHorizontal: 10,
+    paddingVertical: 8,
   },
   title: {
     fontSize: 16,
     color: "white",
-    fontFamily:Fonts.semi_bold
+    fontFamily: Fonts.semi_bold,
   },
   communityByContainer: {
     flexDirection: "column",
@@ -216,9 +241,9 @@ const styles = StyleSheet.create({
     margin: 10,
     borderWidth: 1,
     borderColor: "#eeeeee",
-    width:'90%',
-    alignSelf:'center',
-    justifyContent:'space-evenly'
+    width: "90%",
+    alignSelf: "center",
+    justifyContent: "space-evenly",
   },
   poiItem: {
     width: 50,
@@ -226,7 +251,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -235,12 +260,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  iconTxt:{
-    textAlign:'center',
-    fontSize:14,
-    fontFamily:Fonts.medium,
-    color:Colors.black
-  }
+  iconTxt: {
+    textAlign: "center",
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: Colors.black,
+  },
 });
 
 export default POIScreen;

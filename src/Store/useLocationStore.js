@@ -13,16 +13,6 @@ const useLocationStore = create((set) => ({
         data,
       ],
     })),
-
-  // to save location i.e home, work, other
-  savedLocation: [],
-  setSavedLocation: (data) =>
-    set((state) => ({
-      savedLocation: [
-        ...state.savedLocation,
-        data,
-      ],
-    })),
 }));
 
 export default useLocationStore;

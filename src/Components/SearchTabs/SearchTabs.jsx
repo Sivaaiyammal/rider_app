@@ -47,8 +47,15 @@ const searchTabBtns = [
   },
 ];
 
-const SearchTabs = () => {
-  const [selectedTab, setSelectedTab] = useState(searchTabBtns[0]);
+const SearchTabs = (props) => {
+  const { currentTab } = props;
+  const focusedTab =
+    currentTab === "saved"
+      ? searchTabBtns[1]
+      : currentTab === "poi"
+      ? searchTabBtns[2]
+      : searchTabBtns[0];
+  const [selectedTab, setSelectedTab] = useState(focusedTab);
 
   const getTabContent = () => {
     switch (selectedTab.id) {

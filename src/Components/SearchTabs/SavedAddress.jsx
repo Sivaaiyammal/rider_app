@@ -1,11 +1,11 @@
 import { StyleSheet, Text, View } from "react-native";
-import React from "react";
-import useLocationStore from "../../Store/useLocationStore";
+import React, { useContext } from "react";
 import { useStackScreenStore } from "../../Store/useStackScreen";
 import SearchResult from "../SearchResult";
+import GlobalContext from "../../Context/GlobalContext";
 
 const SavedAddress = () => {
-  const { savedLocation } = useLocationStore();
+  const { savedAddress } = useContext(GlobalContext);
   const { setStackScreen } = useStackScreenStore();
 
   const selectedCallBack = (data) => {
@@ -15,7 +15,7 @@ const SavedAddress = () => {
   return (
     <SearchResult
       searchTxt={""}
-      search_data={savedLocation}
+      search_data={savedAddress}
       selectedCallBack={selectedCallBack}
     />
   );

@@ -11,14 +11,16 @@ import SearchInput from './searchInput';
 import useMapStore from '../../Store/useMapStore';
 import SearchTabs from '../../Components/SearchTabs/SearchTabs';
 
-const SearchScreen = () => {
+const SearchScreen = ({ data }) => {
   const [searchText, setSearchText] = useState('');
   const [searchData, setSearchData] = useState([]);
   const { setStackScreen } = useStackScreenStore();
   const {onSearchResults} = useMapStore();
 
-  const selectedCallBack = (data) => {
-    setStackScreen('TargetLocation', data);
+  console.log('hari-->>data-->>', data)
+
+  const selectedCallBack = (result) => {
+    setStackScreen('TargetLocation', result);
   }
 
   return (
@@ -41,7 +43,7 @@ const SearchScreen = () => {
         //   <SavedAddress />
         //   <NearBy />
         // </ScrollView>
-        <SearchTabs />
+        <SearchTabs currentTab={data}/>
       )}
     </View>
   );

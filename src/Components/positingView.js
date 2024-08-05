@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -9,15 +9,18 @@ import {
   Modal,
   TextInput,
   Pressable,
+  ActivityIndicator,
 } from "react-native";
 import { FloatingAction } from "react-native-floating-action";
 import Icon from "react-native-vector-icons/FontAwesome";
 import useMapStore from "../Store/useMapStore";
 import { useTranslation } from "react-i18next";
 import { Colors, Fonts } from "../Constants/Contants";
+import Entypo from "react-native-vector-icons/Entypo";
 import { radioBtns } from "../Constants/JsonData";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
-import useLocationStore from "../Store/useLocationStore";
+import { SearchAPI } from "../Constants/NEMap/Search";
+import GlobalContext from "../Context/GlobalContext";
 
 // Define the geographical bounds of your static view
 const GEO_BOUNDS = {
@@ -47,11 +50,17 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
   const [locationName, setLocationName] = useState("");
   const [locationNameErr, setLocationNameErr] = useState("");
   const [selectedOption, setSelectedOption] = useState(radioBtns[0]);
+  const [addressName, setAddressName] = useState("");
+  const [addressLoading, setAddressLoading] = useState(false);
+
+  const {saveAddress} = useContext(GlobalContext)
+
+  const search = new SearchAPI();
 
   const { t } = useTranslation();
 
   const { mapMoving } = useMapStore();
-  const { setSavedLocation } = useLocationStore();
+ 
 
   // Calculate position based on latitude and longitude
   const position = latLngToXY(
@@ -103,6 +112,20 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
 
   console.log(mapMoving, "mapMoving");
 
+  const fetchAddressName = async () => {
+    const coordinates = [latLng.lat, latLng.lng];
+    setAddressLoading(true);
+    try {
+      const response = await search.reverseGeocode(coordinates);
+      if (response) {
+        setAddressName(response.properties.street);
+        setAddressLoading(false);
+      }
+    } catch (e) {
+      setAddressLoading(false);
+    }
+  };
+
   const onMarkerIconsPress = (icon) => {
     if (icon.name === "close") {
       setFloatingView(false);
@@ -110,6 +133,7 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
     }
     if (icon.name === "save") {
       setModalVisible(true);
+      fetchAddressName();
     }
   };
 
@@ -121,13 +145,13 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
         name: locationName,
         latitude: latLng.lat,
         longitude: latLng.lng,
-        type:"TYPE_"+selectedOption.name,
-        address: ""
+        type: "TYPE_" + selectedOption.name,
+        address:addressName?  addressName : "",
       };
-      setSavedLocation(savedAddress);
       setLocationNameErr("");
       setLocationName("");
       setModalVisible(false);
+      saveAddress(savedAddress)
     }
   };
 
@@ -157,6 +181,19 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
               ) : (
                 <></>
               )}
+              {addressName && 
+                  <View style={styles.loctionDetails}>
+                  <Entypo
+                    name="location-pin"
+                    size={14}
+                    style={{ marginTop: 2 }}
+                  />
+                  <Text style={styles.subName}>
+                    {addressLoading ? <ActivityIndicator /> : addressName}
+                  </Text>
+                </View>
+              }
+          
               <View style={styles.radionBtnContainer}>
                 {radioBtns.map((item) => {
                   return (
@@ -351,6 +388,18 @@ const styles = StyleSheet.create({
   radionBtnsTxt: {
     fontFamily: Fonts.regular,
     color: Colors.black,
+  },
+  loctionDetails: {
+    flexDirection: "row",
+    alignItems: "center",
+    color: Colors.grey,
+    gap: 5,
+  },
+  subName: {
+    fontSize: 12,
+    fontFamily: Fonts.light,
+    marginTop: 2,
+    width: "90%",
   },
 });
 
