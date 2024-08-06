@@ -18,7 +18,7 @@ const ITEM_LENGTH = width * 0.9;
 const BORDER_RADIUS = 0;
 
 const POIresultScreen = () => {
-  const { searchPOIResults, setMapMarkers, setMapLocation } = useMapStore();
+  const { searchPOIResults, setMapMarkers, setMapLocation, setSearchPOIResults } = useMapStore();
 
   const {goBack, setStackScreen} = useStackScreenStore();
 
@@ -27,6 +27,8 @@ const POIresultScreen = () => {
   const data = searchPOIResults?.searchPOIResults
   ? searchPOIResults?.searchPOIResults
   : [];
+
+  console.log('hari-->>searchPOIResults-->>',searchPOIResults?.searchPOIResults)
 
   const [index, setIndex] = useState(0);
   const indexRef = useRef(index);
@@ -54,7 +56,8 @@ const POIresultScreen = () => {
   }, [data]);
 
   const onBackPress = () => {
-    goBack()
+    goBack();
+    setSearchPOIResults(null)
   }
 
   const onDirectionsPress = (item) => {
