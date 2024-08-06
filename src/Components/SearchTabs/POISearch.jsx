@@ -30,15 +30,13 @@ const POISearch = () => {
     if (location === null) {
       setAlertModal(true);
     } else {
-      if (item.poiID) {
-        console.log(item.poiID);
+        console.log('searchscreen',item.poiID);
         setSearchPOI({
           poiID: item.poiID,
           latitude: location[1],
           longitude: location[0],
         });
         setStackScreen("POIresult");
-      }
     }
   };
 

@@ -27,7 +27,8 @@ const MapContainer = ({ mapStyle }) => {
     setSearchPOIResults,
     setUserLocation,
     setMapMoving,
-    setDisduration
+    setDisduration,
+    setSearchPOIError
   } = useMapStore();
 
   return (
@@ -56,6 +57,7 @@ const MapContainer = ({ mapStyle }) => {
         onDirectionReady={setDirectionReadyCallback}
         onUserLocationChange={(location) => setUserLocation([location.latitude, location.longitude])}
         distanceListner={setDisduration}
+        onSearchPOIError={setSearchPOIError}
       />
     </View>
   );

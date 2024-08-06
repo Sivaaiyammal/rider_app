@@ -22,6 +22,11 @@ const useMapStore = create((set) => ({
     setOnSearchResults: onSearchResults => {
         set({ onSearchResults });
     },
+    
+    searchPOIError:null,
+    setSearchPOIError: searchPOIError => {
+        set({ searchPOIError });
+    },
 
     searchPOIResults: null,
     setSearchPOIResults: searchPOIResults => set({ searchPOIResults }),

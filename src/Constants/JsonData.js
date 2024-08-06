@@ -35,7 +35,7 @@ export const poiSearchData = [
   {
     title: "food",
     data: [
-      { poiID: 0, name: "restaurant" }, // case 0
+      { poiID: 0, name: "restaurant" }, // case 0 // no data or error message returns for poiID:0 
       { poiID: 7, name: "cafe" }, // case 7
       { poiID: 2, name: "fast_food" }, // case 2
     ],
