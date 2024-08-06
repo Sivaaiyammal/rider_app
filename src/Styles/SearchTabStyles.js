@@ -50,11 +50,14 @@ export const searchTabsStyles = StyleSheet.create({
     color: Colors.black,
   },
   poibtns: {
+    flexDirection:'row',
     alignItems: 'center',
-    borderRadius: 5,
+    gap:5,
+    borderWidth:0.4,
+    borderRadius: 10,
+    paddingHorizontal:5
   },
   itemText:{
-    borderWidth:0.4,
     borderRadius:10,
     paddingVertical:5,
     paddingHorizontal:10,

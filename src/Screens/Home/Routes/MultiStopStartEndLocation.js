@@ -46,20 +46,21 @@ const MultiStopStartEndLocation = ({ route }) => {
   const [loading, setLoading] = useState(false);
   const [showOptions, setShowOptions] = useState(false)
   const {onSearchResults, setSearchUnit} = useMapStore();
-  const { location } = useLocationStore();
-  const [directions, setDirections] = useState([
-    {
-      id: 1,
-      name: "Start",
-      location: location || [],
-      locationName: location ? location.join(', ') : "",
-    },
-    { id: 2, name: "Waypoint", location: [], locationName: "" },
-    { id: 3, name: "End", 
-      location: route?.coordinates || [],
-      locationName: route?.name || "",
-    },
-  ]);
+  const { location, directions, setDirections } = useLocationStore();
+  // const [directions, setDirections] = useState(direction);
+  //   [
+  //   {
+  //     id: 1,
+  //     name: "Start",
+  //     location: location || [],
+  //     locationName: location ? location.join(', ') : "",
+  //   },
+  //   { id: 2, name: "Waypoint", location: [], locationName: "" },
+  //   { id: 3, name: "End", 
+  //     location: route?.coordinates || [],
+  //     locationName: route?.name || "",
+  //   },
+  // ]);
 
   const {t} = useTranslation()
 
@@ -78,6 +79,32 @@ const MultiStopStartEndLocation = ({ route }) => {
       return true;
     });
 
+    if(route.coordinates){
+      const updatedDirections = directions.map((item) => {
+
+        if(item.name === "Start"){
+          item.location = location || [],
+          item.locationName = location ? location.join(', ') : ""
+        }
+
+        if (item.name === "End") {
+          item.location = route?.coordinates || [],
+          item.locationName = route?.name || ""
+        }
+        return item
+      })
+      setDirections(updatedDirections)
+    } else if (directions.filter(direction => direction.location.length > 0).length === 1){
+      const updatedDirections = directions.map((item) => {
+        if (item.name === "Start") {
+          item.location = location || [],
+          item.locationName = location ? location.join(', ') : ""
+        }
+        return item
+      })
+      setDirections(updatedDirections)
+    }
+
     const directionPoints = directions
       .filter(direction => direction.location.length > 0)
       .map(direction => ({
@@ -85,8 +112,8 @@ const MultiStopStartEndLocation = ({ route }) => {
         lon: direction.location[0]
       }));
 
-    if(directionPoints.length == 2){
-      console.log("directionPoints", directionPoints)
+    console.log("directionPoints-route", directionPoints, directions)
+    if(directionPoints.length >= 2){
       setMapMarkers([])
       setDirectionPoints({ locations: directionPoints, type: selectedTab });
       setShowOptions(true)
@@ -98,8 +125,7 @@ const MultiStopStartEndLocation = ({ route }) => {
   }, []);
 
   const onBackPress = () => {
-    goBack();
-    setDirections([
+    const directions = [
       {
         id: 1,
         name: "Start",
@@ -108,8 +134,10 @@ const MultiStopStartEndLocation = ({ route }) => {
       },
       { id: 2, name: "Waypoint", location: [], locationName: "" },
       { id: 3, name: "End", location: [], locationName: "" },
-    ]);
+    ]
+    setDirections(directions);
     setDirectionPoints(null);
+    goBack();
   };
 
   const itemHeight = 100;
@@ -186,6 +214,11 @@ const MultiStopStartEndLocation = ({ route }) => {
         return {
           icon: <EndLoc width={15} height={15} />,
           name: t('destination'),
+        };
+      default:
+        return {
+          icon: <Flag width={15} height={15} />,
+          name: t('add_waypoint'),
         };
     }
   };

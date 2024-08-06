@@ -35,99 +35,99 @@ export const poiSearchData = [
   {
     title: "food",
     data: [
-      { poiID: 0, name: "restaurant" }, // case 0
-      { poiID: 7, name: "cafe" }, // case 7
-      { poiID: 2, name: "fast_food" }, // case 2
+      { poiID: 0, name: "restaurant", icon: "wine-bottle" }, // case 0
+      { poiID: 7, name: "cafe", icon: "coffee" }, // case 7
+      { poiID: 2, name: "fast_food", icon: "hamburger" }, // case 2
     ],
   },
   {
     title: "health",
     data: [
-      { poiID: 34, name: "hospital" }, // case 34
-      { poiID: 33, name: "pharmacy" }, // case 33
+      { poiID: 34, name: "hospital", icon: "hospital" }, // case 34
+      { poiID: 33, name: "pharmacy", icon: "hospital-user" }, // case 33
     ],
   },
   {
     title: "shopping",
     data: [
-      { poiID: 301, name: "supermarket" }, // case 301
-      { poiID: 252, name: "department_store" }, // case 252
-      { poiID: 267, name: "general" }, // case 267
-      { poiID: 240, name: "carrepair" }, // case 240
-      { poiID: 239, name: "cars" }, // case 239
-      { poiID: 282, name: "mall" }, // case 282
+      { poiID: 301, name: "supermarket", icon: "store" }, // case 301
+      { poiID: 252, name: "department_store", icon: "store" }, // case 252
+      { poiID: 267, name: "general", icon: "store" }, // case 267
+      { poiID: 240, name: "carrepair", icon: "car" }, // case 240
+      { poiID: 239, name: "cars", icon: "car" }, // case 239
+      { poiID: 282, name: "mall", icon: "store" }, // case 282
     ],
   },
   {
     title: "leisure",
     data: [
-      { poiID: 174, name: "park" }, // case 174
-      { poiID: 179, name: "stadium" }, // case 179
-      { poiID: 171, name: "marina" }, // case 171
-      { poiID: 178, name: "sports_center" }, // case 178
-      { poiID: 169, name: "golf_course" }, // case 169
-      { poiID: 175, name: "pitch" }, // case 175
+      { poiID: 174, name: "park", icon: "dharmachakra" }, // case 174
+      { poiID: 179, name: "stadium", icon: "dharmachakra" }, // case 179
+      { poiID: 171, name: "marina", icon: "swimming-pool" }, // case 171
+      { poiID: 178, name: "sports_center", icon: "futbol" }, // case 178
+      { poiID: 169, name: "golf_course", icon: "life-ring" }, // case 169
+      { poiID: 175, name: "pitch", icon: "house-user" }, // case 175
     ],
   },
   {
     title: "cash",
     data: [
-      { poiID: 29, name: "atm" }, // case 29
-      { poiID: 30, name: "bank" }, // case 30
+      { poiID: 29, name: "atm", icon: "cash-register" }, // case 29
+      { poiID: 30, name: "bank", icon: "money-bill" }, // case 30
     ],
   },
   {
     title: "airport",
     data: [
-      { poiID: 75, name: "terminal" }, // case 75
-      { poiID: 71, name: "aerodrome" }, // case 71
-      { poiID: 171, name: "marina" }, // case 171
+      { poiID: 75, name: "terminal", icon: "plane" }, // case 75
+      { poiID: 71, name: "aerodrome", icon: "plane" }, // case 71
+      { poiID: 171, name: "marina", icon: "plane" }, // case 171
     ],
   },
   {
     title: "sleeping",
-    data: [{ poiID: 1003, name: "hotel" }], // case 1003
+    data: [{ poiID: 1003, name: "hotel", icon: "hotel" }], // case 1003
   },
   {
     title: "public",
     data: [
-      { poiID: 214, name: "government" }, // case 214
-      { poiID: 53, name: "embassy" }, // case 53
-      { poiID: 54, name: "fire_station" }, // case 54
-      { poiID: 67, name: "toilets" }, // case 67
+      { poiID: 214, name: "government", icon: "building" }, // case 214
+      { poiID: 53, name: "embassy", icon: "archway" }, // case 53
+      { poiID: 54, name: "fire_station", icon: "fire" }, // case 54
+      { poiID: 67, name: "toilets", icon: "toilet" }, // case 67
     ],
   },
   {
     title: "education",
     data: [
-      { poiID: 12, name: "school" }, // case 12
-      { poiID: 1001, name: "college" }, // case 1001
-      { poiID: 1002, name: "university" }, // case 1002
-      { poiID: 14, name: "library" }, // case 14
+      { poiID: 12, name: "school", icon: "school" }, // case 12
+      { poiID: 1001, name: "college", icon: "school" }, // case 1001
+      { poiID: 1002, name: "university", icon: "school" }, // case 1002
+      { poiID: 14, name: "library", icon: "book" }, // case 14
     ],
   },
   {
     title: "religious",
     data: [
-      { poiID: 58, name: "mosque" }, // case 58
-      { poiID: 58, name: "church" }, // case 58
+      { poiID: 58, name: "mosque", icon: "mosque" }, // case 58
+      { poiID: 58, name: "church", icon: "church" }, // case 58
     ],
   },
   {
     title: "transports",
     data: [
-      { poiID: 142, name: "bus_stops" }, // case 142
-      { poiID: 27, name: "fuel_station" }, // case 27
-      { poiID: 28, name: "charge_station" }, // case 28
+      { poiID: 142, name: "bus_stops", icon: "bus" }, // case 142
+      { poiID: 27, name: "fuel_station", icon: "station" }, // case 27
+      { poiID: 28, name: "charge_station", icon: "charging-station" }, // case 28
     ],
   },
   {
     title: "tourism",
     data: [
-      { poiID: 369, name: "attractions" }, // case 369
-      { poiID: 380, name: "museums" }, // case 380
-      { poiID: 378, name: "information" }, // case 378
-      { poiID: 376, name: "hostels" }, // case 376
+      { poiID: 369, name: "attractions", icon: "ticket-alt" }, // case 369
+      { poiID: 380, name: "museums", icon: "monument" }, // case 380
+      { poiID: 378, name: "information", icon: "info-circle" }, // case 378
+      { poiID: 376, name: "hostels", icon: "hotel" }, // case 376
     ],
   },
 ];

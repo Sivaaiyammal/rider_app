@@ -16,6 +16,7 @@ import {useStackScreenStore} from '../../Store/useStackScreen';
 import useMapStore from '../../Store/useMapStore.js'
 import useLocationStore from '../../Store/useLocationStore.js'
 import AlertModal from "../AlertModal.jsx";
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 const POISearch = () => {
   const { setStackScreen } = useStackScreenStore();
@@ -72,6 +73,7 @@ const POISearch = () => {
           onPress={() => onIconPress(item)}
           style={searchTabsStyles.poibtns}
         >
+          <Icon name={item.icon} size={15} color="#000" />
           <Text style={searchTabsStyles.itemText}>{t(item.name)}</Text>
         </TouchableOpacity>
       </View>

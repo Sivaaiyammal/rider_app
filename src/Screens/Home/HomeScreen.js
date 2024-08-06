@@ -23,7 +23,7 @@ const HomeScreen = ({ }) => {
   const [latLng, setLatLng] = useState({ lat: 37.7749, lng: -122.4194 });
   const [positioningView, setPositioningView] = useState(false);
   const [dragHeight, setDragHeight] = useState(300);
-  const { mapMoving, setMapMoving, setOnMapCenterChanged, setMode, setMapMarkers, setMapLocation } = useMapStore();
+  const { mapMoving, setMapMoving, setOnMapCenterChanged, setMode, setMapMarkers, setMapLocation, setMapClickCallback } = useMapStore();
   const { setStackScreen } = useStackScreenStore();
   const { setLocation, location } = useLocationStore();
 
@@ -45,6 +45,7 @@ const HomeScreen = ({ }) => {
     checkLocationPermission();
     setMapMarkers([]);
     setOnMapCenterChanged(mapCenterChanged);
+    setMapClickCallback(mapClickCallback);
 
     BackHandler.addEventListener('hardwareBackPress', handleBackPress);
     return () => {
@@ -164,6 +165,12 @@ const HomeScreen = ({ }) => {
       setMapMoving(data.moving);
     }
 
+  }
+
+  const mapClickCallback = (data) => {
+    setLatLng({ lat: data.longitude, lng: data.latitude })
+    setPositioningView(true)
+    setMapMoving(true);
   }
 
   const BottomSheet = () => (

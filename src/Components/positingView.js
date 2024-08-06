@@ -11,8 +11,7 @@ import {
   Pressable,
   ActivityIndicator,
 } from "react-native";
-import { FloatingAction } from "react-native-floating-action";
-import Icon from "react-native-vector-icons/FontAwesome";
+import Icon from "react-native-vector-icons/FontAwesome5";
 import useMapStore from "../Store/useMapStore";
 import { useTranslation } from "react-i18next";
 import { Colors, Fonts } from "../Constants/Contants";
@@ -21,23 +20,31 @@ import { radioBtns } from "../Constants/JsonData";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import { SearchAPI } from "../Constants/NEMap/Search";
 import GlobalContext from "../Context/GlobalContext";
-
+import Marker from "../Constants/NEMap/Marker";
+import useLocationStore from "../Store/useLocationStore";
+import { useStackScreenStore } from "../Store/useStackScreen";
 // Define the geographical bounds of your static view
 const GEO_BOUNDS = {
-  latTop: 85, // Top latitude of your area
-  latBottom: -85, // Bottom latitude of your area
+  latTop: 90, // Top latitude of your area
+  latBottom: -90, // Bottom latitude of your area
   lngLeft: -180, // Left longitude of your area
   lngRight: 180, // Right longitude of your area
 };
 
 // Convert latitude and longitude to x and y coordinates
 const latLngToXY = (lat, lng, width, height) => {
-  const x =
-    ((lng - GEO_BOUNDS.lngLeft) / (GEO_BOUNDS.lngRight - GEO_BOUNDS.lngLeft)) *
-    width;
-  const y =
-    ((GEO_BOUNDS.latTop - lat) / (GEO_BOUNDS.latTop - GEO_BOUNDS.latBottom)) *
-    height;
+  // Ensure lat and lng are within bounds
+  const clampedLat = Math.max(GEO_BOUNDS.latBottom, Math.min(GEO_BOUNDS.latTop, lat));
+  const clampedLng = Math.max(GEO_BOUNDS.lngLeft, Math.min(GEO_BOUNDS.lngRight, lng));
+
+  // Calculate x coordinate
+  const x = ((clampedLng - GEO_BOUNDS.lngLeft) / (GEO_BOUNDS.lngRight - GEO_BOUNDS.lngLeft)) * width;
+
+  // Calculate y coordinate using Mercator projection
+  const latRad = clampedLat * Math.PI / 180;
+  const mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
+  const y = (height / 2) - (width * mercN / (2 * Math.PI));
+
   return { x, y };
 };
 
@@ -53,30 +60,31 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
   const [addressName, setAddressName] = useState("");
   const [addressLoading, setAddressLoading] = useState(false);
 
-  const {saveAddress} = useContext(GlobalContext)
+  const { saveAddress } = useContext(GlobalContext)
 
   const search = new SearchAPI();
 
   const { t } = useTranslation();
 
-  const { mapMoving } = useMapStore();
- 
+  const { mapMoving, setMapMarkers, mapMarkers } = useMapStore();
+  const { setDirections, directions } = useLocationStore();
+  const { setStackScreen } = useStackScreenStore();
 
   // Calculate position based on latitude and longitude
   const position = latLngToXY(
     coords.lat,
     coords.lng,
     width - 130,
-    height + 130
+    height
   );
 
-  console.log(position, width, height, "lknclkdns", latLng);
+  // console.log(position, width, height, "lknclkdns", latLng);
 
   const iconConfigs = [
-    { name: "save", delay: 0 },
-    { name: "map-marker", delay: 400 },
-    { name: "direction", delay: 600 },
-    { name: "3d", delay: 800 },
+    { name: "save", delay: 200 },
+    { name: "map-marker-alt", delay: 400 },
+    { name: "directions", delay: 600 },
+    { name: "location-arrow", delay: 800 },
     { name: "close", delay: 1000 },
   ];
 
@@ -112,30 +120,82 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
 
   console.log(mapMoving, "mapMoving");
 
-  const fetchAddressName = async () => {
+  const fetchAddressName = async (markerSet = false) => {
     const coordinates = [latLng.lat, latLng.lng];
     setAddressLoading(true);
     try {
       const response = await search.reverseGeocode(coordinates);
       if (response) {
-        setAddressName(response.properties.street);
-        setAddressLoading(false);
+        if (!markerSet) {
+          setAddressName(response.properties.street);
+          setAddressLoading(false);
+        }
+        else {
+          return response.properties.street
+        }
+
       }
     } catch (e) {
       setAddressLoading(false);
     }
   };
 
-  const onMarkerIconsPress = (icon) => {
-    if (icon.name === "close") {
-      setFloatingView(false);
-      setPositioningView(false);
+  const onMarkerIconsPress = async (icon) => {
+    const actions = {
+      close: () => {
+        setFloatingView(false);
+        setPositioningView(false);
+      },
+      save: () => {
+        setModalVisible(true);
+        fetchAddressName();
+      },
+      'map-marker-alt': async () => {
+        setFloatingView(false);
+        setPositioningView(false);
+        const marker = new Marker(String(Math.random() * 100), "startarker", latLng.lng, latLng.lat, "marker_start", 36);
+        if (mapMarkers.length === 0) setMapMarkers([marker]);
+        else setMapMarkers([...mapMarkers, marker]);
+        const updatedDirections = await updateDirection("Start", [latLng.lng, latLng.lat]);
+        setDirections(updatedDirections);
+      },
+      directions: async () => {
+        const updatedDirections = await updateDirection("End", [latLng.lng, latLng.lat]);
+        setDirections(updatedDirections);
+        setStackScreen("Directions");
+      },
+      'location-arrow': async () => {
+        setFloatingView(false);
+        setPositioningView(false);
+        const marker = new Marker(String(Math.random() * 100), `waypoint ${mapMarkers.length}`, latLng.lng, latLng.lat, "marker_waypoint", 36);
+        setMapMarkers([...mapMarkers, marker]);
+        const newWaypoint = {
+          id: directions.length,
+          name: `Waypoint ${mapMarkers.length}`,
+          location: [latLng.lng, latLng.lat],
+          locationName: await fetchAddressName(true)
+        };
+        directions.splice(directions.length - 1, 0, newWaypoint);
+        console.log("directions", directions)
+        setDirections(directions);
+      }
+    };
+
+    if (actions[icon.name]) {
+      await actions[icon.name]();
     }
-    if (icon.name === "save") {
-      setModalVisible(true);
-      fetchAddressName();
-    }
-  };
+  }
+
+  const updateDirection = async (name, location) => {
+    const updatedDirections = await Promise.all(directions.map(async (item) => {
+      if (item.name === name) {
+        item.location = location;
+        item.locationName = await fetchAddressName(true)
+      }
+      return item;
+    }));
+    return updatedDirections;
+  }
 
   const saveLocation = () => {
     if (locationName.length === 0) {
@@ -146,7 +206,7 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
         latitude: latLng.lat,
         longitude: latLng.lng,
         type: "TYPE_" + selectedOption.name,
-        address:addressName?  addressName : "",
+        address: addressName ? addressName : "",
       };
       setLocationNameErr("");
       setLocationName("");
@@ -157,83 +217,83 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
 
   const saveModalView = () => {
     return (
-      <View style={styles.centeredView}>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            Alert.alert("Modal has been closed.");
-            setModalVisible(!modalVisible);
-          }}
-        >
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <Text style={styles.title}>{t("save_loc")}</Text>
-              <Text style={styles.inputTitle}>{t("loc_name")}</Text>
-              <TextInput
-                onChangeText={(e) => setLocationName(e)}
-                placeholder={t("enter_location_name")}
-                style={styles.input}
-              />
-              {locationNameErr.length !== 0 ? (
-                <Text style={styles.errTxt}>{t(locationNameErr)}</Text>
-              ) : (
-                <></>
-              )}
-              {addressName && 
-                  <View style={styles.loctionDetails}>
-                  <Entypo
-                    name="location-pin"
-                    size={14}
-                    style={{ marginTop: 2 }}
-                  />
-                  <Text style={styles.subName}>
-                    {addressLoading ? <ActivityIndicator /> : addressName}
-                  </Text>
-                </View>
-              }
-          
-              <View style={styles.radionBtnContainer}>
-                {radioBtns.map((item) => {
-                  return (
-                    <TouchableOpacity
-                      style={styles.radionBtns}
-                      onPress={() => setSelectedOption(item)}
-                    >
-                      <FontAwesome
-                        name={
-                          selectedOption.value === item.value
-                            ? "dot-circle-o"
-                            : "circle-o"
-                        }
-                        size={16}
-                      />
-                      <Text style={styles.radionBtnsTxt}>{t(item.name)}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
+      // <View style={styles.centeredView}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          Alert.alert("Modal has been closed.");
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.title}>{t("save_loc")}</Text>
+            <Text style={styles.inputTitle}>{t("loc_name")}</Text>
+            <TextInput
+              onChangeText={(e) => setLocationName(e)}
+              placeholder={t("enter_location_name")}
+              style={styles.input}
+            />
+            {locationNameErr.length !== 0 ? (
+              <Text style={styles.errTxt}>{t(locationNameErr)}</Text>
+            ) : (
+              <></>
+            )}
+            {addressName &&
+              <View style={styles.loctionDetails}>
+                <Entypo
+                  name="location-pin"
+                  size={14}
+                  style={{ marginTop: 2 }}
+                />
+                <Text style={styles.subName}>
+                  {addressLoading ? <ActivityIndicator /> : addressName}
+                </Text>
               </View>
-              <View style={styles.saveLocationBtns}>
-                <Pressable
-                  style={[styles.saveLocBtn, { backgroundColor: Colors.white }]}
-                  onPress={() => setModalVisible(false)}
-                >
-                  <Text style={[styles.saveLocBtnTxt, { color: Colors.black }]}>
-                    {t("cancel")}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  style={styles.saveLocBtn}
-                  onPress={() => saveLocation()}
-                >
-                  <Text style={styles.saveLocBtnTxt}>{t("save_loc")}</Text>
-                </Pressable>
-              </View>
+            }
+
+            <View style={styles.radionBtnContainer}>
+              {radioBtns.map((item) => {
+                return (
+                  <TouchableOpacity
+                    style={styles.radionBtns}
+                    onPress={() => setSelectedOption(item)}
+                  >
+                    <FontAwesome
+                      name={
+                        selectedOption.value === item.value
+                          ? "dot-circle-o"
+                          : "circle-o"
+                      }
+                      size={16}
+                    />
+                    <Text style={styles.radionBtnsTxt}>{t(item.name)}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <View style={styles.saveLocationBtns}>
+              <Pressable
+                style={[styles.saveLocBtn, { backgroundColor: Colors.white }]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={[styles.saveLocBtnTxt, { color: Colors.black }]}>
+                  {t("cancel")}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.saveLocBtn}
+                onPress={() => saveLocation()}
+              >
+                <Text style={styles.saveLocBtnTxt}>{t("save_loc")}</Text>
+              </Pressable>
             </View>
           </View>
-        </Modal>
-      </View>
+        </View>
+      </Modal>
+      // </View>
     );
   };
 
@@ -260,12 +320,12 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
                 style={styles.iconView}
                 onPress={() => onMarkerIconsPress(icon)}
               >
-                <Icon
+                {icon.name !== "close" ? <Icon
                   name={icon.name}
                   style={styles.icon}
-                  size={18}
+                  size={15}
                   color="#fff"
-                />
+                /> : <Text style={{ color: "#fff", fontSize: 15, fontFamily: Fonts.bold, alignSelf: "center" }}> X </Text>}
               </TouchableOpacity>
             </Animated.View>
           ))}
