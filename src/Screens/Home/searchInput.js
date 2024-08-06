@@ -35,7 +35,7 @@ const SearchInput = ({searchText, setCurrentScreen, focused, setSearchText, setS
             placeholder={t('search')}
             onFocus={() => {
                 // setDragHeight(800);
-                if(focused) setCurrentScreen('Search');
+                if(!closeBtn) setCurrentScreen('Search');
             }}
             value={searchText}
             loading={loading}
