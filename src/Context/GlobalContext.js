@@ -1,6 +1,7 @@
 import { View, Text } from "react-native";
 import React, { createContext, useEffect, useState, useCallback } from "react";
 import { DataStore } from "../Constants/DataStore";
+import { showNotification } from "../Components/NotificationManager";
 
 export const GlobalContext = createContext();
 
@@ -13,8 +14,10 @@ export const ContextProvider = ({ children }) => {
       console.log("Saving address:", newData);
       setSavedAddress(newData);
       await DataStore.storeData("savedAddressed", newData);
+      showNotification("Address Saved Successfully", "", 'success');
     } catch (error) {
       console.error("Error saving address:", error);
+      showNotification("Something Went Wrong", "", 'success');
     }
   }, [savedAddress]);
 

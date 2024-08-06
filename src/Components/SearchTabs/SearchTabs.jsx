@@ -14,6 +14,7 @@ import { Colors, Fonts } from "../../Constants/Contants";
 import Entypo from "react-native-vector-icons/Entypo";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { searchTabsStyles } from "../../Styles/SearchTabStyles";
+import { useTranslation } from "react-i18next";
 
 const searchTabBtns = [
   // {
@@ -57,6 +58,8 @@ const SearchTabs = (props) => {
       : searchTabBtns[0];
   const [selectedTab, setSelectedTab] = useState(focusedTab);
 
+  const {t} = useTranslation()
+
   const getTabContent = () => {
     switch (selectedTab.id) {
       case 1:
@@ -87,7 +90,7 @@ const SearchTabs = (props) => {
               onPress={() => setSelectedTab(item)}
             >
               {item.icon}
-              <Text style={searchTabsStyles.tabBtnsTxt}>{item.name}</Text>
+              <Text style={searchTabsStyles.tabBtnsTxt}>{t(item.title)}</Text>
             </TouchableOpacity>
           );
         })}

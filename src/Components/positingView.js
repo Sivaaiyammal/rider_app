@@ -139,7 +139,7 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
 
   const saveLocation = () => {
     if (locationName.length === 0) {
-      setLocationNameErr("Please Enter Location Name");
+      setLocationNameErr("please_enter_location_name");
     } else {
       const savedAddress = {
         name: locationName,

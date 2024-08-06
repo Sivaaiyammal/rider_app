@@ -10,7 +10,6 @@ import {
 
 // icons
 import { Colors, Fonts, Icons } from "../Constants/Contants";
-import { AddressCards } from "../Styles/ComponentStyles";
 import NoDataFound from '../Components/NoDataFound';
 
 const groupByType = (data) => {

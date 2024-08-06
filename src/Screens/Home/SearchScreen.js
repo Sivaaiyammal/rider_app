@@ -29,7 +29,7 @@ const SearchScreen = ({ data }) => {
         searchText={searchText} 
         setSearchText={setSearchText} 
         setSearchData={setSearchData}
-        focused={false}
+        focused={data === 'saved' || data === 'poi'}
         closeBtn={true}
       />
       {searchText?.length !== 0 ? (

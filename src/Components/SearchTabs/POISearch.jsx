@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState} from "react";
 import {
   StyleSheet,
   Text,
@@ -12,15 +12,55 @@ import {
 import { poiSearchData } from "../../Constants/JsonData";
 import { searchTabsStyles } from "../../Styles/SearchTabStyles";
 import { useTranslation } from "react-i18next";
+import {useStackScreenStore} from '../../Store/useStackScreen';
+import useMapStore from '../../Store/useMapStore.js'
+import useLocationStore from '../../Store/useLocationStore.js'
+import AlertModal from "../AlertModal.jsx";
 
 const POISearch = () => {
+  const { setStackScreen } = useStackScreenStore();
+  const { setSearchPOI } = useMapStore();
+  const { location } = useLocationStore();
 
-  const {t} = useTranslation();
+  const { t } = useTranslation();
+
+  const [alertModal, setAlertModal] = useState(false);
+
+  const onIconPress = (item) => {
+    if (location === null) {
+      setAlertModal(true);
+    } else {
+      if (item.poiID) {
+        console.log(item.poiID);
+        setSearchPOI({
+          poiID: item.poiID,
+          latitude: location[1],
+          longitude: location[0],
+        });
+        setStackScreen("POIresult");
+      }
+    }
+  };
+
+  const renderAlertModal = () => (
+    <AlertModal
+      isVisible={alertModal}
+      onClose={() => {
+        setAlertModal(false);
+      }}
+      leftBtnTxt={"Cancel"}
+      successMessage={"Current Location Not Available"}
+      SubText={"Please enable location permission"}
+      onRightPress={() => Linking.openSettings()}
+      rightBtnText={"Go To Settings"}
+      animationType={"slide"}
+    />
+  );
 
   const renderSectionHeader = (title) => {
     return (
       <View style={searchTabsStyles.sectionHeader}>
-        <Text style={searchTabsStyles.sectionHeaderText}>{title}</Text>
+        <Text style={searchTabsStyles.sectionHeaderText}>{t(title)}</Text>
       </View>
     );
   };
@@ -29,7 +69,7 @@ const POISearch = () => {
     return items.map((item, index) => (
       <View key={index} style={searchTabsStyles.poiListCard}>
         <TouchableOpacity
-          onPress={() => setSelectedItem(item)}
+          onPress={() => onIconPress(item)}
           style={searchTabsStyles.poibtns}
         >
           <Text style={searchTabsStyles.itemText}>{t(item.name)}</Text>
@@ -50,6 +90,7 @@ const POISearch = () => {
         </View>
       ))}
     </ScrollView>
+    {alertModal && renderAlertModal()}
   </View>
   );
 };
