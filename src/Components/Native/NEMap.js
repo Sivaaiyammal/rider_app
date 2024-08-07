@@ -146,11 +146,19 @@ class NEMap extends Component {
       }
     )
 
-    this.searchPOIErrorListener = DeviceEventEmitter.addListener(
+    this.searchPOIResultListener = DeviceEventEmitter.addListener(
       'onSearchPOIResults',
       (data) => {
         console.log("SEARCH POI RESULTS", data)
         this.props.onSearchPOIResults ? this.props.onSearchPOIResults(data) : null;
+      }
+    )
+
+    this.searchPOIErrorListener = DeviceEventEmitter.addListener(
+      'onSearchPOIError',
+      (data) => {
+        console.log("SEARCH POI Error", data)
+        this.props.onSearchPOIError ? this.props.onSearchPOIError(data) : null;
       }
     )
 

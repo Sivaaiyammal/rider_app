@@ -68,7 +68,6 @@ const SearchResult = (props) => {
   };
 
   return (
-    groupedData.length === 0 ? <NoDataFound message={"no_data_found"}/> : 
     <SectionList
       stickySectionHeadersEnabled
       sections={groupedData}

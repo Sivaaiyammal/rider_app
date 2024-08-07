@@ -3,6 +3,7 @@ import React, { useContext } from "react";
 import { useStackScreenStore } from "../../Store/useStackScreen";
 import SearchResult from "../SearchResult";
 import GlobalContext from "../../Context/GlobalContext";
+import NoDataFound from "../NoDataFound";
 
 const SavedAddress = () => {
   const { savedAddress } = useContext(GlobalContext);
@@ -12,7 +13,11 @@ const SavedAddress = () => {
     setStackScreen("TargetLocation", data);
   };
 
-  return (
+  return savedAddress.length === 0 ? (
+    <View style={{flex:1,alignItems:'center', justifyContent:'center'}}>
+    <NoDataFound message={"No Data Found"} />
+    </View>
+  ) : (
     <SearchResult
       searchTxt={""}
       search_data={savedAddress}
