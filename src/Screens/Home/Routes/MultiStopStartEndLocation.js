@@ -112,8 +112,8 @@ const MultiStopStartEndLocation = ({ route }) => {
         lon: direction.location[0]
       }));
 
-    console.log("directionPoints-route", directionPoints, directions)
-    if(directionPoints.length >= 2){
+    if(directionPoints.length === 2 || directionPoints.length > 2){
+      console.log("directionPoints-route", directionPoints, directions)
       setMapMarkers([])
       setDirectionPoints({ locations: directionPoints, type: selectedTab });
       setShowOptions(true)

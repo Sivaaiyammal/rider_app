@@ -154,7 +154,7 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
         setFloatingView(false);
         setPositioningView(false);
         const marker = new Marker(String(Math.random() * 100), "startarker", latLng.lng, latLng.lat, "marker_start", 36);
-        if (mapMarkers.length === 0) setMapMarkers([marker]);
+        if (mapMarkers.length <= 1) setMapMarkers([marker]);
         else setMapMarkers([...mapMarkers, marker]);
         const updatedDirections = await updateDirection("Start", [latLng.lng, latLng.lat]);
         setDirections(updatedDirections);

@@ -25,7 +25,7 @@ const HomeScreen = ({ }) => {
   const [dragHeight, setDragHeight] = useState(300);
   const { mapMoving, setMapMoving, setOnMapCenterChanged, setMode, setMapMarkers, setMapLocation, setMapClickCallback } = useMapStore();
   const { setStackScreen } = useStackScreenStore();
-  const { setLocation, location } = useLocationStore();
+  const { setLocation, setDirections } = useLocationStore();
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -41,6 +41,18 @@ const HomeScreen = ({ }) => {
         return true
       }
     }
+
+    const directions = [
+      {
+        id: 1,
+        name: "Start",
+        location: [],
+        locationName: "",
+      },
+      { id: 2, name: "Waypoint", location: [], locationName: "" },
+      { id: 3, name: "End", location: [], locationName: "" },
+    ]
+    setDirections(directions);
 
     checkLocationPermission();
     setMapMarkers([]);
@@ -168,7 +180,8 @@ const HomeScreen = ({ }) => {
   }
 
   const mapClickCallback = (data) => {
-    setLatLng({ lat: data.longitude, lng: data.latitude })
+    console.log("mapClickCallback", data)
+    setLatLng({ lat: data.latitude, lng: data.longitude })
     setPositioningView(true)
     setMapMoving(true);
   }
