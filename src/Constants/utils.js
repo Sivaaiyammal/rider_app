@@ -1,11 +1,12 @@
 import { Dimensions } from 'react-native';
-const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get('window');
 import moment from 'moment';
 import 'moment-timezone';
 
+export const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get('window');
+
 const currentTimezone = moment.tz.guess();
 
-const utils = {
+export const utils = {
 
   dateToTime(date) {
     let hours = date.getHours();
@@ -140,14 +141,33 @@ const utils = {
     }
     const formattedTime = momentObj.format('h:mm a');
     return [dateComparison, formattedTime]
-  }
+  },
 
+   metersToKilometers(meters) {
+    return meters / 1000;
+   },
+   
+   secondsToReadableTime(seconds) {
+    const duration = moment.duration(seconds, 'seconds');
+    let result = '';
 
+    if (duration.hours() > 0) {
+        result += `${duration.hours()}hr `;
+    }
+    if (duration.minutes() > 0) {
+        result += `${duration.minutes()}min `;
+    }
+    if (duration.seconds() > 0 || duration.asSeconds() === 0) {
+        result += `${duration.seconds()}sec`;
+    }
+
+    return result.trim();
+}
 
 };
 
-module.exports = {
-  utils,
-  WINDOW_HEIGHT,
-  WINDOW_WIDTH,
-};
+// module.exports = {
+//   utils,
+//   WINDOW_HEIGHT,
+//   WINDOW_WIDTH,
+// };
