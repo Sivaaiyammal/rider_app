@@ -9,7 +9,7 @@ const useLocationStore = create((set) => ({
     { id: 2, name: "Waypoint", location: [], locationName: "" },
     { id: 3, name: "End", location: [], locationName: "" },
   ],
-  setDirections: (direction) => set({ direction }),
+  setDirections: (setDirection) => set({ directions: setDirection }),
 
   // to save routes
   savedRoutes: [],

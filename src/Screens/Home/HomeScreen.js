@@ -17,6 +17,7 @@ import SearchInput from './searchInput';
 import { useStackScreenStore } from '../../Store/useStackScreen';
 import useLocationStore from '../../Store/useLocationStore';
 import PositionBasedView from '../../Components/positingView';
+import Drawer from '../../Components/Drawer/Drawer';
 
 const HomeScreen = ({ }) => {
   const [centerPoints, setCenterPoints] = useState(null);
@@ -188,23 +189,7 @@ const HomeScreen = ({ }) => {
 
   const BottomSheet = () => (
     <View style={{ flex: 1, marginTop: 10 }}>
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '100%'
-      }}>
-        <IconButton
-          icon="menu"
-          size={24}
-          containerColor='#fff'
-          color="#000"
-          onPress={() => {
-            console.log('Pressed');
-          }}
-        />
-
-      </View>
+    <Drawer />
 
       <View style={{ position: 'absolute', right: -10 }}>
         <TouchableOpacity onPress={handleCurrentLocation}>

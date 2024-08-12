@@ -7,7 +7,9 @@ export const GlobalContext = createContext();
 
 export const ContextProvider = ({ children }) => {
   const [savedAddress, setSavedAddress] = useState([]);
+  const [savedRoutes, setSavedRoutes] = useState([]);
 
+  // Save Address
   const saveAddress = useCallback(async (value) => {
     try {
       const newData = [...savedAddress, value];
@@ -17,10 +19,12 @@ export const ContextProvider = ({ children }) => {
       showNotification("Address Saved Successfully", "", 'success');
     } catch (error) {
       console.error("Error saving address:", error);
-      showNotification("Something Went Wrong", "", 'success');
+      showNotification("Something Went Wrong", "Please try again", 'success');
     }
   }, [savedAddress]);
 
+
+  //Get Saved Address
   const getSavedAddress = useCallback(async () => {
     try {
       const address = await DataStore.loadData("savedAddressed");
@@ -33,6 +37,12 @@ export const ContextProvider = ({ children }) => {
     }
   }, []);
 
+  // Save Route
+    const saveRoute = useCallback(async (value) => {
+      console.log('hari-->>saveRoute-->>', value)
+
+    }, []);
+
   useEffect(() => {
     getSavedAddress();
   }, []);
@@ -41,7 +51,9 @@ export const ContextProvider = ({ children }) => {
     <GlobalContext.Provider
       value={{
         saveAddress,
+        saveRoute,
         savedAddress,
+        savedRoutes
       }}
     >
       {children}

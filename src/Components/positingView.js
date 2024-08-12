@@ -170,7 +170,7 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
         const marker = new Marker(String(Math.random() * 100), `waypoint ${mapMarkers.length}`, latLng.lng, latLng.lat, "marker_waypoint", 36);
         setMapMarkers([...mapMarkers, marker]);
         const newWaypoint = {
-          id: directions.length,
+          id: directions.length + 1,
           name: `Waypoint ${mapMarkers.length}`,
           location: [latLng.lng, latLng.lat],
           locationName: await fetchAddressName(true)

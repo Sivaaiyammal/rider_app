@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -47,20 +47,6 @@ const MultiStopStartEndLocation = ({ route }) => {
   const [showOptions, setShowOptions] = useState(false)
   const {onSearchResults, setSearchUnit} = useMapStore();
   const { location, directions, setDirections } = useLocationStore();
-  // const [directions, setDirections] = useState(direction);
-  //   [
-  //   {
-  //     id: 1,
-  //     name: "Start",
-  //     location: location || [],
-  //     locationName: location ? location.join(', ') : "",
-  //   },
-  //   { id: 2, name: "Waypoint", location: [], locationName: "" },
-  //   { id: 3, name: "End", 
-  //     location: route?.coordinates || [],
-  //     locationName: route?.name || "",
-  //   },
-  // ]);
 
   const {t} = useTranslation()
 
@@ -79,6 +65,12 @@ const MultiStopStartEndLocation = ({ route }) => {
       return true;
     });
 
+    return () => {
+      BackHandler.removeEventListener("hardwareBackPress", () => {});
+    };
+  }, []);
+
+  useEffect(()=> {
     if(route.coordinates){
       const updatedDirections = directions.map((item) => {
 
@@ -104,7 +96,29 @@ const MultiStopStartEndLocation = ({ route }) => {
       })
       setDirections(updatedDirections)
     }
+    updateDirections(directions)
+  },[])
 
+  // const processLocations = (locations) => {
+  //   return locations.reduce((acc, current) => {
+  //     if (current.name === "Waypoint 0") {
+  //       const waypoint = acc.find(item => item.id === 2);
+  //       if (waypoint) {
+  //         waypoint.location = waypoint.location.concat(current.location);
+  //         if (current.locationName) {
+  //           waypoint.locationName = waypoint.locationName 
+  //             ? `${waypoint.locationName}, ${current.locationName}` 
+  //             : current.locationName;
+  //         }
+  //       }
+  //     } else {
+  //       acc.push(current);
+  //     }
+  //     return acc;
+  //   }, []);
+  // };
+
+  const updateDirections = useCallback((directions) => {
     const directionPoints = directions
       .filter(direction => direction.location.length > 0)
       .map(direction => ({
@@ -118,11 +132,7 @@ const MultiStopStartEndLocation = ({ route }) => {
       setDirectionPoints({ locations: directionPoints, type: selectedTab });
       setShowOptions(true)
     }
-
-    return () => {
-      BackHandler.removeEventListener("hardwareBackPress", () => {});
-    };
-  }, []);
+  },[])
 
   const onBackPress = () => {
     const directions = [
@@ -138,18 +148,32 @@ const MultiStopStartEndLocation = ({ route }) => {
     setDirections(directions);
     setDirectionPoints(null);
     goBack();
+    updateDirections(directions)
   };
 
-  const itemHeight = 100;
-
+  const itemHeight = 60;
   const moveItem = (fromIndex, toIndex) => {
-    if (fromIndex !== toIndex) {
-      const newDirections = [...directions];
-      const [movedItem] = newDirections.splice(fromIndex, 1);
-      newDirections.splice(toIndex, 0, movedItem);
-      setDirections(newDirections);
-    }
-  };
+
+  if (fromIndex !== toIndex) {
+    const newDirections = [...directions];
+    
+    // Swap only the locationName and location arrays
+    const fromItem = newDirections[fromIndex];
+    const toItem = newDirections[toIndex];
+
+    const tempLocationName = fromItem.locationName;
+    const tempLocation = fromItem.location;
+
+    fromItem.locationName = toItem.locationName;
+    fromItem.location = toItem.location;
+
+    toItem.locationName = tempLocationName;
+    toItem.location = tempLocation;
+
+    setDirections(newDirections);
+    updateDirections(newDirections)
+  }
+};
 
   const handleSearchTextChange = (value) => {
     setSearchText(value);
@@ -256,6 +280,7 @@ const MultiStopStartEndLocation = ({ route }) => {
                     style={addLocation.draggableInput}
                     placeholder={getLocationIcon(index).name}
                     value={direction.locationName}
+                    selection={{start:0}}
                     onFocus={() => {
                       setScreen("Search");
                       setSelectedInputIndex(index);
@@ -336,7 +361,7 @@ const MultiStopStartEndLocation = ({ route }) => {
               </TouchableOpacity>
             ))}
           </View>
-          <LocationOptions directions={directions} onRoutesPress={onRoutesPress} onStartNavigationPress={onStartNavigationPress}/>
+          <LocationOptions location={location} directions={directions} onRoutesPress={onRoutesPress} onStartNavigationPress={onStartNavigationPress}/>
         </View>
       )}
     </>

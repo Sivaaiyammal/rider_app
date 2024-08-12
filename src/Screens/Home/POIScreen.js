@@ -141,7 +141,7 @@ const POIScreen = ({ setDragHeight, currentScreen }) => {
           },
           { name: t("more"), icon: "dots-horizontal", color: "#A3CB38" },
         ].map((item, index) => (
-          <View>
+          <View key={index}>
             <IconButton
               key={index}
               icon={item.icon}
