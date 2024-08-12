@@ -18,11 +18,11 @@ import Feather from "react-native-vector-icons/Feather";
 import { useStackScreenStore } from "../Store/useStackScreen";
 import { useTranslation } from "react-i18next";
 
-const SetRouteScreen = ({goBack, onStartPress}) => {
+const SetRouteScreen = ({ goBack, onStartPress, type }) => {
   const { directionReadyCallback } = useMapStore();
   // const {goBack} = useStackScreenStore()
 
-  const {t} = useTranslation()
+  const { t } = useTranslation();
 
   useEffect(() => {
     BackHandler.addEventListener("hardwareBackPress", () => {
@@ -37,11 +37,11 @@ const SetRouteScreen = ({goBack, onStartPress}) => {
 
   const onRoutesPress = () => {
     goBack();
-  }
+  };
 
   const _onStartPress = () => {
-    onStartPress()
-  }
+    onStartPress();
+  };
 
   const getDirectionIcon = (text) => {
     if (text.includes("Drive north")) {
@@ -62,27 +62,27 @@ const SetRouteScreen = ({goBack, onStartPress}) => {
   const renderItem = ({ item }) => (
     <View style={setRouteStyles.item}>
       <View style={setRouteStyles.iconsBg}>
-      <MaterialCommunityIcons
-        name={getDirectionIcon(item.text)}
-        size={24}
-        color={Colors.black}
-      />
+        <MaterialCommunityIcons
+          name={getDirectionIcon(item.text)}
+          size={24}
+          color={Colors.black}
+        />
       </View>
       <Text style={setRouteStyles.text}>{item.text}</Text>
     </View>
   );
 
-  return (
+  return type === "route" ? (
     <View style={setRouteStyles.screen}>
       <BottomSheet minHeight={300} maxHeight={500}>
-        <View style={{width:'90%', alignSelf:'center'}}>
-          <Text style={setRouteStyles.title}>{t('routes')}</Text>
+        <View style={{ width: "90%", alignSelf: "center" }}>
+          <Text style={setRouteStyles.title}>{t("routes")}</Text>
           <FlatList
             data={directionReadyCallback?.routeInstructions}
             renderItem={renderItem}
             keyExtractor={(item, index) => index.toString()}
             initialNumToRender={10}
-            contentContainerStyle={{paddingBottom:100}}
+            contentContainerStyle={{ paddingBottom: 100 }}
           />
         </View>
       </BottomSheet>
@@ -96,8 +96,8 @@ const SetRouteScreen = ({goBack, onStartPress}) => {
             height: 80,
             backgroundColor: Colors.grey_light,
             zIndex: 99999,
-            borderTopRightRadius:20,
-            borderTopLeftRadius:20
+            borderTopRightRadius: 20,
+            borderTopLeftRadius: 20,
           },
         ]}
       >
@@ -106,18 +106,34 @@ const SetRouteScreen = ({goBack, onStartPress}) => {
           onPress={() => onRoutesPress()}
         >
           <Feather name="map" color={Colors.black} />
-          <Text style={addLocation.optionBtnTxt}>{t('map')}</Text>
+          <Text style={addLocation.optionBtnTxt}>{t("map")}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={addLocation.optionBtn}
-         onPress={()=>_onStartPress()}>
+        <TouchableOpacity
+          style={addLocation.optionBtn}
+          onPress={() => _onStartPress()}
+        >
           <MaterialCommunityIcons
             name="navigation"
             color={Colors.blue}
             size={16}
           />
-          <Text style={addLocation.optionBtnTxt}>{t('start')}</Text>
+          <Text style={addLocation.optionBtnTxt}>{t("start")}</Text>
         </TouchableOpacity>
       </View>
+    </View>
+  ) : (
+    <View style={{width:'94%', alignItems:'center'}}>
+      <TouchableOpacity onPress={()=>onRoutesPress()} style={setRouteStyles.navCloseBtn}>
+      <Text style={setRouteStyles.navCloseBtnTxt}>Go Back</Text>
+      </TouchableOpacity>
+      <FlatList
+        data={directionReadyCallback?.routeInstructions}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+        initialNumToRender={10}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        scrollEnabled={false}
+      />
     </View>
   );
 };

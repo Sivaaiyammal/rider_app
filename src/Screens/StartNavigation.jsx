@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   NativeModules,
 } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import BottomSheet from "../Components/BottomSheet";
 import useMapStore from "../Store/useMapStore";
 import { Fonts } from "../Constants";
@@ -17,11 +17,17 @@ import { utils } from "../Constants/utils";
 import Routes from "../Assets/Icons/routes.svg";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import SetRouteScreen from "./SetRouteScreen";
+import Switch from "../Components/Switch";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { routeOptionsData } from "../Constants/JsonData";
 
 const { NeNativeModule } = NativeModules;
 
 const StartNavigation = ({ goBack }) => {
   const { setStartNavigation, disduration } = useMapStore();
+  const [showRoute, setShowRoute] = useState(false);
+  const [selectedRouteOption, setSelectedRouteOption] = useState("");
 
   const { t } = useTranslation();
 
@@ -42,6 +48,100 @@ const StartNavigation = ({ goBack }) => {
     goBack();
   };
 
+
+  const updateRouteOptions = (item) => {
+    const id = item.id;
+    const index = selectedRouteOption.indexOf(id);
+    if (index !== -1) {
+      const updatedItems = [...selectedRouteOption];
+      updatedItems.splice(index, 1);
+      setSelectedRouteOption(updatedItems);
+    } else {
+      setSelectedRouteOption([...selectedRouteOption, id]);
+    }
+  };
+
+  const renderSwitch = () => {
+    return <Switch />;
+  };
+
+  const navigationOptions = () => {
+    return (
+      <View style={styles.optionContainer}>
+        <TouchableOpacity
+          style={styles.optionCard}
+          onPress={() => setShowRoute(true)}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Routes />
+            <Text style={styles.optionTxt}>Routes</Text>
+          </View>
+        </TouchableOpacity>
+        <View style={styles.optionCard}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <FontAwesome5 name="traffic-light" color={Colors.blue} size={16} />
+            <Text style={styles.optionTxt}>Show Traffic</Text>
+          </View>
+          {renderSwitch()}
+        </View>
+        <View style={styles.optionCard}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <MaterialCommunityIcons
+              name="printer-3d"
+              color={Colors.blue}
+              size={16}
+            />
+            <Text style={styles.optionTxt}>3d Map View</Text>
+          </View>
+          {renderSwitch()}
+        </View>
+        <View style={styles.optionCard}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <MaterialCommunityIcons
+              name="theme-light-dark"
+              color={Colors.blue}
+              size={16}
+            />
+            <Text style={styles.optionTxt}>Color Theme</Text>
+          </View>
+          {renderSwitch()}
+        </View>
+        <View style={[styles.optionCard, { flexDirection: "column" }]}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <MaterialCommunityIcons
+              name="map-marker-path"
+              color={Colors.blue}
+              size={16}
+            />
+            <Text style={styles.optionTxt}>Route Options</Text>
+          </View>
+          <View style={styles.routeOptions}>
+            {routeOptionsData.map((item) => {
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.routeOptionsBtn}
+                  onPress={() => updateRouteOptions(item)}
+                >
+                  <MaterialIcons
+                    name={
+                      selectedRouteOption.includes(item.id)
+                        ? "check-box"
+                        : "check-box-outline-blank"
+                    }
+                    size={16}
+                    color={ selectedRouteOption.includes(item.id) ? Colors.blue : Colors.black}
+                  />
+                  <Text style={styles.routeOptionsBtnTxt}>{item.name}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <BottomSheet minHeight={150}>
       <View style={styles.navigationContainer}>
@@ -58,65 +158,17 @@ const StartNavigation = ({ goBack }) => {
           </Text>
         </View>
         <TouchableOpacity style={styles.stopBtn} onPress={() => onPressEvent()}>
-          {/* <Text style={styles.stopBtnTxt}>{t("stop_navigation")}</Text> */}
           <Entypo name={"cross"} color={Colors.white} size={20} />
         </TouchableOpacity>
       </View>
-      <View style={styles.optionContainer}>
-        <View style={styles.optionCard}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <Routes />
-            <Text style={styles.optionTxt}>Routes</Text>
-          </View>
-        </View>
-        <View style={styles.optionCard}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <FontAwesome5 name="traffic-light" color={Colors.blue} size={16} />
-            <Text style={styles.optionTxt}>Show Traffic</Text>
-          </View>
-        </View>
-        <View style={styles.optionCard}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <MaterialCommunityIcons
-              name="printer-3d"
-              color={Colors.blue}
-              size={16}
-            />
-            <Text style={styles.optionTxt}>3d Map View</Text>
-          </View>
-        </View>
-        <View style={styles.optionCard}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <MaterialCommunityIcons
-              name="theme-light-dark"
-              color={Colors.blue}
-              size={16}
-            />
-            <Text style={styles.optionTxt}>Color Theme</Text>
-          </View>
-        </View>
-
-        <View style={styles.optionCard}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <MaterialCommunityIcons
-              name="content-save"
-              color={Colors.blue}
-              size={16}
-            />
-            <Text style={styles.optionTxt}>Save Route</Text>
-          </View>
-        </View>
-        <View style={styles.optionCard}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <MaterialCommunityIcons
-              name="map-marker-path"
-              color={Colors.blue}
-              size={16}
-            />
-            <Text style={styles.optionTxt}>Route Options</Text>
-          </View>
-        </View>
-      </View>
+      {showRoute ? (
+        <SetRouteScreen
+          goBack={() => setShowRoute(false)}
+          type={"navigation"}
+        />
+      ) : (
+        navigationOptions()
+      )}
     </BottomSheet>
   );
 };
@@ -179,5 +231,28 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     fontSize: 18,
     color: Colors.black,
+  },
+  routeOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    width: "100%",
+    justifyContent: "space-between",
+    marginTop: 5,
+  },
+  routeOptionsBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    margin: 5,
+  },
+  routeOptionsBtnTxt: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  routeOptionsBtnTxt: {
+    fontFamily: Fonts.light,
+    color: Colors.black,
+    fontSize: 14,
   },
 });

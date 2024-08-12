@@ -25,9 +25,9 @@ export const radioBtns = [
   {
     id: 1,
     name: "home",
-    value:"Home"
+    value: "Home",
   },
-  { id: 2, name: "work", value:"Work" },
+  { id: 2, name: "work", value: "Work" },
   { id: 3, name: "other", value: "Other" },
 ];
 
@@ -132,3 +132,21 @@ export const poiSearchData = [
   },
 ];
 
+export const routeOptionsData = [
+  {
+    id: 1,
+    name: "Avoid Motorways",
+  },
+  {
+    id: 2,
+    name: "Avoid Toll Roads",
+  },
+  {
+    id: 3,
+    name: "Avoid Ferries",
+  },
+  {
+    id: 4,
+    name: "Avoid Highways",
+  },
+];

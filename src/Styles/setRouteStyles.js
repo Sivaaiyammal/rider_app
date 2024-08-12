@@ -44,5 +44,17 @@ export const setRouteStyles = StyleSheet.create({
     justifyContent:'center',
     borderRadius:50,
     marginRight:10
+  },
+  navCloseBtn:{
+    backgroundColor:Colors.black,
+    marginTop:10,
+    paddingVertical:5,
+    paddingHorizontal:15,
+    borderRadius:10,
+    alignSelf:'flex-end'
+  },
+  navCloseBtnTxt:{
+    fontFamily:Fonts.regular,
+    color:Colors.white    
   }
 });

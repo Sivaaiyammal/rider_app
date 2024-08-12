@@ -151,7 +151,7 @@ const MultiStopStartEndLocation = ({ route }) => {
     updateDirections(directions)
   };
 
-  const itemHeight = 60;
+  const itemHeight = 80;
   const moveItem = (fromIndex, toIndex) => {
 
   if (fromIndex !== toIndex) {
@@ -324,6 +324,7 @@ const MultiStopStartEndLocation = ({ route }) => {
           onStartPress={() => {
             onStartNavigationPress();
           }}
+          type={'route'}
         />
       )}
       {screen === "Navigation" && (
