@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   NativeModules,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import BottomSheet from "../Components/BottomSheet";
 import useMapStore from "../Store/useMapStore";
 import { Fonts } from "../Constants";
@@ -25,9 +25,12 @@ import { routeOptionsData } from "../Constants/JsonData";
 const { NeNativeModule } = NativeModules;
 
 const StartNavigation = ({ goBack }) => {
-  const { setStartNavigation, disduration } = useMapStore();
+  const { setStartNavigation, disduration, setMode } = useMapStore();
   const [showRoute, setShowRoute] = useState(false);
   const [selectedRouteOption, setSelectedRouteOption] = useState("");
+  const [isEnabledTraffic, setIsEnabledTraffic] = React.useState(false);
+  const [isEnabledDarkMode, setIsEnabledDarkMode] = React.useState(false);
+  const [isEnabled3D, setIsEnabled3D] = React.useState(false);
 
   const { t } = useTranslation();
 
@@ -48,8 +51,19 @@ const StartNavigation = ({ goBack }) => {
     goBack();
   };
 
+  const toggleTraffic = () => setIsEnabledTraffic(previousState => !previousState);
 
-  const updateRouteOptions = (item) => {
+  const toggle3D = () => setIsEnabled3D(previousState => !previousState);
+
+  const toggleMode = useCallback(() => {
+    setIsEnabledDarkMode(previousState => {
+      const newMode = !previousState;
+      setMode(newMode ? 'dark' : 'light');
+      return newMode;
+    });
+  }, []);
+
+  const updateRouteOptions = useCallback((item) => {
     const id = item.id;
     const index = selectedRouteOption.indexOf(id);
     if (index !== -1) {
@@ -59,10 +73,36 @@ const StartNavigation = ({ goBack }) => {
     } else {
       setSelectedRouteOption([...selectedRouteOption, id]);
     }
-  };
+    console.log('hari-->>selectedItems-->>', selectedRouteOption)
+  }, [selectedRouteOption]);
 
-  const renderSwitch = () => {
-    return <Switch />;
+  const renderSwitch = (toggleSwitch, isEnabled) => {
+    return (
+      <Switch
+        barHeight={25}
+        switchWidth={25}
+        switchHeight={15}
+        value={isEnabled}
+        onValueChange={toggleSwitch}
+        disabled={false}
+        backgroundActive={'#0095ff'}
+        backgroundInactive={'#d1d1d1'}
+        circleActiveColor={'white'}
+        circleInActiveColor={'white'}
+        changeValueImmediately={true}
+        innerCircleStyle={{
+          borderWidth: 0,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        renderActiveText={false}
+        renderInActiveText={false}
+        switchLeftPx={3} // denominator for logic when sliding to TRUE position. Higher number = more space from RIGHT of the circle to END of the slider
+        switchRightPx={3} // denominator for logic when sliding to FALSE position. Higher number = more space from LEFT of the circle to BEGINNING of the slider
+        switchWidthMultiplier={2} // multiplied by the `circleSize` prop to calculate total width of the Switch
+        switchBorderRadius={30} 
+      />
+    );
   };
 
   const navigationOptions = () => {
@@ -82,18 +122,7 @@ const StartNavigation = ({ goBack }) => {
             <FontAwesome5 name="traffic-light" color={Colors.blue} size={16} />
             <Text style={styles.optionTxt}>Show Traffic</Text>
           </View>
-          {renderSwitch()}
-        </View>
-        <View style={styles.optionCard}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <MaterialCommunityIcons
-              name="printer-3d"
-              color={Colors.blue}
-              size={16}
-            />
-            <Text style={styles.optionTxt}>3d Map View</Text>
-          </View>
-          {renderSwitch()}
+          {renderSwitch(toggleTraffic, isEnabledTraffic)}
         </View>
         <View style={styles.optionCard}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
@@ -104,8 +133,20 @@ const StartNavigation = ({ goBack }) => {
             />
             <Text style={styles.optionTxt}>Color Theme</Text>
           </View>
-          {renderSwitch()}
+          {renderSwitch(toggleMode, isEnabledDarkMode)}
         </View>
+        <View style={styles.optionCard}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <MaterialCommunityIcons
+              name="printer-3d"
+              color={Colors.blue}
+              size={16}
+            />
+            <Text style={styles.optionTxt}>3d Map View</Text>
+          </View>
+          {renderSwitch(toggle3D, isEnabled3D)}
+        </View>
+
         <View style={[styles.optionCard, { flexDirection: "column" }]}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <MaterialCommunityIcons
