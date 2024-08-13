@@ -5,7 +5,7 @@ import { useStackScreenStore } from "../Store/useStackScreen";
 import Map from "./Map";
 import SearchScreen from "./Home/SearchScreen";
 import HomeScreen from "./Home/HomeScreen";
-import SettingsScreen from "./SettingsScreen";
+import SettingsScreen from "./Settings/SettingsScreen";
 import TargetLocation from "./Home/targetLocation";
 import MultiStopStartEndLocation from "./Home/Routes/MultiStopStartEndLocation";
 import POIresultScreen from "./POIScreens/POIresultScreen";
