@@ -23,14 +23,15 @@ import { useTranslation } from "react-i18next";
 const TargetLocation = ({ data }) => {
   const [locationDetails, setLocationDetails] = useState([]);
   const { setMapMarkers, setMapLocation } = useMapStore();
-  const { setStackScreen } = useStackScreenStore();
+  const { setStackScreen, goBack } = useStackScreenStore();
   const { address, name, coordinates, distance } = data;
 
   const {t} = useTranslation()
 
   const closeBottomSheet = () => {
     setMapMarkers([]);
-    setStackScreen("Home");
+    // setStackScreen("Home");
+    goBack()
   };
 
   useEffect(() => {

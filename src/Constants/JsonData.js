@@ -194,9 +194,9 @@ export const settingsDataA = [
 export const settingsDataB = [
   {
     id: 1,
-    name: "My Location",
+    name: "My Locations",
     icon: <Location />,
-    screenName: "RouteSettings",
+    screenName: "MyLocations",
   },
   {
     id: 2,
@@ -208,7 +208,7 @@ export const settingsDataB = [
     id: 3,
     name: "Languages",
     icon: <Language />,
-    screenName: "RouteSettings",
+    screenName: "Languages",
   },
   {
     id: 4,
@@ -216,12 +216,12 @@ export const settingsDataB = [
     icon: <Theme />,
     screenName: "RouteSettings",
   },
-  {
-    id: 5,
-    name: "Notification",
-    icon: <Notification />,
-    screenName: "RouteSettings",
-  },
+  // {
+  //   id: 5,
+  //   name: "Notification",
+  //   icon: <Notification />,
+  //   screenName: "RouteSettings",
+  // },
 ];
 
 export const settingsDataC = [

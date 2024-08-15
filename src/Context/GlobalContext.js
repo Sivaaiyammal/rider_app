@@ -12,6 +12,8 @@ export const ContextProvider = ({ children }) => {
 
   const [distanceConfig, setDistanceConfig] = useState(DistanceFormate.km);
 
+  const [isLoading, setIsLoading] =useState(false)
+
   // Save Address
   const saveAddress = useCallback(
     async (value) => {
@@ -67,7 +69,9 @@ export const ContextProvider = ({ children }) => {
     setIsLoading(true);
     try {
       await DataStore.storeData('unitType', unitType);
+     
       setDistanceConfig(DistanceFormate[unitType] || DistanceFormate.km);
+      
       setIsLoading(false);
     } catch (error) {
       console.error('Error setting distance unit:', error);

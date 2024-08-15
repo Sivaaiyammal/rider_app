@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useCallback, useContext, useState } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import { settingsStyles } from "../../Styles/SettingsScreen";
 import NavBar from "../../Components/NavBar";
 import { useStackScreenStore } from "../../Store/useStackScreen";
@@ -46,16 +46,16 @@ const audioOption = [
   }
 ];
 
-const distanceOption = [
+const _distanceOptions = [
   {
     id: 1,
-    name: "Kilometers",
+    name: "Kilometers (km/kmph)",
     unit:'km',
     type:'distance',
   },
   {
     id: 2,
-    name: "Miles",
+    name: "Miles (m/mph)",
     unit:'mi',
     type:'distance',
   }
@@ -73,6 +73,10 @@ const RouteSettings = () => {
   const [isEnabledTraffic, setIsEnabledTraffic] = useState(false);
   const [isEnabled3D, setIsEnabled3D] = useState(false);
   const [selectedRouteOption, setSelectedRouteOption] = useState("");
+
+  //distance formate updated from localStorage
+  const newDistanceOption = _distanceOptions?.filter((item) => item.unit === distanceConfig.dUnit)
+  const [distanceOption, setDistanceOption] = useState(newDistanceOption[0])
 
   const onBackPress = () => {
     goBack();
@@ -180,7 +184,7 @@ const RouteSettings = () => {
       <ScrollView contentContainerStyle={settingsStyles.container}>
         {_renderPicker(drivingRoute, setDrivingRoute, routOptions, "Driving Route")}
         {_renderPicker(cycleRoute, setCycleRoute, routOptions, "Bicycle Route")}
-        {_renderPicker(cycleRoute, setCycleRoute, distanceOption, "Distance Formate - (Kilometers/Meters)")}
+        {_renderPicker(distanceOption, setDistanceOption, _distanceOptions, "Distance Formate - (Kilometers/Meters)")}
         {_renderPicker(
           navigationType,
           setNavigationType,

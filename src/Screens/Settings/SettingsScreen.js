@@ -13,9 +13,16 @@ import {
   settingsDataE,
 } from "../../Constants/JsonData";
 import { settingsStyles } from "../../Styles/SettingsScreen";
+import useTabScreenStore from "../../Store/useTabScreenStore";
 
 const SettingsScreen = ({ navigation }) => {
   const { setStackScreen } = useStackScreenStore();
+
+  const {setCurrentScreen} = useTabScreenStore()
+
+  const onBackPress = () => {
+    setCurrentScreen('Home')
+  }
 
   const onSettingsPress = (item) => {
     setStackScreen(item.screenName);
@@ -23,9 +30,9 @@ const SettingsScreen = ({ navigation }) => {
 
   return (
     <View style={settingsStyles.screen}>
-      <NavBar title={"Settings"} />
+      <NavBar title={"Settings"} onBackPress={()=>onBackPress()}/>
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-        <View style={settingsStyles.settingItemCard}>
+        {/* <View style={settingsStyles.settingItemCard}>
           {settingsDataA.map((option, index) => (
             <TouchableOpacity
               key={index}
@@ -47,7 +54,7 @@ const SettingsScreen = ({ navigation }) => {
               </View>
             </TouchableOpacity>
           ))}
-        </View>
+        </View> */}
         {settingsDataB.map((option, index) => (
           <TouchableOpacity
             key={index}
@@ -69,7 +76,7 @@ const SettingsScreen = ({ navigation }) => {
             </View>
           </TouchableOpacity>
         ))}
-        <View style={settingsStyles.settingItemCard}>
+        {/* <View style={settingsStyles.settingItemCard}>
           {settingsDataC.map((option, index) => (
             <TouchableOpacity
               key={index}
@@ -91,8 +98,8 @@ const SettingsScreen = ({ navigation }) => {
               </View>
             </TouchableOpacity>
           ))}
-        </View>
-        <View style={settingsStyles.settingItemCard}>
+        </View> */}
+        {/* <View style={settingsStyles.settingItemCard}>
           {settingsDataD.map((option, index) => (
             <TouchableOpacity
               key={index}
@@ -114,8 +121,8 @@ const SettingsScreen = ({ navigation }) => {
               </View>
             </TouchableOpacity>
           ))}
-        </View>
-        {settingsDataE.map((option, index) => (
+        </View> */}
+        {/* {settingsDataE.map((option, index) => (
           <TouchableOpacity
             key={index}
             style={[settingsStyles.settingItemCardSplit]}
@@ -135,7 +142,7 @@ const SettingsScreen = ({ navigation }) => {
               />
             </View>
           </TouchableOpacity>
-        ))}
+        ))} */}
       </ScrollView>
     </View>
   );
