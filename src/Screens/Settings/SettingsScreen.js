@@ -20,14 +20,19 @@ import {
 import { settingsStyles } from "../../Styles/SettingsScreen";
 
 const SettingsScreen = ({ navigation }) => {
+const {setStackScreen} = useStackScreenStore()
+
+  const settingsA = (item) => {
+     setStackScreen(item.screenName)
+  }
 
   return (
-    <View style={settingsStyles.container}>
+    <View style={settingsStyles.screen}>
       <NavBar title={"Settings"} />
       <ScrollView contentContainerStyle={{paddingBottom:100}}>
         <View style={settingsStyles.settingItemCard}>
           {settingsDataA.map((option, index) => (
-            <TouchableOpacity key={index} style={settingsStyles.settingItem}>
+            <TouchableOpacity key={index} style={settingsStyles.settingItem} onPress={()=>settingsA(option)}>
               <View style={{ flexDirection: "row", gap: 15, alignItems:'center'  }}>
                 {option.icon}
                 <Text style={settingsStyles.settingText}>{option.name}</Text>

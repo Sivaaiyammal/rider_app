@@ -10,6 +10,7 @@ import TargetLocation from "./Home/targetLocation";
 import MultiStopStartEndLocation from "./Home/Routes/MultiStopStartEndLocation";
 import POIresultScreen from "./POIScreens/POIresultScreen";
 import SavedRoutes from "./Home/Routes/SavedRoutes";
+import RouteSettings from "./Settings/RouteSettings";
 
 const MainScreen = () => {
   const { stackScreen } = useStackScreenStore();
@@ -37,7 +38,9 @@ const MainScreen = () => {
       case "POIresult":
         return <POIresultScreen />;
       case "savedRoutes":
-        return <SavedRoutes />
+        return <SavedRoutes />;
+        case "RouteSettings":
+        return <RouteSettings />;
       default:
         return <HomeScreen />;
     }

@@ -174,17 +174,20 @@ export const settingsDataA = [
   {
     id: 1,
     name: "Edit Profile",
-    icon: <Profile />
+    icon: <Profile />,
+    screenName : 'RouteSettings'
   },
   {
     id: 2,
     name: "Synced Accounts",
-    icon: <Account />
+    icon: <Account />,
+    screenName : 'RouteSettings'
   },
   {
     id: 3,
     name: "Change Password",
-    icon: <Lock />
+    icon: <Lock />,
+    screenName : 'RouteSettings'
   },
 ];
 

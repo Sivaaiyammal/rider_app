@@ -17,8 +17,6 @@ const SearchScreen = ({ data }) => {
   const { setStackScreen } = useStackScreenStore();
   const {onSearchResults} = useMapStore();
 
-  console.log('hari-->>data-->>', data)
-
   const selectedCallBack = (result) => {
     setStackScreen('TargetLocation', result);
   }
