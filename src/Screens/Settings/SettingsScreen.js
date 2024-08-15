@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import Entypo from "react-native-vector-icons/Entypo";
 
 import { Colors } from "../../Constants/Contants";
@@ -20,20 +15,26 @@ import {
 import { settingsStyles } from "../../Styles/SettingsScreen";
 
 const SettingsScreen = ({ navigation }) => {
-const {setStackScreen} = useStackScreenStore()
+  const { setStackScreen } = useStackScreenStore();
 
-  const settingsA = (item) => {
-     setStackScreen(item.screenName)
-  }
+  const onSettingsPress = (item) => {
+    setStackScreen(item.screenName);
+  };
 
   return (
     <View style={settingsStyles.screen}>
       <NavBar title={"Settings"} />
-      <ScrollView contentContainerStyle={{paddingBottom:100}}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={settingsStyles.settingItemCard}>
           {settingsDataA.map((option, index) => (
-            <TouchableOpacity key={index} style={settingsStyles.settingItem} onPress={()=>settingsA(option)}>
-              <View style={{ flexDirection: "row", gap: 15, alignItems:'center'  }}>
+            <TouchableOpacity
+              key={index}
+              style={settingsStyles.settingItem}
+              onPress={() => onSettingsPress(option)}
+            >
+              <View
+                style={{ flexDirection: "row", gap: 15, alignItems: "center" }}
+              >
                 {option.icon}
                 <Text style={settingsStyles.settingText}>{option.name}</Text>
               </View>
@@ -48,8 +49,14 @@ const {setStackScreen} = useStackScreenStore()
           ))}
         </View>
         {settingsDataB.map((option, index) => (
-          <TouchableOpacity key={index} style={[settingsStyles.settingItemCardSplit]}>
-            <View style={{ flexDirection: "row", gap: 15 , alignItems:'center' }}>
+          <TouchableOpacity
+            key={index}
+            style={[settingsStyles.settingItemCardSplit]}
+            onPress={() => onSettingsPress(option)}
+          >
+            <View
+              style={{ flexDirection: "row", gap: 15, alignItems: "center" }}
+            >
               {option.icon}
               <Text style={settingsStyles.settingText}>{option.name}</Text>
             </View>
@@ -64,8 +71,14 @@ const {setStackScreen} = useStackScreenStore()
         ))}
         <View style={settingsStyles.settingItemCard}>
           {settingsDataC.map((option, index) => (
-            <TouchableOpacity key={index} style={settingsStyles.settingItem}>
-              <View style={{ flexDirection: "row", gap: 15, alignItems:'center'  }}>
+            <TouchableOpacity
+              key={index}
+              style={settingsStyles.settingItem}
+              onPress={() => onSettingsPress(option)}
+            >
+              <View
+                style={{ flexDirection: "row", gap: 15, alignItems: "center" }}
+              >
                 {option.icon}
                 <Text style={settingsStyles.settingText}>{option.name}</Text>
               </View>
@@ -81,8 +94,14 @@ const {setStackScreen} = useStackScreenStore()
         </View>
         <View style={settingsStyles.settingItemCard}>
           {settingsDataD.map((option, index) => (
-            <TouchableOpacity key={index} style={settingsStyles.settingItem}>
-              <View style={{ flexDirection: "row", gap: 15,alignItems:'center'  }}>
+            <TouchableOpacity
+              key={index}
+              style={settingsStyles.settingItem}
+              onPress={() => onSettingsPress(option)}
+            >
+              <View
+                style={{ flexDirection: "row", gap: 15, alignItems: "center" }}
+              >
                 {option.icon}
                 <Text style={settingsStyles.settingText}>{option.name}</Text>
               </View>
@@ -97,8 +116,14 @@ const {setStackScreen} = useStackScreenStore()
           ))}
         </View>
         {settingsDataE.map((option, index) => (
-          <TouchableOpacity key={index} style={[settingsStyles.settingItemCardSplit]}>
-            <View style={{ flexDirection: "row", gap: 15, alignItems:'center' }}>
+          <TouchableOpacity
+            key={index}
+            style={[settingsStyles.settingItemCardSplit]}
+            onPress={() => onSettingsPress(option)}
+          >
+            <View
+              style={{ flexDirection: "row", gap: 15, alignItems: "center" }}
+            >
               {option.icon}
               <Text style={settingsStyles.settingText}>{option.name}</Text>
             </View>
