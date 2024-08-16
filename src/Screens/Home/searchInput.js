@@ -5,7 +5,14 @@ import useMapStore from "../../Store/useMapStore";
 import { useStackScreenStore } from "../../Store/useStackScreen";
 import { useTranslation } from "react-i18next";
 
-const SearchInput = ({searchText, setCurrentScreen, focused, setSearchText, setSearchData, closeBtn }) => {
+const SearchInput = ({
+    searchText, 
+    setCurrentScreen, 
+    focused, 
+    setSearchText, 
+    setSearchData,
+    setIsRecording,
+    closeBtn }) => {
     const [loading, setLoading] = useState(false);
     const { setSearchUnit, onSearchResults } = useMapStore();
     const { setStackScreen } = useStackScreenStore();
@@ -42,6 +49,7 @@ const SearchInput = ({searchText, setCurrentScreen, focused, setSearchText, setS
             onChange={handleSearch}
             onCancelPress={closeBtn ? () => clearText() : undefined}
             autoFocus={!focused}
+            setIsRecording={setIsRecording}
         />
     )
 }

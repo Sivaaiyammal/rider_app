@@ -4,12 +4,17 @@ import {
     Text,
     View,
     Modal,
-    Animated
+    Animated,
+    Alert
 } from 'react-native';
-import Voice from '@react-native-voice/voice';
+import Voice, {
+    SpeechRecognizedEvent,
+    SpeechResultsEvent,
+    SpeechErrorEvent,
+} from '@react-native-voice/voice';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-const VoiceRecognition = ({ modalVisible, setModalVisible }) => {
+const VoiceRecognition = ({ modalVisible, setModalVisible, onSpeechCallBack }) => {
     const [isListening, setIsListening] = useState(false);
     const [recognizedText, setRecognizedText] = useState('');
     const pulseAnimation = useRef(new Animated.Value(0)).current;
@@ -17,8 +22,10 @@ const VoiceRecognition = ({ modalVisible, setModalVisible }) => {
 
     useEffect(() => {
         Voice.onSpeechStart = onSpeechStart;
+        Voice.onSpeechRecognized = onSpeechRecognized;
         Voice.onSpeechEnd = onSpeechEnd;
         Voice.onSpeechResults = onSpeechResults;
+        Voice.onSpeechError = onSpeechError;
 
         if (modalVisible) {
             startListening();
@@ -91,7 +98,7 @@ const VoiceRecognition = ({ modalVisible, setModalVisible }) => {
     const onSpeechStart = (e) => {
         setIsListening(true);
         console.log('Speech started');
-        console.log(e)
+        console.log(e, "speech started")
     };
 
     const onSpeechEnd = (e) => {
@@ -100,18 +107,38 @@ const VoiceRecognition = ({ modalVisible, setModalVisible }) => {
         console.log('Speech ended');
     };
 
+    const onSpeechRecognized = (e) => {
+        console.log(e, "speech recognized")
+    }
+
     const onSpeechResults = (e) => {
         const result = e.value[0];
-        setRecognizedText(result);
         console.log('Speech results:', result);
+        setRecognizedText(result);
+        onSpeechCallBack(result);
+    };
+
+    const onSpeechError = (e) => {
+        console.error('Speech recognition error:', e);
+        Alert.alert(
+            "Speech Recognition Error",
+            "There was an error with speech recognition. Please try again.",
+            [{ text: "OK", onPress: () => setModalVisible(false) }]
+        );
     };
 
     const startListening = async () => {
         try {
+            console.log('startListening');
             await Voice.start('en-US');
             setIsListening(true);
         } catch (error) {
-            console.error(error);
+            console.error('Error starting voice recognition:', error);
+            Alert.alert(
+                "Error",
+                "Failed to start voice recognition. Please check your microphone permissions and try again.",
+                [{ text: "OK", onPress: () => setModalVisible(false) }]
+            );
         }
     };
 
@@ -120,7 +147,7 @@ const VoiceRecognition = ({ modalVisible, setModalVisible }) => {
             await Voice.stop();
             setIsListening(false);
         } catch (error) {
-            console.error(error);
+            console.error('Error stopping voice recognition:', error);
         }
     };
 

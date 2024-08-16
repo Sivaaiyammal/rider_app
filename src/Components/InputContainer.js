@@ -10,26 +10,17 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 // styles
 import { componentStyle } from '../Styles/ComponentStyles';
 
-// voice recorder
-import Voice from '@react-native-voice/voice';
-import VoiceRecognition from './voiceRecognation';
-
 const InputContainer = props => {
-  const { placeholder, onChange, value, onCancelPress, onFocus, loading, autoFocus } = props;
-  const [isRecording, setIsRecording] = useState(false);
-
-
-  const startRecording = () => {
-    setIsRecording(true);
-    // Voice.start('en-US');
-    // Voice.onSpeechStart = () => {
-    //   console.log('Speech started');
-    // }
-    // Voice.onSpeechEnd = () => {
-    //   console.log('Speech ended');
-    //   setIsRecording(false);
-    // }
-  }
+  const { 
+    placeholder, 
+    onChange, 
+    value, 
+    onCancelPress, 
+    onFocus, 
+    loading, 
+    autoFocus, 
+    setIsRecording 
+  } = props;
 
   return (
     <View style={componentStyle.inputContainer}>
@@ -49,13 +40,13 @@ const InputContainer = props => {
           autoFocus={autoFocus || false}
         />
         {/* Mic Icon  */}
-        <TouchableOpacity
+        {onCancelPress && (<TouchableOpacity
           style={componentStyle.inputIcons}
           onPress={() => {
-            startRecording();
+            setIsRecording(true);
           }}>
           <FontAwesome name="microphone" size={20} />
-        </TouchableOpacity>
+        </TouchableOpacity>)}
       </View>
 
       {loading && <ProgressBar
@@ -78,7 +69,6 @@ const InputContainer = props => {
           <AntDesign name="close" size={22} />
         </TouchableOpacity>
       )}
-      <VoiceRecognition modalVisible={isRecording} setModalVisible={setIsRecording} />
     </View>
   );
 };
