@@ -139,5 +139,3 @@ const SetRouteScreen = ({ goBack, onStartPress, type }) => {
 };
 
 export default SetRouteScreen;
-
-const styles = StyleSheet.create({});

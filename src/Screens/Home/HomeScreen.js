@@ -11,7 +11,7 @@ import Marker from '../../Constants/NEMap/Marker';
 import CurrentLocationIcon from '../../Assets/Icons/currentLocation.svg';
 import DirectionsIcon from '../../Assets/Icons/direction.svg';
 import CustomTabBar from '../../Components/CustomTabBar/CustomTabBar';
-import SettingsScreen from '../SettingsScreen';
+import SettingsScreen from '../Settings/SettingsScreen';
 import ContentScreen from './content';
 import SearchInput from './searchInput';
 import { useStackScreenStore } from '../../Store/useStackScreen';

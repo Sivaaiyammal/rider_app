@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 import '../../Locales/IMLocalize';
 import RNRestart from "react-native-restart";
 import {useTranslation} from 'react-i18next';
+import useTabScreenStore from '../../Store/useTabScreenStore';
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -58,7 +59,9 @@ const styles = StyleSheet.create({
 export default function CustomTabBar({ menus = [] }) {
   const [tab, setTab] = useState(menus)
   const [showBottomTabs, setShowBottomTabs] = useState(true)
-  const [currentScreen, setCurrentScreen] = useState('Home')
+  // const [currentScreen, setCurrentScreen] = useState('Home')
+
+  const {currentScreen, setCurrentScreen} = useTabScreenStore()
   const activeIndex = menus.findIndex(menu => menu.name === currentScreen);
 
   const {t, i18n} = useTranslation();

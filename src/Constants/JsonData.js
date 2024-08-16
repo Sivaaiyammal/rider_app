@@ -1,3 +1,22 @@
+import Profile from "../Assets/Icons/settings/editProfile.svg";
+import Account from "../Assets/Icons/settings/account.svg";
+import Lock from "../Assets/Icons/settings/lock.svg";
+import Location from "../Assets/Icons/settings/location.svg";
+import Routes from "../Assets/Icons/settings/routes.svg";
+import Language from "../Assets/Icons/settings/language.svg";
+import Theme from "../Assets/Icons/settings/theme.svg";
+import Notification from "../Assets/Icons/settings/notification.svg";
+import Shield from "../Assets/Icons/settings/shield.svg";
+import Help from "../Assets/Icons/settings/help.svg";
+import Terms from "../Assets/Icons/settings/accept.svg";
+import Privacy from "../Assets/Icons/settings/privacy_policy.svg";
+import About from "../Assets/Icons/settings/info.svg";
+import FeedBack from "../Assets/Icons/settings/feedback.svg";
+import Report from "../Assets/Icons/settings/error.svg";
+import Support from "../Assets/Icons/settings/support.svg";
+import More from "../Assets/Icons/settings/dashboard.svg";
+import Refresh from "../Assets/Icons/settings/refresh.svg";
+
 export const searchTabBtns = [
   {
     id: 1,
@@ -148,5 +167,128 @@ export const routeOptionsData = [
   {
     id: 4,
     name: "Avoid Highways",
+  },
+];
+
+export const settingsDataA = [
+  {
+    id: 1,
+    name: "Edit Profile",
+    icon: <Profile />,
+    screenName: "RouteSettings",
+  },
+  {
+    id: 2,
+    name: "Synced Accounts",
+    icon: <Account />,
+    screenName: "RouteSettings",
+  },
+  {
+    id: 3,
+    name: "Change Password",
+    icon: <Lock />,
+    screenName: "RouteSettings",
+  },
+];
+
+export const settingsDataB = [
+  {
+    id: 1,
+    name: "My Locations",
+    icon: <Location />,
+    screenName: "MyLocations",
+  },
+  {
+    id: 2,
+    name: "Route Settings",
+    icon: <Routes />,
+    screenName: "RouteSettings",
+  },
+  {
+    id: 3,
+    name: "Languages",
+    icon: <Language />,
+    screenName: "Languages",
+  },
+  {
+    id: 4,
+    name: "Color Theme",
+    icon: <Theme />,
+    screenName: "RouteSettings",
+  },
+  // {
+  //   id: 5,
+  //   name: "Notification",
+  //   icon: <Notification />,
+  //   screenName: "RouteSettings",
+  // },
+];
+
+export const settingsDataC = [
+  {
+    id: 1,
+    name: "Data Privacy",
+    icon: <Shield />,
+    screenName: "RouteSettings",
+  },
+  {
+    id: 2,
+    name: "Help",
+    icon: <Help />,
+    screenName: "RouteSettings",
+  },
+  {
+    id: 3,
+    name: "Terms and Conditions",
+    icon: <Terms />,
+    screenName: "RouteSettings",
+  },
+  {
+    id: 4,
+    name: "Privacy Policy",
+    icon: <Privacy />,
+    screenName: "RouteSettings",
+  },
+];
+
+export const settingsDataD = [
+  {
+    id: 1,
+    name: "About Us",
+    icon: <About />,
+    screenName: "RouteSettings",
+  },
+  {
+    id: 2,
+    name: "Send FeedBack",
+    icon: <FeedBack />,
+    screenName: "RouteSettings",
+  },
+  {
+    id: 3,
+    name: "Report Error",
+    icon: <Report />,
+    screenName: "RouteSettings",
+  },
+  {
+    id: 4,
+    name: "Support",
+    icon: <Support />,
+    screenName: "RouteSettings",
+  },
+];
+
+export const settingsDataE = [
+  {
+    id: 1,
+    name: "More Apps",
+    icon: <More />,
+    screenName: "RouteSettings",
+  },
+  {
+    id: 2,
+    name: "Check for Updates",
+    icon: <Refresh />,
+    screenName: "RouteSettings",
   },
 ];
