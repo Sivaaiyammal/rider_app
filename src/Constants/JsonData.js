@@ -194,34 +194,40 @@ export const settingsDataA = [
 export const settingsDataB = [
   {
     id: 1,
-    name: "My Locations",
-    icon: <Location />,
-    screenName: "MyLocations",
-  },
-  {
-    id: 2,
     name: "Route Settings",
     icon: <Routes />,
     screenName: "RouteSettings",
   },
   {
+    id: 2,
+    name: "GPS Reliablitiy",
+    icon: <Routes />,
+    screenName: "RouteSettings",
+  },
+  {
     id: 3,
-    name: "Languages",
+    name: "Navigation Accuracy",
     icon: <Language />,
     screenName: "Languages",
   },
   {
     id: 4,
-    name: "Color Theme",
+    name: "Map Appearence",
     icon: <Theme />,
     screenName: "RouteSettings",
   },
-  // {
-  //   id: 5,
-  //   name: "Notification",
-  //   icon: <Notification />,
-  //   screenName: "RouteSettings",
-  // },
+  {
+    id: 5,
+    name: "Languages",
+    icon: <Language />,
+    screenName: "Languages",
+  },
+  {
+    id: 6,
+    name: "Choose Map Style",
+    icon: <Language />,
+    screenName: "Languages",
+  },
 ];
 
 export const settingsDataC = [
@@ -291,4 +297,60 @@ export const settingsDataE = [
     icon: <Refresh />,
     screenName: "RouteSettings",
   },
+];
+
+export const pickerAccuracy = [
+  {
+    id: 1,
+    name: "Low",
+  },
+  {
+    id: 2,
+    name: "Medium",
+  },
+  {
+    id: 3,
+    name: "High",
+  },
+];
+
+export const pickerAppearance = [
+  {
+    id: 1,
+    name: "Small",
+  },
+  {
+    id: 2,
+    name: "Regular",
+  },
+  {
+    id: 3,
+    name: "Large",
+  },
+];
+
+export const pickerRoute = [
+  {
+    id: 1,
+    name: "Avoid",
+  },
+  {
+    id: 2,
+    name: "Slightly Prefer",
+  },
+  {
+    id: 3,
+    name: "Prefer",
+  },
+];
+
+export const distanceFormate = [
+  {
+    id: 1,
+    name: "Kilometers(km)/ Meters(m)",
+  },
+  {
+    id: 2,
+    name: "Miles(m)/ Feet(ft)",
+  }
 ];

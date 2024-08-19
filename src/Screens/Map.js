@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import useMapStore from "../Store/useMapStore";
 import NEMap from "../Components/Native/NEMap";
 import Loaders from "../Components/Loaders/FullScreenLoader";
+import { useSettingsPropsStore } from "../Store/useSettingsPropsStore";
 
 const MapContainer = ({ mapStyle }) => {
   const {
@@ -30,6 +31,10 @@ const MapContainer = ({ mapStyle }) => {
     setDisduration,
     setSearchPOIError
   } = useMapStore();
+
+  const {settings} = useSettingsPropsStore()
+
+  console.log('Map Settings-->>', settings)
 
   return (
     <View style={[styles.mapContainer]}>

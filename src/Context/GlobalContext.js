@@ -3,16 +3,16 @@ import React, { createContext, useEffect, useState, useCallback } from "react";
 import { DataStore } from "../Constants/DataStore";
 import { showNotification } from "../Components/NotificationManager";
 import { DistanceFormate } from "../Utils/DistanceFormate";
+import { useSettingsPropsStore } from "../Store/useSettingsPropsStore";
 
 export const GlobalContext = createContext();
 
 export const ContextProvider = ({ children }) => {
   const [savedAddress, setSavedAddress] = useState([]);
   const [savedRoutes, setSavedRoutes] = useState([]);
-
-  const [distanceConfig, setDistanceConfig] = useState(DistanceFormate.km);
-
   const [isLoading, setIsLoading] =useState(false)
+
+  const {settings, initializeSettings } = useSettingsPropsStore();
 
   // Save Address
   const saveAddress = useCallback(
@@ -52,36 +52,13 @@ export const ContextProvider = ({ children }) => {
   //Get Saved Route
   const getSavedRoute = useCallback(async () => {}, []);
 
-  // get distance formate
-  const getDistanceUnit = async () => {
-    setIsLoading(true);
-    try {
-      const unitType = await DataStore.loadData('unitType');
-      setDistanceConfig(DistanceFormate[unitType?.data] || DistanceFormate.km);
-    } catch (error) {
-      console.error('Error getting distance unit:', error);
-      setIsLoading(false);
-    }
-  };
- 
-  // update distance formate
-  const updateDistanceUnit = async unitType => {
-    setIsLoading(true);
-    try {
-      await DataStore.storeData('unitType', unitType);
-     
-      setDistanceConfig(DistanceFormate[unitType] || DistanceFormate.km);
-      
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error setting distance unit:', error);
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    getSavedAddress();
-    getDistanceUnit();
+    const initialize = async () => {
+      await getSavedAddress();
+      await initializeSettings();
+    };
+  
+    initialize();
   }, []);
 
   return (
@@ -90,10 +67,8 @@ export const ContextProvider = ({ children }) => {
         saveAddress,
         saveRoute,
         getSavedRoute,
-        updateDistanceUnit,
         savedAddress,
         savedRoutes,
-        distanceConfig,
       }}
     >
       {children}

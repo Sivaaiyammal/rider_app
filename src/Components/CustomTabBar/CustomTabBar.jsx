@@ -103,16 +103,16 @@ const changeLanguage = () => {
     <>
       {tab[activeIndex].component && tab[activeIndex].component}
       <View style={styles.bottomBar}>
-        {tab.map(menu => {
+        {tab.map((menu,id) => {
           if (menu.hidden) {
             return null;
           }
           return (
-            <View style={{ flex: 1 }} key={menu.id}>
+            <View style={{ flex: 1 }} key={id}>
               {
                 <TouchableOpacity
                   style={[styles.menu, {alignItems: 'center', justifyContent: 'center', gap: 5}]}
-                  key={menu.id}
+                  key={id}
                   testID={menu.name}
                   onPress={() => onMenuClick(menu.name, menu.callBack, menu.icon)}>
                   <Icon
