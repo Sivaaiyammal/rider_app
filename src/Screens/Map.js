@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
@@ -6,6 +6,7 @@ import useMapStore from "../Store/useMapStore";
 import NEMap from "../Components/Native/NEMap";
 import Loaders from "../Components/Loaders/FullScreenLoader";
 import { useSettingsPropsStore } from "../Store/useSettingsPropsStore";
+import GlobalContext from "../Context/GlobalContext";
 
 const MapContainer = ({ mapStyle }) => {
   const {
@@ -34,7 +35,9 @@ const MapContainer = ({ mapStyle }) => {
 
   const {settings} = useSettingsPropsStore()
 
-  console.log('Map Settings-->>', settings)
+  // const {themeOperations, themeValue} = useContext(GlobalContext);
+
+  // console.log('Map Settings-->>', themeValue)
 
   return (
     <View style={[styles.mapContainer]}>

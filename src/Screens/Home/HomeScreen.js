@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, View, TouchableOpacity, BackHandler, PermissionsAndroid, Alert } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import DraggableBottomSheet from '../../Components/BottomSheet';
 import { IconButton } from 'react-native-paper';
@@ -18,6 +18,7 @@ import { useStackScreenStore } from '../../Store/useStackScreen';
 import useLocationStore from '../../Store/useLocationStore';
 import PositionBasedView from '../../Components/positingView';
 import Drawer from '../../Components/Drawer/Drawer';
+import GlobalContext from '../../Context/GlobalContext';
 
 const HomeScreen = ({ }) => {
   const [centerPoints, setCenterPoints] = useState(null);
@@ -27,6 +28,8 @@ const HomeScreen = ({ }) => {
   const { mapMoving, setMapMoving, setOnMapCenterChanged, setMode, setMapMarkers, setMapLocation, setMapClickCallback } = useMapStore();
   const { setStackScreen } = useStackScreenStore();
   const { setLocation, setDirections } = useLocationStore();
+
+  const {themeOperations, themeValue} = useContext(GlobalContext);
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -187,6 +190,17 @@ const HomeScreen = ({ }) => {
     setMapMoving(true);
   }
 
+  const changeTheme = (icon) => {
+    if (icon === 'lightbulb') {
+      themeOperations('light')
+      setMode('light')
+    } else {
+      themeOperations('dark')
+      setMode('dark')
+    }
+  }
+
+
   const BottomSheet = () => (
     <View style={{ flex: 1, marginTop: 10 }}>
     <Drawer />
@@ -219,12 +233,12 @@ const HomeScreen = ({ }) => {
             name: 'Home',
             component: <BottomSheet />,
           }, {
-            icon: 'lightbulb',
+            icon: themeValue === 'dark' ? 'lightbulb' : 'moon',
             name: 'Mode',
             component: <View />,
             callBack: (icon) => {
               console.log('Mode pressed', icon);
-              setMode(icon === 'lightbulb' ? 'dark' : 'light');
+              changeTheme(icon)
             },
           }, {
             icon: 'language',

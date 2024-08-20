@@ -1,9 +1,10 @@
-import { View, Text } from "react-native";
+import { View, Text, useColorScheme } from "react-native";
 import React, { createContext, useEffect, useState, useCallback } from "react";
 import { DataStore } from "../Constants/DataStore";
 import { showNotification } from "../Components/NotificationManager";
 import { DistanceFormate } from "../Utils/DistanceFormate";
 import { useSettingsPropsStore } from "../Store/useSettingsPropsStore";
+import useMapStore from "../Store/useMapStore";
 
 export const GlobalContext = createContext();
 
@@ -12,7 +13,12 @@ export const ContextProvider = ({ children }) => {
   const [savedRoutes, setSavedRoutes] = useState([]);
   const [isLoading, setIsLoading] =useState(false)
 
-  const {settings, initializeSettings } = useSettingsPropsStore();
+  const [themeValue, setThemeValue] = useState('');
+  const [initialValue, setInitialValue] = useState(0);
+  const themes = useColorScheme();
+
+  const { initializeSettings } = useSettingsPropsStore();
+  const {setMode} = useMapStore()
 
   // Save Address
   const saveAddress = useCallback(
@@ -52,10 +58,40 @@ export const ContextProvider = ({ children }) => {
   //Get Saved Route
   const getSavedRoute = useCallback(async () => {}, []);
 
+  const themeOperations = theme => {
+    switch (theme) {
+      case 'dark':
+        setTheme(theme, false);
+        return;
+      case 'light':
+        setTheme(theme, false);
+        return;
+      case 'default':
+        setTheme(themes, true);
+        return;
+    }
+  };
+
+  const getAppTheme = useCallback(async () => {
+    const theme = await DataStore.loadData('Theme');
+    const isDefault = await DataStore.loadData('IsDefault');
+    isDefault.data ? themeOperations('default') : themeOperations(theme.data);
+    setThemeValue(theme.data);
+    setMode(theme.data)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setTheme = useCallback(async (theme, isDefault) => {
+    DataStore.storeData('Theme', theme);
+    DataStore.storeData('IsDefault', isDefault);
+    setThemeValue(theme);
+  }, []);
+
   useEffect(() => {
     const initialize = async () => {
       await getSavedAddress();
       await initializeSettings();
+      await getAppTheme();
     };
   
     initialize();
@@ -67,8 +103,11 @@ export const ContextProvider = ({ children }) => {
         saveAddress,
         saveRoute,
         getSavedRoute,
+        setTheme,
+        themeOperations,
         savedAddress,
         savedRoutes,
+        themeValue,
       }}
     >
       {children}
