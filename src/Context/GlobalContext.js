@@ -37,6 +37,21 @@ export const ContextProvider = ({ children }) => {
     [savedAddress]
   );
 
+    // Save Route
+    const saveRoute = useCallback(async (value) => {
+      console.log("hari-->>saveRoute-->>", value);
+      try {
+        const newData = [...savedRoutes, value];
+        console.log("Saving address:", newData);
+        setSavedRoutes(newData);
+        await DataStore.storeData("savedRoutes", newData);
+        showNotification("Routes Saved Successfully", "", "success");
+      } catch (error) {
+        console.error("Error saving Route:", error);
+        showNotification("Something Went Wrong", "Please try again", "success");
+      }
+    }, []);
+
   //Get Saved Address
   const getSavedAddress = useCallback(async () => {
     try {
@@ -50,13 +65,19 @@ export const ContextProvider = ({ children }) => {
     }
   }, []);
 
-  // Save Route
-  const saveRoute = useCallback(async (value) => {
-    console.log("hari-->>saveRoute-->>", value);
-  }, []);
 
   //Get Saved Route
-  const getSavedRoute = useCallback(async () => {}, []);
+  const getSavedRoute = useCallback(async () => {
+    try {
+      const routes = await DataStore.loadData("savedRoutes");
+      console.log("Loaded Routes:", routes.data);
+      if (routes?.data) {
+        setSavedRoutes(routes.data);
+      }
+    } catch (error) {
+      console.error("Error loading Routes:", error);
+    }
+  }, []);
 
   const themeOperations = theme => {
     switch (theme) {
@@ -89,9 +110,10 @@ export const ContextProvider = ({ children }) => {
 
   useEffect(() => {
     const initialize = async () => {
-      await getSavedAddress();
       await initializeSettings();
       await getAppTheme();
+      await getSavedAddress();
+      await getSavedRoute();
     };
   
     initialize();

@@ -6,7 +6,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { addLocation } from "../../Styles/AnimatedTextinputStyles";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -14,11 +14,15 @@ import Routes from "../../Assets/Icons/routes.svg";
 import { Colors, Fonts } from "../../Constants/Contants";
 import useLocationStore from "../../Store/useLocationStore";
 import { useTranslation } from "react-i18next";
+import YourLoc from '../../Assets/Icons/yourloc.svg'
+import Flag from "../../Assets/Icons/flag.svg";
+import EndLoc from "../../Assets/Icons/endLoc.svg";
+import GlobalContext from "../../Context/GlobalContext";
 
 const LocationOptions = (props) => {
   const { onRoutesPress, onStartNavigationPress, directions } = props;
 
-  const {savedRoutes,setSavedRoutes} = useLocationStore();
+  const {saveRoute} = useContext(GlobalContext)
 
   const [modalVisible, setModalVisible] = useState(false);
   const [routeName, setRouteName] = useState("");
@@ -30,15 +34,17 @@ const LocationOptions = (props) => {
     if (routeName.length === 0) {
       setRouteNameErr("Please Enter Route Name");
     } else {
-      const savedAddress = {
+      const savedRoute = {
         routeName: routeName,
         locations: directions
       };
-      setSavedRoutes(savedAddress)
+      saveRoute(savedRoute)
       setRouteNameErr("");
       setModalVisible(false)
     }
   };
+
+  console.log('hari-->>directions-->>saved', directions)
 
   const saveLocModal = () => {
     return (
@@ -66,18 +72,16 @@ const LocationOptions = (props) => {
               ) : (
                 <></>
               )}
-              <Text style={styles.inputTitle}>{t('your_location')}</Text>
-              <TextInput
-                editable={false}
-                placeholder={directions[0]?.locationName}
-                style={styles.input}
-              />
-              <Text style={styles.inputTitle}>{t('end_location')}</Text>
-              <TextInput
-                editable={false}
-                placeholder={directions[2]?.locationName}
-                style={styles.input}
-              />
+              {directions.map((item)=> {
+              return (
+                <View style={styles.addressComponent}>
+                <Text numberOfLines={1} style={styles.inputTitle2}>
+                {item?.name === 'Start' &&  <YourLoc />}
+                {item?.name?.includes('Waypoint') ?  <Flag /> : null}
+                {item?.name === 'End' &&  <EndLoc />}{'   '}{item.locationName}</Text> 
+                </View>
+              )
+              })}
               <View style={styles.saveLocationBtns}>
                 <Pressable
                   style={[styles.saveLocBtn, { backgroundColor: Colors.white }]}
@@ -185,6 +189,13 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: Colors.black,
   },
+  inputTitle2:{
+    fontFamily: Fonts.regular,
+    color: Colors.black,
+    fontSize:12,
+    marginTop:10,
+    width:'100%',
+  },
   saveLocBtn: {
     backgroundColor: Colors.black,
     alignItems: "center",
@@ -212,4 +223,10 @@ const styles = StyleSheet.create({
     bottom: 5,
     color: "red",
   },
+  addressComponent:{
+    flexDirection:'row',
+    gap:10,
+    alignItems:'center',
+    justifyContent:'center'
+  }
 });
