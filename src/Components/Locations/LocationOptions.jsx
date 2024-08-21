@@ -69,13 +69,13 @@ const LocationOptions = (props) => {
               <Text style={styles.inputTitle}>{t('your_location')}</Text>
               <TextInput
                 editable={false}
-                placeholder={directions[0].locationName}
+                placeholder={directions[0]?.locationName}
                 style={styles.input}
               />
               <Text style={styles.inputTitle}>{t('end_location')}</Text>
               <TextInput
                 editable={false}
-                placeholder={directions[2].locationName}
+                placeholder={directions[2]?.locationName}
                 style={styles.input}
               />
               <View style={styles.saveLocationBtns}>

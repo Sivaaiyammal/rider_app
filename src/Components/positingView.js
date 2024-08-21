@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useContext,
+  useCallback,
+} from "react";
 import {
   View,
   Text,
@@ -23,6 +29,7 @@ import GlobalContext from "../Context/GlobalContext";
 import Marker from "../Constants/NEMap/Marker";
 import useLocationStore from "../Store/useLocationStore";
 import { useStackScreenStore } from "../Store/useStackScreen";
+import FullScreenLoader from "../Components/Loaders/FullScreenLoader";
 // Define the geographical bounds of your static view
 const GEO_BOUNDS = {
   latTop: 90, // Top latitude of your area
@@ -34,16 +41,25 @@ const GEO_BOUNDS = {
 // Convert latitude and longitude to x and y coordinates
 const latLngToXY = (lat, lng, width, height) => {
   // Ensure lat and lng are within bounds
-  const clampedLat = Math.max(GEO_BOUNDS.latBottom, Math.min(GEO_BOUNDS.latTop, lat));
-  const clampedLng = Math.max(GEO_BOUNDS.lngLeft, Math.min(GEO_BOUNDS.lngRight, lng));
+  const clampedLat = Math.max(
+    GEO_BOUNDS.latBottom,
+    Math.min(GEO_BOUNDS.latTop, lat)
+  );
+  const clampedLng = Math.max(
+    GEO_BOUNDS.lngLeft,
+    Math.min(GEO_BOUNDS.lngRight, lng)
+  );
 
   // Calculate x coordinate
-  const x = ((clampedLng - GEO_BOUNDS.lngLeft) / (GEO_BOUNDS.lngRight - GEO_BOUNDS.lngLeft)) * width;
+  const x =
+    ((clampedLng - GEO_BOUNDS.lngLeft) /
+      (GEO_BOUNDS.lngRight - GEO_BOUNDS.lngLeft)) *
+    width;
 
   // Calculate y coordinate using Mercator projection
-  const latRad = clampedLat * Math.PI / 180;
-  const mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
-  const y = (height / 2) - (width * mercN / (2 * Math.PI));
+  const latRad = (clampedLat * Math.PI) / 180;
+  const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
+  const y = height / 2 - (width * mercN) / (2 * Math.PI);
 
   return { x, y };
 };
@@ -59,24 +75,21 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
   const [selectedOption, setSelectedOption] = useState(radioBtns[0]);
   const [addressName, setAddressName] = useState("");
   const [addressLoading, setAddressLoading] = useState(false);
+  const [newDirections, setNewDirections] = useState([]);
 
-  const { saveAddress } = useContext(GlobalContext)
+  const { saveAddress } = useContext(GlobalContext);
 
   const search = new SearchAPI();
 
   const { t } = useTranslation();
 
-  const { mapMoving, setMapMarkers, mapMarkers } = useMapStore();
+  const { mapMoving, setMapMarkers, mapMarkers, setDirectionPoints } =
+    useMapStore();
   const { setDirections, directions } = useLocationStore();
   const { setStackScreen } = useStackScreenStore();
 
   // Calculate position based on latitude and longitude
-  const position = latLngToXY(
-    coords.lat,
-    coords.lng,
-    width - 130,
-    height
-  );
+  const position = latLngToXY(coords.lat, coords.lng, width - 130, height);
 
   // console.log(position, width, height, "lknclkdns", latLng);
 
@@ -118,27 +131,108 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
     }, 1000);
   }, []);
 
-  console.log(mapMoving, "mapMoving");
+  const updateDirections = useCallback((directions) => {
+    const directionPoints = directions
+      .filter((direction) => direction.location.length > 0)
+      .map((direction) => ({
+        lat: direction.location[1],
+        lon: direction.location[0],
+      }));
+    setMapMarkers([]);
+    console.log("directionPoints-route", directionPoints, directions);
+    setDirectionPoints({ locations: directionPoints, type: "car" });
+    setStackScreen("Directions", 'position');
+  }, []);
 
-  const fetchAddressName = async (markerSet = false) => {
-    const coordinates = [latLng.lat, latLng.lng];
+  const updateLocationNames = async (locations) => {
     setAddressLoading(true);
+    for (const location of locations) {
+      if (location.location.length > 0) {
+        const [lng, lat] = location.location;
+        const address = await fetchAddressName(lat, lng, true);
+        location.locationName = address;
+      }
+    }
+    updateDirections(locations);
+    setAddressLoading(false);
+  };
+
+  const fetchAddressName = async (lat, lng, markerSet = false) => {
+    const coordinates = [lat, lng];
+    // setAddressLoading(true);
     try {
+      const search = new SearchAPI();
       const response = await search.reverseGeocode(coordinates);
       if (response) {
         if (!markerSet) {
           setAddressName(response.properties.street);
-          setAddressLoading(false);
+        } else {
+          return (
+            response.properties.street ||
+            response.properties.name ||
+            "Unnamed Location"
+          );
         }
-        else {
-          return response.properties.street
-        }
-
       }
     } catch (e) {
-      setAddressLoading(false);
+      console.error("Failed to fetch address", e);
+      return "";
     }
   };
+
+  const setStartLocation = async () => {
+    const marker = new Marker(
+      String(Math.random() * 100),
+      "startMarker",
+      latLng.lng,
+      latLng.lat,
+      "marker_start",
+      36
+    );
+    setMapMarkers([marker]);
+    const directionArray = [
+      {
+        id: 1,
+        location: [latLng.lng, latLng.lat],
+        locationName: "",
+        name: "Start",
+      },
+    ];
+    setDirections(directionArray);
+  };
+
+  const setWaypoints = async () => {
+    const marker = new Marker(
+      String(Math.random() * 100),
+      `waypoint ${mapMarkers.length}`,
+      latLng.lng,
+      latLng.lat,
+      "marker_waypoint",
+      36
+    );
+    setMapMarkers([...mapMarkers, marker]);
+    const newWaypoint = {
+      id: directions.length + 1,
+      name: `Waypoint ${mapMarkers.length}`,
+      location: [latLng.lng, latLng.lat],
+      locationName: "",
+    };
+    const updatedDirections = [...directions];
+    updatedDirections.splice(1 + mapMarkers.length - 1, 0, newWaypoint);
+    setDirections(updatedDirections);
+  };
+
+  const setEndLocation = () => {
+    const endDirection = {
+      id: directions.length + 1,
+      location: [latLng.lng, latLng.lat],
+      locationName: "",
+      name: "End",
+    };
+    const updatedDirections = [...directions, endDirection];
+    setDirections(updatedDirections);
+    updateLocationNames(updatedDirections);
+  }
 
   const onMarkerIconsPress = async (icon) => {
     const actions = {
@@ -148,54 +242,34 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
       },
       save: () => {
         setModalVisible(true);
-        fetchAddressName();
+        fetchAddressName(latLng.lng, latLng.lat);
       },
-      'map-marker-alt': async () => {
+      // set start location
+      "map-marker-alt": async () => {
         setFloatingView(false);
         setPositioningView(false);
-        const marker = new Marker(String(Math.random() * 100), "startarker", latLng.lng, latLng.lat, "marker_start", 36);
-        if (mapMarkers.length <= 1) setMapMarkers([marker]);
-        else setMapMarkers([...mapMarkers, marker]);
-        const updatedDirections = await updateDirection("Start", [latLng.lng, latLng.lat]);
-        setDirections(updatedDirections);
+        await setStartLocation();
       },
+      // set end location and set route
       directions: async () => {
-        const updatedDirections = await updateDirection("End", [latLng.lng, latLng.lat]);
-        setDirections(updatedDirections);
-        setStackScreen("Directions");
+         setEndLocation();
       },
-      'location-arrow': async () => {
+      // set waypoints
+      "location-arrow": async () => {
         setFloatingView(false);
         setPositioningView(false);
-        const marker = new Marker(String(Math.random() * 100), `waypoint ${mapMarkers.length}`, latLng.lng, latLng.lat, "marker_waypoint", 36);
-        setMapMarkers([...mapMarkers, marker]);
-        const newWaypoint = {
-          id: directions.length + 1,
-          name: `Waypoint ${mapMarkers.length}`,
-          location: [latLng.lng, latLng.lat],
-          locationName: await fetchAddressName(true)
-        };
-        directions.splice(directions.length - 1, 0, newWaypoint);
-        console.log("directions", directions)
-        setDirections(directions);
-      }
+        if (mapMarkers.length === 0) {
+          await setStartLocation();
+        } else {
+          await setWaypoints();
+        }
+      },
     };
 
     if (actions[icon.name]) {
       await actions[icon.name]();
     }
-  }
-
-  const updateDirection = async (name, location) => {
-    const updatedDirections = await Promise.all(directions.map(async (item) => {
-      if (item.name === name) {
-        item.location = location;
-        item.locationName = await fetchAddressName(true)
-      }
-      return item;
-    }));
-    return updatedDirections;
-  }
+  };
 
   const saveLocation = () => {
     if (locationName.length === 0) {
@@ -211,7 +285,7 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
       setLocationNameErr("");
       setLocationName("");
       setModalVisible(false);
-      saveAddress(savedAddress)
+      saveAddress(savedAddress);
     }
   };
 
@@ -241,7 +315,7 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
             ) : (
               <></>
             )}
-            {addressName &&
+            {addressName && (
               <View style={styles.loctionDetails}>
                 <Entypo
                   name="location-pin"
@@ -252,7 +326,7 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
                   {addressLoading ? <ActivityIndicator /> : addressName}
                 </Text>
               </View>
-            }
+            )}
 
             <View style={styles.radionBtnContainer}>
               {radioBtns.map((item) => {
@@ -293,12 +367,24 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
           </View>
         </View>
       </Modal>
-      // </View>
     );
   };
 
   return (
     <>
+      {addressLoading && (
+        <View
+          style={{
+            zIndex: 9999,
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+          }}
+        >
+          <FullScreenLoader />
+        </View>
+      )}
+
       {floatingView && (
         <View
           style={{
@@ -320,12 +406,26 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
                 style={styles.iconView}
                 onPress={() => onMarkerIconsPress(icon)}
               >
-                {icon.name !== "close" ? <Icon
-                  name={icon.name}
-                  style={styles.icon}
-                  size={15}
-                  color="#fff"
-                /> : <Text style={{ color: "#fff", fontSize: 15, fontFamily: Fonts.bold, alignSelf: "center" }}> X </Text>}
+                {icon.name !== "close" ? (
+                  <Icon
+                    name={icon.name}
+                    style={styles.icon}
+                    size={15}
+                    color="#fff"
+                  />
+                ) : (
+                  <Text
+                    style={{
+                      color: "#fff",
+                      fontSize: 15,
+                      fontFamily: Fonts.bold,
+                      alignSelf: "center",
+                    }}
+                  >
+                    {" "}
+                    X{" "}
+                  </Text>
+                )}
               </TouchableOpacity>
             </Animated.View>
           ))}

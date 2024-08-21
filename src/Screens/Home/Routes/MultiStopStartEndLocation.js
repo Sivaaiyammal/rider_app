@@ -222,28 +222,22 @@ const MultiStopStartEndLocation = ({ route }) => {
     setScreen("Routes");
   };
 
-  const getLocationIcon = (id) => {
-    switch (id) {
-      case 0:
-        return {
-          icon: <YourLoc />,
-          name: t('your_location'),
-        };
-      case 1:
-        return {
-          icon: <Flag width={15} height={15} />,
-          name: t('add_waypoint'),
-        };
-      case 2:
-        return {
-          icon: <EndLoc width={15} height={15} />,
-          name: t('destination'),
-        };
-      default:
-        return {
-          icon: <Flag width={15} height={15} />,
-          name: t('add_waypoint'),
-        };
+  const getLocationIcon = (id, totalLocations) => {
+    if (id === 0) {
+      return {
+        icon: <YourLoc />,
+        name: t('start_location'),
+      };
+    } else if (id === totalLocations - 1) {
+      return {
+        icon: <EndLoc width={15} height={15} />,
+        name: t('end_location'),
+      };
+    } else {
+      return {
+        icon: <Flag width={15} height={15} />,
+        name: t('waypoint'),
+      };
     }
   };
 
@@ -274,11 +268,11 @@ const MultiStopStartEndLocation = ({ route }) => {
                 }}
               >
                 <View style={addLocation.draggableCard}>
-                  {getLocationIcon(index).icon}
+                  {getLocationIcon(index,directions.length).icon}
                   <TextInput
                     ref={(el) => (inputRefs.current[index] = el)}
                     style={addLocation.draggableInput}
-                    placeholder={getLocationIcon(index).name}
+                    placeholder={getLocationIcon(index,directions.length).name}
                     value={direction.locationName}
                     selection={{start:0}}
                     onFocus={() => {
@@ -336,7 +330,7 @@ const MultiStopStartEndLocation = ({ route }) => {
           }}
         />
       )}
-      {screen !== "Search" && showOptions && screen !== "Navigation" &&(
+      {screen !== "Search" && screen !== "Navigation" &&(
         <View style={addLocation.bottomContainer}>
           <View style={addLocation.directionType}>
             {[
