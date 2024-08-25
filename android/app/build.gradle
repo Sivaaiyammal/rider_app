@@ -69,6 +69,7 @@ android {
 
     namespace "com.itc"
     defaultConfig {
+
         applicationId "com.itc"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
@@ -77,6 +78,11 @@ android {
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+
+        manifestPlaceholders = [
+      appAuthRedirectScheme: 'com.googleusercontent.apps.490539589076-ve73f8pke0kkmhee5riud8frkhm2croi'
+      // your url will look like com.googleusercontent.apps.12345678912-k50abcdefghijkabcdefghijkabcdefv
+    ]
     
         if (isNewArchitectureEnabled()) {
             // We configure the NDK build only if you decide to opt-in for the New Architecture.

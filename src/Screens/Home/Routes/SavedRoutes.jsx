@@ -48,8 +48,8 @@ const SavedRoutes = () => {
                 style={styles.routesCard}
                 onPress={() => goToRoutes(item)}
               >
-                <Text style={{ fontFamily: Fonts.regular }}>
-                  <Text>Name: </Text>
+                <Text style={{ fontFamily: Fonts.regular, color:Colors.black }}>
+                  <Text style={{ fontFamily: Fonts.medium,color:Colors.black  }}>Route Name: </Text>
                   {item.routeName}
                 </Text>
               </TouchableOpacity>

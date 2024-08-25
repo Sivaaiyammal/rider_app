@@ -1,155 +1,92 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, PermissionsAndroid, Image, Button, Alert } from "react-native";
-import { FAB } from "react-native-paper";
-import { useNavigation, CommonActions } from "@react-navigation/native";
-
-import LocationPermissionImg from "../Assets/Icons/locationPermission.svg";
-
+import {
+  I18nManager,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import React from "react";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
+import { useTranslation } from "react-i18next";
+import RNRestart from "react-native-restart";
+import { settingsStyles } from "../Styles/SettingsScreen";
+import { Colors } from "../Constants/Contants";
+import { useStackScreenStore } from "../Store/useStackScreen";
+import NavBar from "../Components/NavBar";
 import { DataStore } from "../Constants/DataStore";
+import { useNavigation } from "@react-navigation/native";
 
 const LanguageScreen = () => {
-  const [screen, setScreen] = useState("language");
-  const [locationPermission, setLocationPermission] = useState(false);
-  const languages = ["English", "Arabic"];
-  const [selectedLanguage, setSelectedLanguage] = useState("English");
-  const navigation = useNavigation();
+  const navigation = useNavigation()
 
-  const handleLanguageSelect = (language) => {
-    setSelectedLanguage(language);
+  const langugaes = [
+    { id: 1, name: "English", code: "en" },
+    { id: 1, name: "Arabic", code: "ar" },
+  ];
+
+  const { goBack } = useStackScreenStore();
+
+  const onBackPress = () => {
+    goBack();
   };
 
-  const handleContinue = () => {
-    DataStore.storeData("language", selectedLanguage);
-    setScreen("location");
+  const { i18n } = useTranslation();
+
+  const changeLanguage = () => {
+    i18n
+      .changeLanguage(i18n.language === "ar" ? "en" : "ar")
+      .then(() => {
+        I18nManager.forceRTL(i18n.language === "ar");
+        RNRestart.Restart();
+      })
+      .catch((err) => {
+        console.log("something went wrong while applying RTL", err);
+      });
   };
 
-  const handleLocationPermission = async () => {
-    const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-    if (result === PermissionsAndroid.RESULTS.GRANTED) {
-      navigation.dispatch(
-        CommonActions.navigate("Home")
-      )
-    } else if (result === PermissionsAndroid.RESULTS.DENIED) {
-
-      Alert.alert("Location Permission", "Location permission denied", [
-        { text: "OK", onPress: () => navigation.dispatch(CommonActions.navigate("Home")) }
-      ])
-
-    }
-
-  }
-
-  const handleLocationPermissionUI = () => {
-
-    return (
-      <View style={{ flex: 1, alignItems: 'center', padding: 10, paddingTop: 100, justifyContent: 'space-between' }}>
-        <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: 'darkblue', width: '80%' }}>We need to access your location</Text>
-        {/* <Image 
-          source={require("../Assets/images/location.png")} 
-          style={{ width: 100, height: 100, marginBottom: 20 }}
-        /> */}
-        <LocationPermissionImg />
-        <Text style={{ margin: 20, fontSize: 16, width: '80%' }}>
-          We need your location to provide accurate navigation and location-based services.
-          Your privacy is important to us, and we only use your location when you're using the app.
-        </Text>
-        <View style={{ width: '80%', flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
-          <Button
-            title="Allow Location"
-            onPress={handleLocationPermission}
-            style={{ marginBottom: 10, backgroundColor: '#007AFF', padding: 10, borderRadius: 5 }}
-            titleStyle={{ color: '#FFFFFF', fontSize: 16 }}
-          />
-        </View>
-      </View>
-    )
-
-  }
-
-  const handleLanguageUI = () => {
-
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Choose Your Language</Text>
-        {languages.map((language, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.languageButton,
-              {
-                backgroundColor: selectedLanguage === language ? "#007AFF" : "#f0f0f0"
-              }
-            ]}
-            onPress={() => {
-              handleLanguageSelect(language);
-            }}>
-            <Text style={[
-              styles.languageText,
-              {
-                color: selectedLanguage === language ? "#ffffff" : "#212121"
-              }
-            ]}>{language}</Text>
-          </TouchableOpacity>
-        ))}
-
-        <FAB
-          icon="arrow-right"
-          color="#fff"
-          onPress={handleContinue}
-          style={styles.continueButton}
-        />
-      </View>
-    );
-
+  const onNextPress = () => {
+     DataStore.storeData('language', 'languageDone')
+     navigation.navigate('onBoardingScreen')
   }
 
   return (
-    <>
-      {screen === "language" ? handleLanguageUI() : handleLocationPermissionUI()}
-    </>
+    <View style={settingsStyles.screen}>
+      <View style={settingsStyles.navContainer}> 
+      <Text style={settingsStyles.navContainerTxt}>Choose Language</Text>
+      </View>
+      <View style={[settingsStyles.container, { width: "100%" }]}>
+        {langugaes.map((item) => {
+          return (
+            <TouchableOpacity
+              key={item.id}
+              style={[settingsStyles.settingItemCardSplit]}
+              onPress={() => changeLanguage()}
+            >
+              <View
+                style={{ flexDirection: "row", gap: 15, alignItems: "center" }}
+              >
+                <Text style={settingsStyles.settingText}>{item.name}</Text>
+              </View>
+              <View>
+                <FontAwesome
+                  name={
+                    i18n.language === item.code ? "dot-circle-o" : "circle-o"
+                  }
+                  color={Colors.black}
+                  size={20}
+                />
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+      <TouchableOpacity style={settingsStyles.bottombtn} onPress={()=>onNextPress()}>
+        <Text style={settingsStyles.bottombtnTxt}>Next</Text>
+      </TouchableOpacity>
+    </View>
   );
-
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
-    color: "#000",
-    fontWeight: "bold",
-  },
-  languageButton: {
-    padding: 10,
-    marginVertical: 5,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 5,
-    width: "80%",
-    alignItems: "center",
-  },
-  languageText: {
-    fontSize: 18,
-    color: "#212121",
-    fontWeight: "bold",
-  },
-  continueButtonContainer: {
-    // flex: 1,
-    justifyContent: "flex-end",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  continueButton: {
-    position: "absolute",
-    bottom: 20,
-    right: 20,
-    backgroundColor: "#007AFF",
-    borderRadius: 50,
-  },
-});
-
 export default LanguageScreen;
+
+const styles = StyleSheet.create({});

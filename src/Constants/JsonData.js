@@ -16,6 +16,36 @@ import Report from "../Assets/Icons/settings/error.svg";
 import Support from "../Assets/Icons/settings/support.svg";
 import More from "../Assets/Icons/settings/dashboard.svg";
 import Refresh from "../Assets/Icons/settings/refresh.svg";
+import OnBoardA from '../Assets/Icons/onBoarding/onBoardA.svg'
+import OnBoardB from '../Assets/Icons/onBoarding/onBoardB.svg'
+import OnBoardC from '../Assets/Icons/onBoarding/onBoardC.svg'
+
+export const onBoardingSlides = [
+  {
+    id: 1,
+    name: "Slide 1",
+    title: `${"Download Offline" + `${'\n'}` + "Maps"}`,
+    image: <OnBoardA/>,
+    content:
+      "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, seddiam nonumy eirmod tempor invidunt ut labore et dolore  magna aliquyam erat, sed diam voluptua.",
+  },
+  {
+    id: 2,
+    name: "Slide 2",
+    title: `${"Find Your Favorite " + `${'\n'}` + "Locations"}`,
+    image: <OnBoardB/>,
+    content:
+      "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, seddiam nonumy eirmod tempor invidunt ut labore et dolore  magna aliquyam erat, sed diam voluptua.",
+  },
+  {
+    id: 3,
+    name: "Slide 3",
+    title: "Easy Navigation",
+    image: <OnBoardC/>,
+    content:
+      "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, seddiam nonumy eirmod tempor invidunt ut labore et dolore  magna aliquyam erat, sed diam voluptua.",
+  },
+];
 
 export const searchTabBtns = [
   {
@@ -302,11 +332,11 @@ export const settingsDataE = [
 export const pickerAccuracy = [
   {
     id: 1,
-    name: "Low",
+    name: "Medium",
   },
   {
     id: 2,
-    name: "Medium",
+    name: "Low",
   },
   {
     id: 3,
@@ -317,11 +347,11 @@ export const pickerAccuracy = [
 export const pickerAppearance = [
   {
     id: 1,
-    name: "Small",
+    name: "Regular",
   },
   {
     id: 2,
-    name: "Regular",
+    name: "Small",
   },
   {
     id: 3,
@@ -332,15 +362,15 @@ export const pickerAppearance = [
 export const pickerRoute = [
   {
     id: 1,
-    name: "Avoid",
-  },
-  {
-    id: 2,
     name: "Slightly Prefer",
   },
   {
-    id: 3,
+    id: 2,
     name: "Prefer",
+  },
+  {
+    id: 3,
+    name: "Avoid",
   },
 ];
 
@@ -352,5 +382,5 @@ export const distanceFormate = [
   {
     id: 2,
     name: "Miles(m)/ Feet(ft)",
-  }
+  },
 ];
