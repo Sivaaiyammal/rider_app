@@ -93,14 +93,14 @@ export const OnBoradingStyles = StyleSheet.create({
     color: Colors.white,
     textAlign: "center",
   },
-  bottomViewSkipBtn:{
+  bottomViewSkipBtn: {
     width: "25%",
-    alignItems:'center'
+    alignItems: "center",
   },
   bottomViewSkip: {
     textAlign: "center",
-    fontFamily:Fonts.medium,
-    color:Colors.black
+    fontFamily: Fonts.medium,
+    color: Colors.black,
   },
   pagination: {
     width: "50%",
@@ -115,8 +115,8 @@ export const OnBoradingStyles = StyleSheet.create({
     backgroundColor: Colors.grey_light,
     justifyContent: "center",
     borderRadius: 5,
-    marginVertical:4,
-    marginHorizontal:5
+    marginVertical: 4,
+    marginHorizontal: 5,
   },
   paginationSliderActive: {
     height: 5,
@@ -150,6 +150,49 @@ export const OnBoradingStyles = StyleSheet.create({
     alignSelf: "center",
     justifyContent: "space-between",
     flexDirection: "row",
-    alignItems:'center'
+    alignItems: "center",
+  },
+});
+
+export const userPreferenceStyles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    padding: 20,
+  },
+  headingTxt: {
+    fontFamily: Fonts.medium,
+    color: Colors.black,
+    fontSize: 30,
+  },
+  locBg: {
+    width: "90%",
+    alignSelf: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+    marginTop: 20,
+  },
+  locText: {
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: Colors.black,
+    width: "100%",
+    textAlign: "center",
+    marginTop: 20,
+  },
+  allowBtn: {
+    width: "75%",
+    alignSelf: "center",
+    backgroundColor: Colors.blue,
+    alignItems: "center",
+    marginTop: 25,
+    paddingVertical: 10,
+    borderRadius: 20,
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    paddingHorizontal: 20,
+  },
+  allowBtnTxt: {
+    fontFamily:Fonts.regular,
+        color:Colors.white,
   },
 });

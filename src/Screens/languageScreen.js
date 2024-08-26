@@ -14,14 +14,14 @@ import { Colors } from "../Constants/Contants";
 import { useStackScreenStore } from "../Store/useStackScreen";
 import NavBar from "../Components/NavBar";
 import { DataStore } from "../Constants/DataStore";
-import { useNavigation } from "@react-navigation/native";
+import { CommonActions, useNavigation } from "@react-navigation/native";
 
 const LanguageScreen = () => {
   const navigation = useNavigation()
 
   const langugaes = [
     { id: 1, name: "English", code: "en" },
-    { id: 1, name: "Arabic", code: "ar" },
+    { id: 2, name: "Arabic", code: "ar" },
   ];
 
   const { goBack } = useStackScreenStore();
@@ -46,7 +46,12 @@ const LanguageScreen = () => {
 
   const onNextPress = () => {
      DataStore.storeData('language', 'languageDone')
-     navigation.navigate('onBoardingScreen')
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: "onBoardingScreen" }],
+      })
+    );
   }
 
   return (

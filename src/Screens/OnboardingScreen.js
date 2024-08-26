@@ -16,15 +16,15 @@ import { onBoardingSlides } from "../Constants/JsonData";
 import { WIDTH } from "../Constants";
 import { Colors } from "../Constants/Contants";
 import { DataStore } from "../Constants/DataStore";
-import { useNavigation } from "@react-navigation/native";
+import { CommonActions, useNavigation } from "@react-navigation/native";
 
 const Slide = ({ data }) => {
   return (
-    <ScrollView contentContainerStyle={OnBoradingStyles.slide}>
+    <View style={OnBoradingStyles.slide}>
       <Text style={OnBoradingStyles.slideTitle}>{data.title}</Text>
       <View style={[OnBoradingStyles.slideImageContainer]}>{data.image}</View>
       <Text style={OnBoradingStyles.slideSubtitle}>{data.content}</Text>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -48,7 +48,7 @@ function Pagination({ index, length }) {
   );
 }
 
-export default function OnboardingScreen(props) {
+export default function OnboardingScreen() {
 
   const navigation = useNavigation()
   const totalSlides = onBoardingSlides.length;
@@ -60,7 +60,12 @@ export default function OnboardingScreen(props) {
 
   const handleDone = () => {
     DataStore.storeData('onBoarding', 'onBoardingDone')
-    navigation.navigate('LoginScreen')
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: "LoginScreen" }],
+      })
+    );
   }
 
   const handleNext = useCallback((isNext, isDone) => {
@@ -112,7 +117,7 @@ export default function OnboardingScreen(props) {
         showsHorizontalScrollIndicator={false}
         bounces={false}
         onScroll={onScroll}
-        initialNumToRender={4}
+        initialNumToRender={3}
         maxToRenderPerBatch={1}
         removeClippedSubviews={true}
         scrollEventThrottle={16}

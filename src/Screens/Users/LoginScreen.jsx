@@ -4,6 +4,8 @@ import {
   TouchableOpacity,
   View,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import React, { useCallback, useState } from "react";
 
@@ -19,7 +21,7 @@ import {
 import { UserScreenStyles } from "../../Styles/UserScreenStyles";
 import { Colors } from "../../Constants/Contants";
 import { DataStore } from "../../Constants/DataStore";
-import { useNavigation } from "@react-navigation/native";
+import { CommonActions, useNavigation } from "@react-navigation/native";
 
 const GOOGLE_OAUTH_APP_GUID = "490539589076-ve73f8pke0kkmhee5riud8frkhm2croi";
 
@@ -42,7 +44,12 @@ const LoginScreen = () => {
 
   const guestLogin = () => {
     DataStore.storeData('login', 'loginDone')
-    navigation.navigate('Home')
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: "userPreference" }],
+      })
+    );
   };
 
   return (
@@ -82,7 +89,7 @@ const LoginScreen = () => {
       </Text>
       <TouchableOpacity
         style={UserScreenStyles.bottomBtn}
-        onPress={() => guestLogin()}
+        onPress={()=>guestLogin()}
       >
         <Text style={UserScreenStyles.bottomTxt}>Continue as Guest</Text>
       </TouchableOpacity>

@@ -14,31 +14,49 @@ const SplashScreen = () => {
       const language = await DataStore.loadData("language");
       const onBoard = await DataStore.loadData("onBoarding");
       const login = await DataStore.loadData("login");
+      const userPreference = await DataStore.loadData("userPreference")
 
       if (language.data === "languageDone") {
         if (onBoard.data === "onBoardingDone"){
           if (login.data === 'loginDone'){
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "Home" }],
-            });
+            if (userPreference.data === 'userPreferenceDone') {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: "Home" }],
+                })
+              );
+            } else {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: "userPreference" }],
+                })
+              );
+            }
           } else {
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "LoginScreen" }],
-            });
+            navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: "LoginScreen" }],
+              })
+            );
           }
         } else {
-          navigation.reset({
-            index: 0,
-            routes: [{ name: "onBoardingScreen" }],
-          });
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: "onBoardingScreen" }],
+            })
+          );
         }
       } else {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "LanguageScreen" }],
-        });
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "LanguageScreen" }],
+          })
+        );
       }
     }, 3000);
   }, []);
