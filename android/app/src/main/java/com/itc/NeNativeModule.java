@@ -53,6 +53,7 @@ import com.dot.nenativemap.directions.RouteInstructionsDisplay;
 import com.dot.nenativemap.directions.VHRoutingRequest;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
 
 import com.dot.nenativemap.search.Search;
 import com.dot.nenativemap.search.SearchResultCallback;
@@ -98,6 +99,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     private RouteInstructionsDisplay routeInstructionsDisplay;
     private Navigator navigator;
     boolean isNavMode = false;
+    private Map<String, String> settingsProps = new HashMap<>();
 
     private Search search;
     // Handler navHandler;
@@ -212,6 +214,15 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                             @Override
                             public void onRegionWillChange(boolean b) {
 
+                            }
+
+                            @Override
+                            public void onRegionIsChanging() {
+                            }
+
+                            @Override
+                            public void onRegionDidChange(boolean b) {
+
                                 LngLat mapCenter = new LngLat(
                                         mapController.getCameraPosition().latitude,
                                         mapController.getCameraPosition().longitude);
@@ -225,15 +236,6 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                                 eventData.putBoolean("moving", b);
                                 reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                                         .emit("onMapCenterChanged", eventData);
-                            }
-
-                            @Override
-                            public void onRegionIsChanging() {
-                            }
-
-                            @Override
-                            public void onRegionDidChange(boolean b) {
-
                             }
                         });
 
@@ -289,10 +291,23 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     @ReactProp(name = "enable3D")
     public void set3DVisibility(MapView mapView, boolean enable) {
-        if(mapController != null) {
+        if (mapController != null) {
             mapController.enable3dBuildingsVisibility(enable);
             mapController.enableExtrusionsVisibility(false);
-//            mapView.getMapAsync;
+            // mapView.getMapAsync;
+        }
+    }
+
+    @ReactProp(name = "settingsProps")
+    public void setSettingsProps(MapView mapView, ReadableMap settingsProps) {
+        Log.e("SettingsProps", " " + settingsProps);
+        if (settingsProps != null) {
+            ReadableMapKeySetIterator iterator = settingsProps.keySetIterator();
+            while (iterator.hasNextKey()) {
+                String key = iterator.nextKey();
+                String value = settingsProps.getString(key);
+                this.settingsProps.put(key, value);
+            }
         }
     }
 
@@ -1006,17 +1021,88 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
             reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                     .emit("navigation", eventData);
-            Map<String, Object> directionsOptions = new HashMap<>();
-            directionsOptions.put("units", "miles");
             eventData = new WritableNativeMap();
 
             reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                     .emit("direction-init", eventData);
             Map<String, Object> autooptions = new HashMap<>();
-            autooptions.put("use_highways", 0.5);
-            autooptions.put("use_tolls", 0.5);
-            autooptions.put("use_ferry", 0.5);
-            autooptions.put("use_living_street", 0.1);
+            Map<String, Object> bicycleOptions = new HashMap<>();
+            Map<String, Object> walkOptions = new HashMap<>();
+            String directionsCriteria = DirectionsCriteria.KILOMETERS;
+
+            if (settingsProps.get("distanceFormate").equals("Kilometers(km)/ Meters(m)")) {
+                directionsCriteria = DirectionsCriteria.KILOMETERS;
+            } else {
+                directionsCriteria = DirectionsCriteria.MILES;
+            }
+
+            switch (settingsProps.get("highways")) {
+                case "Prefer":
+                    autooptions.put("use_highways", 1.0);
+                    break;
+                case "Avoid":
+                    autooptions.put("use_highways", 0.0);
+                    break;
+                case "Slightly Prefer":
+                    autooptions.put("use_highways", 0.5);
+                    break;
+                default:
+                    break;
+            }
+
+            switch (settingsProps.get("tolls")) {
+                case "Prefer":
+                    autooptions.put("use_tolls", 1.0);
+                    break;
+                case "Avoid":
+                    autooptions.put("use_tolls", 0.0);
+                    break;
+                case "Slightly Prefer":
+                    autooptions.put("use_tolls", 0.5);
+                    break;
+                default:
+                    break;
+            }
+
+            switch (settingsProps.get("ferry")) {
+                case "Prefer":
+                    autooptions.put("use_ferry", 1.0);
+                    bicycleOptions.put("use_ferry", 1.0);
+                    walkOptions.put("use_ferry", 1.0);
+                    break;
+                case "Avoid":
+                    autooptions.put("use_ferry", 0.0);
+                    bicycleOptions.put("use_ferry", 0.0);
+                    walkOptions.put("use_ferry", 0.0);
+                    break;
+                case "Slightly Prefer":
+                    autooptions.put("use_ferry", 0.5);
+                    bicycleOptions.put("use_ferry", 0.5);
+                    walkOptions.put("use_ferry", 0.5);
+                    break;
+                default:
+                    break;
+            }
+
+            switch (settingsProps.get("livingStreet")) {
+                case "Prefer":
+                    autooptions.put("use_living_street", 0.4);
+                    bicycleOptions.put("use_living_street", 0.6);
+                    walkOptions.put("use_living_street", 1);
+                    break;
+                case "Avoid":
+                    autooptions.put("use_living_street", 0.0);
+                    bicycleOptions.put("use_living_street", 0.0);
+                    walkOptions.put("use_living_street", 0.0);
+                    break;
+                case "Slightly Prefer":
+                    autooptions.put("use_living_street", 0.2);
+                    bicycleOptions.put("use_living_street", 0.4);
+                    walkOptions.put("use_living_street", 0.6);
+                    break;
+                default:
+                    break;
+            }
 
             String profile = DirectionsCriteria.PROFILE_CAR;
 
@@ -1029,8 +1115,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             VHRoutingRequest.CostingOptions costingOptions = VHRoutingRequest.CostingOptions
                     .builder()
                     .auto(autooptions)
-                    .bicycle(autooptions)
-                    .pedestrian(autooptions)
+                    .bicycle(bicycleOptions)
+                    .pedestrian(walkOptions)
                     .build();
             VHRoutingRequest request = VHRoutingRequest.builder()
                     .locations(locations)
@@ -1038,7 +1124,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     .costing_options(costingOptions)
                     .alternates(2)
                     .language("en-US")
-                    .units(DirectionsCriteria.KILOMETERS)
+                    .units(directionsCriteria)
                     .build();
 
             double currBearingInDegrees = 0;
@@ -1358,6 +1444,35 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         cameraPosition.longitude = origin.longitude;
         cameraPosition.latitude = origin.latitude;
         cameraPosition.zoom = 15;
+        double gpsReliability = 0.7;
+        double navPrecision = 100;
+
+        if (settingsProps != null) {
+
+            switch (settingsProps.get("gpsReliability")) {
+                case "High":
+                    gpsReliability = 0.7;
+                    break;
+                case "Medium":
+                    gpsReliability = 0.5;
+                    break;
+                case "Low":
+                    gpsReliability = 0.3;
+                    break;
+            }
+
+            switch (settingsProps.get("navAccuracy")) {
+                case "High":
+                    navPrecision = 100;
+                    break;
+                case "Medium":
+                    navPrecision = 50;
+                    break;
+                case "Low":
+                    navPrecision = 10;
+                    break;
+            }
+        }
 
         eventData = new WritableNativeMap();
         eventData.putString("message", "before  start navigation" + mapView);
@@ -1379,8 +1494,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 .providerType(providerType)
                 .distanceUnit(directionCriteria)
                 .legIsManuallyProvided(false)
-                // .gpsReliability(0.7)
-                // .navPrecision(100)
+                .gpsReliability(gpsReliability)
+                .navPrecision(navPrecision)
                 .build();
         // Call this method with Context from within an Activity
         if (mapView != null) {

@@ -37,7 +37,7 @@ const MapContainer = ({ mapStyle }) => {
 
   // const {themeOperations, themeValue} = useContext(GlobalContext);
 
-  // console.log('Map Settings-->>', themeValue)
+  console.log('Map Settings-->>', settings)
 
   return (
     <View style={[styles.mapContainer]}>
@@ -52,6 +52,7 @@ const MapContainer = ({ mapStyle }) => {
         markers={mapMarkers}
         searchUnit={searchUnit}
         autoPOISearch={searchPOI}
+        settingsProps={settings}
         onSearchResults={setOnSearchResults}
         onSearchPOIResults={setSearchPOIResults}
         mode={mode}
