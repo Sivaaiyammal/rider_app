@@ -53,7 +53,10 @@ const SearchScreen = ({ data }) => {
         // </ScrollView>
         <SearchTabs currentTab={data}/>
       )}
+      <View style={{position:'absolute'}}>
       <VoiceRecognition modalVisible={isRecording} setModalVisible={setIsRecording} onSpeechCallBack={onSpeechResults} />
+
+      </View>
     </View>
   );
 };

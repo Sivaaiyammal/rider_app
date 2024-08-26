@@ -30,6 +30,7 @@ import Marker from "../Constants/NEMap/Marker";
 import useLocationStore from "../Store/useLocationStore";
 import { useStackScreenStore } from "../Store/useStackScreen";
 import FullScreenLoader from "../Components/Loaders/FullScreenLoader";
+import { showNotification } from "./NotificationManager";
 // Define the geographical bounds of your static view
 const GEO_BOUNDS = {
   latTop: 85.0511, // Top latitude of Mercator projection (limit to avoid infinity)
@@ -85,13 +86,15 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
 
   const { setMapMarkers, mapMarkers, setDirectionPoints, setMapLocation } =
     useMapStore();
-  const { setDirections, directions } = useLocationStore();
+  const { setDirections, directions, location } = useLocationStore();
   const { setStackScreen } = useStackScreenStore();
 
   // Calculate position based on latitude and longitude
   const position = latLngToXY(coords.lat, coords.lng, width, height);
 
   // console.log(position, width, height, "lknclkdns", latLng);
+
+  // console.log('hari-->>homeLocatione-->>', location)
 
   const iconConfigs = [
     { name: "save", delay: 200 },
@@ -146,7 +149,7 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
     setMapMarkers([]);
     console.log("directionPoints-route", directionPoints, directions);
     setDirectionPoints({ locations: directionPoints, type: "car" });
-    setStackScreen("Directions", 'position');
+    setStackScreen("Directions", "position");
   }, []);
 
   const updateLocationNames = async (locations) => {
@@ -228,16 +231,41 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
   };
 
   const setEndLocation = () => {
-    const endDirection = {
-      id: directions.length + 1,
-      location: [latLng.lng, latLng.lat],
-      locationName: "",
-      name: "End",
-    };
-    const updatedDirections = [...directions, endDirection];
-    setDirections(updatedDirections);
-    updateLocationNames(updatedDirections);
-  }
+    if (directions[0]?.location?.length === 0) {
+      if (location === null)
+        return showNotification(
+          "Current Location Not Available",
+          "Please Enable GPS or add Current Location",
+          "error"
+        );
+      const newDirections = [
+        {
+          id: 1,
+          location: [location[0], location[1]],
+          locationName: "",
+          name: "Start",
+        },
+        {
+          id: 2,
+          location: [latLng.lng, latLng.lat],
+          locationName: "",
+          name: "End",
+        },
+      ];
+      setDirections(newDirections);
+      updateLocationNames(newDirections);
+    } else {
+      const endDirection = {
+        id: directions.length + 1,
+        location: [latLng.lng, latLng.lat],
+        locationName: "",
+        name: "End",
+      };
+      const updatedDirections = [...directions, endDirection];
+      setDirections(updatedDirections);
+      updateLocationNames(updatedDirections);
+    }
+  };
 
   const onMarkerIconsPress = async (icon) => {
     const actions = {
@@ -257,7 +285,7 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
       },
       // set end location and set route
       directions: async () => {
-         setEndLocation();
+        setEndLocation();
       },
       // set waypoints
       "location-arrow": async () => {

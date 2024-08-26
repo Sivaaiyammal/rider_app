@@ -96,4 +96,31 @@ export const settingsStyles = StyleSheet.create({
     color: Colors.black,
     fontSize: 14,
   },
+  navContainer:{
+    height:100,
+    width:'100%',
+    alignItems:'center',
+    justifyContent:'center'
+  },
+  navContainerTxt:{
+    fontFamily:Fonts.medium,
+    color:Colors.black,
+    fontSize:18
+  },
+  bottombtn:{
+    position:'absolute',
+    bottom:20,
+    height:40,
+    width:'60%',
+    alignItems:'center',
+    justifyContent:'center',
+    backgroundColor:Colors.blue,
+    alignSelf:'center',
+    borderRadius:10,
+  },
+  bottombtnTxt:{
+    fontSize:16,
+    fontFamily:Fonts.regular,
+    color:Colors.white
+  }
 });
