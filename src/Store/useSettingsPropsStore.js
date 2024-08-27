@@ -8,14 +8,14 @@ import {
 } from "../Constants/JsonData";
 
 const defaultSettings = {
-  gpsReliability: pickerAccuracy[0],
-  navAccuracy: pickerAccuracy[0],
-  mapAppearance: pickerAppearance[0],
-  highways: pickerRoute[0],
-  tolls: pickerRoute[0],
-  ferry: pickerRoute[0],
-  livingStreet: pickerRoute[0],
-  distanceFormate: distanceFormate[0],
+  gpsReliability: pickerAccuracy[0].name,
+  navAccuracy: pickerAccuracy[0].name,
+  mapAppearance: pickerAppearance[0].name,
+  highways: pickerRoute[0].name,
+  tolls: pickerRoute[0].name,
+  ferry: pickerRoute[0].name,
+  livingStreet: pickerRoute[0].name,
+  distanceFormate: distanceFormate[0].name,
 };
 
 export const useSettingsPropsStore = create((set) => ({

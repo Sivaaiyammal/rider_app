@@ -36,7 +36,7 @@ const RouteSettings = (props) => {
   };
 
   const onPickerChange = (key, value) => {
-    updateSettings({ ...settings, [key]: value });
+    updateSettings({ ...settings, [key]: value?.name });
   };
 
   const renderPicker = (key, pickerData, placeholder, icon, infoIcon) => {

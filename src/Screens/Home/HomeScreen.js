@@ -122,7 +122,7 @@ const HomeScreen = ({ }) => {
   }
 
   const mapClickCallback = (data) => {
-    console.log("mapClickCallback", data)
+    setPositioningView(false)
     setLatLng({ lat: data.latitude, lng: data.longitude })
     setPositioningView(true)
     setMapMoving(true);

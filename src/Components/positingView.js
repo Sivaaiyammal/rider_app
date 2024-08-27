@@ -33,8 +33,8 @@ import FullScreenLoader from "../Components/Loaders/FullScreenLoader";
 import { showNotification } from "./NotificationManager";
 // Define the geographical bounds of your static view
 const GEO_BOUNDS = {
-  latTop: 90, // Top latitude of your area
-  latBottom: -90, // Bottom latitude of your area
+  latTop: 85.0511, // Top latitude of Mercator projection (limit to avoid infinity)
+  latBottom: -85.0511, // Bottom latitude of Mercator projection
   lngLeft: -180, // Left longitude of your area
   lngRight: 180, // Right longitude of your area
 };
@@ -84,13 +84,13 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
 
   const { t } = useTranslation();
 
-  const { mapMoving, setMapMarkers, mapMarkers, setDirectionPoints } =
+  const { setMapMarkers, mapMarkers, setDirectionPoints, setMapLocation } =
     useMapStore();
   const { setDirections, directions, location } = useLocationStore();
   const { setStackScreen } = useStackScreenStore();
 
   // Calculate position based on latitude and longitude
-  const position = latLngToXY(coords.lat, coords.lng, width - 130, height);
+  const position = latLngToXY(coords.lat, coords.lng, width, height);
 
   // console.log(position, width, height, "lknclkdns", latLng);
 
@@ -130,6 +130,11 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
     });
 
     setTimeout(() => {
+      setMapLocation({
+        lat: latLng.lat || latLng.latitude,
+        lng: latLng.lng || latLng.longitude,
+        zoom: 15
+      });
       setFloatingView(true);
     }, 1000);
   }, []);
@@ -417,7 +422,7 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
         <View
           style={{
             position: "absolute",
-            left: position.x - 10,
+            left: position.x + 135,
             top: position.y - 210,
             zIndex: 1000,
           }}
@@ -463,7 +468,7 @@ const PositionBasedView = ({ latLng, setPositioningView }) => {
         style={[
           {
             position: "absolute",
-            left: position.x - 10,
+            left: position.x + 135,
             top: position.y - 10,
           },
         ]}

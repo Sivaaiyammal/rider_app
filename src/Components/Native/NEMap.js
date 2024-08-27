@@ -225,6 +225,7 @@ class NEMap extends Component {
           }
           autoPOISearch={this.props.autoPOISearch}
           mode={this.props.mode}
+          settingsProps={this.props.settingsProps}
           searchUnit={this.props.searchUnit}
           geometries={this.state.mapLoaded ? this.props.geometries : null}
           findRoute={
