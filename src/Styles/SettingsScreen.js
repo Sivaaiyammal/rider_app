@@ -122,5 +122,27 @@ export const settingsStyles = StyleSheet.create({
     fontSize:16,
     fontFamily:Fonts.regular,
     color:Colors.white
+  },
+  doneBtn:{
+    // position:'absolute',
+    // bottom:20,
+    height:40,
+    width:'60%',
+    alignItems:'center',
+    justifyContent:'center',
+    backgroundColor:Colors.blue,
+    alignSelf:'center',
+    borderRadius:10,
+    marginTop:40
+  },
+  navigationTitle:{
+    alignItems:'center',
+    height:50,
+    justifyContent:'center'
+  },
+  navigationTitleTxt:{
+    fontFamily:Fonts.semi_bold,
+    color:Colors.black,
+    fontSize:18
   }
 });

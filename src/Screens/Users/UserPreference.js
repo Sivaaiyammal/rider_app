@@ -11,32 +11,29 @@ import {
 } from "react-native";
 import { useNavigation, CommonActions } from "@react-navigation/native";
 import { DataStore } from "../../Constants/DataStore";
+import {
+  RequestFineLocationPermission
+} from '../../Controllers/PermissionHandler';
 
 import LocationPermissionImg from "../../Assets/Icons/locationPermission";
 import { userPreferenceStyles } from "../../Styles/OnBoradingStyles";
+import { Colors } from "../../Constants/Contants";
 
 const UserPreference = () => {
   const navigation = useNavigation();
-
+  
   const handleContinue = () => {
-    navigation.dispatch(CommonActions.navigate("Home"));
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: "Home" }],
+      })
+    );
     DataStore.storeData("userPreference", "userPreferenceDone");
   };
 
   const handleLocationPermission = async () => {
-    const result = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    );
-    if (result === PermissionsAndroid.RESULTS.GRANTED) {
-      handleContinue()
-    } else if (result === PermissionsAndroid.RESULTS.DENIED) {
-      Alert.alert("Location Permission", "Location permission denied", [
-        {
-          text: "OK",
-          onPress: () => handleContinue(),
-        },
-      ]);
-    }
+    RequestFineLocationPermission()
   };
 
   const handleLocationPermissionUI = () => {
@@ -58,6 +55,12 @@ const UserPreference = () => {
          onPress={()=> handleLocationPermission()}>
           <Text style={userPreferenceStyles.allowBtnTxt}>
             Allow Location Permission
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[userPreferenceStyles.allowBtn,{backgroundColor:Colors.white}]}
+         onPress={()=> handleContinue()}>
+          <Text style={[userPreferenceStyles.allowBtnTxt,{color:Colors.black}]}>
+            Continue
           </Text>
         </TouchableOpacity>
       </View>

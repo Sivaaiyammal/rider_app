@@ -5,32 +5,53 @@ import {
   Text,
   TouchableOpacity,
   NativeModules,
+  Animated,
 } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import BottomSheet from "../Components/BottomSheet";
 import useMapStore from "../Store/useMapStore";
-import { Fonts } from "../Constants";
+import { Fonts, HEIGHT, WIDTH } from "../Constants";
 import { Colors } from "../Constants/Contants";
 import { useTranslation } from "react-i18next";
 import Entypo from "react-native-vector-icons/Entypo";
 import { utils } from "../Constants/utils";
 import Routes from "../Assets/Icons/routes.svg";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import SetRouteScreen from "./SetRouteScreen";
 import Switch from "../Components/Switch";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { routeOptionsData } from "../Constants/JsonData";
+import RouteSettings from "./Settings/RouteSettings";
+import { useStackScreenStore } from "../Store/useStackScreen";
 
 const { NeNativeModule } = NativeModules;
 
 const StartNavigation = ({ goBack }) => {
   const { setStartNavigation, disduration, setMode } = useMapStore();
+  const {setStackScreen} = useStackScreenStore()
   const [showRoute, setShowRoute] = useState(false);
   const [selectedRouteOption, setSelectedRouteOption] = useState("");
   const [isEnabledTraffic, setIsEnabledTraffic] = React.useState(false);
   const [isEnabledDarkMode, setIsEnabledDarkMode] = React.useState(false);
   const [isEnabled3D, setIsEnabled3D] = React.useState(false);
+  const bounceValue = useRef(new Animated.Value(1200)).current;
+  const [isHidden, setIsHidden] = useState(false);
+
+  console.log('hari-->>disduration-->>',disduration)
+
+  const _toggleSubview = useCallback(() => {
+    let toValue = 0;
+    if (isHidden) {
+      toValue = 1200;
+    }
+    Animated.spring(bounceValue, {
+      toValue: toValue,
+      velocity: 8,
+      tension: 2,
+      friction: 5,
+      useNativeDriver: true,
+    }).start();
+    setIsHidden(!isHidden);
+  }, [isHidden]);
 
   const { t } = useTranslation();
 
@@ -117,14 +138,27 @@ const StartNavigation = ({ goBack }) => {
             <Text style={styles.optionTxt}>Routes</Text>
           </View>
         </TouchableOpacity>
-        <View style={styles.optionCard}>
+        <TouchableOpacity
+          style={styles.optionCard}
+          onPress={() => _toggleSubview()}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <MaterialIcons
+                    name={"settings-suggest"}
+                    size={18}
+                    color={Colors.blue}
+                  />
+            <Text style={styles.optionTxt}>Settings</Text>
+          </View>
+        </TouchableOpacity>
+        {/* <View style={styles.optionCard}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <FontAwesome5 name="traffic-light" color={Colors.blue} size={16} />
             <Text style={styles.optionTxt}>Show Traffic</Text>
           </View>
           {renderSwitch(toggleTraffic, isEnabledTraffic)}
-        </View>
-        <View style={styles.optionCard}>
+        </View> */}
+        {/* <View style={styles.optionCard}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <MaterialCommunityIcons
               name="theme-light-dark"
@@ -134,8 +168,8 @@ const StartNavigation = ({ goBack }) => {
             <Text style={styles.optionTxt}>Color Theme</Text>
           </View>
           {renderSwitch(toggleMode, isEnabledDarkMode)}
-        </View>
-        <View style={styles.optionCard}>
+        </View> */}
+        {/* <View style={styles.optionCard}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <MaterialCommunityIcons
               name="printer-3d"
@@ -145,9 +179,9 @@ const StartNavigation = ({ goBack }) => {
             <Text style={styles.optionTxt}>3d Map View</Text>
           </View>
           {renderSwitch(toggle3D, isEnabled3D)}
-        </View>
+        </View> */}
 
-        <View style={[styles.optionCard, { flexDirection: "column" }]}>
+        {/* <View style={[styles.optionCard, { flexDirection: "column" }]}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <MaterialCommunityIcons
               name="map-marker-path"
@@ -178,13 +212,14 @@ const StartNavigation = ({ goBack }) => {
               );
             })}
           </View>
-        </View>
+        </View> */}
       </View>
     );
   };
 
   return (
-    <BottomSheet minHeight={150}>
+    <>
+        <BottomSheet minHeight={150}>
       <View style={styles.navigationContainer}>
         <View>
           <Text style={styles.destinationTxt}>
@@ -211,6 +246,14 @@ const StartNavigation = ({ goBack }) => {
         navigationOptions()
       )}
     </BottomSheet>
+          <Animated.View
+        style={[
+          styles.modalView,
+          { transform: [{ translateY: bounceValue }] },
+        ]}>
+       <RouteSettings screen={'navigation'} onDonePress={_toggleSubview}/>
+      </Animated.View>
+    </>
   );
 };
 
@@ -295,5 +338,15 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.light,
     color: Colors.black,
     fontSize: 14,
+  },
+  modalView: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    height: HEIGHT,
+    width: WIDTH,
+    zIndex: 20000,
   },
 });

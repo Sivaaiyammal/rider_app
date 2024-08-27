@@ -66,6 +66,7 @@ const MapContainer = ({ mapStyle }) => {
         onUserLocationChange={(location) => setUserLocation([location.latitude, location.longitude])}
         distanceListner={setDisduration}
         onSearchPOIError={setSearchPOIError}
+        onNavigationEnd={(e)=> console.log('hari--->>navigationEnd-->>', e)}
       />
     </View>
   );

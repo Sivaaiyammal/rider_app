@@ -177,9 +177,9 @@ const POIresultScreen = () => {
         />
       </View>
       {searchPOIError?.error &&
-        bottomModal("Something Went Wrong", searchPOIError?.error)}
+        bottomModal("No Results Found", "")}
       {searchPOIResults?.searchPOIResults?.length === 0 &&
-        bottomModal("No Data Found", "")}
+        bottomModal("No Results Found", "")}
     </>
   );
 };

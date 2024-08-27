@@ -13,7 +13,7 @@ export const checkFineLocationPermissions = async () => {
   }
 }
 
-export const RequestFineLocationPermission = async (translation) => { // translation is the obj passed to function for translation method
+export const RequestFineLocationPermission = async () => {
 
   const hasFineLocationPermission = await checkFineLocationPermissions()
   if (hasFineLocationPermission) {
@@ -25,7 +25,7 @@ export const RequestFineLocationPermission = async (translation) => { // transla
 
     if (result === "never_ask_again") {
       Alert.alert(
-        'Permission Required',
+        'Permission Required','',
         [
           {
             text: "Cancel",

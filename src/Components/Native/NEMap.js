@@ -175,6 +175,13 @@ class NEMap extends Component {
         this.props.onMapMoving ? this.props.onMapMoving(data) : null;
       }
     )
+
+    this.onNavigationEndListener = DeviceEventEmitter.addListener(
+      'navigation',
+      (data) => {
+        this.props.onNavigationEnd ? this.props.onNavigationEnd(data) : null;
+      }
+    )
   }
 
   componentWillUnmount() {

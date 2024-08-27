@@ -1,5 +1,5 @@
-import { ScrollView, StyleSheet, View, TouchableOpacity, BackHandler, PermissionsAndroid, Alert } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, View, TouchableOpacity, BackHandler, PermissionsAndroid, Alert, Linking } from 'react-native';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 
 import DraggableBottomSheet from '../../Components/BottomSheet';
 import { IconButton } from 'react-native-paper';
@@ -19,6 +19,8 @@ import useLocationStore from '../../Store/useLocationStore';
 import PositionBasedView from '../../Components/positingView';
 import Drawer from '../../Components/Drawer/Drawer';
 import GlobalContext from '../../Context/GlobalContext';
+import locationTask from '../../Controllers/GetCurrentLocation';
+import { checkFineLocationPermissions, RequestFineLocationPermission } from '../../Controllers/PermissionHandler';
 
 const HomeScreen = ({ }) => {
   const [centerPoints, setCenterPoints] = useState(null);
@@ -31,20 +33,21 @@ const HomeScreen = ({ }) => {
 
   const {themeOperations, themeValue} = useContext(GlobalContext);
 
+  const checkLocationPermission = useCallback(async (value) => {
+    const locationPermissionCheck = await checkFineLocationPermissions()
+    if (locationPermissionCheck) {
+      getLocation();
+    } else {
+     await RequestFineLocationPermission()
+    }
+    console.log('hari-->>mapScreen-->>1')
+  }, [checkFineLocationPermissions]);
+
   useEffect(() => {
     const handleBackPress = () => {
       console.log('Back pressed');
       return true;
     };
-
-    const checkLocationPermission = async () => {
-      const locationPermissionCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-
-      if (locationPermissionCheck) {
-        getLocation();
-        return true
-      }
-    }
 
     const directions = [
       {
@@ -69,73 +72,8 @@ const HomeScreen = ({ }) => {
     };
   }, []);
 
-  const getLocation = () => {
-    Geolocation.getCurrentPosition(
-      (position) => {
-        setLocation([position.coords.longitude, position.coords.latitude]);
-        setMapLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          zoom: 25,
-        });
-      },
-      (error) => {
-        console.error('Error getting location:', error);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 10000,
-      }
-    );
-  }
-
-  const handleCurrentLocation = async () => {
-    try {
-      const locationPermissionCheck = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
-
-      if (locationPermissionCheck) {
-        getLocation();
-        return true
-      }
-
-      const grantedLocation = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      ]);
-
-      if (grantedLocation['android.permission.ACCESS_FINE_LOCATION'] !== PermissionsAndroid.RESULTS.GRANTED) {
-        console.log("One or more permissions denied");
-
-        if (grantedLocation['android.permission.ACCESS_FINE_LOCATION'] === 'never_ask_again') {
-          Alert.alert(
-            "Permission Required",
-            "Location permission is required. Please enable it in the app settings.",
-            [
-              { text: "Open Settings", onPress: () => Linking.openSettings() }
-            ]
-          );
-        } else {
-          Alert.alert(
-            "Permission Denied",
-            "Location permission is required. Please enable it in the app settings.",
-            [
-              { text: "Open Settings", onPress: () => Linking.openSettings() }
-            ]
-          );
-        }
-        return false
-      } else {
-        console.log("Location permissions granted");
-        getLocation();
-        return true
-      }
-
-    } catch (err) {
-      console.warn(err);
-      setLocation(false);
-      return false
-    }
-
+  const getLocation = async () => {
+    await locationTask.getCurrentLocation()
   }
 
   const mapCenterChanged = (data) => {
@@ -206,7 +144,7 @@ const HomeScreen = ({ }) => {
     <Drawer />
 
       <View style={{ position: 'absolute', right: -10 }}>
-        <TouchableOpacity onPress={handleCurrentLocation}>
+        <TouchableOpacity onPress={checkLocationPermission}>
           <CurrentLocationIcon />
         </TouchableOpacity>
         <TouchableOpacity style={{ marginLeft: 12 }} onPress={() => console.log('Pressed')}>

@@ -131,7 +131,7 @@ export const OnBoradingStyles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 10,
-    backgroundColor: Colors.green_light,
+    // backgroundColor: Colors.green_light,
     gap: 10,
   },
   grantedTxt: {
@@ -158,6 +158,7 @@ export const userPreferenceStyles = StyleSheet.create({
   screen: {
     flex: 1,
     padding: 20,
+    backgroundColor:Colors.white
   },
   headingTxt: {
     fontFamily: Fonts.medium,

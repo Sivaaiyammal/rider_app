@@ -44,8 +44,6 @@ const LocationOptions = (props) => {
     }
   };
 
-  console.log('hari-->>directions-->>saved', directions)
-
   const saveLocModal = () => {
     return (
       <View style={styles.centeredView}>

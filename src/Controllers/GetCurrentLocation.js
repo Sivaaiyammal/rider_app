@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 
-import Geolocation from "@react-native-community/geolocation";
+import Geolocation from "react-native-geolocation-service";
 import useLocationStore from "../Store/useLocationStore";
 import useMapStore from "../Store/useMapStore";
 

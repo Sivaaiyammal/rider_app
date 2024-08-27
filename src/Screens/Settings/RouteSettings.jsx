@@ -15,10 +15,15 @@ import Switch from "../../Components/Switch";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { distanceFormate, pickerRoute, routeOptionsData } from "../../Constants/JsonData";
+import {
+  distanceFormate,
+  pickerRoute,
+  routeOptionsData,
+} from "../../Constants/JsonData";
 import { useSettingsPropsStore } from "../../Store/useSettingsPropsStore";
 
-const RouteSettings = () => {
+const RouteSettings = (props) => {
+  const { screen, onDonePress } = props;
   const { goBack } = useStackScreenStore();
 
   const [isEnabledTraffic, setIsEnabledTraffic] = useState(false);
@@ -35,7 +40,9 @@ const RouteSettings = () => {
   };
 
   const renderPicker = (key, pickerData, placeholder, icon, infoIcon) => {
-    const selectedValue = pickerData?.filter((item) => item?.name === settings[key]?.name)
+    const selectedValue = pickerData?.filter(
+      (item) => item?.name === settings[key]?.name
+    );
     return (
       <View style={settingsStyles.pickerContainer}>
         <View
@@ -124,7 +131,15 @@ const RouteSettings = () => {
 
   return (
     <View style={settingsStyles.screen}>
-      <NavBar title={"Route Settings"} onBackPress={() => onBackPress()} />
+      {screen === "navigation" ? (
+        <View style={settingsStyles.navigationTitle}>
+            <Text style={settingsStyles.navigationTitleTxt}>Route Settings</Text>
+          </View>
+      
+      ) : (
+        <NavBar title={"Route Settings"} onBackPress={() => onBackPress()} />
+      )}
+
       <ScrollView contentContainerStyle={settingsStyles.container}>
         {renderPicker("highways", pickerRoute, "Highways")}
         {renderPicker("tolls", pickerRoute, "Tolls")}
@@ -149,6 +164,11 @@ const RouteSettings = () => {
           </View>
           {renderSwitch(toggle3D, isEnabled3D)}
         </View>
+        {screen === "navigation" && (
+          <TouchableOpacity style={settingsStyles.doneBtn} onPress={()=>onDonePress()}>
+            <Text style={settingsStyles.bottombtnTxt}>Done</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </View>
   );
