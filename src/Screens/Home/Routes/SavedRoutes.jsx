@@ -19,8 +19,6 @@ const SavedRoutes = () => {
     goBack();
   };
 
-  console.log("hari-->>savedRoputes->>", savedRoutes);
-
   const goToRoutes = (item) => {
     const directionPoints = item.locations
       .filter((direction) => direction.location.length > 0)
@@ -42,9 +40,10 @@ const SavedRoutes = () => {
         {savedRoutes.length === 0 ? (
           <NoDataFound message={"No Routes Found"} />
         ) : (
-          savedRoutes?.map((item) => {
+          savedRoutes?.map((item, id) => {
             return (
               <TouchableOpacity
+                key={id}
                 style={styles.routesCard}
                 onPress={() => goToRoutes(item)}
               >

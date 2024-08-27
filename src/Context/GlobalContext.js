@@ -50,7 +50,7 @@ export const ContextProvider = ({ children }) => {
         console.error("Error saving Route:", error);
         showNotification("Something Went Wrong", "Please try again", "success");
       }
-    }, []);
+    }, [savedRoutes]);
 
   //Get Saved Address
   const getSavedAddress = useCallback(async () => {
