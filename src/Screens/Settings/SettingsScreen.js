@@ -29,7 +29,7 @@ const SettingsScreen = ({ navigation }) => {
   };
 
   const renderPicker = (key, pickerData, placeholder, icon, infoIcon) => {
-    const selectedValue = pickerData?.filter((item) => item?.name === settings[key]?.name)
+    const selectedValue = pickerData?.filter((item) => item?.name === settings[key])
     return (
       <View style={settingsStyles.pickerContainer}>
       <View

@@ -41,7 +41,7 @@ const RouteSettings = (props) => {
 
   const renderPicker = (key, pickerData, placeholder, icon, infoIcon) => {
     const selectedValue = pickerData?.filter(
-      (item) => item?.name === settings[key]?.name
+      (item) => item?.name === settings[key]
     );
     return (
       <View style={settingsStyles.pickerContainer}>
