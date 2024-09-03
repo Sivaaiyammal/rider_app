@@ -1,0 +1,7 @@
+module.exports = {
+    // ROOT_API_URL: 'https://apinot.vmmaps.com/nottest',
+    // ROOT_API_URL_NOT: "https://apinot.vmmaps.com/notdailyrides",
+    ROOT_API_URL: 'https://apinot.vmmaps.com/vmroutesLive/',
+    NE_ROOT_URL: 'https://nammaoorutaxi.com',
+    NE_ACCESS_TOKEN: 'eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJfaWQiOiJ1c3ItNzV1bXJpa2k0YjY0c3AiLCJ0aWQiOiJ0a24tNzV1bXJpa2k0Y2RlY3ciLCJpYXQiOjE2MDY3MjgwMDl9.ck77ElEO7VR-yEJ0RrSHMp9OdDPvYUAuQqc-eASNk-sah2TX-Rhjvj71B2aFFlC-'
+}

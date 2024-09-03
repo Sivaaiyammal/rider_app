@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <g id="Group_41789" data-name="Group 41789" transform="translate(-312 -408)">
+    <circle id="Ellipse_3207" data-name="Ellipse 3207" cx="24" cy="24" r="24" transform="translate(312 408)" fill="#ff5050"/>
+    <text id="SOS" transform="translate(323 437)" fill="#fff" font-size="14" font-family="SofiaPro, Sofia Pro"><tspan x="0" y="0">SOS</tspan></text>
+    <path id="Ellipse_3208" data-name="Ellipse 3208" d="M22,1a21.006,21.006,0,0,0-8.174,40.35A21.006,21.006,0,0,0,30.174,2.65,20.868,20.868,0,0,0,22,1m0-1A22,22,0,1,1,0,22,22,22,0,0,1,22,0Z" transform="translate(314 410)" fill="#fff"/>
+  </g>
+</svg>

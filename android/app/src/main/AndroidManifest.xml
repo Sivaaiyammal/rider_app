@@ -10,10 +10,10 @@
     <application
         android:name=".MainApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_customer"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher_customer"
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"

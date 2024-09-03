@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+    <path data-name="Path 932" d="M21.034 10 6.426 24.608C4.148 24.165 3 22.575 3 19.837V10z" transform="translate(-1.739 2.706)" style="fill:#ffd100"/>
+    <path data-name="Path 933" d="M28.4 10v9.837a4.918 4.918 0 0 1-4.918 4.918H9.909a.492.492 0 0 1-.344-.836L23.484 10z" transform="translate(2.369 2.706)" style="fill:#ffd100"/>
+    <path data-name="Path 934" d="M22.918 8.394v3.279H18l4.181-4.181a.434.434 0 0 1 .721.3c.016.2.016.393.016.607z" transform="translate(7.853 1.033)" style="fill:#212529"/>
+    <path data-name="Path 935" d="M33.871 2.611a1.228 1.228 0 0 0-1.738 0l-4.15 4.148H8.41a4.348 4.348 0 0 0-4.918 4.918v3.279h16.294l-6.968 6.968h-2.769a1.23 1.23 0 1 0 0 2.459h.31l-7.736 7.738a1.23 1.23 0 1 0 1.738 1.738l29.51-29.51a1.228 1.228 0 0 0 0-1.738z" transform="translate(-2.231 -2.25)" style="fill:#212529"/>
+</svg>

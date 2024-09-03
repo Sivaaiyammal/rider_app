@@ -1,0 +1,123 @@
+
+1. receivedFromSubVendor
+
+
+    POST method
+    http://localhost:1997/api/vendorManagement/receivedFromSubVendor
+    payload in body
+    {
+        "vendorId":"NOT_12",
+        "page":0,
+        "limit":10,
+        "params":{
+            "search":"",
+            "requestStatus":0 //pending,approved,rejected by default select pending
+        }
+    }
+
+
+2. receivedFromVendor
+
+POST Method
+http://localhost:1997/api/vendorManagement/receivedFromVendor
+
+{
+    "vendorId":"NAT_Tirupur", // your vendor_id you can get from class instance
+    "page":0,
+    "limit":10,
+    "params":{
+        "search":"",
+        "requestStatus":2 //0- pending,1- approved, 2 - rejected by default select 0
+    }
+}
+
+
+3. approve as vendor
+
+POST 
+http://localhost:1997/api/vendorManagement/approveAsVendor
+
+{
+    "id":"40b1f666-7d44-4206-96b2-42314cb36856", // give the requestId which you will get from receivedFromVendor API
+    "vendorId":"NAT_Tirupur",//your vendor id 
+    "approved":"2" // 0- pending,1- approved, 2 - rejected by default select 0
+}
+
+
+4. approve as sub vendor 
+POST
+
+http://localhost:1997/api/vendorManagement/approveAsSubVendor
+
+{
+    "id":"829077fe-235d-4c0e-8d8d-0ef9b132f42a", // give the requestId which you will get from receivedFromVendor API
+    "vendorId":"NOT_12", // your vendor id
+    "approved":"1", // 0- pending,1- approved, 2 - rejected by default select 0
+    "commission":10 
+}
+
+
+5.send request to sub vendor
+http://localhost:1997/api/vendorManagement/sendRequestToSubVendor
+
+{
+    "vendorId":"NOT_12", //your id 
+    "subVendorId":"NAT_Tirupur", // if which you wil get from find vendor api (vendor_id)
+    "commission":10
+}
+
+6. undo request to sub vendor
+http://localhost:1997/api/vendorManagement/undoRequestToSubVendor
+
+{
+    "vendorId":"NOT_12", //your id
+    "subVendorId":"NAT_Tirupur" // if which you wil get from find vendor api (vendor_id)
+}
+
+7. send request to vendor
+http://localhost:1997/api/vendorManagement/sendRequestToVendor
+{
+    "vendorId":"NOT_12", //your id 
+    "myId":"NAT_Tirupur", // if which you wil get from find vendor api (vendor_id)
+    "commission":10
+}
+
+8 .undo request to vendor
+http://localhost:1997/api/vendorManagement/undoRequestToVendor
+{
+    "vendorId":"NOT_12",
+    "myId":"NAT_Tirupur"
+}
+
+9. get send to vendor
+
+http://localhost:1997/api/vendorManagement/getSendToVendor
+
+{
+    "vendorId":"NAT_Tirupur",//your vendor_id
+    "limit":10,
+    "page":0,
+    "params":{
+        "startTime":1694331444000,
+        "endTime":1695368244000,
+        "requestStatus":0
+    }
+}
+
+10. get send to sub vendor 
+
+http://localhost:1997/api/vendorManagement/getSendToSubVendor
+
+{
+    "vendorId":"NOT_12",//your vendor_id
+    "limit":10,
+    "page":0,
+    "params":{
+        "startTime":1694331444000,
+        "endTime":1695368244000,
+        "requestStatus":0
+    }
+}
+
+
+check filters from api code
