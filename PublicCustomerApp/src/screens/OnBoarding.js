@@ -1,0 +1,132 @@
+/* eslint-disable camelcase */
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, {useCallback, useRef, useState} from 'react';
+import {FlatList, View, Text, Image, TouchableOpacity} from 'react-native';
+
+import { onBoardingSlides } from '../constants/JsonData';
+import { onBoardingStyles } from '../styles/SplashStyles';
+import { width } from '../utils/Utils';
+import { DataStore } from '../controllers/DataStore';
+import { useNavigation } from '@react-navigation/native';
+
+const Slide = ({data}) => {
+  return (
+    <View style={onBoardingStyles.slide}>
+      <View style={[onBoardingStyles.slideImageContainer]}>
+        {data.image}
+      </View>
+      <Text style={onBoardingStyles.slideTitle}>{data.title}</Text>
+      <Text style={onBoardingStyles.slideSubtitle}>{data.description}</Text>
+    </View>
+  );
+};
+
+function Pagination({index, length}) {
+  const progress = (index + 1) / length;
+  const progressWidth = `${progress * 100}%`;
+
+  return (
+    <View style={onBoardingStyles.pagination} pointerEvents="none">
+      <View style={onBoardingStyles.paginationSliderInactive}>
+        <View
+          style={[
+            onBoardingStyles.paginationSliderActive,
+            {width: progressWidth},
+          ]}
+        />
+      </View>
+    </View>
+  );
+}
+
+export default function OnBoarding(props) {
+  const navigation = useNavigation()
+  const totalSlides = onBoardingSlides.length;
+  const [index, setIndex] = useState(0);
+  const indexRef = useRef(index);
+  const flatListRef = useRef(null);
+
+  indexRef.current = index;
+
+  const handleDone = useCallback(() => {
+     DataStore.storeData('onBoarding', 'onBoardingDone')
+     navigation.navigate('LoginScreen')
+  }, []);
+
+  const handleNext = useCallback(() => {
+    console.log('fsdkfnksdks');
+    const nextIndex = index + 1;
+    if (nextIndex < totalSlides) {
+      flatListRef.current.scrollToIndex({index: nextIndex});
+    }
+    if (nextIndex === totalSlides) {
+      handleDone();
+    }
+  }, [index, totalSlides]);
+
+  const onScroll = useCallback(event => {
+    const slideSize = event.nativeEvent.layoutMeasurement.width;
+    const scroll_index = event.nativeEvent.contentOffset.x / slideSize;
+    const roundIndex = Math.round(scroll_index);
+
+    const distance = Math.abs(roundIndex - scroll_index);
+
+    const isNoMansLand = distance > 0.4;
+
+    if (roundIndex !== indexRef.current && !isNoMansLand) {
+      setIndex(roundIndex);
+    }
+  }, []);
+
+  const renderItem = useCallback(function renderItem({item}) {
+    return <Slide data={item} />;
+  }, []);
+
+  return (
+    <View style={onBoardingStyles.onboardContainer}>
+      {/* <View style={onBoardingStyles.skipBtn}>
+        {index !== onBoardingSlides.length - 1 && (
+          <TouchableOpacity onPress={() => handleDone()}>
+            <Text testID="skip" style={onBoardingStyles.skipBtnText}>
+              Skip
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View> */}
+      <FlatList
+        ref={flatListRef}
+        data={onBoardingSlides}
+        style={onBoardingStyles.carousel}
+        contentContainerStyle={{alignItems:'center'}}
+        renderItem={renderItem}
+        pagingEnabled
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        bounces={false}
+        onScroll={onScroll}
+        initialNumToRender={3}
+        maxToRenderPerBatch={1}
+        removeClippedSubviews={true}
+        scrollEventThrottle={16}
+        windowSize={1}
+        keyExtractor={useCallback(s => String(s.id), [])}
+        getItemLayout={useCallback(
+          (_, ind) => ({
+            ind,
+            length: width,
+            offset: ind * width,
+          }),
+          [],
+        )}
+      />
+      <Pagination index={index} length={onBoardingSlides.length} />
+      <TouchableOpacity
+        style={onBoardingStyles.nextBtn}
+        onPress={() => handleNext()}>
+        <Text testID="next" style={onBoardingStyles.nextText}>
+          {index === onBoardingSlides.length - 1 ? 'Get Started' : 'Next'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
