@@ -7,11 +7,11 @@ import {loginStyles} from '../../styles/UserStyles';
 import Logo from '../../assets/image/logo.svg';
 import Phone from '../../assets/image/svgIcons/phone.svg';
 import {colors} from '../../constants/constants';
-import { DataStore } from '../../controllers/DataStore';
-import { CommonActions, useNavigation } from '@react-navigation/native';
+import {DataStore} from '../../controllers/DataStore';
+import {CommonActions, useNavigation} from '@react-navigation/native';
 
 const LoginScreen = () => {
-  const navigation = useNavigation()
+  const navigation = useNavigation();
   const [countryCode, setCountryCode] = useState('IN');
   const [country, setCountry] = useState({
     callingCode: ['91'],
@@ -23,6 +23,8 @@ const LoginScreen = () => {
     subregion: 'Southern Asia',
   });
   const [visible, setVisible] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneNumErr, setPhoneNumErr] = useState(null);
 
   const onSelect = country => {
     setCountryCode(country.cca2);
@@ -66,13 +68,24 @@ const LoginScreen = () => {
   };
 
   const requestOTP = () => {
-     navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{name: 'HomeScreen'}],
-      }),
-    );
-  }
+    if (phoneNumber.length === 0) {
+      setPhoneNumErr('Please Enter Mobile Number');
+    } else if (phoneNumber.length < 10){
+      setPhoneNumErr('Please Enter Valid Mobile Number');
+    } else {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{name: 'HomeScreen'}],
+        }),
+      );
+    }
+  };
+
+  const handleChange = text => {
+    const numericValue = text.replace(/[^0-9]/g, '');
+    setPhoneNumber(numericValue);
+  };
 
   return (
     <View style={loginStyles.screen}>
@@ -88,14 +101,23 @@ const LoginScreen = () => {
         </Text>
         <View style={loginStyles.inputConatiner}>
           {renderCountryPicker()}
-          <TextInput style={loginStyles.input} placeholder="hello" keyboardType='numeric'/>
+          <TextInput
+            style={loginStyles.input}
+            placeholder="Mobile Number"
+            keyboardType="number-pad"
+            onChangeText={handleChange}
+            value={phoneNumber}
+            maxLength={10}
+          />
           <View style={loginStyles.phoneIcon}>
-          <Phone />
+            <Phone />
           </View>
-          
         </View>
+        {(phoneNumber.length === 0 || phoneNumber.length < 10) && (
+          <Text style={loginStyles.errTxt}>{phoneNumErr}</Text>
+        )}
       </View>
-      <TouchableOpacity style={loginStyles.otpBtn} onPress={()=>requestOTP()}>
+      <TouchableOpacity style={loginStyles.otpBtn} onPress={() => requestOTP()}>
         <Text style={loginStyles.otptxt}>Request OTP</Text>
       </TouchableOpacity>
     </View>

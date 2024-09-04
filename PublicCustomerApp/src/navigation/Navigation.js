@@ -5,6 +5,7 @@ import LanguageScreen from '../screens/LanguageScreen';
 import OnBoarding from '../screens/OnBoarding';
 import LoginScreen from '../screens/authentication/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
+import OTPScreen from '../screens/authentication/OTPScreen';
 
 const Navigation = () => {
   const Stack = createNativeStackNavigator();
@@ -16,7 +17,8 @@ const Navigation = () => {
       <Stack.Screen name="SplashScreen" component={SplashScreen} />
       <Stack.Screen name="LanguageScreen" component={LanguageScreen} />
       <Stack.Screen name="OnBoarding" component={OnBoarding} />
-      <Stack.Screen name="LoginScreen" component={LoginScreen} />
+      <Stack.Screen name="LoginScreen" component={HomeScreen} />
+      <Stack.Screen name="OTPScreen" component={OTPScreen} />
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
     </Stack.Navigator>
   );

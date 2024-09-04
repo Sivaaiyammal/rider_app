@@ -12,4 +12,6 @@ export const colors = {
   yellow: '#FFD100',
   grey_dark: '#9E9E9E',
   blue_xxdark: '#0F223C',
+  danger_red:'#D83838',
+  grey_xdark: '#D6D6D6'
 };

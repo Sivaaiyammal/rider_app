@@ -6,64 +6,64 @@ export const loginStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
   },
-  header:{
-    flexDirection:'row',
-    width:'90%',
-    alignSelf:'center',
-    marginTop:20,
-    paddingVertical:10,
-    alignItems:'center'
+  header: {
+    flexDirection: 'row',
+    width: '90%',
+    alignSelf: 'center',
+    marginTop: 20,
+    paddingVertical: 10,
+    alignItems: 'center',
   },
-  headerTxt:{
-    fontFamily:Fonts.bold,
-    color:colors.black,
-    fontSize:24,
-    marginLeft:10
+  headerTxt: {
+    fontFamily: Fonts.bold,
+    color: colors.black,
+    fontSize: 24,
+    marginLeft: 10,
   },
-  contectContainer :{
-    width:'90%',
-    alignSelf:'center',
-    paddingVertical:10,
+  contectContainer: {
+    width: '90%',
+    alignSelf: 'center',
+    paddingVertical: 10,
   },
-  signInTxt:{
-    fontFamily:Fonts.light,
-    color:colors.black,
-    fontSize:16
+  signInTxt: {
+    fontFamily: Fonts.light,
+    color: colors.black,
+    fontSize: 16,
   },
-  inputConatiner:{
-    width:'100%',
-    marginTop:10,
-    borderRadius:10,
-    flexDirection:'row',
-    alignItems:'center',
-    backgroundColor:colors.white,
-    borderWidth:1
+  inputConatiner: {
+    width: '100%',
+    marginTop: 10,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderWidth: 1,
   },
-  countryPicker:{
-    width:'30%',
-    flexDirection:'row',
-    alignItems:'center',
-    justifyContent:'center',
-    backgroundColor:colors.white,
-    borderRightWidth:0.3,
+  countryPicker: {
+    width: '30%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.white,
+    borderRightWidth: 0.3,
   },
-  input:{ 
-    width:'60%',
-    paddingLeft:10,
-    fontFamily:Fonts.regular,
-    color:colors.black,
-    fontSize:16
+  input: {
+    width: '60%',
+    paddingLeft: 10,
+    fontFamily: Fonts.regular,
+    color: colors.black,
+    fontSize: 16,
   },
-  phoneIcon:{
+  phoneIcon: {
     width: '10%',
-    alignItems:'center'
+    alignItems: 'center',
   },
-  callingCode:{
-    fontFamily:Fonts.regular,
-    color:colors.black,
-    fontSize:16
+  callingCode: {
+    fontFamily: Fonts.regular,
+    color: colors.black,
+    fontSize: 16,
   },
-  otpBtn:{
+  otpBtn: {
     position: 'absolute',
     bottom: 20,
     backgroundColor: colors.blue_xxdark,
@@ -71,11 +71,37 @@ export const loginStyles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 30,
     alignItems: 'center',
-    alignSelf:'center'
+    alignSelf: 'center',
   },
-  otptxt :{
+  otptxt: {
     fontFamily: Fonts.medium,
     color: colors.white,
     fontSize: 14,
+  },
+  errTxt: {
+    color: colors.danger_red,
+    fontFamily: Fonts.light,
+    fontSize: 14,
+    marginTop: 10,
+  },
+  otpHeaderTxt:{
+    textAlign:'center',
+    marginTop:20
+  },
+  headerContent:{
+    fontFamily:Fonts.light,
+    fontSize:16,
+    color:colors.black
+  },
+  phoneTxt:{
+    fontFamily:Fonts.medium,
+    color:colors.black,
+    textAlign:'center',
+    marginTop:5
+  },
+  otpContainer:{
+    width:'90%',
+    alignSelf:'center',
+    marginTop:25
   }
 });
