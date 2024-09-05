@@ -2,6 +2,7 @@ import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import {useStackScreenStore} from '../store/useStackScreenStore';
 import MapScreen from './MapScreen';
+import MapContainer from './Map';
 
 const HomeScreen = () => {
   const {stackScreen} = useStackScreenStore();
@@ -15,9 +16,10 @@ const HomeScreen = () => {
   };
 
   return (
-    <View style={{flex: 1}}>
+    <>
       {renderContent()}
-    </View>
+      <MapContainer />
+    </>
   );
 };
 

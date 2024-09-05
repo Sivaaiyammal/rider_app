@@ -110,7 +110,7 @@ export default MapScreen;
 const styles = StyleSheet.create({
   animatedStyles: {
     flexGrow: 1,
-    backgroundColor: 'white',
+    // backgroundColor: 'white',
     position: 'absolute',
     top: 0,
     bottom: 0,
