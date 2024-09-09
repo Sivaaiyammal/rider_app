@@ -35,7 +35,7 @@ const MapContainer = ({ mapStyle }) => {
 
   const searchStr = { start_location: location ? [location[1], location[0]] : [], search_str: searchUnit }
 
-  console.log("searchStr", mapReady);
+  console.log("mapReady", searchStr);
 
   return (
     <View style={[styles.mapContainer]}>
@@ -50,7 +50,7 @@ const MapContainer = ({ mapStyle }) => {
         markers={mapMarkers}
         searchUnit={searchStr}
         autoPOISearch={searchPOI}
-        settingsProps={{}}
+        settingsProps={{"language":'en'}}
         onSearchResults={setOnSearchResults}
         onSearchPOIResults={setSearchPOIResults}
         mode={mode}
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   mapStyles: {
     width: "100%",
     height: "100%",
-    zIndex: 1,
+    zIndex: 99999999,
   },
   gradientContainer: {
     zIndex: 2,

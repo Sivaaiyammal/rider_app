@@ -5,9 +5,12 @@ import ProfileImage from '../assets/image/svgIcons/profileImage.svg';
 import {colors, Fonts} from '../constants/constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import BottomSheet from '../components/BottomSheet';
+import {useStackScreenStore} from '../store/useStackScreenStore';
 
 const MapScreen = () => {
   const [showMenu, setShowMenu] = useState(false);
+
+  const {setStackScreen} = useStackScreenStore();
 
   const scaleValue = useRef(new Animated.Value(1)).current;
   const offsetValue = useRef(new Animated.Value(0)).current;
@@ -37,13 +40,13 @@ const MapScreen = () => {
 
   const toggleMenu = () => {
     Animated.timing(scaleValue, {
-      toValue: showMenu ? 1 : 0.78,
+      toValue: showMenu ? 1 : 0.9,
       duration: 300,
       useNativeDriver: true,
     }).start();
 
     Animated.timing(offsetValue, {
-      toValue: showMenu ? 0 : 350,
+      toValue: showMenu ? 0 : 300,
       duration: 300,
       useNativeDriver: true,
     }).start();
@@ -67,7 +70,7 @@ const MapScreen = () => {
             transform: [{scale: scaleValue}, {translateX: offsetValue}],
           },
         ]}>
-        <Animated.View style={[{transform: [{translateY: closeButtonOffset}]}]}>
+        <Animated.View>
           <View style={styles.addressContainer}>
             <View
               style={{
@@ -93,14 +96,16 @@ const MapScreen = () => {
             </View>
           </View>
         </Animated.View>
+        <BottomSheet minHeight={150}>
+          <TouchableOpacity
+            style={styles.searchcontainer}
+            onPress={() => setStackScreen('SearchLocationScreen')}>
+            <Ionicons name={'search'} size={22} />
+            <Text style={styles.searchcontainerTxt}>Search Destination</Text>
+          </TouchableOpacity>
+        </BottomSheet>
       </Animated.View>
       {showMenu && <SideDrawer />}
-      <BottomSheet minHeight={150}>
-        <TouchableOpacity style={styles.searchcontainer}>
-          <Ionicons name={'search'} size={22} />
-          <Text style={styles.searchcontainerTxt}>Search Destination</Text>
-        </TouchableOpacity>
-      </BottomSheet>
     </>
   );
 };
@@ -110,12 +115,13 @@ export default MapScreen;
 const styles = StyleSheet.create({
   animatedStyles: {
     flexGrow: 1,
-    // backgroundColor: 'white',
     position: 'absolute',
     top: 0,
     bottom: 0,
     left: 0,
     right: 0,
+    overflow: 'hidden',
+    zIndex: 3,
   },
   searchcontainer: {
     flexDirection: 'row',
@@ -147,7 +153,6 @@ const styles = StyleSheet.create({
     width: '90%',
     alignSelf: 'center',
   },
-
   addressProfileImage: {
     width: 40,
     height: 40,
@@ -156,14 +161,12 @@ const styles = StyleSheet.create({
   title: {
     color: '#757575',
     fontSize: 14,
-    fontFamily:Fonts.bold
+    fontFamily: Fonts.bold,
   },
-
   address: {
     color: '#212121',
     fontSize: 12,
     marginTop: 2,
-    fontFamily:Fonts.regular
+    fontFamily: Fonts.regular,
   },
 });
-
