@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 import { requireNativeComponent, View } from 'react-native';
 import { DeviceEventEmitter } from 'react-native';
+import PropTypes from 'prop-types';
 
 const MapView = requireNativeComponent('NeNativeModule'); // Use the module name defined in your native module
 
@@ -249,5 +250,32 @@ class NEMap extends Component {
     );
   }
 }
+
+NEMap.propTypes = {
+  onMapReady: PropTypes.func,
+  onMapClick: PropTypes.func,
+  onUserLocationChange: PropTypes.func,
+  onDirectionReady: PropTypes.func,
+  onDirectionInit: PropTypes.func,
+  distanceListner: PropTypes.func,
+  onMarkerClick: PropTypes.func,
+  onMapDblclick: PropTypes.func,
+  onSearchResults: PropTypes.func,
+  onSearchPOIResults: PropTypes.func,
+  onSearchPOIError: PropTypes.func,
+  onMapCenterChanged: PropTypes.func,
+  onMapMoving: PropTypes.func,
+  onNavigationEnd: PropTypes.func,
+  mapStyle: PropTypes.object,
+  markers: PropTypes.array,
+  homeLocation: PropTypes.object,
+  autoPOISearch: PropTypes.bool,
+  mode: PropTypes.string,
+  settingsProps: PropTypes.object,
+  searchUnit: PropTypes.string,
+  geometries: PropTypes.array,
+  findRoute: PropTypes.array,
+  navigation: PropTypes.object,
+};
 
 export default NEMap;

@@ -1,3 +1,4 @@
+import React from 'react';
 import OnBoardA from '../assets/image/onboarding/onboardA.svg';
 import OnBoardB from '../assets/image/onboarding/onboardB.svg';
 import OnBoardC from '../assets/image/onboarding/onboardC.svg';

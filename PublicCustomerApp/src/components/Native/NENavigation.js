@@ -1,5 +1,6 @@
 /* eslint-disable react/self-closing-comp */
 import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 import {requireNativeComponent, View} from 'react-native';
 import {DeviceEventEmitter} from 'react-native';
 
@@ -98,5 +99,14 @@ class NENavigation extends Component {
     );
   }
 }
+
+NENavigation.propTypes = {
+  onMapReady: PropTypes.func,
+  onMapClick: PropTypes.func,
+  mapStyle: PropTypes.object,
+  markers: PropTypes.array,
+  homeLocation: PropTypes.object,
+  polylines: PropTypes.array,
+};
 
 export default NENavigation;

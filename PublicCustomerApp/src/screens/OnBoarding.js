@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, {useCallback, useRef, useState} from 'react';
 import {FlatList, View, Text, Image, TouchableOpacity} from 'react-native';
 
@@ -51,7 +50,7 @@ export default function OnBoarding(props) {
   const handleDone = useCallback(() => {
      DataStore.storeData('onBoarding', 'onBoardingDone')
      navigation.navigate('LoginScreen')
-  }, []);
+  }, [navigation]);
 
   const handleNext = useCallback(() => {
     console.log('fsdkfnksdks');
@@ -62,7 +61,7 @@ export default function OnBoarding(props) {
     if (nextIndex === totalSlides) {
       handleDone();
     }
-  }, [index, totalSlides]);
+  }, [index, totalSlides, handleDone]);
 
   const onScroll = useCallback(event => {
     const slideSize = event.nativeEvent.layoutMeasurement.width;

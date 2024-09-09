@@ -1,4 +1,4 @@
-import {Animated, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Animated, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator} from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import SideDrawer from '../components/Drawer/SideDrawer';
 import ProfileImage from '../assets/image/svgIcons/profileImage.svg';
@@ -91,7 +91,7 @@ const MapScreen = () => {
             <View style={{marginLeft: 10}}>
               <Text style={styles.title}>{'Location'}</Text>
               <Text style={styles.address}>
-                {'this.props.address' || <ActivityIndicator />}
+                {this.props?.address ? this.props.address : <ActivityIndicator />}
               </Text>
             </View>
           </View>
