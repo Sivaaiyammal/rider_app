@@ -1,5 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
+import PropTypes from 'prop-types';
 
 import useMapStore from "../store/useMapStore";
 import NEMap from "../components/Native/NEMap";
@@ -69,6 +70,10 @@ const MapContainer = ({ mapStyle }) => {
       />
     </View>
   );
+};
+
+MapContainer.propTypes = {
+  mapStyle: PropTypes.object,
 };
 
 export default MapContainer;

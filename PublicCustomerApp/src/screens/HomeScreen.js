@@ -1,5 +1,4 @@
-import {StyleSheet, Text, View} from 'react-native';
-import React, { useCallback, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {useStackScreenStore} from '../store/useStackScreenStore';
 import MapScreen from './MapScreen';
 import MapContainer from './Map';

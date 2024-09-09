@@ -56,7 +56,7 @@ export const DataStore = {
     }
   },
 
-  clearSession: async () => {
+  clearSession: async (key) => {
     try {
     //   KEYS_TO_CLEAR_ON_SESSION_END.forEach(async key => {
         

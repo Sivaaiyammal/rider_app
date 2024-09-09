@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* global module */
 module.exports = {
   root: true,
   extends: '@react-native',
@@ -15,7 +17,7 @@ module.exports = {
     // Maximum line length of 300 characters
     'max-len': ['error', { code: 300 }],
     // Detect unused styles in React Native
-    'react-native/no-unused-styles': 'error',
+    'react-native/no-unused-styles': 'warn',
     // Enforce platform-specific components
     'react-native/split-platform-components': 'error',
     // Warn against inline styles

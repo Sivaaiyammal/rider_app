@@ -6,8 +6,6 @@ import {loginStyles} from '../../styles/UserStyles';
 
 import Logo from '../../assets/image/logo.svg';
 import Phone from '../../assets/image/svgIcons/phone.svg';
-import {colors} from '../../constants/constants';
-import {DataStore} from '../../controllers/DataStore';
 import {CommonActions, useNavigation} from '@react-navigation/native';
 
 const LoginScreen = () => {

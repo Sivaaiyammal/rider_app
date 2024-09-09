@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import React, {useCallback, useRef, useState} from 'react';
-import {FlatList, View, Text, Image, TouchableOpacity} from 'react-native';
+import PropTypes from 'prop-types';
+import {FlatList, View, Text, TouchableOpacity} from 'react-native';
 
 import { onBoardingSlides } from '../constants/JsonData';
 import { onBoardingStyles } from '../styles/SplashStyles';
@@ -18,6 +19,10 @@ const Slide = ({data}) => {
       <Text style={onBoardingStyles.slideSubtitle}>{data.description}</Text>
     </View>
   );
+};
+
+Slide.propTypes = {
+  data: PropTypes.object,
 };
 
 function Pagination({index, length}) {
@@ -38,7 +43,12 @@ function Pagination({index, length}) {
   );
 }
 
-export default function OnBoarding(props) {
+Pagination.propTypes = {
+  index: PropTypes.number,
+  length: PropTypes.number,
+};
+
+export default function OnBoarding() {
   const navigation = useNavigation()
   const totalSlides = onBoardingSlides.length;
   const [index, setIndex] = useState(0);
