@@ -1,4 +1,4 @@
-import React, {useRef, useState, useCallback} from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import {
   ScrollView,
   Text,
@@ -6,19 +6,20 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import YourLoc from '../../assets/image/svgIcons/yourLoc.svg';
 import EndLoc from '../../assets/image/svgIcons/endLoc.svg';
-import {addLocation} from '../../styles/AddLocationStyles';
+import { addLocation } from '../../styles/AddLocationStyles';
 import DragAndDropCard from '../../components/DragAndDropCard';
-import {colors} from '../../constants/constants';
+import { colors } from '../../constants/constants';
 import useLocationStore from '../../store/useLocationStore';
 import useMapStore from '../../store/useMapStore';
 import Marker from '../../controllers/NEMap/Marker';
 
+
 const AddLocationCard = () => {
-  const {directions, setDirections} = useLocationStore();
+  const { directions, setDirections } = useLocationStore();
   const {
     setSearchUnit,
     mapMarkers,
@@ -51,7 +52,7 @@ const AddLocationCard = () => {
         lon: direction.lng,
       }));
       setMapMarkers([]);
-      setDirectionPoints({locations: routeData, type: 'car'});
+      setDirectionPoints({ locations: routeData, type: 'car' });
     } else {
       setDirectionPoints(null)
     }
@@ -85,6 +86,7 @@ const AddLocationCard = () => {
     );
     setMapMarkers(updatedMarkers);
   };
+
 
   //   on location name Press
   const onLocationNamePress = useCallback(
@@ -146,7 +148,7 @@ const AddLocationCard = () => {
   }, []);
 
   return (
-    <View style={{backgroundColor: colors.white, paddingVertical: 5}}>
+    <View style={{ backgroundColor: colors.white, paddingVertical: 5 }}>
       <View style={addLocation.addLocationContainer}>
         {directions.map((direction, index) => (
           <DragAndDropCard
@@ -181,7 +183,7 @@ const AddLocationCard = () => {
           </DragAndDropCard>
         ))}
         {onSearchResults && (
-          <View style={{height: 200, marginTop: 10}}>
+          <View style={{ height: 200, marginTop: 10 }}>
             <ScrollView>
               {onSearchResults?.searchResults?.map((item, i) => (
                 <TouchableOpacity
