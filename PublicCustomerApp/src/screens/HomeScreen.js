@@ -5,6 +5,8 @@ import MapContainer from './Map';
 import { checkFineLocationPermissions, RequestFineLocationPermission } from '../controllers/PermissionHandler';
 import locationTask from '../controllers/GetCurrentLocation';
 import SearchLocationScreen from './SearchLocation/SearchLocationScreen';
+import VehicleListScreen from './VehicleListScreen';
+import SelectedVehicle from './SelectedVehicle';
 
 const HomeScreen = () => {
   const {stackScreen} = useStackScreenStore();
@@ -28,6 +30,10 @@ const HomeScreen = () => {
         return <MapScreen />;
       case 'SearchLocationScreen':
         return <SearchLocationScreen />;
+        case 'VehicleList':
+        return <VehicleListScreen />;
+        case 'SelectedVehicle':
+        return <SelectedVehicle />;
       default:
         return null;
     }
