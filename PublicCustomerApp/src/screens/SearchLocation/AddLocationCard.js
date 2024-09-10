@@ -1,7 +1,6 @@
-import React, {useRef, useState, useMemo, useCallback} from 'react';
+import React, {useRef, useState, useCallback} from 'react';
 import {
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -11,7 +10,6 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import YourLoc from '../../assets/image/svgIcons/yourLoc.svg';
 import EndLoc from '../../assets/image/svgIcons/endLoc.svg';
-import Flag from '../../assets/image/svgIcons/endLoc.svg';
 import {addLocation} from '../../styles/AddLocationStyles';
 import DragAndDropCard from '../../components/DragAndDropCard';
 import {colors} from '../../constants/constants';
@@ -27,7 +25,6 @@ const AddLocationCard = () => {
     onSearchResults,
     setOnSearchResults,
     setMapMarkers,
-    setDirectionPoints,
   } = useMapStore();
   const [selectedInputIndex, setSelectedInputIndex] = useState(0);
 

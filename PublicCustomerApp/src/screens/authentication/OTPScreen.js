@@ -1,5 +1,5 @@
 import {Text, TouchableOpacity, View} from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useState} from 'react';
 import {loginStyles} from '../../styles/UserStyles';
 import OTPTextInput from 'react-native-otp-textinput';
 import {colors} from '../../constants/constants';

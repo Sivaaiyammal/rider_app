@@ -1,3 +1,4 @@
+/* global module */
 module.exports = {
   arrowParens: 'avoid',
   bracketSameLine: true,

@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import SplashScreen from '../screens/SplashScreen';
 import LanguageScreen from '../screens/LanguageScreen';
 import OnBoarding from '../screens/OnBoarding';
-import LoginScreen from '../screens/authentication/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import OTPScreen from '../screens/authentication/OTPScreen';
 

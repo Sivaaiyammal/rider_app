@@ -1,4 +1,4 @@
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import React, {useState} from 'react';
 import {LanguageStyles} from '../styles/SplashStyles';
 import {languages} from '../constants/JsonData';

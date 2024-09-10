@@ -47,7 +47,7 @@ class SearchAPI {
 
 }
 
-module.exports = { SearchAPI };
+export default SearchAPI;
 
 
 

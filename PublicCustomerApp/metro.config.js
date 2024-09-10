@@ -1,5 +1,6 @@
-const path = require("path");
-const { getDefaultConfig, mergeConfig } = require("@react-native/metro-config");
+/* global module require __dirname */
+const path = require('path');
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
 const defaultConfig = getDefaultConfig(__dirname);
 const { resolver: { sourceExts, assetExts } } = defaultConfig;
