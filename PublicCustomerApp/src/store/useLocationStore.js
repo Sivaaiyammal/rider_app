@@ -14,8 +14,11 @@ const useLocationStore = create(set => ({
   ...initialDirections,
   setDirections: setDirection => set({directions: setDirection}),
 
-  resetDirections: () => set({ ...initialDirections }),
-  
+  currentLocationName: '',
+  setCurrentLocationName: locationName =>
+    set({currentLocationName: locationName}),
+
+  resetDirections: () => set({...initialDirections}),
 }));
 
 export default useLocationStore;
