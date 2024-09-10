@@ -26,6 +26,7 @@ const AddLocationCard = () => {
     onSearchResults,
     setOnSearchResults,
     setMapMarkers,
+    setDirectionPoints,
   } = useMapStore();
   const [selectedInputIndex, setSelectedInputIndex] = useState(0);
 
@@ -43,17 +44,19 @@ const AddLocationCard = () => {
     setSearchUnit(value);
   }, []);
 
-  //   const setRouteDirection = () => {
-  //     const directionPoints = directions
-  //       .filter(direction => direction.location.length > 0)
-  //       .map(direction => ({
-  //         lat: direction.location[1],
-  //         lon: direction.location[0],
-  //       }));
-  //     setMapMarkers([]);
-  //     console.log('directionPoints-route', directionPoints, directions);
-  //     setDirectionPoints({locations: directionPoints, type: 'car'});
-  //   };
+  const setRouteDirection = directions => {
+    console.log('hari-->>directions-->>', directions, directions.length);
+    if (directions.length === 2) {
+      const routeData = directions.map(direction => ({
+        lat: direction.lat,
+        lon: direction.lng,
+      }));
+      setMapMarkers([]);
+      setDirectionPoints({ locations: routeData, type: 'car' });
+    } else {
+      setDirectionPoints(null)
+    }
+  };
 
   const addMapMarkers = (item, markerType) => {
     const marker = new Marker(
@@ -74,6 +77,7 @@ const AddLocationCard = () => {
       updatedMarkers.push(marker);
     }
     setMapMarkers(updatedMarkers);
+    setRouteDirection(updatedMarkers);
   };
 
   const removeMapMarker = markerType => {
@@ -159,7 +163,9 @@ const AddLocationCard = () => {
                 inputRefs.current[hoverIndex].focus();
               }
             }}>
-            <Text style={addLocation.inputHeader}>{getLocationIcon(index, directions.length).name}</Text>
+            <Text style={addLocation.inputHeader}>
+              {getLocationIcon(index, directions.length).name}
+            </Text>
             <View style={addLocation.draggableCard}>
               {getLocationIcon(index, directions.length).icon}
               <TextInput
@@ -177,13 +183,15 @@ const AddLocationCard = () => {
           </DragAndDropCard>
         ))}
         {onSearchResults && (
-          <View style={{ height: 190 }}>
+          <View style={{ height: 200, marginTop: 10 }}>
             <ScrollView>
               {onSearchResults?.searchResults?.map((item, i) => (
                 <TouchableOpacity
                   key={i}
                   onPress={() => onLocationNamePress(item)}>
-                  <Text>{item.address || item.name}</Text>
+                  <Text style={addLocation.searchResults}>
+                    {item.address || item.name}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>

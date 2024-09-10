@@ -38,6 +38,18 @@ const MapContainer = ({ mapStyle }) => {
 
   console.log("mapReady", searchStr);
 
+  const defaultSettings = {
+    "distanceFormate": "Kilometers(km)/ Meters(m)",
+    "ferry": "Avoid",
+    "gpsReliability": "High",
+    "highways": "Prefer",
+    "language": "en",
+    "livingStreet": "Slightly Prefer",
+    "mapAppearance": "Small",
+    "navAccuracy": "Medium",
+    "tolls": "Slightly Prefer"
+  }
+
   return (
     <View style={[styles.mapContainer]}>
       {!mapReady && <Loaders message="Setting up Map" />}
@@ -51,7 +63,7 @@ const MapContainer = ({ mapStyle }) => {
         markers={mapMarkers}
         searchUnit={searchStr}
         autoPOISearch={searchPOI}
-        settingsProps={{"language":'en'}}
+        settingsProps={defaultSettings}
         onSearchResults={setOnSearchResults}
         onSearchPOIResults={setSearchPOIResults}
         mode={mode}
