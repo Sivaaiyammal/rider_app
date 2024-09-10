@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import PropTypes from 'prop-types';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import YourLoc from '../../assets/image/svgIcons/yourLoc.svg';
@@ -18,16 +19,10 @@ import useMapStore from '../../store/useMapStore';
 import Marker from '../../controllers/NEMap/Marker';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
 
-<<<<<<< HEAD
 const AddLocationCard = (props) => {
   const {screenType} = props
   const {directions, setDirections} = useLocationStore();
   const {setStackScreen} = useStackScreenStore()
-=======
-
-const AddLocationCard = () => {
-  const { directions, setDirections } = useLocationStore();
->>>>>>> 45e9875b9853c34e6fd28566da896fcee26f19ea
   const {
     setSearchUnit,
     mapMarkers,
@@ -68,10 +63,7 @@ const AddLocationCard = () => {
   
       setMapMarkers([]);
       setDirectionPoints({ locations: routeData, type: 'car' });
-<<<<<<< HEAD
       console.log('hari-->>directions-->>', sortedDirections, routeData);
-=======
->>>>>>> 45e9875b9853c34e6fd28566da896fcee26f19ea
     } else {
       setDirectionPoints(null);
     }
@@ -203,13 +195,8 @@ const AddLocationCard = () => {
             </View>
           </DragAndDropCard>
         ))}
-<<<<<<< HEAD
         {(onSearchResults && onSearchResults?.searchResults?.length !== 0 && searchUnit.length !== 0) && (
           <View style={{height: 200, marginTop: 10}}>
-=======
-        {onSearchResults && (
-          <View style={{ height: 200, marginTop: 10 }}>
->>>>>>> 45e9875b9853c34e6fd28566da896fcee26f19ea
             <ScrollView>
               {onSearchResults?.searchResults?.map((item, i) => (
                 <TouchableOpacity
@@ -229,3 +216,8 @@ const AddLocationCard = () => {
 };
 
 export default AddLocationCard;
+
+AddLocationCard.propTypes = {
+  screenType: PropTypes.string,
+};
+
