@@ -14,19 +14,16 @@ import SearchAPI from '../controllers/NEMap/Search';
 
 const MapScreenHeader = props => {
   const {toggleMenu, showMenu} = props;
-  const {location} = useLocationStore();
-  const [locationName, setLocationName] = useState('');
+  const {location, currentLocationName, setCurrentLocationName} = useLocationStore();
 
   const fetchAddressName = async () => {
     if (location && location.length === 2) {
-      // Check if location is valid
       const coordinates = [location[1], location[0]];
       try {
         const search = new SearchAPI();
         const response = await search.reverseGeocode(coordinates);
-        console.log('hari-->>location-->>Name', response);
         if (response) {
-          setLocationName(
+            setCurrentLocationName(
             response.properties.street ||
               response.properties.name ||
               'Unnamed Location',
@@ -62,7 +59,7 @@ const MapScreenHeader = props => {
       <View style={{marginLeft: 10}}>
         <Text style={styles.title}>{'Location'}</Text>
         <Text style={styles.address}>
-          {locationName ? locationName : <ActivityIndicator />}
+          {currentLocationName ? currentLocationName : <ActivityIndicator />}
         </Text>
       </View>
     </View>
