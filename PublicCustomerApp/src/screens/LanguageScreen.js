@@ -1,9 +1,9 @@
-import {Text, TouchableOpacity, View} from 'react-native';
-import React, {useState} from 'react';
-import {LanguageStyles} from '../styles/SplashStyles';
-import {languages} from '../constants/JsonData';
-import {colors} from '../constants/constants';
-import {useNavigation} from '@react-navigation/native';
+import { Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { LanguageStyles } from '../styles/SplashStyles';
+import { languages } from '../constants/JsonData';
+import { colors } from '../constants/constants';
+import { useNavigation } from '@react-navigation/native';
 import { DataStore } from '../controllers/DataStore';
 
 const LanguageScreen = () => {
@@ -17,7 +17,7 @@ const LanguageScreen = () => {
 
   const onNextPress = () => {
     navigation.navigate('OnBoarding');
-    DataStore.storeData('language','languageDone')
+    DataStore.storeData('language', 'languageDone');
   };
 
   return (

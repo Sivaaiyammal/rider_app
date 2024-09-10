@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
-import React, {useCallback, useRef, useState} from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import {FlatList, View, Text, TouchableOpacity} from 'react-native';
+import { FlatList, View, Text, TouchableOpacity } from 'react-native';
 
 import { onBoardingSlides } from '../constants/JsonData';
 import { onBoardingStyles } from '../styles/SplashStyles';
@@ -9,7 +9,7 @@ import { width } from '../utils/Utils';
 import { DataStore } from '../controllers/DataStore';
 import { useNavigation } from '@react-navigation/native';
 
-const Slide = ({data}) => {
+const Slide = ({ data }) => {
   return (
     <View style={onBoardingStyles.slide}>
       <View style={[onBoardingStyles.slideImageContainer]}>
@@ -25,7 +25,7 @@ Slide.propTypes = {
   data: PropTypes.object,
 };
 
-function Pagination({index, length}) {
+function Pagination({ index, length }) {
   const progress = (index + 1) / length;
   const progressWidth = `${progress * 100}%`;
 
@@ -35,7 +35,7 @@ function Pagination({index, length}) {
         <View
           style={[
             onBoardingStyles.paginationSliderActive,
-            {width: progressWidth},
+            { width: progressWidth },
           ]}
         />
       </View>
@@ -58,15 +58,14 @@ export default function OnBoarding() {
   indexRef.current = index;
 
   const handleDone = useCallback(() => {
-     DataStore.storeData('onBoarding', 'onBoardingDone')
-     navigation.navigate('LoginScreen')
+    DataStore.storeData('onBoarding', 'onBoardingDone')
+    navigation.navigate('LoginScreen')
   }, [navigation]);
 
   const handleNext = useCallback(() => {
-    console.log('fsdkfnksdks');
     const nextIndex = index + 1;
     if (nextIndex < totalSlides) {
-      flatListRef.current.scrollToIndex({index: nextIndex});
+      flatListRef.current.scrollToIndex({ index: nextIndex });
     }
     if (nextIndex === totalSlides) {
       handleDone();
@@ -87,7 +86,7 @@ export default function OnBoarding() {
     }
   }, []);
 
-  const renderItem = useCallback(function renderItem({item}) {
+  const renderItem = useCallback(function renderItem({ item }) {
     return <Slide data={item} />;
   }, []);
 
@@ -106,7 +105,7 @@ export default function OnBoarding() {
         ref={flatListRef}
         data={onBoardingSlides}
         style={onBoardingStyles.carousel}
-        contentContainerStyle={{alignItems:'center'}}
+        contentContainerStyle={{ alignItems: 'center' }}
         renderItem={renderItem}
         pagingEnabled
         horizontal

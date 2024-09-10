@@ -1,14 +1,19 @@
-import {Text, TextInput, TouchableOpacity, View} from 'react-native';
-import React, {useState} from 'react';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useRef, useState, useCallback } from 'react';
 
-import CountryPicker, {FlagButton} from 'react-native-country-picker-modal';
-import {loginStyles} from '../../styles/UserStyles';
-
+import CountryPicker, { FlagButton } from 'react-native-country-picker-modal';
+import { loginStyles } from '../../styles/UserStyles';
 import Logo from '../../assets/image/logo.svg';
 import Phone from '../../assets/image/svgIcons/phone.svg';
-import {CommonActions, useNavigation} from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
+import { showNotification } from '../../components/NotificationManger';
+import { DataStore } from '../../controllers/DataStore';
+
+import { usePostQuery } from '../../hooks/useQuery';
+
 
 const LoginScreen = () => {
+
   const navigation = useNavigation();
   const [countryCode, setCountryCode] = useState('IN');
   const [country, setCountry] = useState({
@@ -23,6 +28,36 @@ const LoginScreen = () => {
   const [visible, setVisible] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneNumErr, setPhoneNumErr] = useState(null);
+
+  const onRequestOTPSuccess = (data) => {
+
+    if (data.success) {
+
+      showNotification('OTP Sent', 'OTP Sent to your mobile number', 'success');
+
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'OTPScreen',
+          params: {
+            phoneNumber: phoneNumber,
+          },
+        }),
+      );
+    } else {
+      showNotification('Invalid Mobile Number', data.message, 'danger');
+    }
+
+  }
+
+  const onRequestOTPError = (data) => {
+    if (!data.success) showNotification('Invalid Mobile Number', data.message, 'danger');
+
+  }
+
+  const { mutate: requestOTPMutate, isSuccess } = usePostQuery({
+    onSuccess: onRequestOTPSuccess,
+    onError: onRequestOTPError
+  });
 
   const onSelect = country => {
     setCountryCode(country.cca2);
@@ -65,18 +100,24 @@ const LoginScreen = () => {
     );
   };
 
-  const requestOTP = () => {
+  const requestOTP = async () => {
     if (phoneNumber.length === 0) {
       setPhoneNumErr('Please Enter Mobile Number');
-    } else if (phoneNumber.length < 10){
+    } else if (phoneNumber.length < 10) {
       setPhoneNumErr('Please Enter Valid Mobile Number');
     } else {
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{name: 'HomeScreen'}],
-        }),
-      );
+
+      const payload = {
+        phoneNumber: phoneNumber,
+      }
+
+      DataStore.storeData('login_phoneNumber', phoneNumber)
+
+      await requestOTPMutate({
+        queryKey: 'loginQuery',
+        url: '/customer/auth/login',
+        payload: payload
+      })
     }
   };
 

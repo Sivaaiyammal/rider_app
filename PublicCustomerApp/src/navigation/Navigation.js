@@ -1,9 +1,10 @@
 import React from 'react';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SplashScreen from '../screens/SplashScreen';
 import LanguageScreen from '../screens/LanguageScreen';
 import OnBoarding from '../screens/OnBoarding';
 import HomeScreen from '../screens/HomeScreen';
+import LoginScreen from '../screens/authentication/LoginScreen';
 import OTPScreen from '../screens/authentication/OTPScreen';
 
 const Navigation = () => {
@@ -12,11 +13,11 @@ const Navigation = () => {
   return (
     <Stack.Navigator
       initialRouteName="SplashScreen"
-      screenOptions={{headerShown: false}}>
+      screenOptions={{ headerShown: false }}>
       <Stack.Screen name="SplashScreen" component={SplashScreen} />
       <Stack.Screen name="LanguageScreen" component={LanguageScreen} />
       <Stack.Screen name="OnBoarding" component={OnBoarding} />
-      <Stack.Screen name="LoginScreen" component={HomeScreen} />
+      <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="OTPScreen" component={OTPScreen} />
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
     </Stack.Navigator>
