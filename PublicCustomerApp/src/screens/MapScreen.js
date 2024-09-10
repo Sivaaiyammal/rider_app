@@ -16,21 +16,22 @@ const MapScreen = () => {
   const offsetValue = useRef(new Animated.Value(0)).current;
   const closeButtonOffset = useRef(new Animated.Value(0)).current;
 
+
   useEffect(() => {
     if (!showMenu) {
       Animated.parallel([
         Animated.timing(scaleValue, {
-          toValue: showMenu ? 0.78 : 1,
+          toValue: 1,
           duration: 300,
           useNativeDriver: true,
         }),
         Animated.timing(offsetValue, {
-          toValue: showMenu ? 350 : 0,
+          toValue: 0,
           duration: 300,
           useNativeDriver: true,
         }),
         Animated.timing(closeButtonOffset, {
-          toValue: showMenu ? -30 : 0,
+          toValue: 0, 
           duration: 300,
           useNativeDriver: true,
         }),
@@ -39,25 +40,25 @@ const MapScreen = () => {
   }, [showMenu, scaleValue, offsetValue, closeButtonOffset]);
 
   const toggleMenu = () => {
-    Animated.timing(scaleValue, {
-      toValue: showMenu ? 1 : 0.9,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.timing(scaleValue, {
+        toValue: showMenu ? 1 : 0.9, 
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(offsetValue, {
+        toValue: showMenu ? 0 : 300, 
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(closeButtonOffset, {
+        toValue: showMenu ? 0 : -30,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
 
-    Animated.timing(offsetValue, {
-      toValue: showMenu ? 0 : 300,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-
-    Animated.timing(closeButtonOffset, {
-      toValue: showMenu ? 0 : -30,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-    setShowMenu(!showMenu);
-    return !showMenu;
+    setShowMenu(!showMenu); 
   };
 
   return (
@@ -114,14 +115,11 @@ export default MapScreen;
 
 const styles = StyleSheet.create({
   animatedStyles: {
-    flexGrow: 1,
-    position: 'absolute',
     top: 0,
     bottom: 0,
     left: 0,
     right: 0,
-    overflow: 'hidden',
-    zIndex: 3,
+    zIndex: 2,
   },
   searchcontainer: {
     flexDirection: 'row',

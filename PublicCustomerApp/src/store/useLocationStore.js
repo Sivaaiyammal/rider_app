@@ -1,15 +1,21 @@
 import {create} from 'zustand';
 
-const useLocationStore = create(set => ({
-  location: null,
-  setLocation: location => set({location}),
-
+const initialDirections = {
   directions: [
     {id: 1, name: 'Start', location: [], locationName: ''},
     {id: 2, name: 'End', location: [], locationName: ''},
   ],
+};
+
+const useLocationStore = create(set => ({
+  location: null,
+  setLocation: location => set({location}),
+
+  ...initialDirections,
   setDirections: setDirection => set({directions: setDirection}),
 
+  resetDirections: () => set({ ...initialDirections }),
+  
 }));
 
 export default useLocationStore;
