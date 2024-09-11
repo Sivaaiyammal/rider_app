@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-useless-catch */
-import { ROOT_API_URL } from '../Config/APIConfig';
+import { ROOT_API_URL } from '../config/APIConfig';
 
 const DefaultPostHeaders = {
   'Content-Type': 'application/json',

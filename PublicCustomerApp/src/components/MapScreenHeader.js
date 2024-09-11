@@ -36,8 +36,8 @@ const MapScreenHeader = props => {
   };
 
   useEffect(() => {
-    fetchAddressName(); // Call fetchAddressName when location changes
-  }, [location]); // Use `location` as a dependency
+    fetchAddressName(); 
+  }, [location]); 
 
   return (
     <View style={styles.addressContainer}>

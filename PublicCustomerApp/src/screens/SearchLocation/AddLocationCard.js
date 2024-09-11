@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import PropTypes from 'prop-types';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import YourLoc from '../../assets/image/svgIcons/yourLoc.svg';
@@ -16,10 +17,12 @@ import { colors } from '../../constants/constants';
 import useLocationStore from '../../store/useLocationStore';
 import useMapStore from '../../store/useMapStore';
 import Marker from '../../controllers/NEMap/Marker';
+import { useStackScreenStore } from '../../store/useStackScreenStore';
 
-
-const AddLocationCard = () => {
-  const { directions, setDirections } = useLocationStore();
+const AddLocationCard = (props) => {
+  const {screenType} = props
+  const {directions, setDirections} = useLocationStore();
+  const {setStackScreen} = useStackScreenStore()
   const {
     setSearchUnit,
     mapMarkers,
@@ -27,6 +30,7 @@ const AddLocationCard = () => {
     setOnSearchResults,
     setMapMarkers,
     setDirectionPoints,
+    searchUnit
   } = useMapStore();
   const [selectedInputIndex, setSelectedInputIndex] = useState(0);
 
@@ -35,6 +39,9 @@ const AddLocationCard = () => {
 
   const onFocus = useCallback(id => {
     setSelectedInputIndex(id);
+    if (screenType === 'vehicleList' ){
+      setStackScreen('SearchLocationScreen')
+    }
   }, []);
 
   const onChangeText = useCallback((value, index) => {
@@ -42,19 +49,23 @@ const AddLocationCard = () => {
     newDirections[index].locationName = value;
     setDirections(newDirections);
     setSearchUnit(value);
+    setDirectionPoints(null);
   }, []);
 
-  const setRouteDirection = directions => {
-    console.log('hari-->>directions-->>', directions, directions.length);
+  const setRouteDirection = (directions) => {
     if (directions.length === 2) {
-      const routeData = directions.map(direction => ({
+      // Sort directions by their id to ensure start and end points
+      const sortedDirections = directions.sort((a, b) => a.id - b.id);
+      const routeData = sortedDirections.map((direction) => ({
         lat: direction.lat,
         lon: direction.lng,
       }));
+  
       setMapMarkers([]);
       setDirectionPoints({ locations: routeData, type: 'car' });
+      console.log('hari-->>directions-->>', sortedDirections, routeData);
     } else {
-      setDirectionPoints(null)
+      setDirectionPoints(null);
     }
   };
 
@@ -68,7 +79,6 @@ const AddLocationCard = () => {
       36,
       true,
     );
-    marker.setFocus(true);
     const updatedMarkers = [...mapMarkers];
     const existingIndex = updatedMarkers.findIndex(m => m.type === markerType);
     if (existingIndex !== -1) {
@@ -76,6 +86,7 @@ const AddLocationCard = () => {
     } else {
       updatedMarkers.push(marker);
     }
+    marker.setFocus(true);
     setMapMarkers(updatedMarkers);
     setRouteDirection(updatedMarkers);
   };
@@ -85,6 +96,7 @@ const AddLocationCard = () => {
       marker => marker.type !== markerType,
     );
     setMapMarkers(updatedMarkers);
+    setDirectionPoints(null)
   };
 
 
@@ -100,6 +112,7 @@ const AddLocationCard = () => {
       ];
       setDirections(newDirections);
       setOnSearchResults(null);
+      setSearchUnit('');
       if (selectedInputIndex === 0) {
         addMapMarkers(item, 'marker_start');
       } else if (selectedInputIndex === directions.length - 1) {
@@ -182,8 +195,8 @@ const AddLocationCard = () => {
             </View>
           </DragAndDropCard>
         ))}
-        {onSearchResults && (
-          <View style={{ height: 200, marginTop: 10 }}>
+        {(onSearchResults && onSearchResults?.searchResults?.length !== 0 && searchUnit.length !== 0) && (
+          <View style={{height: 200, marginTop: 10}}>
             <ScrollView>
               {onSearchResults?.searchResults?.map((item, i) => (
                 <TouchableOpacity
@@ -203,3 +216,8 @@ const AddLocationCard = () => {
 };
 
 export default AddLocationCard;
+
+AddLocationCard.propTypes = {
+  screenType: PropTypes.string,
+};
+

@@ -1,0 +1,82 @@
+
+import {StyleSheet} from 'react-native';
+import {colors, Fonts} from '../constants/constants';
+import {height, width} from '../utils/Utils';
+
+export const vehicleDetailsStyles = StyleSheet.create({
+    detailsContainer:{
+        flexDirection:'row',
+        backgroundColor:colors.white_dirt,
+        width:'90%',
+        alignSelf:'center',
+        borderRadius:10,
+        marginTop:10,
+        paddingVertical:5
+    },
+    name:{
+        fontFamily:Fonts.semi_bold,
+        color:colors.black,
+        fontSize:24
+    },
+    durationTxt:{
+        fontFamily:Fonts.light,
+        color:colors.black,
+        fontSize:14,
+        marginVertical:3
+    },
+    fareTxt:{
+        fontFamily:Fonts.medium,
+        color:colors.green,
+        fontSize:24,
+        marginVertical:3
+    },
+    locationContainer:{
+        backgroundColor:colors.white_dirt,
+        width:'90%',
+        alignSelf:'center',
+        borderRadius:10,
+        marginTop:10,
+        paddingVertical:5,
+        paddingHorizontal:10
+    },
+    locationNames:{
+        flexDirection:'row',
+        gap:10,
+        alignItems:'center'
+    },
+    locationTxt:{
+        fontFamily:Fonts.regular,
+        fontSize:14,
+        color:colors.black,
+        marginTop:15
+    },
+    paymentContainer:{
+        backgroundColor:colors.white_dirt,
+        width:'90%',
+        alignSelf:'center',
+        borderRadius:10,
+        marginTop:10,
+        paddingVertical:10,
+        paddingHorizontal:10
+    },
+    paymentTxt:{
+        fontFamily:Fonts.regular,
+        fontSize:16,
+        color:colors.black
+    },
+    cnfrmBtn:{
+        backgroundColor:colors.green,
+        width:'90%',
+        alignSelf:'center',
+        borderRadius:10,
+        marginTop:20,
+        paddingVertical:10,
+        paddingHorizontal:10,
+        alignItems:'center'
+    },
+    cnfrmBtnTxt:{
+        color:colors.white,
+        fontFamily:Fonts.medium,
+        fontSize:12
+    }
+});
