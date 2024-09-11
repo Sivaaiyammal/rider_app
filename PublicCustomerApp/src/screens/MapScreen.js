@@ -1,17 +1,21 @@
-import {Animated, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator} from 'react-native';
+import {Animated, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import SideDrawer from '../components/Drawer/SideDrawer';
-import ProfileImage from '../assets/image/svgIcons/profileImage.svg';
 import {colors, Fonts} from '../constants/constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import BottomSheet from '../components/BottomSheet';
 import {useStackScreenStore} from '../store/useStackScreenStore';
 import MapScreenHeader from '../components/MapScreenHeader';
+import useLocationStore from '../store/useLocationStore';
+import Marker from '../controllers/NEMap/Marker';
+import useMapStore from '../store/useMapStore';
 
 const MapScreen = () => {
   const [showMenu, setShowMenu] = useState(false);
 
   const {setStackScreen} = useStackScreenStore();
+  const {location,setDirections, currentLocationName} = useLocationStore(); 
+  const {setMapMarkers} = useMapStore();
 
   const scaleValue = useRef(new Animated.Value(1)).current;
   const offsetValue = useRef(new Animated.Value(0)).current;
@@ -60,6 +64,32 @@ const MapScreen = () => {
     setShowMenu(!showMenu); 
   };
 
+  const onSearchPress = () => {
+    // if location set current loc as start else navigate
+    if (location && currentLocationName) {
+      const initialDirections = [
+        {id: 1, name: 'Start', location: location, locationName: currentLocationName},
+        {id: 2, name: 'End', location: [], locationName: ''},
+      ]
+      setDirections(initialDirections)
+      const marker = new Marker(
+        String(0),
+        currentLocationName,
+        location[0],
+        location[1],
+        'marker_start',
+        36,
+        true,
+      );
+      marker.setFocus(true);
+      setMapMarkers([marker]);
+      setStackScreen('SearchLocationScreen')
+    } else {
+      setStackScreen('SearchLocationScreen')
+    }
+
+  }
+
   return (
     <>
       <Animated.View
@@ -76,7 +106,7 @@ const MapScreen = () => {
         <BottomSheet minHeight={150}>
           <TouchableOpacity
             style={styles.searchcontainer}
-            onPress={() => setStackScreen('SearchLocationScreen')}>
+            onPress={() => onSearchPress()}>
             <Ionicons name={'search'} size={22} />
             <Text style={styles.searchcontainerTxt}>Search Destination</Text>
           </TouchableOpacity>
