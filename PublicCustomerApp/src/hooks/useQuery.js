@@ -5,10 +5,10 @@ import { useMutation, useQueryClient } from 'react-query';
 const usePostQuery = ({ onSuccess, onError }) => {
     const queryClient = useQueryClient();
 
-    const postQuery = async ({ queryKey, url, payload }) => {
+    const postQuery = async ({ queryKey, url, payload, token = null }) => {
 
         const apiRequest = new APIRequest();
-        const res = await apiRequest.request(url, 'POST', payload);
+        const res = await apiRequest.request(url, 'POST', payload, token);
 
         queryClient.invalidateQueries(queryKey);
 
@@ -26,10 +26,10 @@ const usePostQuery = ({ onSuccess, onError }) => {
 const useGetQuery = () => {
     const queryClient = useQueryClient();
 
-    const getQuery = async ({ queryKey, url }) => {
+    const getQuery = async ({ queryKey, url, payload = null, token = nul }) => {
         const apiRequest = new APIRequest();
         try {
-            const res = await apiRequest.request(url, 'GET');
+            const res = await apiRequest.request(url, 'GET', payload, token);
 
             queryClient.invalidateQueries(queryKey);
 

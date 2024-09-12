@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-useless-catch */
-import { ROOT_API_URL } from '../config/APIConfig';
+import Config from '../Config/APIConfig';
 
 const DefaultPostHeaders = {
   'Content-Type': 'application/json',
@@ -14,7 +14,7 @@ const DefaultFormDataHeaders = {
 
 class APIRequest {
   constructor(baseURL) {
-    this.baseURL = baseURL || ROOT_API_URL;
+    this.baseURL = baseURL || Config.ROOT_API_URL;
   }
 
   async request(

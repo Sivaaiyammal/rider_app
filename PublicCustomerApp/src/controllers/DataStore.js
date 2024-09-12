@@ -2,8 +2,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ALLOWED_KEYS = [
-   'language',
-   'onBoarding'
+  'language',
+  'onBoarding',
+  'access_token',
+  'refresh_token',
+  'userdetails',
 ]
 
 // const KEYS_TO_CLEAR_ON_SESSION_END = [
@@ -58,9 +61,9 @@ export const DataStore = {
 
   clearSession: async (key) => {
     try {
-    //   KEYS_TO_CLEAR_ON_SESSION_END.forEach(async key => {
-        
-    //   });
+      //   KEYS_TO_CLEAR_ON_SESSION_END.forEach(async key => {
+
+      //   });
       await AsyncStorage.removeItem(key);
       console.log("Cleared all keys")
     } catch (error) {
