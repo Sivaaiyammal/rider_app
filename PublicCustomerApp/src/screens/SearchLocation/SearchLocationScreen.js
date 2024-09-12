@@ -15,6 +15,8 @@ import useRideSelectionStore from '../../store/useRideSelectionStore';
 import TripType from './TripType';
 import RideType from './RideType';
 import ScheduleContainer from './ScheduleContainer';
+import { rideType } from '../../constants/JsonData';
+import { utils } from '../../utils/Utils';
 
 const SearchLocation = () => {
   const {goBack, setStackScreen} = useStackScreenStore();
@@ -27,7 +29,7 @@ const SearchLocation = () => {
     directionPoints,
   } = useMapStore();
 
-  const {setSelectedTrip, selectedTrip, selectedRide, setSelectedRide} =
+  const {setSelectedTrip, selectedTrip, selectedRide, setSelectedRide, scheduleDateTime, setScheduleDateTime} =
     useRideSelectionStore();
 
   const [isHidden, setIsHidden] = useState(false);
@@ -65,6 +67,7 @@ const SearchLocation = () => {
   };
 
   const onConfirm = () => {
+    // use scheduleDateTime?.date,scheduleDateTime?.time as api params
     setStackScreen('VehicleList');
   };
 
@@ -89,8 +92,23 @@ const SearchLocation = () => {
       setShowScheduleContainer(true)
     } else {
       _toggleSubview();
+      setScheduleDateTime(null);
     }
   };
+
+  const oncloseDateTime = () => {
+    setShowScheduleContainer(false)
+    if (scheduleDateTime) return 
+    setSelectedRide(rideType[0])
+  }
+
+  const onConfirmDateTime = () => {
+    setShowScheduleContainer(false)
+    _toggleSubview();
+  }
+
+const scheduleDate = scheduleDateTime?.date ? utils.formatDate(scheduleDateTime?.date) : ""
+const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(scheduleDateTime?.time) : ""
 
   return (
     <>
@@ -100,7 +118,8 @@ const SearchLocation = () => {
           style={addLocation.rideSelection}
           onPress={() => onRideTypePress()}>
           <Schdule />
-          <Text style={addLocation.rideSelectionTxt}>{selectedRide.name}</Text>
+          <Text style={addLocation.rideSelectionTxt}>{selectedRide.name}{'  '}{scheduleDate + "-" + scheduleTime}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={addLocation.rideSelection}
@@ -139,7 +158,7 @@ const SearchLocation = () => {
         )}
       </Animated.View>
       {showScheduleContainer &&  
-        <ScheduleContainer />
+        <ScheduleContainer oncloseDateTime={oncloseDateTime} onConfirmDateTime={onConfirmDateTime}/>
       }
     </>
   );

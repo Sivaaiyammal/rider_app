@@ -1,29 +1,46 @@
 import {
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import React, {useState} from 'react';
-import {colors, Fonts} from '../../constants/constants';
+import {colors} from '../../constants/constants';
 import {utils} from '../../utils/Utils';
 import DatePicker from 'react-native-date-picker';
 import useRideSelectionStore from '../../store/useRideSelectionStore';
+import { scheduleContainerStyles } from '../../styles/AddLocationStyles';
+import { showNotification } from '../../components/NotificationManger';
 
-const ScheduleContainer = () => {
+const ScheduleContainer = (props) => {
+  const {oncloseDateTime, onConfirmDateTime} = props
   const fourteenDaysWithDayNames = utils.getNextDayLists(14);
-  const {scheduleDateTime} = useRideSelectionStore();
+  const {setScheduleDateTime} = useRideSelectionStore();
 
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedDate, setSelectedDate] = useState(fourteenDaysWithDayNames[0]);
+  const [selectedTime, setSelectedTime] = useState(new Date());
 
   const onSelectDate = item => {
     setSelectedDate(item);
   };
 
   const onDateChange = time => {
-    console.log('hari-->>time-->>', time);
+    setSelectedTime(time)
   };
+
+  const onConfirm = () => {
+    const _selectedTime = new Date(selectedTime);
+    const currentTime = new Date();
+    if (_selectedTime < currentTime) {
+       showNotification('Invalid Date Time', "Please Select Time Greater then Current Time", "warning")
+    } else {
+      setScheduleDateTime({ date: selectedDate.date, time: selectedTime });
+      onConfirmDateTime()
+    }
+  }
+
+  const isToday = utils.isToday(selectedDate.date);
+  const minTime = isToday ? new Date() : null;
 
   return (
     <View style={scheduleContainerStyles.container}>
@@ -32,10 +49,10 @@ const ScheduleContainer = () => {
       </Text>
       <View style={scheduleContainerStyles.selectedDateContainer}>
         <Text style={scheduleContainerStyles.yearTxt}>
-          {new Date(scheduleDateTime.selectedDate).toDateString()}
+          {new Date(selectedDate.date).toDateString()}
         </Text>
         <Text style={scheduleContainerStyles.timeTxt}>
-          - {utils.timestampTo12HourFormat(scheduleDateTime.time)} -
+          - {utils.timestampTo12HourFormat(selectedTime)} -
         </Text>
       </View>
       <Text style={scheduleContainerStyles.yearTxt}>
@@ -50,7 +67,7 @@ const ScheduleContainer = () => {
                 scheduleContainerStyles.listCards,
                 {
                   backgroundColor:
-                    selectedDate.date === item.date
+                  selectedDate.index === item.index
                       ? colors.violet
                       : colors.grey_xdark,
                 },
@@ -61,7 +78,7 @@ const ScheduleContainer = () => {
                   scheduleContainerStyles.listCardsTxt,
                   {
                     color:
-                      selectedDate.date === item.date
+                      selectedDate.index === item.index
                         ? colors.white
                         : colors.black,
                   },
@@ -73,7 +90,7 @@ const ScheduleContainer = () => {
                   scheduleContainerStyles.listCardsTxt,
                   {
                     color:
-                      selectedDate.date === item.date
+                      selectedDate.index === item.index
                         ? colors.white
                         : colors.black,
                   },
@@ -87,20 +104,22 @@ const ScheduleContainer = () => {
       <View style={scheduleContainerStyles.datePickerContainer}>
         <DatePicker
           mode="time"
-          date={scheduleDateTime.time}
+          date={selectedTime}
           is24hourSource="locale"
           onDateChange={onDateChange}
+          minimumDate={minTime}
         />
       </View>
       <View style={scheduleContainerStyles.btnComponent}>
-        <TouchableOpacity style={scheduleContainerStyles.confrmBtn}>
+        <TouchableOpacity style={scheduleContainerStyles.confrmBtn} onPress={oncloseDateTime}>
           <Text style={scheduleContainerStyles.confrmBtnTxt}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
             scheduleContainerStyles.confrmBtn,
             {backgroundColor: colors.black},
-          ]}>
+          ]}
+          onPress={()=>onConfirm()}>
           <Text
             style={[
               scheduleContainerStyles.confrmBtnTxt,
@@ -115,86 +134,3 @@ const ScheduleContainer = () => {
 };
 
 export default ScheduleContainer;
-
-const scheduleContainerStyles = StyleSheet.create({
-  container: {
-    width: '100%',
-    backgroundColor: colors.white,
-    position: 'absolute',
-    bottom: 0,
-    zIndex: 6,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 10,
-  },
-  containerTitle: {
-    fontFamily: Fonts.light,
-    color: colors.black,
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  selectedDateContainer: {
-    width: '70%',
-    alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: colors.yellow_xxlight,
-    marginTop: 15,
-    borderRadius: 10,
-    paddingBottom: 10,
-  },
-  yearTxt: {
-    textAlign: 'center',
-    marginTop: 10,
-    fontFamily: Fonts.regular,
-    color: colors.black,
-    fontSize: 16,
-  },
-  timeTxt: {
-    fontFamily: Fonts.regular,
-    color: colors.black,
-    fontSize: 12,
-  },
-  btnComponent: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 10,
-  },
-  confrmBtn: {
-    width: '40%',
-    backgroundColor: colors.grey_xdark,
-    paddingVertical: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  confrmBtnTxt: {
-    fontFamily: Fonts.regular,
-    color: colors.black,
-    fontSize: 16,
-  },
-  listCards: {
-    backgroundColor: colors.grey_xdark,
-    marginHorizontal: 5,
-    padding: 10,
-    marginTop: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 50,
-    borderRadius: 15,
-  },
-  listCardsTxt: {
-    fontFamily: Fonts.light,
-    color: colors.black,
-    fontSize: 14,
-  },
-  datePickerContainer: {
-    backgroundColor: colors.white_dirt,
-    marginVertical: 15,
-    alignItems: 'center',
-    width: '80%',
-    alignSelf: 'center',
-    borderRadius: 10,
-  },
-});

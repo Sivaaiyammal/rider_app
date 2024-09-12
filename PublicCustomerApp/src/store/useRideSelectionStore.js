@@ -8,11 +8,8 @@ const useRideSelectionStore = create(set => ({
   selectedRide: rideType[0],
   setSelectedRide: selectedRide => set({selectedRide}),
 
-  scheduleDateTime: {
-    data:new Date(),
-    time:new Date(),
-  },
-  setScheduleDataTime: scheduleDateTime => set({scheduleDateTime})
+  scheduleDateTime: null,
+  setScheduleDateTime: (scheduleDateTime) => set({ scheduleDateTime }),
 }));
 
 export default useRideSelectionStore;

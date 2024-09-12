@@ -47,8 +47,8 @@ export const utils = {
     return moment().format('LLLL'); // Wednesday, November 1, 2023 4:25 PM
   },
 
-  currentMonthNameAndYear(){
-    return moment().format('MMMM YYYY')
+  currentMonthNameAndYear() {
+    return moment().format('MMMM YYYY');
   },
 
   get90DaysAfterCurrentDate() {
@@ -56,11 +56,15 @@ export const utils = {
   },
 
   formatDate(dateString) {
-    return moment.tz(dateString, currentTimezone).format('LL');
+    return moment(dateString).format('DD MMM YY');
   },
 
   formatDateAndTime(isoString) {
     return moment.tz(isoString, currentTimezone).format('LLL');
+  },
+
+  isToday(date) {
+    return moment(date).isSame(new Date(), 'day');
   },
 
   createUUID() {
@@ -101,7 +105,7 @@ export const utils = {
       const monthName = currentDate.format('MMMM');
       const day = currentDate.format('DD');
       const year = currentDate.format('YYYY');
-      const formattedDate = currentDate.format('YYYY-MM-DD');
+      const formattedDate = currentDate;
       daysList.push({
         index: i + 1,
         date: formattedDate,
