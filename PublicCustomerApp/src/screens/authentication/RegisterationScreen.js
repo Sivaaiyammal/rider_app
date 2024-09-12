@@ -9,6 +9,7 @@ import { showNotification } from '../../components/NotificationManger';
 import { DataStore } from '../../controllers/DataStore';
 import { usePostQuery } from '../../hooks/useQuery';
 import useUserInfoStore from '../../store/useUserInfoStore';
+import { utils } from '../../utils/Utils';
 import DatePicker from 'react-native-date-picker'
 
 const RegisterationScreen = () => {

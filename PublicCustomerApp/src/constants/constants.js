@@ -16,5 +16,7 @@ export const colors = {
   danger_red:'#D83838',
   grey_xdark: '#D6D6D6',
   white_dirt:'#F5F5F5',
-  green:'#1C9A18'
+  green:'#1C9A18',
+  yellow_xxlight:'#FFFFE6',
+  violet:'#4B48AB',
 };

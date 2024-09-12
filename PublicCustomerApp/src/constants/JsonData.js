@@ -3,6 +3,10 @@ import OnBoardA from '../assets/image/onboarding/onboardA.svg';
 import OnBoardB from '../assets/image/onboarding/onboardB.svg';
 import OnBoardC from '../assets/image/onboarding/onboardC.svg';
 
+import OnWayTrip from '../assets/image/svgIcons/onWayTrip.svg';
+import RoundTrip from '../assets/image/svgIcons/roundTrip.svg';
+import StopsTrip from '../assets/image/svgIcons/stopsTrip.svg';
+
 export const languages = [
   {
     id: 1,
@@ -43,4 +47,33 @@ export const onBoardingSlides = [
     description:
       "Watch your driver's arrival in real-time and stay updated with their location. No more guessing when your ride will arrive.",
   },
+];
+
+ export const tripType = [
+  {
+    id: 1,
+    name: 'One Way Trip',
+    icon: <OnWayTrip />,
+  },
+  {
+    id: 2,
+    name: 'Round Trip',
+    icon: <RoundTrip />,
+  },
+  {
+    id: 3,
+    name: 'Add Five Stops',
+    icon: <StopsTrip />,
+  },
+];
+
+export const rideType = [
+  {
+    id: 1,
+    name: 'Pickup Now',
+  },
+  {
+    id: 2,
+    name: 'Schedule',
+  }
 ];
