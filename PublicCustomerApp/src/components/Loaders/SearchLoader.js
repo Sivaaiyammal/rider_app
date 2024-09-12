@@ -1,0 +1,50 @@
+import {StyleSheet, Text, View} from 'react-native';
+import React from 'react';
+import Pulse from './Pulse';
+import VehicleSearch from '../../assets/image/svgIcons/vehicleSearch.svg';
+import { colors, Fonts } from '../../constants/constants';
+
+const SearchLoader = () => {
+  return (
+    <View style={styles.container}>
+      <Pulse />
+      <View style={styles.contentContainer}>
+      <VehicleSearch />
+      <Text style={styles.textA}>Searching for Taxi...</Text>
+      <Text style={styles.textB}>Your ride will start soon</Text>
+      </View>
+      
+    </View>
+  );
+};
+
+export default SearchLoader;
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: 300,
+    backgroundColor: 'white',
+    overflow: 'hidden',
+  },
+  contentContainer:{
+    width:'80%',
+    marginTop:60,
+    alignSelf:'center',
+    alignItems:'center',
+  },
+  textA:{
+    fontFamily:Fonts.medium,
+    color:colors.black,
+    fontSize:16,
+    marginTop:10
+  },
+  textB:{
+    fontFamily:Fonts.light,
+    color:colors.black,
+    fontSize:12,
+    marginTop:10
+  }
+});
