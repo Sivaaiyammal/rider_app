@@ -108,11 +108,6 @@ const RegisterationScreen = () => {
         if (FormStepperState < max_stepper_length) setFormStepperState(FormStepperState + 1)
         else if (FormStepperState == max_stepper_length) {
 
-            const access_token = await DataStore.loadData('access_token');
-
-            console.log(access_token, 'access_token');
-
-
             const payload = {
                 name: Name,
                 dob: DOB,
@@ -122,8 +117,7 @@ const RegisterationScreen = () => {
             await RegisterMutate({
                 queryKey: 'profileUpdateQuery',
                 url: '/customer/profile/update',
-                payload: payload,
-                token: access_token.data
+                payload: payload
             })
 
         }

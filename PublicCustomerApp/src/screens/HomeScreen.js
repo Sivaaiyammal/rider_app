@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import {useStackScreenStore} from '../store/useStackScreenStore';
+import { useStackScreenStore } from '../store/useStackScreenStore';
 import MapScreen from './MapScreen';
 import MapContainer from './Map';
 import { checkFineLocationPermissions, RequestFineLocationPermission } from '../controllers/PermissionHandler';
@@ -8,21 +8,23 @@ import SearchLocationScreen from './SearchLocation/SearchLocationScreen';
 import VehicleListScreen from './VehicleListScreen';
 import SelectedVehicle from './SelectedVehicle';
 
+import { DataStore } from '../controllers/DataStore';
+
 const HomeScreen = () => {
-  const {stackScreen} = useStackScreenStore();
+  const { stackScreen } = useStackScreenStore();
 
   const checkLocationPermission = async () => {
     const locationPermissionCheck = await checkFineLocationPermissions()
     if (locationPermissionCheck) {
       await locationTask.getCurrentLocation()
     } else {
-     await RequestFineLocationPermission()
+      await RequestFineLocationPermission()
     }
   };
 
-  useEffect(()=> {
+  useEffect(() => {
     checkLocationPermission();
-  },[])
+  }, [])
 
   const renderContent = () => {
     switch (stackScreen[stackScreen.length - 1]) {
@@ -30,9 +32,9 @@ const HomeScreen = () => {
         return <MapScreen />;
       case 'SearchLocationScreen':
         return <SearchLocationScreen />;
-        case 'VehicleList':
+      case 'VehicleList':
         return <VehicleListScreen />;
-        case 'SelectedVehicle':
+      case 'SelectedVehicle':
         return <SelectedVehicle />;
       default:
         return null;

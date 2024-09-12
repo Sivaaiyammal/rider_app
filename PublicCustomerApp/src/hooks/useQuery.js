@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import APIRequest from '../controllers/APIRequest';
 import { useMutation, useQueryClient } from 'react-query';
+import { DataStore } from '../controllers/DataStore';
 
 const usePostQuery = ({ onSuccess, onError }) => {
     const queryClient = useQueryClient();
 
-    const postQuery = async ({ queryKey, url, payload, token = null }) => {
+
+    const postQuery = async ({ queryKey, url, payload }) => {
+
+        const access_token = await DataStore.loadData('access_token');
 
         const apiRequest = new APIRequest();
-        const res = await apiRequest.request(url, 'POST', payload, token);
+        const res = await apiRequest.request(url, 'POST', payload, access_token.data);
 
         queryClient.invalidateQueries(queryKey);
 
