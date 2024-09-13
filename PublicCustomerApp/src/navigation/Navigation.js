@@ -18,7 +18,7 @@ const Navigation = () => {
       <Stack.Screen name="SplashScreen" component={SplashScreen} />
       <Stack.Screen name="LanguageScreen" component={LanguageScreen} />
       <Stack.Screen name="OnBoarding" component={OnBoarding} />
-      <Stack.Screen name="LoginScreen" component={HomeScreen} />
+      <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="RegisterationScreen" component={RegisterationScreen} />
       <Stack.Screen name="OTPScreen" component={OTPScreen} />
       <Stack.Screen name="HomeScreen" component={HomeScreen} />

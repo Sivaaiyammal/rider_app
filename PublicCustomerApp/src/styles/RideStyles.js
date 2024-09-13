@@ -195,5 +195,17 @@ export const rideStyles = StyleSheet.create({
       fontSize:12,
       textAlign:'center',
       marginTop:10
+    },
+    endRideContainer:{
+      flex:1,
+      backgroundColor:'rgba(0, 0, 0, 0.3)',
+      zIndex:9
+    },
+    rideCompleteTxt:{
+      fontFamily:Fonts.regular,
+      fontSize:16,
+      color:colors.grey_xxdark,
+      textAlign:'center',
+      marginTop:20
     }
   });
