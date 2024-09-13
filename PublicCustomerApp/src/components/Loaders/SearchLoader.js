@@ -1,10 +1,16 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {Alert, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import React from 'react';
 import Pulse from './Pulse';
 import VehicleSearch from '../../assets/image/svgIcons/vehicleSearch.svg';
 import { colors, Fonts } from '../../constants/constants';
+import SwipeButton from '../SwipeButton';
 
 const SearchLoader = () => {
+
+  const handleSwipeSuccess = () => {
+    Alert.alert("Success", "You have successfully swiped the button!");
+  };
+
   return (
     <View style={styles.container}>
       <Pulse />
@@ -13,7 +19,10 @@ const SearchLoader = () => {
       <Text style={styles.textA}>Searching for Taxi...</Text>
       <Text style={styles.textB}>Your ride will start soon</Text>
       </View>
-      
+       {/* <SwipeButton onSwipeSuccess={handleSwipeSuccess}/> */}
+       <TouchableOpacity>
+        <Text>Cancel Booking</Text>
+       </TouchableOpacity>
     </View>
   );
 };
@@ -28,6 +37,8 @@ const styles = StyleSheet.create({
     height: 300,
     backgroundColor: 'white',
     overflow: 'hidden',
+    borderTopLeftRadius:30,
+    borderTopRightRadius:30
   },
   contentContainer:{
     width:'80%',

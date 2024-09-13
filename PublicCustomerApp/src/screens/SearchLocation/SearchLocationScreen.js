@@ -136,6 +136,11 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
           <Text style={addLocation.confirmBtnTxt}>CONFIRM DESTINATION</Text>
         </TouchableOpacity>
       )}
+       <TouchableOpacity
+          style={addLocation.confirmBtn}
+          onPress={() => onConfirm()}>
+          <Text style={addLocation.confirmBtnTxt}>CONFIRM DESTINATION</Text>
+        </TouchableOpacity>
       <Animated.View
         onPress={() => console.log('pressed')}
         style={[
