@@ -6,7 +6,6 @@ export const rideStyles = StyleSheet.create({
       position: 'absolute',
       bottom: 0,
       backgroundColor: colors.blue_xxdark,
-      height: 400,
       width: '100%',
       borderTopLeftRadius: 25,
       borderTopRightRadius: 25,
@@ -16,7 +15,6 @@ export const rideStyles = StyleSheet.create({
       paddingVertical: 10,
       width: '90%',
       alignSelf: 'center',
-      marginTop: 10,
       justifyContent: 'space-between',
       alignItems: 'center',
     },
@@ -160,5 +158,42 @@ export const rideStyles = StyleSheet.create({
       fontFamily:Fonts.medium,
       fontSize:12,
       color:colors.white
+    },
+    driverDetailsB:{
+      width:'90%',
+      paddingHorizontal:10,
+      alignSelf:'center'
+    },
+    OnRideText:{
+      backgroundColor:colors.message_blue,
+      alignSelf:'flex-end',
+      top:10,
+      width:'28%',
+      textAlign:'center',
+      paddingVertical:5,
+      color:colors.white,
+      fontFamily:Fonts.regular,
+      borderRadius:15
+    },
+    profilePic:{
+      width:'25%',
+      backgroundColor:'yellow',
+      aspectRatio:1,
+      borderRadius:50,
+      alignSelf:'center'
+    },
+    profileName:{
+      fontFamily:Fonts.medium,
+      color:colors.black,
+      fontSize:20,
+      textAlign:'center',
+      marginTop:10
+    },
+    carType:{
+      fontFamily:Fonts.regular,
+      color:colors.black,
+      fontSize:12,
+      textAlign:'center',
+      marginTop:10
     }
   });
