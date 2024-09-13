@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import NavBar from '../components/NavBar';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import useSelectedVehicleStore from '../store/useSelectedVehicleStore';
@@ -20,12 +20,13 @@ import DurationBlack from '../assets/image/durationBlack.svg';
 import FareGreen from '../assets/image/fareGreen.svg';
 import Rocket from '../assets/image/svgIcons/rocket.svg';
 import EndBlack from '../assets/image/svgIcons/end_black.svg';
+import SearchLoader from '../components/Loaders/SearchLoader';
 
 const SelectedVehicle = () => {
 
   const navigation = useNavigation();
 
-  const { goBack, reset: screenStoreReset } = useStackScreenStore();
+  const { goBack, reset: screenStoreReset, setStackScreen } = useStackScreenStore();
   const { selectedVehicle } = useSelectedVehicleStore();
   const { directions, setDirections } = useLocationStore();
   const { selectedTrip, selectedRide } = useRideSelectionStore();
@@ -36,6 +37,8 @@ const SelectedVehicle = () => {
     setSearchUnit,
     directionPoints,
   } = useMapStore();
+
+  const [isLoading, setIsLoading] = useState('')
 
   const onBackPress = () => {
     goBack();
@@ -139,6 +142,16 @@ const SelectedVehicle = () => {
 
   }
 
+  const _HandleBookRide = () => {
+    setIsLoading(true) 
+    // setTimeout(() => {
+       
+    // }, 3000);
+    
+    setStackScreen('DriverAssignedScreen')
+
+  }
+
 
   return (
     <>
@@ -169,7 +182,7 @@ const SelectedVehicle = () => {
         <View style={vehicleDetailsStyles.locationContainer}>
           {directions.map(item => {
             return (
-              <View style={vehicleDetailsStyles.locationNames}>
+              <View key={item.id} style={vehicleDetailsStyles.locationNames}>
                 {getLocationIcon(item)}
                 <Text style={vehicleDetailsStyles.locationTxt}>
                   {item.locationName}
@@ -183,11 +196,12 @@ const SelectedVehicle = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={vehicleDetailsStyles.cnfrmBtn}
-          onPress={HandleBookRide}
+          onPress={_HandleBookRide}
         >
           <Text style={vehicleDetailsStyles.cnfrmBtnTxt}>Confirm {selectedVehicle.name} Ride</Text>
         </TouchableOpacity>
       </BottomSheet>
+      {/* <SearchLoader /> */}
     </>
   );
 };

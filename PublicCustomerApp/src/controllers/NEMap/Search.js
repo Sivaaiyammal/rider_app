@@ -1,4 +1,4 @@
-import ApiConfig from "../../Config/APIConfig";
+import ApiConfig from "../../config/APIConfig";
 
 class SearchAPI {
     static CACHE = {};

@@ -57,7 +57,9 @@ export const vehicleDetailsStyles = StyleSheet.create({
         borderRadius:10,
         marginTop:10,
         paddingVertical:10,
-        paddingHorizontal:10
+        paddingHorizontal:10,
+        flexDirection:'row',
+        justifyContent:'space-between'
     },
     paymentTxt:{
         fontFamily:Fonts.regular,

@@ -8,7 +8,8 @@ import SearchLocationScreen from './SearchLocation/SearchLocationScreen';
 import VehicleListScreen from './VehicleListScreen';
 import SelectedVehicle from './SelectedVehicle';
 
-import { DataStore } from '../controllers/DataStore';
+import DriverAssignedScreen from './driverAssigned/DriverAssignedScreen';
+import RideSummary from './RideSummary';
 
 const HomeScreen = () => {
   const { stackScreen } = useStackScreenStore();
@@ -36,6 +37,10 @@ const HomeScreen = () => {
         return <VehicleListScreen />;
       case 'SelectedVehicle':
         return <SelectedVehicle />;
+      case 'DriverAssignedScreen':
+        return <DriverAssignedScreen />;
+        case 'RideSummary':
+          return <RideSummary />;
       default:
         return null;
     }
