@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useState, useRef, useCallback, useContext} from 'react';
+import React, { useState, useRef, useCallback, useContext } from 'react';
 import {
   Text,
   View,
@@ -8,7 +8,9 @@ import {
   ScrollView,
   Linking,
 } from 'react-native';
-import {drawerStyles} from '../../styles/DrawerStyles';
+import { drawerStyles } from '../../styles/DrawerStyles';
+
+import { CommonActions, useNavigation } from '@react-navigation/native';
 
 import ProfileImage from '../../assets/image/svgIcons/profileImage.svg';
 import MyAccount from '../../assets/image/drawerIcons/myAccount.svg';
@@ -20,9 +22,12 @@ import About from '../../assets/image/drawerIcons/about.svg';
 import Legal from '../../assets/image/drawerIcons/legal.svg';
 
 const SideDrawerV2 = () => {
+
+  const navigation = useNavigation();
+
   const drawerData = [
     {
-      id: 1,
+      id: 'my-account',
       name: 'My Account',
       screen: '',
       icon: <MyAccount />,
@@ -64,6 +69,18 @@ const SideDrawerV2 = () => {
       icon: <Legal />,
     },
   ];
+
+  const HandleOpenDrawerMenu = (menu) => {
+
+    if (menu.id == 'my-account') {
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'MyAccountScreen'
+        }),
+      );
+    }
+  }
+
   return (
     <View style={drawerStyles.container}>
       <View style={drawerStyles.drawercontainer}>
@@ -75,7 +92,11 @@ const SideDrawerV2 = () => {
           <ScrollView>
             {drawerData.map(item => {
               return (
-                <TouchableOpacity style={drawerStyles.drawerBtns}>
+                <TouchableOpacity
+                  style={drawerStyles.drawerBtns}
+                  key={`drawer-${item.id}`}
+                  onPress={() => HandleOpenDrawerMenu(item)}
+                >
                   {item.icon}
                   <Text style={drawerStyles.btnText}>{item.name}</Text>
                 </TouchableOpacity>
