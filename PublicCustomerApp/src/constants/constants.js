@@ -19,4 +19,9 @@ export const colors = {
   green:'#1C9A18',
   yellow_xxlight:'#FFFFE6',
   violet:'#4B48AB',
+  orange:'#FFA200',
+  yellow_light:'#FFEDA7',
+  call_green:'#329782',
+  message_blue:'#4289E5',
+  cance_red:'#FF6060'
 };
