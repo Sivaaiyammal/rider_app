@@ -25,7 +25,7 @@ const NavBar = props => {
       <TouchableOpacity style={navStyles.leftIcon} onPress={onBackPress}>
         {onBackPress && (
           <View style={navStyles.leftBtn}>
-            <Ionicons name="chevron-back" size={30} color={colors.black} />
+            <Ionicons name="chevron-back" size={20} color={colors.black} />
           </View>
         )}
       </TouchableOpacity>

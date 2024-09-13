@@ -25,7 +25,7 @@ export const navStyles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-    padding:8
+    padding:6
   },
   rightIcon: {
     width: '20%',
@@ -37,9 +37,9 @@ export const navStyles = StyleSheet.create({
     alignItems: 'center',
   },
   contentTxt: {
-    fontFamily: Fonts.semi_bold,
+    fontFamily: Fonts.regular,
     color: colors.black,
-    fontSize: 18,
+    fontSize: 16,
     textAlign:'center'
   },
 });

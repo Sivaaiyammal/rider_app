@@ -8,6 +8,7 @@ import { CommonActions, useNavigation } from '@react-navigation/native';
 import { showNotification } from '../../components/NotificationManger';
 import { DataStore } from '../../controllers/DataStore';
 import { usePostQuery } from '../../hooks/useQuery';
+import useUserInfoStore from '../../store/useUserInfoStore';
 
 
 const OTPScreen = ({ route }) => {
@@ -16,17 +17,43 @@ const OTPScreen = ({ route }) => {
   const [loginPhoneNumber, setloginPhoneNumber] = useState(route.params.phoneNumber);
   const [otpInput, setOtpInput] = useState('');
 
-  const onVerifyOTPSuccess = (data) => {
+  const { setID, setUserdetails } = useUserInfoStore();
+
+  const onVerifyOTPSuccess = async (data) => {
 
     if (data.success) {
 
       showNotification('OTP Verified', 'OTP Verified Successfully', 'success');
 
-      navigation.dispatch(
-        CommonActions.navigate({
-          name: 'HomeScreen'
-        }),
-      );
+      console.log(data, 'data');
+
+
+      let { accessToken, refreshToken, userDetails } = data
+
+      setID(userDetails._id)
+      setUserdetails(userDetails)
+
+      console.log(typeof accessToken, typeof refreshToken, userDetails, 'data');
+
+
+      await DataStore.storeData('access_token', accessToken)
+      await DataStore.storeData('refresh_token', refreshToken)
+      await DataStore.storeData('userdetails', userDetails)
+
+      if (!userDetails.personalDetails) {
+        navigation.dispatch(
+          CommonActions.navigate({
+            name: 'RegisterationScreen'
+          }),
+        );
+      } else {
+        navigation.dispatch(
+          CommonActions.navigate({
+            name: 'HomeScreen'
+          }),
+        );
+      }
+
     } else {
       showNotification('Invalid OTP', data.message, 'danger');
     }

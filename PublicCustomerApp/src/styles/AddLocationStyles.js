@@ -81,6 +81,151 @@ export const addLocation = StyleSheet.create({
     color: colors.white,
     fontSize: 12,
   },
+  rideSelectionContainer:{
+    width:'96%',
+    paddingVertical:10,
+    backgroundColor:colors.white,
+    flexDirection:'row',
+    justifyContent:'space-around',
+    alignSelf:'center'
+  },
+  rideSelection:{
+    backgroundColor:colors.black,
+    flexDirection:'row',
+    alignItems:'center',
+    gap:10,
+    paddingHorizontal:15,
+    borderRadius:15,
+    paddingVertical:5
+  },
+  rideSelectionTxt:{
+    color:colors.white,
+    fontFamily:Fonts.regular,
+    fontSize:12
+  },
+  rideOptionContainer:{
+    position:'absolute',
+    bottom:0,
+    backgroundColor:'rgba(0, 0, 0, 0.3)',
+    width:'100%',
+    height:'100%', 
+    zIndex:5
+  },
+  rideOptionBottom:{
+    position:'absolute',
+    bottom:0,
+    backgroundColor:colors.white,
+    width:'100%',
+    borderTopRightRadius:20,
+    borderTopLeftRadius:20,
+    padding:10
+  },
+  tripSelectionBtn:{
+    flexDirection:'row',
+    margin:10,
+    gap:10,
+    backgroundColor:colors.white_dirt,
+    paddingVertical:15,
+    paddingHorizontal:15,
+    borderRadius:10,
+    alignItems:'center',
+    justifyContent:'space-between'
+  },
+  tripSelectionBtnTxt:{
+    fontFamily:Fonts.light,
+    color:colors.black,
+    fontSize:16,
+  },
+  closeBtn:{
+    paddingRight:20,
+    marginVertical:10,
+    alignSelf:'flex-end',
+    padding:10,
+    alignItems:'center',
+  }
+});
+
+export const scheduleContainerStyles = StyleSheet.create({
+  container: {
+    width: '100%',
+    backgroundColor: colors.white,
+    position: 'absolute',
+    bottom: 0,
+    zIndex: 6,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 10,
+  },
+  containerTitle: {
+    fontFamily: Fonts.light,
+    color: colors.black,
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  selectedDateContainer: {
+    width: '70%',
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    backgroundColor: colors.yellow_xxlight,
+    marginTop: 15,
+    borderRadius: 10,
+    paddingBottom: 10,
+  },
+  yearTxt: {
+    textAlign: 'center',
+    marginTop: 10,
+    fontFamily: Fonts.regular,
+    color: colors.black,
+    fontSize: 16,
+  },
+  timeTxt: {
+    fontFamily: Fonts.regular,
+    color: colors.black,
+    fontSize: 12,
+  },
+  btnComponent: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+  confrmBtn: {
+    width: '40%',
+    backgroundColor: colors.grey_xdark,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  confrmBtnTxt: {
+    fontFamily: Fonts.regular,
+    color: colors.black,
+    fontSize: 16,
+  },
+  listCards: {
+    backgroundColor: colors.grey_xdark,
+    marginHorizontal: 5,
+    padding: 10,
+    marginTop: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 50,
+    borderRadius: 15,
+  },
+  listCardsTxt: {
+    fontFamily: Fonts.light,
+    color: colors.black,
+    fontSize: 14,
+  },
+  datePickerContainer: {
+    backgroundColor: colors.white_dirt,
+    marginVertical: 15,
+    alignItems: 'center',
+    width: '80%',
+    alignSelf: 'center',
+    borderRadius: 10,
+  },
 });
 
 export const vehicleList = StyleSheet.create({

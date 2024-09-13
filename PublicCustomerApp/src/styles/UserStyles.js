@@ -1,5 +1,5 @@
-import {StyleSheet} from 'react-native';
-import {colors, Fonts} from '../constants/constants';
+import { StyleSheet } from 'react-native';
+import { colors, Fonts } from '../constants/constants';
 
 export const loginStyles = StyleSheet.create({
   screen: {
@@ -84,24 +84,96 @@ export const loginStyles = StyleSheet.create({
     fontSize: 14,
     marginTop: 10,
   },
-  otpHeaderTxt:{
-    textAlign:'center',
-    marginTop:20
+  otpHeaderTxt: {
+    textAlign: 'center',
+    marginTop: 20
   },
-  headerContent:{
-    fontFamily:Fonts.light,
-    fontSize:16,
-    color:colors.black
+  headerContent: {
+    fontFamily: Fonts.light,
+    fontSize: 16,
+    color: colors.black
   },
-  phoneTxt:{
-    fontFamily:Fonts.medium,
-    color:colors.black,
-    textAlign:'center',
-    marginTop:5
+  phoneTxt: {
+    fontFamily: Fonts.medium,
+    color: colors.black,
+    textAlign: 'center',
+    marginTop: 5
   },
-  otpContainer:{
-    width:'90%',
-    alignSelf:'center',
-    marginTop:25
+  otpContainer: {
+    width: '90%',
+    alignSelf: 'center',
+    marginTop: 25
   }
+});
+
+export const registerationStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.white,
+    padding: 20,
+    width: "100%",
+    justifyContent: 'space-between'
+  },
+  sizedBox: {
+    padding: 3,
+    width: 50,
+    marginTop: 10,
+    marginBottom: 20,
+
+    backgroundColor: 'blue',
+    height: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    display: 'flex',
+  },
+  inputContianer: {
+    width: "100%",
+    height: 48,
+    borderColor: colors.black,
+    borderWidth: 1,
+    borderRadius: 8,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingLeft: 22
+  },
+  inputTitle: {
+    fontSize: 16,
+    fontWeight: "400",
+    marginBottom: 12,
+    marginVertical: 8,
+    color: colors.black
+  },
+  requestBtn: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    width: 130,
+    alignItems: 'center',
+    backgroundColor: colors.black,
+    padding: 10,
+    color: colors.white,
+    borderRadius: 5
+  },
+  titleStyle: {
+    fontWeight: 'bold',
+    fontSize: 24,
+    color: colors.black
+  },
+  stepperTitleStyle: {
+    fontWeight: 'bold',
+    fontSize: 34,
+    color: colors.black
+  },
+  stepperInputContianer: {
+    width: "100%",
+    height: 48,
+    borderColor: `#4b48ab`,
+    borderWidth: 0,
+    borderBottomWidth: 1.5,
+    marginTop: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingLeft: 10
+  },
 });
