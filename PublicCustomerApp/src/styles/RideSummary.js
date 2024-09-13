@@ -128,5 +128,28 @@ export const rideSummary = StyleSheet.create({
       fontFamily:Fonts.medium,
       color:colors.black,
       fontSize:16
+    },
+    input:{
+      fontFamily:Fonts.regular,
+      fontSize:12,
+      minHeight:100,
+      backgroundColor:colors.white_dirt,
+      marginTop:10
+    },
+    submitBtn:{
+      backgroundColor:colors.green,
+      alignSelf:'flex-end',
+      marginRight:15,
+      flexDirection:'row',
+      alignItems:'center',
+      paddingVertical:10,
+      paddingHorizontal:20,
+      borderRadius:10,
+      marginTop:10
+    },
+    submitBtnTxt:{
+      fontFamily:Fonts.medium,
+      fontSize:16,
+      color:colors.white
     }
   });
