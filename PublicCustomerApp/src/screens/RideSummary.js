@@ -1,7 +1,7 @@
 import {
   ImageBackground,
-  StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -17,6 +17,9 @@ import Fare from '../assets/image/svgIcons/fare.svg';
 import Support from '../assets/image/svgIcons/support.svg';
 import {rideStyles} from '../styles/RideStyles';
 import {rideSummary} from '../styles/RideSummary';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {colors} from '../constants/constants';
+import {Rating} from 'react-native-ratings';
 
 const RideSummary = () => {
   const {directions} = useLocationStore();
@@ -29,6 +32,8 @@ const RideSummary = () => {
         return <EndBlack />;
     }
   };
+
+  const isCompleted = true;
 
   return (
     <BottomSheet>
@@ -110,15 +115,54 @@ const RideSummary = () => {
         </View>
       </View>
 
+      {isCompleted && (
+        <TouchableOpacity style={vehicleDetailsStyles.paymentContainer}>
+          <Text style={vehicleDetailsStyles.paymentTxt}>Payment Method</Text>
+          <Text>Cash</Text>
+        </TouchableOpacity>
+      )}
+
+      {isCompleted && (
+        <View>
+          <View style={rideSummary.seperater} />
+          <Text style={rideSummary.titles}>How is your Trips?</Text>
+          <View
+            style={[rideStyles.driverDetailsB, {marginTop: 15, width: '96%'}]}>
+            <View style={rideStyles.profilePic}></View>
+            <Rating
+              type="custom"
+              ratingCount={5}
+              imageSize={30}
+              onFinishRating={e => console.log('star-->>rating-->>', e)}
+              style={{paddingVertical: 10}}
+              defaultRating={3.5}
+            />
+            <TextInput style={rideSummary.input} placeholder="Comments" />
+          </View>
+
+          <TouchableOpacity style={rideSummary.submitBtn}>
+            <Ionicons name={'checkmark'} size={22} color={colors.white} />
+            <Text style={rideSummary.submitBtnTxt}>Submit</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       <TouchableOpacity style={vehicleDetailsStyles.paymentContainer}>
         <Text style={vehicleDetailsStyles.paymentTxt}>
           Get Help from Support
         </Text>
         <Support />
       </TouchableOpacity>
-      <TouchableOpacity style={rideSummary.payBtn}>
-        <Text style={rideSummary.payBtnTxt}>PAY ₹157.50</Text>
-      </TouchableOpacity>
+      {isCompleted ? (
+        <TouchableOpacity
+          style={[rideSummary.payBtn, {backgroundColor: colors.black}]}>
+          <Text style={rideSummary.payBtnTxt}>HOME</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity style={rideSummary.payBtn}>
+          <Text style={rideSummary.payBtnTxt}>PAY ₹157.50</Text>
+        </TouchableOpacity>
+      )}
     </BottomSheet>
   );
 };

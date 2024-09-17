@@ -7,6 +7,7 @@ import HomeScreen from '../screens/HomeScreen';
 import LoginScreen from '../screens/authentication/LoginScreen';
 import RegisterationScreen from '../screens/authentication/RegisterationScreen';
 import OTPScreen from '../screens/authentication/OTPScreen';
+import MyAccountScreen from '../screens/Profile/MyAccountScreen';
 
 const Navigation = () => {
   const Stack = createNativeStackNavigator();
@@ -22,6 +23,7 @@ const Navigation = () => {
       <Stack.Screen name="RegisterationScreen" component={RegisterationScreen} />
       <Stack.Screen name="OTPScreen" component={OTPScreen} />
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Screen name="MyAccountScreen" component={MyAccountScreen} />
     </Stack.Navigator>
   );
 };

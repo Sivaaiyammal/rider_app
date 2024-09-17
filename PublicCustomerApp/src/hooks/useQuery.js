@@ -27,23 +27,26 @@ const usePostQuery = ({ onSuccess, onError }) => {
 
 }
 
-const useGetQuery = () => {
+const useGetQuery = ({ onSuccess, onError }) => {
     const queryClient = useQueryClient();
 
-    const getQuery = async ({ queryKey, url, payload = null, token = nul }) => {
+    const getQuery = async ({ queryKey, url, payload = null }) => {
+
+        const access_token = await DataStore.loadData('access_token');
+
         const apiRequest = new APIRequest();
-        try {
-            const res = await apiRequest.request(url, 'GET', payload, token);
+        const res = await apiRequest.request(url, 'GET', payload, access_token.data);
 
-            queryClient.invalidateQueries(queryKey);
+        queryClient.invalidateQueries(queryKey);
 
-            return res;
-        } catch (err) {
-            return err;
-        }
+        return res;
+
     }
 
-    return useMutation(getQuery);
+    return useMutation(getQuery, {
+        onSuccess: (data) => onSuccess(data),
+        onError: (error) => onError(error)
+    });
 }
 
 export { usePostQuery, useGetQuery };
