@@ -1,4 +1,4 @@
-import ApiConfig from "../../config/APIConfig.js";
+import ApiConfig from "../../Config/APIConfig.js";
 const polyline = require('polyline');
 
 class DirectionAPI {

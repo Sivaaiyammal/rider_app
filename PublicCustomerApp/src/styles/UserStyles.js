@@ -103,6 +103,12 @@ export const loginStyles = StyleSheet.create({
     width: '90%',
     alignSelf: 'center',
     marginTop: 25
+  },
+  resendOTP:{
+    color:colors.grey_dark,
+    fontFamily:Fonts.light,
+    textAlign:'center',
+    marginTop:15
   }
 });
 

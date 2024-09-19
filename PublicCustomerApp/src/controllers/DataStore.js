@@ -7,6 +7,9 @@ const ALLOWED_KEYS = [
   'access_token',
   'refresh_token',
   'userdetails',
+  'Theme',
+  'IS_FIRST',
+  'IsDefault',
 ]
 
 // const KEYS_TO_CLEAR_ON_SESSION_END = [
