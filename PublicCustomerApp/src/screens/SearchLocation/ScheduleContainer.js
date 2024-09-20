@@ -1,43 +1,63 @@
-import {
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import React, {useState} from 'react';
 import {colors} from '../../constants/constants';
 import {utils} from '../../utils/Utils';
 import DatePicker from 'react-native-date-picker';
 import useRideSelectionStore from '../../store/useRideSelectionStore';
-import { scheduleContainerStyles } from '../../styles/AddLocationStyles';
-import { showNotification } from '../../components/NotificationManger';
+import {scheduleContainerStyles} from '../../styles/AddLocationStyles';
+import {showNotification} from '../../components/NotificationManger';
 
-const ScheduleContainer = (props) => {
-  const {oncloseDateTime, onConfirmDateTime} = props
+const ScheduleContainer = props => {
+  const {
+    oncloseDateTime,
+    onConfirmDateTime,
+    isUpdate,
+    scheduleTime,
+    scheduleDate,
+  } = props;
   const fourteenDaysWithDayNames = utils.getNextDayLists(14);
   const {setScheduleDateTime} = useRideSelectionStore();
 
-  const [selectedDate, setSelectedDate] = useState(fourteenDaysWithDayNames[0]);
-  const [selectedTime, setSelectedTime] = useState(new Date());
+  const filteredData = fourteenDaysWithDayNames.filter(item => {
+    const itemDate = (
+      typeof item.date === 'string' ? new Date(item.date) : item.date
+    )
+      .toISOString()
+      .split('T')[0];
+    return itemDate === scheduleDate;
+  });
+
+  const [selectedDate, setSelectedDate] = useState(
+    isUpdate ? filteredData[0] : fourteenDaysWithDayNames[0],
+  );
+  const [selectedTime, setSelectedTime] = useState(
+    isUpdate ? scheduleTime : new Date(),
+  );
+
+  console.log('hari-->>scheduleDataTime-->>', fourteenDaysWithDayNames);
 
   const onSelectDate = item => {
     setSelectedDate(item);
   };
 
   const onDateChange = time => {
-    setSelectedTime(time)
+    setSelectedTime(time);
   };
 
   const onConfirm = () => {
     const _selectedTime = new Date(selectedTime);
     const currentTime = new Date();
     if (_selectedTime < currentTime) {
-       showNotification('Invalid Date Time', "Please Select Time Greater then Current Time", "warning")
+      showNotification(
+        'Invalid Date Time',
+        'Please Select Time Greater then Current Time',
+        'warning',
+      );
     } else {
-      setScheduleDateTime({ date: selectedDate.date, time: selectedTime });
-      onConfirmDateTime()
+      setScheduleDateTime({date: selectedDate.date, time: selectedTime});
+      onConfirmDateTime();
     }
-  }
+  };
 
   const isToday = utils.isToday(selectedDate.date);
   const minTime = isToday ? new Date() : null;
@@ -67,7 +87,7 @@ const ScheduleContainer = (props) => {
                 scheduleContainerStyles.listCards,
                 {
                   backgroundColor:
-                  selectedDate.index === item.index
+                    selectedDate.index === item.index
                       ? colors.violet
                       : colors.grey_xdark,
                 },
@@ -111,7 +131,9 @@ const ScheduleContainer = (props) => {
         />
       </View>
       <View style={scheduleContainerStyles.btnComponent}>
-        <TouchableOpacity style={scheduleContainerStyles.confrmBtn} onPress={oncloseDateTime}>
+        <TouchableOpacity
+          style={scheduleContainerStyles.confrmBtn}
+          onPress={oncloseDateTime}>
           <Text style={scheduleContainerStyles.confrmBtnTxt}>Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -119,7 +141,7 @@ const ScheduleContainer = (props) => {
             scheduleContainerStyles.confrmBtn,
             {backgroundColor: colors.black},
           ]}
-          onPress={()=>onConfirm()}>
+          onPress={() => onConfirm()}>
           <Text
             style={[
               scheduleContainerStyles.confrmBtnTxt,
