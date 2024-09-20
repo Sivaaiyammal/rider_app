@@ -76,3 +76,5 @@ package-lock.json
 !.yarn/versions
 
 Todo.md
+[core]
+  ignorecase = false

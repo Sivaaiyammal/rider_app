@@ -1,95 +1,88 @@
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import {Text, TextInput, TouchableOpacity, View} from 'react-native';
+import React, {useRef, useState, useCallback, useEffect} from 'react';
 
-import { loginStyles } from '../../styles/UserStyles';
+import {loginStyles} from '../../styles/UserStyles';
 import OTPTextInput from 'react-native-otp-textinput';
-import { colors } from '../../constants/constants';
-import { CommonActions, useNavigation } from '@react-navigation/native';
-import { showNotification } from '../../components/NotificationManger';
-import { DataStore } from '../../controllers/DataStore';
-import { usePostQuery } from '../../hooks/useQuery';
+import {colors} from '../../constants/constants';
+import {CommonActions, useNavigation} from '@react-navigation/native';
+import {showNotification} from '../../components/NotificationManger';
+import {DataStore} from '../../controllers/DataStore';
 import useUserInfoStore from '../../store/useUserInfoStore';
+import {verifyOTPMutation} from '../../API/APICalls/UserAPICalls';
+import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 
-
-const OTPScreen = ({ route }) => {
-
+const OTPScreen = ({route}) => {
   const navigation = useNavigation();
-  const [loginPhoneNumber, setloginPhoneNumber] = useState(route.params.phoneNumber);
+  const [loginPhoneNumber, setloginPhoneNumber] = useState(
+    route.params.phoneNumber,
+  );
   const [otpInput, setOtpInput] = useState('');
 
-  const { setID, setUserdetails } = useUserInfoStore();
+  const [timer, setTimer] = useState(30);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
-  const onVerifyOTPSuccess = async (data) => {
+  const {setID, setUserdetails} = useUserInfoStore();
 
+  useEffect(() => {
+    if (timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setIsButtonDisabled(false);
+    }
+  }, [timer]);
+
+  const handleVerificationSuccess = async data => {
     if (data.success) {
-
       showNotification('OTP Verified', 'OTP Verified Successfully', 'success');
 
       console.log(data, 'data');
+      let {accessToken, refreshToken, userDetails} = data;
+      setID(userDetails._id);
+      setUserdetails(userDetails);
 
-
-      let { accessToken, refreshToken, userDetails } = data
-
-      setID(userDetails._id)
-      setUserdetails(userDetails)
-
-      console.log(typeof accessToken, typeof refreshToken, userDetails, 'data');
-
-
-      await DataStore.storeData('access_token', accessToken)
-      await DataStore.storeData('refresh_token', refreshToken)
-      await DataStore.storeData('userdetails', userDetails)
-
+      await DataStore.storeData('access_token', accessToken);
+      await DataStore.storeData('refresh_token', refreshToken);
+      await DataStore.storeData('userdetails', userDetails);
       if (!userDetails.personalDetails) {
         navigation.dispatch(
           CommonActions.navigate({
-            name: 'RegisterationScreen'
+            name: 'RegisterationScreen',
           }),
         );
       } else {
         navigation.dispatch(
           CommonActions.navigate({
-            name: 'HomeScreen'
+            name: 'HomeScreen',
           }),
         );
       }
-
     } else {
       showNotification('Invalid OTP', data.message, 'danger');
     }
+  };
 
-  }
-
-  const onVerifyOTPError = (data) => {
-    if (!data.success) showNotification('Invalid OTP', data.message, 'danger');
-
-  }
-
-  const { mutate: VerifyOTPMutate, isSuccess } = usePostQuery({
-    onSuccess: onVerifyOTPSuccess,
-    onError: onVerifyOTPError
-  });
+  const {mutate: verifyOTPMutate, isLoading: isLoading} = verifyOTPMutation(
+    handleVerificationSuccess,
+  );
 
   const verifyOtp = async () => {
     if (otpInput.length === 0) {
       showNotification('Please Verify OTP', 'Invalid Otp', 'danger');
     } else {
-
       const payload = {
         otp: otpInput,
         phoneNumber: loginPhoneNumber,
-      }
-
-      await VerifyOTPMutate({
-        queryKey: 'verifyOTPQuery',
-        url: '/customer/auth/verifyOTP',
-        payload: payload
-      })
+      };
+      verifyOTPMutate(payload);
     }
   };
 
   return (
     <View style={loginStyles.screen}>
+      {isLoading && <FullScreenLoader />}
       <Text style={[loginStyles.headerTxt, loginStyles.otpHeaderTxt]}>
         One Time{'\n'}Password(OTP)
       </Text>
@@ -122,6 +115,9 @@ const OTPScreen = ({ route }) => {
           ]}
         />
       </View>
+      <TouchableOpacity onPress={()=>console.log('hari-->>resendPressed-->>')}>
+      <Text style={loginStyles.resendOTP}>Resend OTP {isButtonDisabled ? `in ${timer}` : null}</Text>
+      </TouchableOpacity>
       <TouchableOpacity style={loginStyles.otpBtn} onPress={() => verifyOtp()}>
         <Text style={loginStyles.otptxt}>Verify OTP</Text>
       </TouchableOpacity>

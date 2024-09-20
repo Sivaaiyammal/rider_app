@@ -1,4 +1,10 @@
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 
 import CountryPicker, { FlagButton } from 'react-native-country-picker-modal';
@@ -22,155 +28,112 @@ import MyAccountHeader from '../../components/Profile/MyAccountHeader';
 import MyAccountProfileImage from '../../components/Profile/MyAccountProfileImage';
 import MyAccountInfo from '../../components/Profile/MyAccountInfo';
 import SwipeBtn from '../../components/SwipeBtn';
+import { fetchUserDetails } from '../../API/APICalls/UserAPICalls';
+import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 
 const MyAccountScreen = () => {
-    const navigation = useNavigation();
+  const navigation = useNavigation();
 
-    const { userdetails, setUserdetails } = useUserInfoStore();
+  const { userdetails, setUserdetails } = useUserInfoStore();
 
-    const [UserId, setUserId] = useState('');
-    const [Name, setName] = useState('');
-    const [Gender, setGender] = useState('0');
-    const [DOB, setDOB] = useState('');
-    const [Phone, setPhone] = useState('');
-    const [Email, setEmail] = useState('');
-    const [HomeAddress, setHomeAddress] = useState('');
-    const [WorkAddress, setWorkAddress] = useState('');
+  const { data: userProfile, isLoading: isProfileLoading } = fetchUserDetails();
 
-    const [Info_Items, setInfo_Items] = useState([
-        {
-            key: "Full Name",
-            value: utils.toTitleCase(Name) || '',
-            image: <MainProfile width={"25"} height={"25"} />,
-            imageType: 'svg'
-        },
-        {
-            key: "Gender",
-            value: (Gender >= 0 ? (Gender == 0 ? "Male" : "Female") : ''),
-            image: <Profile width={"25"} height={"25"} />,
-            imageType: 'svg'
-        },
-        {
-            key: "Phone Number",
-            value: Phone || '',
-            image: <Mobile width={"25"} height={"25"} />,
-            imageType: 'svg'
-        },
-        {
-            key: "Email Address",
-            value: Email || '',
-            image: <Card width={"25"} height={"25"} />,
-            imageType: 'svg'
-        },
-        {
-            key: "Home",
-            value: HomeAddress || '',
-            image: <HomeLocation width={"25"} height={"25"} />,
-            imageType: 'svg'
-        },
-        {
-            key: "Work",
-            value: WorkAddress || '',
-            image: <OfficeLocation width={"25"} height={"25"} />,
-            imageType: 'svg'
-        },
-    ])
+  console.log('hari-->>userProfile-->>', userProfile, isProfileLoading);
 
-    const HandleBackBtn = () => {
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'HomeScreen' }],
-            }),
-        );
-    }
+  const [UserId, setUserId] = useState('');
+  const [Name, setName] = useState('');
+  const [Gender, setGender] = useState('0');
+  const [DOB, setDOB] = useState('');
+  const [Phone, setPhone] = useState('');
+  const [Email, setEmail] = useState('');
+  const [HomeAddress, setHomeAddress] = useState('');
+  const [WorkAddress, setWorkAddress] = useState('');
 
-    const onGetUserDetailsSuccess = async (data) => {
+  const [Info_Items, setInfo_Items] = useState([
+    {
+      key: 'Full Name',
+      value: utils.toTitleCase(Name) || '',
+      image: <MainProfile width={'25'} height={'25'} />,
+      imageType: 'svg',
+    },
+    {
+      key: 'Gender',
+      value: Gender >= 0 ? (Gender == 0 ? 'Male' : 'Female') : '',
+      image: <Profile width={'25'} height={'25'} />,
+      imageType: 'svg',
+    },
+    {
+      key: 'Phone Number',
+      value: Phone || '',
+      image: <Mobile width={'25'} height={'25'} />,
+      imageType: 'svg',
+    },
+    {
+      key: 'Email Address',
+      value: Email || '',
+      image: <Card width={'25'} height={'25'} />,
+      imageType: 'svg',
+    },
+    {
+      key: 'Home',
+      value: HomeAddress || '',
+      image: <HomeLocation width={'25'} height={'25'} />,
+      imageType: 'svg',
+    },
+    {
+      key: 'Work',
+      value: WorkAddress || '',
+      image: <OfficeLocation width={'25'} height={'25'} />,
+      imageType: 'svg',
+    },
+  ]);
 
-        if (data.success) {
+  const HandleBackBtn = () => {
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'HomeScreen' }],
+      }),
+    );
+  };
 
-            let { _id, personalDetails, phone } = data.data
+  const Logout = async () => {
+    await DataStore.storeData('access_token', null);
+    await DataStore.storeData('refresh_token', null);
+    await DataStore.storeData('userdetails', null);
 
-            setUserId(_id)
-            setName(personalDetails.name)
-            setDOB(personalDetails.dob)
-            setPhone(phone)
-            setEmail(personalDetails.email)
+    navigation.dispatch(
+      CommonActions.navigate({
+        name: 'LoginScreen',
+      }),
+    );
+  };
 
-            let info_Items = [...Info_Items]
+  const setProfileDetails = () => {
+    if (!userProfile?.data) return []
+    const personalDetails = userProfile?.data?.personalDetails;
+    let info_Items = [...Info_Items];
+    info_Items[0].value = personalDetails.name;
+    info_Items[1].value = personalDetails.gender || '';
+    info_Items[2].value = personalDetails.phone;
+    info_Items[3].value = personalDetails.email;
+    info_Items[4].value = personalDetails.homeAddress || '';
+    info_Items[5].value = personalDetails.workAddress || '';
+    return info_Items;
+  };
 
-            info_Items[0].value = personalDetails.name
-            info_Items[1].value = personalDetails.gender || ''
-            info_Items[2].value = phone
-            info_Items[3].value = personalDetails.email
-            info_Items[4].value = personalDetails.homeAddress || ''
-            info_Items[5].value = personalDetails.workAddress || ''
-
-            setInfo_Items(info_Items)
-
-        } else {
-            showNotification('Failed to get user details', data.message, 'danger');
-        }
-
-    }
-
-    const onGetUserDetailsError = (data) => {
-        if (!data.success) showNotification('Failed to get user details', data.message, 'danger');
-
-    }
-
-    const { mutate: GetUserDetailsMutate, isSuccess } = useGetQuery({
-        onSuccess: onGetUserDetailsSuccess,
-        onError: onGetUserDetailsError
-    });
-
-    const LoadUserDetails = async () => {
-
-        await GetUserDetailsMutate({
-            queryKey: 'GetUserDetailsQuery',
-            url: '/customer/profile/get-details',
-        })
-
-    }
-
-
-    const Logout = async () => {
-
-        await DataStore.storeData('access_token', null);
-        await DataStore.storeData('refresh_token', null)
-        await DataStore.storeData('userdetails', null)
-
-        navigation.dispatch(
-            CommonActions.navigate({
-                name: 'LoginScreen'
-            }),
-        );
-
-    }
-
-    useEffect(() => {
-        LoadUserDetails()
-
-    }, []);
-
-
-    return (
-        <ScrollView>
-            <MyAccountHeader
-                title="My Account"
-                onBackClick={HandleBackBtn}
-            />
-            <MyAccountProfileImage
-                name={utils.toTitleCase(Name)}
-                id={UserId}
-            />
-            <MyAccountInfo
-                infos={Info_Items}
-            />
-            <SwipeBtn name="SWIPE TO LOGOUT" onHandleSwipeEnd={Logout} />
-
-        </ScrollView>
-    )
-}
+  return (
+    <ScrollView>
+      {isProfileLoading && <FullScreenLoader />}
+      <MyAccountHeader title="My Account" onBackClick={HandleBackBtn} />
+      <MyAccountProfileImage
+        name={utils.toTitleCase(Name)}
+        id={userProfile?.data?._id}
+      />
+      <MyAccountInfo infos={setProfileDetails()} />
+      <SwipeBtn name="SWIPE TO LOGOUT" onHandleSwipeEnd={Logout} />
+    </ScrollView>
+  );
+};
 
 export default MyAccountScreen;

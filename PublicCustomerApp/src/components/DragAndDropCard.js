@@ -1,7 +1,5 @@
 import React, {useRef, useState, useMemo} from 'react';
 import {StyleSheet, PanResponder, Animated} from 'react-native';
-import { Colors } from '../Constants/Contants';
-import { HEIGHT } from '../Constants/Metrics';
 import { height } from '../utils/Utils';
 import { colors } from '../constants/constants';
 

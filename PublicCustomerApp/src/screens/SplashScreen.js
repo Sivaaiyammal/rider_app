@@ -22,7 +22,7 @@ const SplashScreen = () => {
     const access_token = await DataStore.loadData('access_token');
     const userdetails = await DataStore.loadData('userdetails');
 
-    console.log(access_token, userdetails);
+    console.log('access_token',access_token, userdetails);
 
     if (access_token.data && userdetails.data) {
 

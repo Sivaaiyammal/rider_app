@@ -1,19 +1,18 @@
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
-import React, { useRef, useState, useCallback } from 'react';
+import {Text, TextInput, TouchableOpacity, View} from 'react-native';
+import React, {useRef, useState, useCallback} from 'react';
 
-import CountryPicker, { FlagButton } from 'react-native-country-picker-modal';
-import { loginStyles } from '../../styles/UserStyles';
+import CountryPicker, {FlagButton} from 'react-native-country-picker-modal';
+import {loginStyles} from '../../styles/UserStyles';
 import Logo from '../../assets/image/logo.svg';
 import Phone from '../../assets/image/svgIcons/phone.svg';
-import { CommonActions, useNavigation } from '@react-navigation/native';
-import { showNotification } from '../../components/NotificationManger';
-import { DataStore } from '../../controllers/DataStore';
+import {CommonActions, useNavigation} from '@react-navigation/native';
+import {showNotification} from '../../components/NotificationManger';
+import {DataStore} from '../../controllers/DataStore';
 
-import { usePostQuery } from '../../hooks/useQuery';
-
+import {requestOTPMutation} from '../../API/APICalls/UserAPICalls';
+import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 
 const LoginScreen = () => {
-
   const navigation = useNavigation();
   const [countryCode, setCountryCode] = useState('IN');
   const [country, setCountry] = useState({
@@ -29,12 +28,9 @@ const LoginScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneNumErr, setPhoneNumErr] = useState(null);
 
-  const onRequestOTPSuccess = (data) => {
-
-    if (data.success) {
-
+  const handleLoginSuccess = (data) => {
+    if (data) {
       showNotification('OTP Sent', 'OTP Sent to your mobile number', 'success');
-
       navigation.dispatch(
         CommonActions.navigate({
           name: 'OTPScreen',
@@ -43,21 +39,12 @@ const LoginScreen = () => {
           },
         }),
       );
-    } else {
-      showNotification('Invalid Mobile Number', data.message, 'danger');
     }
+  };
 
-  }
-
-  const onRequestOTPError = (data) => {
-    if (!data.success) showNotification('Invalid Mobile Number', data.message, 'danger');
-
-  }
-
-  const { mutate: requestOTPMutate, isSuccess } = usePostQuery({
-    onSuccess: onRequestOTPSuccess,
-    onError: onRequestOTPError
-  });
+  const {mutate: requestOTPMutate, isLoading: isLoading} = requestOTPMutation(
+    handleLoginSuccess,
+  );
 
   const onSelect = country => {
     setCountryCode(country.cca2);
@@ -106,18 +93,11 @@ const LoginScreen = () => {
     } else if (phoneNumber.length < 10) {
       setPhoneNumErr('Please Enter Valid Mobile Number');
     } else {
-
       const payload = {
         phoneNumber: phoneNumber,
-      }
-
-      DataStore.storeData('login_phoneNumber', phoneNumber)
-
-      await requestOTPMutate({
-        queryKey: 'loginQuery',
-        url: '/customer/auth/login',
-        payload: payload
-      })
+      };
+      DataStore.storeData('login_phoneNumber', phoneNumber);
+      requestOTPMutate(payload);
     }
   };
 
@@ -127,39 +107,44 @@ const LoginScreen = () => {
   };
 
   return (
-    <View style={loginStyles.screen}>
-      <View style={loginStyles.header}>
-        <Logo />
-        <Text style={loginStyles.headerTxt}>
-          Namma Ooru Taxi ® {'\n'} For Public
-        </Text>
-      </View>
-      <View style={loginStyles.contectContainer}>
-        <Text style={loginStyles.signInTxt}>
-          Sign In by using Mobile Number
-        </Text>
-        <View style={loginStyles.inputConatiner}>
-          {renderCountryPicker()}
-          <TextInput
-            style={loginStyles.input}
-            placeholder="Mobile Number"
-            keyboardType="number-pad"
-            onChangeText={handleChange}
-            value={phoneNumber}
-            maxLength={10}
-          />
-          <View style={loginStyles.phoneIcon}>
-            <Phone />
-          </View>
+    <>
+      {isLoading && <FullScreenLoader />}
+      <View style={loginStyles.screen}>
+        <View style={loginStyles.header}>
+          <Logo />
+          <Text style={loginStyles.headerTxt}>
+            Namma Ooru Taxi ® {'\n'} For Public
+          </Text>
         </View>
-        {(phoneNumber.length === 0 || phoneNumber.length < 10) && (
-          <Text style={loginStyles.errTxt}>{phoneNumErr}</Text>
-        )}
+        <View style={loginStyles.contectContainer}>
+          <Text style={loginStyles.signInTxt}>
+            Sign In by using Mobile Number
+          </Text>
+          <View style={loginStyles.inputConatiner}>
+            {renderCountryPicker()}
+            <TextInput
+              style={loginStyles.input}
+              placeholder="Mobile Number"
+              keyboardType="number-pad"
+              onChangeText={handleChange}
+              value={phoneNumber}
+              maxLength={10}
+            />
+            <View style={loginStyles.phoneIcon}>
+              <Phone />
+            </View>
+          </View>
+          {(phoneNumber.length === 0 || phoneNumber.length < 10) && (
+            <Text style={loginStyles.errTxt}>{phoneNumErr}</Text>
+          )}
+        </View>
+        <TouchableOpacity
+          style={loginStyles.otpBtn}
+          onPress={() => requestOTP()}>
+          <Text style={loginStyles.otptxt}>Request OTP</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity style={loginStyles.otpBtn} onPress={() => requestOTP()}>
-        <Text style={loginStyles.otptxt}>Request OTP</Text>
-      </TouchableOpacity>
-    </View>
+    </>
   );
 };
 
