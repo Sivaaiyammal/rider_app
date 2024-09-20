@@ -1,4 +1,4 @@
-import ApiConfig from "../../config/APIConfig.js";
+import ApiConfig from "../../Config/APIConfig.js";
 const polyline = require('polyline');
 
 class DirectionAPI {
@@ -15,7 +15,7 @@ class DirectionAPI {
         let payload = {
             "locations": points,
             "directionsOptions": { "units": "kilometers" },
-            "costing":  "taxi",
+            "costing": "taxi",
         }
         let url = baseURL + JSON.stringify(payload)
 
@@ -38,7 +38,7 @@ class DirectionAPI {
             let duration = parseFloat(time) / 60
             let distance = length
             if (distanceDurationonly) return [distance, duration]
-            let {legs} = trip
+            let { legs } = trip
             let route_track = []
 
             legs.forEach(leg => {

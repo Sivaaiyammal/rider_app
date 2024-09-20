@@ -33,7 +33,7 @@ const SideDrawerV2 = () => {
       icon: <MyAccount />,
     },
     {
-      id: 2,
+      id: 'your-rides',
       name: 'Your Rides',
       screen: '',
       icon: <YourRides />,
@@ -76,6 +76,12 @@ const SideDrawerV2 = () => {
       navigation.dispatch(
         CommonActions.navigate({
           name: 'MyAccountScreen'
+        }),
+      );
+    } else if (menu.id == 'your-rides') {
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'YourRidesScreen'
         }),
       );
     }

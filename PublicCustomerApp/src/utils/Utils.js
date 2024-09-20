@@ -8,6 +8,158 @@ export const { width } = Dimensions.get('window');
 export const { height } = Dimensions.get('window');
 
 export const utils = {
+  getVehicleTypeImage: (type) => {
+    if (type == '1') return require('../assets/image/vehicle/auto_left.png')
+    else if (type == '2') return require('../assets/image/vehicle/bike_left.png')
+    else if (type == '3') return require('../assets/image/vehicle/hatchback.png')
+    else if (type == '4') return require('../assets/image/vehicle/sedan.png')
+    else if (type == '5' || type == 'car') return require('../assets/image/vehicle/suv_left.png')
+    else if (type == '6') return require('../assets/image/vehicle/luxsedan_left.png')
+  },
+  getVehicleTypeLabel(type) {
+    if (type == '1') return 'Auto'
+    else if (type == '2') return 'BiKe'
+    else if (type == '3') return 'Hatchback'
+    else if (type == '4') return 'Sedan'
+    else if (type == '5' || type == 'car') return 'SUV'
+    else if (type == '6') return 'Luxury Sedan'
+
+  },
+  getEasyDate(duration) {
+
+    let [start, end] = [undefined, undefined]
+
+    // "2022-11-06T10:15"
+
+    if (duration == 'tomorrow') {
+
+      let date_Obj = new Date()
+      let yyyy = date_Obj.getFullYear();
+      let mm = date_Obj.getMonth() + 1;
+      let dd = date_Obj.getDate() + 1;
+
+      if (dd < 10) dd = '0' + dd;
+      if (mm < 10) mm = '0' + mm;
+
+      start = ([yyyy, mm, dd].join('-')) + 'T00:00'
+      end = ([yyyy, mm, dd].join('-')) + 'T23:59'
+    }
+    else if (duration == 'today') {
+
+      let date_Obj = new Date()
+      let yyyy = date_Obj.getFullYear();
+      let mm = date_Obj.getMonth() + 1;
+      let dd = date_Obj.getDate();
+
+      if (dd < 10) dd = '0' + dd;
+      if (mm < 10) mm = '0' + mm;
+
+      start = ([yyyy, mm, dd].join('-')) + 'T00:00'
+      end = ([yyyy, mm, dd].join('-')) + 'T23:59'
+    }
+    else if (duration == 'yesterday') {
+
+      let date_Obj = new Date()
+      let yyyy = date_Obj.getFullYear();
+      let mm = date_Obj.getMonth() + 1;
+      let dd = date_Obj.getDate() - 1;
+
+      if (dd < 10) dd = '0' + dd;
+      if (mm < 10) mm = '0' + mm;
+
+      start = ([yyyy, mm, dd].join('-')) + 'T00:00'
+      end = ([yyyy, mm, dd].join('-')) + 'T23:59'
+    }
+    else if (duration == 'week') {
+
+      let date_Obj = new Date()
+      let firstday = new Date(date_Obj.setDate(date_Obj.getDate() - date_Obj.getDay()))
+      let lastday = new Date(date_Obj.setDate(date_Obj.getDate() - date_Obj.getDay() + 6))
+
+      {
+        let yyyy = firstday.getFullYear();
+        let mm = firstday.getMonth() + 1;
+        let dd = firstday.getDate();
+
+        if (dd < 10) dd = '0' + dd;
+        if (mm < 10) mm = '0' + mm;
+
+        start = ([yyyy, mm, dd].join('-')) + 'T00:00'
+
+      }
+      {
+        let yyyy = lastday.getFullYear();
+        let mm = lastday.getMonth() + 1;
+        let dd = lastday.getDate();
+
+        if (dd < 10) dd = '0' + dd;
+        if (mm < 10) mm = '0' + mm;
+
+        end = ([yyyy, mm, dd].join('-')) + 'T23:59'
+
+      }
+    }
+    else if (duration == 'month') {
+
+      let date_Obj = new Date()
+      let firstday = new Date(date_Obj.getFullYear(), date_Obj.getMonth(), 1)
+      let lastday = new Date(date_Obj.getFullYear(), date_Obj.getMonth() + 1, 0)
+
+      {
+        let yyyy = firstday.getFullYear();
+        let mm = firstday.getMonth() + 1;
+        let dd = firstday.getDate();
+
+        if (dd < 10) dd = '0' + dd;
+        if (mm < 10) mm = '0' + mm;
+
+        start = ([yyyy, mm, dd].join('-')) + 'T00:00'
+
+      }
+      {
+        let yyyy = lastday.getFullYear();
+        let mm = lastday.getMonth() + 1;
+        let dd = lastday.getDate();
+
+        if (dd < 10) dd = '0' + dd;
+        if (mm < 10) mm = '0' + mm;
+
+        end = ([yyyy, mm, dd].join('-')) + 'T23:59'
+
+      }
+    }
+    else if (duration == 'year') {
+
+      let date_Obj = new Date()
+      let firstday = new Date(date_Obj.getFullYear(), 0, 1)
+      let lastday = new Date(date_Obj.getFullYear(), 12, 0)
+
+      {
+        let yyyy = firstday.getFullYear();
+        let mm = firstday.getMonth() + 1;
+        let dd = firstday.getDate();
+
+        if (dd < 10) dd = '0' + dd;
+        if (mm < 10) mm = '0' + mm;
+
+        start = ([yyyy, mm, dd].join('-')) + 'T00:00'
+
+      }
+      {
+        let yyyy = lastday.getFullYear();
+        let mm = lastday.getMonth() + 1;
+        let dd = lastday.getDate();
+
+        if (dd < 10) dd = '0' + dd;
+        if (mm < 10) mm = '0' + mm;
+
+        end = ([yyyy, mm, dd].join('-')) + 'T23:59'
+
+      }
+    }
+
+    return { start, end }
+  },
   dateToTime(date) {
     let hours = date.getHours();
     let minutes = date.getMinutes();
@@ -40,6 +192,24 @@ export const utils = {
     date = date || new Date();
 
     return new Date(date);
+  },
+  formateDateLabel: (ms) => {
+    const date = new Date(ms);
+
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const weekday = weekdays[date.getUTCDay()]
+    const day = String(date.getUTCDate()).padStart(2, '0')
+    const month = months[date.getUTCMonth()]
+    const year = String(date.getUTCFullYear()).slice(-2)
+
+    let hours = date.getUTCHours()
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+    const ampm = hours >= 12 ? 'PM' : 'AM'
+    hours = hours % 12 || 12
+
+    return `${weekday}, ${day} ${month} ${year} . ${hours}:${minutes} ${ampm}`
   },
 
   // function to conver seconds to X Hrs Y Mins or X Mins or X Hrs or X sec
@@ -78,11 +248,12 @@ export const utils = {
     return moment().add(90, 'days').format('YYYY-MM-DD');
   },
 
-  formatDate(dateString) {
-    return moment(dateString).format('DD MMM YY');
+  formatDate(dateString, format = 'DD MMM YYYY') {
+    return moment(dateString).format(format || 'DD MMM YY');
   },
 
   formatDateAndTime(isoString) {
+    isoString = isoString ? new Date(isoString) : new Date();
     return moment.tz(isoString, currentTimezone).format('LLL');
   },
 

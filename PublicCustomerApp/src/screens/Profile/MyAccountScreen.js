@@ -106,6 +106,7 @@ const MyAccountScreen = () => {
             info_Items[4].value = personalDetails.homeAddress || ''
             info_Items[5].value = personalDetails.workAddress || ''
 
+            setInfo_Items(info_Items)
 
         } else {
             showNotification('Failed to get user details', data.message, 'danger');

@@ -143,12 +143,12 @@ const SelectedVehicle = () => {
   }
 
   const _HandleBookRide = () => {
-    setIsLoading(true) 
+    setIsLoading(true)
     // setTimeout(() => {
-       
+
     // }, 3000);
-    
-    setStackScreen('DriverAssignedScreen')
+
+    setStackScreen('VehicleSearchLoader')
 
   }
 

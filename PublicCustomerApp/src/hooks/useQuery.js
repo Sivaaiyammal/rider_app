@@ -30,12 +30,12 @@ const usePostQuery = ({ onSuccess, onError }) => {
 const useGetQuery = ({ onSuccess, onError }) => {
     const queryClient = useQueryClient();
 
-    const getQuery = async ({ queryKey, url, payload = null }) => {
+    const getQuery = async ({ queryKey, url, payload = null, query = null }) => {
 
         const access_token = await DataStore.loadData('access_token');
 
         const apiRequest = new APIRequest();
-        const res = await apiRequest.request(url, 'GET', payload, access_token.data);
+        const res = await apiRequest.request(url, 'GET', payload, access_token.data, query);
 
         queryClient.invalidateQueries(queryKey);
 

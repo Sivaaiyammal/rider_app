@@ -42,9 +42,15 @@ const RegisterationScreen = () => {
     );
 
     const [Name, setName] = useState('');
-    const [DOB, setDOB] = useState('');
+    const [DOB, setDOB] = useState(new Date());
     const [Email, setEmail] = useState('');
     const [OpenDatePicker, setOpenDatePicker] = useState(false)
+
+    const [InputErrorId, setInputErrorId] = useState('')
+    const [InputErrorMssage, setInputErrorMssage] = useState('')
+
+    const verifyEmail = (value) => (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value))
+
 
     const onRegisterSuccess = (data) => {
 
@@ -94,6 +100,9 @@ const RegisterationScreen = () => {
         if (FormStepperState != 0 && FormStepperState <= max_stepper_length) setFormStepperState(FormStepperState - 1)
     }
     const onStepperNextHandler = async (id) => {
+
+        if (InputErrorId == id) return
+
         let max_stepper_length = FormStepper.length - 1
         const verifyEmail = (value) => (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value))
 
@@ -110,7 +119,7 @@ const RegisterationScreen = () => {
 
             const payload = {
                 name: Name,
-                dob: DOB,
+                dob: utils.formatDate(DOB, 'DD-MM-YYYY'),
                 email: Email
             }
 
@@ -126,7 +135,19 @@ const RegisterationScreen = () => {
     const onStepperInputHandler = (id, value) => {
         if (id == 'name') setName(value)
         else if (id == 'dob') setDOB(value)
-        else if (id == 'email') setEmail(value)
+        else if (id == 'email') {
+
+            console.log(verifyEmail(value), 'ashdgasd');
+
+            if (!verifyEmail(value)) {
+                setInputErrorId(id)
+                setInputErrorMssage('Please enter valid email address.')
+            } else {
+                setInputErrorId('')
+                setInputErrorMssage('')
+            }
+            setEmail(value)
+        }
     }
 
     const onStepperInputFocusHandler = (id, value) => {
@@ -135,8 +156,16 @@ const RegisterationScreen = () => {
 
     const getStepperInputValue = (id) => {
         if (id == 'name') return Name
-        else if (id == 'dob') return DOB
+        else if (id == 'dob') return utils.formatDate(DOB, 'DD-MM-YYYY')
+
         else if (id == 'email') return Email
+    }
+    const onDOBDateChange = (date) => {
+        setOpenDatePicker(false)
+        setDOB(date)
+    }
+    const onDatePickerClose = () => {
+        setOpenDatePicker(false)
     }
 
 
@@ -156,7 +185,11 @@ const RegisterationScreen = () => {
                 </Text>
 
 
-                <View style={registerationStyles.stepperInputContianer}>
+                <View style={[
+                    InputErrorId == FormStepper[FormStepperState].id
+                        ? registerationStyles.stepperInputError : {},
+                    registerationStyles.stepperInputContianer
+                ]}>
                     <TextInput
                         style={{ width: "100%", fontSize: 16 }}
                         placeholder={FormStepper[FormStepperState].placeholder}
@@ -169,13 +202,27 @@ const RegisterationScreen = () => {
                         onFocus={(value) => onStepperInputFocusHandler(FormStepper[FormStepperState].id, value)}
                         color="#000"
                     />
+                    {OpenDatePicker ?
+                        <DatePicker
+                            modal
+                            open={OpenDatePicker}
+                            date={DOB}
+                            onConfirm={onDOBDateChange}
+                            onCancel={onDatePickerClose}
+                            mode='date'
+                            maximumDate={new Date()}
+                        />
+                        : ''}
                 </View>
+                {InputErrorId == FormStepper[FormStepperState].id ?
+                    <Text style={registerationStyles.stepperInputErrorMessage}>{InputErrorMssage}</Text>
+                    : ""}
             </View>
             <TouchableOpacity
                 style={{ padding: 10, alignItems: 'flex-end' }}
                 onPress={() => onStepperNextHandler(FormStepper[FormStepperState].id)}
             >
-                <View style={registerationStyles.requestBtn}>
+                <View style={[InputErrorId == FormStepper[FormStepperState].id ? registerationStyles.requestBtnDisabe : {}, registerationStyles.requestBtn]}>
                     <Text style={{ color: 'white' }}>{
                         FormStepperState == FormStepper.length - 1 ? 'Continue' : 'Next'
                     } </Text>

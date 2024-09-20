@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import {
   ScrollView,
   Text,
@@ -20,9 +20,9 @@ import Marker from '../../controllers/NEMap/Marker';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
 
 const AddLocationCard = (props) => {
-  const {screenType} = props
-  const {directions, setDirections} = useLocationStore();
-  const {setStackScreen} = useStackScreenStore()
+  const { screenType } = props
+  const { directions, setDirections } = useLocationStore();
+  const { setStackScreen } = useStackScreenStore()
   const {
     setSearchUnit,
     mapMarkers,
@@ -39,7 +39,7 @@ const AddLocationCard = (props) => {
 
   const onFocus = useCallback(id => {
     setSelectedInputIndex(id);
-    if (screenType === 'vehicleList' ){
+    if (screenType === 'vehicleList') {
       setStackScreen('SearchLocationScreen')
     }
   }, []);
@@ -60,7 +60,7 @@ const AddLocationCard = (props) => {
         lat: direction.lat,
         lon: direction.lng,
       }));
-  
+
       setMapMarkers([]);
       setDirectionPoints({ locations: routeData, type: 'car' });
       console.log('hari-->>directions-->>', sortedDirections, routeData);
@@ -160,6 +160,7 @@ const AddLocationCard = (props) => {
     }
   }, []);
 
+
   return (
     <View style={{ backgroundColor: colors.white, paddingVertical: 5 }}>
       <View style={addLocation.addLocationContainer}>
@@ -195,8 +196,8 @@ const AddLocationCard = (props) => {
             </View>
           </DragAndDropCard>
         ))}
-        {(onSearchResults && onSearchResults?.searchResults?.length !== 0 && searchUnit.length !== 0) && (
-          <View style={{height: 200, marginTop: 10}}>
+        {(onSearchResults && Array.isArray(onSearchResults?.searchResults) && onSearchResults?.searchResults?.length !== 0 && searchUnit.length !== 0) && (
+          <View style={{ height: 200, marginTop: 10 }}>
             <ScrollView>
               {onSearchResults?.searchResults?.map((item, i) => (
                 <TouchableOpacity

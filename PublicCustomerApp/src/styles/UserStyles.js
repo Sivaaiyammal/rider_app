@@ -154,6 +154,9 @@ export const registerationStyles = StyleSheet.create({
     color: colors.white,
     borderRadius: 5
   },
+  requestBtnDisabe: {
+    opacity: 0.5
+  },
   titleStyle: {
     fontWeight: 'bold',
     fontSize: 24,
@@ -176,4 +179,12 @@ export const registerationStyles = StyleSheet.create({
     justifyContent: 'center',
     paddingLeft: 10
   },
+  stepperInputError: {
+    borderColor: colors.danger_red
+  },
+  stepperInputErrorMessage: {
+    fontFamily: Fonts.regular,
+    fontSize: 12,
+    color: colors.danger_red
+  }
 });

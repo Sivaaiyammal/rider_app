@@ -7,6 +7,7 @@ import locationTask from '../controllers/GetCurrentLocation';
 import SearchLocationScreen from './SearchLocation/SearchLocationScreen';
 import VehicleListScreen from './VehicleListScreen';
 import SelectedVehicle from './SelectedVehicle';
+import VehicleSearchLoader from './VehicleSearchLoader';
 
 import DriverAssignedScreen from './driverAssigned/DriverAssignedScreen';
 import RideSummary from './RideSummary';
@@ -37,10 +38,12 @@ const HomeScreen = () => {
         return <VehicleListScreen />;
       case 'SelectedVehicle':
         return <SelectedVehicle />;
+      case 'VehicleSearchLoader':
+        return <VehicleSearchLoader />;
       case 'DriverAssignedScreen':
         return <DriverAssignedScreen />;
-        case 'RideSummary':
-          return <RideSummary />;
+      case 'RideSummary':
+        return <RideSummary />;
       default:
         return null;
     }
