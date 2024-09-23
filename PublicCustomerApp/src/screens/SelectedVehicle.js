@@ -1,5 +1,5 @@
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import NavBar from '../components/NavBar';
 import {useStackScreenStore} from '../store/useStackScreenStore';
 import useSelectedVehicleStore from '../store/useSelectedVehicleStore';
@@ -15,17 +15,17 @@ import {usePostQuery} from '../hooks/useQuery';
 import locationTask from '../controllers/GetCurrentLocation';
 
 import SearchLoader from '../components/Loaders/SearchLoader';
-import {createRideMutation} from '../API/APICalls/RideAPICalls';
+import {cancelRideMutation, createRideMutation} from '../API/APICalls/RideAPICalls';
 import FullScreenLoader from '../components/Loaders/FullScreenLoader';
 import SelectedVehicleDetails from '../components/SelectedVehicleDetails';
 
 const SelectedVehicle = () => {
   const navigation = useNavigation();
 
-  const {goBack, setStackScreen} = useStackScreenStore();
+  const {goBack, setStackScreen, screenStoreReset} = useStackScreenStore();
   const {selectedVehicle} = useSelectedVehicleStore();
   const {directions, setDirections} = useLocationStore();
-  const {selectedTrip, selectedRide} = useRideSelectionStore();
+  const {selectedTrip, selectedRide, setBookingDetails, bookingDetails} = useRideSelectionStore();
   const {
     setOnSearchResults,
     setMapMarkers,
@@ -33,6 +33,8 @@ const SelectedVehicle = () => {
     setSearchUnit,
     directionPoints,
   } = useMapStore();
+
+  const timeoutIdRef = useRef(null);
 
   const [isLoading, setIsLoading] = useState('');
 
@@ -55,22 +57,59 @@ const SelectedVehicle = () => {
     return 'car';
   };
 
+
+
   const onBookingSuccess = data => {
     if (data.success) {
       showNotification('Booking Completed Successfully', '', 'success');
       setIsLoading(true);
-
-      const timeoutId = setTimeout(() => {
+      setBookingDetails(data);
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+      }
+      timeoutIdRef.current = setTimeout(() => {
         setIsLoading(false);
         setStackScreen('DriverAssignedScreen');
-      }, 3000);
-
-      return () => clearTimeout(timeoutId);
+      }, 5000);
     }
   };
 
+  const onCancelSuccess =async (data) => {
+    if (data.success) {
+      showNotification(data.message, '', 'success');
+      setBookingDetails(null);
+      setDirections([
+        { id: 1, name: 'Start', location: [], locationName: '' },
+        { id: 2, name: 'End', location: [], locationName: '' },
+      ]);
+      setOnSearchResults(null);
+      setMapMarkers([]);
+      setDirectionPoints(null);
+      setSearchUnit('');
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+        timeoutIdRef.current = null;
+      }
+      setIsLoading(false); 
+      setStackScreen('Home')
+      await locationTask.getCurrentLocation();
+    }
+  }
+
+  // Clear timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutIdRef.current) {
+        clearTimeout(timeoutIdRef.current);
+      }
+    };
+  }, []);
+
   const {mutate: BookingMutate, isLoading: isBookRideLoading} =
     createRideMutation(onBookingSuccess);
+
+  const {mutate: cancelRideMutate, isLoading: isCancelRideLoading} =
+    cancelRideMutation(onCancelSuccess);
 
   const HandleBookRide = async () => {
     if (directions.length < 2) {
@@ -115,15 +154,23 @@ const SelectedVehicle = () => {
     BookingMutate(payload);
   };
 
-  console.log('hari-->>selectedRide-->>',isBookRideLoading)
+  const onCancelRide = () => {
+    // {"message": "Ride created successfully",
+    //    "ride": {"acknowledged": true,
+    //      "insertedId": "66f1506af7e54f72cfe7b0f5"}, "success": true}
+    const payload = {
+      rideId:bookingDetails?.ride?.insertedId
+    }
+    cancelRideMutate(payload)
+  }
 
   return (
     <>
       {isLoading ? (
-        <SearchLoader />
+        <SearchLoader handleSwipeSuccess={onCancelRide}/>
       ) : (
         <>
-          {isBookRideLoading && (
+          {(isBookRideLoading || isCancelRideLoading) && (
             <View style={{width: '100%', height: '100%', zIndex: 9999}}>
               <FullScreenLoader />
             </View>

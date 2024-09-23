@@ -1,5 +1,5 @@
 import {QueryClient, useMutation } from 'react-query';
-import { bookRide, getRideEstimation } from '../EndPoints/EndPoints';
+import { bookRide, cancelRide, getRideEstimation } from '../EndPoints/EndPoints';
 import {showNotification} from '../../components/NotificationManger';
 
 const queryClient = new QueryClient();
@@ -43,6 +43,29 @@ export const createRideMutation = onSuccessCallback => {
     onError: error => {
       showNotification(
         `Booking Failed - (${error.status})`,
+        error?.message?.message,
+        'danger',
+      );
+    },
+  });
+};
+
+// Cancek Ride Mutation
+export const cancelRideMutation = onSuccessCallback => {
+  return useMutation(['cancelRide'], cancelRide, {
+    onSuccess: data => {
+      if (data.success) {
+        if (onSuccessCallback) {
+          queryClient.invalidateQueries('cancelRide');
+          onSuccessCallback(data);
+        }
+      } else {
+        showNotification('Booking Cancel Failed', data.message, 'danger');
+      }
+    },
+    onError: error => {
+      showNotification(
+        `Booking Cancel Failed - (${error.status})`,
         error?.message?.message,
         'danger',
       );

@@ -6,11 +6,13 @@ import { colors, Fonts } from '../../constants/constants';
 import SwipeButton from '../SwipeButton';
 import SwipeBtn from '../SwipeBtn';
 
-const SearchLoader = () => {
+const SearchLoader = (props) => {
 
-  const handleSwipeSuccess = () => {
-    Alert.alert("Success", "You have successfully swiped the button!");
-  };
+  const {handleSwipeSuccess} = props
+
+  // const handleSwipeSuccess = () => {
+  //   Alert.alert("Success", "You have successfully swiped the button!");
+  // };
 
   return (
     <View style={styles.container}>
@@ -21,7 +23,7 @@ const SearchLoader = () => {
       <Text style={styles.textB}>Your ride will start soon</Text>
       </View>
       <View style={styles.SwipeBtn}>
-      <SwipeBtn name="SWIPE TO CANCEL" onHandleSwipeEnd={{}} />
+      <SwipeBtn name="SWIPE TO CANCEL" onHandleSwipeEnd={()=>handleSwipeSuccess()} />
       </View>
     </View>
   );

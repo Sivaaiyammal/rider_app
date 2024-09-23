@@ -35,3 +35,9 @@ export const bookRide = async (payload)=> {
   const {data} = await apiClient.post('/customer/ride/create', payload)
   return data
 }
+
+// cancel Ride
+export const cancelRide = async (payload)=> {
+  const {data} = await apiClient.post('/customer/ride/cancelRide', payload)
+  return data
+}
