@@ -1,6 +1,6 @@
-import {StyleSheet} from 'react-native';
-import {colors, Fonts} from '../constants/constants';
-import {height} from '../utils/Utils';
+import { StyleSheet } from 'react-native';
+import { colors, Fonts } from '../constants/constants';
+import { height } from '../utils/Utils';
 
 export const addLocation = StyleSheet.create({
   container: {
@@ -81,67 +81,67 @@ export const addLocation = StyleSheet.create({
     color: colors.white,
     fontSize: 12,
   },
-  rideSelectionContainer:{
-    width:'96%',
-    paddingVertical:10,
-    backgroundColor:colors.white,
-    flexDirection:'row',
-    justifyContent:'space-around',
-    alignSelf:'center'
+  rideSelectionContainer: {
+    width: '96%',
+    paddingVertical: 10,
+    backgroundColor: colors.white,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignSelf: 'center'
   },
-  rideSelection:{
-    backgroundColor:colors.black,
-    flexDirection:'row',
-    alignItems:'center',
-    gap:10,
-    paddingHorizontal:15,
-    borderRadius:15,
-    paddingVertical:5
+  rideSelection: {
+    backgroundColor: colors.black,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 15,
+    borderRadius: 15,
+    paddingVertical: 5
   },
-  rideSelectionTxt:{
-    color:colors.white,
-    fontFamily:Fonts.regular,
-    fontSize:12
+  rideSelectionTxt: {
+    color: colors.white,
+    fontFamily: Fonts.regular,
+    fontSize: 12
   },
-  rideOptionContainer:{
-    position:'absolute',
-    bottom:0,
-    backgroundColor:'rgba(0, 0, 0, 0.3)',
-    width:'100%',
-    height:'100%', 
-    zIndex:5
+  rideOptionContainer: {
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    width: '100%',
+    height: '100%',
+    zIndex: 5
   },
-  rideOptionBottom:{
-    position:'absolute',
-    bottom:0,
-    backgroundColor:colors.white,
-    width:'100%',
-    borderTopRightRadius:20,
-    borderTopLeftRadius:20,
-    padding:10
+  rideOptionBottom: {
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: colors.white,
+    width: '100%',
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+    padding: 10
   },
-  tripSelectionBtn:{
-    flexDirection:'row',
-    margin:10,
-    gap:10,
-    backgroundColor:colors.white_dirt,
-    paddingVertical:15,
-    paddingHorizontal:15,
-    borderRadius:10,
-    alignItems:'center',
-    justifyContent:'space-between'
+  tripSelectionBtn: {
+    flexDirection: 'row',
+    margin: 10,
+    gap: 10,
+    backgroundColor: colors.white_dirt,
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'space-between'
   },
-  tripSelectionBtnTxt:{
-    fontFamily:Fonts.light,
-    color:colors.black,
-    fontSize:16,
+  tripSelectionBtnTxt: {
+    fontFamily: Fonts.light,
+    color: colors.black,
+    fontSize: 16,
   },
-  closeBtn:{
-    paddingRight:20,
-    marginVertical:10,
-    alignSelf:'flex-end',
-    padding:10,
-    alignItems:'center',
+  closeBtn: {
+    paddingRight: 20,
+    marginVertical: 10,
+    alignSelf: 'flex-end',
+    padding: 10,
+    alignItems: 'center',
   }
 });
 
@@ -263,6 +263,9 @@ export const vehicleList = StyleSheet.create({
     marginTop: 10,
   },
   vehicleDetailsTxt: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 3,
     fontFamily: Fonts.light,
     color: colors.grey_xdark,
     fontSize: 14,

@@ -4,9 +4,9 @@ import NavBar from '../components/NavBar';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import useSelectedVehicleStore from '../store/useSelectedVehicleStore';
 import useLocationStore from '../store/useLocationStore';
+import useRideSelectionStore from '../store/useRideSelectionStore';
 import useMapStore from '../store/useMapStore';
 
-import useRideSelectionStore from '../store/useRideSelectionStore';
 import BottomSheet from '../components/BottomSheet';
 import { vehicleDetailsStyles } from '../styles/VehicleDetails';
 import { CommonActions, useNavigation } from '@react-navigation/native';

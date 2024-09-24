@@ -36,6 +36,9 @@ const useGetQuery = ({ onSuccess, onError }) => {
         const apiRequest = new APIRequest();
         const res = await apiRequest.request(url, 'GET', payload, access_token.data, query);
 
+        console.log(res, 'res');
+
+
         queryClient.invalidateQueries(queryKey);
 
         return res;
