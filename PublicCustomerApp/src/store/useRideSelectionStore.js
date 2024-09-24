@@ -10,6 +10,9 @@ const useRideSelectionStore = create(set => ({
 
   scheduleDateTime: null,
   setScheduleDateTime: (scheduleDateTime) => set({ scheduleDateTime }),
+
+  bookingDetails: null,
+  setBookingDetails: (bookingDetails) => set({bookingDetails})
 }));
 
 export default useRideSelectionStore;

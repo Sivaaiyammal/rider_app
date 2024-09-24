@@ -3,7 +3,7 @@ import DriverArrival from './DriverArrival';
 import OnRide from './OnRide';
 
 const DriverAssignedScreen = () => {
-  const onRide = true;
+  const onRide = false;
 
   return <>{onRide ? <OnRide /> : <DriverArrival />}</>;
 };

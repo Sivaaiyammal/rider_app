@@ -23,3 +23,21 @@ export const getUserDetails = async ()=> {
   const {data} = await apiClient.get('/customer/profile/get-details')
   return data
 }
+
+// get ride estimate
+export const getRideEstimation = async (payload)=> {
+  const {data} = await apiClient.post('/customer/ride/getRideEstimate', payload)
+  return data
+}
+
+// Book Ride
+export const bookRide = async (payload)=> {
+  const {data} = await apiClient.post('/customer/ride/create', payload)
+  return data
+}
+
+// cancel Ride
+export const cancelRide = async (payload)=> {
+  const {data} = await apiClient.post('/customer/ride/cancelRide', payload)
+  return data
+}

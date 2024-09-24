@@ -78,6 +78,7 @@ export const profileUpdateMutations = onSuccessCallback => {
   });
 };
 
+// query user profile
 export const fetchUserDetails = () => {
   return useQuery(['userProfile'], getUserDetails, {
     onError: error => {

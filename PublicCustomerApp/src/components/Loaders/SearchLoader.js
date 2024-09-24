@@ -4,12 +4,15 @@ import Pulse from './Pulse';
 import VehicleSearch from '../../assets/image/svgIcons/vehicleSearch.svg';
 import { colors, Fonts } from '../../constants/constants';
 import SwipeButton from '../SwipeButton';
+import SwipeBtn from '../SwipeBtn';
 
-const SearchLoader = () => {
+const SearchLoader = (props) => {
 
-  const handleSwipeSuccess = () => {
-    Alert.alert("Success", "You have successfully swiped the button!");
-  };
+  const {handleSwipeSuccess} = props
+
+  // const handleSwipeSuccess = () => {
+  //   Alert.alert("Success", "You have successfully swiped the button!");
+  // };
 
   return (
     <View style={styles.container}>
@@ -19,10 +22,9 @@ const SearchLoader = () => {
       <Text style={styles.textA}>Searching for Taxi...</Text>
       <Text style={styles.textB}>Your ride will start soon</Text>
       </View>
-       {/* <SwipeButton onSwipeSuccess={handleSwipeSuccess}/> */}
-       <TouchableOpacity>
-        <Text>Cancel Booking</Text>
-       </TouchableOpacity>
+      <View style={styles.SwipeBtn}>
+      <SwipeBtn name="SWIPE TO CANCEL" onHandleSwipeEnd={()=>handleSwipeSuccess()} />
+      </View>
     </View>
   );
 };
@@ -57,5 +59,8 @@ const styles = StyleSheet.create({
     color:colors.black,
     fontSize:12,
     marginTop:10
+  },
+  SwipeBtn:{
+    marginTop:20
   }
 });

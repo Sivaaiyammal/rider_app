@@ -80,5 +80,50 @@ export const vehicleDetailsStyles = StyleSheet.create({
         color:colors.white,
         fontFamily:Fonts.medium,
         fontSize:12
+    },
+    dateTimeText:{
+        width:'70%',
+        color:colors.black,
+        fontSize:16,
+        fontFamily:Fonts.regular
+    },
+    changeBtn:{
+        color:colors.violet,
+        fontSize:16,
+        fontFamily:Fonts.regular
+    },
+    successMsg:{
+        fontFamily:Fonts.regular,
+        fontSize:14,
+        color:colors.black,
+        width:'60%'
+    },
+    successMsgDriver:{
+        fontFamily:Fonts.light,
+        fontSize:14,
+        color:colors.grey_dark,
+        width:'60%'
+    },
+    priceContainer:{
+        backgroundColor:colors.yellow_light,
+        width:'90%',
+        alignSelf:'center',
+        marginVertical:10,
+        alignItems:'center',
+        justifyContent:'space-evenly',
+        flexDirection:'row',
+        paddingVertical:10,
+        borderRadius:10,
+    },
+    priceContainerTxt:{
+        fontFamily:Fonts.light,
+        fontSize:16,
+        color:colors.black,
+        textAlign:'center'
+    },
+    priceTxt:{
+        fontFamily:Fonts.medium,
+        fontSize:24,
+        color:colors.black
     }
 });
