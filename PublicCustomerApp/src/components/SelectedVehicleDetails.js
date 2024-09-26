@@ -14,6 +14,7 @@ import {utils} from '../utils/Utils';
 import ScheduleContainer from '../screens/SearchLocation/ScheduleContainer';
 import BookedTick from '../assets/image/svgIcons/bookedTick.svg';
 import {colors} from '../constants/constants';
+import { getVehicleDetailsById } from '../constants/JsonData';
 
 const SelectedVehicleDetails = props => {
   const {selectedVehicle, HandleBookRide, selectedRide} = props;
@@ -79,27 +80,27 @@ const SelectedVehicleDetails = props => {
         )}
         <View style={vehicleDetailsStyles.detailsContainer}>
           <Image
-            source={selectedVehicle.Image}
+            source={getVehicleDetailsById(selectedVehicle.type).image}
             style={{width: 120, aspectRatio: 1}}
           />
           <View>
             <Text style={vehicleDetailsStyles.name}>
-              {selectedVehicle.name}
+              {getVehicleDetailsById(selectedVehicle.type).name}
             </Text>
             {selectedRide.name !== 'Schedule' && (
               <Text style={vehicleDetailsStyles.durationTxt}>
                 {' '}
-                <DurationBlack /> {selectedVehicle.duration}
+                <DurationBlack /> {selectedVehicle?.duration?.toFixed(2)}
               </Text>
             )}
 
             <Text style={vehicleDetailsStyles.durationTxt}>
               {' '}
-              <PeopleBlack /> {selectedVehicle.count}
+              <PeopleBlack /> {getVehicleDetailsById(selectedVehicle.type).capacity}
             </Text>
             {selectedRide.name !== 'Schedule' && (
               <Text style={vehicleDetailsStyles.fareTxt}>
-                <FareGreen /> {selectedVehicle.total_price}
+                <FareGreen /> {selectedVehicle.fare}
               </Text>
             )}
           </View>

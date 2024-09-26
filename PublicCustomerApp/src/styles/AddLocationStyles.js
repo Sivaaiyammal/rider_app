@@ -240,13 +240,13 @@ export const vehicleList = StyleSheet.create({
     backgroundColor: '#FAFAFA',
   },
   imageContainer: {
-    width: '25%',
+    width: '20%',
     aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   vehicleDetails: {
-    width: '50%',
+    width: '48%',
     borderRightWidth: 0.3,
     marginVertical: 8,
   },
@@ -274,7 +274,7 @@ export const vehicleList = StyleSheet.create({
   priceDetails: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: '25%',
+    width: '30%',
   },
   totalPrice: {
     fontFamily: Fonts.medium,

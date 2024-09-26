@@ -54,16 +54,19 @@ export const onBoardingSlides = [
     id: 1,
     name: 'One Way Trip',
     icon: <OnWayTrip />,
+    value:'one_way'
   },
   {
     id: 2,
     name: 'Round Trip',
     icon: <RoundTrip />,
+    value:'round_trip',
   },
   {
     id: 3,
     name: 'Add Five Stops',
     icon: <StopsTrip />,
+    value:'round_trip',
   },
 ];
 
@@ -71,9 +74,54 @@ export const rideType = [
   {
     id: 1,
     name: 'Pickup Now',
+    value:'instant'
   },
   {
     id: 2,
     name: 'Schedule',
+    value:'schedule'
   }
 ];
+
+export const getVehicleDetailsById = (id) => {
+  switch (id) {
+    case 'bike':
+      return {
+        name: 'Motor Bike',
+        image: require('../assets/image/vehicle/bike.png'),
+        capacity: 1
+      };
+    case 'auto':
+      return {
+        name: 'Auto Rickshaw',
+        image: require('../assets/image/vehicle/auto.png'),
+        capacity: 3
+      };
+    case 'hatchback':
+      return {
+        name: 'Hatchback',
+        image: require('../assets/image/vehicle/hatchback.png'),
+        capacity: 3
+      };
+    case 'sedan':
+      return {
+        name: 'Sedan',
+        image: require('../assets/image/vehicle/sedan.png'),
+        capacity: 4
+      };
+    case 'suv':
+      return {
+        name: 'SUV',
+        image: require('../assets/image/vehicle/suv.png'),
+        capacity: 4
+      };
+    case 'luxsedan':
+      return {
+        name: 'Luxury Sedan',
+        image: require('../assets/image/vehicle/luxsedan.png'),
+        capacity: 5
+      };
+    default:
+      return null; // or handle as needed, e.g., return a default vehicle
+  }
+};

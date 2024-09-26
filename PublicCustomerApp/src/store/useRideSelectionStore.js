@@ -11,6 +11,9 @@ const useRideSelectionStore = create(set => ({
   scheduleDateTime: null,
   setScheduleDateTime: (scheduleDateTime) => set({ scheduleDateTime }),
 
+  vehicleList: [],
+  setVehicleList: (vehicleList) => set({ vehicleList }),
+
   bookingDetails: null,
   setBookingDetails: (bookingDetails) => set({bookingDetails})
 }));

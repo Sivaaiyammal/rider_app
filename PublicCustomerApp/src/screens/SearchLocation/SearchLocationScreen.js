@@ -17,10 +17,13 @@ import RideType from './RideType';
 import ScheduleContainer from './ScheduleContainer';
 import { rideType } from '../../constants/JsonData';
 import { utils } from '../../utils/Utils';
+import { rideEstimation } from '../../API/APICalls/RideAPICalls';
+import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
+import VehicleListScreen from '../VehicleListScreen';
 
 const SearchLocation = () => {
-  const {goBack, setStackScreen} = useStackScreenStore();
-  const {setDirections} = useLocationStore();
+  const {goBack} = useStackScreenStore();
+  const {setDirections, directions} = useLocationStore();
   const {
     setOnSearchResults,
     setMapMarkers,
@@ -29,7 +32,7 @@ const SearchLocation = () => {
     directionPoints,
   } = useMapStore();
 
-  const {setSelectedTrip, selectedTrip, selectedRide, setSelectedRide, scheduleDateTime, setScheduleDateTime} =
+  const {setSelectedTrip, selectedTrip, selectedRide, setSelectedRide, scheduleDateTime, setScheduleDateTime,vehicleList, setVehicleList} =
     useRideSelectionStore();
 
   const [isHidden, setIsHidden] = useState(false);
@@ -54,6 +57,7 @@ const SearchLocation = () => {
   }, [isHidden]);
 
   const onBackPress = async () => {
+    if (vehicleList.length !== 0) return setVehicleList([])
     setDirections([
       {id: 1, name: 'Start', location: [], locationName: ''},
       {id: 2, name: 'End', location: [], locationName: ''},
@@ -66,9 +70,34 @@ const SearchLocation = () => {
     await locationTask.getCurrentLocation();
   };
 
+  const onEstimationSuccess = (data) => {
+    setVehicleList(data?.data)
+  }
+
+  const {mutate: estimationMutate, isLoading: isEstimationLoading} =
+    rideEstimation(onEstimationSuccess);
+
   const onConfirm = () => {
-    // use scheduleDateTime?.date,scheduleDateTime?.time as api params
-    setStackScreen('VehicleList');
+    let start_location = directions.filter(item => item.name == 'Start')[0]
+    let end_location = directions.filter(item => item.name == 'End')[0]
+    let waypoints = directions.filter(item => item.name == 'Waypoint')
+    let trip_type = selectedTrip.value
+    let ride_type = selectedRide.value
+
+    let payload = {
+      startLocation: {
+        lat: start_location.location[0],
+        lon: start_location.location[1],
+      },
+      endLocation: {
+        lat: end_location.location[0],
+        lon: end_location.location[1],
+      },
+
+      waypoints: waypoints.map(item => { return { lat: item.location[0], lon: item.location[1] } }),
+      trip_type: trip_type,
+    }
+    estimationMutate(payload)
   };
 
   const onRideTypePress = () => {
@@ -112,6 +141,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
   return (
     <>
+      {isEstimationLoading && <FullScreenLoader />}
       <NavBar withBg onBackPress={onBackPress} title={'Destination'} />
       <View style={addLocation.rideSelectionContainer}>
         <TouchableOpacity
@@ -159,6 +189,9 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
       </Animated.View>
       {showScheduleContainer &&  
         <ScheduleContainer oncloseDateTime={oncloseDateTime} onConfirmDateTime={onConfirmDateTime}/>
+      }
+      {vehicleList.length !== 0 && 
+        <VehicleListScreen vehicleListData={vehicleList}/>
       }
     </>
   );
