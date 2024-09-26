@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import PropTypes from 'prop-types';
+import { _ } from "lodash";
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import YourLoc from '../../assets/image/svgIcons/yourLoc.svg';
@@ -44,12 +45,21 @@ const AddLocationCard = (props) => {
     }
   }, []);
 
-  const onChangeText = useCallback((value, index) => {
+  const debouncedSetSearchUnit = useCallback(
+    _.debounce((value) => {
+      setSearchUnit(value);
+    }, 2000, {
+      leading: true,
+      trailing: true,
+    }), []
+  );
+
+  const _onChangeText = useCallback((value, index) => {
     const newDirections = [...directions];
     newDirections[index].locationName = value;
     setDirections(newDirections);
-    setSearchUnit(value);
     setDirectionPoints(null);
+    debouncedSetSearchUnit(value);
   }, []);
 
   const setRouteDirection = (directions) => {
@@ -188,7 +198,7 @@ const AddLocationCard = (props) => {
                 // placeholder={getLocationIcon(index, directions.length).name}
                 value={direction.locationName}
                 onFocus={() => onFocus(index)}
-                onChangeText={value => onChangeText(value, index)}
+                onChangeText={value => _onChangeText(value, index)}
               />
               <TouchableOpacity onPress={() => clearText(index)}>
                 <Ionicons name={'close'} size={20} />
