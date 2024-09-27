@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import React, {useRef, useState, useCallback} from 'react';
 import {
   ScrollView,
   Text,
@@ -7,23 +7,23 @@ import {
   View,
 } from 'react-native';
 import PropTypes from 'prop-types';
-import { _ } from "lodash";
+import {_} from 'lodash';
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import YourLoc from '../../assets/image/svgIcons/yourLoc.svg';
 import EndLoc from '../../assets/image/svgIcons/endLoc.svg';
-import { addLocation } from '../../styles/AddLocationStyles';
+import {addLocation} from '../../styles/AddLocationStyles';
 import DragAndDropCard from '../../components/DragAndDropCard';
-import { colors } from '../../constants/constants';
+import {colors} from '../../constants/constants';
 import useLocationStore from '../../store/useLocationStore';
 import useMapStore from '../../store/useMapStore';
 import Marker from '../../controllers/NEMap/Marker';
-import { useStackScreenStore } from '../../store/useStackScreenStore';
+import {useStackScreenStore} from '../../store/useStackScreenStore';
 
-const AddLocationCard = (props) => {
-  const { screenType } = props
-  const { directions, setDirections } = useLocationStore();
-  const { setStackScreen } = useStackScreenStore()
+const AddLocationCard = props => {
+  const {screenType} = props;
+  const {directions, setDirections} = useLocationStore();
+  const {setStackScreen} = useStackScreenStore();
   const {
     setSearchUnit,
     mapMarkers,
@@ -31,7 +31,7 @@ const AddLocationCard = (props) => {
     setOnSearchResults,
     setMapMarkers,
     setDirectionPoints,
-    searchUnit
+    searchUnit,
   } = useMapStore();
   const [selectedInputIndex, setSelectedInputIndex] = useState(0);
 
@@ -41,17 +41,22 @@ const AddLocationCard = (props) => {
   const onFocus = useCallback(id => {
     setSelectedInputIndex(id);
     if (screenType === 'vehicleList') {
-      setStackScreen('SearchLocationScreen')
+      setStackScreen('SearchLocationScreen');
     }
   }, []);
 
   const debouncedSetSearchUnit = useCallback(
-    _.debounce((value) => {
-      setSearchUnit(value);
-    }, 2000, {
-      leading: true,
-      trailing: true,
-    }), []
+    _.debounce(
+      value => {
+        setSearchUnit(value);
+      },
+      2000,
+      {
+        leading: true,
+        trailing: true,
+      },
+    ),
+    [],
   );
 
   const _onChangeText = useCallback((value, index) => {
@@ -62,22 +67,28 @@ const AddLocationCard = (props) => {
     debouncedSetSearchUnit(value);
   }, []);
 
-  const setRouteDirection = (directions) => {
+  const setRouteDirection = directions => {
     if (directions.length === 2) {
       // Sort directions by their id to ensure start and end points
       const sortedDirections = directions.sort((a, b) => a.id - b.id);
-      const routeData = sortedDirections.map((direction) => ({
+      const routeData = sortedDirections.map(direction => ({
         lat: direction.lat,
         lon: direction.lng,
       }));
-
       setMapMarkers([]);
-      setDirectionPoints({ locations: routeData, type: 'car' });
-      console.log('hari-->>directions-->>', sortedDirections, routeData);
+      setDirectionPoints({locations: routeData, type: 'car'});
     } else {
       setDirectionPoints(null);
     }
   };
+
+  const updateDirections = useCallback(directions => {
+    const directionPoints = directions.map(direction => ({
+      lat: direction.location[1],
+      lon: direction.location[0],
+    }));
+    setDirectionPoints({locations: directionPoints, type: 'car'});
+  }, []);
 
   const addMapMarkers = (item, markerType) => {
     const marker = new Marker(
@@ -106,9 +117,8 @@ const AddLocationCard = (props) => {
       marker => marker.type !== markerType,
     );
     setMapMarkers(updatedMarkers);
-    setDirectionPoints(null)
+    setDirectionPoints(null);
   };
-
 
   //   on location name Press
   const onLocationNamePress = useCallback(
@@ -117,8 +127,8 @@ const AddLocationCard = (props) => {
       newDirections[selectedInputIndex].locationName =
         item.address || item.name;
       newDirections[selectedInputIndex].location = [
-        item.latitude,
         item.longitude,
+        item.latitude,
       ];
       setDirections(newDirections);
       setOnSearchResults(null);
@@ -170,9 +180,29 @@ const AddLocationCard = (props) => {
     }
   }, []);
 
+  const moveItem = (fromIndex, toIndex) => {
+    if (fromIndex !== toIndex) {
+      const newDirections = [...directions];
+
+      // Swap only the locationName and location arrays
+      const fromItem = newDirections[fromIndex];
+      const toItem = newDirections[toIndex];
+
+      const tempLocationName = fromItem.locationName;
+      const tempLocation = fromItem.location;
+
+      fromItem.locationName = toItem.locationName;
+      fromItem.location = toItem.location;
+
+      toItem.locationName = tempLocationName;
+      toItem.location = tempLocation;
+      setDirections(newDirections);
+      updateDirections(newDirections);
+    }
+  };
 
   return (
-    <View style={{ backgroundColor: colors.white, paddingVertical: 5 }}>
+    <View style={{backgroundColor: colors.white, paddingVertical: 5}}>
       <View style={addLocation.addLocationContainer}>
         {directions.map((direction, index) => (
           <DragAndDropCard
@@ -182,10 +212,12 @@ const AddLocationCard = (props) => {
             itemHeight={itemHeight}
             topOffset={0}
             onDragEnd={(dragIndex, hoverIndex, isMoved) => {
-              console.log(`Dragged from ${dragIndex} to ${hoverIndex}`);
-              if (isMoved && inputRefs.current[hoverIndex]) {
+              console.log(
+                `Dragged from ${dragIndex} to ${hoverIndex} - Moved: ${isMoved}`,
+              );
+              if (isMoved) return moveItem(dragIndex, hoverIndex);
+              if (inputRefs.current[hoverIndex])
                 inputRefs.current[hoverIndex].focus();
-              }
             }}>
             <Text style={addLocation.inputHeader}>
               {getLocationIcon(index, directions.length).name}
@@ -206,21 +238,24 @@ const AddLocationCard = (props) => {
             </View>
           </DragAndDropCard>
         ))}
-        {(onSearchResults && Array.isArray(onSearchResults?.searchResults) && onSearchResults?.searchResults?.length !== 0 && searchUnit.length !== 0) && (
-          <View style={{ height: 200, marginTop: 10 }}>
-            <ScrollView>
-              {onSearchResults?.searchResults?.map((item, i) => (
-                <TouchableOpacity
-                  key={i}
-                  onPress={() => onLocationNamePress(item)}>
-                  <Text style={addLocation.searchResults}>
-                    {item.address || item.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
+        {onSearchResults &&
+          Array.isArray(onSearchResults?.searchResults) &&
+          onSearchResults?.searchResults?.length !== 0 &&
+          searchUnit.length !== 0 && (
+            <View style={{height: 200, marginTop: 10}}>
+              <ScrollView>
+                {onSearchResults?.searchResults?.map((item, i) => (
+                  <TouchableOpacity
+                    key={i}
+                    onPress={() => onLocationNamePress(item)}>
+                    <Text style={addLocation.searchResults}>
+                      {item.address || item.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
       </View>
     </View>
   );
@@ -231,4 +266,3 @@ export default AddLocationCard;
 AddLocationCard.propTypes = {
   screenType: PropTypes.string,
 };
-

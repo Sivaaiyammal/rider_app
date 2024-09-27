@@ -1,7 +1,7 @@
 import React, {useRef, useState, useMemo} from 'react';
 import {StyleSheet, PanResponder, Animated} from 'react-native';
-import { height } from '../utils/Utils';
-import { colors } from '../constants/constants';
+import {height} from '../utils/Utils';
+import {colors} from '../constants/constants';
 
 const DragAndDropCard = ({
   index,
@@ -10,19 +10,34 @@ const DragAndDropCard = ({
   children,
   length,
   topOffset,
-  itemHeight
+  itemHeight,
 }) => {
   // Create a ref to store the position of the card
   const position = useRef(new Animated.ValueXY()).current;
 
-  // State to track if the card is being dragged
   const [dragging, setDragging] = useState(false);
 
-  const calculateDropIndex = (gestureState, itemHeight, dataLength, topOffset = 0) => {
+  const calculateDropIndex = (
+    gestureState,
+    itemHeight,
+    dataLength,
+    topOffset = 0,
+  ) => {
     const dragY = gestureState.moveY - topOffset;
-    const middlePointOffset = itemHeight / 3;
-    let estimatedIndex = Math.floor((dragY + middlePointOffset) / itemHeight);
+    let estimatedIndex = Math.floor(dragY / itemHeight);
+
     estimatedIndex = Math.max(0, Math.min(estimatedIndex, dataLength - 1));
+
+    if (estimatedIndex === 0 && gestureState.dy < 0) {
+      return 0;
+    }
+
+    if (gestureState.dy > itemHeight / 2 && estimatedIndex < dataLength - 1) {
+      estimatedIndex += 1;
+    } else if (gestureState.dy < -itemHeight / 2 && estimatedIndex > 0) {
+      estimatedIndex -= 1;
+    }
+
     return estimatedIndex;
   };
 
@@ -39,7 +54,7 @@ const DragAndDropCard = ({
               dy: position.y,
             },
           ],
-          { useNativeDriver: false },
+          {useNativeDriver: false},
         ),
         onPanResponderGrant: () => {
           setDragging(true);
@@ -52,10 +67,11 @@ const DragAndDropCard = ({
             length,
             topOffset,
           );
-          const movedSlightly = Math.abs(gestureState.dy) < 10;
+          const movedSlightly = Math.abs(gestureState.dy) >= 10;
           onDragEnd(index, dropIndex, movedSlightly);
+
           Animated.spring(position, {
-            toValue: { x: 0, y: 0 },
+            toValue: {x: 0, y: 0},
             useNativeDriver: false,
           }).start();
         },
@@ -65,17 +81,17 @@ const DragAndDropCard = ({
 
   return (
     <Animated.View
-    style={[
-      styles.card,
-      {
-        transform: position.getTranslateTransform(),
-        opacity: dragging ? 0.4 : 1,
-        zIndex: dragging ? 1 : 0,
-      },
-    ]}
-   >
-    {children}
-  </Animated.View>
+      style={[
+        styles.card,
+        {
+          transform: position.getTranslateTransform(),
+          opacity: dragging ? 0.4 : 1,
+          zIndex: dragging ? 1 : 0,
+        },
+      ]}
+      {...panResponder.panHandlers}>
+      {children}
+    </Animated.View>
   );
 };
 
@@ -85,12 +101,11 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: 5,
-    height: height * 0.06,
-    alignItems:'center',
-    justifyContent:'center',
-    marginVertical:5,
-    backgroundColor:colors.white,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 5,
+    backgroundColor: colors.white,
   },
 });
 export default DragAndDropCard;
-
