@@ -89,7 +89,8 @@ const DragAndDropCard = ({
           zIndex: dragging ? 1 : 0,
         },
       ]}
-      {...panResponder.panHandlers}>
+      // {...panResponder.panHandlers}
+      >
       {children}
     </Animated.View>
   );

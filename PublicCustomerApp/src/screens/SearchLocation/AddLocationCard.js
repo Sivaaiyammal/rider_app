@@ -1,4 +1,4 @@
-import React, {useRef, useState, useCallback} from 'react';
+import React, {useRef, useState, useCallback, useEffect} from 'react';
 import {
   ScrollView,
   Text,
@@ -20,29 +20,23 @@ import useMapStore from '../../store/useMapStore';
 import Marker from '../../controllers/NEMap/Marker';
 import {useStackScreenStore} from '../../store/useStackScreenStore';
 
-const AddLocationCard = props => {
-  const {screenType} = props;
-  const {directions, setDirections} = useLocationStore();
+const AddLocationCard = () => {
+  const {directions, setDirections, setSelectedInput} = useLocationStore();
   const {setStackScreen} = useStackScreenStore();
   const {
     setSearchUnit,
     mapMarkers,
-    onSearchResults,
-    setOnSearchResults,
     setMapMarkers,
     setDirectionPoints,
-    searchUnit,
+    mapClickCallback
   } = useMapStore();
-  const [selectedInputIndex, setSelectedInputIndex] = useState(0);
 
   const inputRefs = useRef([]);
   const itemHeight = 80;
 
   const onFocus = useCallback(id => {
-    setSelectedInputIndex(id);
-    if (screenType === 'vehicleList') {
-      setStackScreen('SearchLocationScreen');
-    }
+    setStackScreen('SearchScreen');
+    setSelectedInput(id);
   }, []);
 
   const debouncedSetSearchUnit = useCallback(
@@ -67,99 +61,23 @@ const AddLocationCard = props => {
     debouncedSetSearchUnit(value);
   }, []);
 
-  const setRouteDirection = directions => {
-    if (directions.length === 2) {
-      // Sort directions by their id to ensure start and end points
-      const sortedDirections = directions.sort((a, b) => a.id - b.id);
-      const routeData = sortedDirections.map(direction => ({
-        lat: direction.lat,
-        lon: direction.lng,
-      }));
-      setMapMarkers([]);
-      setDirectionPoints({locations: routeData, type: 'car'});
-    } else {
-      setDirectionPoints(null);
-    }
-  };
-
-  const updateDirections = useCallback(directions => {
-    const directionPoints = directions.map(direction => ({
-      lat: direction.location[1],
-      lon: direction.location[0],
-    }));
-    setDirectionPoints({locations: directionPoints, type: 'car'});
-  }, []);
-
-  const addMapMarkers = (item, markerType) => {
-    const marker = new Marker(
-      String(selectedInputIndex),
-      item?.name || Math.random().toString(),
-      item?.longitude,
-      item?.latitude,
-      markerType,
-      36,
-      true,
-    );
-    const updatedMarkers = [...mapMarkers];
-    const existingIndex = updatedMarkers.findIndex(m => m.type === markerType);
-    if (existingIndex !== -1) {
-      updatedMarkers[existingIndex] = marker;
-    } else {
-      updatedMarkers.push(marker);
-    }
-    marker.setFocus(true);
-    setMapMarkers(updatedMarkers);
-    setRouteDirection(updatedMarkers);
-  };
-
-  const removeMapMarker = markerType => {
-    const updatedMarkers = mapMarkers.filter(
-      marker => marker.type !== markerType,
-    );
-    setMapMarkers(updatedMarkers);
-    setDirectionPoints(null);
-  };
-
-  //   on location name Press
-  const onLocationNamePress = useCallback(
-    item => {
-      const newDirections = [...directions];
-      newDirections[selectedInputIndex].locationName =
-        item.address || item.name;
-      newDirections[selectedInputIndex].location = [
-        item.longitude,
-        item.latitude,
-      ];
-      setDirections(newDirections);
-      setOnSearchResults(null);
-      setSearchUnit('');
-      if (selectedInputIndex === 0) {
-        addMapMarkers(item, 'marker_start');
-      } else if (selectedInputIndex === directions.length - 1) {
-        addMapMarkers(item, 'marker_end');
+  const updateDirections = useCallback((directions) => {
+    const directionPoints = directions.map(direction => {
+      if (direction.location.length > 0) {
+        return {
+          lat: direction.location[1],
+          lon: direction.location[0],
+        };
       } else {
-        addMapMarkers(item, `marker_waypoint ${selectedInputIndex}`);
+        return null;
       }
-    },
-    [directions, selectedInputIndex, setDirections, setOnSearchResults],
-  );
-
-  // clear text and remove marker
-  const clearText = index => {
-    const newDirections = [...directions];
-    newDirections[index].locationName = '';
-    newDirections[index].location = [];
-    setSearchUnit('');
-    setDirections(newDirections);
-    setOnSearchResults(null);
-    if (index === 0) {
-      removeMapMarker('marker_start');
-    } else if (index === directions.length - 1) {
-      removeMapMarker('marker_end');
+    }).filter(point => point !== null);
+    if (directionPoints.length > 0) {
+      setDirectionPoints({ locations: directionPoints, type: 'car' });
     } else {
-      removeMapMarker(`marker_waypoint ${index}`);
+      console.log('No valid direction points found. Not updating state.');
     }
-  };
+  }, []);
 
   const getLocationIcon = useCallback((id, totalLocations) => {
     if (id === 0) {
@@ -179,6 +97,7 @@ const AddLocationCard = props => {
       };
     }
   }, []);
+
 
   const moveItem = (fromIndex, toIndex) => {
     if (fromIndex !== toIndex) {
@@ -201,6 +120,49 @@ const AddLocationCard = props => {
     }
   };
 
+  const addWaypoints = () => {
+    const endIndex = directions.findIndex(item => item.name === "End");
+    // Create a new waypoint object with the current End ID
+    const newWaypoint = {
+      id: directions[endIndex].id,
+      location: [],
+      locationName: "",
+      name: `Waypoint ${directions.length - 1}`
+    };
+    directions[endIndex].id += 1;
+    const newData = [
+      ...directions.slice(0, endIndex),
+      newWaypoint,
+      directions[endIndex]
+    ];
+    setDirections(newData)
+  }
+
+  const updateRouteDirections = useCallback(
+    (newData) => {
+      const routeData = newData.map(item => {
+        return {
+          lat: item.location[1],
+          lon: item.location[0],
+        };
+      });
+      setDirectionPoints({locations: routeData, type: 'car'});
+    },
+    [directions],
+  );
+
+  const removeWaypoints = (id) => {
+    const filteredData = directions.filter(item => item.id !== id);
+    // Rearrange id after deletion
+    const newData = filteredData.map((item, index) => ({
+      ...item,
+      id: index + 1,
+      name: item.name.startsWith("Waypoint") ? `Waypoint ${index}` : item.name
+    }));
+    setDirections(newData)
+    updateRouteDirections(newData)
+  }
+
   return (
     <View style={{backgroundColor: colors.white, paddingVertical: 5}}>
       <View style={addLocation.addLocationContainer}>
@@ -216,7 +178,7 @@ const AddLocationCard = props => {
                 `Dragged from ${dragIndex} to ${hoverIndex} - Moved: ${isMoved}`,
               );
               if (isMoved) return moveItem(dragIndex, hoverIndex);
-              if (inputRefs.current[hoverIndex])
+              if (!isMoved && inputRefs.current[hoverIndex])
                 inputRefs.current[hoverIndex].focus();
             }}>
             <Text style={addLocation.inputHeader}>
@@ -227,35 +189,23 @@ const AddLocationCard = props => {
               <TextInput
                 ref={el => (inputRefs.current[index] = el)}
                 style={addLocation.draggableInput}
-                // placeholder={getLocationIcon(index, directions.length).name}
                 value={direction.locationName}
                 onFocus={() => onFocus(index)}
                 onChangeText={value => _onChangeText(value, index)}
+                selection={{start:0}}
               />
-              <TouchableOpacity onPress={() => clearText(index)}>
+              {getLocationIcon(index, directions.length).name === 'Waypoint' && 
+                <TouchableOpacity onPress={() => removeWaypoints(direction.id)}>
                 <Ionicons name={'close'} size={20} />
               </TouchableOpacity>
+              }
             </View>
           </DragAndDropCard>
         ))}
-        {onSearchResults &&
-          Array.isArray(onSearchResults?.searchResults) &&
-          onSearchResults?.searchResults?.length !== 0 &&
-          searchUnit.length !== 0 && (
-            <View style={{height: 200, marginTop: 10}}>
-              <ScrollView>
-                {onSearchResults?.searchResults?.map((item, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    onPress={() => onLocationNamePress(item)}>
-                    <Text style={addLocation.searchResults}>
-                      {item.address || item.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
+        <TouchableOpacity style={{marginTop:10,
+        }} onPress={()=>addWaypoints()}>
+          <Text>Add Waypoints</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );

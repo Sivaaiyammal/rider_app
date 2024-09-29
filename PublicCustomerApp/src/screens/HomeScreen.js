@@ -11,6 +11,7 @@ import VehicleSearchLoader from './VehicleSearchLoader';
 
 import DriverAssignedScreen from './driverAssigned/DriverAssignedScreen';
 import RideSummary from './RideSummary';
+import SearchScreen from './SearchScreen';
 
 const HomeScreen = () => {
   const { stackScreen } = useStackScreenStore();
@@ -34,6 +35,8 @@ const HomeScreen = () => {
         return <MapScreen />;
       case 'SearchLocationScreen':
         return <SearchLocationScreen />;
+        case 'SearchScreen':
+          return <SearchScreen />;
       case 'VehicleList':
         return <VehicleListScreen />;
       case 'SelectedVehicle':

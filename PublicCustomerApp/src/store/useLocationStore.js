@@ -14,6 +14,9 @@ const useLocationStore = create(set => ({
 
   currentLocationName: '',
   setCurrentLocationName: locationName=>set({currentLocationName: locationName}),
+
+  selectedInput: null,
+  setSelectedInput: selectedInput=>set({selectedInput}),
   
 }));
 
