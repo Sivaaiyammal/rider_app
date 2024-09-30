@@ -29,9 +29,9 @@ const SearchScreen = () => {
     setDirectionPoints,
     directionPoints,
   } = useMapStore();
-  const {selectedInput, setDirections, directions} = useLocationStore();
+  const {selectedInput, setSelectedInput,setDirections, directions} = useLocationStore();
 
-  // Debounce the search input to limit API calls
+  // Debounce the search input to limit API calls 
   const debouncedSetSearchUnit = useMemo(
     () =>
       debounce(value => {
@@ -69,7 +69,7 @@ const SearchScreen = () => {
   // Set route direction when markers are removed
   const updateRouteDirections = useCallback(
     newData => {
-      const input = selectedInput + 1;
+      const input = selectedInput.id;
       const routeData = directions.map(item => {
         if (item.id === input) {
           return {
@@ -93,7 +93,7 @@ const SearchScreen = () => {
     (item, markerType) => {
       if (!directionPoints) {
         const marker = new Marker(
-          String(selectedInput),
+          String(selectedInput.id),
           item?.name || Math.random().toString(),
           item?.longitude,
           item?.latitude,
@@ -123,8 +123,9 @@ const SearchScreen = () => {
 
   const onLocationNamePress = useCallback(
     item => {
+      const input = selectedInput.id - 1;
       const newDirections = directions.map((dir, index) =>
-        index === selectedInput
+        index === input
           ? {
               ...dir,
               locationName: item.address || item.name,
@@ -132,14 +133,13 @@ const SearchScreen = () => {
             }
           : dir,
       );
-
       setDirections(newDirections);
       setOnSearchResults(null);
       setSearchUnit('');
 
-      if (selectedInput === 0) {
+      if (selectedInput.id === 1) {
         addMapMarkers(item, 'marker_start');
-      } else if (selectedInput === directions.length - 1) {
+      } else if (selectedInput.id === directions.length - 1) {
         addMapMarkers(item, 'marker_end');
       } else {
         addMapMarkers(item, 'marker_waypoint');
@@ -148,9 +148,14 @@ const SearchScreen = () => {
     [directions],
   );
 
+  const onGoBack = () =>{
+    goBack(),
+    setSelectedInput(null)
+  }
+
   return (
     <View style={styles.screen}>
-      <NavBar onBackPress={goBack} title={'Search Location'} />
+      <NavBar onBackPress={onGoBack} title={'Search Location'} />
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Search"
@@ -177,7 +182,7 @@ const SearchScreen = () => {
           ))}
         </ScrollView>
       )}
-      <TouchableOpacity style={styles.bottomBtn}>
+      <TouchableOpacity style={styles.bottomBtn} onPress={()=>goBack()}>
         <Entypo name="location" size={18} color={colors.black} />
         <Text style={styles.bottomBtnTxt}>Locate on Map</Text>
       </TouchableOpacity>

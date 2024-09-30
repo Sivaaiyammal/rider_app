@@ -23,7 +23,7 @@ import VehicleListScreen from '../VehicleListScreen';
 
 const SearchLocation = () => {
   const {goBack} = useStackScreenStore();
-  const {setDirections, directions} = useLocationStore();
+  const {setDirections, directions, setSelectedInput} = useLocationStore();
   const {
     setOnSearchResults,
     setMapMarkers,
@@ -67,6 +67,7 @@ const SearchLocation = () => {
     goBack();
     setDirectionPoints(null);
     setSearchUnit('');
+    setSelectedInput(null);
     await locationTask.getCurrentLocation();
   };
 

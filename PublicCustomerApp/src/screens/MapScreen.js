@@ -73,7 +73,7 @@ const MapScreen = () => {
       ]
       setDirections(initialDirections)
       const marker = new Marker(
-        String(0),
+        String(1),
         currentLocationName,
         location[0],
         location[1],
