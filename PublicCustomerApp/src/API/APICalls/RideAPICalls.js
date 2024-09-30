@@ -20,7 +20,7 @@ export const rideEstimation = onSuccessCallback => {
     onError: error => {
       showNotification(
         `Ride Estimation - (${error.status})`,
-        error?.message?.message,
+        error?.message?.message || error?.message,
         'danger',
       );
     },
@@ -43,14 +43,14 @@ export const createRideMutation = onSuccessCallback => {
     onError: error => {
       showNotification(
         `Booking Failed - (${error.status})`,
-        error?.message?.message,
+        error?.message?.message || error?.message,
         'danger',
       );
     },
   });
 };
 
-// Cancek Ride Mutation
+// Cancel Ride Mutation
 export const cancelRideMutation = onSuccessCallback => {
   return useMutation(['cancelRide'], cancelRide, {
     onSuccess: data => {
@@ -66,7 +66,7 @@ export const cancelRideMutation = onSuccessCallback => {
     onError: error => {
       showNotification(
         `Booking Cancel Failed - (${error.status})`,
-        error?.message?.message,
+        error?.message?.message || error?.message,
         'danger',
       );
     },

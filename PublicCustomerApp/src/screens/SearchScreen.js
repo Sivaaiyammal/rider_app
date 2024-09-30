@@ -58,6 +58,7 @@ const SearchScreen = () => {
           lon: direction.lng,
         }));
         setMapMarkers([]);
+
         setDirectionPoints({locations: routeData, type: 'car'});
       } else {
         setDirectionPoints(null);
@@ -77,18 +78,24 @@ const SearchScreen = () => {
             lon: newData.longitude,
             locationName: newData.address,
           };
+        } else if (item.location && item.location.length > 1) {
+          return {
+            lat: item.location[1] !== undefined ? item.location[1] : null,
+            lon: item.location[0] !== undefined ? item.location[0] : null,
+          };
+        } else {
+          return null;
         }
-        return {
-          lat: item.location[1],
-          lon: item.location[0],
-        };
-      });
-      setDirectionPoints({locations: routeData, type: 'car'});
+      }).filter(point => point !== null && point.lat !== null && point.lon !== null);
+      // console.log('hari-->>route-->>', routeData);
+      setDirectionPoints({ locations: routeData, type: 'car' });
       goBack();
     },
-    [selectedInput, directions],
+    [selectedInput, directions]
   );
+  
 
+  // add map markers if route not added
   const addMapMarkers = useCallback(
     (item, markerType) => {
       if (!directionPoints) {
@@ -121,6 +128,7 @@ const SearchScreen = () => {
     [directionPoints],
   );
 
+  // onpress on search results
   const onLocationNamePress = useCallback(
     item => {
       const input = selectedInput.id - 1;
@@ -150,7 +158,7 @@ const SearchScreen = () => {
 
   const onGoBack = () =>{
     goBack(),
-    setSelectedInput(null)
+    setSelectedInput(null) // to disable locate on map when goBack
   }
 
   return (

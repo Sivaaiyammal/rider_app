@@ -33,6 +33,7 @@ export const addLocation = StyleSheet.create({
     borderWidth: 0.4,
     borderRadius: 10,
     elevation: 5,
+    flexDirection:'row',
   },
   inputHeader: {
     width: '100%',
@@ -47,6 +48,7 @@ export const addLocation = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     alignSelf: 'center',
+    // backgroundColor:'yellow'
   },
   draggableInput: {
     width: '86%',
@@ -55,6 +57,7 @@ export const addLocation = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 14,
     borderBottomWidth: 0.4,
+    // backgroundColor:'red'
   },
   dragIcon: {
     position: 'absolute',
@@ -142,6 +145,10 @@ export const addLocation = StyleSheet.create({
     alignSelf: 'flex-end',
     padding: 10,
     alignItems: 'center',
+  },
+  waypointsbtn:{
+    alignSelf:'center', 
+    width:'10%', 
   }
 });
 

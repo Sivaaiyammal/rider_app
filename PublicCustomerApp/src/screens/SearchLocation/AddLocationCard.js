@@ -6,11 +6,11 @@ import {
   View,
 } from 'react-native';
 import PropTypes from 'prop-types';
-import {_} from 'lodash';
-
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import YourLoc from '../../assets/image/svgIcons/yourLoc.svg';
 import EndLoc from '../../assets/image/svgIcons/endLoc.svg';
+import Flag from '../../assets/image/svgIcons/flag.svg';
+import AddWaypoint from '../../assets/image/svgIcons/addWaypoint.svg';
 import {addLocation} from '../../styles/AddLocationStyles';
 import DragAndDropCard from '../../components/DragAndDropCard';
 import {colors} from '../../constants/constants';
@@ -25,7 +25,6 @@ const AddLocationCard = () => {
     useLocationStore();
   const {setStackScreen} = useStackScreenStore();
   const {
-    setSearchUnit,
     mapMarkers,
     setMapMarkers,
     setDirectionPoints,
@@ -41,48 +40,6 @@ const AddLocationCard = () => {
     setSelectedInput(obj);
   }, []);
 
-  const debouncedSetSearchUnit = useCallback(
-    _.debounce(
-      value => {
-        setSearchUnit(value);
-      },
-      2000,
-      {
-        leading: true,
-        trailing: true,
-      },
-    ),
-    [],
-  );
-
-  const _onChangeText = useCallback((value, index) => {
-    const newDirections = [...directions];
-    newDirections[index].locationName = value;
-    setDirections(newDirections);
-    setDirectionPoints(null);
-    debouncedSetSearchUnit(value);
-  }, []);
-
-  const updateDirections = useCallback(directions => {
-    const directionPoints = directions
-      .map(direction => {
-        if (direction.location.length > 0) {
-          return {
-            lat: direction.location[1],
-            lon: direction.location[0],
-          };
-        } else {
-          return null;
-        }
-      })
-      .filter(point => point !== null);
-    if (directionPoints.length > 0) {
-      setDirectionPoints({locations: directionPoints, type: 'car'});
-    } else {
-      console.log('No valid direction points found. Not updating state.');
-    }
-  }, []);
-
   const getLocationIcon = useCallback((id, totalLocations) => {
     if (id === 0) {
       return {
@@ -96,11 +53,32 @@ const AddLocationCard = () => {
       };
     } else {
       return {
-        icon: <YourLoc width={15} height={15} />,
+        icon: <Flag width={15} height={15} />,
         name: `Waypoint`,
       };
     }
   }, []);
+
+    // update newDirections on location reaarange
+    const updateDirections = useCallback(directions => {
+      const directionPoints = directions
+        .map(direction => {
+          if (direction.location.length > 0) {
+            return {
+              lat: direction.location[1],
+              lon: direction.location[0],
+            };
+          } else {
+            return null;
+          }
+        })
+        .filter(point => point !== null);
+      if (directionPoints.length > 0) {
+        setDirectionPoints({locations: directionPoints, type: 'car'});
+      } else {
+        console.log('No valid direction points found. Not updating state.');
+      }
+    }, []);
 
   const moveItem = (fromIndex, toIndex) => {
     if (fromIndex !== toIndex) {
@@ -124,6 +102,7 @@ const AddLocationCard = () => {
   };
 
   const addWaypoints = () => {
+    if (directions.length >=4) return
     const endIndex = directions.findIndex(item => item.name === 'End');
     // Create a new waypoint object with the current End ID
     const newWaypoint = {
@@ -153,28 +132,34 @@ const AddLocationCard = () => {
     _updateRemoveWaypoints(newData);
   };
 
-
+  //  remove wave points marker and update directions
   const _updateRemoveWaypoints = useCallback(
     newData => {
-      const routeData = newData.map(item => {
-        return {
-          lat: item.location[1],
-          lon: item.location[0],
-        };
-      });
-      setDirectionPoints({locations: routeData, type: 'car'});
+      const routeData = newData
+        .map(item => {
+          return {
+            lat: item.location[1],
+            lon: item.location[0],
+          };
+        })
+        .filter(point => point.lat !== undefined && point.lon !== undefined);  
+      if (routeData.length > 0) {
+        setDirectionPoints({ locations: routeData, type: 'car' });
+      } else {
+        console.log('No valid route data available to set direction points.');
+      }
     },
-    [directions],
+    [directions]
   );
-
+  
+// Set route direction when markers are cleared
   const updateRouteDirections = useCallback(
     (newData) => {
       const sortedDirections = [...newData].sort((a, b) => a.id - b.id);
-    
       const routeData = sortedDirections.map(newData => ({
         lat: newData.location[1],
         lon: newData.location[0],
-      }));
+      })).filter(point => point.lat !== undefined && point.lon !== undefined);  ;
       setDirectionPoints({ locations: routeData, type: 'car' });
     },
     [directions],
@@ -201,6 +186,7 @@ const AddLocationCard = () => {
       [setDirectionPoints, setMapMarkers]
     );
 
+    // add map markers on map click
   const addMapMarkers = useCallback(
     (item, markerType) => {
         const marker = new Marker(
@@ -227,6 +213,7 @@ const AddLocationCard = () => {
     [directionPoints],
   );
 
+  // update location name when markers updated in map
   const updateLocationNames = async (data, input) => {
     const {latitude, longitude} = data;
     const address = await fetchAddressName(latitude, longitude, true);
@@ -265,6 +252,7 @@ const AddLocationCard = () => {
     }
   };
 
+  // locate on map 
   const mapClickCallback = async (data) => {
     if (selectedInput === null) return false;
     if (selectedInput.name === 'Start') {
@@ -283,6 +271,7 @@ const AddLocationCard = () => {
   return (
     <View style={{backgroundColor: colors.white, paddingVertical: 5}}>
       <View style={addLocation.addLocationContainer}>
+        <View style={{width:'88%'}}>
         {directions.map((direction, index) => (
           <DragAndDropCard
             key={direction.id}
@@ -299,7 +288,7 @@ const AddLocationCard = () => {
                 inputRefs.current[hoverIndex].focus();
             }}>
             <Text style={addLocation.inputHeader}>
-              {getLocationIcon(index, directions.length).name}
+             {direction?.name?.includes('Waypoint') ? direction.name : getLocationIcon(index, directions.length).name}
             </Text>
             <View style={addLocation.draggableCard}>
               {getLocationIcon(index, directions.length).icon}
@@ -308,8 +297,8 @@ const AddLocationCard = () => {
                 style={addLocation.draggableInput}
                 value={direction.locationName}
                 onFocus={() => onFocus(index, direction)}
-                onChangeText={value => _onChangeText(value, index)}
                 selection={{start: 0}}
+                // editable={false}
               />
               {getLocationIcon(index, directions.length).name ===
                 'Waypoint' && (
@@ -320,10 +309,11 @@ const AddLocationCard = () => {
             </View>
           </DragAndDropCard>
         ))}
+        </View>
         <TouchableOpacity
-          style={{marginTop: 10}}
+          style={addLocation.waypointsbtn}
           onPress={() => addWaypoints()}>
-          <Text>Add Waypoints</Text>
+          <AddWaypoint />
         </TouchableOpacity>
       </View>
     </View>
