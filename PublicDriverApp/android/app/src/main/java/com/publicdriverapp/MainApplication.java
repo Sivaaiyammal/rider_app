@@ -3,7 +3,6 @@ package com.publicdriverapp;
 import android.app.Application;
 import android.content.Context;
 
-
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
@@ -13,6 +12,7 @@ import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.soloader.SoLoader;
 import com.publicdriverapp.newarchitecture.MainApplicationReactNativeHost;
 
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -21,6 +21,7 @@ import com.dot.nenativemap.security.NENative;
 import com.virtualmaze.services_core.utils.NEApiServices;
 
 import com.facebook.react.modules.i18nmanager.I18nUtil;
+import com.facebook.react.bridge.ReactContext;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -37,10 +38,13 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       @SuppressWarnings("UnnecessaryLocalVariable")
       List<ReactPackage> packages = new PackageList(this).getPackages();
-      // Packages that cannot be autolinked yet can be added manually here, for example:
-      packages.add(new NeNativePackage(mReactApplicationContext));
+      // Only add the package if mReactApplicationContext is not null
+      // if (mReactApplicationContext != null) {
+          packages.add(new NeNativePackage(mReactApplicationContext));
+      // }
       return packages;
     }
+
 
     @Override
     protected String getJSMainModuleName() {
@@ -58,6 +62,37 @@ public class MainApplication extends Application implements ReactApplication {
       return mReactNativeHost;
     }
   }
+
+  // @Override
+  // public void onCreate() {
+  //   super.onCreate();
+
+  //   // Initialize SoLoader
+  //   SoLoader.init(this, /* native exopackage */ false);
+
+  //   // Initialize other services that don't require ReactContext
+  //   NEApiServices.initialize(getApplicationContext());
+  //   NENative.getInstance(getApplicationContext(), NEApiServices.getAccessToken());
+
+  //   // Initialize Flipper for debugging
+  //   initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+
+  //   // Add a listener to ensure ReactContext is properly initialized
+  //   getReactNativeHost().getReactInstanceManager().addReactInstanceEventListener(new ReactInstanceManager.ReactInstanceEventListener() {
+  //       @Override
+  //       public void onReactContextInitialized(ReactContext context) {
+  //           // Use the properly initialized ReactContext here
+  //           mReactApplicationContext = (ReactApplicationContext) context;
+
+  //           // Initialize any components that require the ReactApplicationContext
+  //           I18nUtil sharedI18nUtilInstance = I18nUtil.getInstance();
+  //           sharedI18nUtilInstance.allowRTL(mReactApplicationContext, true);
+  //       }
+  //   });
+
+  //   // Trigger the initialization of the React context
+  //   getReactNativeHost().getReactInstanceManager().createReactContextInBackground();
+  // }
 
   @Override
   public void onCreate() {
