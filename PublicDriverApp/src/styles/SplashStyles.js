@@ -5,21 +5,23 @@ import {height, width} from '../utils/Utils';
 export const SplashStyles = StyleSheet.create({
   screen: {
     flex: 1,
-    alignItems: 'center',
     backgroundColor: colors.white,
   },
   logoContainer: {
-    width: '100%',
-    alignItems: 'center',
+    width: '90%',
     justifyContent: 'center',
     flex: 0.35,
+    alignSelf: 'center',
+  },
+  logo: {
+    width: '25%',
+    height: 80,
   },
   splashTitle: {
     fontFamily: Fonts.bold,
     color: colors.black,
     fontSize: 24,
     marginTop: 15,
-    textAlign: 'center',
   },
   versionTxt: {
     fontFamily: Fonts.regular,
@@ -30,7 +32,6 @@ export const SplashStyles = StyleSheet.create({
   splashBg: {
     position: 'absolute',
     bottom: 0,
-    overflow: 'hidden',
     width: '100%',
     alignItems: 'center',
   },
@@ -39,57 +40,60 @@ export const SplashStyles = StyleSheet.create({
 export const LanguageStyles = StyleSheet.create({
   screen: {
     flex: 1,
-    alignItems: 'center',
     backgroundColor: colors.white,
-  },
-  title: {
-    fontFamily: Fonts.semi_bold,
-    fontSize: 32,
-    color: colors.black,
-    marginTop: 30,
-    textAlign: 'center',
   },
   langContainer: {
     width: '90%',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    marginTop: 30,
+    alignSelf: 'center',
+    marginTop: 10,
   },
   langBtn: {
-    backgroundColor: colors.white,
-    borderRadius: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    paddingVertical: 30,
-    width: '25%',
+    marginVertical: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
+    borderWidth: 0.3,
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    borderRadius: 10,
   },
   langTxt: {
-    fontFamily: Fonts.semi_bold,
-    color: colors.black,
+    fontFamily: Fonts.regular,
     fontSize: 16,
+    color: colors.black,
   },
   nextBtn: {
+    backgroundColor: colors.black,
     position: 'absolute',
-    bottom: 20,
-    backgroundColor: colors.blue_xxdark,
-    width: '80%',
+    bottom: height * 0.05,
+    right: width * 0.05,
     paddingVertical: 10,
-    borderRadius: 30,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
   },
   nextBtnTxt: {
-    fontFamily: Fonts.medium,
     color: colors.white,
-    fontSize: 14,
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+  },
+  welcomeCards: {
+    marginVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: colors.white_dirt,
+  },
+  welcomeDesc: {
+    fontFamily: Fonts.light,
+    fontSize: 16,
+    width: '80%',
+    color: colors.black,
   },
 });
 
@@ -97,6 +101,11 @@ export const onBoardingStyles = StyleSheet.create({
   onboardContainer: {
     flex: 1,
     backgroundColor: colors.white,
+  },
+  backBtn:{
+    left:15,
+    top:15,
+    zIndex:1
   },
   slide: {
     width: width,
@@ -108,14 +117,20 @@ export const onBoardingStyles = StyleSheet.create({
     color: colors.black,
     textAlign: 'center',
     width: '80%',
-    marginTop:20
+    marginTop: 20,
+  },
+  yellowSeperator:{
+    width:'30%',
+    height:5,
+    backgroundColor:colors.yellow,
+    top:10
   },
   slideSubtitle: {
     fontFamily: Fonts.regular,
     color: colors.black,
     width: '90%',
     textAlign: 'center',
-    marginTop:20
+    marginTop: 20,
   },
   pagination: {
     width: '50%',
@@ -123,50 +138,63 @@ export const onBoardingStyles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 20,
     backgroundColor: colors.white,
-    top: 5,
+    alignSelf: 'center',
+    gap:10
+  },
+  carousel: {flex: 1, backgroundColor: colors.white},
+  bottomBtns: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '90%',
     alignSelf: 'center',
   },
-
-  carousel: {flex: 1, backgroundColor: colors.white},
   nextBtn: {
-    alignSelf: 'center',
-    padding: 10,
-    width: width * 0.8,
+    backgroundColor: colors.black,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 10,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
+    gap: 10,
   },
   nextText: {
-    fontFamily: Fonts.medium,
-    fontSize: 15,
     color: colors.white,
-    textAlign: 'center',
-    backgroundColor:colors.blue_xxdark,
-    width:'100%',
-    paddingVertical:10,
-    borderRadius:50
-  },
-  skipBtn: {
-    width: width * 0.94,
-    alignSelf: 'center',
-    padding:15,
-    alignItems: 'flex-end',
-  },
-  skipBtnText: {
     fontFamily: Fonts.regular,
-    color: colors.warm_grey,
-  },
-  paginationSliderInactive: {
-    width: '100%',
-    height: 5,
-    backgroundColor: colors.white_Two,
-    justifyContent: 'center',
-    borderRadius: 10,
-  },
-  paginationSliderActive: {
-    height: 5,
-    backgroundColor: colors.bright_orange,
-    borderRadius: 10,
+    fontSize: 16,
   },
 });
+
+export const thingstoKnowStyles = StyleSheet.create({
+   header :{
+      width:'100%',
+      alignItems:'center',
+      flexDirection:'row',
+      justifyContent:'center',
+      gap:5,
+   },
+   headerTxt:{
+    fontFamily:Fonts.semi_bold,
+    fontSize:24,
+    color:colors.black,
+    marginTop:10
+   },
+   termsContainer:{
+    width:'90%',
+    alignSelf:'center',
+    flexDirection:'row',
+    alignItems:'center',
+    gap:10
+   },
+   termsText:{
+    fontFamily:Fonts.light,
+    color:colors.black,
+    fontSize:12,
+    width:'92%'
+   },
+   linkText:{
+    fontFamily:Fonts.regular,
+    color:colors.black,
+    fontSize:12,
+    textDecorationLine:'underline',
+   }
+})

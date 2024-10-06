@@ -4,12 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const ALLOWED_KEYS = [
   'language',
   'onBoarding',
-  'access_token',
-  'refresh_token',
-  'userdetails',
-  'Theme',
-  'IS_FIRST',
-  'IsDefault',
+  'termsAccepted',
+  'userInfo'
 ]
 
 // const KEYS_TO_CLEAR_ON_SESSION_END = [

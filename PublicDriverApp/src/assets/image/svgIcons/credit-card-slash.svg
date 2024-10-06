@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <g id="credit-card-slash" transform="translate(-2.231 -2.25)">
+    <path id="Path_932" data-name="Path 932" d="M21.034,10,6.426,24.608C4.148,24.165,3,22.575,3,19.837V10Z" transform="translate(0.492 4.956)" fill="#ffd100"/>
+    <path id="Path_933" data-name="Path 933" d="M28.4,10v9.837a4.918,4.918,0,0,1-4.918,4.918H9.909a.492.492,0,0,1-.344-.836L23.484,10Z" transform="translate(4.6 4.956)" fill="#ffd100"/>
+    <path id="Path_934" data-name="Path 934" d="M22.918,8.394v3.279H18l4.181-4.181a.434.434,0,0,1,.721.3c.016.2.016.393.016.607Z" transform="translate(10.084 3.283)" fill="#212529"/>
+    <path id="Path_935" data-name="Path 935" d="M33.871,2.611a1.228,1.228,0,0,0-1.738,0l-4.15,4.148H8.41a4.348,4.348,0,0,0-4.918,4.918v3.279H19.786l-6.968,6.968H10.049a1.23,1.23,0,1,0,0,2.459h.31L2.623,32.121a1.23,1.23,0,1,0,1.738,1.738l29.51-29.51a1.228,1.228,0,0,0,0-1.738Z" transform="translate(0 0)" fill="#212529"/>
+  </g>
+</svg>

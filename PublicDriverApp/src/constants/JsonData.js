@@ -2,10 +2,25 @@ import React from 'react';
 import OnBoardA from '../assets/image/onboarding/onboardA.svg';
 import OnBoardB from '../assets/image/onboarding/onboardB.svg';
 import OnBoardC from '../assets/image/onboarding/onboardC.svg';
+import OnBoardD from '../assets/image/onboarding/onboardD.svg';
 
-import OnWayTrip from '../assets/image/svgIcons/onWayTrip.svg';
-import RoundTrip from '../assets/image/svgIcons/roundTrip.svg';
-import StopsTrip from '../assets/image/svgIcons/stopsTrip.svg';
+import ThingsA from '../assets/image/svgIcons/thingsA.svg';
+import ThingsB from '../assets/image/svgIcons/thingsB.svg';
+import ThingsC from '../assets/image/svgIcons/thingsC.svg';
+import ThingsD from '../assets/image/svgIcons/thingsD.svg';
+
+import FindCand from '../assets/image/svgIcons/Find_candidate.svg';
+import Integrity from '../assets/image/svgIcons/integrity.svg';
+import CreditCard from '../assets/image/svgIcons/credit-card-slash.svg';
+
+import Male from '../assets/image/svgIcons/male.svg';
+import Female from '../assets/image/svgIcons/female.svg';
+
+import Auto from '../assets/image/vehicles/auto.svg';
+import HatchBack from '../assets/image/vehicles/hatchback.svg';
+import Sedan from '../assets/image/vehicles/sedan.svg';
+import SUV from '../assets/image/vehicles/suv.svg';
+import Bike from '../assets/image/vehicles/motorbike.svg';
 
 export const languages = [
   {
@@ -25,103 +40,147 @@ export const languages = [
   },
 ];
 
+export const welcomeData = [
+  {
+   id:1,
+   desc: 'Namma Ooru Taxi ® helps customers to find your taxi on map',
+   image : <FindCand />
+  },
+  {
+    id:2,
+    desc: 'Provide correct details and necessary documents. Your registration will be approved approximately in 2 - 4 days. Once it got approved, you may get calls from our customers',
+    image : <Integrity />
+  },
+  {
+    id:3,
+    desc:"We do not charge you any commission fees. You can directly discuss about the trip fare with our customers and get paid",
+    image : <CreditCard />
+  }
+]
+
 export const onBoardingSlides = [
   {
     id: 1,
-    title: 'Quick and Easy Bookings',
+    title: 'Get Call from the Customers',
     image: <OnBoardA />,
-    description:
-      "Choose your destination, pick your ride, and you're on your way in just a few taps.",
+    description:"Speak Politely to your customers. Ask the place where they want to go and the reasonable price for the trip",
+    note: "You can ask the customer if the person is calling through our app Namma Ooru Taxi ®",
   },
   {
     id: 2,
-    title: 'Set Your Destination',
+    title: 'Get Pickup Location and Start',
     image: <OnBoardB />,
-    description:
-      'Whether it`s a ride home, the office, or an adventure, "Namma Ooru Taxi ®" is ready to take you there.',
+    description: "Negotiate your rate and ask them to share the pickup location with Namma Ooru Taxi ® app. Receive the pick-up location via notification and accept it to start the trip",
+    note: "Make Sure you have contacted the customer to confirm and start trip"
   },
   {
     id: 3,
-    title: 'Track Your Ride',
+    title: 'Pickup the Customer',
     image: <OnBoardC />,
-    description:
-      "Watch your driver's arrival in real-time and stay updated with their location. No more guessing when your ride will arrive.",
+    description: "Pickup the customer on time. Set the destination location in the app and start app navigation"
+  },
+  {
+    id: 4,
+    title: 'Reviews are important',
+    image: <OnBoardD />,
+    description: "Try to get good reviews from customer who can increase visibility and commitment. The customer will evaluate your behavior, tariff and cleanliness of the vehicle",
   },
 ];
 
- export const tripType = [
+export const ThingsToKnowData = [
   {
-    id: 1,
-    name: 'One Way Trip',
-    icon: <OnWayTrip />,
-    value:'one_way'
+    id:1,
+    desc : 'Identify our customers as they call and speak politely with them',
+    image: <ThingsA />,
   },
   {
-    id: 2,
-    name: 'Round Trip',
-    icon: <RoundTrip />,
-    value:'round_trip',
+    id:2,
+    desc : 'Call customer before starting or cancelling the trip',
+    image: <ThingsB />,
   },
   {
-    id: 3,
-    name: 'Add Five Stops',
-    icon: <StopsTrip />,
-    value:'round_trip',
+    id:3,
+    desc : 'Ask the reasonable price for the trip and become a preferred driver for your customers, Preferred driver have more priority that others',
+    image: <ThingsC />,
   },
-];
+  {
+    id:4,
+    desc : 'Ratings are the key to more commitment. Make sure you get a good rating.',
+    image: <ThingsD />,
+  },
+]
 
-export const rideType = [
+export const genderData = [
   {
-    id: 1,
-    name: 'Pickup Now',
-    value:'instant'
-  },
-  {
-    id: 2,
-    name: 'Schedule',
-    value:'schedule'
+    id:1,
+    name:'Male',
+    icon:< Male />
+  },{
+    id:2,
+    name:'Female',
+    icon:< Female />
   }
-];
+]
 
-export const getVehicleDetailsById = (id) => {
-  switch (id) {
-    case 'bike':
-      return {
-        name: 'Motor Bike',
-        image: require('../assets/image/vehicle/bike.png'),
-        capacity: 1
-      };
-    case 'auto':
-      return {
-        name: 'Auto Rickshaw',
-        image: require('../assets/image/vehicle/auto.png'),
-        capacity: 3
-      };
-    case 'hatchback':
-      return {
-        name: 'Hatchback',
-        image: require('../assets/image/vehicle/hatchback.png'),
-        capacity: 3
-      };
-    case 'sedan':
-      return {
-        name: 'Sedan',
-        image: require('../assets/image/vehicle/sedan.png'),
-        capacity: 4
-      };
-    case 'suv':
-      return {
-        name: 'SUV',
-        image: require('../assets/image/vehicle/suv.png'),
-        capacity: 4
-      };
-    case 'luxsedan':
-      return {
-        name: 'Luxury Sedan',
-        image: require('../assets/image/vehicle/luxsedan.png'),
-        capacity: 5
-      };
-    default:
-      return null; // or handle as needed, e.g., return a default vehicle
+export const vehicleList = [
+  {
+    id:1,
+    name:'Auto Rickshaw',
+    image: <Auto />
+  },
+  {
+    id:2,
+    name:'HatchBack',
+    image: <HatchBack />
+  },
+  {
+    id:3,
+    name:'Sedan',
+    image: <Sedan />
+  },
+  {
+    id:4,
+    name:'SUV',
+    image: <SUV />
+  },
+  {
+    id:5,
+    name:'Motor Bike',
+    image: <Bike />
   }
-};
+]
+
+export const documentsList = [
+  {
+    id:1,
+    name :'Vehicle Registration Number'
+  },
+  {
+    id:2,
+    name :'Driving License'
+  },
+  {
+    id:3,
+    name :'Vehicle RC Book'
+  },
+  {
+    id:4,
+    name :'Insurance'
+  },
+  {
+    id:5,
+    name :'Aadhar Card'
+  },
+  {
+    id:6,
+    name :'PAN Card'
+  },
+  {
+    id:7,
+    name :'Driver Photo'
+  },
+  {
+    id:8,
+    name :'Vehicle Photo'
+  }
+]

@@ -5,7 +5,7 @@ import {
   requestOTP,
   verifyOTP,
 } from '../EndPoints/EndPoints';
-import {showNotification} from '../../components/NotificationManger';
+import {showNotification} from '../../components/NotificationManager';
 
 const queryClient = new QueryClient();
 
