@@ -20,10 +20,11 @@ export const colors = {
   white_dirt: '#F5F5F5',
   green: '#1C9A18',
   yellow_xxlight: '#FFFFE6',
-  violet: '#4B48AB',
   orange: '#FFA200',
   yellow_light: '#FFEDA7',
   call_green: '#329782',
-  message_blue: '#4289E5',
-  cance_red: '#FF6060'
+  violet: '#5A6AFF',
+  blue_xxlight:'#E9EBFF',
+  cance_red: '#FF6060',
+  orange_xxlight:'#FFE8E8'
 };

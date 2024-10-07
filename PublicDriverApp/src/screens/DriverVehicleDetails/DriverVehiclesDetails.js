@@ -1,9 +1,10 @@
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import { Text, TouchableOpacity, View} from 'react-native';
 import React, {useState} from 'react';
 import NavBarA from '../../components/TopNavBar/NavBarA';
-import {colors, Fonts} from '../../constants/constants';
+import {colors} from '../../constants/constants';
 import VehicleEntry from './VehicleEntry';
 import DriverEntry from './DriverEntry';
+import { driverDetailStyles } from '../../styles/DriverDetailsUpload';
 
 const DriverVehiclesDetails = () => {
   const driverDetailsTab = [
@@ -33,18 +34,18 @@ const DriverVehiclesDetails = () => {
   return (
     <View style={{backgroundColor:colors.white, flex:1}}>
       <NavBarA title={'Enter'} subtitle={'Driver & Vehicle Details'} />
-      <View style={styles.tabContainer}>
+      <View style={driverDetailStyles.tabContainer}>
         {driverDetailsTab.map(item => {
           return (
             <TouchableOpacity
-              style={styles.tabBtns}
+              style={driverDetailStyles.tabBtns}
               key={item.id}
               onPress={() => setSelected(item)}>
               <Text
                 style={
                   selected.id === item.id
-                    ? styles.selectedtitleText
-                    : styles.titleText
+                    ? driverDetailStyles.selectedtitleText
+                    : driverDetailStyles.titleText
                 }>
                 {item.title}
               </Text>
@@ -52,7 +53,7 @@ const DriverVehiclesDetails = () => {
           );
         })}
       </View>
-      <View style={styles.subConatiner}>
+      <View style={driverDetailStyles.subConatiner}>
       {_renderComponent()}
       </View>
     
@@ -61,33 +62,3 @@ const DriverVehiclesDetails = () => {
 };
 
 export default DriverVehiclesDetails;
-
-const styles = StyleSheet.create({
-  tabContainer: {
-    width: '90%',
-    alignSelf: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    marginTop: 20,
-  },
-  titleText: {
-    fontFamily: Fonts.regular,
-    fontSize: 16,
-    color: colors.grey_dark,
-  },
-  selectedtitleText: {
-    color: colors.yellow,
-    fontFamily: Fonts.medium,
-    fontSize: 16,
-    textDecorationLine: 'underline',
-  },
-  tabBtns: {
-    width: '50%',
-    alignItems: 'center',
-  },
-  subConatiner:{
-    width:'90%',
-    alignSelf:'center',
-    marginTop:10
-  }
-});

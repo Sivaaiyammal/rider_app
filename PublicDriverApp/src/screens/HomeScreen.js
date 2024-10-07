@@ -4,7 +4,8 @@ import DriverVehiclesDetails from './DriverVehicleDetails/DriverVehiclesDetails'
 
 const HomeScreen = () => {
   return (
-     <DriverVehiclesDetails />
+    //  <DriverVehiclesDetails />
+    <Text>HomeScreen</Text>
   )
 }
 
