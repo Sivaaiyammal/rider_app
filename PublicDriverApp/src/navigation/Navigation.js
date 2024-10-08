@@ -26,7 +26,7 @@ const Navigation = () => {
        <Stack.Screen name="ThingsToKnow" component={ThingsToKnow}/>
        <Stack.Screen name="LoginScreen" component={LoginScreen}/>
        <Stack.Screen name="OTPScreen" component={OTPscreen}/>
-       <Stack.Screen name="HomeScreen" component={DriverVehiclesDetails}/>
+       <Stack.Screen name="HomeScreen" component={HomeScreen}/>
        <Stack.Screen name="DriverVehiclesDetails" component={DriverVehiclesDetails}/>
        <Stack.Screen name="DocumentsListScreen" component={DocumentsListScreen}/>
        <Stack.Screen name="DocUploadScreen" component={DocUploadScreen}/>

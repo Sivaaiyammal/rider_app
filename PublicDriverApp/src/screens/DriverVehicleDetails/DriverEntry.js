@@ -1,4 +1,11 @@
-import { Text, TouchableOpacity, View} from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React, {useState} from 'react';
 import InputField from '../../components/InputField';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -10,25 +17,50 @@ import License from '../../assets/image/inputs/license.svg';
 import {genderData} from '../../constants/JsonData';
 import {colors, Fonts} from '../../constants/constants';
 import {useNavigation} from '@react-navigation/native';
-import { driverDetailStyles } from '../../styles/DriverDetailsUpload';
+import {driverDetailStyles} from '../../styles/DriverDetailsUpload';
 
 const DriverEntry = () => {
   const navigation = useNavigation();
-  const [value, setValue] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [aadharID, setAadharId] = useState('');
+  const [panNum, setPanNum] = useState('');
+  const [licenseNum, setLicenseNum] = useState('');
+  const [nameErr, setNameErr] = useState('');
+  const [phoneErr, setPhoneErr] = useState('');
+  const [aadharIDErr, setAadharIdErr] = useState('');
+  const [licenseNumErr, setLicenseNumErr] = useState('');
   const [selected, setSelected] = useState(genderData[0]);
 
   const onNextPress = () => {
-    navigation.navigate('DocumentsListScreen');
+    if (name.length === 0) {
+      setNameErr('Please Enter Name')
+    } else if (phone.length === 0) {
+       setPhoneErr('Please Enter Phone')
+    } else if (aadharID.length === 0) {
+      setAadharIdErr('please Enter Aadhar ID Number')
+    } else if (licenseNum.length === 0) {
+      setLicenseNumErr('Please Enter License Number')
+    } else {
+      const payload = {
+        name : name,
+        phoneNumber: phone,
+        aadharId: aadharID,
+        panNum: panNum,
+        licenseNum: licenseNum,
+      }
+      console.log('hari-->>playload-->>', payload)
+    }
   };
 
   return (
-    <View>
+    <>
       <InputField
         style={driverDetailStyles.textField}
-        value={value}
+        value={name}
         label="Full Name"
-        // errorText={error}
-        onChangeText={text => setValue(text)}
+        errorText={name.length === 0 ?  nameErr : null}
+        onChangeText={text => setName(text)}
         icon={<UserName />}
       />
       <View style={driverDetailStyles.GenderContainer}>
@@ -52,41 +84,44 @@ const DriverEntry = () => {
       </View>
       <InputField
         style={driverDetailStyles.textField}
-        value={value}
+        value={phone}
         label="Phone Number"
-        // errorText={error}
-        onChangeText={text => setValue(text)}
+        errorText={phone.length === 0 ? phoneErr : null}
+        onChangeText={text => setPhone(text)}
         icon={<Phone />}
+        keyboardType="number-pad"
       />
       <InputField
         style={driverDetailStyles.textField}
-        value={value}
+        value={aadharID}
         label="Aadhar ID Number"
-        // errorText={error}
-        onChangeText={text => setValue(text)}
+        errorText={aadharID.length ===0 ?  aadharIDErr : null }
+        onChangeText={text => setAadharId(text)}
         icon={<Pan />}
+        keyboardType="number-pad"
       />
       <InputField
         style={driverDetailStyles.textField}
-        value={value}
+        value={panNum}
         label="PAN Number (Optional)"
-        // errorText={error}
-        onChangeText={text => setValue(text)}
+        onChangeText={text => setPanNum(text)}
         icon={<Pan />}
       />
       <InputField
         style={driverDetailStyles.textField}
-        value={value}
+        value={licenseNum}
         label="License Number"
-        // errorText={error}
-        onChangeText={text => setValue(text)}
+        errorText={licenseNum.length === 0 ? licenseNumErr : null}
+        onChangeText={text => setLicenseNum(text)}
         icon={<License />}
       />
-      <TouchableOpacity style={driverDetailStyles.nextBtn} onPress={() => onNextPress()}>
+      <TouchableOpacity
+        style={driverDetailStyles.nextBtn}
+        onPress={() => onNextPress()}>
         <Text style={driverDetailStyles.nextTxt}>Next</Text>
         <AntDesign name="arrowright" color={colors.white} size={16} />
       </TouchableOpacity>
-    </View>
+    </>
   );
 };
 

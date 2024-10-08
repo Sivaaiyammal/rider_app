@@ -22,6 +22,10 @@ import Sedan from '../assets/image/vehicles/sedan.svg';
 import SUV from '../assets/image/vehicles/suv.svg';
 import Bike from '../assets/image/vehicles/motorbike.svg';
 
+import Tea from '../assets/image/tabIcons/tea.svg';
+import Snack from '../assets/image/tabIcons/snack.svg';
+import Lunch from '../assets/image/tabIcons/lunch.svg';
+
 export const languages = [
   {
     id: 1,
@@ -183,4 +187,29 @@ export const documentsList = [
     id:8,
     name :'Vehicle Photo'
   }
+]
+
+export const breakData= [ 
+  {
+    id:1,
+    name:'teaBreak',
+    duration: '15 min',
+    value: 15 * 60,
+    icon: <Tea />
+  },
+  {
+    id:2,
+    name:'snack',
+    duration: '30 min',
+    icon: <Snack />,
+    value: 30 * 60,
+  },
+  {
+    id:3,
+    name:'lunch',
+    duration: '1 hr',
+    icon: <Lunch />,
+    value: 60 * 60,
+  },
+
 ]

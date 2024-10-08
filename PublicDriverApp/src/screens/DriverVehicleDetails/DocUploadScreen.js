@@ -126,7 +126,6 @@ const DocUploadScreen = ({route}) => {
          </View>
          </>
       )}
-   
     </View>
   );
 };

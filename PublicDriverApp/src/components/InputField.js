@@ -19,6 +19,7 @@ const InputField = props => {
     onBlur,
     onFocus,
     icon,
+    keyboardType = 'default',
     ...restOfProps
   } = props;
   const [isFocused, setIsFocused] = useState(false);
@@ -40,6 +41,8 @@ const InputField = props => {
   let backgroundColor =isFocused ? colors.white : colors.white_dirt;
 
   return (
+    <>
+   
     <View style={[styles.inputConatiner,{borderColor,backgroundColor}]}>
       <TextInput
         style={[styles.input]}
@@ -54,6 +57,7 @@ const InputField = props => {
           setIsFocused(true);
           onFocus?.(event);
         }}
+        keyboardType={keyboardType}
       />
       {icon}
       <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
@@ -94,8 +98,9 @@ const InputField = props => {
           </Text>
         </Animated.View>
       </TouchableWithoutFeedback>
-      {!!errorText && <Text style={styles.error}>{errorText}</Text>}
     </View>
+    {!!errorText && <Text style={styles.error}>{errorText}</Text>}
+    </>
   );
 };
 
@@ -124,10 +129,10 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.light,
   },
   error: {
-    marginTop: 4,
-    marginLeft: 12,
     fontSize: 12,
     color: colors.danger_red,
+    fontFamily:Fonts.light,
+    bottom:8
   },
 });
 

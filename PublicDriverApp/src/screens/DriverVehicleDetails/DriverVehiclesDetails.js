@@ -1,10 +1,17 @@
-import { Text, TouchableOpacity, View} from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React, {useState} from 'react';
 import NavBarA from '../../components/TopNavBar/NavBarA';
 import {colors} from '../../constants/constants';
 import VehicleEntry from './VehicleEntry';
 import DriverEntry from './DriverEntry';
-import { driverDetailStyles } from '../../styles/DriverDetailsUpload';
+import {driverDetailStyles} from '../../styles/DriverDetailsUpload';
 
 const DriverVehiclesDetails = () => {
   const driverDetailsTab = [
@@ -32,7 +39,7 @@ const DriverVehiclesDetails = () => {
   };
 
   return (
-    <View style={{backgroundColor:colors.white, flex:1}}>
+    <View style={{backgroundColor: colors.white, flex: 1}}>
       <NavBarA title={'Enter'} subtitle={'Driver & Vehicle Details'} />
       <View style={driverDetailStyles.tabContainer}>
         {driverDetailsTab.map(item => {
@@ -53,10 +60,18 @@ const DriverVehiclesDetails = () => {
           );
         })}
       </View>
-      <View style={driverDetailStyles.subConatiner}>
-      {_renderComponent()}
-      </View>
-    
+      <KeyboardAvoidingView
+        style={{flex: 1}}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 120 : 40}>
+        <ScrollView
+          contentContainerStyle={{flexGrow: 1}}
+          keyboardShouldPersistTaps="handled">
+          <View style={driverDetailStyles.subConatiner}>
+            {_renderComponent()}
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 };

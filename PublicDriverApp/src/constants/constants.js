@@ -19,6 +19,8 @@ export const colors = {
   grey_xdark: '#D6D6D6',
   white_dirt: '#F5F5F5',
   green: '#1C9A18',
+  green_online:'#299865',
+  green_xxlight:'#2998650D',
   yellow_xxlight: '#FFFFE6',
   orange: '#FFA200',
   yellow_light: '#FFEDA7',

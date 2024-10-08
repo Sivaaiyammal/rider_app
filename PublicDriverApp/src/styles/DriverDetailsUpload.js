@@ -58,6 +58,7 @@ export const driverDetailStyles = StyleSheet.create({
         paddingHorizontal: 20,
         gap: 8,
         flexDirection: 'row',
+        borderRadius:5
       },
       nextTxt: {
         color: colors.white,
