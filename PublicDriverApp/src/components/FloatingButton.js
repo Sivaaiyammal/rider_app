@@ -179,7 +179,7 @@ const FloatingButton = () => {
             }]}
             >
               {item.icon}
-              <Text>{item.duration}</Text>
+              <Text style={styles.duration}>{item.duration}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -316,7 +316,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 100,
     alignSelf: 'center',
-    zIndex: 2,
     alignItems: 'center',
   },
   popUpIcon: {
@@ -333,7 +332,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 100,
     alignSelf: 'center',
-    zIndex: 2,
     alignItems: 'center',
   },
   popUpTextConatiner: {
@@ -372,6 +370,10 @@ const styles = StyleSheet.create({
   },
   timer:{
     fontFamily:Fonts.semi_bold
+  },
+  duration:{
+    fontFamily:Fonts.light,
+    color:colors.black
   }
 });
 

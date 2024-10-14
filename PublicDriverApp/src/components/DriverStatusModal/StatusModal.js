@@ -4,7 +4,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
 } from 'react-native';
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -36,19 +35,20 @@ const StatusModal = ({
           {successMessage && <Text style={styles.title}>{successMessage}</Text>}
           {children && <View>{children}</View>}
           <View style={{flexDirection: 'row', gap: 10}}>
-            <TouchableOpacity onPress={onClose} style={styles.offlineCloseBtn}>
+            {
+              leftBtnTxt && 
+              <TouchableOpacity onPress={onClose} style={styles.offlineCloseBtn}>
               <Text style={styles.offlineCloseBtnText}>{leftBtnTxt}</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-                onPress={onRightPress}
-                style={styles.offlineActionBtn}>
-             <Text style={styles.offlineActionBtnText}>{rightBtnText}</Text>
-          </TouchableOpacity>
-            {/* <TouchableOpacity
-              onPress={onRightPress}
-              style={styles.onlineActionBtn}>
-              <Text style={styles.onlineActionText}>{rightBtnText}</Text>
-            </TouchableOpacity> */}
+            }
+            {rightBtnText &&
+             <TouchableOpacity
+             onPress={onRightPress}
+             style={styles.offlineActionBtn}>
+          <Text style={styles.offlineActionBtnText}>{rightBtnText}</Text>
+       </TouchableOpacity> 
+            }
+           
           </View>
         </View>
       </View>

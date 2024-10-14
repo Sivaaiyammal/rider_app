@@ -3,6 +3,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import SideDrawer from '../../components/Drawer/SideDrawer';
 import { colors, Fonts } from '../../constants/constants';
 import DriveScreenHeader from '../../components/DriveScreenHeader';
+import HomeHeader from '../../components/HomeHeader';
 
 const DriveScreen = () => {
   const [showMenu, setShowMenu] = useState(false);
@@ -65,7 +66,8 @@ const DriveScreen = () => {
           },
         ]}>
         <Animated.View>
-       <DriveScreenHeader toggleMenu={toggleMenu} showMenu={showMenu}/>
+       {/* <DriveScreenHeader toggleMenu={toggleMenu} showMenu={showMenu}/> */}
+       <HomeHeader />
         </Animated.View>
 
       </Animated.View>

@@ -28,5 +28,7 @@ export const colors = {
   violet: '#5A6AFF',
   blue_xxlight:'#E9EBFF',
   cance_red: '#FF6060',
-  orange_xxlight:'#FFE8E8'
+  orange_xxlight:'#FFE8E8',
+  skyBlue:'#42A5F5',
+  white_light:'#FCFCFC'
 };
