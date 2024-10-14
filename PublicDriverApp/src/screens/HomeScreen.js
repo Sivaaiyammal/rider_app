@@ -11,24 +11,13 @@ import Drive from '../assets/image/tabIcons/drive.svg';
 import Service from '../assets/image/tabIcons/service.svg';
 import Trips from '../assets/image/tabIcons/trips.svg';
 import Earnings from '../assets/image/tabIcons/earnings.svg';
-
-// import { checkFineLocationPermissions, RequestFineLocationPermission } from '../controllers/PermissionHandler';
+import AreaPreference from './ServiceScreens/AreaPreference';
+import DutyPreference from './ServiceScreens/DutyPreference';
+import UpComingTrips from './TripsScreens/UpComingTrips';
+import TripHistoryScreen from './TripsScreens/TripHistoryScreen';
 
 const HomeScreen = () => {
   const {stackScreen} = useStackScreenStore();
-
-  // const checkLocationPermission = async () => {
-  //   const locationPermissionCheck = await checkFineLocationPermissions()
-  //   if (locationPermissionCheck) {
-  //     await locationTask.getCurrentLocation()
-  //   } else {
-  //     await RequestFineLocationPermission()
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   checkLocationPermission();
-  // }, [])
 
   const renderContent = () => {
     switch (stackScreen[stackScreen.length - 1]) {
@@ -69,6 +58,14 @@ const HomeScreen = () => {
             ]}
           />
         );
+      case 'AreaPreference':
+        return <AreaPreference />;
+      case 'DutyPreference':
+        return <DutyPreference />;
+      case 'UpComingTrips':
+        return <UpComingTrips />;
+      case 'TripHistoryScreen':
+        return <TripHistoryScreen />;
       default:
         return null;
     }

@@ -16,7 +16,8 @@ import TotalDistance from '../assets/image/svgIcons/totalDistance.svg';
 import TotalTrips from '../assets/image/svgIcons/totalTrips.svg';
 import SideDrawer from './Drawer/SideDrawer';
 
-const HomeHeader = () => {
+const HomeHeader = (props) => {
+  const {screen} = props
   const [summaryModal, setSummaryModal] = useState(false);
 
   const summaryData = [
@@ -91,24 +92,32 @@ const HomeHeader = () => {
     <>
       <View style={headerStyles.container}>
          <SideDrawer/>
-        <TouchableOpacity
-          style={headerStyles.amntBtn}
-          onPress={() => setSummaryModal(true)}>
-          <Text style={headerStyles.amntBtnTxt}>
-            <Text style={{color: colors.yellow}}>₹</Text>10.
-            <Text style={{fontSize: 10}}>00</Text>
-          </Text>
-        </TouchableOpacity>
+         {screen === 'drive' ? 
+            <TouchableOpacity
+            style={headerStyles.amntBtn}
+            onPress={() => setSummaryModal(true)}>
+            <Text style={headerStyles.amntBtnTxt}>
+              <Text style={{color: colors.yellow}}>₹</Text>10.
+              <Text style={{fontSize: 10}}>00</Text>
+            </Text>
+          </TouchableOpacity>: <Text style={headerStyles.title}>{screen}</Text>}
+
+     
         <View style={headerStyles.mapIconContainer}>
           <TouchableOpacity style={headerStyles.NotificationBtn}>
             <Bell />
           </TouchableOpacity>
+          {screen === 'drive' && 
+          <>
           <TouchableOpacity style={headerStyles.NotificationBtn}>
             <Gps />
           </TouchableOpacity>
           <TouchableOpacity style={headerStyles.NotificationBtn}>
             <Navigation />
           </TouchableOpacity>
+          </>
+          }
+          
         </View>
       </View>
       {renderSummaryModal()}
@@ -195,4 +204,12 @@ const headerStyles = StyleSheet.create({
     fontSize: 16,
     fontFamily: Fonts.regular,
   },
+  title:{
+    fontFamily:Fonts.regular,
+    color:colors.black,
+    fontSize:16,
+    alignSelf:'center',
+    position:'absolute',
+    top:25
+  }
 });

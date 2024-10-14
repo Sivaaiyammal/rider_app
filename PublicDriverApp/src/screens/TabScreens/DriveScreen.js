@@ -6,55 +6,6 @@ import DriveScreenHeader from '../../components/DriveScreenHeader';
 import HomeHeader from '../../components/HomeHeader';
 
 const DriveScreen = () => {
-  const [showMenu, setShowMenu] = useState(false);
-
-  const scaleValue = useRef(new Animated.Value(1)).current;
-  const offsetValue = useRef(new Animated.Value(0)).current;
-  const closeButtonOffset = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (!showMenu) {
-      Animated.parallel([
-        Animated.timing(scaleValue, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(offsetValue, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(closeButtonOffset, {
-          toValue: 0, 
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [showMenu, scaleValue, offsetValue, closeButtonOffset]);
-
-  const toggleMenu = () => {
-    Animated.parallel([
-      Animated.timing(scaleValue, {
-        toValue: showMenu ? 1 : 0.9, 
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(offsetValue, {
-        toValue: showMenu ? 0 : 300, 
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(closeButtonOffset, {
-        toValue: showMenu ? 0 : -30,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    setShowMenu(!showMenu); 
-  };
-
   return (
     <>
       <Animated.View
@@ -62,16 +13,12 @@ const DriveScreen = () => {
           styles.animatedStyles,
           {
             borderRadius: 15,
-            transform: [{scale: scaleValue}, {translateX: offsetValue}],
           },
         ]}>
         <Animated.View>
-       {/* <DriveScreenHeader toggleMenu={toggleMenu} showMenu={showMenu}/> */}
-       <HomeHeader />
+       <HomeHeader screen={'drive'}/>
         </Animated.View>
-
       </Animated.View>
-      {showMenu && <SideDrawer />}
     </>
   );
 };

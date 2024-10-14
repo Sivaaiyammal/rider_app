@@ -15,9 +15,9 @@ class Marker {
      */
     constructor(id, name, lng, lat, type = "default", size = 36, selected=false) {
 
-        if (!markerTypes.includes(type)) {
-            throw new Error("Invalid marker type");
-        }
+        // if (!markerTypes.includes(type)) {
+        //     throw new Error("Invalid marker type");
+        // }
 
 
         if (!markerSizes.includes(size)) {
