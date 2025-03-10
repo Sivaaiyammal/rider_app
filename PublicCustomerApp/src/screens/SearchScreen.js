@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo,useState,useContext} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import Entypo from 'react-native-vector-icons/Entypo';
 import {debounce} from 'lodash';
 import {colors, Fonts} from '../constants/constants';
@@ -16,9 +17,16 @@ import {useStackScreenStore} from '../store/useStackScreenStore';
 import useMapStore from '../store/useMapStore';
 import useLocationStore from '../store/useLocationStore';
 import Marker from '../controllers/NEMap/Marker';
-
+import { performSearch } from '../components/Native/NESearch';
+import { SearchResultV2 } from './searchResult';
+import StateVectorConatiner from '../components/StateVectorConatiner';
+import { clearSingleStateVector } from "../components/Native/NESearch";
+import FullScreenLoader from '../components/Loaders/FullScreenLoader';
+import HistoryCard from '../components/historyCard';
 const SearchScreen = () => {
+  const [searchTxt,setSearchTxt] = useState("");
   const {goBack} = useStackScreenStore();
+  const [isLoading,setIsLoading] = useState(false);
   const {
     setSearchUnit,
     onSearchResults,
@@ -29,24 +37,69 @@ const SearchScreen = () => {
     setDirectionPoints,
     directionPoints,
   } = useMapStore();
-  const {selectedInput, setSelectedInput,setDirections, directions} = useLocationStore();
+  const {location, selectedInput, setSelectedInput,setDirections, directions} = useLocationStore();
 
   // Debounce the search input to limit API calls 
+  const searchAPI = async (value,statevectore={},fullSearch=false) => {
+
+    console.log('hari-->>location-->>', location)
+    const searchParams = {
+      latitude: location[1], // Coimbatore latitude
+      longitude: location[0], // Coimbatore longitude
+      searchString: value,
+      mapUnitName: "india",
+      stateVector:statevectore,
+      resultCount: 10,
+      langCode: 'en', // i18n.language 
+      debug: true,
+      onlineOnly: true,
+      makeFullSearch: fullSearch,
+      isPoiSearch: false,
+      radius: 100000,
+      category: [],
+    };
+
+    try {
+      
+      setIsLoading(true);
+      const searchResults = await performSearch(searchParams);
+      setIsLoading(false);
+      setOnSearchResults(searchResults);
+ 
+    } catch (e) {
+      throw new Error(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const debouncedSetSearchUnit = useMemo(
-    () =>
-      debounce(value => {
-        setSearchUnit(value);
-      }, 500),
-    [setSearchUnit],
+    () => debounce(searchAPI, 500),
+    [setSearchUnit]
   );
 
   // Memoize the input change handler to avoid unnecessary re-renders
   const _onChangeText = useCallback(
     value => {
       debouncedSetSearchUnit(value);
+      setSearchTxt(value);
     },
     [debouncedSetSearchUnit],
   );
+ 
+  
+  const selectedCallBack = async (item, type) => {
+    console.log( "directions",directions)
+    if (type === 'Fast_match') {
+      await searchAPI('',item)
+      setSearchTxt('')
+   
+      
+    }else{
+    
+      onLocationNamePress(item)
+    }
+  };
 
   // Set route direction when markers are updated
   const setRouteDirection = useCallback(
@@ -94,6 +147,10 @@ const SearchScreen = () => {
     [selectedInput, directions]
   );
   
+  const removeStateVecotr = async (item) =>{
+     clearSingleStateVector(item.key, item.index)
+     await searchAPI(searchTxt, null)
+  }
 
   // add map markers if route not added
   const addMapMarkers = useCallback(
@@ -131,12 +188,15 @@ const SearchScreen = () => {
   // onpress on search results
   const onLocationNamePress = useCallback(
     item => {
-      const input = selectedInput.id - 1;
+     
+      const input = selectedInput?.id - 1;
+      console.log('input-->>', input)
       const newDirections = directions.map((dir, index) =>
         index === input
           ? {
               ...dir,
-              locationName: item.address || item.name,
+              locationName:  item.name,
+              locationAddress: item.address?.charAt(0).toUpperCase() + item.address?.slice(1),
               location: [item.longitude, item.latitude],
             }
           : dir,
@@ -147,14 +207,21 @@ const SearchScreen = () => {
 
       if (selectedInput.id === 1) {
         addMapMarkers(item, 'marker_start');
-      } else if (selectedInput.id === directions.length - 1) {
+      } else if (input === directions.length - 1) {
+        
         addMapMarkers(item, 'marker_end');
       } else {
         addMapMarkers(item, 'marker_waypoint');
       }
+      setSelectedInput(null);
     },
     [directions],
   );
+
+
+  const fullSearch = () =>{
+    searchAPI(searchTxt, null,true)
+  }
 
   const onGoBack = () =>{
     goBack(),
@@ -162,22 +229,32 @@ const SearchScreen = () => {
   }
 
   return (
+    <>
+    {isLoading && <FullScreenLoader />}
     <View style={styles.screen}>
-      <NavBar onBackPress={onGoBack} title={'Search Location'} />
+      <NavBar onBackPress={onGoBack} title={'Search'} />
       <View style={styles.inputContainer}>
+        <View style={{flexDirection:'row',alignItems:'center',gap:5}}>
+        <AntDesign name="search1" color={colors.grey} size={22} />
         <TextInput
-          placeholder="Search"
+          placeholder="Search Places"
           style={styles.input}
           onChangeText={_onChangeText}
           autoFocus
+          onSubmitEditing={() => fullSearch()}
         />
+        </View>
         <TouchableOpacity
           style={styles.closeBtn}
           onPress={() => setSearchUnit('')}>
-          <AntDesign name="close" color={colors.black} size={22} />
+            <View style={styles.searchAction}>
+          {searchTxt.length > 0 && <Ionicons onPress={()=>fullSearch()} name="checkmark-outline" color={colors.grey} size={24} />}
+           {searchTxt.length > 0 && <AntDesign name="close" color={colors.grey} size={22} />} 
+            </View>
         </TouchableOpacity>
       </View>
-      {onSearchResults?.searchResults?.length > 0 && searchUnit.length > 0 && (
+      <StateVectorConatiner stateVectorArr={onSearchResults} removeStateVecotr={removeStateVecotr}/>
+      {/* {onSearchResults?.searchResults?.length > 0 && searchUnit.length > 0 && (
         <ScrollView contentContainerStyle={{paddingBottom: 80}}>
           {onSearchResults.searchResults.map((item, i) => (
             <TouchableOpacity
@@ -189,12 +266,15 @@ const SearchScreen = () => {
             </TouchableOpacity>
           ))}
         </ScrollView>
-      )}
+      )} */}
+      {onSearchResults? <SearchResultV2 searchTxt={searchTxt} search_data={onSearchResults} selectedCallBack={selectedCallBack}/>:<HistoryCard/>}
+      
       <TouchableOpacity style={styles.bottomBtn} onPress={()=>goBack()}>
         <Entypo name="location" size={18} color={colors.black} />
         <Text style={styles.bottomBtnTxt}>Locate on Map</Text>
       </TouchableOpacity>
     </View>
+    </>
   );
 };
 
@@ -212,21 +292,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderRadius: 5,
-    borderWidth: 0.3,
-    paddingHorizontal: 5,
-    elevation: 5,
-    backgroundColor: colors.white,
-    marginTop: 10,
+    paddingHorizontal: 10,
+    backgroundColor: colors.grey_light,
+    marginTop: 5,
   },
   closeBtn: {
     width: '12%',
     aspectRatio: 1,
-    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
   },
   input: {
-    width: '85%',
+    paddingHorizontal: 5,
+    color:colors.black,
+    fontFamily:Fonts.regular,
+    fontSize:16
   },
   bottomBtn: {
     position: 'absolute',
@@ -256,6 +336,13 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     fontSize: 14,
     color: colors.black,
+  },
+  searchAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap:10,
+    paddingRight:10
   },
   resultsBtnAdd: {
     fontFamily: Fonts.light,

@@ -1,7 +1,11 @@
 package com.publiccustomerapp;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.PointF;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 import android.app.Activity;
 import android.view.View;
@@ -12,9 +16,11 @@ import android.widget.LinearLayout;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.List;
+import com.facebook.react.bridge.Promise;
 
 import com.dot.nenativemap.MapChangeListener;
 import com.dot.nenativemap.TouchInput;
@@ -54,17 +60,24 @@ import com.dot.nenativemap.directions.VHRoutingRequest;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
-
-import com.dot.nenativemap.search.Search;
+import com.virtualmaze.bundle_downloader.NENativeMap;
+import com.virtualmaze.bundle_downloader.listener.NENativeDownloadListener;
+import com.virtualmaze.bundle_downloader.utils.ProgressType;
+import androidx.appcompat.app.AlertDialog;
+import com.facebook.react.bridge.ReadableType;
 import com.dot.nenativemap.search.SearchResultCallback;
 import com.dot.nenativemap.search.SearchResponse;
-import com.dot.nenativemap.search.SearchData;
-import com.dot.nenativemap.search.PlaceName;
-import com.dot.nenativemap.search.AreaName;
-import com.dot.nenativemap.search.Coordinates;
-import com.dot.nenativemap.search.Postcode;
-import com.dot.nenativemap.search.StreetName;
-import com.dot.nenativemap.search.SearchPOIConstant;
+
+// import com.dot.nenativemap.search.Search;
+// import com.dot.nenativemap.search.SearchResultCallback;
+// import com.dot.nenativemap.search.SearchResponse;
+// import com.dot.nenativemap.search.SearchData;
+// import com.dot.nenativemap.search.PlaceName;
+// import com.dot.nenativemap.search.AreaName;
+// import com.dot.nenativemap.search.Coordinates;
+// import com.dot.nenativemap.search.Postcode;
+// import com.dot.nenativemap.search.StreetName;
+// import com.dot.nenativemap.search.SearchPOIConstant;
 
 import org.json.JSONArray;
 
@@ -83,6 +96,9 @@ import com.dot.nenativemap.annotations.StyleType;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.dot.nenativemap.search.SearchResultCallback;
+import com.dot.nenativemap.search.Search;
+import com.dot.nenativemap.search.SearchData;
 // import com.dot.nenativemap.annotations.PolylineOptions;
 
 public class NeNativeModule extends ViewGroupManager<MapView> implements LifecycleEventListener {
@@ -130,7 +146,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             WritableNativeMap eventData = new WritableNativeMap();
             eventData.putDouble("longitude", longitude);
             eventData.putDouble("latitude", latitude);
-
+            Log.e("onMapClick", "message" + eventData);
             reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                     .emit("onMapClick", eventData);
             return true;
@@ -192,7 +208,16 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         mapView.onCreate(null);
         reactContext.addLifecycleEventListener(this);
 
+        if (settingsProps != null) {
+            boolean enable3D = Boolean.parseBoolean(settingsProps.get("enable3D"));
+            MapController.enable3dBuildingsVisibility(enable3D);
+
+            boolean enableExtrusions = Boolean.parseBoolean(settingsProps.get("enableExtrusions"));
+            MapController.enableExtrusionsVisibility(enableExtrusions);
+        }
+
         mapView.getMapAsync(
+
                 new MapReadyCallback() {
                     @Override
                     public void onMapReady(MapController mapCtrler) {
@@ -204,6 +229,17 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
                         mapController.enable3dBuildingsVisibility(false);
                         mapController.enableExtrusionsVisibility(false);
+
+
+                        if(settingsProps != null) {
+                            String language = settingsProps.get("language");
+                            if(language != null) {
+                                mapController.setMapLangCode(language);
+                            }
+                            String mapStyleString = Boolean.parseBoolean(settingsProps.get("enableDarkTheme")) ? "NIGHT2" : "DAY2";
+                            MapController.MapStyle mapStyle = MapController.MapStyle.valueOf(mapStyleString);
+                            mapController.setMapStyle(mapStyle);
+                        }
 
                         mapController.setMapChangeListener(new MapChangeListener() {
                             @Override
@@ -218,6 +254,14 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
                             @Override
                             public void onRegionIsChanging() {
+
+                                float rotation = (float) Math.toDegrees(mapController.getCameraPosition().getRotation());
+
+                                WritableMap eventData = Arguments.createMap();
+                                eventData.putDouble("rotation", rotation);
+                                reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                        .emit("onMapRotationChanged", eventData);
+
                             }
 
                             @Override
@@ -289,15 +333,6 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         return mapView;
     }
 
-    @ReactProp(name = "enable3D")
-    public void set3DVisibility(MapView mapView, boolean enable) {
-        if (mapController != null) {
-            mapController.enable3dBuildingsVisibility(enable);
-            mapController.enableExtrusionsVisibility(false);
-            // mapView.getMapAsync;
-        }
-    }
-
     @ReactProp(name = "settingsProps")
     public void setSettingsProps(MapView mapView, ReadableMap settingsProps) {
         Log.e("SettingsProps", " " + settingsProps);
@@ -305,10 +340,16 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             ReadableMapKeySetIterator iterator = settingsProps.keySetIterator();
             while (iterator.hasNextKey()) {
                 String key = iterator.nextKey();
-                String value = settingsProps.getString(key);
-                this.settingsProps.put(key, value);
+                if (settingsProps.getType(key) == ReadableType.Boolean) {
+                    boolean value = settingsProps.getBoolean(key);
+                    this.settingsProps.put(key, String.valueOf(value));
+                } else if (settingsProps.getType(key) == ReadableType.String) {
+                    String value = settingsProps.getString(key);
+                    this.settingsProps.put(key, value);
+                }
             }
-//            if(mapController != null) mapController.setMapLangCode(this.settingsProps.get("language"));
+            // if(mapController != null)
+            // mapController.setMapLangCode(this.settingsProps.get("language"));
         }
     }
 
@@ -322,185 +363,12 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 searchFilePaths.put(mapUnit, mapUnitName);
             }
             Log.e("Search", "load" + " " + mapController + " " + pathPrefix + searchFilePaths);
-            search.getInstance().init(mapController, pathPrefix, searchFilePaths);
+            
+            search.getInstance().init(
+                mapController, pathPrefix, searchFilePaths);
         } else {
             Log.e("Search", "Error in initSearch: search or mapController is null");
         }
-    }
-
-    private List<VMSearchData> getResults(SearchResponse result, ReadableArray currentLocation) {
-        List<VMSearchData> vmSearchData = new ArrayList<>();
-        SearchData data = result.getSearchData();
-        List<String> cityNames = new ArrayList<>(); // List to store city names
-        double currentLatitude = currentLocation.getDouble(0);
-        double currentLongitude = currentLocation.getDouble(1);
-        if (data.getPlaceName() != null && !data.getPlaceName().isEmpty()) {
-            for (PlaceName placeName : data.getPlaceName()) {
-                String address = "";
-                for (String place_address : placeName.getAddress()) {
-                    address = place_address.isEmpty() ? address : address.isEmpty() ? place_address : address + ", " + place_address;
-                }
-                LngLat position = new LngLat(placeName.getPos().get(0), placeName.getPos().get(1));
-                String name = placeName.getPlaceName().get(placeName.getPlaceName().size() - 1);
-                if (name.isEmpty()) {
-                    name = placeName.getPlaceName().get(0);
-                }
-                name = capitalizeFirstLetter(name);
-                address = capitalizeFirstLetter(address);
-                String category = placeName.getCategory().get(placeName.getCategory().size() - 1);
-                double distance = calculateDistance(currentLatitude, currentLongitude, position.latitude, position.longitude);
-                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_ADDRESS, position, "", category, "");
-                vmsearchData.setDistance(distance);
-                vmSearchData.add(vmsearchData);
-            }
-        }
-        if (data.getStreetName() != null && !data.getStreetName().isEmpty()) {
-            for (StreetName streetName : data.getStreetName()) {
-                String address = "";
-                if(streetName.getAddress() != null) {
-                    for (String street_address : streetName.getAddress()) {
-                        address = street_address.isEmpty() ? address : address.isEmpty() ? street_address : address + ", " + street_address;
-                    }
-                }
-                String name = streetName.getName().get(streetName.getName().size() - 1);
-                if (name.isEmpty()) {
-                    name = streetName.getName().get(0);
-                }
-                LngLat lngLat = new LngLat(streetName.getPos().get(0), streetName.getPos().get(1));
-                name = capitalizeFirstLetter(name);
-                address = capitalizeFirstLetter(address);
-                double distance = calculateDistance(currentLatitude, currentLongitude, lngLat.latitude, lngLat.longitude);
-                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_STREET, lngLat, "", "", "");
-                vmsearchData.setDistance(distance);
-                vmSearchData.add(vmsearchData);
-            }
-        }
-        if (data.getAreaName() != null && !data.getAreaName().isEmpty()) {
-            for (AreaName areaName : data.getAreaName()) {
-                String address = "";
-                if(areaName.getAddress() != null) {
-                    for (String area_address : areaName.getAddress()) {
-                        address = area_address.isEmpty() ? address : address.isEmpty() ? area_address : address + ", " + area_address;
-                    }
-                }
-                String name = areaName.getName().get(areaName.getName().size() - 1);
-                if (name.isEmpty()) {
-                    name = areaName.getName().get(0);
-                }
-                LngLat lngLat = new LngLat(areaName.getPos().get(0), areaName.getPos().get(1));
-                name = capitalizeFirstLetter(name);
-                address = capitalizeFirstLetter(address);
-                double distance = calculateDistance(currentLatitude, currentLongitude, lngLat.latitude, lngLat.longitude);
-                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_LOCATIONS, lngLat, "", "", "");
-                vmsearchData.setDistance(distance);
-                vmSearchData.add(vmsearchData);
-            }
-        }
-        if (data.getCity() != null && !data.getCity().isEmpty()) {
-            for (AreaName city : data.getCity()) {
-                String address = "";
-                if(city.getAddress() != null) {
-                    for (String city_address : city.getAddress()) {
-                        address = city_address.isEmpty() ? address : address.isEmpty() ? city_address : address + ", " + city_address;
-                    }
-                }
-                String name = city.getName().get(city.getName().size() - 1);
-                if (name.isEmpty()) {
-                    name = city.getName().get(0);
-                }
-                cityNames.add(name);
-                LngLat lngLat = new LngLat(city.getPos().get(0), city.getPos().get(1));
-                name = capitalizeFirstLetter(name);
-                address = capitalizeFirstLetter(address);
-                double distance = -1;
-                if (currentLatitude != 0.0 && currentLongitude != 0.0) {
-                    distance = calculateDistance(currentLatitude, currentLongitude, lngLat.latitude, lngLat.longitude);
-                }
-                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_LOCATIONS, lngLat, "", "", "");
-                vmsearchData.setDistance(distance);
-                vmSearchData.add(vmsearchData);
-            }
-        }
-        if (data.getDistrict() != null && !data.getDistrict().isEmpty()) {
-            for (AreaName district : data.getDistrict()) {
-                String address = "";
-                if(district.getAddress() != null) {
-                    for (String district_address : district.getAddress()) {
-                        address = district_address.isEmpty() ? address : address.isEmpty() ? district_address : address + ", " + district_address;
-                    }
-                }
-                String name = district.getName().get(district.getName().size() - 1);
-                if (name.isEmpty()) {
-                    name = district.getName().get(0);
-                }
-                if(cityNames.contains(name)) {
-                    continue;
-                }
-                LngLat lngLat = new LngLat(district.getPos().get(0), district.getPos().get(1));
-                name = capitalizeFirstLetter(name);
-                address = capitalizeFirstLetter(address);
-                double distance = -1;
-                if (currentLatitude != 0.0 && currentLongitude != 0.0) {
-                    distance = calculateDistance(currentLatitude, currentLongitude, lngLat.latitude, lngLat.longitude);
-                }
-                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_LOCATIONS, lngLat, "", "", "");
-                vmsearchData.setDistance(distance);
-                vmSearchData.add(vmsearchData);
-            }
-        }
-        if (data.getState() != null && !data.getState().isEmpty()) {
-            for (AreaName state : data.getState()) {
-                String address = "";
-                if(state.getAddress() != null) {
-                    for (String state_address : state.getAddress()) {
-                        address = state_address.isEmpty() ? address : address.isEmpty() ? state_address : address + ", " + state_address;
-                    }
-                }
-                String name = state.getName().get(state.getName().size() - 1);
-                if (name.isEmpty()) {
-                    name = state.getName().get(0);
-                }
-                LngLat lngLat = new LngLat(state.getPos().get(0), state.getPos().get(1));
-                name = capitalizeFirstLetter(name);
-                address = capitalizeFirstLetter(address);
-                double distance = -1;
-                if (currentLatitude != 0.0 && currentLongitude != 0.0) {
-                    distance = calculateDistance(currentLatitude, currentLongitude, lngLat.latitude, lngLat.longitude);
-                }
-                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_LOCATIONS, lngLat, "", "", "");
-                vmsearchData.setDistance(distance);
-                vmSearchData.add(vmsearchData);
-            }
-        }
-        if (data.getPostcode() != null && !data.getPostcode().isEmpty()) {
-            for (Postcode postCode : data.getPostcode()) {
-                String name = postCode.getPcode();
-                LngLat lngLat = new LngLat(postCode.getPos().get(0), postCode.getPos().get(1));
-                name = capitalizeFirstLetter(name);
-                double distance = -1;
-                if (currentLatitude != 0.0 && currentLongitude != 0.0) {
-                    distance = calculateDistance(currentLatitude, currentLongitude, lngLat.latitude, lngLat.longitude);
-                }
-                VMSearchData vmsearchData = new VMSearchData(name, "", "", AutocompleteResultType.TYPE_LOCATIONS, lngLat, "", "", "");
-                vmsearchData.setDistance(distance);
-                vmSearchData.add(vmsearchData);
-            }
-        }
-        if (data.getCoords() != null && !data.getCoords().isEmpty()) {
-            for (Coordinates coord : data.getCoords()) {
-                String name = coord.getPos().get(1) + "," + coord.getPos().get(0);
-                LngLat lngLat = new LngLat(coord.getPos().get(0), coord.getPos().get(1));
-                double distance = -1;
-                if (currentLatitude != 0.0 && currentLongitude != 0.0) {
-                    distance = calculateDistance(currentLatitude, currentLongitude, lngLat.latitude, lngLat.longitude);
-                }
-                VMSearchData vmsearchData = new VMSearchData(name, "", "", AutocompleteResultType.TYPE_LOCATIONS, lngLat, "", "", "");
-                vmsearchData.setDistance(distance);
-                vmSearchData.add(vmsearchData);
-            }
-        }
-
-        return vmSearchData;
     }
 
     private static final double DEG2RADFACTOR = Math.PI / 180.0;
@@ -530,241 +398,12 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 
-    @ReactProp(name = "searchUnit")
-    public void setSearchUnit(MapView mapView, ReadableMap searchUnit) {
-        if (mapController == null || search == null) {
-            Log.e("NeNativeModule", "mapController or search is null in setSearchUnit");
-            return;
-        }
-
-        try {
-            SearchResultCallback searchResultCallback = new SearchResultCallback() {
-                @Override
-                public void onSuccess(SearchResponse result) {
-                    if (result != null) {
-                        Log.e("Search Result", "" + result);
-                        List<VMSearchData> searchData = getResults(result, searchUnit.getArray("start_location"));
-                        // Process and emit the search results to React Native
-                        WritableArray searchResultsArray = Arguments.createArray();
-                        for (VMSearchData data : searchData) {
-                            WritableMap dataMap = Arguments.createMap();
-                            dataMap.putString("name", data.getName());
-                            dataMap.putString("address", data.getAddress());
-                            dataMap.putString("countryCode", data.getCountyCode());
-                            dataMap.putString("type", data.getType().toString());
-                            dataMap.putDouble("longitude", data.getLngLat().longitude);
-                            dataMap.putDouble("latitude", data.getLngLat().latitude);
-                            dataMap.putString("line", data.getLine());
-                            dataMap.putString("parking", data.getParking());
-                            dataMap.putString("area_hl", data.getArea_hl());
-                            dataMap.putDouble("distance", data.getDistance());
-                            searchResultsArray.pushMap(dataMap);
-                        }
-                        WritableMap eventData = Arguments.createMap();
-                        eventData.putArray("searchResults", searchResultsArray);
-                        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                                .emit("onSearchResults", eventData);
-                    } else {
-                        Log.w("NeNativeModule", "Search success, but result is null");
-                        WritableNativeMap eventData = new WritableNativeMap();
-                        eventData.putString("searchResults", "null");
-                        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                                .emit("onSearchResults", eventData);
-                    }
-                }
-
-                @Override
-                public void onFailure(SearchResponse error) {
-                    if (error != null) {
-                        Log.e("NeNativeModule", "Search error: " + error.getErrMessage());
-                        WritableNativeMap eventData = new WritableNativeMap();
-                        eventData.putString("searchResults", error.getErrMessage());
-                        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                                .emit("onSearchResults", eventData);
-                    } else {
-                        Log.e("NeNativeModule", "Search failed with null error");
-                        WritableNativeMap eventData = new WritableNativeMap();
-                        eventData.putString("searchResults", "null");
-                        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                                .emit("onSearchResults", eventData);
-                    }
-                    // TODO: Emit error to React Native
-                }
-            };
-
-            HashMap<String, String> searchFilters = new HashMap<>();
-
-            ReadableArray searchUnitArray = searchUnit.getArray("start_location");
-            String searchUnitString = searchUnit.getString("search_str");
-
-            Log.e("Language", settingsProps.get("language"));
-
-            assert searchUnitArray != null;
-            String query = search.getInstance().buildSearchRequest(
-                    "southern-zone",
-                    searchUnitString,
-                    searchUnitArray.getDouble(0),
-                    searchUnitArray.getDouble(1),
-                    "[\"all\"]",
-                    settingsProps.get("language"),
-                    "[\"place_name\", \"street_name\", \"area_name\", \"district\", \"city\", \"state\", \"postcode\", \"tags\", \"cords\"]",
-                    searchFilters,
-                    20,
-                    false);
-
-            if (query == null || query.isEmpty()) {
-                throw new IllegalArgumentException("Generated query is null or empty");
-            }
-
-            search.getInstance().getSearchAsync(query, true, searchResultCallback);
-        } catch (IllegalArgumentException e) {
-            Log.e("NeNativeModule", "Invalid argument in setSearchUnit: " + e.getMessage());
-            // TODO: Emit error to React Native
-        } catch (Exception e) {
-            Log.e("NeNativeModule", "Unexpected error in setSearchUnit: " + e.getMessage());
-            e.printStackTrace();
-            // TODO: Emit error to React Native
-        }
-    }
-
-    public List<VMSearchData> getPOIResults(SearchResponse response, double currentLatitude, double currentLongitude) {
-        List<VMSearchData> vmSearchData = new ArrayList<>();
-        SearchData data = response.getSearchData();
-        if (data.getBboxSearch() != null && !data.getBboxSearch().isEmpty()) {
-            for (PlaceName placeName : data.getBboxSearch()) {
-                StringBuilder addressBuilder = new StringBuilder();
-                for (String placeAddress : placeName.getAddress()) {
-                    if (!placeAddress.isEmpty()) {
-                        if (addressBuilder.length() > 0) {
-                            addressBuilder.append(", ");
-                        }
-                        addressBuilder.append(placeAddress);
-                    }
-                }
-                String address = addressBuilder.toString();
-
-                String name = placeName.getPlaceName().isEmpty() ? ""
-                        : placeName.getPlaceName().get(placeName.getPlaceName().size() - 1);
-                if (name.isEmpty() && !placeName.getPlaceName().isEmpty()) {
-                    name = placeName.getPlaceName().get(0);
-                }
-
-                LngLat position = new LngLat(placeName.getPos().get(0), placeName.getPos().get(1));
-
-                name = capitalizeFirstLetter(name);
-                address = capitalizeFirstLetter(address);
-                double distance = -1;
-                if (currentLatitude != 0.0 && currentLongitude != 0.0) {
-                    distance = calculateDistance(currentLatitude, currentLongitude, position.latitude, position.longitude);
-                }
-                VMSearchData vmsearchData = new VMSearchData(name, address, "", AutocompleteResultType.TYPE_POI,
-                        position, "", "", "");
-                vmsearchData.setDistance(distance);
-                vmSearchData.add(vmsearchData);
-            }
-        }
-        return vmSearchData;
-    }
-
-    @ReactProp(name = "autoPOISearch")
-    public void setAutoPOISearch(MapView mapView, ReadableMap POIData) {
-        if (mapController == null || POIData == null || POIData.getInt("poiID") == 0) {
-            Log.e("NeNativeModule", "mapController is null in setAutoPOISearch");
-            return;
-        }
-
-        double CURRENT_LATITUDE = 24.450288;
-        double CURRENT_LONGITUDE = 54.381127;
-
-        if (POIData.getDouble("latitude") != 0 && POIData.getDouble("longitude") != 0) {
-            CURRENT_LATITUDE = POIData.getDouble("latitude");
-            CURRENT_LONGITUDE = POIData.getDouble("longitude");
-        }
-
-        double finalCURRENT_LATITUDE = CURRENT_LATITUDE;
-        double finalCURRENT_LONGITUDE = CURRENT_LONGITUDE;
-        SearchResultCallback searchResultCallback = new SearchResultCallback() {
-            @Override
-            public void onSuccess(SearchResponse result) {
-                if (result != null) {
-                    try {
-                        List<VMSearchData> searchData = getPOIResults(result, finalCURRENT_LATITUDE, finalCURRENT_LONGITUDE);
-                        WritableArray searchResultsArray = Arguments.createArray();
-                        for (VMSearchData data : searchData) {
-                            WritableMap dataMap = Arguments.createMap();
-                            dataMap.putString("name", data.getName());
-                            dataMap.putString("address", data.getAddress());
-                            dataMap.putString("type", data.getType().toString());
-                            dataMap.putDouble("longitude", data.getLngLat().longitude);
-                            dataMap.putDouble("latitude", data.getLngLat().latitude);
-                            searchResultsArray.pushMap(dataMap);
-                        }
-                        WritableMap eventData = Arguments.createMap();
-                        eventData.putArray("searchPOIResults", searchResultsArray);
-                        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                                .emit("onSearchPOIResults", eventData);
-                    } catch (Exception e) {
-                        Log.e("NeNativeModule", "Error processing search results: " + e.getMessage());
-                        emitErrorEvent("Error processing search results");
-                    }
-                } else {
-                    Log.w("NeNativeModule", "Search success, but result is null");
-                    emitErrorEvent("Search result is null");
-                }
-            }
-
-            @Override
-            public void onFailure(SearchResponse error) {
-                String errorMessage = (error != null) ? error.getErrMessage() : "Unknown error";
-                Log.e("NeNativeModule", "Search error: " + errorMessage);
-                emitErrorEvent("Search failed: " + errorMessage);
-            }
-        };
-
-        try {
-            search = new Search();
-            HashMap<String, String> searchFilters = new HashMap<>();
-            String poiFilters = getOnlinePOICategoryFilter(
-                    SearchPOIConstant.getOnlinePOIFilter(POIData.getInt("poiID"))).toString();
-            String query = search.getInstance().buildPOISearchRequest(
-                    "southern-zone",
-                    CURRENT_LATITUDE,
-                    CURRENT_LONGITUDE,
-                    poiFilters,
-                    "en",
-                    95, 5000, 15, false);
-
-            if (query == null || query.isEmpty()) {
-                throw new IllegalArgumentException("Generated query is null or empty");
-            }
-
-            search.getInstance().getSearchAsync(query, false, searchResultCallback);
-        } catch (IllegalArgumentException e) {
-            Log.e("NeNativeModule", "Invalid argument in setAutoPOISearch: " + e.getMessage());
-            emitErrorEvent("Invalid search parameters");
-        } catch (Exception e) {
-            Log.e("NeNativeModule", "Unexpected error in setAutoPOISearch: " + e.getMessage());
-            e.printStackTrace();
-            emitErrorEvent("Unexpected error occurred");
-        }
-    }
 
     private void emitErrorEvent(String errorMessage) {
         WritableMap eventData = Arguments.createMap();
         eventData.putString("error", errorMessage);
         reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit("onSearchPOIError", eventData);
-    }
-
-    private JSONArray getOnlinePOICategoryFilter(List<String> arrayList) {
-        if (arrayList != null && !arrayList.isEmpty()) {
-            JSONArray jsonArray = new JSONArray();
-            for (String category : arrayList) {
-                jsonArray.put(category);
-            }
-            return jsonArray;
-        }
-        return null;
     }
 
     @ReactProp(name = "navMode")
@@ -786,6 +425,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     @ReactProp(name = "homeLocation")
     public void setHomeLocation(MapView mapView, ReadableArray location) {
         if (mapController != null && location != null) {
+            Log.e("homeLocation", "location: " + location);
             ReadableMap homeLocation = location.getMap(0);
             CameraPosition camera = mapController.getCameraPosition();
             camera.longitude = homeLocation.getDouble("lng");
@@ -858,9 +498,9 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     .size(markerSize)
                     .interactive(true)
                     .rotation(0)
-                    .flat(true)
+//                    .flat(true)
                     .title(title)
-                    .style(StyleType.ROTATABLE_MARKER)
+                    .style(StyleType.MARKER)
                     .texture(markerType);
             if (marker == null) {
                 Log.d("AJIN", "new marker call today " + markerId);
@@ -876,7 +516,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                         userData.setId(markerId);
                         marker.setUserData(userData);
                         Log.d("AJIN", markerId + " Set usedata");
-//                        mapController.NEMarkerSetAngle(marker, angle);
+                        // mapController.NEMarkerSetAngle(marker, angle);
                         synchronized (addedMarkers) {
                             addedMarkers.add(marker);
                         }
@@ -936,7 +576,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     markerTextures.put(markerId, markerType);
                     marker.setVisible(true);
                 }
-//                mapController.NEMarkerSetAngle(marker, angle);
+                // mapController.NEMarkerSetAngle(marker, angle);
                 markersToRemove.remove(marker);
                 synchronized (currentMarkers) {
                     currentMarkers.add(marker);
@@ -1026,6 +666,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     @ReactProp(name = "findRoute")
     public void findRoute(MapView mapView, ReadableMap routeData) {
+        
         if (mapView != null && routeData != null && mapController != null) {
             ReadableArray locationArray = routeData.getArray("locations");
             String type = routeData.getString("type");
@@ -1054,7 +695,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             showGetRouteProgress();
             mapController.setCurrentLocationEnabled(true);
 
-            directions.getInstance().init(reactNativeContext, "southIndia", "southIndia", mapController.mapPointer);
+            directions.getInstance().init(reactNativeContext, "ITC", "ITC", mapController.mapPointer);
 
             Log.e("crossareas", "crosses direction instance ");
             ArrayList<VHRoutingRequest.Location> locations = new ArrayList<>();
@@ -1163,7 +804,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             String language = settingsProps.get("language");
             String languageCode = "en-US";
 
-            if(language.equals("en")) {
+            if (language.equals("en")) {
                 languageCode = "en-US";
             } else {
                 languageCode = "ar";
@@ -1216,6 +857,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     public RouteCallback getRouteCallback() {
         return routeCallback;
     }
+
+
 
     private RouteCallback routeCallback = new RouteCallback() {
         @Override
@@ -1311,12 +954,17 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     @ReactProp(name = "navigation")
     public void navigationPreview(MapView mapView, boolean startNavigation) {
+        if (mapView == null) {
+            Log.e("ERROR", "MapView is null");
+            return;
+        }
 
-        if (mapView != null && startNavigation) {
-
+        if (startNavigation) {
             createDummyView();
 
             int viewIds = DUMMY_VIEW_IDS;
+
+            Log.e("DummyView", "Dummy view created with ID: " + viewIds);
 
             // Handle success
             WritableNativeMap eventData = new WritableNativeMap();
@@ -1328,18 +976,13 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             int routeIndex = 0;
             directions.getInstance().getRouteInstructions(routeIndex);
             RouteCount routeCount = directions.getInstance().getPrimaryRoute();
-            // Log.e("NENative", "RC: " + routeCount.getRouteCount() + " sel route " +
-            // routeCount.getSelectedRoute());
             int[] padding = { 50, 20, 30, 40 };
             directions.getInstance().zoomRoute(padding, 1, -1);
-            if (mapController != null)
+            if (mapController != null) {
                 mapController.setCurrentLocationEnabled(true);
+            }
             NavigationMode mode = NavigationMode.SIMULATE;
-            // if(navMode.equals("realtime")){
-            // mode = NavigationMode.REALTIME;
-            // }else{
-            // mode = NavigationMode.SIMULATE;
-            // }
+
             startNavigation(reactNativeContext.getCurrentActivity(), viewIds, mode,
                     new NavigationEndListener() {
                         @Override
@@ -1348,24 +991,25 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                             WritableNativeMap eventData = new WritableNativeMap();
                             eventData.putString("message", "navigation end");
                             if (mapController != null) {
-                                Log.e("NENative", "Called navigation end reset cllbacks");
+                                Log.e("NENative", "Called navigation end reset callbacks");
                                 mapController.setRouteCallback(getRouteCallback());
+                                mapController.getTouchInput().setTapResponder(tapResponder);
                             }
                             reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                                     .emit("navigation", eventData);
                         }
                     });
-
         } else if (mapController != null) {
             mapController.setCurrentLocationEnabled(true);
         } else {
             WritableNativeMap eventData = new WritableNativeMap();
-            eventData.putString("message", "err mapview is null");
-
+            eventData.putString("message", "err mapController is null");
+            if(mapController != null) {
+                mapController.getTouchInput().setTapResponder(tapResponder);
+            }
             reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                     .emit("navigation", eventData);
         }
-
     }
 
     private void showGetRouteProgress() {
@@ -1374,8 +1018,13 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     public void startNavigation(Activity activity, int viewIds, NavigationMode navigationMode,
             NavigationEndListener navigationEndListener) {
+        if (activity == null) {
+            Log.e("ERROR", "Activity is null");
+            return;
+        }
+
         WritableNativeMap eventData = new WritableNativeMap();
-        eventData.putString("message", "insdie start navigation" + mapView);
+        eventData.putString("message", "inside start navigation" + mapView);
 
         reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit("navigation", eventData);
@@ -1388,8 +1037,11 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 WritableNativeMap eventData = new WritableNativeMap();
                 eventData.putString("message", "navigation end");
                 if (mapController != null) {
-                    Log.e("NENative", "Called navigation end reset cllbacks");
+                    Log.e("NENative", "Called navigation end reset callbacks");
                     mapController.setRouteCallback(getRouteCallback());
+                }
+                if(mapController != null) {
+                    mapController.getTouchInput().setTapResponder(tapResponder);
                 }
                 reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                         .emit("navigationEnd", eventData);
@@ -1408,7 +1060,6 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
                         reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                                 .emit("onNavigationDistanceChange", eventData);
-
                     }
                 }, viewIds);
     }
@@ -1420,38 +1071,62 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     @ReactMethod
     public void createDummyView() {
-        if (reactNativeContext.getCurrentActivity() != null) {
-            // Create a FrameLayout container for the dummy view
-            FrameLayout container = new FrameLayout(reactNativeContext);
-            container.setId(DUMMY_VIEW_IDS); // Set a unique ID
-            ViewGroup reactNativeView = (ViewGroup) mapView; // Replace 'mapView' with your actual view reference
-
-            ViewGroup parentView = (ViewGroup) reactNativeView.getParent();
-            if (parentView == null) {
-                Log.e("ERROR", "Parent view is null");
-                return;
-            }
-            int parentHeight = parentView.getHeight();
-
-            // Calculate 100% of the parent view's height in pixels
-            int desiredHeightInPixels = parentHeight;
-            FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    desiredHeightInPixels // Height in pixels, set to full parent height
-            );
-
-            container.setLayoutParams(layoutParams);
-
-            // Create the dummy view
-            View dummyView = new View(reactNativeContext.getCurrentActivity());
-
-            // Add the dummy view to the container
-            container.addView(dummyView);
-            SharedDirections.setCurrentActivity(reactNativeContext.getCurrentActivity());
-
-            // Add the container as a child of your React Native component's view
-            reactNativeView.addView(container);
+        Activity currentActivity = reactNativeContext.getCurrentActivity();
+        if (currentActivity == null) {
+            Log.e("ERROR", "Current activity is null");
+            return;
         }
+
+        currentActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // Create a custom FrameLayout that handles React Native's layout requests
+                    FrameLayout container = new FrameLayout(reactNativeContext) {
+                        @Override
+                        public void requestLayout() {
+                            super.requestLayout();
+                            post(measureAndLayout);
+                        }
+
+                        private final Runnable measureAndLayout = new Runnable() {
+                            @Override
+                            public void run() {
+                                measure(
+                                        MeasureSpec.makeMeasureSpec(getWidth(), MeasureSpec.EXACTLY),
+                                        MeasureSpec.makeMeasureSpec(getHeight(), MeasureSpec.EXACTLY));
+                                layout(getLeft(), getTop(), getRight(), getBottom());
+                            }
+                        };
+                    };
+                    container.setId(DUMMY_VIEW_IDS); // Set a unique ID
+
+                    // Check initialization of mapView
+                    if (mapView == null) {
+                        Log.e("ERROR", "mapView is null. Cannot create dummy view.");
+                        return;
+                    }
+
+                    ViewGroup reactNativeView = (ViewGroup) mapView;
+
+                    // Ensure that mapView has a parent
+                    ViewGroup parentView = (ViewGroup) reactNativeView.getParent();
+                    if (parentView == null) {
+                        Log.e("ERROR", "Parent view is null. Cannot add container.");
+                        return;
+                    }
+                    View dummyView = new View(currentActivity);
+                    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(
+                            FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+                    dummyView.setLayoutParams(layoutParams);
+                    container.addView(dummyView);
+                    reactNativeView.addView(container);
+                    SharedDirections.setCurrentActivity(currentActivity);
+                } catch (Exception e) {
+                    Log.e("ERROR", "Error in createDummyView: " + e.getMessage());
+                }
+            }
+        });
     }
 
     @ReactMethod
@@ -1495,7 +1170,13 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         } else if (locationProvider.equals("ne")) {
             providerType = ProviderType.NE_FUSED;
         }
+
         MapController.MapStyle mapStyle = MapController.MapStyle.DAY;
+//        if(settingsProps != null) {
+//            String mapStyleString = Boolean.parseBoolean(settingsProps.get("enableDarkTheme")) ? "NIGHT2" : "DAY2";
+//            mapStyle = MapController.MapStyle.valueOf(mapStyleString);
+//        }
+
         CameraPosition cameraPosition = new CameraPosition();
         // TODO : issue in updating the current location
 
@@ -1639,4 +1320,178 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         System.out.println("dismissing");
 
     }
+
+    public static boolean isInternetAvailable(ThemedReactContext currentContext) {
+        ConnectivityManager conectivityManager = (ConnectivityManager) currentContext
+                .getSystemService(Context.CONNECTIVITY_SERVICE);// as ConnectivityManager
+        NetworkInfo networkInfo = conectivityManager.getActiveNetworkInfo();
+        if (networkInfo != null) {
+            if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                return networkInfo.isAvailable();
+            } else if (networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) {
+                return networkInfo.isAvailable();
+            }
+        }
+        return false;
+    }
+    @ReactProp(name = "offlineMap")
+    public void startDownloadOfflineMap(MapView mapView, boolean offlineMap) {
+        if (offlineMap) {
+            if (!isInternetAvailable(reactNativeContext)) {
+                WritableNativeMap eventData = new WritableNativeMap();
+                eventData.putString("message", "No internet connection");
+                reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                        .emit("onDownloadFailed", eventData);
+                return;
+            }
+            try {
+                NENativeMap.getInstance().initializeOfflineFilesDownload(reactNativeContext,
+                        NENativeMap.OfflineType.ALL, true, new NENativeDownloadListener() {
+                            @Override
+                            public void onDownloading(int progressValue, ProgressType progressType,
+                                    String progressData) {
+                                WritableNativeMap eventData = new WritableNativeMap();
+                                eventData.putInt("progressValue", progressValue);
+                                eventData.putString("progressType", progressType.toString());
+                                eventData.putString("progressData", progressData);
+                                reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                        .emit("onDownloading", eventData);
+                            }
+
+                            @Override
+                            public void onDownloadFailed(String message) {
+                                Log.e("Download failed", "offline file download failed " + message);
+                                WritableNativeMap eventData = new WritableNativeMap();
+                                eventData.putString("message", "Download failed" + "\n\n" + message);
+                                reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                        .emit("onDownloadFailed", eventData);
+                            }
+
+                            @Override
+                            public void onDownloadFinished() {
+                                WritableNativeMap eventData = new WritableNativeMap();
+                                eventData.putString("message", "Download finished");
+                                reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                        .emit("onDownloadFinished", eventData);
+                            }
+                        });
+            } catch (Exception e) {
+                Log.e("Download failed", e.toString());
+            }
+        }
+    }
+    @ReactMethod
+    public void search(
+            double CURRENT_LATITUDE,
+            double CURRENT_LONGITUDE,
+            String searchString,
+            String mapUnitName,
+            com.facebook.react.bridge.ReadableMap stateVectorForMatches,
+            int resultCount,
+            String lang_code,
+            boolean debug,
+            boolean onlineOnly,
+            boolean makeFullSearch,
+            boolean isPoiSearch,
+            double radius,
+            String category,
+            Promise promise
+    ) {
+        Log.d("AJIN","SEARCH CALL MADE");
+        Log.d("AJIN", "CURRENT_LATITUDE: " + CURRENT_LATITUDE);
+        Log.d("AJIN", "CURRENT_LONGITUDE: " + CURRENT_LONGITUDE);
+        Log.d("AJIN", "searchString: " + searchString);
+        Log.d("AJIN", "mapUnitName: " + mapUnitName);
+        Log.d("AJIN", "resultCount: " + resultCount);
+        Log.d("AJIN", "lang_code: " + lang_code);
+        Log.d("AJIN", "debug: " + debug);
+        Log.d("AJIN", "onlineOnly: " + onlineOnly);
+        Log.d("AJIN", "makeFullSearch: " + makeFullSearch);
+        Log.d("AJIN", "isPoiSearch: " + isPoiSearch);
+        Log.d("AJIN", "radius: " + radius);
+        Log.d("AJIN", "category: " + category);
+
+        SearchResultCallback searchResultCallback = new SearchResultCallback() {
+            @Override
+            public void onSuccess(SearchResponse result) {
+                Log.d("AJIN", "result come");
+                WritableMap map = Arguments.createMap();
+                SearchData searchData = result.getSearchData();
+                map.putMap("searchData", SearchDataConverter.toReadableMap(searchData));
+                map.putString("mapUnitName", mapUnitName);
+                map.putString("searchString", searchString);
+                Log.d("AJIN", "Search result map: " + map.toString());
+                promise.resolve(map);
+
+            }
+
+            @Override
+            public void onFailure(SearchResponse error) {
+                Log.d("AJIN", "result failed"+ error);
+//                promise.reject("Search failed", (WritableMap) error);
+
+            }
+
+            @Override
+            public void onCancelled(SearchResponse searchResponse) {
+                Log.d("AJIN", "result onCancelled"+ searchResponse);
+            }
+        };
+
+        // Check if stateVectorForMatches is null
+        Map<String, List<Object>> sv = new HashMap<>();
+        if (stateVectorForMatches != null) {
+            ReadableMapKeySetIterator iterator = stateVectorForMatches.keySetIterator();
+
+            while (iterator.hasNextKey()) {
+                String key = iterator.nextKey();
+                ReadableArray array = stateVectorForMatches.getArray(key);
+                List<Object> values = new ArrayList<>();
+                for (int i = 0; i < array.size(); i++) {
+                    switch (array.getType(i)) {
+                        case String:
+                            values.add(array.getString(i));
+                            break;
+                        case Number:
+                            values.add(array.getDouble(i));
+                            break;
+                        case Boolean:
+                            values.add(array.getBoolean(i));
+                            break;
+                    }
+                }
+                sv.put(key, values);
+            }
+        } else {
+            Log.d("AJIN", "stateVectorForMatches is null");
+        }
+
+        Search.getInstance().handleSearchRequest(
+                mapUnitName,
+            searchString, 
+            sv,
+            resultCount, 
+            lang_code,
+            CURRENT_LATITUDE, 
+            CURRENT_LONGITUDE, 
+            debug,
+            onlineOnly,
+            makeFullSearch,
+            isPoiSearch,
+            radius,
+            category,
+            searchResultCallback);
+    }
+
+    @ReactMethod
+    public void removeStateVector(String key, int index) {
+        Search.getInstance().removeStateVector(key, (long)index);
+    }
+
+
+    @ReactMethod
+    public void clearStateVector() {
+        Search.getInstance().clearStateVector();
+    }
+
 }

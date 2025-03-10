@@ -4,25 +4,30 @@ import React, { Component } from 'react';
 import { requireNativeComponent, View } from 'react-native';
 import { DeviceEventEmitter } from 'react-native';
 import PropTypes from 'prop-types';
+import { NativeModules } from 'react-native';
+// This component wraps a native map module called 'NeNativeModule' and provides a React interface to it
+const MapView = requireNativeComponent('NeNativeModule');
+const { NeNativeModule } = NativeModules;
 
-const MapView = requireNativeComponent('NeNativeModule'); // Use the module name defined in your native module
-
+// Default styling for the map view
 const defaultStyle = {
-  height: '99%',
+  height: '99%', 
   width: '100%',
 };
 
 class NEMap extends Component {
   constructor(props) {
     super(props);
+    // Track map loading state and resize state
     this.state = {
-      mapLoaded: false,
-      loadMap: false,
-      resizeDone: false,
+      mapLoaded: false, // Whether native map is fully loaded
+      loadMap: false,   // Whether to render map component
+      resizeDone: false // Whether resize animation is complete
     };
     this.getmapReady = this.getmapReady.bind(this);
   }
 
+  // Trigger map resize after short delay
   triggerResize() {
     setTimeout(() => {
       this.setState(prevState => ({
@@ -32,10 +37,11 @@ class NEMap extends Component {
     }, 100);
   }
 
+  // Special resize handling for navigation mode
   triggerResizeNav() {
     this.setState(prevState => ({
-      ...prevState,
-      resizeDone: false,
+      ...prevState, 
+      resizeDone: false
     }));
     setTimeout(() => {
       this.setState(prevState => ({
@@ -46,6 +52,34 @@ class NEMap extends Component {
   }
 
   componentDidMount() {
+     /* TEST SEARCH */
+    setTimeout(async () => {
+      const searchResponse = await NeNativeModule.search(
+        13.0827,     // Chennai latitude
+        80.2707,     // Chennai longitude
+        "hotel",      // searchString - Text to search for
+        "india", // mapUnitName - Map region/zone name
+        {},          // stateVectorForMatches - State vector for matching results
+        10,          // resultCount - Number of results to return
+        "en",        // lang_code - Language code for results
+        true,        // debug - Enable debug mode
+        false,        // onlineOnly - Search only online results
+        false,        // makeFullSearch - Perform full search
+        false,        // isPoiSearch - Search for points of interest
+        50000,        // radius - Search radius in meters
+        '["restaurant", "cafe", "fast food"]'           // category - POI category filter
+      );
+      console.log("SEARCH RESPONSE", JSON.stringify(searchResponse.searchData.fast_match))
+      console.log("SEARCH RESPONSE", JSON.stringify(searchResponse.searchData.matchedStrings))
+
+      /* To clear a single state vector */
+      NeNativeModule.removeStateVector("place_name", 0)
+
+      /* To clear all state vectors */
+      NeNativeModule.clearStateVector()
+
+    }, 15000);
+    // Initialize map after short delay
     setTimeout(() => {
       this.setState(prevState => ({
         ...prevState,
@@ -53,23 +87,21 @@ class NEMap extends Component {
         resizeDone: false,
       }));
     }, 100);
-    console.log("NEMap componentDidMount");
-    /* Trigger map ready callback */
+
+    // Set up event listeners for map events from native code
     this.mapReadyListener = DeviceEventEmitter.addListener('onMapReady', () => {
       console.log("MAP READYY")
-      // Set Map loaded to true
       this.setState(prevState => ({
         ...prevState,
         mapLoaded: true,
       }));
-      this.props.onMapReady ? this.props.onMapReady() : null;
-
+      this.props.onMapReady?.();
       this.triggerResize();
     });
 
+    // Navigation ready event handling
     this.navigationReadyListener = DeviceEventEmitter.addListener("onNavigationReady", () => {
-      this.props.onMapReady ? this.props.onMapReady() : null
-      // Set Map loaded to true
+      this.props.onMapReady?.();
       setTimeout(() => {
         this.setState(prevState => ({
           ...prevState,
@@ -77,12 +109,9 @@ class NEMap extends Component {
         }));
         this.triggerResizeNav()
       }, 100)
-
-      console.log("Navigation, Map LOADED TRUE")
-
-
     });
 
+    // Map click event - provides lat/lng coordinates
     this.mapClickListener = DeviceEventEmitter.addListener(
       'onMapClick',
       data => {
@@ -90,10 +119,11 @@ class NEMap extends Component {
           longitude: parseFloat(data.longitude.toFixed(5)),
           latitude: parseFloat(data.latitude.toFixed(5)),
         };
-        this.props.onMapClick ? this.props.onMapClick(fixedData) : null;
+        this.props.onMapClick?.(fixedData);
       },
     );
 
+    // User location updates
     this.userLocationChangeListener = DeviceEventEmitter.addListener(
       'onUserLocationChange',
       data => {
@@ -101,50 +131,52 @@ class NEMap extends Component {
           longitude: parseFloat(data.longitude.toFixed(5)),
           latitude: parseFloat(data.latitude.toFixed(5)),
         };
-        this.props.onUserLocationChange
-          ? this.props.onUserLocationChange(fixedData)
-          : null;
+        this.props.onUserLocationChange?.(fixedData);
       },
     );
 
+    // Route/navigation related events
     this.directionReadyListener = DeviceEventEmitter.addListener(
       'direction-ready',
       data => {
-        this.props.onDirectionReady ? this.props.onDirectionReady(data) : null;
+        this.props.onDirectionReady?.(data);
       },
     );
+
     this.directionInitListener = DeviceEventEmitter.addListener(
       'direction-init',
       data => {
-        this.props.onDirectionInit ? this.props.onDirectionInit(true) : null;
+        this.props.onDirectionInit?.(true);
       },
     );
 
     this.distanceListner = DeviceEventEmitter.addListener(
       'navigationLocation',
       data => {
-        this.props.distanceListner ? this.props.distanceListner(data) : null
+        this.props.distanceListner?.(data);
       },
     );
 
+    // Marker interaction events
     this.markerClickListener = DeviceEventEmitter.addListener(
       'onMarkerClick',
       (data) => {
-        this.props.onMarkerClick ? this.props.onMarkerClick(data) : null;
+        this.props.onMarkerClick?.(data);
       }
     )
 
     this.onMapDblclickListener = DeviceEventEmitter.addListener(
       'onMapDblclick',
       (data) => {
-        this.props.onMapDblclick ? this.props.onMapDblclick(data) : null;
+        this.props.onMapDblclick?.(data);
       }
     )
 
+    // Search related events
     this.searchResultsListener = DeviceEventEmitter.addListener(
       'onSearchResults',
       (data) => {
-        this.props.onSearchResults ? this.props.onSearchResults(data) : null;
+        this.props.onSearchResults?.(data);
       }
     )
 
@@ -152,7 +184,7 @@ class NEMap extends Component {
       'onSearchPOIResults',
       (data) => {
         console.log("SEARCH POI RESULTS", data)
-        this.props.onSearchPOIResults ? this.props.onSearchPOIResults(data) : null;
+        this.props.onSearchPOIResults?.(data);
       }
     )
 
@@ -160,28 +192,30 @@ class NEMap extends Component {
       'onSearchPOIError',
       (data) => {
         console.log("SEARCH POI Error", data)
-        this.props.onSearchPOIError ? this.props.onSearchPOIError(data) : null;
+        this.props.onSearchPOIError?.(data);
       }
     )
 
+    // Map movement/position events
     this.mapCenterListener = DeviceEventEmitter.addListener(
       'onMapCenterChanged',
       (data) => {
-        this.props.onMapCenterChanged ? this.props.onMapCenterChanged(data) : null;
+        this.props.onMapCenterChanged?.(data);
       }
     )
 
     this.mapMovingListener = DeviceEventEmitter.addListener(
       'onMapMoving',
       (data) => {
-        this.props.onMapMoving ? this.props.onMapMoving(data) : null;
+        this.props.onMapMoving?.(data);
       }
     )
 
+    // Navigation end events
     this.onNavigationEndListener = DeviceEventEmitter.addListener(
       'navigation',
       (data) => {
-        this.props.onNavigationEnd ? this.props.onNavigationEnd(data) : null;
+        this.props.onNavigationEnd?.(data);
       }
     )
 
@@ -193,27 +227,25 @@ class NEMap extends Component {
     )
   }
 
+  // Clean up event listeners
   componentWillUnmount() {
-    // Don't forget to remove the listener to avoid memory leaks
     this.mapReadyListener.remove();
     this.mapClickListener.remove();
-    // this.navigationReadyListener.remove();
-
   }
+
   getmapReady() {
     return this.state.mapLoaded;
   }
 
+  // Handle marker updates by triggering resize
   componentDidUpdate = (prevProps, prevState) => {
     if (prevProps.markers !== this.props.markers) {
       this.setState(prevState => ({
         ...prevState,
         resizeDone: !prevState.resizeDone,
       }));
-      // }, 100);
     }
   };
-
 
   render() {
     return this.state.loadMap ? (
@@ -251,6 +283,7 @@ class NEMap extends Component {
   }
 }
 
+// PropTypes define the expected props and their types
 NEMap.propTypes = {
   onMapReady: PropTypes.func,
   onMapClick: PropTypes.func,
