@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { colors, Fonts } from '../constants/constants';
 import { height } from '../utils/Utils';
+import { difference } from 'react-query/types/core/utils';
 
 export const addLocation = StyleSheet.create({
   container: {
@@ -28,35 +29,46 @@ export const addLocation = StyleSheet.create({
   addLocationContainer: {
     width: '95%',
     padding: 10,
+    paddingBottom:0,
     backgroundColor: colors.white,
     alignSelf: 'center',
     borderWidth: 0.4,
     borderRadius: 10,
     elevation: 5,
     flexDirection:'row',
+    borderColor:colors.grey_light,
+   
   },
   inputHeader: {
     width: '100%',
     top: 10,
     left: 20,
     fontFamily: Fonts.regular,
-    color: colors.black,
+    color: '#757575',
     fontSize: 12,
+    paddingLeft:5
   },
+  divider: {height: 1, backgroundColor: colors.grey_light, marginBottom: 5,marginTop:0},
   draggableCard: {
     flexDirection: 'row',
-    alignItems: 'center',
     width: '100%',
-    alignSelf: 'center',
+    
+    
     // backgroundColor:'yellow'
   },
+  dragIcons: {
+    marginTop: 5,
+    
+  },
   draggableInput: {
-    width: '86%',
-    height: height * 0.06,
+    width: '94%',
+    paddingLeft:5,
     marginLeft: 5,
+    paddingTop:8,
     fontFamily: Fonts.medium,
     fontSize: 14,
-    borderBottomWidth: 0.4,
+    color:colors.black,
+   
     // backgroundColor:'red'
   },
   dragIcon: {
@@ -72,39 +84,69 @@ export const addLocation = StyleSheet.create({
   confirmBtn: {
     width: '90%',
     alignSelf: 'center',
-    backgroundColor: colors.blue_xxdark,
+    backgroundColor: colors.black,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 10,
     position: 'absolute',
     bottom: 20,
     alignItems: 'center',
   },
+  confirmBtnTxtContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   confirmBtnTxt: {
     fontFamily: Fonts.medium,
     color: colors.white,
-    fontSize: 12,
+    fontSize: 16,
   },
   rideSelectionContainer: {
-    width: '96%',
+    width: '95%',
     paddingVertical: 10,
     backgroundColor: colors.white,
     flexDirection: 'row',
     justifyContent: 'space-around',
-    alignSelf: 'center'
+    alignSelf: 'center',
   },
   rideSelection: {
     backgroundColor: colors.black,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    width: '46%',
     paddingHorizontal: 15,
     borderRadius: 15,
-    paddingVertical: 5
+    padding: 10,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    justifyContent: 'center',
+  },
+  forMeContainer: {
+    padding: 7,
+    position: 'absolute',
+    top: 10,
+    right: 15,
+    display:'flex',
+    flexDirection:'row',
+    alignItems:'center',
+    gap:5,
+    zIndex:10
+  },
+  forMeText: {
+    color: colors.black,
+    fontSize: 16,
+    fontFamily: Fonts.regular,
   },
   rideSelectionTxt: {
     color: colors.white,
     fontFamily: Fonts.regular,
-    fontSize: 12
+    fontSize: 14,
+    display: 'flex',
+    paddingLeft:5
+
   },
   rideOptionContainer: {
     position: 'absolute',

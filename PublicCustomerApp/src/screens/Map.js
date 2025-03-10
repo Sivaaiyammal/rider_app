@@ -1,11 +1,13 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import PropTypes from 'prop-types';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import useMapStore from "../store/useMapStore";
 import NEMap from "../components/Native/NEMap";
 import Loaders from "../components/Loaders/FullScreenLoader";
 import useLocationStore from "../store/useLocationStore";
+import useMapStyleStore from "../store/useMapStyleStore";
 
 const MapContainer = ({ mapStyle }) => {
   const {
@@ -29,14 +31,14 @@ const MapContainer = ({ mapStyle }) => {
     setUserLocation,
     setMapMoving,
     setDisduration,
-    setSearchPOIError
+    setSearchPOIError,
+    setMapLocation
   } = useMapStore();
+  const { defaultStyle } = useMapStyleStore();
 
   const { location } = useLocationStore();
 
   const searchStr = { start_location: location ? [location[1], location[0]] : [], search_str: searchUnit }
-
-  console.log("mapReady", searchStr);
 
   const defaultSettings = {
     "distanceFormate": "Kilometers(km)/ Meters(m)",
@@ -50,8 +52,9 @@ const MapContainer = ({ mapStyle }) => {
     "tolls": "Slightly Prefer"
   }
 
+
   return (
-    <View style={[styles.mapContainer]}>
+    <View style={[styles.mapContainer, defaultStyle]}>
       {!mapReady && <Loaders message="Setting up Map" />}
       <NEMap
         mapStyle={mapStyle || styles.mapStyles}
@@ -80,7 +83,9 @@ const MapContainer = ({ mapStyle }) => {
         onSearchPOIError={setSearchPOIError}
         onNavigationEnd={(e) => console.log('hari--->>navigationEnd-->>', e)}
       />
+     
     </View>
+    
   );
 };
 
@@ -92,15 +97,13 @@ export default MapContainer;
 
 const styles = StyleSheet.create({
   mapContainer: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
+    position: "absolute", 
     zIndex: -1,
   },
   mapStyles: {
     width: "100%",
     height: "100%",
-    zIndex: 99999999,
+   
   },
   gradientContainer: {
     zIndex: 2,
@@ -111,4 +114,21 @@ const styles = StyleSheet.create({
   LinearGradient: {
     flex: 1,
   },
+  currentLocationButton: {
+    position: 'absolute',
+    right: 16,
+    bottom: 100,
+    backgroundColor: 'white',
+    padding: 12,
+    borderRadius: 30,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    zIndex:4000
+  }
 });

@@ -52,7 +52,7 @@ export const onBoardingSlides = [
  export const tripType = [
   {
     id: 1,
-    name: 'One Way Trip',
+    name: 'One Way',
     icon: <OnWayTrip />,
     value:'one_way'
   },
@@ -84,38 +84,39 @@ export const rideType = [
 ];
 
 export const getVehicleDetailsById = (id) => {
+
   switch (id) {
-    case 'bike':
+    case 'BIKE':
       return {
         name: 'Motor Bike',
         image: require('../assets/image/vehicle/bike.png'),
         capacity: 1
       };
-    case 'auto':
+    case 'AUTO':
       return {
         name: 'Auto Rickshaw',
         image: require('../assets/image/vehicle/auto.png'),
         capacity: 3
       };
-    case 'hatchback':
+    case 'HATCHBACK':
       return {
         name: 'Hatchback',
         image: require('../assets/image/vehicle/hatchback.png'),
         capacity: 3
       };
-    case 'sedan':
+    case 'SEDAN':
       return {
         name: 'Sedan',
         image: require('../assets/image/vehicle/sedan.png'),
         capacity: 4
       };
-    case 'suv':
+    case 'SUV':
       return {
         name: 'SUV',
         image: require('../assets/image/vehicle/suv.png'),
         capacity: 4
       };
-    case 'luxsedan':
+    case 'LUXURY_SEDAN':
       return {
         name: 'Luxury Sedan',
         image: require('../assets/image/vehicle/luxsedan.png'),

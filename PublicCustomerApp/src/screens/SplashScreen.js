@@ -24,24 +24,31 @@ const SplashScreen = () => {
 
     console.log('access_token',access_token, userdetails);
 
-    if (access_token.data && userdetails.data) {
+    if (access_token.data) {
 
-      if (!userdetails.data.personalDetails) {
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'RegisterationScreen' }],
-          }),
-        );
-        return;
-      } else {
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'HomeScreen' }],
-          }),
-        );
-      }
+      // if (!userdetails.data.personalDetails) {
+      //   navigation.dispatch(
+      //     CommonActions.reset({
+      //       index: 0,
+      //       routes: [{ name: 'RegisterationScreen' }],
+      //     }),
+      //   );
+      //   return;
+      // } else {
+      //   navigation.dispatch(
+      //     CommonActions.reset({
+      //       index: 0,
+      //       routes: [{ name: 'HomeScreen' }],
+      //     }),
+      //   );
+      // }
+
+      navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'HomeScreen' }],
+            }),
+          );
 
 
     } else if (language.data === 'languageDone') {

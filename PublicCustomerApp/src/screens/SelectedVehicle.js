@@ -18,7 +18,7 @@ import SearchLoader from '../components/Loaders/SearchLoader';
 import {cancelRideMutation, createRideMutation} from '../API/APICalls/RideAPICalls';
 import FullScreenLoader from '../components/Loaders/FullScreenLoader';
 import SelectedVehicleDetails from '../components/SelectedVehicleDetails';
-
+import useMapStyleStore from '../store/useMapStyleStore';
 const SelectedVehicle = () => {
   const navigation = useNavigation();
 
@@ -26,6 +26,7 @@ const SelectedVehicle = () => {
   const {selectedVehicle} = useSelectedVehicleStore();
   const {directions, setDirections} = useLocationStore();
   const {selectedTrip, selectedRide, setBookingDetails, bookingDetails} = useRideSelectionStore();
+  const {setMapStyle,resetMapStyle} = useMapStyleStore();
   const {
     setOnSearchResults,
     setMapMarkers,
@@ -39,13 +40,14 @@ const SelectedVehicle = () => {
   const [isLoading, setIsLoading] = useState('');
 
   const onBackPress = () => {
+    resetMapStyle();
     goBack();
   };
 
   const getRideTypeValue = type => {
-    if (type == '1') return 'one_way';
-    if (type == '2') return 'round_trip';
-    return 'one_way';
+    if (type == '1') return 'ONESIDE';
+    if (type == '2') return 'ROUNDTRIP';
+    return 'ONESIDE';
   };
   const getTripTypeValue = type => {
     if (type == '1') return 'instant';
@@ -98,6 +100,10 @@ const SelectedVehicle = () => {
 
   // Clear timeout on component unmount
   useEffect(() => {
+    setMapStyle({
+      width: "100%",
+      height: "60%",
+    });
     return () => {
       if (timeoutIdRef.current) {
         clearTimeout(timeoutIdRef.current);
@@ -134,23 +140,21 @@ const SelectedVehicle = () => {
     let waypoints = directions.filter(item => item.name == 'Waypoint');
     let trip_type = getTripTypeValue(selectedTrip.id);
     let ride_type = getRideTypeValue(selectedRide.id);
-    let vehicle_type = getVehicleTypeValue(selectedVehicle.id);
+    let vehicle_type = selectedVehicle.vehicleType;
 
     let payload = {
-      startLocation: {
-        location: start_location.location,
-        address: start_location.locationName,
-      },
-      endLocation: {
-        location: end_location.location,
-        address: end_location.locationName,
-      },
-      waypoints: waypoints.map(item => {
-        return {location: item.location, address: item.locationName};
-      }),
+      startLocation: [ start_location.location[0],start_location.location[1]],
+      endLocation: [end_location.location[0],end_location.location[1]],
+      stops: [
+        {name:'Pickup Point',location:[start_location.location[0],start_location.location[1]],address:start_location.locationName},
+        {name:'Drop Point',location:[end_location.location[0],end_location.location[1]],address:end_location.locationName},
+      ],
       rideType: ride_type,
       vehicleType: vehicle_type,
+      passangerCount: 1,
+      pickupTime: "234243242342",
     };
+    console.log('payload-->>', payload)
     BookingMutate(payload);
   };
 
@@ -175,7 +179,7 @@ const SelectedVehicle = () => {
               <FullScreenLoader />
             </View>
           )}
-          <NavBar withBg title={'Choose Your Ride'} onBackPress={onBackPress} />
+          <NavBar title={'Choose Your Ride'} onBackPress={onBackPress} />
           <SelectedVehicleDetails
             selectedVehicle={selectedVehicle}
             HandleBookRide={HandleBookRide}

@@ -36,10 +36,20 @@ export const navStyles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
   },
+  leftcontent: {
+    alignItems: 'flex-start',
+  },
   contentTxt: {
     fontFamily: Fonts.regular,
     color: colors.black,
     fontSize: 16,
     textAlign:'center'
+  },
+  leftcontentTxt: {
+    fontFamily: Fonts.regular,
+    color: colors.black,
+    fontSize: 16,
+    textAlign:'left',
+    paddingLeft:0
   },
 });

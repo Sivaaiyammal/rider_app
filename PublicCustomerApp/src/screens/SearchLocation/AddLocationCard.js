@@ -37,23 +37,24 @@ const AddLocationCard = () => {
 
   const onFocus = useCallback((id, obj) => {
     setStackScreen('SearchScreen');
+    console.log("obj", obj)
     setSelectedInput(obj);
   }, []);
 
   const getLocationIcon = useCallback((id, totalLocations) => {
     if (id === 0) {
       return {
-        icon: <YourLoc />,
+        icon: <YourLoc style={addLocation.dragIcons}/>,
         name: 'Start Location',
       };
     } else if (id === totalLocations - 1) {
       return {
-        icon: <EndLoc width={15} height={15} />,
+        icon: <EndLoc  style={addLocation.dragIcons} width={15} height={15} />,
         name: 'End Location',
       };
     } else {
       return {
-        icon: <Flag width={15} height={15} />,
+        icon: <Flag  style={addLocation.dragIcons} width={15} height={15} />,
         name: `Waypoint`,
       };
     }
@@ -272,43 +273,46 @@ const AddLocationCard = () => {
     <View style={{backgroundColor: colors.white, paddingVertical: 5}}>
       <View style={addLocation.addLocationContainer}>
         <View style={{width:'88%'}}>
-        {directions.map((direction, index) => (
-          <DragAndDropCard
-            key={direction.id}
-            index={index}
-            length={directions.length}
-            itemHeight={itemHeight}
-            topOffset={0}
-            onDragEnd={(dragIndex, hoverIndex, isMoved) => {
-              console.log(
-                `Dragged from ${dragIndex} to ${hoverIndex} - Moved: ${isMoved}`,
-              );
-              if (isMoved) return moveItem(dragIndex, hoverIndex);
-              if (!isMoved && inputRefs.current[hoverIndex])
-                inputRefs.current[hoverIndex].focus();
-            }}>
-            <Text style={addLocation.inputHeader}>
-             {direction?.name?.includes('Waypoint') ? direction.name : getLocationIcon(index, directions.length).name}
-            </Text>
-            <View style={addLocation.draggableCard}>
-              {getLocationIcon(index, directions.length).icon}
-              <TextInput
-                ref={el => (inputRefs.current[index] = el)}
-                style={addLocation.draggableInput}
-                value={direction.locationName}
-                onFocus={() => onFocus(index, direction)}
-                selection={{start: 0}}
-                // editable={false}
-              />
-              {getLocationIcon(index, directions.length).name ===
-                'Waypoint' && (
-                <TouchableOpacity onPress={() => removeWaypoints(direction.id)}>
-                  <Ionicons name={'close'} size={20} />
-                </TouchableOpacity>
+          {directions.map((direction, index) => (
+            <React.Fragment key={direction.id}>
+              <DragAndDropCard
+                index={index}
+                length={directions.length}
+                itemHeight={itemHeight}
+                topOffset={0}
+                onDragEnd={(dragIndex, hoverIndex, isMoved) => {
+                  console.log(
+                    `Dragged from ${dragIndex} to ${hoverIndex} - Moved: ${isMoved}`,
+                  );
+                  if (isMoved) return moveItem(dragIndex, hoverIndex);
+                  if (!isMoved && inputRefs.current[hoverIndex])
+                    inputRefs.current[hoverIndex].focus();
+                }}>
+                <Text style={addLocation.inputHeader}>
+                  {direction?.name?.includes('Waypoint') ? direction.name : getLocationIcon(index, directions.length).name}
+                </Text>
+                <View style={addLocation.draggableCard}>
+                  {getLocationIcon(index, directions.length).icon}
+                  <TextInput
+                    ref={el => (inputRefs.current[index] = el)}
+                    style={addLocation.draggableInput}
+                    value={direction.locationName ? `${direction.locationName.charAt(0).toUpperCase()}${direction.locationName.slice(1)}${direction.locationAddress ? `, ${direction.locationAddress}` : ''}` : ''}
+                    onFocus={() => onFocus(index, direction)}
+                    selection={{start: 0}}
+                    // editable={false}
+                  />
+                  {getLocationIcon(index, directions.length).name === 'Waypoint' && (
+                    <TouchableOpacity onPress={() => removeWaypoints(direction.id)}>
+                      <Ionicons name={'close'} size={20} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </DragAndDropCard>
+              {index !== directions.length - 1 && (
+                <View style={addLocation.divider} />
               )}
-            </View>
-          </DragAndDropCard>
-        ))}
+            </React.Fragment>
+          ))}
         </View>
         <TouchableOpacity
           style={addLocation.waypointsbtn}

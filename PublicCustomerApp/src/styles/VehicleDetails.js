@@ -2,6 +2,7 @@
 import {StyleSheet} from 'react-native';
 import {colors, Fonts} from '../constants/constants';
 import {height, width} from '../utils/Utils';
+import { AutoScroll } from 'recyclerlistview';
 
 export const vehicleDetailsStyles = StyleSheet.create({
     detailsContainer:{
@@ -11,7 +12,20 @@ export const vehicleDetailsStyles = StyleSheet.create({
         alignSelf:'center',
         borderRadius:10,
         marginTop:10,
-        paddingVertical:5
+        paddingVertical:10,
+        gap:10,
+        paddingHorizontal:10,
+        alignItems:'center'
+        
+    },
+    vehicleImage:{
+        flex:1.5,
+        height:100,
+        borderRadius:10
+    },
+    durationContainer:{
+        flexDirection:'row',
+        gap:10
     },
     name:{
         fontFamily:Fonts.semi_bold,
@@ -37,18 +51,27 @@ export const vehicleDetailsStyles = StyleSheet.create({
         borderRadius:10,
         marginTop:10,
         paddingVertical:5,
-        paddingHorizontal:10
+        paddingHorizontal:10,
+        display:'flex',
+        flexDirection:'column',
+        gap:10
     },
     locationNames:{
         flexDirection:'row',
         gap:10,
         alignItems:'center'
+        
+    },
+    locationTxtContainer:{
+        flex:1,
+        paddingHorizontal:10,
+        paddingVertical:5
     },
     locationTxt:{
         fontFamily:Fonts.regular,
         fontSize:14,
         color:colors.black,
-        marginTop:15
+       
     },
     paymentContainer:{
         backgroundColor:colors.white_dirt,
@@ -64,7 +87,10 @@ export const vehicleDetailsStyles = StyleSheet.create({
     paymentTxt:{
         fontFamily:Fonts.regular,
         fontSize:16,
-        color:colors.black
+        color:colors.black,
+        flexDirection:'row',
+        alignItems:'center',
+        gap:10
     },
     cnfrmBtn:{
         backgroundColor:colors.green,
@@ -76,10 +102,28 @@ export const vehicleDetailsStyles = StyleSheet.create({
         paddingHorizontal:10,
         alignItems:'center'
     },
+    paymentOptionsContainer:{
+        backgroundColor:colors.white_dirt,
+        width:'90%',
+        alignSelf:'center',
+        borderRadius:10,
+        borderTopRightRadius:0,
+        borderTopLeftRadius:0,
+        paddingVertical:10,
+        paddingHorizontal:10,
+     
+    },
+    paymentOption:{
+        paddingVertical:10,
+        paddingHorizontal:10,
+       
+    },
+    
+    
     cnfrmBtnTxt:{
         color:colors.white,
         fontFamily:Fonts.medium,
-        fontSize:12
+        fontSize:16
     },
     dateTimeText:{
         width:'70%',

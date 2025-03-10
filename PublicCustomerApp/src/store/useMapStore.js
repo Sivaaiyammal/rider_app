@@ -73,6 +73,10 @@ const useMapStore = create((set) => ({
     mapMoving: true,
     setMapMoving: mapMoving => set({ mapMoving }),
 
+
+    stateVector: null,
+    setStateVector: (newState) => set({ stateVector: newState }),
+
     mode: 'light',
     setMode: mode => {
         set({ mode })

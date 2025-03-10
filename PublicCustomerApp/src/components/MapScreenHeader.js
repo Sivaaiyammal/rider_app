@@ -50,7 +50,9 @@ const MapScreenHeader = props => {
           <Ionicons
             name={!showMenu ? 'reorder-three-outline' : 'close'}
             size={35}
+            color={colors.black}
           />
+          
         </TouchableOpacity>
         <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
           <ProfileImage />
@@ -58,7 +60,7 @@ const MapScreenHeader = props => {
       </View>
       <View style={{marginLeft: 10}}>
         <Text style={styles.title}>{'Location'}</Text>
-        <Text style={styles.address}>
+        <Text style={[styles.address, {maxWidth: 270}]} numberOfLines={1} ellipsizeMode="tail">
           {currentLocationName ? currentLocationName : <ActivityIndicator />}
         </Text>
       </View>

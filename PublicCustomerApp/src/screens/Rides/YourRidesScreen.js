@@ -31,8 +31,8 @@ const YourRidesScreen = () => {
 
     const [Rides, setRides] = useState([
         {
-            bookedTime: 1726120926843,
-            trip_id: 123,
+            bookingTime: 1726120926843,
+            _id: 123,
             fare: 100,
             distance: 10,
             duration: 20,
@@ -47,7 +47,8 @@ const YourRidesScreen = () => {
             endLocation: {
                 address: 'Kolkata'
             },
-        }
+            
+        },
     ]);
 
 
@@ -87,11 +88,11 @@ const YourRidesScreen = () => {
         setIsRefreshing(false);
         if (data.success) {
 
-            let { rides, totalPages } = data
-            if (isLoadMore) setRides([...Rides, ...rides])
-            else setRides(rides)
+            let { trips, pagination } = data
+            if (isLoadMore) setRides([...Rides])
+            else setRides(trips)
 
-            setFilterMaxPages(totalPages)
+            setFilterMaxPages(pagination?.totalPages)
 
         } else {
             showNotification('Failed to get rides', data.message, 'danger');
@@ -123,7 +124,7 @@ const YourRidesScreen = () => {
         setIsRefreshing(true);
         await GetRidesMutate({
             queryKey: 'GetRidesQuery',
-            url: '/customer/ride/getRides',
+            url: '/publicrides/customer/getTrips',
             query: payload
         })
 
@@ -158,7 +159,7 @@ const YourRidesScreen = () => {
                 <View
                     style={yourRidesStyles.ridesContainerItemLeft}
                 >
-                    <Text style={yourRidesStyles.ridesContainerItemTitle}>{utils.formateDateLabel(ride.bookedTime)}</Text>
+                    <Text style={yourRidesStyles.ridesContainerItemTitle}>{utils.formateDateLabel(ride.bookingTime)}</Text>
                     <Text style={yourRidesStyles.ridesContainerItemDesc}>{ride?.endLocation?.address || '--'}</Text>
                     <Text style={yourRidesStyles.ridesContainerItemFare}>₹{ride.fare || '00'}</Text>
                 </View>

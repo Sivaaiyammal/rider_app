@@ -7,6 +7,11 @@ export const Fonts = {
 };
 
 export const colors = {
+  white: "#FFFFFF",
+  grey_xlight: "#eeeeee",
+  font_black: "#000000",
+  handle_grey: "#616161",
+
   black: '#212121',
   dark: '#0A0A0A',
   white: '#FFFFFF',
@@ -25,5 +30,18 @@ export const colors = {
   yellow_light: '#FFEDA7',
   call_green: '#329782',
   message_blue: '#4289E5',
-  cance_red: '#FF6060'
+  cance_red: '#FF6060',
+  grey_xxlight: "#fafafa",
+  grey_light: "#e0e0e0",
+  grey: "#616161",
+  blue_xlight: "#d6f2ff",
+  blue: "#0080ff",
+  green_xlight: "#d6f2ea",
+  green: "#0d8f03",
+  orange_xlight: "#ffebd5",
+  orange: "#f18000",
+  violet: "#5a36bf",
+  commonBlack:"#000000",
+  commonWhite:"#FFFFFF",
+  danger:'red'
 };

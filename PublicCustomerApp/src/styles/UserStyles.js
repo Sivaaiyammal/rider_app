@@ -23,7 +23,7 @@ export const loginStyles = StyleSheet.create({
   contectContainer: {
     width: '90%',
     alignSelf: 'center',
-    paddingVertical: 10,
+    paddingTop: 10,
   },
   signInTxt: {
     fontFamily: Fonts.light,
@@ -109,6 +109,18 @@ export const loginStyles = StyleSheet.create({
     fontFamily:Fonts.light,
     textAlign:'center',
     marginTop:15
+  },
+  newUserBtn: {
+    paddingVertical:10,
+    paddingLeft: 20,
+    fontFamily: Fonts.regular,
+    color: colors.black,
+    fontSize: 16,
+  },
+  registerPageBtn:{
+    paddingLeft:10,
+    color:colors.black,
+    fontWeight:'bold'
   }
 });
 

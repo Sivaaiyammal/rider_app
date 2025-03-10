@@ -1,21 +1,62 @@
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View,StatusBar,Linking,Alert,BackHandler} from 'react-native';
 import React from 'react';
 import NavBar from '../../components/NavBar';
 import {colors, Fonts} from '../../constants/constants';
 
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-
+import  useMapStore  from '../../store/useMapStore';
 import Message from '../../assets/image/svgIcons/message.svg';
 import { rideStyles } from '../../styles/RideStyles';
+import { useStackScreenStore } from '../../store/useStackScreenStore';
+import useRideSelectionStore from '../../store/useRideSelectionStore';
+import useLocationStore from '../../store/useLocationStore';
 
 const DriverArrival = () => {
   const OTP = '4730';
   const otpArray = OTP.split('');
+  const {goBack} = useStackScreenStore();
+  const {
+    setOnSearchResults,
+    setMapMarkers,
+    setDirectionPoints,
+   
+  } = useMapStore();
+  const {setDirections} = useLocationStore();
+
+  const {vehicleList, setVehicleList} =
+    useRideSelectionStore();
+
+  const handleCall = (phoneNumber) => {
+    const url = `tel:${encodeURIComponent(phoneNumber)}`; 
+     Linking.openURL(url).catch((err) => console.error('An error occurred', err));
+  }
+
+  const onBackPress = async () => {
+
+    if (vehicleList.length !== 0) return setVehicleList([])
+    setDirections([
+      {id: 1, name: 'Start', location: [], locationName: ''},
+      {id: 2, name: 'End', location: [], locationName: ''},
+    ]);
+    setOnSearchResults(null);
+    setMapMarkers([]);
+    goBack();
+    setDirectionPoints(null);
+    setSearchUnit('');
+    setSelectedInput(null);
+    await locationTask.getCurrentLocation();
+  };
+
+  BackHandler.addEventListener('hardwareBackPress', () => {
+    onBackPress()
+    return true
+  });
 
   return (
     <>
-      <NavBar withBg title={'Driver Assigned'} />
+    <StatusBar barStyle={'dark-content'} backgroundColor={colors.white}/>
+      <NavBar  title={'Driver Assigned'} />
       <View style={rideStyles.container}>
         <View style={rideStyles.title}>
           <Text style={rideStyles.titleTxt}>Your driver has arrived</Text>
@@ -69,7 +110,7 @@ const DriverArrival = () => {
             </View>
           </View>
           <View style={rideStyles.driverDetails}>
-           <TouchableOpacity style={rideStyles.callBtn}>
+           <TouchableOpacity onPress={() => handleCall('8248611628')} style={rideStyles.callBtn}>
            <FontAwesome6 size={14} color={colors.white} name="phone-volume"/>
             <Text style={rideStyles.callTxt}>CALL DRIVER</Text>
            </TouchableOpacity>

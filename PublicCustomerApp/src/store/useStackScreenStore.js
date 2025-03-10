@@ -2,6 +2,7 @@ import {create} from 'zustand';
 
 export const useStackScreenStore = create((set, get) => ({
   stackScreen: ['Home'],
+  
   setStackScreen: stackScreen => {
     const arr = [];
     arr.push(...get().stackScreen, stackScreen);

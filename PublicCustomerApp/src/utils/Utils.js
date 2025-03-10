@@ -16,6 +16,9 @@ export const utils = {
     else if (type == '5' || type == 'car') return require('../assets/image/vehicle/suv_left.png')
     else if (type == '6') return require('../assets/image/vehicle/luxsedan_left.png')
   },
+  metersToKilometers(meters) {
+    return meters / 1000;
+   },
   getVehicleTypeLabel(type) {
     if (type == '1') return 'Auto'
     else if (type == '2') return 'BiKe'

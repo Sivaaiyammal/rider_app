@@ -1,6 +1,7 @@
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import React, {useState} from 'react';
 import BottomSheet from './BottomSheet';
+import { StatusBar } from 'react-native';
 import {vehicleDetailsStyles} from '../styles/VehicleDetails';
 
 import PeopleBlack from '../assets/image/peopleBlack.svg';
@@ -15,20 +16,31 @@ import ScheduleContainer from '../screens/SearchLocation/ScheduleContainer';
 import BookedTick from '../assets/image/svgIcons/bookedTick.svg';
 import {colors} from '../constants/constants';
 import { getVehicleDetailsById } from '../constants/JsonData';
-
+import Ionicons from 'react-native-vector-icons/Ionicons';
 const SelectedVehicleDetails = props => {
   const {selectedVehicle, HandleBookRide, selectedRide} = props;
   const {directions} = useLocationStore();
   const {scheduleDateTime} = useRideSelectionStore();
 
   const [showScheduleContainer, setShowScheduleContainer] = useState(false);
+  const [bottomSheetHeight, setBottomSheetHeight] = useState(0);
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState('Cash'); 
+  const paymentOptions = ['Cash', 'UPI'];
+
 
   const getLocationIcon = item => {
+    console.log(item.name)
     switch (item.name) {
       case 'Start':
         return <Rocket />;
       case 'End':
         return <EndBlack />;
+      default:
+        if (item.name.startsWith('Waypoint')) {
+          return <EndBlack />;
+        }
+        return null;
     }
   };
 
@@ -51,7 +63,12 @@ const SelectedVehicleDetails = props => {
 
   return (
     <>
-      <BottomSheet>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff"  />
+      <BottomSheet minHeight={bottomSheetHeight}>
+        <View style={{paddingBottom:40}} onLayout={(event) => {
+          const { height } = event.nativeEvent.layout;
+          setBottomSheetHeight(height); // Dynamically set the height
+        }}>
         {selectedRide.name === 'Schedule' && isBooked && (
           <>
             <View
@@ -80,27 +97,33 @@ const SelectedVehicleDetails = props => {
         )}
         <View style={vehicleDetailsStyles.detailsContainer}>
           <Image
-            source={getVehicleDetailsById(selectedVehicle.type).image}
-            style={{width: 120, aspectRatio: 1}}
+          style={vehicleDetailsStyles.vehicleImage}
+            source={getVehicleDetailsById(selectedVehicle.vehicleType).image}
           />
-          <View>
+          <View style={{flex:1,justifyContent:'space-between'}}>
             <Text style={vehicleDetailsStyles.name}>
-              {getVehicleDetailsById(selectedVehicle.type).name}
+              {getVehicleDetailsById(selectedVehicle.vehicleType).name}
             </Text>
+            <View style={vehicleDetailsStyles.durationContainer}>
+
             {selectedRide.name !== 'Schedule' && (
               <Text style={vehicleDetailsStyles.durationTxt}>
                 {' '}
-                <DurationBlack /> {selectedVehicle?.duration?.toFixed(2)}
+                <DurationBlack /> {selectedVehicle?.time}
               </Text>
             )}
 
             <Text style={vehicleDetailsStyles.durationTxt}>
               {' '}
-              <PeopleBlack /> {getVehicleDetailsById(selectedVehicle.type).capacity}
+              <PeopleBlack /> {getVehicleDetailsById(selectedVehicle.vehicleType).capacity}
             </Text>
+
+              
+            </View>
+           
             {selectedRide.name !== 'Schedule' && (
               <Text style={vehicleDetailsStyles.fareTxt}>
-                <FareGreen /> {selectedVehicle.fare}
+                <FareGreen /> {selectedVehicle.price}
               </Text>
             )}
           </View>
@@ -117,20 +140,71 @@ const SelectedVehicleDetails = props => {
           </View>
         )}
         <View style={vehicleDetailsStyles.locationContainer}>
-          {directions.map(item => {
+          {directions.map((item,index) => {
             return (
+          
               <View key={item.id} style={vehicleDetailsStyles.locationNames}>
                 {getLocationIcon(item)}
-                <Text style={vehicleDetailsStyles.locationTxt}>
-                  {item.locationName}
+                <View style={vehicleDetailsStyles.locationTxtContainer}>
+                  <Text>
+                    {index == 0 ? 'From' : index != directions.length-1 ? 'Stop' : 'To'}
+                  </Text>
+                <Text numberOfLines={1} ellipsizeMode="tail" style={vehicleDetailsStyles.locationTxt}>
+                  {item.locationName?.charAt(0).toUpperCase() + item.locationName?.slice(1)}
                 </Text>
+                </View>
               </View>
+              
             );
           })}
         </View>
-        <TouchableOpacity style={vehicleDetailsStyles.paymentContainer}>
+        <TouchableOpacity 
+          style={vehicleDetailsStyles.paymentContainer}
+          onPress={() => setShowPaymentOptions(true)}
+        >
           <Text style={vehicleDetailsStyles.paymentTxt}>Payment Method</Text>
-        </TouchableOpacity>
+              <View style={{flexDirection:'row', alignItems:'center', gap:10}}>
+                <Text style={[vehicleDetailsStyles.paymentTxt,{color:colors.green}]}>{selectedPayment || 'Cash'}</Text>
+                <Ionicons name="chevron-down" size={24} color="black" style={{transform:[{rotate:showPaymentOptions ? '180deg' : '0deg'}]}} />
+              </View>
+          </TouchableOpacity>
+        {showPaymentOptions && (
+          <View style={vehicleDetailsStyles.paymentOptionsContainer}>
+            {paymentOptions.map((option, index) => (
+            <TouchableOpacity 
+              style={[vehicleDetailsStyles.paymentOption, { borderColor: selectedPayment === option ? colors.green : colors.grey,}]}
+              onPress={() => {
+                setSelectedPayment(option);
+                setShowPaymentOptions(false);
+              }}
+            >
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <View style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  borderWidth: 2,
+                  borderColor: selectedPayment === option ? colors.green : colors.grey,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  marginRight: 10
+                }}>
+                  {selectedPayment === option && (
+                    <View style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 6,
+                      backgroundColor: colors.green
+                    }} />
+                  )}
+                </View>
+                <Text style={vehicleDetailsStyles.paymentTxt}>{option}</Text>
+              </View>
+            </TouchableOpacity>
+            ))}
+            
+          </View>
+        )}
         {isBooked ? (
           <TouchableOpacity
             style={[
@@ -145,10 +219,11 @@ const SelectedVehicleDetails = props => {
             style={vehicleDetailsStyles.cnfrmBtn}
             onPress={HandleBookRide}>
             <Text style={vehicleDetailsStyles.cnfrmBtnTxt}>
-              Confirm {selectedVehicle.name} Ride
+              Confirm {getVehicleDetailsById(selectedVehicle.vehicleType).name} Ride
             </Text>
           </TouchableOpacity>
         )}
+        </View>
       </BottomSheet>
       {showScheduleContainer && (
         <View style={{zIndex: 9999, flex: 1}}>
