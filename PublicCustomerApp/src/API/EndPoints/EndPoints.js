@@ -6,6 +6,13 @@ export const requestOTP = async (payload) => {
   return data;
 };
 
+export const testlogin = async (payload) => {
+  const { data } = await apiClient.post('/publicrides/customer/login', payload);
+  return data;
+};
+
+
+
 // verify OTP
 export const verifyOTP = async (payload) => {
   const { data } = await apiClient.post('/customer/auth/verifyOTP', payload);
@@ -26,13 +33,13 @@ export const getUserDetails = async ()=> {
 
 // get ride estimate
 export const getRideEstimation = async (payload)=> {
-  const {data} = await apiClient.post('/customer/ride/getRideEstimate', payload)
+  const {data} = await apiClient.post('/publicrides/customer/getRideEstimations', payload)
   return data
 }
 
 // Book Ride
 export const bookRide = async (payload)=> {
-  const {data} = await apiClient.post('/customer/ride/create', payload)
+  const {data} = await apiClient.post('/publicrides/customer/bookTrip', payload)
   return data
 }
 

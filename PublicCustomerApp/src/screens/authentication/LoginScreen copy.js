@@ -9,7 +9,7 @@ import {CommonActions, useNavigation} from '@react-navigation/native';
 import {showNotification} from '../../components/NotificationManger';
 import {DataStore} from '../../controllers/DataStore';
 
-import {requestOTPMutation, testLogin} from '../../API/APICalls/UserAPICalls';
+import {requestOTPMutation} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 
 const LoginScreen = () => {
@@ -26,26 +26,23 @@ const LoginScreen = () => {
   });
   const [visible, setVisible] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [password, setPassword] = useState('');
   const [phoneNumErr, setPhoneNumErr] = useState(null);
 
   const handleLoginSuccess = (data) => {
     if (data) {
-      showNotification('Logged In', 'Logged in Successfully', 'success');
-      console.log(data, 'data');
-      let {token} = data?.user;
-      console.log("token", token)
-      DataStore.storeData('access_token', token);
-     
+      showNotification('OTP Sent', 'OTP Sent to your mobile number', 'success');
       navigation.dispatch(
         CommonActions.navigate({
-          name: 'HomeScreen',
+          name: 'OTPScreen',
+          params: {
+            phoneNumber: phoneNumber,
+          },
         }),
       );
     }
   };
 
-  const {mutate: testLogins, isLoading: isLoading} = testLogin(
+  const {mutate: requestOTPMutate, isLoading: isLoading} = requestOTPMutation(
     handleLoginSuccess,
   );
 
@@ -96,13 +93,11 @@ const LoginScreen = () => {
     } else if (phoneNumber.length < 10) {
       setPhoneNumErr('Please Enter Valid Mobile Number');
     } else {
-      console.log(phoneNumber)
       const payload = {
-        phone: phoneNumber,
-        password: password
+        phoneNumber: phoneNumber,
       };
       DataStore.storeData('login_phoneNumber', phoneNumber);
-      testLogins(payload);
+      requestOTPMutate(payload);
     }
   };
 
@@ -110,10 +105,6 @@ const LoginScreen = () => {
     const numericValue = text.replace(/[^0-9]/g, '');
     setPhoneNumber(numericValue);
   };
-
-  const PasswordHandle= text => {
-    setPassword(text)
-  }
 
   const navigateRegisterPage = () => {
     navigation.dispatch(
@@ -152,33 +143,19 @@ const LoginScreen = () => {
               <Phone />
             </View>
           </View>
-          {/* {(phoneNumber.length === 0 || phoneNumber.length < 10) && (
+          {(phoneNumber.length === 0 || phoneNumber.length < 10) && (
             <Text style={loginStyles.errTxt}>{phoneNumErr}</Text>
-          )} */}
-        </View>
-        <View style={loginStyles.contectContainer}>
-          <View style={loginStyles.inputConatiner}>
-            <TextInput
-              style={loginStyles.input}
-              placeholder="Password"
-              onChangeText={PasswordHandle}
-              value={password}
-            />
-          </View>
+          )}
         </View>
         <TouchableOpacity
-          style={loginStyles.newUserBtn}
+       
           onPress={() => navigateRegisterPage()}>
-          <Text style={{ flexDirection: "row" }}>
-            <Text>New User? </Text>
-            <Text style={loginStyles.registerPageBtn}>Register</Text>
-          </Text>
+          <Text>New User</Text>
         </TouchableOpacity>
-
         <TouchableOpacity
           style={loginStyles.otpBtn}
           onPress={() => requestOTP()}>
-          <Text style={loginStyles.otptxt}>Login</Text>
+          <Text style={loginStyles.otptxt}>Request OTP</Text>
         </TouchableOpacity>
       </View>
     </>

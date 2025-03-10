@@ -3,6 +3,7 @@ import {
   getUserDetails,
   profileUpdate,
   requestOTP,
+  testlogin,
   verifyOTP,
 } from '../EndPoints/EndPoints';
 import {showNotification} from '../../components/NotificationManger';
@@ -31,6 +32,29 @@ export const requestOTPMutation = onSuccessCallback => {
     },
   });
 };
+
+export const testLogin = onSuccessCallback => {
+  return useMutation(['requestOTP'], testlogin, {
+    onSuccess: data => {
+      if (data.success) {
+        if (onSuccessCallback) {
+          queryClient.invalidateQueries('requestOTP');
+          onSuccessCallback(data);
+        }
+      } else {
+        showNotification('Login Failed', data.message, 'danger');
+      }
+    },
+    onError: error => {
+      showNotification(
+        `Login Failed - (${error.status})`,
+        error?.message,
+        'danger',
+      );
+    },
+  });
+};
+
 
 // verify OTP Mutation
 export const verifyOTPMutation = onSuccessCallback => {

@@ -27,26 +27,16 @@ const RegisterationScreen = () => {
         inputMode: 'text'
       },
       {
-        id: 'phonenumber',
-        title: "Your Phone Number",
-        placeholder: "1234567890",
-        inputMode: 'number'
+        id: 'dob',
+        title: "What's your Date of Birth",
+        placeholder: "DD-MM-YYYY",
+        inputMode: 'date'
       },
       {
         id: 'email',
         title: "What's your Email Address",
         placeholder: "user@xyz.com",
         inputMode: 'email'
-      },
-      {
-        id: 'gender',
-        title: "What's your Gender",
-         inputMode: 'text'
-      },
-      {
-        id: 'password',
-        title: "Create a Password",
-         inputMode: 'text'
       },
     ]
   );
@@ -55,9 +45,6 @@ const RegisterationScreen = () => {
   const [DOB, setDOB] = useState(new Date());
   const [Email, setEmail] = useState('');
   const [OpenDatePicker, setOpenDatePicker] = useState(false)
-  const [Phone, setPhone] = useState('');
-  const [Gender,setGender]=useState('');
-  const [Password,setPassword]=useState('');
 
   const [InputErrorId, setInputErrorId] = useState('')
   const [InputErrorMssage, setInputErrorMssage] = useState('')
@@ -78,6 +65,7 @@ const RegisterationScreen = () => {
 
       _userDetails.personalDetails = {
         name: Name,
+        dob: DOB,
         email: Email
       }
 
@@ -97,7 +85,6 @@ const RegisterationScreen = () => {
   }
 
   const onRegisterError = (data) => {
-    console.log('data');
     if (!data.success) showNotification('Please try again', data.message, 'danger');
 
   }
@@ -123,9 +110,6 @@ const RegisterationScreen = () => {
       (id == 'name' && Name.length <= 0)
       || (id == 'dob' && DOB.length <= 0)
       || (id == 'email' && Email.length <= 0)
-      || (id == 'phonenumber' && Phone.length <= 0)
-      || (id == 'gender' && Gender.length <= 0)
-      || (id == 'password' && Password.length <= 0)
     ) return alert(`Please fill ${id}.`);
 
     if (id == 'email' && !verifyEmail(Email)) return alert(`Please enter valid email address.`);
@@ -135,29 +119,22 @@ const RegisterationScreen = () => {
 
       const payload = {
         name: Name,
-        email: Email,
-        phone: Phone,
-        password: Password,
-        gender: Gender
+        dob: utils.formatDate(DOB, 'DD-MM-YYYY'),
+        email: Email
       }
-      console.log(payload, 'payload');
 
-      RegisterMutate({
+      await RegisterMutate({
         queryKey: 'profileUpdateQuery',
-        url: '/publicrides/customer/signup',
+        url: '/customer/profile/update',
         payload: payload
       })
 
-     
     }
 
   }
   const onStepperInputHandler = (id, value) => {
     if (id == 'name') setName(value)
     else if (id == 'dob') setDOB(value)
-    else if (id == 'phonenumber') setPhone(value)
-    else if (id == 'gender') setGender(value)
-    else if (id == 'password') setPassword(value)
     else if (id == 'email') {
 
       console.log(verifyEmail(value), 'ashdgasd');
