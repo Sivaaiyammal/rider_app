@@ -1,6 +1,8 @@
 
 const markerTypes = ['driver', 'marker_start','location_pin', 'marker_end', 'marker_waypoint', 'car', 'default', "car_red", "car_yellow", "car_green"]
-const markerSizes = [24, 36, 48]
+   
+
+const markerSizes = [24, 36, 48, 64]
 
 class Marker {
 
@@ -15,9 +17,9 @@ class Marker {
      */
     constructor(id, name, lng, lat, type = "default", size = 36, selected=false) {
 
-        if (!markerTypes.includes(type)) {
-            throw new Error("Invalid marker type");
-        }
+        // if (!markerTypes.includes(type)) {
+        //     throw new Error("Invalid marker type");
+        // }
 
 
         if (!markerSizes.includes(size)) {
@@ -34,6 +36,15 @@ class Marker {
         this.selected = selected;
         this.angle = 0
         this.focus = false
+        this.animate = true
+        this.animationTime = 8000
+        this.showToolTip = false
+        this.doRotation = true
+        this.padding = [0,0,0,0]
+    }
+
+    setAnimationTime(time){
+        this.animationTime = time
     }
 
     setFocus(focus){
@@ -50,6 +61,22 @@ class Marker {
 
     setAngle(angle){
         this.angle = angle
+    }
+
+    setAnimate(animate){
+        this.animate = animate
+    }
+
+    setShowToolTip(showToolTip){
+        this.showToolTip = showToolTip
+    }
+
+    setDoRotation(doRotation){
+        this.doRotation = doRotation
+    }
+
+    setPadding(padding){
+        this.padding = padding
     }
 
 }

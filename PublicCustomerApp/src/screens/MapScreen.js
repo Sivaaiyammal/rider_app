@@ -116,23 +116,19 @@ const MapScreen = () => {
       setStackScreen('SearchScreen');
     }
   };
+  const handleMenu = () => {
+    setShowMenu(!showMenu);
+  }
 
   return (
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff"  />
       <LinearGradient colors={['#FFFFFF', '#FFFFFF', 'rgba(255,255,255,0)']} style={{height:50,position:'absolute',top:0,left:0,right:0,zIndex:1}} ></LinearGradient>
-      <Animated.View
-        style={[
-          styles.animatedStyles,
-          {
-            borderRadius: 15,
-            transform: [{scale: scaleValue}, {translateX: offsetValue}],
-          },
-        ]}>
-        <Animated.View>
-       <MapScreenHeader toggleMenu={toggleMenu} showMenu={showMenu}/>
+     
+        <Animated.View style={{zIndex: 2}}>
+        <MapScreenHeader toggleMenu={toggleMenu} showMenu={showMenu}/>
         </Animated.View>
-        <BottomSheet minHeight={150} style={{zIndex: 1000}}>
+        <BottomSheet minHeight={290}  >
           <TouchableOpacity
             style={styles.searchcontainer}
             onPress={() => onSearchPress('searchBox')}>
@@ -147,9 +143,10 @@ const MapScreen = () => {
             <Text style={styles.buttonTxt}>Ride Now</Text>
           </TouchableOpacity>
           <HistoryCard/>
-        </BottomSheet>
-      </Animated.View>
-      {showMenu && <SideDrawer />}
+          </BottomSheet>
+       
+     
+      {showMenu && <SideDrawer handleMenu={handleMenu} />}
     </>
   );
 };

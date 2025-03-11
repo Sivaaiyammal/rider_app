@@ -12,20 +12,22 @@ import NavBar from '../components/NavBar';
 import {useStackScreenStore} from '../store/useStackScreenStore';
 import { shallow } from 'zustand/shallow';
 import useMapStyleStore from '../store/useMapStyleStore';
-
+import useVehicleLocationStore from '../store/useVehicleLoactionStore';
 
 const VehicleListScreen = () => {
   const { goBack, setStackScreen } = useStackScreenStore();
   const { setSelectedVehicle } = useSelectedVehicleStore();
   const { vehicleList: vehicles } = useRideSelectionStore();
   const { setMapStyle, resetMapStyle } = useMapStyleStore();
-
+  const { setCurrentVehicleType } = useVehicleLocationStore();
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0);
 
   const handleVehicleSelect = (vehicle) => {
     resetMapStyle();
-    setStackScreen('SelectedVehicle');
+    console.log('vehicle--->>>', vehicle);
+    // setStackScreen('SelectedVehicle');
     setSelectedVehicle(vehicle);
+    setCurrentVehicleType((vehicle.vehicleType).toLowerCase());
   };
   useEffect(() => {
     setMapStyle({

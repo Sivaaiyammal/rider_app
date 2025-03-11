@@ -114,6 +114,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     private Directions directions;
     private RouteInstructionsDisplay routeInstructionsDisplay;
     private Navigator navigator;
+    Set<String> markersInCreation = new HashSet<>();
     boolean isNavMode = false;
     private Map<String, String> settingsProps = new HashMap<>();
 
@@ -452,29 +453,47 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         }
 
     }
+    public Integer getMarkerDrawable(String type) {
+        switch (type) {
+            case "suv": return R.drawable.suv;
+           
+            case "marker_start": return R.drawable.vehicle_start;
+            case "marker_end": return R.drawable.vehicle_end;
+            case "marker_waypoint": return R.drawable.marker_stop_grey;
+            case "location_pin": return R.drawable.marker_stop_grey;
+         
+            default: return R.drawable.marker_stop_grey;
+        }
+    }
+
 
     @ReactProp(name = "markers")
     public synchronized void setMarkers(MapView mapView, ReadableArray markers) {
         if (mapController == null) {
+            markerTextures.clear();
+            addedMarkers.clear();
+            markersInCreation.clear();
             return;
         }
         if (markers == null) {
             mapController.removeAllMarkers();
             synchronized (addedMarkers) {
+                markerTextures.clear();
                 addedMarkers.clear();
+                markersInCreation.clear();
             }
             return;
         }
         if (markers.size() == 0) {
             mapController.removeAllMarkers();
-            mapController.setCurrentLocationEnabled(true);
             synchronized (addedMarkers) {
+                markerTextures.clear();
                 addedMarkers.clear();
+                markersInCreation.clear();
             }
             return;
         }
-        Log.d("AJIN", "ADD MARKERS CALLED");
-        HashSet<Marker> currentMarkers = new HashSet<>();
+        HashSet <Marker> currentMarkers = new HashSet<>();
         HashSet<Marker> markersToRemove = new HashSet<>(addedMarkers);
         for (int i = 0; i < markers.size(); i++) {
             ReadableMap markerData = markers.getMap(i);
@@ -485,8 +504,10 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             int markerSize = markerData.getInt("size");
             boolean isMarkerSelected = markerData.getBoolean("selected");
             boolean focus = markerData.getBoolean("focus");
-            // boolean animate = markerData.getBoolean("animate");
-            // int animationTime = markerData.getInt("animationTime");
+            boolean animate = markerData.getBoolean("animate");
+            int animationTime = markerData.getInt("animationTime");
+            boolean showToolTip = markerData.getBoolean("showToolTip");
+            boolean doRotation = markerData.getBoolean("doRotation");
 
             String title = markerData.getString("title");
             String snippet = markerData.getString("snippet");
@@ -497,33 +518,60 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     .position(new LngLat(longitude, latitude))
                     .size(markerSize)
                     .interactive(true)
-                    .rotation(0)
-//                    .flat(true)
-                    .title(title)
-                    .style(StyleType.MARKER)
-                    .texture(markerType);
-            if (marker == null) {
-                Log.d("AJIN", "new marker call today " + markerId);
+                    .flat(true)
+                    .style(StyleType.ROTATABLE_MARKER);
+            if(!doRotation){
+                markerOptions.flat(false);
+            }
+//                    .texture(markerType);
+            Integer markerDrawable = getMarkerDrawable(markerType);
+            if(showToolTip==true){
+                markerOptions.title(title).snippet(snippet);
+            }
+            if(doRotation){
+                markerOptions.rotation(0);
+            }
+            if(marker!=null){
+                Long prevMarkerId = marker.getMarkerId();
+                if (prevMarkerId == null) {
+                    // Handle the case where prevMarkerId is null
+                    Log.d("AJIN", "prevMarkerId is null");
+                    marker = null;
+                }
+            }
+
+
+            if(marker==null){
+                /* Check marker is already queued for creation */
+                if(markersInCreation.contains(markerId)){
+                    continue;
+                }
+                /* Add the marker id in queue for creation */
+                markersInCreation.add(markerId);
                 OnMarkerCreateListener onMarkerCreateListener = new OnMarkerCreateListener() {
                     @Override
                     public synchronized void onMarkerCreated(Marker marker) {
-                        if (mapController == null) {
+                        if(mapController==null){
                             Log.d("AJIN", "MAP ctrl not");
                             return;
                         }
-                        Log.d("AJIN", "MARKER CREATE EMMITED " + marker.getMarkerName());
+                        Log.d("AJIN","MARKER CREATE EMMITED " + marker.getMarkerName());
+                        markersInCreation.remove(markerId);
                         MarkerData userData = new MarkerData();
                         userData.setId(markerId);
                         marker.setUserData(userData);
+                        marker.setDrawable(markerDrawable);
                         Log.d("AJIN", markerId + " Set usedata");
-                        // mapController.NEMarkerSetAngle(marker, angle);
+                        if(doRotation==true){
+                            mapController.NEMarkerSetAngle(marker, angle);
+                        }
                         synchronized (addedMarkers) {
                             addedMarkers.add(marker);
                         }
-                        markerTextures.put(markerId, markerType);
+                        markerTextures.put(markerId,markerType);
                         if (isMarkerSelected) {
                             mapController.selectMarker(marker);
-                        } else {
+                        }else{
                             mapController.deselectMarker(marker);
                         }
                         synchronized (currentMarkers) {
@@ -538,45 +586,48 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 };
                 mapController.NEMarkerAdd(markerOptions, onMarkerCreateListener);
 
-            } else {
+            }else{
                 LngLat oldpos = marker.getPosition();
                 oldpos.longitude = longitude;
                 oldpos.latitude = latitude;
-                // if(animate){
-                // marker.setPointEased(oldpos,animationTime, MapController.EaseType.LINEAR);
-                // }else{
-                marker.setPoint(new LngLat(longitude, latitude));
-                // }
-                if (focus) {
-                    CameraPosition camera = mapController.getCameraPosition();
-                    camera.longitude = longitude;
-                    camera.latitude = latitude;
-                    camera.zoom = 15;
-                    // mapController.updateCameraPosition(CameraUpdateFactory.newCameraPosition(camera),100);
-                    mapController.updateCameraPosition(
-                            CameraUpdateFactory.newLngLatZoom(new LngLat(longitude, latitude), 16), 100);
-                    // mapController.flyToCameraPosition(camera, 100, null);
+                if(animate){
+                    marker.setPointEased(oldpos,animationTime, MapController.EaseType.LINEAR);
+                }else{
+                    marker.setPoint(new LngLat(longitude,latitude));
+                }
+                if(focus){
+                    CameraPosition cameraPosition = mapController.getCameraPosition();
+                    float zoom = 14;
+                    float cameraZoom = cameraPosition.getZoom();
+                    if(cameraZoom>14.0){
+                        zoom = cameraZoom;
+                    }
+                    mapController.updateCameraPosition(CameraUpdateFactory.newLngLatZoom(new LngLat(longitude,latitude), zoom),100);
                 }
                 if (isMarkerSelected) {
                     mapController.selectMarker(marker);
-                } else {
+                }else{
                     mapController.deselectMarker(marker);
                 }
                 String prevString = markerTextures.get(markerId);
-
-                if (prevString != null && !markerType.equals(markerTextures.get(markerId))) {
+//
+                if (prevString!= null && !markerType.equals(prevString)) {
                     marker.setVisible(false);
-                    mapController.NEMarkerSetStyle(marker, markerOptions);
+//                    mapController.NEMarkerSetStyle(marker, markerOptions);
+                    marker.setDrawable(markerDrawable);
                     markerTextures.put(markerId, markerType);
                     marker.setVisible(true);
-                }
-                if (prevString == null) {
+               }
+                if(prevString==null){
                     marker.setVisible(false);
                     mapController.NEMarkerSetStyle(marker, markerOptions);
+                    marker.setDrawable(markerDrawable);
                     markerTextures.put(markerId, markerType);
                     marker.setVisible(true);
+               }
+                if(doRotation){
+                    mapController.NEMarkerSetAngle(marker, angle);
                 }
-                // mapController.NEMarkerSetAngle(marker, angle);
                 markersToRemove.remove(marker);
                 synchronized (currentMarkers) {
                     currentMarkers.add(marker);
@@ -588,27 +639,21 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             addedMarkers.clear();
             addedMarkers.addAll(currentMarkers);
         }
-        for (Marker marker : markersToRemove) {
+        for(Marker marker : markersToRemove){
             mapController.removeMarker(marker.getMarkerId());
         }
         markersToRemove.clear();
     }
 
-    // Helper method to find a marker by LatLng in the addedMarkers collection
-    private Marker findMarkerWithLatLng(LngLat targetLatLng) {
-        for (Marker marker : addedMarkers) {
-            if (marker.getPosition().equals(targetLatLng)) {
-                return marker;
-            }
-        }
-        return null;
-    }
-
-    private Marker findMarkerWithId(String id) {
-        for (Marker marker : addedMarkers) {
-            MarkerData userData = (MarkerData) marker.getUserData();
-            if (userData.getId() == id) {
-                return marker;
+    private synchronized Marker findMarkerWithId(String id) {
+        synchronized (addedMarkers) {
+            for (Marker marker : addedMarkers) {
+                MarkerData userData = (MarkerData) marker.getUserData();
+                if(marker==null) continue;
+                if(userData==null) continue;
+                if (userData.getId().equals(id)) {
+                    return marker;
+                }
             }
         }
         return null;

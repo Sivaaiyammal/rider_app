@@ -44,8 +44,8 @@ const SearchScreen = () => {
 
     console.log('hari-->>location-->>', location)
     const searchParams = {
-      latitude: location[1], // Coimbatore latitude
-      longitude: location[0], // Coimbatore longitude
+      latitude: location[1], 
+      longitude: location[0], 
       searchString: value,
       mapUnitName: "india",
       stateVector:statevectore,

@@ -48,7 +48,7 @@ const MapScreenHeader = props => {
         }}>
         <TouchableOpacity onPress={() => toggleMenu()}>
           <Ionicons
-            name={!showMenu ? 'reorder-three-outline' : 'close'}
+            name={ 'reorder-three-outline'}
             size={35}
             color={colors.black}
           />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import PropTypes from 'prop-types';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -8,6 +8,8 @@ import NEMap from "../components/Native/NEMap";
 import Loaders from "../components/Loaders/FullScreenLoader";
 import useLocationStore from "../store/useLocationStore";
 import useMapStyleStore from "../store/useMapStyleStore";
+import useVehicleLocationStore from "../store/useVehicleLoactionStore";
+import Marker from "../controllers/NEMap/Marker";
 
 const MapContainer = ({ mapStyle }) => {
   const {
@@ -32,8 +34,9 @@ const MapContainer = ({ mapStyle }) => {
     setMapMoving,
     setDisduration,
     setSearchPOIError,
-    setMapLocation
+    setMapLocation, setMapMarkers
   } = useMapStore();
+  const { vehicleLocations,currentVehicleType } = useVehicleLocationStore();
   const { defaultStyle } = useMapStyleStore();
 
   const { location } = useLocationStore();
@@ -51,6 +54,49 @@ const MapContainer = ({ mapStyle }) => {
     "navAccuracy": "Medium",
     "tolls": "Slightly Prefer"
   }
+
+  useEffect(() => {
+    if (currentVehicleType === "none") {
+      // Remove only car markers, keep other markers
+      const newMarkers = mapMarkers.filter(marker => marker.name !== 'car');
+      setMapMarkers(newMarkers);
+     
+    } else {
+      if (currentVehicleType === "all") {
+        let allVehicleMarkers = [];
+        Object.values(vehicleLocations).forEach(vehicleArray => {
+          if (vehicleArray && vehicleArray.length > 0) {
+            const markers = vehicleArray.map(vehicle => {
+              return new Marker(
+                vehicle.id,
+                'car',
+                vehicle.longitude, 
+                vehicle.latitude,
+                'suv',
+                36,
+                true
+              );
+            });
+            allVehicleMarkers = [...allVehicleMarkers, ...markers];
+          }
+        });
+        setMapMarkers(allVehicleMarkers);
+      } else {
+        const vehicleMarkers = vehicleLocations[currentVehicleType].map(vehicle => {
+          return new Marker(
+            vehicle.id,
+            'car',
+            vehicle.longitude,
+            vehicle.latitude, 
+            'suv',
+            36,
+            true
+          );
+        });
+        setMapMarkers(vehicleMarkers);
+      }
+    }
+  }, [currentVehicleType, vehicleLocations]);
 
 
   return (
