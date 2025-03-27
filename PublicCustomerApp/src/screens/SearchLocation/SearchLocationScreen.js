@@ -8,6 +8,8 @@ import useMapStore from '../../store/useMapStore';
 import locationTask from '../../controllers/GetCurrentLocation';
 import {addLocation} from '../../styles/AddLocationStyles';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import polyline from '@mapbox/polyline';
+import Polyline from '../../controllers/NEMap/Polyline';
 
 import Schdule from '../../assets/image/svgIcons/schdule.svg';
 import Onway from '../../assets/image/svgIcons/onway.svg';
@@ -24,9 +26,12 @@ import VehicleListScreen from '../VehicleListScreen';
 import useMapStyleStore from '../../store/useMapStyleStore';
 import { colors } from '../../constants/constants';
 import Contactsheet from '../../components/Contactsheet';
+import useUserInfoStore from '../../store/useUserInfoStore';
+import { findRoute } from '../../controllers/NEMap/findRoute';
 const SearchLocation = () => {
+  const {userdetails} = useUserInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
-  const {setDirections, directions, setSelectedInput} = useLocationStore();
+  const {setDirections, directions, setSelectedInput, selectedInput} = useLocationStore();
   const {setMapStyle,resetMapStyle} = useMapStyleStore();
   const {
     setOnSearchResults,
@@ -34,9 +39,10 @@ const SearchLocation = () => {
     setDirectionPoints,
     setSearchUnit,
     directionPoints,
+    setGeometries,
   } = useMapStore();
 
-  const {setSelectedTrip, selectedTrip, selectedRide, setSelectedRide, scheduleDateTime, setScheduleDateTime,vehicleList, setVehicleList, tripFor, setTripFor, contactDetails, setContactDetails} =
+  const {setSelectedTrip, selectedTrip, selectedRide, setSelectedRide, scheduleDateTime, setScheduleDateTime,vehicleList, setVehicleList, tripFor, setSelectedContact,setRideDistance,setRideDuration,rideDistance} =
     useRideSelectionStore();
 
   const [isHidden, setIsHidden] = useState(false);
@@ -62,7 +68,7 @@ const SearchLocation = () => {
   }, [isHidden]);
 
   const onBackPress = async () => {
-    console.log("onBackPress")
+    resetMapStyle();
     if (vehicleList.length !== 0) return setVehicleList([])
     setDirections([
       {id: 1, name: 'Start', location: [], locationName: ''},
@@ -75,7 +81,7 @@ const SearchLocation = () => {
     setSearchUnit('');
     setSelectedInput(null);
     await locationTask.getCurrentLocation();
-    resetMapStyle();
+    
   };
 
   useEffect(() => {
@@ -84,9 +90,28 @@ const SearchLocation = () => {
       height: "70%",
       bottom: 0,
     });
+    setSelectedContact({name:userdetails.name,phone:userdetails.phone})
   }, []);
 
+
+  useEffect(() => {
+    const fetchRoute = async () => {
+      if (directions) {
+        const response = await findRoute(directions);
+        if(response && response?.trip?.summary){
+          console.log('response-->>', response?.trip?.summary?.length)
+           setRideDistance(response?.trip?.summary?.length)
+           setRideDuration(response?.trip?.summary?.time)
+           
+        }
+      }
+    };
+    
+    fetchRoute();
+  }, [directions]);
+
   const onEstimationSuccess = (data) => {
+    console.log('data-->>', data)
     if (!data?.data) return;
     setVehicleList(data.data);
     if (data.data.length !== 0) {
@@ -99,18 +124,16 @@ const SearchLocation = () => {
 
   const onConfirm = () => {
     let start_location = directions.filter(item => item.name == 'Start')[0]
-    let end_location = directions.filter(item => item.name == 'End')[0]
-    let waypoints = directions.filter(item => item.name == 'Waypoint')
-    let trip_type = selectedTrip.value
-    let ride_type = selectedRide.value
 
     let payload = {
-      startLocation: [start_location.location[0],start_location.location[1]],
-      endLocation: [ end_location.location[0],end_location.location[1]],
+      pickupLocation: [start_location.location[0],start_location.location[1]],
+      distance: rideDistance,
+      
 
       // waypoints: waypoints.map(item => { return { lat: item.location[0], lon: item.location[1] } }),
       // trip_type: trip_type,
     }
+    console.log('payload-->>', payload)
     estimationMutate(payload)
   };
 
@@ -152,8 +175,22 @@ const SearchLocation = () => {
 
   const onTripForPress = () => {
     setShowTripFor(true)
-    console.log("onTripForPress")
   }
+
+  const getplace = () => {
+   
+    if(selectedInput?.name === 'Start'){
+      return 'start location'
+    }else if(selectedInput?.name === 'End'){
+      return 'destination'
+    }else if(selectedInput?.name.startsWith('Waypoint')){
+      return `stop ${selectedInput?.id-1}`
+    }
+    else{
+      return 'destination'
+    }
+  }
+
 
 const scheduleDate = scheduleDateTime?.date ? utils.formatDate(scheduleDateTime?.date) : ""
 const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(scheduleDateTime?.time) : ""
@@ -161,12 +198,9 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
   return (
     <>
       {isEstimationLoading && <FullScreenLoader />}
-      <NavBar withBg onBackPress={onBackPress} leftTitle={'Plan your trip'} />
+      <NavBar withBg onBackPress={onBackPress} title={'Plan your trip'} />
       
-      <TouchableOpacity style={addLocation.forMeContainer}  onPress={() => onTripForPress()}>
-        <Text style={addLocation.forMeText}>{tripFor}</Text>
-        <Ionicons name="chevron-down" size={18} color={colors.black} />
-      </TouchableOpacity>
+    
   
       <View style={addLocation.rideSelectionContainer}>
         <TouchableOpacity
@@ -177,21 +211,26 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
           </Text>
           {!scheduleDate && <Ionicons name={"chevron-down"} size={14} color={"white"} />}
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={addLocation.rideSelection}
           onPress={() => onTripTypePress()}>
           <Onway />
           <Text style={addLocation.rideSelectionTxt}>{selectedTrip.name}</Text>
           <Ionicons name={"chevron-down"} size={14} color={"white"} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <TouchableOpacity style={addLocation.rideSelection}  onPress={() => onTripForPress()}>
+        <Text style={addLocation.rideSelectionTxt}>{tripFor}</Text>
+        <Ionicons name="chevron-down" size={18} color={colors.white} />
+      </TouchableOpacity>
       </View>
       <AddLocationCard screenType={'searchLocation'} />
+      {selectedInput && <Text style={{width:'fit-content',backgroundColor:colors.grey_xxlight,color:colors.black,elevation:10,marginTop:10,fontSize:16,paddingVertical:5,paddingHorizontal:15,textAlign:'center',alignSelf:'center',borderRadius:10}}>Mark {getplace()} in map</Text>}
       {directionPoints && (
         <TouchableOpacity
           style={addLocation.confirmBtn}
           onPress={() => onConfirm()}>
           <View style={addLocation.confirmBtnTxtContainer}>
-            <Text style={addLocation.confirmBtnTxt}>CONFIRM  DESTINATION </Text>
+            <Text style={addLocation.confirmBtnTxt}>CONFIRM  DESTINATION</Text>
             <Ionicons name="arrow-forward" size={18} color="white" />
           </View>
         </TouchableOpacity>

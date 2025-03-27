@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Animated } from "react-native";
 import PropTypes from 'prop-types';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -9,7 +9,10 @@ import Loaders from "../components/Loaders/FullScreenLoader";
 import useLocationStore from "../store/useLocationStore";
 import useMapStyleStore from "../store/useMapStyleStore";
 import useVehicleLocationStore from "../store/useVehicleLoactionStore";
-import Marker from "../controllers/NEMap/Marker";
+
+import locationTask from "../controllers/GetCurrentLocation";
+import FullScreenLoader from "../components/Loaders/FullScreenLoader";
+
 
 const MapContainer = ({ mapStyle }) => {
   const {
@@ -34,9 +37,9 @@ const MapContainer = ({ mapStyle }) => {
     setMapMoving,
     setDisduration,
     setSearchPOIError,
-    setMapLocation, setMapMarkers
+    loading
   } = useMapStore();
-  const { vehicleLocations,currentVehicleType } = useVehicleLocationStore();
+ 
   const { defaultStyle } = useMapStyleStore();
 
   const { location } = useLocationStore();
@@ -55,53 +58,21 @@ const MapContainer = ({ mapStyle }) => {
     "tolls": "Slightly Prefer"
   }
 
-  useEffect(() => {
-    if (currentVehicleType === "none") {
-      // Remove only car markers, keep other markers
-      const newMarkers = mapMarkers.filter(marker => marker.name !== 'car');
-      setMapMarkers(newMarkers);
-     
-    } else {
-      if (currentVehicleType === "all") {
-        let allVehicleMarkers = [];
-        Object.values(vehicleLocations).forEach(vehicleArray => {
-          if (vehicleArray && vehicleArray.length > 0) {
-            const markers = vehicleArray.map(vehicle => {
-              return new Marker(
-                vehicle.id,
-                'car',
-                vehicle.longitude, 
-                vehicle.latitude,
-                'suv',
-                36,
-                true
-              );
-            });
-            allVehicleMarkers = [...allVehicleMarkers, ...markers];
-          }
-        });
-        setMapMarkers(allVehicleMarkers);
-      } else {
-        const vehicleMarkers = vehicleLocations[currentVehicleType].map(vehicle => {
-          return new Marker(
-            vehicle.id,
-            'car',
-            vehicle.longitude,
-            vehicle.latitude, 
-            'suv',
-            36,
-            true
-          );
-        });
-        setMapMarkers(vehicleMarkers);
-      }
-    }
-  }, [currentVehicleType, vehicleLocations]);
-
+  
+  const onPressCurrentLocation = async () => {
+    await locationTask.getCurrentLocation();
+  }
+  const onPressZoomIn = () => {
+    setZoomLevel(zoomLevel + 1);
+  }
+  const onPressZoomOut = () => {
+    setZoomLevel(zoomLevel - 1);
+  }
 
   return (
-    <View style={[styles.mapContainer, defaultStyle]}>
+    <Animated.View style={[styles.mapContainer, defaultStyle, { transition: 'all 20s ease-in-out' }]}>
       {!mapReady && <Loaders message="Setting up Map" />}
+      {loading && <FullScreenLoader />}
       <NEMap
         mapStyle={mapStyle || styles.mapStyles}
         homeLocation={mapLocation}
@@ -129,8 +100,24 @@ const MapContainer = ({ mapStyle }) => {
         onSearchPOIError={setSearchPOIError}
         onNavigationEnd={(e) => console.log('hari--->>navigationEnd-->>', e)}
       />
-     
-    </View>
+      <View style={styles.mapButtons}>
+      <View style={styles.zoomButtons}>
+        <TouchableOpacity style={styles.zoomButton} >
+          <Ionicons name="add-outline" size={20} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.zoomButton}>
+          <Ionicons name="remove-outline" size={20} color="black" />
+        </TouchableOpacity>
+      </View>
+        <TouchableOpacity style={styles.currentLocationButton} onPress={onPressCurrentLocation}>
+          <Ionicons name="locate-outline" size={20} color="black" />
+          {/* <ion-icon name="locate-outline"></ion-icon> */}
+        </TouchableOpacity>
+
+        
+      </View>
+
+    </Animated.View>
     
   );
 };
@@ -149,7 +136,6 @@ const styles = StyleSheet.create({
   mapStyles: {
     width: "100%",
     height: "100%",
-   
   },
   gradientContainer: {
     zIndex: 2,
@@ -160,10 +146,30 @@ const styles = StyleSheet.create({
   LinearGradient: {
     flex: 1,
   },
-  currentLocationButton: {
+  mapButtons: {
     position: 'absolute',
     right: 16,
-    bottom: 100,
+    top: "10%",
+    shadowColor: '#000',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  markLocationButton: {
+    backgroundColor: 'black',
+    padding: 12,
+    borderRadius: 30,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+  },
+  currentLocationButton: {
+   
     backgroundColor: 'white',
     padding: 12,
     borderRadius: 30,
@@ -176,5 +182,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     zIndex:4000
-  }
+  },
+  zoomButtons: {
+    backgroundColor: 'white',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    gap: 8,
+    elevation: 5,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+  },
+  zoomButton: {
+    backgroundColor: 'white',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    
+}  
 });

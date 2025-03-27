@@ -1,5 +1,5 @@
-import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useState} from 'react';
+import {Image, StyleSheet, Text, TouchableOpacity, View, Animated,Easing,Dimensions} from 'react-native';
+import React, {useState,useEffect,useRef} from 'react';
 import BottomSheet from './BottomSheet';
 import { StatusBar } from 'react-native';
 import {vehicleDetailsStyles} from '../styles/VehicleDetails';
@@ -17,16 +17,21 @@ import BookedTick from '../assets/image/svgIcons/bookedTick.svg';
 import {colors} from '../constants/constants';
 import { getVehicleDetailsById } from '../constants/JsonData';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import useMapStyleStore from '../store/useMapStyleStore';
+
 const SelectedVehicleDetails = props => {
   const {selectedVehicle, HandleBookRide, selectedRide} = props;
   const {directions} = useLocationStore();
-  const {scheduleDateTime} = useRideSelectionStore();
+  const {scheduleDateTime,setPaymentMethod,paymentMethod} = useRideSelectionStore();
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const screenHeight = Dimensions.get('window').height;
+  const {setMapStyle} = useMapStyleStore();
 
   const [showScheduleContainer, setShowScheduleContainer] = useState(false);
   const [bottomSheetHeight, setBottomSheetHeight] = useState(0);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState('Cash'); 
   const paymentOptions = ['Cash', 'UPI'];
+ 
 
 
   const getLocationIcon = item => {
@@ -61,14 +66,46 @@ const SelectedVehicleDetails = props => {
 
   const isBooked = false;
 
+  useEffect(() => {
+    setMapStyle({
+      width: "100%",
+      height: "70%",
+    });
+
+    Animated.timing(slideAnim, {
+      toValue: 1,
+      duration: 500, // Increased duration for a slower animation
+      useNativeDriver: true,
+      easing: Easing.in(Easing.ease) // Correctly use Easing.inOut
+    }).start();
+  }, []);
+
+
   return (
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff"  />
-      <BottomSheet minHeight={bottomSheetHeight}>
-        <View style={{paddingBottom:40}} onLayout={(event) => {
-          const { height } = event.nativeEvent.layout;
-          setBottomSheetHeight(height); // Dynamically set the height
-        }}>
+      <Animated.View 
+        style={{
+          transform: [
+            {
+              translateY: slideAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [screenHeight, 0]
+              })
+            }
+          ],
+          backgroundColor: 'white',
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          padding: 10,
+          paddingBottom:10,
+          position: 'absolute',
+          bottom: 0,
+          width: '100%',
+          maxHeight: screenHeight * 0.7
+        }}
+      >
+       <View>
         {selectedRide.name === 'Schedule' && isBooked && (
           <>
             <View
@@ -164,7 +201,7 @@ const SelectedVehicleDetails = props => {
         >
           <Text style={vehicleDetailsStyles.paymentTxt}>Payment Method</Text>
               <View style={{flexDirection:'row', alignItems:'center', gap:10}}>
-                <Text style={[vehicleDetailsStyles.paymentTxt,{color:colors.green}]}>{selectedPayment || 'Cash'}</Text>
+                <Text style={[vehicleDetailsStyles.paymentTxt,{color:colors.green}]}>{paymentMethod || 'Cash'}</Text>
                 <Ionicons name="chevron-down" size={24} color="black" style={{transform:[{rotate:showPaymentOptions ? '180deg' : '0deg'}]}} />
               </View>
           </TouchableOpacity>
@@ -172,9 +209,10 @@ const SelectedVehicleDetails = props => {
           <View style={vehicleDetailsStyles.paymentOptionsContainer}>
             {paymentOptions.map((option, index) => (
             <TouchableOpacity 
-              style={[vehicleDetailsStyles.paymentOption, { borderColor: selectedPayment === option ? colors.green : colors.grey,}]}
+              key={index}
+              style={[vehicleDetailsStyles.paymentOption, { borderColor: paymentMethod === option ? colors.green : colors.grey,}]}
               onPress={() => {
-                setSelectedPayment(option);
+                setPaymentMethod(option);
                 setShowPaymentOptions(false);
               }}
             >
@@ -184,12 +222,12 @@ const SelectedVehicleDetails = props => {
                   height: 20,
                   borderRadius: 10,
                   borderWidth: 2,
-                  borderColor: selectedPayment === option ? colors.green : colors.grey,
+                  borderColor: paymentMethod === option ? colors.green : colors.grey,
                   justifyContent: 'center',
                   alignItems: 'center',
                   marginRight: 10
                 }}>
-                  {selectedPayment === option && (
+                    {paymentMethod === option && (
                     <View style={{
                       width: 12,
                       height: 12,
@@ -224,7 +262,7 @@ const SelectedVehicleDetails = props => {
           </TouchableOpacity>
         )}
         </View>
-      </BottomSheet>
+      </Animated.View>
       {showScheduleContainer && (
         <View style={{zIndex: 9999, flex: 1}}>
           <ScheduleContainer

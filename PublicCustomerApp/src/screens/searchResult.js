@@ -71,7 +71,7 @@ const transformData = (data) => {
 export const SearchResultV2 = (props) => {
     const MAX_ITEMS_TO_SHOW = 5;
     const { searchTxt, search_data, selectedCallBack } = props;
-    console.log('hari-->>search_data-->>', search_data)
+    
     const sections = transformData(search_data?.searchData);
    
     const [expandedSections, setExpandedSections] = useState({});

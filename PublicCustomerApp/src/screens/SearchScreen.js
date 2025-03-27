@@ -23,6 +23,7 @@ import StateVectorConatiner from '../components/StateVectorConatiner';
 import { clearSingleStateVector } from "../components/Native/NESearch";
 import FullScreenLoader from '../components/Loaders/FullScreenLoader';
 import HistoryCard from '../components/historyCard';
+import { DataStore } from '../controllers/DataStore';
 const SearchScreen = () => {
   const [searchTxt,setSearchTxt] = useState("");
   const {goBack} = useStackScreenStore();
@@ -38,11 +39,38 @@ const SearchScreen = () => {
     directionPoints,
   } = useMapStore();
   const {location, selectedInput, setSelectedInput,setDirections, directions} = useLocationStore();
+  const storeRecentSearch = async (item) => {
+    try {
+      const recentSearches = await DataStore.loadData('recentSearches');
+      let updatedSearches = [];
 
+      if (recentSearches && recentSearches.data) {
+        // Check if item already exists
+        const exists = recentSearches.data.some(search => search.name === item.name);
+        
+        if (!exists) {
+          // Add new item to start of array, limit to 5 items
+          updatedSearches = [item, ...recentSearches.data].slice(0, 5);
+        } else {
+          // Move existing item to start
+          updatedSearches = [
+            item,
+            ...recentSearches.data.filter(search => search.name !== item.name)
+          ].slice(0, 5);
+        }
+      } else {
+        updatedSearches = [item];
+      }
+
+      await DataStore.storeData('recentSearches', updatedSearches);
+    } catch (error) {
+      console.error("Error storing recent search:", error);
+    }
+  }
   // Debounce the search input to limit API calls 
   const searchAPI = async (value,statevectore={},fullSearch=false) => {
 
-    console.log('hari-->>location-->>', location)
+    
     const searchParams = {
       latitude: location[1], 
       longitude: location[0], 
@@ -89,7 +117,7 @@ const SearchScreen = () => {
  
   
   const selectedCallBack = async (item, type) => {
-    console.log( "directions",directions)
+  
     if (type === 'Fast_match') {
       await searchAPI('',item)
       setSearchTxt('')
@@ -105,12 +133,14 @@ const SearchScreen = () => {
   const setRouteDirection = useCallback(
     directions => {
       if (directions.length >= 2) {
+       
         const sortedDirections = directions.sort((a, b) => a.id - b.id);
         const routeData = sortedDirections.map(direction => ({
           lat: direction.lat,
           lon: direction.lng,
         }));
         setMapMarkers([]);
+        
 
         setDirectionPoints({locations: routeData, type: 'car'});
       } else {
@@ -123,6 +153,7 @@ const SearchScreen = () => {
   // Set route direction when markers are removed
   const updateRouteDirections = useCallback(
     newData => {
+      
       const input = selectedInput.id;
       const routeData = directions.map(item => {
         if (item.id === input) {
@@ -188,9 +219,8 @@ const SearchScreen = () => {
   // onpress on search results
   const onLocationNamePress = useCallback(
     item => {
-     
+      storeRecentSearch(item);
       const input = selectedInput?.id - 1;
-      console.log('input-->>', input)
       const newDirections = directions.map((dir, index) =>
         index === input
           ? {
@@ -201,6 +231,7 @@ const SearchScreen = () => {
             }
           : dir,
       );
+     
       setDirections(newDirections);
       setOnSearchResults(null);
       setSearchUnit('');
@@ -267,7 +298,7 @@ const SearchScreen = () => {
           ))}
         </ScrollView>
       )} */}
-      {onSearchResults? <SearchResultV2 searchTxt={searchTxt} search_data={onSearchResults} selectedCallBack={selectedCallBack}/>:<HistoryCard/>}
+      {onSearchResults? <SearchResultV2 searchTxt={searchTxt} search_data={onSearchResults} selectedCallBack={selectedCallBack}/>:<HistoryCard selectCallback={onLocationNamePress}/>}
       
       <TouchableOpacity style={styles.bottomBtn} onPress={()=>goBack()}>
         <Entypo name="location" size={18} color={colors.black} />

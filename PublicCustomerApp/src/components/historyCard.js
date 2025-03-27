@@ -1,51 +1,41 @@
-import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import React, { useCallback, useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, DeviceEventEmitter } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {colors, Fonts} from '../constants/constants';
+import { useFocusEffect } from '@react-navigation/native';
+import { colors, Fonts } from '../constants/constants';
+import { DataStore } from '../controllers/DataStore';
 
-const HistoryCard = () => {
-  // Mock data - in real app this would come from storage/API
-  const historyItems = [
-    {
-      id: 1,
-      name: 'Brookefields Mall',
-      address: 'Dr Krishnasamy Mudaliyar Rd, Coimbatore',
-      latitude: 11.0168,
-      longitude: 76.9558,
-      distance: '2.3 km'
-    },
-    {
-      id: 2,
-      name: 'VOC Park and Zoo',
-      address: 'Sanganoor Road, Ram Nagar, Coimbatore', 
-      latitude: 11.0139,
-      longitude: 76.9703,
-      distance: '3.1 km'
-    },
-    {
-      id: 3,
-      name: 'Prozone Mall',
-      address: 'Sathy Rd, Ganapathy, Coimbatore',
-      latitude: 11.0374,
-      longitude: 76.9900,
-      distance: '5.8 km'
-    }
-  ];
+const HistoryCard = ({ selectCallback }) => {
+  const [historyItems, setHistoryItems] = useState([]);
+  
+  const setRecentSearches = useCallback(async () => {
+    const recentSearches = await DataStore.loadData('recentSearches');
+    setHistoryItems(recentSearches.data);
+  }, []);
+
+  useEffect(() => {
+    setRecentSearches();
+  }, [setRecentSearches]);
+
+ 
+
+  
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Recent</Text>
-      {historyItems.map(item => (
-        <View key={item.id} style={styles.historyItem}>
-          <View style={styles.iconContainer}>
-            <Ionicons name="time" size={20} color={colors.grey} />
+      {historyItems?.length > 0 && historyItems.map((item, index) => (
+        <TouchableOpacity key={index} onPress={() => selectCallback(item)}>
+          <View style={styles.historyItem}>
+            <View style={styles.iconContainer}>
+              <Ionicons name="time" size={20} color={colors.grey} />
+            </View>
+            <View style={styles.textContainer}>
+              <Text style={styles.name}>{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</Text>
+              <Text style={styles.address}>{item.address}</Text>
+            </View>
           </View>
-          <View style={styles.textContainer}>
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.address}>{item.address}</Text>
-         
-          </View>
-        </View>
+        </TouchableOpacity>
       ))}
     </View>
   );
@@ -58,7 +48,7 @@ const styles = StyleSheet.create({
   },
   historyItem: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center', 
     paddingVertical: 10,
     borderBottomWidth: 0.5,
     borderBottomColor: colors.grey,

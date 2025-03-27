@@ -1,5 +1,5 @@
 import ApiConfig from "../../Config/APIConfig.js";
-const polyline = require('polyline');
+// const polyline = require('polyline');
 
 class DirectionAPI {
 
@@ -10,8 +10,8 @@ class DirectionAPI {
     }
 
     async findValhalla(points, distanceDurationonly = false) {
-        let baseURL = "http://zeus.virtualmaze.in/router/route?data="
-        points = points.map(loc => { return { 'lat': parseFloat(loc[1] || 0), 'lon': parseFloat(loc[0] || 0) } })
+        let baseURL = "https://ne.vmmaps.com/routing/v1/route?data="
+        points = points.map(loc => { return { 'lat': parseFloat(loc.lat || loc[1] || 0), 'lon': parseFloat(loc.lon || loc[0] || 0) } })
         let payload = {
             "locations": points,
             "directionsOptions": { "units": "kilometers" },
@@ -46,7 +46,7 @@ class DirectionAPI {
                 let track = polyline.decode(shape, 6)
                 route_track.push(...track)
             })
-            return route_track;
+            return {route_track, distance, duration};
         }
 
         return false
@@ -79,6 +79,41 @@ class DirectionAPI {
         return decodedPoints;
     }
 
+    async findRoute(points) {
+        const latlngs = points?.map(item => {
+            return {
+              lat: item.location ? item.location[1] : item.lat,
+              lon: item.location ? item.location[0] : item.lon,
+            };
+        });
+
+        const jsonObject = {
+            costing: 'auto',
+            costing_options: {},
+            language: 'en',
+            locations: latlngs ? latlngs : [],
+            units: 'kilometers',
+        };
+        const jsonString = JSON.stringify(jsonObject);
+        const encodedData = encodeURIComponent(jsonString);
+        const url = `${ApiConfig.ROUTE_API_URL}?data=${encodedData}&access_token=${ApiConfig.NE_ACCESS_TOKEN}`;
+        
+        try {
+            const response = await fetch(url, {
+                method: 'GET',
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const routeData = await response.json();
+            return routeData;
+        } catch (error) {
+            console.error("Error fetching route:", error);
+            return null;
+        }
+    }
 }
 
-module.exports = { DirectionAPI };
+module.exports = DirectionAPI;

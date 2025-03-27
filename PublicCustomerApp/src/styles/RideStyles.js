@@ -45,6 +45,7 @@ export const rideStyles = StyleSheet.create({
       paddingVertical: 10,
       paddingHorizontal: 10,
       alignItems: 'center',
+      marginBottom:10
     },
     vehicleNum: {
       fontFamily: Fonts.semi_bold,
@@ -126,9 +127,11 @@ export const rideStyles = StyleSheet.create({
       alignItems:'center',
       paddingVertical:10,
       gap:10,
-      borderColor:colors.grey_dark
+      borderColor:colors.grey_dark,
+      
     },
     callBtn:{
+      flex:1,
       flexDirection:'row',
       width:'65%',
       backgroundColor:colors.call_green,

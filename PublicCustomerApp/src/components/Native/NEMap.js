@@ -26,7 +26,7 @@ class NEMap extends Component {
     };
     this.getmapReady = this.getmapReady.bind(this);
   }
-
+  
   // Trigger map resize after short delay
   triggerResize() {
     setTimeout(() => {
@@ -246,6 +246,12 @@ class NEMap extends Component {
       }));
     }
   };
+
+  // Method to remove markers
+  removeMarkers(markerIds) {
+    console.log("markerIds", markerIds)
+    // NeNativeModule.removeMarkers(markerIds);
+  }
 
   render() {
     return this.state.loadMap ? (

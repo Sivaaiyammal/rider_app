@@ -65,4 +65,9 @@ const clearAllStateVectors = () => {
   NeNativeModule.clearStateVector();
 };
 
-export { performSearch, clearSingleStateVector, clearAllStateVectors };
+const removeAllMarkers = (markers) => {
+  console.log("markers", markers)
+  NeNativeModule.removeMarkers(markers);
+};
+
+export { performSearch, clearSingleStateVector, clearAllStateVectors, removeAllMarkers };

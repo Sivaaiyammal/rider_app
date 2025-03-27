@@ -23,7 +23,7 @@ const useMapStore = create((set) => ({
         set({ onSearchResults });
     },
 
-    searchPOIError:null,
+    searchPOIError: null,
     setSearchPOIError: searchPOIError => {
         set({ searchPOIError });
     },
@@ -43,8 +43,8 @@ const useMapStore = create((set) => ({
     geometriesType: '',
     setGeometriesType: geometriesType => set({ geometriesType }),
     
-    directionReadyCallback : null,
-    setDirectionReadyCallback : (directionReadyCallback) => set({ directionReadyCallback }),
+    directionReadyCallback: null,
+    setDirectionReadyCallback: (directionReadyCallback) => set({ directionReadyCallback }),
 
     directionPoints: null,
     setDirectionPoints: (directionPoints) => set({ directionPoints }),
@@ -73,7 +73,6 @@ const useMapStore = create((set) => ({
     mapMoving: true,
     setMapMoving: mapMoving => set({ mapMoving }),
 
-
     stateVector: null,
     setStateVector: (newState) => set({ stateVector: newState }),
 
@@ -82,6 +81,9 @@ const useMapStore = create((set) => ({
         set({ mode })
         console.log('Mode set', mode)
     },
+
+    loading: false,
+    setLoading: loading => set({ loading }),
 
     removeMarker: (id) => {
         set(state => {
@@ -108,7 +110,6 @@ const useMapStore = create((set) => ({
             };
         });
     },
-
 
     reset: () => {
         set({

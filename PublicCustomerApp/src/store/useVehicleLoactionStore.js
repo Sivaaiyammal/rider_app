@@ -18,7 +18,7 @@ const useVehicleLocationStore = create((set) => ({
         id: 'suv2', 
         latitude: 11.0528,
         longitude: 77.0482,
-        heading: 90,
+        heading: 180,
         status: 'available'
       },
       {

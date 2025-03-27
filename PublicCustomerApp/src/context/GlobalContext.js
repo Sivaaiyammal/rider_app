@@ -3,7 +3,7 @@ import React, {createContext, useEffect, useState, useCallback} from 'react';
 import PropTypes from 'prop-types';
 
 import { DataStore } from '../controllers/DataStore';
-
+import wsService from '../controllers/SocketServices';
 export const GlobalContext = createContext();
 
 export const ContextProvider = ({children}) => {
@@ -37,6 +37,11 @@ export const ContextProvider = ({children}) => {
     setThemeValue(theme);
   }, []);
 
+  const addListener = useCallback(token => {
+    wsService.initSocket(token);
+  }, []);
+
+
   useEffect(() => {
     const initialize = async () => {
       await getAppTheme();
@@ -51,6 +56,7 @@ export const ContextProvider = ({children}) => {
         setTheme,
         themeOperations,
         themeValue,
+        addListener
       }}>
       {children}
     </GlobalContext.Provider>

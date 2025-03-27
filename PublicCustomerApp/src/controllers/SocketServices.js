@@ -1,15 +1,36 @@
 import io from 'socket.io-client';
+import Config from '../Config/APIConfig';
+import useRideSelectionStore from '../store/useRideSelectionStore';
+import { useDriverLocationStore } from '../store/useDriverLocationStore';
 
-const SOCKET_URL = '';
+const SOCKET_URL = Config.ROOT_API_URL;
+
 
 class WSService {
   constructor() {
     this.socket = null;
-    this.sockeData = [];
-    this.socketLiveData = {}
-
-    this.onLocationDeviceUpdate = this.onLocationDeviceUpdate.bind(this)
+    this.socketDriverAssignedData = {}
     this.initSocket = this.initSocket.bind(this)
+    this.driverAllocated = this.driverAllocated.bind(this)
+    this.useRideSelectionStore = useRideSelectionStore
+    this.useDriverLocationStore = useDriverLocationStore
+  }
+
+  driverAllocated(data){
+    if(data?.driver && data?.otp){
+      this.useRideSelectionStore.getState().setAssignedDriver(data?.driver);
+      this.useRideSelectionStore.getState().setOtp(data?.otp);
+    }
+   
+    
+  }
+  
+  driverLocationUpdate(data){
+    if(data){
+      this.useDriverLocationStore.getState().setDriverLocation(data?.location?.coordinates);
+      this.useDriverLocationStore.getState().setDriverAngle(data?.liveStats?.course);
+      this.useDriverLocationStore.getState().setDriverMaxSpeed(data?.liveStats?.speed) || 0;
+    }
   }
 
   async initSocket(userId) {
@@ -23,7 +44,9 @@ class WSService {
         const protocolAndHost = urlParts.slice(0, 3).join('/');
         const path = '/' + urlParts.slice(3).join('/');
 
-        this.socket = io(`${protocolAndHost}/web-app-clients`, {
+        console.log("protocolAndHost-->>fdff", protocolAndHost)
+
+        this.socket = io(`${protocolAndHost}/public-rides-customer`, {
           path: path !== '/' ? path + '/socket.io' : '/socket.io',
           query: {
             accessToken: userId,
@@ -33,6 +56,10 @@ class WSService {
           console.log("socket connected", this.socket.id)
           resolve(true);
         });
+
+        this.socket.on('driverAllocated', this.driverAllocated);
+
+        this.socket.on('driverLocationUpdate', this.driverLocationUpdate);
 
         this.socket.on('connect_error', error => {
           console.error(

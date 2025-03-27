@@ -10,6 +10,7 @@ const ALLOWED_KEYS = [
   'Theme',
   'IS_FIRST',
   'IsDefault',
+  'recentSearches',
 ]
 
 // const KEYS_TO_CLEAR_ON_SESSION_END = [

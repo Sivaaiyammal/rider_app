@@ -4,5 +4,9 @@ module.exports = {
     Google_API_KEY: 'AIzaSyDYdu8L3PtShB_WHZ9vrbQq7qK8eE65geM',
     // ROOT_API_URL: 'https://267b-2409-40f4-2005-6890-546f-89a9-e6f3-8b0b.ngrok-free.app'
     //  ROOT_API_URL: 'http://10.0.2.2:3000'
-     ROOT_API_URL: 'http://localhost:3000'
+    // ROOT_API_URL: 'https://tracker.vmmaps.com/trackerbackend-test',
+    // ROOT_API_URL: 'http://10.0.2.2:3000',
+    ROOT_API_URL: 'http://localhost:3000',
+    ROUTE_API_URL: 'https://ne.vmmaps.com/routing/v1/route',
+    
 }

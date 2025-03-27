@@ -19,17 +19,19 @@ import useMapStore from '../../store/useMapStore';
 import Marker from '../../controllers/NEMap/Marker';
 import {useStackScreenStore} from '../../store/useStackScreenStore';
 import SearchAPI from '../../controllers/NEMap/Search';
+import Directions from '../../controllers/NEMap/Directions';
 
 const AddLocationCard = () => {
-  const {directions, setDirections, setSelectedInput, selectedInput} =
-    useLocationStore();
+  const {directions, setDirections, setSelectedInput, selectedInput} = useLocationStore();
   const {setStackScreen} = useStackScreenStore();
   const {
     mapMarkers,
     setMapMarkers,
     setDirectionPoints,
     setMapClickCallback,
-    directionPoints
+    directionPoints,
+    setLoading,
+    loading
   } = useMapStore();
 
   const inputRefs = useRef([]);
@@ -37,8 +39,9 @@ const AddLocationCard = () => {
 
   const onFocus = useCallback((id, obj) => {
     setStackScreen('SearchScreen');
-    console.log("obj", obj)
+    
     setSelectedInput(obj);
+    console.log("obj", obj)
   }, []);
 
   const getLocationIcon = useCallback((id, totalLocations) => {
@@ -155,20 +158,23 @@ const AddLocationCard = () => {
   
 // Set route direction when markers are cleared
   const updateRouteDirections = useCallback(
-    (newData) => {
+    async (newData) => {
       const sortedDirections = [...newData].sort((a, b) => a.id - b.id);
       const routeData = sortedDirections.map(newData => ({
         lat: newData.location[1],
         lon: newData.location[0],
       })).filter(point => point.lat !== undefined && point.lon !== undefined);  ;
       setDirectionPoints({ locations: routeData, type: 'car' });
+      const directions = new Directions();
+      const response = await directions.findRoute(routeData);
+      console.log(response, 'routeData')
     },
     [directions],
   );
   
     // Set route direction when markers are updated
     const setRouteDirection = useCallback(
-      directions => {
+      async directions => {
         if (directions.length >= 2) {
           // Create a copy of the directions before sorting
           const sortedDirections = [...directions].sort((a, b) => a.id - b.id);
@@ -180,6 +186,9 @@ const AddLocationCard = () => {
     
           setMapMarkers([]); 
           setDirectionPoints({ locations: routeData, type: 'car' });
+          
+         
+          
         } else {
           setDirectionPoints(null); 
         }
@@ -255,7 +264,9 @@ const AddLocationCard = () => {
 
   // locate on map 
   const mapClickCallback = async (data) => {
+   
     if (selectedInput === null) return false;
+    
     if (selectedInput.name === 'Start') {
       updateLocationNames(data, selectedInput, 'marker_start')
     } else if (selectedInput.name === 'End') {
@@ -263,11 +274,12 @@ const AddLocationCard = () => {
     } else {
       updateLocationNames(data, selectedInput, 'marker_waypoint')
     }
+    setSelectedInput(null);
   };
 
   useEffect(() => {
     setMapClickCallback(mapClickCallback);
-  }, []);
+  }, [selectedInput]);
 
   return (
     <View style={{backgroundColor: colors.white, paddingVertical: 5}}>

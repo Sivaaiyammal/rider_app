@@ -1,5 +1,5 @@
 import {Text, TextInput, TouchableOpacity, View} from 'react-native';
-import React, {useRef, useState, useCallback} from 'react';
+import React, {useRef, useState, useCallback, useContext} from 'react';
 
 import CountryPicker, {FlagButton} from 'react-native-country-picker-modal';
 import {loginStyles} from '../../styles/UserStyles';
@@ -11,9 +11,11 @@ import {DataStore} from '../../controllers/DataStore';
 
 import {requestOTPMutation, testLogin} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
-
+import useUserInfoStore from '../../store/useUserInfoStore';
+import { GlobalContext } from '../../context/GlobalContext';
 const LoginScreen = () => {
   const navigation = useNavigation();
+  const {addListener} = useContext(GlobalContext);
   const [countryCode, setCountryCode] = useState('IN');
   const [country, setCountry] = useState({
     callingCode: ['91'],
@@ -28,7 +30,7 @@ const LoginScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [phoneNumErr, setPhoneNumErr] = useState(null);
-
+  const {setUserdetails} = useUserInfoStore();
   const handleLoginSuccess = (data) => {
     if (data) {
       showNotification('Logged In', 'Logged in Successfully', 'success');
@@ -36,6 +38,9 @@ const LoginScreen = () => {
       let {token} = data?.user;
       console.log("token", token)
       DataStore.storeData('access_token', token);
+      DataStore.storeData('userdetails', data?.user);
+      setUserdetails(data?.user);
+      addListener(token);
      
       navigation.dispatch(
         CommonActions.navigate({
@@ -96,11 +101,12 @@ const LoginScreen = () => {
     } else if (phoneNumber.length < 10) {
       setPhoneNumErr('Please Enter Valid Mobile Number');
     } else {
-      console.log(phoneNumber)
+      
       const payload = {
-        phone: phoneNumber,
+        phone: '+91' + phoneNumber,
         password: password
       };
+      console.log(payload)
       DataStore.storeData('login_phoneNumber', phoneNumber);
       testLogins(payload);
     }

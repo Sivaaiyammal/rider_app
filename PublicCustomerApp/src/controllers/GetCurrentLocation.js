@@ -10,7 +10,8 @@ class currentLocation {
   constructor() {}
   async getCurrentLocation() {
     const {setLocation} = useLocationStore.getState();
-    const {setMapLocation} = useMapStore.getState();
+    const {setMapLocation,setLoading} = useMapStore.getState();
+    setLoading(true); // Set loading to true before starting the geolocation process
     return new Promise((resolve, reject) => {
       Geolocation.getCurrentPosition(
         position => {
@@ -25,10 +26,12 @@ class currentLocation {
             lng: position.coords.longitude,
             zoom: 25,
           });
+          setLoading(false); // Set loading to false after successfully getting the position
         },
         error => {
           reject(error);
           setLocation(null);
+          setLoading(false); // Set loading to false if there is an error
         },
         {
           accuracy: {

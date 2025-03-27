@@ -86,7 +86,7 @@ export const rideType = [
 export const getVehicleDetailsById = (id) => {
 
   switch (id) {
-    case 'BIKE':
+    case 'MOTORBIKE':
       return {
         name: 'Motor Bike',
         image: require('../assets/image/vehicle/bike.png'),

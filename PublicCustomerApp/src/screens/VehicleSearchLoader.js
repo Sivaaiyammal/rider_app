@@ -14,10 +14,12 @@ import vehicle_search from '../assets/image/Trips/vehicle_search.png';
 import BottomSheet from '../components/BottomSheet';
 import { commonStyles } from '../styles/VehicleSearchLoaderStyle';
 import { showNotification } from '../components/NotificationManger';
-
+import { useEffect } from 'react';
+import useMapStyleStore from '../store/useMapStyleStore';
 const VehicleSearchLoader = ({ onCancel }) => {
 
   const { goBack, reset: screenStoreReset, setStackScreen } = useStackScreenStore();
+  const { setMapStyle } = useMapStyleStore();
   const { selectedVehicle } = useSelectedVehicleStore();
   const { directions, setDirections } = useLocationStore();
   const { selectedTrip, selectedRide } = useRideSelectionStore();
@@ -28,6 +30,16 @@ const VehicleSearchLoader = ({ onCancel }) => {
     setSearchUnit,
     directionPoints,
   } = useMapStore();
+
+  useEffect(() => {
+    setTimeout(() => {
+      setMapStyle({
+        width: "100%",
+        height: "100%",
+        transition: 'all 5s ease-in-out',
+      });
+    }, 5000);
+  }, []);
 
   const cancelSearching = async (label) => {
 

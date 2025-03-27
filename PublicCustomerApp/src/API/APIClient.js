@@ -13,6 +13,7 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   async config => {
     const access_token = await DataStore.loadData('access_token');
+    console.log('access_token', access_token);
     if (access_token.data) {
       config.headers.Authorization = `Bearer ${access_token.data}`;
     }

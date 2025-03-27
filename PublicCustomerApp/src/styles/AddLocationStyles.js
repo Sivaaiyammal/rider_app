@@ -53,7 +53,6 @@ export const addLocation = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
     
-    
     // backgroundColor:'yellow'
   },
   dragIcons: {
@@ -100,7 +99,7 @@ export const addLocation = StyleSheet.create({
     fontFamily: Fonts.medium,
     color: colors.white,
     fontSize: 16,
-  },
+  }, 
   rideSelectionContainer: {
     width: '95%',
     paddingVertical: 10,
@@ -119,9 +118,6 @@ export const addLocation = StyleSheet.create({
     borderRadius: 15,
     padding: 10,
     display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
     justifyContent: 'center',
   },
   forMeContainer: {
@@ -151,7 +147,7 @@ export const addLocation = StyleSheet.create({
   rideOptionContainer: {
     position: 'absolute',
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: 'rgba(79, 65, 65, 0)',
     width: '100%',
     height: '100%',
     zIndex: 5
@@ -279,7 +275,7 @@ export const scheduleContainerStyles = StyleSheet.create({
 
 export const vehicleList = StyleSheet.create({
   cards: {
-    width: '90%',
+    width: '100%',
     marginVertical: 5,
     alignSelf: 'center',
     flexDirection: 'row',
@@ -287,6 +283,7 @@ export const vehicleList = StyleSheet.create({
     overflow: 'hidden',
     paddingHorizontal: 5,
     backgroundColor: '#FAFAFA',
+    paddingHorizontal:10
   },
   imageContainer: {
     width: '20%',
@@ -310,6 +307,25 @@ export const vehicleList = StyleSheet.create({
     justifyContent: 'space-between',
     paddingRight: 10,
     marginTop: 10,
+  },
+  confirmBtn: {
+    width: '100%',
+    alignSelf: 'center',
+    backgroundColor: colors.black,
+    paddingVertical: 10,
+    marginTop:10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  confirmBtnTxtContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  confirmBtnTxt: {
+    fontFamily: Fonts.medium,
+    color: colors.white,
+    fontSize: 16,
   },
   vehicleDetailsTxt: {
     display: 'flex',

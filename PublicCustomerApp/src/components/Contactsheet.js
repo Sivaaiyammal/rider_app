@@ -1,20 +1,39 @@
-import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
-import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, Animated } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
 import { colors, Fonts } from '../constants/constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useRideSelectionStore from '../store/useRideSelectionStore';
 import Contacts from 'react-native-contacts';
 import { useNavigation } from '@react-navigation/native';
+import useUserInfoStore from '../store/useUserInfoStore';
 
 const Contactsheet = ({ onClose, onConfirm }) => {
   const navigation = useNavigation();
-  const { tripFor, contactDetails, setContactDetails, setTripFor } = useRideSelectionStore();
+  const {userdetails} = useUserInfoStore();
+  const { tripFor, contactDetails, setContactDetails, setTripFor, setSelectedContact } = useRideSelectionStore();
   const [showAddContact, setShowAddContact] = useState(false);
-  const [selectedContact, setSelectedContact] = useState(null);
-  const [newContact, setNewContact] = useState({
-    name: '',
-    phone: '+91'
-  });
+  
+
+  const slideAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(slideAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 50,
+      friction: 7
+    }).start();
+  }, []);
+
+  const handleClose = () => {
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true
+    }).start(() => {
+      onClose();
+    });
+  };
 
   const validatePhoneNumber = (phone) => {
     // Validation for Indian mobile numbers with country code
@@ -43,7 +62,11 @@ const Contactsheet = ({ onClose, onConfirm }) => {
   };
 
   const handleSelectMyself = () => {
-    setSelectedContact(null);
+    const contact = {
+      name: userdetails.name,
+      phone: userdetails.phone
+    }
+    setSelectedContact(contact);
     setTripFor('For Myself');
     onConfirm();
   };
@@ -57,10 +80,24 @@ const Contactsheet = ({ onClose, onConfirm }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <Animated.View 
+      style={[
+        styles.container,
+        {
+          transform: [
+            {
+              translateY: slideAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [300, 0]
+              })
+            }
+          ]
+        }
+      ]}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>Book For</Text>
-        <TouchableOpacity onPress={onClose}>
+        <TouchableOpacity onPress={handleClose}>
           <Ionicons name="close" size={24} color={colors.black} />
         </TouchableOpacity>
       </View>
@@ -144,7 +181,7 @@ const Contactsheet = ({ onClose, onConfirm }) => {
           </View>
         </View>
       )}
-    </View>
+    </Animated.View>
   );
 };
 

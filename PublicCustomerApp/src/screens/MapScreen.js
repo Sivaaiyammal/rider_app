@@ -11,13 +11,13 @@ import useLocationStore from '../store/useLocationStore';
 import Marker from '../controllers/NEMap/Marker';
 import useMapStore from '../store/useMapStore';
 import LinearGradient from 'react-native-linear-gradient';
-
+import MapContainer from './Map';
 const MapScreen = () => {
   const [showMenu, setShowMenu] = useState(false);
 
   const {setStackScreen} = useStackScreenStore();
   const {location,directions,setDirections, currentLocationName,setSelectedInput} = useLocationStore(); 
-  const {setMapMarkers} = useMapStore();
+  const {setMapMarkers,setDirectionPoints} = useMapStore();
 
   const scaleValue = useRef(new Animated.Value(1)).current;
   const offsetValue = useRef(new Animated.Value(0)).current;
@@ -67,7 +67,8 @@ const MapScreen = () => {
     setShowMenu(!showMenu); 
   };
 
-  const onSearchPress = (element = 'rideNow') => {
+  const onSearchPress = (element = 'rideNow', item = null) => {
+    console.log('item', element, item);
     // In this function we handle navigation and state setup for click events from the ride now button and search box
     // Set initial directions with current location if available
     if (location && currentLocationName) {
@@ -85,10 +86,15 @@ const MapScreen = () => {
           locationName: ''
         }
       ];
+      if (item) {
+        initialDirections[1].location = [item.longitude, item.latitude];
+        initialDirections[1].locationName = `${item.name}, ${item.address}`;
+      }
+      console.log('initialDirections', initialDirections);
       setDirections(initialDirections);
-
+      let markers = [];
       // Add marker for current location
-      const marker = new Marker(
+      const startMarker = new Marker(
         '1',
         currentLocationName,
         location[0],
@@ -97,8 +103,26 @@ const MapScreen = () => {
         36,
         true
       );
-      marker.setFocus(true);
-      setMapMarkers([marker]);
+      markers.push(startMarker);
+      if (item) {
+        const endMarker = new Marker(
+          '2',
+          item.name,
+          item.latitude,
+          item.longitude, 
+          'marker_end',
+          36,
+          true
+        );
+        markers.push(endMarker);
+        const routeData = initialDirections.map(direction => ({
+          lat: direction.location[1],
+          lon: direction.location[0],
+        }));  
+        console.log('routeData', routeData);
+        setDirectionPoints({locations: routeData, type: 'car'});
+      }
+      setMapMarkers(markers);
       
       if (element === 'searchBox') {
         setSelectedInput(initialDirections[1]);
@@ -119,6 +143,9 @@ const MapScreen = () => {
   const handleMenu = () => {
     setShowMenu(!showMenu);
   }
+  const onHistoryPress = (item) => {
+    onSearchPress('rideNow', item);
+  }
 
   return (
     <>
@@ -128,6 +155,8 @@ const MapScreen = () => {
         <Animated.View style={{zIndex: 2}}>
         <MapScreenHeader toggleMenu={toggleMenu} showMenu={showMenu}/>
         </Animated.View>
+      
+        
         <BottomSheet minHeight={290}  >
           <TouchableOpacity
             style={styles.searchcontainer}
@@ -142,7 +171,7 @@ const MapScreen = () => {
             <Ionicons name={'car'} size={22} color={colors.white} />
             <Text style={styles.buttonTxt}>Ride Now</Text>
           </TouchableOpacity>
-          <HistoryCard/>
+           <HistoryCard selectCallback={onHistoryPress}/>
           </BottomSheet>
        
      

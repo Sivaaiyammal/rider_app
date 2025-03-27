@@ -15,12 +15,12 @@ class Marker {
      * @param {string} type - The type of the marker. Default is "default".
      * @param {number} size - The size of the marker. Default is 36.
      */
-    constructor(id, name, lng, lat, type = "default", size = 36, selected=false) {
+    constructor(id, name, lng, lat, type = "default", size = 36, selected=false, angle=0) {
 
         // if (!markerTypes.includes(type)) {
         //     throw new Error("Invalid marker type");
         // }
-
+        console.log("size", size)
 
         if (!markerSizes.includes(size)) {
             throw new Error("Invalid marker size");

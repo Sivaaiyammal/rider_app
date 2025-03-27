@@ -77,7 +77,7 @@ const SideDrawerV2 = ({handleMenu}) => {
       icon: <YourRides />,
     },
     {
-      id: 3,
+      id: 'notification',
       name: 'Notification',
       screen: '',
       icon: <Notification />,
@@ -89,7 +89,7 @@ const SideDrawerV2 = ({handleMenu}) => {
       icon: <Language />,
     },
     {
-      id: 5,
+      id: 'contact-us',
       name: 'Contact Us',
       screen: '',
       icon: <ContactUs />,
@@ -119,6 +119,19 @@ const SideDrawerV2 = ({handleMenu}) => {
       navigation.dispatch(
         CommonActions.navigate({
           name: 'YourRidesScreen'
+        }),
+      );
+    } else if (menu.id == 'notification') {
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'NotificationScreen'
+        }),
+      );
+    
+    } else if (menu.id == 'contact-us') {
+      navigation.dispatch(
+        CommonActions.navigate({
+          name: 'ContactScreen'
         }),
       );
     }

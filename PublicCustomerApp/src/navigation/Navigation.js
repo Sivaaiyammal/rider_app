@@ -10,7 +10,8 @@ import OTPScreen from '../screens/authentication/OTPScreen';
 import YourRidesScreen from '../screens/Rides/YourRidesScreen';
 import YourRideDetailsScreen from '../screens/Rides/YourRideDetailsScreen';
 import MyAccountScreen from '../screens/Profile/MyAccountScreen';
-
+import NotificationScreen from '../screens/NotificationScreen';
+import ContactScreen from '../screens/ContactScreen';
 const Navigation = () => {
   const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,8 @@ const Navigation = () => {
       <Stack.Screen name="YourRidesScreen" component={YourRidesScreen} />
       <Stack.Screen name="YourRideDetailsScreen" component={YourRideDetailsScreen} />
       <Stack.Screen name="MyAccountScreen" component={MyAccountScreen} />
+      <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
+      <Stack.Screen name="ContactScreen" component={ContactScreen} />
     </Stack.Navigator>
   );
 };
