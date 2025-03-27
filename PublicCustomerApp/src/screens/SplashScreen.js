@@ -1,15 +1,17 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import React, { useCallback, useEffect } from 'react';
+import { ActivityIndicator, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useContext } from 'react';
 import { SplashStyles } from '../styles/SplashStyles';
 import Logo from '../assets/image/logo.svg';
 import SplashBg from '../assets/image/splashBg.svg';
 import { colors } from '../constants/constants';
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { DataStore } from '../controllers/DataStore';
-
+import useUserInfoStore from '../store/useUserInfoStore';
+import { GlobalContext } from '../context/GlobalContext';
 const SplashScreen = () => {
   const navigation = useNavigation();
-
+  const {addListener} = useContext(GlobalContext);
+  const {setUserdetails} = useUserInfoStore();
   useEffect(() => {
     setTimeout(() => {
       nextScreen();
@@ -22,9 +24,13 @@ const SplashScreen = () => {
     const access_token = await DataStore.loadData('access_token');
     const userdetails = await DataStore.loadData('userdetails');
 
-    console.log('access_token',access_token, userdetails);
+    console.log('access_token',access_token, userdetails.data);
 
     if (access_token.data) {
+      if(userdetails.data){
+        setUserdetails(userdetails.data);
+      }
+      addListener(access_token.data);
 
       // if (!userdetails.data.personalDetails) {
       //   navigation.dispatch(
