@@ -8,6 +8,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 import android.app.Activity;
+import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -35,6 +36,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
+import com.dot.nenativemap.annotations.PatternType;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactMethod;
@@ -456,199 +458,249 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     public Integer getMarkerDrawable(String type) {
         switch (type) {
             case "suv": return R.drawable.suv;
-           
             case "marker_start": return R.drawable.vehicle_start;
             case "marker_end": return R.drawable.vehicle_end;
             case "marker_waypoint": return R.drawable.marker_stop_grey;
+            case "hatchback": return R.drawable.hatchback;
+            case "auto": return R.drawable.auto;
+            case "sedan": return R.drawable.sedan;
             case "location_pin": return R.drawable.marker_stop_grey;
          
             default: return R.drawable.marker_stop_grey;
         }
     }
-
+    
+    @ReactMethod
+    public synchronized void removeMarkers(ReadableArray markers) {
+        for (int i = 0; i < markers.size(); i++) {
+            ReadableMap markerData = markers.getMap(i);
+            String markerId = markerData.getString("id");
+            Marker marker = findMarkerWithId(markerId);
+            
+           
+            if (marker != null) {
+                
+                mapController.removeMarker(marker.getMarkerId());
+            }
+        }
+    }
 
     @ReactProp(name = "markers")
     public synchronized void setMarkers(MapView mapView, ReadableArray markers) {
-        if (mapController == null) {
-            markerTextures.clear();
-            addedMarkers.clear();
-            markersInCreation.clear();
-            return;
-        }
-        if (markers == null) {
-            mapController.removeAllMarkers();
-            synchronized (addedMarkers) {
+        try {
+            if (mapController == null) {
                 markerTextures.clear();
                 addedMarkers.clear();
                 markersInCreation.clear();
+                return;
             }
-            return;
-        }
-        if (markers.size() == 0) {
-            mapController.removeAllMarkers();
+            if (markers == null) {
+                mapController.removeAllMarkers();
+                synchronized (addedMarkers) {
+                    markerTextures.clear();
+                    addedMarkers.clear();
+                    markersInCreation.clear();
+                }
+                return;
+            }
+            if (markers.size() == 0) {
+                mapController.removeAllMarkers();
+                synchronized (addedMarkers) {
+                    markerTextures.clear();
+                    addedMarkers.clear();
+                    markersInCreation.clear();
+                }
+                return;
+            }
+            HashSet <Marker> currentMarkers = new HashSet<>();
+            HashSet<Marker> markersToRemove = new HashSet<>(addedMarkers);
+            for (int i = 0; i < markers.size(); i++) {
+                try {
+                    ReadableMap markerData = markers.getMap(i);
+                    double latitude = markerData.getDouble("lat");
+                    double longitude = markerData.getDouble("lng");
+                    String markerId = markerData.getString("id");
+                    String markerType = markerData.getString("type");
+                    int markerSize = markerData.getInt("size");
+                    boolean isMarkerSelected = markerData.getBoolean("selected");
+                    boolean focus = markerData.getBoolean("focus");
+                    boolean animate = markerData.getBoolean("animate");
+                    int animationTime = markerData.getInt("animationTime");
+                    boolean showToolTip = markerData.getBoolean("showToolTip");
+                    boolean doRotation = markerData.getBoolean("doRotation");
+
+                    String title = markerData.getString("title");
+                    String snippet = markerData.getString("snippet");
+                    int angle = markerData.getInt("angle");
+                    Marker marker = findMarkerWithId(markerId);
+                    MarkerOptions markerOptions = new MarkerOptions()
+                            .name(markerId)
+                            .position(new LngLat(longitude, latitude))
+                            .size(markerSize)
+                            .interactive(true)
+                            .flat(true)
+                            .style(StyleType.ROTATABLE_MARKER);
+                    if(!doRotation){
+                        markerOptions.flat(false);
+                    }
+    //                    .texture(markerType);
+                    Integer markerDrawable = getMarkerDrawable(markerType);
+                    if(showToolTip==true){
+                        markerOptions.title(title).snippet(snippet);
+                    }
+                    if(doRotation){
+                        markerOptions.rotation(0);
+                    }
+                    if(marker!=null){
+                        try {
+                            Long prevMarkerId = marker.getMarkerId();
+                            if (prevMarkerId == null) {
+                                // Handle the case where prevMarkerId is null
+                                Log.d("AJIN", "prevMarkerId is null");
+                                marker = null;
+                            }
+                        } catch (Exception e) {
+                            Log.e("MARKER_ERROR", "Error getting marker ID: " + e.getMessage());
+                            marker = null;
+                        }
+                    }
+
+                    if(marker==null){
+                        /* Check marker is already queued for creation */
+                        if(markersInCreation.contains(markerId)){
+                            continue;
+                        }
+                        /* Add the marker id in queue for creation */
+                        markersInCreation.add(markerId);
+                        OnMarkerCreateListener onMarkerCreateListener = new OnMarkerCreateListener() {
+                            @Override
+                            public synchronized void onMarkerCreated(Marker marker) {
+                                try {
+                                    if(mapController==null){
+                                        Log.d("AJIN", "MAP ctrl not");
+                                        return;
+                                    }
+                                    Log.d("AJIN","MARKER CREATE EMMITED " + marker.getMarkerName());
+                                    markersInCreation.remove(markerId);
+                                    MarkerData userData = new MarkerData();
+                                    userData.setId(markerId);
+                                    marker.setUserData(userData);
+                                    marker.setDrawable(markerDrawable);
+                                    Log.d("AJIN", markerId + " Set usedata");
+                                    if(doRotation==true){
+                                        mapController.NEMarkerSetAngle(marker, angle);
+                                    }
+                                    synchronized (addedMarkers) {
+                                        addedMarkers.add(marker);
+                                    }
+                                    markerTextures.put(markerId,markerType);
+                                    if (isMarkerSelected) {
+                                        mapController.selectMarker(marker);
+                                    }else{
+                                        mapController.deselectMarker(marker);
+                                    }
+                                    synchronized (currentMarkers) {
+                                        currentMarkers.add(marker);
+                                    }
+                                } catch (Exception e) {
+                                    Log.e("MARKER_ERROR", "Error in onMarkerCreated: " + e.getMessage());
+                                }
+                            }
+
+                            @Override
+                            public void onFailed(String name) {
+                                Log.d("AJIN", "Failed marker " + name);
+                                markersInCreation.remove(markerId);
+                            }
+                        };
+                        try {
+                            mapController.NEMarkerAdd(markerOptions, onMarkerCreateListener);
+                        } catch (Exception e) {
+                            Log.e("MARKER_ERROR", "Error adding marker: " + e.getMessage());
+                            markersInCreation.remove(markerId);
+                        }
+                    }else{
+                        try {
+                            LngLat oldpos = marker.getPosition();
+                            oldpos.longitude = longitude;
+                            oldpos.latitude = latitude;
+                            if(animate){
+                                marker.setPointEased(oldpos,animationTime, MapController.EaseType.LINEAR);
+                            }else{
+                                marker.setPoint(new LngLat(longitude,latitude));
+                            }
+                            if(focus){
+                                CameraPosition cameraPosition = mapController.getCameraPosition();
+                                float zoom = 14;
+                                float cameraZoom = cameraPosition.getZoom();
+                                if(cameraZoom>14.0){
+                                    zoom = cameraZoom;
+                                }
+                                mapController.updateCameraPosition(CameraUpdateFactory.newLngLatZoom(new LngLat(longitude,latitude), zoom),100);
+                            }
+                            if (isMarkerSelected) {
+                                mapController.selectMarker(marker);
+                            }else{
+                                mapController.deselectMarker(marker);
+                            }
+                            String prevString = markerTextures.get(markerId);
+    //
+                            if (prevString!= null && !markerType.equals(prevString)) {
+                                marker.setVisible(false);
+    //                    mapController.NEMarkerSetStyle(marker, markerOptions);
+                                marker.setDrawable(markerDrawable);
+                                markerTextures.put(markerId, markerType);
+                                marker.setVisible(true);
+                           }
+                            if(prevString==null){
+                                marker.setVisible(false);
+                                mapController.NEMarkerSetStyle(marker, markerOptions);
+                                marker.setDrawable(markerDrawable);
+                                markerTextures.put(markerId, markerType);
+                                marker.setVisible(true);
+                           }
+                            if(doRotation){
+                                mapController.NEMarkerSetAngle(marker, angle);
+                            }
+                            markersToRemove.remove(marker);
+                            synchronized (currentMarkers) {
+                                currentMarkers.add(marker);
+                            }
+                        } catch (Exception e) {
+                            Log.e("MARKER_ERROR", "Error updating existing marker: " + e.getMessage());
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e("MARKER_ERROR", "Error processing marker at index " + i + ": " + e.getMessage());
+                }
+            }
+            
             synchronized (addedMarkers) {
-                markerTextures.clear();
                 addedMarkers.clear();
-                markersInCreation.clear();
+                addedMarkers.addAll(currentMarkers);
             }
-            return;
+            
+            try {
+                for(Marker marker : markersToRemove){
+                    mapController.removeMarker(marker.getMarkerId());
+                }
+            } catch (Exception e) {
+                Log.e("MARKER_ERROR", "Error removing markers: " + e.getMessage());
+            }
+            
+            markersToRemove.clear();
+        } catch (Exception e) {
+            Log.e("MARKER_ERROR", "Error in setMarkers: " + e.getMessage());
         }
-        HashSet <Marker> currentMarkers = new HashSet<>();
-        HashSet<Marker> markersToRemove = new HashSet<>(addedMarkers);
-        for (int i = 0; i < markers.size(); i++) {
-            ReadableMap markerData = markers.getMap(i);
-            double latitude = markerData.getDouble("lat");
-            double longitude = markerData.getDouble("lng");
-            String markerId = markerData.getString("id");
-            String markerType = markerData.getString("type");
-            int markerSize = markerData.getInt("size");
-            boolean isMarkerSelected = markerData.getBoolean("selected");
-            boolean focus = markerData.getBoolean("focus");
-            boolean animate = markerData.getBoolean("animate");
-            int animationTime = markerData.getInt("animationTime");
-            boolean showToolTip = markerData.getBoolean("showToolTip");
-            boolean doRotation = markerData.getBoolean("doRotation");
-
-            String title = markerData.getString("title");
-            String snippet = markerData.getString("snippet");
-            int angle = markerData.getInt("angle");
-            Marker marker = findMarkerWithId(markerId);
-            MarkerOptions markerOptions = new MarkerOptions()
-                    .name(markerId)
-                    .position(new LngLat(longitude, latitude))
-                    .size(markerSize)
-                    .interactive(true)
-                    .flat(true)
-                    .style(StyleType.ROTATABLE_MARKER);
-            if(!doRotation){
-                markerOptions.flat(false);
-            }
-//                    .texture(markerType);
-            Integer markerDrawable = getMarkerDrawable(markerType);
-            if(showToolTip==true){
-                markerOptions.title(title).snippet(snippet);
-            }
-            if(doRotation){
-                markerOptions.rotation(0);
-            }
-            if(marker!=null){
-                Long prevMarkerId = marker.getMarkerId();
-                if (prevMarkerId == null) {
-                    // Handle the case where prevMarkerId is null
-                    Log.d("AJIN", "prevMarkerId is null");
-                    marker = null;
-                }
-            }
-
-
-            if(marker==null){
-                /* Check marker is already queued for creation */
-                if(markersInCreation.contains(markerId)){
-                    continue;
-                }
-                /* Add the marker id in queue for creation */
-                markersInCreation.add(markerId);
-                OnMarkerCreateListener onMarkerCreateListener = new OnMarkerCreateListener() {
-                    @Override
-                    public synchronized void onMarkerCreated(Marker marker) {
-                        if(mapController==null){
-                            Log.d("AJIN", "MAP ctrl not");
-                            return;
-                        }
-                        Log.d("AJIN","MARKER CREATE EMMITED " + marker.getMarkerName());
-                        markersInCreation.remove(markerId);
-                        MarkerData userData = new MarkerData();
-                        userData.setId(markerId);
-                        marker.setUserData(userData);
-                        marker.setDrawable(markerDrawable);
-                        Log.d("AJIN", markerId + " Set usedata");
-                        if(doRotation==true){
-                            mapController.NEMarkerSetAngle(marker, angle);
-                        }
-                        synchronized (addedMarkers) {
-                            addedMarkers.add(marker);
-                        }
-                        markerTextures.put(markerId,markerType);
-                        if (isMarkerSelected) {
-                            mapController.selectMarker(marker);
-                        }else{
-                            mapController.deselectMarker(marker);
-                        }
-                        synchronized (currentMarkers) {
-                            currentMarkers.add(marker);
-                        }
-                    }
-
-                    @Override
-                    public void onFailed(String name) {
-                        Log.d("AJIN", "Failed marker " + name);
-                    }
-                };
-                mapController.NEMarkerAdd(markerOptions, onMarkerCreateListener);
-
-            }else{
-                LngLat oldpos = marker.getPosition();
-                oldpos.longitude = longitude;
-                oldpos.latitude = latitude;
-                if(animate){
-                    marker.setPointEased(oldpos,animationTime, MapController.EaseType.LINEAR);
-                }else{
-                    marker.setPoint(new LngLat(longitude,latitude));
-                }
-                if(focus){
-                    CameraPosition cameraPosition = mapController.getCameraPosition();
-                    float zoom = 14;
-                    float cameraZoom = cameraPosition.getZoom();
-                    if(cameraZoom>14.0){
-                        zoom = cameraZoom;
-                    }
-                    mapController.updateCameraPosition(CameraUpdateFactory.newLngLatZoom(new LngLat(longitude,latitude), zoom),100);
-                }
-                if (isMarkerSelected) {
-                    mapController.selectMarker(marker);
-                }else{
-                    mapController.deselectMarker(marker);
-                }
-                String prevString = markerTextures.get(markerId);
-//
-                if (prevString!= null && !markerType.equals(prevString)) {
-                    marker.setVisible(false);
-//                    mapController.NEMarkerSetStyle(marker, markerOptions);
-                    marker.setDrawable(markerDrawable);
-                    markerTextures.put(markerId, markerType);
-                    marker.setVisible(true);
-               }
-                if(prevString==null){
-                    marker.setVisible(false);
-                    mapController.NEMarkerSetStyle(marker, markerOptions);
-                    marker.setDrawable(markerDrawable);
-                    markerTextures.put(markerId, markerType);
-                    marker.setVisible(true);
-               }
-                if(doRotation){
-                    mapController.NEMarkerSetAngle(marker, angle);
-                }
-                markersToRemove.remove(marker);
-                synchronized (currentMarkers) {
-                    currentMarkers.add(marker);
-                }
-            }
-
-        }
-        synchronized (addedMarkers) {
-            addedMarkers.clear();
-            addedMarkers.addAll(currentMarkers);
-        }
-        for(Marker marker : markersToRemove){
-            mapController.removeMarker(marker.getMarkerId());
-        }
-        markersToRemove.clear();
     }
 
     private synchronized Marker findMarkerWithId(String id) {
         synchronized (addedMarkers) {
             for (Marker marker : addedMarkers) {
                 MarkerData userData = (MarkerData) marker.getUserData();
+                Log.e("Karthik", "marker: " + marker);
+                Log.e("Karthik", "userData: " + userData);
+                Log.e("Karthik", "userData: " + userData.getId());
                 if(marker==null) continue;
                 if(userData==null) continue;
                 if (userData.getId().equals(id)) {
@@ -705,6 +757,138 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                         }
                     }
                 }
+            }
+        }
+    }
+
+    public void renderPolyline(ReadableMap polyline) {
+        if(mapController==null){
+            return;
+        }
+
+        ReadableArray coordinates = polyline.getArray("coordinates");
+        String color = polyline.getString("color");
+        String width = polyline.getString("width");
+        boolean focus = polyline.getBoolean("focus");
+        ReadableArray margin = polyline.getArray("padding");
+        String pattern = polyline.getString("pattern");
+
+        focus = true;
+
+        
+
+        List<LngLat> linePoints = new ArrayList<>();
+        double minLat = Double.MAX_VALUE;
+        double maxLat = Double.MIN_VALUE;
+        double minLon = Double.MAX_VALUE;
+        double maxLon = Double.MIN_VALUE;
+        for (int j = 0; j < coordinates.size(); j++) {
+            ReadableArray coordinate = coordinates.getArray(j);
+            double latitude = coordinate.getDouble(1);
+            double longitude = coordinate.getDouble(0);
+            linePoints.add(new LngLat(longitude, latitude));
+            if (latitude < minLat) minLat = latitude;
+            if (latitude > maxLat) maxLat = latitude;
+            if (longitude < minLon) minLon = longitude;
+            if (longitude > maxLon) maxLon = longitude;
+        }
+
+        if(focus){
+            mapController.updateCameraPosition(
+                    CameraUpdateFactory.newLngLatBounds(new LngLat(minLon, minLat), new LngLat(maxLon, maxLat),
+                            new Rect(margin.getInt(0), margin.getInt(1), margin.getInt(2), margin.getInt(3))),500);
+        }
+
+        PolylineOptions.LineWidth polylineWidth = PolylineOptions.LineWidth.SMALL;
+        if(width.equals("medium")){
+            polylineWidth = PolylineOptions.LineWidth.REGULAR;
+        }
+        if(width.equals("large")){
+            polylineWidth = PolylineOptions.LineWidth.LARGE;
+        }
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .addAll(linePoints)
+                .color(color)
+                .polylineWidth(polylineWidth);
+        if(pattern.equals("dashed")){
+            polylineOptions.patternType(PatternType.DOT);
+        }
+        mapController.drawPolyLine(polylineOptions);
+    }
+
+    public void renderCircle(ReadableMap circle){
+        // if(mapController==null){
+        //     return;
+        // }
+        // double lat = circle.getDouble("lat");
+        // double lng = circle.getDouble("lng");
+        // double radius = circle.getDouble("radius");
+        // boolean focus = circle.getBoolean("focus");
+        // ReadableArray margin = circle.getArray("padding");
+        // String fillColor = circle.getString("fillColor");
+        // String strokeColor = circle.getString("strokeColor");
+        // String strokeWidth  = circle.getString("strokeWidth");
+
+        // LngLat center = new LngLat(lng,lat );
+        // CircleOptions circleOptions = new CircleOptions();
+
+        // CircleOptions.StrokeWidth circleStrokeWidth = CircleOptions.StrokeWidth.SMALL;
+        // if(strokeWidth.equals("medium")){
+        //     circleStrokeWidth = CircleOptions.StrokeWidth.REGULAR;
+        // }
+        // if(strokeWidth.equals("large")){
+        //     circleStrokeWidth = CircleOptions.StrokeWidth.LARGE;
+        // }
+
+        // Log.d("AJIN", strokeColor);
+        // Log.d("AJIN", fillColor);
+
+        // circleOptions
+        //         .radius(radius)
+        //         .center(center)
+        //         .strokeColor(strokeColor)
+        //         .strokeWidth(circleStrokeWidth)
+        //         .fillColor(fillColor);
+        // List<LngLat> points = circleOptions.getPoints();
+        // double minLat = Double.MAX_VALUE;
+        // double maxLat = Double.MIN_VALUE;
+        // double minLon = Double.MAX_VALUE;
+        // double maxLon = Double.MIN_VALUE;
+        // for (int j = 0; j < points.size(); j++) {
+        //     LngLat coordinate = points.get(j);
+        //     double latitude = coordinate.latitude;
+        //     double longitude = coordinate.longitude;
+        //     if (latitude < minLat) minLat = latitude;
+        //     if (latitude > maxLat) maxLat = latitude;
+        //     if (longitude < minLon) minLon = longitude;
+        //     if (longitude > maxLon) maxLon = longitude;
+        // }
+        // if(focus){
+        //     mapController.updateCameraPosition(
+        //             CameraUpdateFactory.newLngLatBounds(new LngLat(minLon, minLat), new LngLat(maxLon, maxLat),
+        //                     new Rect(margin.getInt(0), margin.getInt(1), margin.getInt(2), margin.getInt(3))),500);
+        // }
+        // mapController.drawCircle(circleOptions);
+    }
+
+
+    @ReactProp(name = "geometries")
+    public void setGeometries(MapView mapView, ReadableArray geometries) {
+        if (mapController == null) return;
+        if (geometries == null) {
+            mapController.clearLines();
+            return;
+        }
+        mapController.clearLines();
+        for (int i = 0; i < geometries.size(); i++) {
+            // Parse polyline object data from the prop
+            ReadableMap geometry = geometries.getMap(i);
+            String type = geometry.getString("type");
+            Log.d("AJIN", type);
+            if (type.equals("polyline")) {
+                renderPolyline(geometry);
+            } else if (type.equals("circle")) {
+                renderCircle(geometry);
             }
         }
     }
