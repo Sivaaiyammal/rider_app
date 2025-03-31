@@ -8,6 +8,7 @@ const useUserInfoStore = create(set => ({
   userdetails: null,
   setUserdetails: userdetails => set({ userdetails }),
 
+
 }));
 
 export default useUserInfoStore;

@@ -3,16 +3,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { colors, Fonts } from '../constants/constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useRideSelectionStore from '../store/useRideSelectionStore';
-import Contacts from 'react-native-contacts';
 import { useNavigation } from '@react-navigation/native';
 import useUserInfoStore from '../store/useUserInfoStore';
 
 const Contactsheet = ({ onClose, onConfirm }) => {
   const navigation = useNavigation();
-  const {userdetails} = useUserInfoStore();
+  const { userdetails } = useUserInfoStore();
   const { tripFor, contactDetails, setContactDetails, setTripFor, setSelectedContact } = useRideSelectionStore();
   const [showAddContact, setShowAddContact] = useState(false);
-  
+  const [newContact, setNewContact] = useState({ name: '', phone: '' });
 
   const slideAnim = useRef(new Animated.Value(0)).current;
 
@@ -36,8 +35,7 @@ const Contactsheet = ({ onClose, onConfirm }) => {
   };
 
   const validatePhoneNumber = (phone) => {
-    // Validation for Indian mobile numbers with country code
-    const phoneRegex = /^\+91[6-9]\d{9}$/;
+    const phoneRegex = /^[6-9]\d{9}$/;
     return phoneRegex.test(phone);
   };
 
@@ -46,13 +44,22 @@ const Contactsheet = ({ onClose, onConfirm }) => {
   };
 
   const handleAddContact = () => {
-    if (isFormValid()) {
-      setContactDetails([...contactDetails, newContact]);
-      setNewContact({ name: '', phone: '+91' });
-      setShowAddContact(false);
-    } else {
+    if (!isFormValid()) {
       alert('Please enter a valid Indian mobile number (e.g. +919876543210)');
+      return;
     }
+
+    const alreadyExists = contactDetails.some(c => c.phone === newContact.phone);
+    if (alreadyExists) {
+      alert('Contact already exists');
+      return;
+    }
+
+    const updatedContacts = [...contactDetails, newContact];
+    setContactDetails(updatedContacts);
+    setNewContact({ name: '', phone: '+91' });
+    setShowAddContact(false);
+    // onConfirm?.(); // Optional: auto close
   };
 
   const handleSelectContact = (contact) => {
@@ -62,10 +69,16 @@ const Contactsheet = ({ onClose, onConfirm }) => {
   };
 
   const handleSelectMyself = () => {
+    if (!userdetails?.name || !userdetails?.phone) {
+      alert('User details not available');
+      return;
+    }
+
     const contact = {
       name: userdetails.name,
       phone: userdetails.phone
-    }
+    };
+
     setSelectedContact(contact);
     setTripFor('For Myself');
     onConfirm();
@@ -74,7 +87,10 @@ const Contactsheet = ({ onClose, onConfirm }) => {
   const handleGetFromContacts = () => {
     navigation.navigate('ContactsList', {
       onSelectContact: (selectedContact) => {
-        setContactDetails([...contactDetails, selectedContact]);
+        const alreadyExists = contactDetails.some(c => c.phone === selectedContact.phone);
+        if (!alreadyExists) {
+          setContactDetails([...contactDetails, selectedContact]);
+        }
       }
     });
   };
@@ -107,7 +123,7 @@ const Contactsheet = ({ onClose, onConfirm }) => {
         onPress={handleSelectMyself}
       >
         <Text style={styles.myselfText}>Myself</Text>
-        {tripFor==='For Myself' && <Ionicons name="checkmark-circle" size={24} color={colors.green} />}
+        {tripFor === 'For Myself' && <Ionicons name="checkmark-circle" size={24} color={colors.green} />}
       </TouchableOpacity>
 
       {contactDetails.map((contact, index) => (
@@ -120,7 +136,7 @@ const Contactsheet = ({ onClose, onConfirm }) => {
             <Text style={styles.contactName}>{contact.name}</Text>
             <Text style={styles.contactPhone}>{contact.phone}</Text>
           </View>
-          {tripFor===contact.name && <Ionicons name="checkmark-circle" size={24} color={colors.green} />}
+          {tripFor === contact.name && <Ionicons name="checkmark-circle" size={24} color={colors.green} />}
         </TouchableOpacity>
       ))}
 
@@ -139,7 +155,7 @@ const Contactsheet = ({ onClose, onConfirm }) => {
             onPress={handleGetFromContacts}
           >
             <Ionicons name="people-outline" size={24} color={colors.blue} />
-            <Text style={[styles.addButtonText, {color: colors.blue}]}>Choose from Contacts</Text>
+            <Text style={[styles.addButtonText, { color: colors.blue }]}>Choose from Contacts</Text>
           </TouchableOpacity> */}
         </>
       ) : (
@@ -148,17 +164,19 @@ const Contactsheet = ({ onClose, onConfirm }) => {
             style={styles.input}
             placeholder="Enter name"
             value={newContact.name}
-            onChangeText={(text) => setNewContact({...newContact, name: text})}
+            onChangeText={(text) => setNewContact({ ...newContact, name: text })}
           />
+          <View style={[styles.input, {flexDirection:'row',gap:10}]}>
+          <Text style={{fontFamily:Fonts.medium,fontSize:16,color:colors.black}}>+91</Text>
           <TextInput
-            style={styles.input}
-            placeholder="Enter mobile number (e.g. +919876543210)"
+            placeholder="Enter mobile number"
             keyboardType="phone-pad"
             value={newContact.phone}
-            onChangeText={(text) => setNewContact({...newContact, phone: text})}
+            maxLength={10}
+            onChangeText={(text) => setNewContact({ ...newContact, phone: text })}
           />
+          </View>
           <View style={styles.buttonRow}>
-           
             <TouchableOpacity 
               style={[
                 styles.confirmButton,
@@ -176,7 +194,7 @@ const Contactsheet = ({ onClose, onConfirm }) => {
                 setShowAddContact(false);
               }}
             >
-                <Ionicons name="close" style={{color:colors.grey_dark}} size={20} color={colors.red} />
+              <Ionicons name="close" style={{ color: colors.grey_dark }} size={20} />
             </TouchableOpacity>
           </View>
         </View>
@@ -227,11 +245,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.grey_light
   },
-  contactRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10
-  },
   contactName: {
     fontFamily: Fonts.medium,
     fontSize: 16,
@@ -265,14 +278,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.grey,
     borderRadius: 8,
-    padding: 12,
+    alignItems:'center',
+    paddingHorizontal:10, 
     marginBottom: 16,
     fontFamily: Fonts.regular
   },
   confirmButton: {
     backgroundColor: colors.green,
-    paddingVertical:10,
-    paddingHorizontal:10,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
     borderRadius: 8,
     alignItems: 'center'
   },
@@ -285,24 +299,19 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 16
   },
-  buttonRow:{
-    display:'flex',
-    flexDirection:'row',
-    justifyContent:'flex-end',
-    alignItems:'center',
-    gap:10
+  buttonRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    gap: 10
   },
-  cancelButton:{
-    backgroundColor:colors.grey_light,
-    paddingVertical:10,
-    paddingHorizontal:10,
+  cancelButton: {
+    backgroundColor: colors.grey_light,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
     borderRadius: 8,
     alignItems: 'center'
-  },
-  cancelText:{
-    color:colors.black,
-    fontFamily:Fonts.medium,
-    fontSize:16
   }
 });
 

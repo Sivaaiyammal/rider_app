@@ -67,7 +67,9 @@ const VehicleListScreen = () => {
                 vehicle.latitude,
                 vehicleArray,
                 36,
-                true
+                true,
+                266.6896667480469
+
               );
             });
             allVehicleMarkers = [...allVehicleMarkers, ...markers];
@@ -83,9 +85,11 @@ const VehicleListScreen = () => {
             vehicle.latitude, 
             currentVehicleType,
             36,
-            true
+            true,
+            266.6896667480469
           );
         });
+        console.log('vehicleMarkers-->>', vehicleMarkers)
         setMapMarkers(vehicleMarkers);
       }
     }
@@ -119,6 +123,17 @@ const VehicleListScreen = () => {
     resetMapStyle();
     goBack();
     setCurrentVehicleType('none')
+  };
+  const getRandomColor = (vehicleType ) => {
+    console.log('vehicleType-->>', vehicleType)
+    const colors = {
+      'SEDAN': '#9b3e3e',
+      'SUV': '#4b48ab',
+      'HATCHBACK': '#4b88ab',
+      'BIKE': '#9B59B6',
+      'AUTO': '#F9D423'
+    }
+    return colors[vehicleType] || '#000000';
   };
 
   return (
@@ -157,8 +172,11 @@ const VehicleListScreen = () => {
           {vehicles.map((item, idx) => {
             const vehicleDetails = getVehicleDetailsById(item.vehicleType);
             return (
-              <TouchableOpacity key={idx} style={[vehicleList.cards, selectedVehicle?.vehicleType === item?.vehicleType && { backgroundColor: colors.grey_light}]} onPress={() => handleVehicleSelect(item)}>
+              <TouchableOpacity key={idx} style={[vehicleList.cards, selectedVehicle?.vehicleType === item?.vehicleType && { backgroundColor: colors.grey_xlight}]} onPress={() => handleVehicleSelect(item)}>
                 <View style={vehicleList.imageContainer}>
+                  <View style={[vehicleList.imageBg, {backgroundColor:getRandomColor(item.vehicleType)}]}>
+
+                  </View>
                   <Image
                     source={vehicleDetails.image}
                     style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
@@ -169,7 +187,7 @@ const VehicleListScreen = () => {
                   <View style={vehicleList.vehicleDetailsContainer}>
                     <View style={vehicleList.vehicleDetailsTxt}>
                       <Duration />
-                      <Text style={{ fontFamily: Fonts.light, color: colors.black }}>{item.timeTakenToPickup || ''} mins away</Text>
+                      <Text style={{ fontFamily: Fonts.light, color: colors.black, fontSize:12 }}>{item.timeTakenToPickup || ''} mins away</Text>
                     </View>
                     <View style={vehicleList.vehicleDetailsTxt}>
                       <People />

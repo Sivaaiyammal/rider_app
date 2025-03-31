@@ -283,18 +283,30 @@ export const vehicleList = StyleSheet.create({
     overflow: 'hidden',
     paddingHorizontal: 5,
     backgroundColor: '#FAFAFA',
-    paddingHorizontal:10
+    paddingHorizontal:10,
   },
   imageContainer: {
-    width: '20%',
+    width: '27%',
     aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  imageBg: {
+    position:'absolute',
+    left:0,
+    width: '50%',
+    height: '70%',
+    backgroundColor: colors.yellow,
+    borderRadius: 10,
+    borderTopRightRadius: 40,
+    borderBottomRightRadius: 40,
+  },
   vehicleDetails: {
-    width: '48%',
+    display:'flex',
+    justifyContent:'center',
+    flex:1,
     borderRightWidth: 0.3,
-    marginVertical: 8,
+    paddingHorizontal:5
   },
 
   vehicleName: {
@@ -306,7 +318,7 @@ export const vehicleList = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingRight: 10,
-    marginTop: 10,
+    marginTop: 5,
   },
   confirmBtn: {
     width: '100%',

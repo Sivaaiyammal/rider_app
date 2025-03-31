@@ -9,14 +9,7 @@ const StateVectorConatiner = (props) => {
   const { stateVector, setStateVector } = useMapStore();
   const { stateVectorArr, removeStateVecotr } = props;
 
-  const onVectorPress = (item, index) => {
-    // console.log('hari-->>item-->>', item, index)
-    // const updatedStateVector = { ...stateVector };
-    // updatedStateVector[key].splice(index, 1);
-    // if (updatedStateVector[key].length === 0) {
-    //   delete updatedStateVector[key];
-    // }
-    // setStateVector(updatedStateVector);
+  const onVectorPress = (item) => {
     removeStateVecotr(item);
   };
 
@@ -36,21 +29,7 @@ const StateVectorConatiner = (props) => {
       )}
     </View>
   ) : null;
-  // return stateVector ? (
-  // <View style={styles.vectorContainer}>
-
-  //       {Object.entries(stateVector).map(([key, values]) => (
-  //       values?.map((value, index) => (
-  //         <View key={index} style={styles.stateBtn}>
-  //           <Text style={styles.stateText}>{value[1]}</Text>
-  //           <TouchableOpacity key={key} onPress={()=>onVectorPress(key, index)}>
-  //           <Entypo name="cross" size={22} color={'black'}/>
-  //           </TouchableOpacity>
-  //         </View>
-  //       ))
-  //   ))}
-  // </View>
-  // ) : null;
+ 
 };
 
 export default StateVectorConatiner;

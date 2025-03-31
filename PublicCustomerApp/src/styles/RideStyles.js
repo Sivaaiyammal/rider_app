@@ -2,16 +2,30 @@ import { StyleSheet } from "react-native";
 import { colors, Fonts } from "../constants/constants";
 
 export const rideStyles = StyleSheet.create({
-    container: {
+    containerMain: {
       position: 'absolute',
       bottom: 0,
-      backgroundColor: colors.blue_xxdark,
       width: '100%',
+    },
+    container:{
+      backgroundColor: colors.white,
       borderTopLeftRadius: 25,
       borderTopRightRadius: 25,
+      elevation: 10,
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: -3,
+      },
+      shadowOpacity: 0.50,
+      shadowRadius: 5,
+
     },
     title: {
-      flexDirection: 'row',
+      backgroundColor: colors.white,
+      marginTop:10,
+      flexDirection:"column",
+      gap:5,
       paddingVertical: 10,
       width: '90%',
       alignSelf: 'center',
@@ -19,13 +33,12 @@ export const rideStyles = StyleSheet.create({
       alignItems: 'center',
     },
     titleTxt: {
-      color: colors.white,
+      margin:0,
+      color: colors.black,
       fontFamily: Fonts.regular,
       fontSize: 16,
     },
     statusBox: {
-      backgroundColor: colors.orange,
-      paddingVertical: 6,
       paddingHorizontal: 10,
       borderRadius: 15,
     },
@@ -40,12 +53,13 @@ export const rideStyles = StyleSheet.create({
       marginTop: 10,
       width: '90%',
       alignSelf: 'center',
-      elevation: 5,
+      justifyContent:'center',
       borderRadius: 10,
       paddingVertical: 10,
       paddingHorizontal: 10,
       alignItems: 'center',
-      marginBottom:10
+      marginBottom:10,
+      borderWidth:0.3,
     },
     vehicleNum: {
       fontFamily: Fonts.semi_bold,
@@ -60,6 +74,7 @@ export const rideStyles = StyleSheet.create({
     driverDetails: {
       width: '90%',
       alignSelf: 'center',
+      justifyContent:'center',
       paddingVertical: 10,
       flexDirection: 'row',
     },
@@ -124,6 +139,7 @@ export const rideStyles = StyleSheet.create({
     vehicleDetails:{
       borderWidth:0.3,
       width:'25%',
+      flex:1,
       alignItems:'center',
       paddingVertical:10,
       gap:10,

@@ -1,5 +1,4 @@
 import {
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -8,7 +7,7 @@ import {
   BackHandler,
   Image,
 } from 'react-native';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import NavBar from '../../components/NavBar';
 import { colors } from '../../constants/constants';
 
@@ -24,16 +23,20 @@ import polyline from '@mapbox/polyline';
 import useDriverLocationStore from '../../store/useDriverLocationStore';
 import { findRoute } from '../../controllers/NEMap/findRoute';
 import Marker from '../../controllers/NEMap/Marker';
-import { getRemainingPolyline } from '../../controllers/PolylineController';
+import { showNotification } from '../../components/NotificationManger';
 
 
 const DriverArrival = () => {
-  const [getDriverLocation, setGetDriverLocation] = useState(false);
+
+  const [GetDriverSocketData, setGetDriverSocketData] = useState(false)
+
+
+  const [driverDistance, setDriverDistance] = useState('100m away');
+  const [arrivalTime, setArrivalTime] = useState(300);
  
   const { reset } = useStackScreenStore();
-  const { driverLocation, setDriverLocation , driverAngle, driverMaxSpeed} = useDriverLocationStore();
-  const [polylineDATA, setPolylineDATA] = useState(null);
-  const [reversedPolylineCoords, setReversedPolylineCoords] = useState([]); // ✅ new state
+  const { driverLocation, setDriverLocation, driverAngle, driverMaxSpeed } = useDriverLocationStore();
+
 
   const {
     setOnSearchResults,
@@ -52,7 +55,8 @@ const DriverArrival = () => {
     rideDistance,
     rideDuration,
   } = useRideSelectionStore();
-
+ 
+  
   const locationTask = useLocationStore();
 
   const handleCall = (phoneNumber) => {
@@ -86,129 +90,181 @@ const DriverArrival = () => {
     return () => backHandler.remove();
   }, [onBackPress]);
 
+  
+    const AddMarker = (driverLocation) => {
+      const markers = []
+      let vehicleType = bookingDetails?.vehicleType ? bookingDetails?.vehicleType.toLowerCase() : 'suv'
+      try {
+        if(bookingDetails?.startLocation){
+          const pickupMarker = new Marker(
+            'pickup',
+            'pickup',
+            bookingDetails.startLocation[0],
+            bookingDetails.startLocation[1],
+            'default',
+            36,
+            true
+          )
+          markers.push(pickupMarker)
+        }
+        if(driverLocation){
+          const driverAngles = driverAngle || 0
+          const driverMarker = new Marker(
+          'car',
+          vehicleType,
+          driverLocation[0],
+          driverLocation[1],
+          vehicleType,
+          36,
+          true,
+          driverAngles
+        );
+        markers.push(driverMarker)
+        }
+        console.log('markers-->>', markers)
+        setMapMarkers(markers)
+      } catch (error) {
+        console.error('Error adding marker:', error);
+      }
+    };
 
-  useEffect(() => {
-    if (driverLocation) {
-      addMarker(driverLocation);
+    const fetchRoute = async () => {
+      try {
+        if (driverLocation && bookingDetails?.startLocation) {
+          const directions = [
+            {
+              id: 1,
+              name: 'Start',
+              location: [
+                driverLocation[0],
+                driverLocation[1],
+              ],
+            },
+            {
+              id: 2,
+              name: 'End',
+              location: bookingDetails.startLocation,
+            },
+          ];
+
+          const response = await findRoute(directions);
+          if (response?.trip) {
+            const allCoords = [];
+            if (!GetDriverSocketData) {
+              response.trip.legs.forEach((item) => {
+                const decodedData = polyline.decode(item.shape, 6);
+                const reversedCoordinates = decodedData.map(([lat, lon]) => [lon, lat]);
+                allCoords.push(...reversedCoordinates);
+              });
+
+              // Create and set polyline
+              const polyLine = new Polyline(
+                1,
+                `routes`,
+                allCoords,
+                '#174EA6',
+                'small'
+              );
+              polyLine.setPadding([100, 130, 100, 100]);
+              polyLine.setFocus(true);
+              // Set both geometries and markers at once
+              setGeometries([polyLine]);
+              setGetDriverSocketData(true);
+            }
+            if (response?.trip?.summary?.time) {
+              setArrivalTime(response?.trip?.summary?.time);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching route:', error);
+      }
+    };
+
+    useEffect(() => {
+      console.log('driverLocation-->>', driverLocation);
+      console.log('driverAngle-->>', driverAngle)
+      if (driverLocation && driverAngle != null) {
+        AddMarker(driverLocation);
+        fetchRoute(driverLocation);
+        checkDriverLocation(driverLocation);
+      }
+    }, [driverLocation]);
+
+    useEffect(() => {
+      setDirectionPoints(null);
+      if(assignedDriver && assignedDriver?.name){
+        showNotification(`${assignedDriver?.name.charAt(0).toUpperCase() + assignedDriver?.name.slice(1).toLowerCase()} assigned to your ride`, 'is on the way to your location', 'success')
+      }
+    }, []);
+
+
+    const checkDriverLocation = (driverLocation) => {
+      try {
+        if(driverLocation && bookingDetails?.startLocation) {
+          // Calculate distance between driver and end location
+          const driverLat = driverLocation[0];
+          const driverLng = driverLocation[1];
+          const endLat = bookingDetails.startLocation[0];
+          const endLng = bookingDetails.startLocation[1];
+        
+        // Calculate distance using Haversine formula
+        const R = 6371e3; // Earth's radius in meters
+        const φ1 = driverLat * Math.PI/180;
+        const φ2 = endLat * Math.PI/180;
+        const Δφ = (endLat-driverLat) * Math.PI/180;
+        const Δλ = (endLng-driverLng) * Math.PI/180;
+        
+        const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                  Math.cos(φ1) * Math.cos(φ2) *
+                  Math.sin(Δλ/2) * Math.sin(Δλ/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distance = R * c; // distance in meters
+        console.log('distance-->>', distance)
+        // Check if driver is within 200 meters of end location
+        if (distance <= 200) {
+          console.log('Driver has entered destination area (within 200m radius)');
+          
+          showNotification(`Driver almost reached your location`,`OTP :${otp}`, 'success')
+          
+          // Here you can trigger any actions needed when driver reaches destination
+          
+        }
+      }
+    } catch (error) {
+      console.error('Error checking driver location:', error);
     }
-    if(!getDriverLocation){
-      fetchRoute();
-      setDriverLocation(driverLocation);
-      setGetDriverLocation(true);
     }
-  }, [driverLocation]);
-
-  const fetchRoute = async () => {
-    if (driverLocation && bookingDetails?.startLocation) {
-      const directions = [
-        {
-          id: 1,
-          name: 'Start',
-          location: [
-            driverLocation[0],
-            driverLocation[1],
-          ],
-        },
-        {
-          id: 2,
-          name: 'End',
-          location: bookingDetails.startLocation,
-        },
-      ];
-
-      const response = await findRoute(directions);
-      setPolylineDATA(response);
-    }
-  };
 
 
-  useEffect(() => {
-    setDirectionPoints([]);
-    setDriverLocation(assignedDriver?.location?.coordinates);
-    fetchRoute();
-    
-    
-  }, [assignedDriver]);
-
-  // useEffect(() => {
-  //   console.log('driverLocation-->>', driverLocation)
-  //   if (polylineDATA && driverLocation) {
-  //     const remaining = getRemainingPolyline(reversedPolylineCoords, [
-  //       driverLocation[0],
-  //       driverLocation[1],
-  //     ]);
-  //     setReversedPolylineCoords(remaining);
-  //     console.log('remaining-->>', remaining[0])
-      
-  //   }
-  // }, [driverLocation]);
 
 
-  const addMarker = (location) => {
-    const marker = new Marker(
-      'car',
-      'hyundai',
-      location[0],
-      location[1],
-      'suv',
-      36,
-      true,
-      driverAngle,
-    );
-    setMapMarkers([marker]);
-  }
 
 
-  useEffect(() => {
-    if (!polylineDATA?.trip?.legs?.length) return;
-    const allCoords = [];
-  
-    // Step 1: Decode & reverse coordinates
-    polylineDATA.trip.legs.forEach((item) => {
-      const decodedData = polyline.decode(item.shape, 6);
-      const reversedCoordinates = decodedData.map(([lat, lon]) => [lon, lat]);
-      allCoords.push(...reversedCoordinates);
-    });
-    // Step 2: Store in state
-    setReversedPolylineCoords(allCoords);
-  }, [polylineDATA]);
 
 
-  useEffect(() => {
-    if (!reversedPolylineCoords.length) return;
-    const polyLine = new Polyline(
-      1,
-      `routes`,
-      reversedPolylineCoords,
-      '#174EA6',
-      'small'
-    );
-    polyLine.setPadding([100, 130, 100, 100]);
-    polyLine.setFocus(true);
-  
-    setGeometries([polyLine]);
-  
-   
-  }, [reversedPolylineCoords, driverLocation]);
-  
+
+
+
 
   return (
     <>
       <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
       <NavBar title="Driver Assigned" />
-      <View style={rideStyles.container}>
+      <View style={rideStyles.containerMain}>
+        <View style={rideStyles.container}>
         <View style={rideStyles.title}>
           <Text style={rideStyles.titleTxt}>
-            Your driver has arrived in 2 minutes
+          Your driver will reach your location in
           </Text>
           <View style={rideStyles.statusBox}>
-            <Text style={[rideStyles.titleTxt, { fontSize: 14 }]}>100m away</Text>
+          <Text style={[rideStyles.titleTxt, {fontSize: 24,fontWeight:"600",  color:"rgb(4, 113, 59)"}]}>{Math.round(arrivalTime/60)} Minutes</Text>
           </View>
         </View>
 
         <View style={rideStyles.contentContianer}>
           <View style={rideStyles.carDetailsCard}>
-            <View>
+            <View style={{display:'flex',flexDirection:'column',alignItems:'center'}}>
               <Text style={rideStyles.vehicleNum}>
                 {assignedDriver?.ownVehicleInfo?.vehicleNumber}
               </Text>
@@ -252,10 +308,7 @@ const DriverArrival = () => {
             </View>
           </View>
 
-          <View style={[rideStyles.driverDetails, { width: '100%' }]}>
-            
-            
-          
+          <View style={[rideStyles.driverDetails, { width: '90%' }]}>
             <RideInfo label="Duration" value={`${Math.round(rideDuration / 60)} Mins`} />
             <RideInfo label="Distance" value={`${Math.round(rideDistance)} Km`} />
             <RideInfo label="Price" value={`₹${Math.round(bookingDetails?.estimatedFare)}`} /> 
@@ -275,6 +328,7 @@ const DriverArrival = () => {
             </TouchableOpacity>
           </View>
         </View>
+      </View>
       </View>
     </>
   );

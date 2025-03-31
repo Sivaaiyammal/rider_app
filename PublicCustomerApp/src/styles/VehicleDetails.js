@@ -18,10 +18,25 @@ export const vehicleDetailsStyles = StyleSheet.create({
         alignItems:'center'
         
     },
+    vehicleImageContainer:{
+        width: "50%",
+        alignItems:'center',
+        justifyContent:'center'
+    },
+    vehicleImageBg:{
+        position:'absolute',
+        left:0,
+        width: '40%',
+        height: '100%',
+        borderRadius:10,
+        borderTopRightRadius:50,
+        borderBottomRightRadius:50,
+        backgroundColor: colors.yellow,
+    },
     vehicleImage:{
-        flex:1.5,
-        height:100,
-        borderRadius:10
+        width: 170,
+        height: 150,
+        resizeMode: 'contain'
     },
     durationContainer:{
         flexDirection:'row',

@@ -34,7 +34,7 @@ class Marker {
         this.type = type;
         this.size = size;
         this.selected = selected;
-        this.angle = 0
+        this.angle = angle
         this.focus = false
         this.animate = true
         this.animationTime = 8000

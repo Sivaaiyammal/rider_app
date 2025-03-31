@@ -11,10 +11,9 @@ import useLocationStore from '../store/useLocationStore';
 import Marker from '../controllers/NEMap/Marker';
 import useMapStore from '../store/useMapStore';
 import LinearGradient from 'react-native-linear-gradient';
-import MapContainer from './Map';
+
 const MapScreen = () => {
   const [showMenu, setShowMenu] = useState(false);
-
   const {setStackScreen} = useStackScreenStore();
   const {location,directions,setDirections, currentLocationName,setSelectedInput} = useLocationStore(); 
   const {setMapMarkers,setDirectionPoints} = useMapStore();
@@ -174,8 +173,7 @@ const MapScreen = () => {
            <HistoryCard selectCallback={onHistoryPress}/>
           </BottomSheet>
        
-     
-      {showMenu && <SideDrawer handleMenu={handleMenu} />}
+         {showMenu && <SideDrawer handleMenu={handleMenu} />}
     </>
   );
 };

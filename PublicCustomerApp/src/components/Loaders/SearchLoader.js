@@ -3,7 +3,6 @@ import React from 'react';
 import Pulse from './Pulse';
 import VehicleSearch from '../../assets/image/svgIcons/vehicleSearch.svg';
 import { colors, Fonts } from '../../constants/constants';
-import SwipeButton from '../SwipeButton';
 import SwipeBtn from '../SwipeBtn';
 
 const SearchLoader = (props) => {

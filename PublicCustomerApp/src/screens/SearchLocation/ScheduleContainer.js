@@ -34,8 +34,6 @@ const ScheduleContainer = props => {
     isUpdate ? scheduleTime : new Date(),
   );
 
-  console.log('hari-->>scheduleDataTime-->>', fourteenDaysWithDayNames);
-
   const onSelectDate = item => {
     setSelectedDate(item);
   };

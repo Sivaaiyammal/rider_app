@@ -111,7 +111,10 @@ const SearchLocation = () => {
   }, [directions]);
 
   const onEstimationSuccess = (data) => {
-    console.log('data-->>', data)
+    if (data?.data == null){
+      return alert('No vehicle available')
+    }
+   
     if (!data?.data) return;
     setVehicleList(data.data);
     if (data.data.length !== 0) {
@@ -219,6 +222,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
           <Ionicons name={"chevron-down"} size={14} color={"white"} />
         </TouchableOpacity> */}
         <TouchableOpacity style={addLocation.rideSelection}  onPress={() => onTripForPress()}>
+        <Ionicons name="person" size={18} color={colors.white} />
         <Text style={addLocation.rideSelectionTxt}>{tripFor}</Text>
         <Ionicons name="chevron-down" size={18} color={colors.white} />
       </TouchableOpacity>

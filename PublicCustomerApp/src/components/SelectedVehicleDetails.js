@@ -3,6 +3,7 @@ import React, {useState,useEffect,useRef} from 'react';
 import BottomSheet from './BottomSheet';
 import { StatusBar } from 'react-native';
 import {vehicleDetailsStyles} from '../styles/VehicleDetails';
+import AddressContainer from './Trips/AddressContainer';
 
 import PeopleBlack from '../assets/image/peopleBlack.svg';
 import DurationBlack from '../assets/image/durationBlack.svg';
@@ -80,6 +81,18 @@ const SelectedVehicleDetails = props => {
     }).start();
   }, []);
 
+  const getRandomColor = (vehicleType ) => {
+    console.log('vehicleType-->>', vehicleType)
+    const colors = {
+      'SEDAN': '#9b3e3e',
+      'SUV': '#4b48ab',
+      'HATCHBACK': '#4b88ab',
+      'BIKE': '#9B59B6',
+      'AUTO': '#F9D423'
+    }
+    return colors[vehicleType] || '#000000';
+  };
+
 
   return (
     <>
@@ -133,11 +146,14 @@ const SelectedVehicleDetails = props => {
           </>
         )}
         <View style={vehicleDetailsStyles.detailsContainer}>
-          <Image
-          style={vehicleDetailsStyles.vehicleImage}
+          <View style={vehicleDetailsStyles.vehicleImageContainer}>
+            <View style={[vehicleDetailsStyles.vehicleImageBg, {backgroundColor:getRandomColor(selectedVehicle.vehicleType)}]}></View>
+            <Image
+            style={vehicleDetailsStyles.vehicleImage}
             source={getVehicleDetailsById(selectedVehicle.vehicleType).image}
           />
-          <View style={{flex:1,justifyContent:'space-between'}}>
+          </View>
+          <View style={{flex:1,justifyContent:'space-between',width:"50%"}}>
             <Text style={vehicleDetailsStyles.name}>
               {getVehicleDetailsById(selectedVehicle.vehicleType).name}
             </Text>
@@ -146,7 +162,7 @@ const SelectedVehicleDetails = props => {
             {selectedRide.name !== 'Schedule' && (
               <Text style={vehicleDetailsStyles.durationTxt}>
                 {' '}
-                <DurationBlack /> {selectedVehicle?.time}
+                <DurationBlack /> {selectedVehicle?.timeTakenToPickup}
               </Text>
             )}
 
@@ -160,7 +176,7 @@ const SelectedVehicleDetails = props => {
            
             {selectedRide.name !== 'Schedule' && (
               <Text style={vehicleDetailsStyles.fareTxt}>
-                <FareGreen /> {selectedVehicle.price}
+                <FareGreen /> {selectedVehicle.fare}
               </Text>
             )}
           </View>
@@ -176,25 +192,7 @@ const SelectedVehicleDetails = props => {
             </TouchableOpacity>
           </View>
         )}
-        <View style={vehicleDetailsStyles.locationContainer}>
-          {directions.map((item,index) => {
-            return (
-          
-              <View key={item.id} style={vehicleDetailsStyles.locationNames}>
-                {getLocationIcon(item)}
-                <View style={vehicleDetailsStyles.locationTxtContainer}>
-                  <Text>
-                    {index == 0 ? 'From' : index != directions.length-1 ? 'Stop' : 'To'}
-                  </Text>
-                <Text numberOfLines={1} ellipsizeMode="tail" style={vehicleDetailsStyles.locationTxt}>
-                  {item.locationName?.charAt(0).toUpperCase() + item.locationName?.slice(1)}
-                </Text>
-                </View>
-              </View>
-              
-            );
-          })}
-        </View>
+        <AddressContainer directions={directions} />
         <TouchableOpacity 
           style={vehicleDetailsStyles.paymentContainer}
           onPress={() => setShowPaymentOptions(true)}

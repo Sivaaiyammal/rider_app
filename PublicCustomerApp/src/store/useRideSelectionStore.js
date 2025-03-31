@@ -43,7 +43,12 @@ const useRideSelectionStore = create(set => ({
 
   rideDuration: null,
   setRideDuration: (rideDuration) => set({rideDuration}),
-  
+
+  rideStatus: null,
+  setRideStatus: (rideStatus) => set({rideStatus}),
+
+  finalFareDetails: null,
+  setFinalFareDetails: (finalFareDetails) => set({finalFareDetails}),
 }));
 
 

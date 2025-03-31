@@ -112,12 +112,9 @@ const SelectedVehicle = () => {
 
   const onBookingSuccess = data => {
     if (data.success) {
-      showNotification('Booking Completed Successfully', '', 'success');
+      // showNotification('Searching for Vehicle', '', 'success');
       setIsLoading(true);
-
       // setAssignedDriver(Driver)
-     
-      
     }
   };
 
@@ -204,7 +201,7 @@ const SelectedVehicle = () => {
    
     let distance = 3000;
     let estimatedDuration = rideDuration;
-    let bookingFor = tripFor == "For Myself" ? "MYSELF" : "OTHER";
+    let bookingFor = tripFor == "For Myself" ? "MYSELF" : "OTHERS";
     let bookingForName = selectedContact.name 
     let bookingForPhone = selectedContact.phone
  
@@ -236,11 +233,13 @@ const SelectedVehicle = () => {
     // {"message": "Ride created successfully",
     //    "ride": {"acknowledged": true,
     //      "insertedId": "66f1506af7e54f72cfe7b0f5"}, "success": true}
-    const payload = {
-      rideId:bookingDetails?.ride?.insertedId
-    }
-    cancelRideMutate(payload)
+    // const payload = {
+    //   rideId:bookingDetails?.ride?.insertedId
+    // }
+    // cancelRideMutate(payload)
+    goBack()
   }
+  
 
   return (
     <>

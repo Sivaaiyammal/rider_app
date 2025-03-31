@@ -1,9 +1,11 @@
 import io from 'socket.io-client';
 import Config from '../Config/APIConfig';
 import useRideSelectionStore from '../store/useRideSelectionStore';
-import { useDriverLocationStore } from '../store/useDriverLocationStore';
+import useDriverLocationStore from '../store/useDriverLocationStore';
 
 const SOCKET_URL = Config.ROOT_API_URL;
+
+
 
 
 class WSService {
@@ -12,6 +14,9 @@ class WSService {
     this.socketDriverAssignedData = {}
     this.initSocket = this.initSocket.bind(this)
     this.driverAllocated = this.driverAllocated.bind(this)
+    this.driverLocationUpdate = this.driverLocationUpdate.bind(this)
+    this.onRideStatus = this.onRideStatus.bind(this)
+    this.driverTestSimulation = this.driverTestSimulation.bind(this)
     this.useRideSelectionStore = useRideSelectionStore
     this.useDriverLocationStore = useDriverLocationStore
   }
@@ -20,16 +25,45 @@ class WSService {
     if(data?.driver && data?.otp){
       this.useRideSelectionStore.getState().setAssignedDriver(data?.driver);
       this.useRideSelectionStore.getState().setOtp(data?.otp);
+      this.simulateDriverLocation()
     }
    
     
   }
-  
+
+  onRideStatus(data){
+    console.log(data)
+    if(data?.tripStatus){
+      this.useRideSelectionStore.getState().setRideStatus(data?.tripStatus);
+    }
+    if(data?.fareDetails){
+      this.useRideSelectionStore.getState().setFinalFareDetails(data?.fareDetails);
+    }
+  }
+ 
   driverLocationUpdate(data){
     if(data){
-      this.useDriverLocationStore.getState().setDriverLocation(data?.location?.coordinates);
-      this.useDriverLocationStore.getState().setDriverAngle(data?.liveStats?.course);
-      this.useDriverLocationStore.getState().setDriverMaxSpeed(data?.liveStats?.speed) || 0;
+      try {
+        this.useDriverLocationStore.getState().setDriverLocation(data?.data?.location?.coordinates);
+        this.useDriverLocationStore.getState().setDriverAngle(data?.data?.liveStats?.course);
+        this.useDriverLocationStore.getState().setDriverMaxSpeed(data?.data?.liveStats?.speed) || 0;
+      } catch (error) {
+        console.error('Error updating driver location:', error);
+      }
+    }
+  }
+
+  driverTestSimulation(data){
+    
+    if(data){
+      console.log('simulate sdata-->>', data)
+      try {
+        this.useDriverLocationStore.getState().setDriverLocation(data?.data?.location?.coordinates);
+        this.useDriverLocationStore.getState().setDriverAngle(data?.data?.liveStats?.course);
+        this.useDriverLocationStore.getState().setDriverMaxSpeed(data?.data?.liveStats?.speed) || 0;
+      } catch (error) {
+        console.error('Error updating driver location:', error);
+      }
     }
   }
 
@@ -60,6 +94,10 @@ class WSService {
         this.socket.on('driverAllocated', this.driverAllocated);
 
         this.socket.on('driverLocationUpdate', this.driverLocationUpdate);
+
+        this.socket.on('driverTestSimulation', this.driverTestSimulation);
+
+        this.socket.on('passangerTripStatus', this.onRideStatus);
 
         this.socket.on('connect_error', error => {
           console.error(
