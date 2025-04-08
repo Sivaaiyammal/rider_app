@@ -19,112 +19,45 @@ import {cancelRideMutation, createRideMutation} from '../API/APICalls/RideAPICal
 import FullScreenLoader from '../components/Loaders/FullScreenLoader';
 import SelectedVehicleDetails from '../components/SelectedVehicleDetails';
 import useMapStyleStore from '../store/useMapStyleStore';
-import useUserInfoStore from '../store/useUserInfoStore';
-const Driver={
-  "_id": {
-    "$oid": "67e152f98403b17a8eba7ff6"
-  },
-  "name": "katthik",
-  "email": "karthik@gmail.com",
-  "phone": "+916754545434",
-  "password": "U2FsdGVkX1/jA8Ej0yAp4VF+QPiRGlXwOH3Dx2oobHE=",
-  "fcmTokens": [
-    {
-      "token": "fHcyNcp9Si-6P_NayoviTO:APA91bFZgA27Tzf3CKaUJBssfTyhN-zVtCMY2_LXi4FKH9uAGKvQqauyWDjBhSSba_JbVjlphycL4-FVxLJfpjYoW_BSAQCstYbPp3eeRhnInVYmWC26Ik8",
-      "deviceImei": "681cc30ddef15e10"
-    }
-  ],
-  "createdBy": "publicrides",
-  "createdOn": 1742820089412,
-  "publicRidesDriver": true,
-  "tripStatus": "ONGOING",
-  "aadharNo": "76e564754474",
-  "gender": "male",
-  "panNo": "hftyftyfty",
-  "ownVehicleInfo": {
-    "vehicleNumber": "erewrwewe",
-    "vehicleColor": "Blue",
-    "vehicleType": "AUTO",
-    "vehicleBrand": "Tata Motors",
-    "vehicleModel": "Tigor",
-    "manufacturingYear": "2023"
-  },
-  "documents": {
-    "aadhar": "https://not-publicrides.objectstore.e2enetworks.net/driver/67e152f98403b17a8eba7ff6/aadhar/aadhar.png",
-    "driving_license": "https://not-publicrides.objectstore.e2enetworks.net/driver/67e152f98403b17a8eba7ff6/driving_license/driving_license.png",
-    "vehicle_rc_book": "https://not-publicrides.objectstore.e2enetworks.net/driver/67e152f98403b17a8eba7ff6/vehicle_rc_book/vehicle_rc_book.png",
-    "insurance": "https://not-publicrides.objectstore.e2enetworks.net/driver/67e152f98403b17a8eba7ff6/insurance/insurance.png",
-    "pollution_certificate": "https://not-publicrides.objectstore.e2enetworks.net/driver/67e152f98403b17a8eba7ff6/pollution_certificate/pollution_certificate.png",
-    "pan_card": "https://not-publicrides.objectstore.e2enetworks.net/driver/67e152f98403b17a8eba7ff6/pan_card/pan_card.png",
-    "driver_photo": "https://not-publicrides.objectstore.e2enetworks.net/driver/67e152f98403b17a8eba7ff6/driver_photo/driver_photo.png",
-    "vehicle_photo": "https://not-publicrides.objectstore.e2enetworks.net/driver/67e152f98403b17a8eba7ff6/vehicle_photo/vehicle_photo.png"
-  },
-  "location": {
-    "type": "Point",
-    "coordinates": [
-      80.2092,
-      13.0639
-    ]
-  },
-  "licenseNo": "646547764674764764776464747647646747647"
-}
+    
+
 const SelectedVehicle = () => {
-  const navigation = useNavigation();
-  const {userdetails} = useUserInfoStore();
-  const {goBack, setStackScreen, screenStoreReset} = useStackScreenStore();
+ 
+  const {goBack, setStackScreen} = useStackScreenStore();
   const {selectedVehicle} = useSelectedVehicleStore();
+
   const {directions, setDirections} = useLocationStore();
-  const {selectedTrip, selectedRide, setBookingDetails, bookingDetails, tripFor, selectedContact, paymentMethod, assignedDriver, rideDuration, setAssignedDriver} = useRideSelectionStore();
+  const {setBookingDetails, tripFor, selectedContact, paymentMethod, rideDuration, selectedRide} = useRideSelectionStore();
   const {setMapStyle,resetMapStyle} = useMapStyleStore();
   const {
     setOnSearchResults,
     setMapMarkers,
     setDirectionPoints,
     setSearchUnit,
-    directionPoints,
   } = useMapStore();
 
   const timeoutIdRef = useRef(null);
 
-  const [isLoading, setIsLoading] = useState('');
 
   const onBackPress = () => {
     resetMapStyle();
     goBack();
   };
 
-  const getRideTypeValue = type => {
-    if (type == '1') return 'ONESIDE';
-    if (type == '2') return 'ROUNDTRIP';
-    return 'ONESIDE';
-  };
-  const getTripTypeValue = type => {
-    if (type == '1') return 'instant';
-    if (type == '2') return 'schedule';
-    return 'instant';
-  };
-  const getVehicleTypeValue = type => {
-    if (type == '1') return 'bike';
-    return 'car';
-  };
-
-
+ 
 
   const onBookingSuccess = data => {
     if (data.success) {
+      console.log('onBookingSuccess');
+      console.log('data', data)
+      setBookingDetails(data?.trip);
       // showNotification('Searching for Vehicle', '', 'success');
-      setIsLoading(true);
+      setStackScreen('TripScreenManager');
       // setAssignedDriver(Driver)
     }
   };
 
-  useEffect(() => {
-    if(assignedDriver){
-      setIsLoading(false);
-      setStackScreen('DriverAssignedScreen');
-    }
-    
-  }, [assignedDriver])
+  
 
   const onCancelSuccess =async (data) => {
     if (data.success) {
@@ -142,7 +75,7 @@ const SelectedVehicle = () => {
         clearTimeout(timeoutIdRef.current);
         timeoutIdRef.current = null;
       }
-      setIsLoading(false); 
+      
       setStackScreen('Home')
       await locationTask.getCurrentLocation();
     }
@@ -197,6 +130,7 @@ const SelectedVehicle = () => {
     
     let vehicle_type = selectedVehicle.vehicleType;
     let tripEstimatedPrice = selectedVehicle.fare;
+    let maxFare = selectedVehicle.fareMax;
     
    
     let distance = 3000;
@@ -221,6 +155,7 @@ const SelectedVehicle = () => {
       bookingFor: bookingFor,
       bookingForName: bookingForName,
       bookingForPhone: bookingForPhone,
+      maxFare: maxFare,
       paymentMethod: paymentMethod.toUpperCase(),
     };
     console.log('payload-->>', payload)
@@ -242,12 +177,6 @@ const SelectedVehicle = () => {
   
 
   return (
-    <>
-      {isLoading ? (
-        <>
-        <SearchLoader handleSwipeSuccess={onCancelRide}/>
-        </>
-      ) : (
         <>
           {(isBookRideLoading || isCancelRideLoading) && (
             <View style={{width: '100%', height: '100%', zIndex: 9999}}>
@@ -261,8 +190,7 @@ const SelectedVehicle = () => {
             selectedRide={selectedRide}
           />
         </>
-      )}
-    </>
+    
   );
 };
 

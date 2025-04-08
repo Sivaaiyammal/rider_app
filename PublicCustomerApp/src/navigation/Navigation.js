@@ -12,6 +12,7 @@ import YourRideDetailsScreen from '../screens/Rides/YourRideDetailsScreen';
 import MyAccountScreen from '../screens/Profile/MyAccountScreen';
 import NotificationScreen from '../screens/NotificationScreen';
 import ContactScreen from '../screens/ContactScreen';
+
 const Navigation = () => {
   const Stack = createNativeStackNavigator();
 

@@ -1,7 +1,7 @@
-package com.publiccustomerapp;
+package com.vmtrackers.customerapp;
 
 import com.dot.nenativemap.LngLat;
-import com.publiccustomerapp.AutocompleteResultType;
+import com.vmtrackers.customerapp.AutocompleteResultType;
 
 public class VMSearchData {
     private String name;

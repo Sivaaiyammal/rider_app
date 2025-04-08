@@ -276,7 +276,7 @@ const OnRide = () => {
             <Text style={{fontFamily:Fonts.regular,fontSize:16, color:colors.black,}}>Estimated amount to be paid </Text>
             <Text style={{fontFamily:Fonts.regular,fontSize:20, color:colors.green,}}>₹{bookingDetails?.estimatedFare}</Text>
           </View>
-          <AddressContainer directions={directions} />
+          <AddressContainer directions={bookingDetails?.stops} />
           {/* <TouchableOpacity
             style={vehicleDetailsStyles.paymentContainer}
             onPress={() => changePayment()}>

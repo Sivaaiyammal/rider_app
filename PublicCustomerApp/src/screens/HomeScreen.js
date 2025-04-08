@@ -8,13 +8,19 @@ import SearchLocationScreen from './SearchLocation/SearchLocationScreen';
 import VehicleListScreen from './VehicleListScreen';
 import SelectedVehicle from './SelectedVehicle';
 import VehicleSearchLoader from './VehicleSearchLoader';  
-import DriverAssignedScreen from './driverAssigned/DriverAssignedScreen';
+import TripScreenManager from './driverAssigned/TripScreenManager';
 import RideSummary from './RideSummary';
 import SearchScreen from './SearchScreen';
 import NotificationScreen from './NotificationScreen';
 import ContactScreen from './ContactScreen';
+import VehicleSearchScreen from './vehicleSearchScreen';
+import { useQuery } from 'react-query';
+import { checkOnGoingRide } from '../API/EndPoints/EndPoints';
+import useRideSelectionStore from '../store/useRideSelectionStore';
+
 const HomeScreen = () => {
-  const { stackScreen } = useStackScreenStore();
+  const { stackScreen, setStackScreen } = useStackScreenStore();
+  const { setBookingDetails, setAssignedDriver ,setRideStatus} = useRideSelectionStore();
 
   const checkLocationPermission = async () => {
     const locationPermissionCheck = await checkFineLocationPermissions()
@@ -25,7 +31,29 @@ const HomeScreen = () => {
     }
   };
 
-  
+  const { data: onGoingRide } = useQuery('checkOnGoingRide', checkOnGoingRide, {
+    onSuccess: (data) => {
+      console.log("data",data)
+      if (data) {
+        if (data?.trip?.status === 'PENDING') {
+          setBookingDetails(data?.trip);
+          setStackScreen('VehicleSearchScreen');
+        } else if (data?.trip?.status === 'ACCEPTED') {
+          
+          setBookingDetails(data?.trip);
+          setAssignedDriver(data?.assignDriver);
+          setStackScreen('TripScreenManager');
+        }
+        else if (data?.trip?.status === 'PICKEDUP') {
+          
+          setBookingDetails(data?.trip);
+          setAssignedDriver(data?.assignDriver);
+          setRideStatus('STARTED');
+          setStackScreen('TripScreenManager');
+        }
+      }
+    }
+  });
 
   useEffect(() => {
     checkLocationPermission();
@@ -37,18 +65,18 @@ const HomeScreen = () => {
         return <MapScreen />;
       case 'SearchLocationScreen':
         return <SearchLocationScreen />;
-        case 'SearchScreen':
-          return <SearchScreen />;
+      case 'SearchScreen':
+        return <SearchScreen />;
       case 'VehicleList':
         return <VehicleListScreen />;
       case 'SelectedVehicle':
         return <SelectedVehicle />;
-      case 'VehicleSearchLoader':
-        return <VehicleSearchLoader />;
-      case 'DriverAssignedScreen':
-        return <DriverAssignedScreen />;
+      case 'TripScreenManager':
+        return <TripScreenManager />;
       case 'RideSummary':
         return <RideSummary />;
+      case 'VehicleSearchScreen':
+        return <VehicleSearchScreen />;
       default:
         return null;
     }

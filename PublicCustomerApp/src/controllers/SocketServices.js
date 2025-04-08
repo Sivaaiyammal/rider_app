@@ -2,6 +2,7 @@ import io from 'socket.io-client';
 import Config from '../Config/APIConfig';
 import useRideSelectionStore from '../store/useRideSelectionStore';
 import useDriverLocationStore from '../store/useDriverLocationStore';
+import { useStackScreenStore } from '../store/useStackScreenStore';
 
 const SOCKET_URL = Config.ROOT_API_URL;
 
@@ -17,15 +18,19 @@ class WSService {
     this.driverLocationUpdate = this.driverLocationUpdate.bind(this)
     this.onRideStatus = this.onRideStatus.bind(this)
     this.driverTestSimulation = this.driverTestSimulation.bind(this)
+    // this.driverFareUpdate = this.driverFareUpdate.bind(this)
     this.useRideSelectionStore = useRideSelectionStore
     this.useDriverLocationStore = useDriverLocationStore
+    this.useStackScreenStore = useStackScreenStore
   }
 
   driverAllocated(data){
     if(data?.driver && data?.otp){
+      this.useRideSelectionStore.getState().updateBookingStatus(data?.tripStatus);
       this.useRideSelectionStore.getState().setAssignedDriver(data?.driver);
-      this.useRideSelectionStore.getState().setOtp(data?.otp);
-      this.simulateDriverLocation()
+      this.useRideSelectionStore.getState().updateOtp(data?.otp);
+      this.useStackScreenStore.getState().setStackScreen('TripScreenManager');
+      
     }
    
     
@@ -34,7 +39,21 @@ class WSService {
   onRideStatus(data){
     console.log(data)
     if(data?.tripStatus){
-      this.useRideSelectionStore.getState().setRideStatus(data?.tripStatus);
+      if(data?.tripStatus === 'CANCELLED'){
+        try {
+          console.log('CANCELLED');
+          console.log(data?.tripStatus);
+          this.useStackScreenStore.getState().setStackScreen('TripScreenManager');
+          this.useRideSelectionStore.getState().setOtp(null);
+          this.useRideSelectionStore.getState().setAssignedDriver(null);
+          this.useRideSelectionStore.getState().updateBookingStatus(data?.tripStatus);
+        } catch (error) {
+          console.error('Error handling ride cancellation:', error);
+        }
+        
+        
+      }
+      
     }
     if(data?.fareDetails){
       this.useRideSelectionStore.getState().setFinalFareDetails(data?.fareDetails);
@@ -52,6 +71,17 @@ class WSService {
       }
     }
   }
+
+  // driverFareUpdate(data){
+  //   try {
+  //     if(data?.currentFare){
+  //       console.log('currentFare', data?.currentFare);
+  //       this.useRideSelectionStore.getState().setCurrentFare(data?.currentFare);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error updating driver fare:', error);
+  //   }
+  // }
 
   driverTestSimulation(data){
     
@@ -98,6 +128,8 @@ class WSService {
         this.socket.on('driverTestSimulation', this.driverTestSimulation);
 
         this.socket.on('passangerTripStatus', this.onRideStatus);
+
+        // this.socket.on('passangerTripFareUpdate', this.driverFareUpdate);
 
         this.socket.on('connect_error', error => {
           console.error(

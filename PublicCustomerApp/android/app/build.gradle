@@ -1,6 +1,7 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+apply plugin: 'com.google.gms.google-services'
 
 import com.android.build.OutputFile
 import org.apache.tools.ant.taskdefs.condition.Os
@@ -113,9 +114,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.publiccustomerapp"
+    namespace "com.vmtrackers.customerapp"
     defaultConfig {
-        applicationId "com.publiccustomerapp"
+        applicationId "com.vmtrackers.customerapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -262,6 +263,8 @@ dependencies {
     implementation 'com.facebook.react:react-native'  // From node_modules
 
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+
+    implementation 'com.google.firebase:firebase-messaging:23.1.2' 
 
     implementation name: "nenative", ext: 'aar'
     implementation name: "ne_location_management", ext: 'aar'

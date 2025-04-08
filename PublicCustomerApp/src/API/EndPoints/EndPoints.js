@@ -44,7 +44,18 @@ export const bookRide = async (payload)=> {
 }
 
 // cancel Ride
-export const cancelRide = async (payload)=> {
-  const {data} = await apiClient.post('/customer/ride/cancelRide', payload)
+
+
+export const checkOnGoingRide = async ()=> {
+  const {data} = await apiClient.get('/publicrides/customer/getOngoingTrip')
   return data
 }
+
+export const cancelRide = async (payload)=> {
+  console.log('payload', payload)
+  const {data} = await apiClient.post('publicrides/customer/cancelTrip', payload)
+  return data
+}
+
+
+

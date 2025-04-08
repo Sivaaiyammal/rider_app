@@ -23,7 +23,7 @@ import useMapStyleStore from '../store/useMapStyleStore';
 const SelectedVehicleDetails = props => {
   const {selectedVehicle, HandleBookRide, selectedRide} = props;
   const {directions} = useLocationStore();
-  const {scheduleDateTime,setPaymentMethod,paymentMethod} = useRideSelectionStore();
+  const {scheduleDateTime,setPaymentMethod,paymentMethod,bookingDetails} = useRideSelectionStore();
   const slideAnim = useRef(new Animated.Value(0)).current;
   const screenHeight = Dimensions.get('window').height;
   const {setMapStyle} = useMapStyleStore();
@@ -176,7 +176,7 @@ const SelectedVehicleDetails = props => {
            
             {selectedRide.name !== 'Schedule' && (
               <Text style={vehicleDetailsStyles.fareTxt}>
-                <FareGreen /> {selectedVehicle.fare}
+                <FareGreen /> {selectedVehicle.fare} - {selectedVehicle.fareMax}
               </Text>
             )}
           </View>

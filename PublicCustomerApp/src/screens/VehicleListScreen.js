@@ -39,62 +39,62 @@ const VehicleListScreen = () => {
     resetMapStyle()
     setStackScreen('SelectedVehicle');
   }
-  useEffect(() => {
-    if (currentVehicleType === "none") {
-      // removeAllMarkers(mapMarkers)
-      const marker = new Marker(
-        '1',
-        'currentLocation',
-        location[0],
-        location[1],
-        'marker_start',
-        36,
-        true
-      );
+  // useEffect(() => {
+  //   if (currentVehicleType === "none") {
+  //     // removeAllMarkers(mapMarkers)
+  //     const marker = new Marker(
+  //       '1',
+  //       'currentLocation',
+  //       location[0],
+  //       location[1],
+  //       'marker_start',
+  //       36,
+  //       true
+  //     );
       
-      setMapMarkers([marker]);
+  //     setMapMarkers([marker]);
      
-    } else {
-      if (currentVehicleType === "all") {
-        let allVehicleMarkers = [];
-        Object.values(vehicleLocations).forEach(vehicleArray => {
-          if (vehicleArray && vehicleArray.length > 0) {
-            const markers = vehicleArray.map(vehicle => {
-              return new Marker(
-                vehicle.id,
-                'car',
-                vehicle.longitude, 
-                vehicle.latitude,
-                vehicleArray,
-                36,
-                true,
-                266.6896667480469
+  //   } else {
+  //     if (currentVehicleType === "all") {
+  //       let allVehicleMarkers = [];
+  //       Object.values(vehicleLocations).forEach(vehicleArray => {
+  //         if (vehicleArray && vehicleArray.length > 0) {
+  //           const markers = vehicleArray.map(vehicle => {
+  //             return new Marker(
+  //               vehicle.id,
+  //               'car',
+  //               vehicle.longitude, 
+  //               vehicle.latitude,
+  //               vehicleArray,
+  //               36,
+  //               true,
+  //               266.6896667480469
 
-              );
-            });
-            allVehicleMarkers = [...allVehicleMarkers, ...markers];
-          }
-        });
-        setMapMarkers(allVehicleMarkers);
-      } else {
-        const vehicleMarkers = vehicleLocations[currentVehicleType].map(vehicle => {
-          return new Marker(
-            vehicle.id,
-            'car',
-            vehicle.longitude,
-            vehicle.latitude, 
-            currentVehicleType,
-            36,
-            true,
-            266.6896667480469
-          );
-        });
-        console.log('vehicleMarkers-->>', vehicleMarkers)
-        setMapMarkers(vehicleMarkers);
-      }
-    }
+  //             );
+  //           });
+  //           allVehicleMarkers = [...allVehicleMarkers, ...markers];
+  //         }
+  //       });
+  //       setMapMarkers(allVehicleMarkers);
+  //     } else {
+  //       const vehicleMarkers = vehicleLocations[currentVehicleType].map(vehicle => {
+  //         return new Marker(
+  //           vehicle.id,
+  //           'car',
+  //           vehicle.longitude,
+  //           vehicle.latitude, 
+  //           currentVehicleType,
+  //           36,
+  //           true,
+  //           266.6896667480469
+  //         );
+  //       });
+  //       console.log('vehicleMarkers-->>', vehicleMarkers)
+  //       setMapMarkers(vehicleMarkers);
+  //     }
+  //   }
     
-  }, [currentVehicleType, vehicleLocations]);
+  // }, [currentVehicleType, vehicleLocations]);
   useEffect(() => {
     Animated.timing(slideAnim, {
       toValue: 1,
@@ -170,6 +170,7 @@ const VehicleListScreen = () => {
       >
         <View>
           {vehicles.map((item, idx) => {
+            console.log('item-->>', item)
             const vehicleDetails = getVehicleDetailsById(item.vehicleType);
             return (
               <TouchableOpacity key={idx} style={[vehicleList.cards, selectedVehicle?.vehicleType === item?.vehicleType && { backgroundColor: colors.grey_xlight}]} onPress={() => handleVehicleSelect(item)}>
@@ -196,7 +197,7 @@ const VehicleListScreen = () => {
                   </View>
                 </View>
                 <View style={vehicleList.priceDetails}>
-                  <Text style={vehicleList.totalPrice}>₹{item.fare}</Text>
+                  <Text style={vehicleList.totalPrice}>₹{item.fare} - {item.fareMax}</Text>
                   {item.discount_price > 0 && (
                     <Text style={vehicleList.discountPrice}>
                       {item.discount_price}% off

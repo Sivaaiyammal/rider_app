@@ -1,4 +1,4 @@
-package com.publiccustomerapp.newarchitecture.components;
+package com.vmtrackers.customerapp.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;

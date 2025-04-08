@@ -1,4 +1,4 @@
-package com.publiccustomerapp;
+package com.vmtrackers.customerapp;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.ReactApplicationContext;

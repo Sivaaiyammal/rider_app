@@ -1,4 +1,4 @@
-package com.publiccustomerapp;
+package com.vmtrackers.customerapp;
 
 import android.util.Log;
 

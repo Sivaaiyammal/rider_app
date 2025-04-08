@@ -8,8 +8,10 @@ import EndBlack from '../../assets/image/svgIcons/end_black.svg';
 const getLocationIcon = (item) => {
   switch (item.name) {
     case 'Start':
+    case 'Pickup Point':
       return <Rocket />;
     case 'End':
+    case 'Drop Point':
       return <EndBlack />;
     default:
       if (item.name && item.name.startsWith('Waypoint')) {
@@ -20,6 +22,7 @@ const getLocationIcon = (item) => {
 };
 
 const AddressContainer = ({ directions }) => {
+  console.log('directions', directions)
   return (
     <View style={styles.locationContainer}>
       {directions.map((item, index) => {
@@ -31,7 +34,7 @@ const AddressContainer = ({ directions }) => {
                 {index == 0 ? 'From' : index != directions.length-1 ? 'Stop' : 'To'}
               </Text>
               <Text numberOfLines={1} ellipsizeMode="tail" style={styles.locationTxt}>
-                {item.locationName?.charAt(0).toUpperCase() + item.locationName?.slice(1)}
+                {(item.address || item.locationName)?.charAt(0).toUpperCase() + (item.address || item.locationName)?.slice(1)}
               </Text>
             </View>
           </View>

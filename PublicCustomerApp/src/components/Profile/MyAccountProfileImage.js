@@ -22,10 +22,10 @@ const MyAccountProfileImage = (props) => {
                     <Image style={styles.profileImg} source={ProfileImage} />
                 </View>
             </View>
-            <View style={[styles.container, { borderTopLeftRadius: 10, borderTopRightRadius: 10 }]}>
+            <View style={[styles.container, { borderTopLeftRadius: 10, borderTopRightRadius: 10 ,paddingBottom:20}]}>
 
                 <Text style={{ fontSize: 24, fontWeight: 'bold', color: ColorSet.black, marginTop: 60 }}>{name}</Text>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#6c63ff' }}>{id}</Text>
+                {/* <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#6c63ff' }}>{id}</Text> */}
             </View>
         </>
     )

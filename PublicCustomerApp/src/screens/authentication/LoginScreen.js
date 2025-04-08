@@ -13,6 +13,8 @@ import {requestOTPMutation, testLogin} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 import useUserInfoStore from '../../store/useUserInfoStore';
 import { GlobalContext } from '../../context/GlobalContext';
+import messaging from '@react-native-firebase/messaging';
+import DeviceInfo from 'react-native-device-info';  
 const LoginScreen = () => {
   const navigation = useNavigation();
   const {addListener} = useContext(GlobalContext);
@@ -94,6 +96,14 @@ const LoginScreen = () => {
         renderFlagButton={renderCustomFlagButton}></CountryPicker>
     );
   };
+  const getFcmToken = async () => {
+    try {
+      const fcmToken = await messaging().getToken();
+      return fcmToken;
+    } catch (error) {
+      console.log('Error getting FCM token: ', error);
+    }
+  };
 
   const requestOTP = async () => {
     if (phoneNumber.length === 0) {
@@ -101,10 +111,20 @@ const LoginScreen = () => {
     } else if (phoneNumber.length < 10) {
       setPhoneNumErr('Please Enter Valid Mobile Number');
     } else {
+      const fcmToken = await getFcmToken();
+      const deviceImei = await DeviceInfo.getUniqueId().catch(error => {
+        console.log('Error getting device IMEI: ', error);
+      });
+      const tokenCred = {
+        token: fcmToken,
+        deviceImei: deviceImei,
+      };
       
       const payload = {
         phone: '+91' + phoneNumber,
-        password: password
+        password: password,
+        fcmToken: tokenCred,
+        
       };
       console.log(payload)
       DataStore.storeData('login_phoneNumber', phoneNumber);
