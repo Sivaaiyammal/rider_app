@@ -5,16 +5,20 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {colors, Fonts} from '../constants/constants';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import React, {useEffect} from 'react';
+import {Fonts} from '../constants/constants';
 import ProfileImage from '../assets/image/svgIcons/profileImage.svg';
 import useLocationStore from '../store/useLocationStore';
 import SearchAPI from '../controllers/NEMap/Search';
+import HomeMenuIcon from '../assets/icons/HomeMenu.svg';
+import {width} from '../utils/Utils';
 
 const MapScreenHeader = props => {
-  const {toggleMenu, showMenu} = props;
+  const {toggleMenu} = props;
   const {location, currentLocationName, setCurrentLocationName} = useLocationStore();
+
+  // Calculate responsive maxWidth (70% of screen width)
+  const responsiveMaxWidth = width * 0.7;
 
   const fetchAddressName = async () => {
     if (location && location.length === 2) {
@@ -45,13 +49,10 @@ const MapScreenHeader = props => {
         style={{
           flexDirection: 'row',
           alignItems: 'center',
+          gap: 5,
         }}>
-        <TouchableOpacity onPress={() => toggleMenu()}>
-          <Ionicons
-            name={ 'reorder-three-outline'}
-            size={35}
-            color={colors.black}
-          />
+        <TouchableOpacity style={styles.homeMenuIcon} onPress={() => toggleMenu()}>
+          <HomeMenuIcon  />
           
         </TouchableOpacity>
         <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -59,8 +60,8 @@ const MapScreenHeader = props => {
         </TouchableOpacity>
       </View>
       <View style={{marginLeft: 10}}>
-        <Text style={styles.title}>{'Location'}</Text>
-        <Text style={[styles.address, {maxWidth: 270}]} numberOfLines={1} ellipsizeMode="tail">
+        <Text style={styles.title}>{'Your Location'}</Text>
+        <Text style={[styles.address, {maxWidth: responsiveMaxWidth-10}]} numberOfLines={1} ellipsizeMode="tail">
           {currentLocationName ? currentLocationName : <ActivityIndicator />}
         </Text>
       </View>
@@ -75,14 +76,20 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 20,
     zIndex: 100,
-    backgroundColor: colors.white,
     flexDirection: 'row',
     padding: 8,
-    borderRadius: 8,
     elevation: 5,
     overflow: 'hidden',
     width: '90%',
     alignSelf: 'center',
+    borderRadius: 16,
+    boxShadow: '0 3px 6px 0 rgba(0, 0, 0, 0.05)',
+    border: 'solid 0.5px #e0e0e0',
+    backgroundColor: '#fff',
+    
+  },
+  homeMenuIcon: {
+    paddingHorizontal: 10,
   },
   addressProfileImage: {
     width: 40,
@@ -90,14 +97,17 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   title: {
-    fontSize: 14,
-    fontFamily: Fonts.bold,
-    color:colors.black
+    fontFamily: Fonts.regular,
+    fontSize: 12,
+   
+    color: '#757575',
+    
   },
   address: {
     color: '#212121',
-    fontSize: 12,
+    fontSize: 14,
+    fontWeight: 500,
     marginTop: 2,
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.medium,
   },
 });

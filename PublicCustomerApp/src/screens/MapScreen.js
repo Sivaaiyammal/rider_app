@@ -20,13 +20,17 @@ import useLocationStore from '../store/useLocationStore';
 import Marker from '../controllers/NEMap/Marker';
 import useMapStore from '../store/useMapStore';
 import LinearGradient from 'react-native-linear-gradient';
+import SearchIcon from '../assets/icons/SearchIcon.svg';
+import HomeIcon from '../assets/icons/HomeIcon.svg';
+import { width } from '../utils/Utils';
+import WorkIcon from '../assets/icons/WorkIcon.svg';
 
 const MapScreen = () => {
   // State management
   const [showMenu, setShowMenu] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const responsiveMaxWidth = width * 0.8;
   // Store hooks
   const {setStackScreen} = useStackScreenStore();
   const {
@@ -324,28 +328,36 @@ const MapScreen = () => {
           onPress={() => onSearchPress('searchBox')}
           disabled={isLoading}
         >
-          <Ionicons name="search" size={22} color="#757575" />
+          <SearchIcon />
           <Text style={styles.searchContainerText}>
             Where do you want to go?
           </Text>
         </TouchableOpacity>
+
+        <View style={styles.FavouriteAddressContainer}>
+            <View style={styles.FavouriteAddressItem}>
+              <View style={styles.FavouriteAddressItemIcon}>
+                <HomeIcon width={50} height={50} />
+              </View>
+              <View style={styles.FavouriteAddressItemTextContainer}>
+                <Text style={styles.FavouriteAddressItemText}>Home</Text>
+                <Text numberOfLines={1} ellipsizeMode="tail"  style={[styles.FavouriteAddressItemSubText, {maxWidth: responsiveMaxWidth}]}>123uuuuuuuuuuuuyyyyyyyyyy Main St, Anytown, USA</Text>
+              </View>
+            </View>
+            <View style={styles.FavouriteAddressItem}>
+              <View style={styles.FavouriteAddressItemIcon}>
+                <WorkIcon width={50} height={50} />
+              </View>
+              <View style={styles.FavouriteAddressItemTextContainer}>
+                <Text style={styles.FavouriteAddressItemText}>Work</Text>
+                <Text numberOfLines={1} ellipsizeMode="tail"  style={[styles.FavouriteAddressItemSubText, {maxWidth: responsiveMaxWidth}]}>123uuuuuuuuuuuuyyyyyyyyyy Main St, Anytown, USA</Text>
+              </View>
+            </View>
+        </View>
          
-        <TouchableOpacity
-          style={[styles.buttonContainer, isLoading && styles.buttonDisabled]}
-          onPress={() => onSearchPress()}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator size="small" color={colors.white} />
-          ) : (
-            <Ionicons name="car" size={22} color={colors.white} />
-          )}
-          <Text style={styles.buttonText}>
-            {isLoading ? 'Processing...' : 'Ride Now'}
-          </Text>
-        </TouchableOpacity>
+       
         
-        <HistoryCard selectCallback={onHistoryPress} />
+        <HistoryCard selectCallback={onHistoryPress} header={false} bottomborder={false}/>
       </BottomSheet>
        
       {showMenu && <SideDrawer handleMenu={handleMenu} />}
@@ -376,13 +388,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     gap: 10,
     marginTop: 20,
-    borderWidth: 0.3,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: '#f5f5f5',
-    paddingHorizontal: 10,
     alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 0.5,
     borderColor: '#e0e0e0',
+    backgroundColor: '#fafafa',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -402,8 +413,12 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   searchContainerText: {
-    fontFamily: Fonts.medium,
-    color: '#757575',
+    fontFamily: Fonts.regular,
+  
+    fontSize: 16,
+      
+    textAlign: 'left',
+    color: '#121212',
   },
   buttonText: {
     fontFamily: Fonts.medium,
@@ -454,4 +469,41 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 12,
   },
+ 
+  FavouriteAddressItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 0,
+    borderRadius: 16,
+   
+  },
+  FavouriteAddressContainer:{
+    gap: 20,
+    marginTop: 20,
+  },
+  FavouriteAddressItemIcon: {
+  
+ 
+  
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  FavouriteAddressItemTextContainer: {
+    gap: 5,
+  },
+  FavouriteAddressItemText: {
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+    textAlign: 'left',
+    color: '#212121',
+  },
+  FavouriteAddressItemSubText: {
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+    color: '#757575',
+    textAlign: 'left',
+  },
+  
 });

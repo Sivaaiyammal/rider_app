@@ -12,6 +12,7 @@ import useVehicleLocationStore from "../store/useVehicleLoactionStore";
 
 import locationTask from "../controllers/GetCurrentLocation";
 import FullScreenLoader from "../components/Loaders/FullScreenLoader";
+import CurrentLocationIcon from '../assets/icons/CurrentLocationIcon.svg';
 
 
 const MapContainer = ({ mapStyle }) => {
@@ -37,10 +38,11 @@ const MapContainer = ({ mapStyle }) => {
     setMapMoving,
     setDisduration,
     setSearchPOIError,
-    loading
+    loading,
+   
   } = useMapStore();
  
-  const { defaultStyle } = useMapStyleStore();
+  const { defaultStyle,mapbuttonStyle } = useMapStyleStore();
 
   const { location } = useLocationStore();
 
@@ -60,6 +62,7 @@ const MapContainer = ({ mapStyle }) => {
 
   
   const onPressCurrentLocation = async () => {
+    console.log('hari--->>onPressCurrentLocation-->>');
     await locationTask.getCurrentLocation();
   }
   const onPressZoomIn = () => {
@@ -100,7 +103,7 @@ const MapContainer = ({ mapStyle }) => {
         onSearchPOIError={setSearchPOIError}
         onNavigationEnd={(e) => console.log('hari--->>navigationEnd-->>', e)}
       />
-      <View style={styles.mapButtons}>
+       <View style={[styles.mapButtons,mapbuttonStyle]}>
       {/* <View style={styles.zoomButtons}>
         <TouchableOpacity style={styles.zoomButton} >
           <Ionicons name="add-outline" size={20} color="black" />
@@ -110,11 +113,10 @@ const MapContainer = ({ mapStyle }) => {
         </TouchableOpacity>
       </View> */}
         <TouchableOpacity style={styles.currentLocationButton} onPress={onPressCurrentLocation}>
-          <Ionicons name="locate-outline" size={20} color="black" />
+          <CurrentLocationIcon width={22} height={22} />
           {/* <ion-icon name="locate-outline"></ion-icon> */}
         </TouchableOpacity>
 
-        
       </View>
 
     </Animated.View>
@@ -148,14 +150,13 @@ const styles = StyleSheet.create({
   },
   mapButtons: {
     position: 'absolute',
-    right: 16,
-    top: "12%",
     shadowColor: '#000',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
+    zIndex: 1000,
   },
   markLocationButton: {
     backgroundColor: 'black',

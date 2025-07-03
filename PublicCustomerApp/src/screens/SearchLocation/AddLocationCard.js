@@ -106,22 +106,7 @@ const AddLocationCard = () => {
   };
 
   const addWaypoints = () => {
-    if (directions.length >=4) return
-    const endIndex = directions.findIndex(item => item.name === 'End');
-    // Create a new waypoint object with the current End ID
-    const newWaypoint = {
-      id: directions[endIndex].id,
-      location: [],
-      locationName: '',
-      name: `Waypoint ${directions.length - 1}`,
-    };
-    directions[endIndex].id += 1;
-    const newData = [
-      ...directions.slice(0, endIndex),
-      newWaypoint,
-      directions[endIndex],
-    ];
-    setDirections(newData);
+    setStackScreen('WaypointScreen');
   };
 
   const removeWaypoints = id => {

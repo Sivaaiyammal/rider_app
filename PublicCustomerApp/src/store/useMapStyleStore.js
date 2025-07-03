@@ -7,14 +7,23 @@ const defaultStyles = {
  
 };
 
+const defaultMapButtonStyle = {
+  right: 16,
+  top: "12%",
+};
+
 const useMapStyleStore = create((set) => ({
   defaultStyle: defaultStyles,
+  mapbuttonStyle: defaultMapButtonStyle,
 
   // Method to update the map style
   setMapStyle: (newStyle) => set({ defaultStyle: {...newStyle } }),
 
   // Method to reset to default
   resetMapStyle: () => set({ defaultStyle: defaultStyles }),
+ 
+
+  setMapButtonStyle: (newStyle) => set({ mapbuttonStyle: {...newStyle } }),
 }));
 
 export default useMapStyleStore;

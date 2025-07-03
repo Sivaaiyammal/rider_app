@@ -17,11 +17,13 @@ const App = () => {
   }), []);
 
   return (
-    <I18nextProvider i18n={i18n}>
-    <QueryClientProvider client={queryClient}>
-      <MainApp />
-    </QueryClientProvider>
-    </I18nextProvider>
+   
+      <I18nextProvider i18n={i18n}>
+        <QueryClientProvider client={queryClient}>
+          <MainApp />
+        </QueryClientProvider>
+      </I18nextProvider>
+
   );
 };
 

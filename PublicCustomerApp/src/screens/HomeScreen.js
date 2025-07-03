@@ -15,6 +15,8 @@ import { useQuery } from 'react-query';
 import { checkOnGoingRide } from '../API/EndPoints/EndPoints';
 import useRideSelectionStore from '../store/useRideSelectionStore';
 import useMapStore from '../store/useMapStore';
+import WaypointScreen from './WaypointScreen';
+import { StatusBar } from 'react-native';
 
 
 const HomeScreen = () => {
@@ -92,6 +94,8 @@ const HomeScreen = () => {
         return <RideSummary />;
       case 'VehicleSearchScreen':
         return <VehicleSearchScreen />;
+      case 'WaypointScreen':
+        return <WaypointScreen />;
       default:
         return null;
     }
@@ -99,6 +103,7 @@ const HomeScreen = () => {
 
   return (
     <>
+     <StatusBar barStyle="dark-content" backgroundColor={"white"} />
       {renderContent()}
       <MapContainer
         mapReady={mapReady}

@@ -4,8 +4,9 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
 import { colors, Fonts } from '../constants/constants';
 import { DataStore } from '../controllers/DataStore';
+import HistoryIcon from '../assets/icons/HistoryIcon.svg';
 
-const HistoryCard = ({ selectCallback }) => {
+const HistoryCard = ({ selectCallback, header = true, bottomborder = true }) => {
   const [historyItems, setHistoryItems] = useState([]);
   
   const setRecentSearches = useCallback(async () => {
@@ -19,13 +20,13 @@ const HistoryCard = ({ selectCallback }) => {
 
   return (
     <View style={styles.container}>
-      {historyItems?.length > 0 && <Text style={styles.title}>Recent</Text>}
+      {(historyItems?.length > 0 && header) && <Text style={styles.title}>Recent</Text>}
       {historyItems?.length > 0 ? (
         historyItems.map((item, index) => (
           <TouchableOpacity key={index} onPress={() => selectCallback(item)}>
-            <View style={styles.historyItem}>
+            <View style={[styles.historyItem, {borderBottomWidth: index === historyItems.length - 1 ? 0 : 0.5}]}>
               <View style={styles.iconContainer}>
-                <Ionicons name="time" size={20} color={colors.grey} />
+                <HistoryIcon width={50} height={50} />
               </View>
               <View style={styles.textContainer}>
                 <Text style={styles.name}>{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</Text>
@@ -49,6 +50,8 @@ const HistoryCard = ({ selectCallback }) => {
 
 HistoryCard.propTypes = {
   selectCallback: PropTypes.func.isRequired,
+  header: PropTypes.bool,
+  bottomborder: PropTypes.bool,
 };
 
 const styles = StyleSheet.create({
@@ -62,6 +65,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: 0.5,
     borderBottomColor: colors.grey,
+    gap: 20,
   },
   iconContainer: {
     width: 40,

@@ -1,6 +1,6 @@
 /* eslint-disable react/display-name */
 import React, { useRef } from 'react';
-import { View, KeyboardAvoidingView, Dimensions } from 'react-native';
+import { View, KeyboardAvoidingView, Dimensions, StyleSheet } from 'react-native';
 import { Modalize } from 'react-native-modalize';
 
 const BottomSheet = React.memo(({ children, minHeight, maxHeight, panGestureEnabled = true, reference = null }) => {
@@ -11,6 +11,7 @@ const BottomSheet = React.memo(({ children, minHeight, maxHeight, panGestureEnab
   
       <Modalize
         ref={modalizeRef}
+        modalStyle={styles.modalShadow}
         alwaysOpen={minHeight || 300}
         childrenStyle={{ height: minHeight || 300 }}
         modalHeight={maxHeight || screenHeight}
@@ -28,5 +29,16 @@ const BottomSheet = React.memo(({ children, minHeight, maxHeight, panGestureEnab
   
   );
 });
-
+const styles = StyleSheet.create({
+  modalShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 20,
+    borderRadius: 16,
+    
+    backgroundColor: '#fff',
+  },
+});
 export default BottomSheet;
