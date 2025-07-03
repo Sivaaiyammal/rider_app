@@ -6,10 +6,14 @@ import {
   Linking,
   BackHandler,
   Image,
+  Alert,
+  TextInput,
+  Modal,
 } from 'react-native';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import NavBar from '../../components/NavBar';
 import { colors } from '../../constants/constants';
+import { cancelRide } from '../../API/EndPoints/EndPoints';
 
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
@@ -24,15 +28,23 @@ import useDriverLocationStore from '../../store/useDriverLocationStore';
 import { findRoute } from '../../controllers/NEMap/findRoute';
 import Marker from '../../controllers/NEMap/Marker';
 import { showNotification } from '../../components/NotificationManger';
+import locationTask from '../../controllers/GetCurrentLocation';
+import useMapStyleStore from '../../store/useMapStyleStore';
+import CancelRideModal from '../../components/Trips/CancelTripModel';
+
 
 
 const DriverArrival = () => {
 
   const [GetDriverSocketData, setGetDriverSocketData] = useState(false)
+  const {setStackScreen} = useStackScreenStore();
 
 
   const [driverDistance, setDriverDistance] = useState('100m away');
+  const {setBookingDetails} = useRideSelectionStore();
   const [arrivalTime, setArrivalTime] = useState(300);
+  const {resetMapStyle} = useMapStyleStore();
+  const {setDirections} = useLocationStore();
  
   const { reset } = useStackScreenStore();
   const { driverLocation, setDriverLocation, driverAngle, driverMaxSpeed } = useDriverLocationStore();
@@ -43,7 +55,6 @@ const DriverArrival = () => {
     setMapMarkers,
     setDirectionPoints,
     setGeometries,
-    setDirections,
   } = useMapStore();
 
   const {
@@ -110,7 +121,7 @@ const DriverArrival = () => {
         if(driverLocation){
           const driverAngles = driverAngle || 0
           const driverMarker = new Marker(
-          'car',
+          'auto',
           vehicleType,
           driverLocation[0],
           driverLocation[1],
@@ -181,6 +192,8 @@ const DriverArrival = () => {
       }
     };
 
+    
+
     useEffect(() => {
       console.log('driverLocation-->>', driverLocation);
       console.log('driverAngle-->>', driverAngle)
@@ -190,6 +203,16 @@ const DriverArrival = () => {
         checkDriverLocation(driverLocation);
       }
     }, [driverLocation]);
+
+    useEffect(() => {
+      console.log('driverLocation-->>', driverLocation);
+      console.log('driverAngle-->>', driverAngle)
+      if (assignedDriver?.location?.coordinates != null) {
+        AddMarker(assignedDriver?.location?.coordinates);
+        fetchRoute(assignedDriver?.location?.coordinates);
+        checkDriverLocation(assignedDriver?.location?.coordinates);
+      }
+    }, []);
 
     useEffect(() => {
       setDirectionPoints(null);
@@ -242,10 +265,34 @@ const DriverArrival = () => {
 
 
 
+   
 
 
 
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const handleCancelRide = async (reason) => {
+    console.log('handleCancelRide');
+    setModalVisible(true);
+    try {
+      const response = await cancelRide({ tripId: bookingDetails._id, reason });
+      if (response.success) {
+        showNotification(response.message, '', 'success');
+        setDirections([
+          { id: 1, name: 'Start', location: [], locationName: '' },
+          { id: 2, name: 'End', location: [], locationName: '' },
+        ]);
+        setOnSearchResults(null);
+        setMapMarkers([]);
+        resetMapStyle();
+        setStackScreen('Home');
+        locationTask.getCurrentLocation();
+        setModalVisible(false);
+      }
+    } catch (error) {
+      console.error('Error cancelling ride:', error);
+    }
+  }
+  
 
   return (
     <>
@@ -299,7 +346,7 @@ const DriverArrival = () => {
             <View style={rideStyles.otpContainer}>
               <Text style={rideStyles.otpTitle}>OTP</Text>
               <View style={{ flexDirection: 'row' }}>
-                {otp.split('').map((char, index) => (
+                {bookingDetails?.otp?.split('').map((char, index) => (
                   <Text key={index} style={rideStyles.otpNum}>
                     {char}
                   </Text>
@@ -323,13 +370,20 @@ const DriverArrival = () => {
               <Text style={rideStyles.callTxt}>CALL DRIVER</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={rideStyles.closeBtn}>
+            <TouchableOpacity style={rideStyles.closeBtn} onPress={() => setModalVisible(true)}>
               <AntDesign name="close" size={26} color={colors.white} />
             </TouchableOpacity>
           </View>
         </View>
       </View>
       </View>
+      {modalVisible && (
+        <CancelRideModal
+          modalVisible={modalVisible}
+          setModalVisible={setModalVisible}
+          callCancelRide={handleCancelRide}
+        />
+      )}
     </>
   );
 };

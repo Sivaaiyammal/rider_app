@@ -22,12 +22,15 @@ import Language from '../../assets/image/drawerIcons/Language.svg';
 import ContactUs from '../../assets/image/drawerIcons/ContactUs.svg';
 import About from '../../assets/image/drawerIcons/about.svg';
 import Legal from '../../assets/image/drawerIcons/legal.svg';
-
+import useUserInfoStore from '../../store/useUserInfoStore';
 const SideDrawerV2 = ({handleMenu}) => {
+  const {userdetails} = useUserInfoStore();
 
   const navigation = useNavigation();
   const slideAnim = useRef(new Animated.Value(-300)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  console.log('userdetails', userdetails)
 
   useEffect(() => {
     Animated.parallel([
@@ -76,36 +79,36 @@ const SideDrawerV2 = ({handleMenu}) => {
       screen: '',
       icon: <YourRides />,
     },
-    {
-      id: 'notification',
-      name: 'Notification',
-      screen: '',
-      icon: <Notification />,
-    },
-    {
-      id: 4,
-      name: 'Language',
-      screen: '',
-      icon: <Language />,
-    },
+    // {
+    //   id: 'notification',
+    //   name: 'Notification',
+    //   screen: '',
+    //   icon: <Notification />,
+    // },
+    // {
+    //   id: 4,
+    //   name: 'Language',
+    //   screen: '',
+    //   icon: <Language />,
+    // },
     {
       id: 'contact-us',
       name: 'Contact Us',
       screen: '',
       icon: <ContactUs />,
     },
-    {
-      id: 6,
-      name: 'About',
-      screen: '',
-      icon: <About />,
-    },
-    {
-      id: 7,
-      name: 'Legal',
-      screen: '',
-      icon: <Legal />,
-    },
+    // {
+    //   id: 6,
+    //   name: 'About',
+    //   screen: '',
+    //   icon: <About />,
+    // },
+    // {
+    //   id: 7,
+    //   name: 'Legal',
+    //   screen: '',
+    //   icon: <Legal />,
+    // },
   ];
 
   const HandleOpenDrawerMenu = (menu) => {
@@ -142,7 +145,7 @@ const SideDrawerV2 = ({handleMenu}) => {
       <Animated.View style={[drawerStyles.drawercontainer, {transform: [{translateX: slideAnim}]}]}>
         <View style={drawerStyles.profileContainer}>
           <ProfileImage width={60} height={60} />
-          <Text style={drawerStyles.userName}>Ezio Auditore</Text>
+          <Text style={drawerStyles.userName}>{userdetails?.name}</Text>
         </View>
         <View style={drawerStyles.contentContainer}>
           <ScrollView>

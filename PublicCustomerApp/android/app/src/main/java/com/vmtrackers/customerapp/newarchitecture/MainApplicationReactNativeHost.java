@@ -1,4 +1,4 @@
-package com.publiccustomerapp.newarchitecture;
+package com.vmtrackers.customerapp.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -15,9 +15,9 @@ import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.EmptyReactNativeConfig;
 //import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.publiccustomerapp.BuildConfig;
-import com.publiccustomerapp.newarchitecture.components.MainComponentsRegistry;
-import com.publiccustomerapp.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.vmtrackers.customerapp.BuildConfig;
+import com.vmtrackers.customerapp.newarchitecture.components.MainComponentsRegistry;
+import com.vmtrackers.customerapp.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 
 import java.util.ArrayList;
 import java.util.List;

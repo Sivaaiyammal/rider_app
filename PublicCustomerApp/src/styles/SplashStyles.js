@@ -1,6 +1,6 @@
 import {StyleSheet} from 'react-native';
 import {colors, Fonts} from '../constants/constants';
-import {height, width} from '../utils/Utils';
+import {width} from '../utils/Utils';
 
 export const SplashStyles = StyleSheet.create({
   screen: {
@@ -36,62 +36,7 @@ export const SplashStyles = StyleSheet.create({
   },
 });
 
-export const LanguageStyles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: colors.white,
-  },
-  title: {
-    fontFamily: Fonts.semi_bold,
-    fontSize: 32,
-    color: colors.black,
-    marginTop: 30,
-    textAlign: 'center',
-  },
-  langContainer: {
-    width: '90%',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    marginTop: 30,
-  },
-  langBtn: {
-    backgroundColor: colors.white,
-    borderRadius: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    paddingVertical: 30,
-    width: '25%',
-    alignItems: 'center',
-  },
-  langTxt: {
-    fontFamily: Fonts.semi_bold,
-    color: colors.black,
-    fontSize: 16,
-  },
-  nextBtn: {
-    position: 'absolute',
-    bottom: 20,
-    backgroundColor: colors.blue_xxdark,
-    width: '80%',
-    paddingVertical: 10,
-    borderRadius: 30,
-    alignItems: 'center',
-  },
-  nextBtnTxt: {
-    fontFamily: Fonts.medium,
-    color: colors.white,
-    fontSize: 14,
-  },
-});
+
 
 export const onBoardingStyles = StyleSheet.create({
   onboardContainer: {

@@ -10,11 +10,26 @@ import {DataStore} from '../../controllers/DataStore';
 import useUserInfoStore from '../../store/useUserInfoStore';
 import {verifyOTPMutation} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
+// Utility function to mask phone number
+const maskPhoneNumber = (phoneNumber) => {
+  if (!phoneNumber || phoneNumber.length < 5) return phoneNumber;
+  
+  const firstThree = phoneNumber.substring(0, 3);
+  const lastTwo = phoneNumber.substring(phoneNumber.length - 2);
+  const middleAsterisks = '*'.repeat(phoneNumber.length - 5);
+  
+  return `${firstThree}${middleAsterisks}${lastTwo}`;
+};
 
 const OTPScreen = ({route}) => {
   const navigation = useNavigation();
   const [loginPhoneNumber, setloginPhoneNumber] = useState(
     route.params.phoneNumber,
+  );
+  const [countryCode, setCountryCode] = useState(
+    route.params.countryCode,
   );
   const [otpInput, setOtpInput] = useState('');
 
@@ -37,16 +52,19 @@ const OTPScreen = ({route}) => {
   const handleVerificationSuccess = async data => {
     if (data.success) {
       showNotification('OTP Verified', 'OTP Verified Successfully', 'success');
-
       console.log(data, 'data');
-      let {accessToken, refreshToken, userDetails} = data;
-      setID(userDetails._id);
-      setUserdetails(userDetails);
+      let {  user,isNewUser} = data;
 
-      await DataStore.storeData('access_token', accessToken);
-      await DataStore.storeData('refresh_token', refreshToken);
-      await DataStore.storeData('userdetails', userDetails);
-      if (!userDetails.personalDetails) {
+      console.log(user?.token)
+      console.log(user)
+      console.log(isNewUser)
+      setID(user._id);
+      setUserdetails(user);
+
+      await DataStore.storeData('access_token', user?.token);
+      await DataStore.storeData('userdetails', user);
+      if (isNewUser) {
+        
         navigation.dispatch(
           CommonActions.navigate({
             name: 'RegisterationScreen',
@@ -74,7 +92,7 @@ const OTPScreen = ({route}) => {
     } else {
       const payload = {
         otp: otpInput,
-        phoneNumber: loginPhoneNumber,
+        phone: `+${countryCode}${loginPhoneNumber}`,
       };
       verifyOTPMutate(payload);
     }
@@ -83,13 +101,32 @@ const OTPScreen = ({route}) => {
   return (
     <View style={loginStyles.screen}>
       {isLoading && <FullScreenLoader />}
+      
+      {/* Header with back button */}
+      <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 20}}>
+      
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: colors.blue_xxdark,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+        >
+          <Icon name="chevron-left" size={30} color="white" />
+        </TouchableOpacity>
+      </View>
+      
       <Text style={[loginStyles.headerTxt, loginStyles.otpHeaderTxt]}>
         One Time{'\n'}Password(OTP)
       </Text>
       <Text style={[loginStyles.headerContent, loginStyles.otpHeaderTxt]}>
         An OTP has been sent to mobile number
       </Text>
-      <Text style={loginStyles.phoneTxt}>{loginPhoneNumber}</Text>
+      <Text style={loginStyles.phoneTxt}>{maskPhoneNumber(loginPhoneNumber)}</Text>
       <View style={loginStyles.otpContainer}>
         <OTPTextInput
           inputCount={6}

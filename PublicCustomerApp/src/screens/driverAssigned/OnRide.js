@@ -48,6 +48,7 @@ const OnRide = () => {
     setMapMarkers(null)
     fetchRoute()
     const startMarker = AddMarker(bookingDetails?.startLocation)
+    // const endMarker = AddMarker(bookingDetails?.endLocation, 'marker_end')
     setMapMarkers([startMarker])
     showNotification(`Trip has started`, 'you have started your trip', 'success')
     // setStackScreen('RideSummary');
@@ -56,7 +57,7 @@ const OnRide = () => {
   const AddMarker = (driverLocation,type) => {
 
     const angle = type === 'suv' ? driverAngle || 0 : 0
-    const markerType = type === 'car' ? bookingDetails?.vehicleType ? bookingDetails?.vehicleType.toLowerCase() : 'suv' : type
+    const markerType = type === 'suv' ? bookingDetails?.vehicleType ? bookingDetails?.vehicleType.toLowerCase() : 'suv' : type
     const marker = new Marker(
       markerType,
       'hyundai',
@@ -276,7 +277,7 @@ const OnRide = () => {
             <Text style={{fontFamily:Fonts.regular,fontSize:16, color:colors.black,}}>Estimated amount to be paid </Text>
             <Text style={{fontFamily:Fonts.regular,fontSize:20, color:colors.green,}}>₹{bookingDetails?.estimatedFare}</Text>
           </View>
-          <AddressContainer directions={directions} />
+          <AddressContainer directions={bookingDetails?.stops} />
           {/* <TouchableOpacity
             style={vehicleDetailsStyles.paymentContainer}
             onPress={() => changePayment()}>

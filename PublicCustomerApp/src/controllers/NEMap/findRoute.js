@@ -26,7 +26,7 @@ export async function findRoute(points) {
         // const encodedData = encodeURIComponent(jsonString);
         const url = `${ApiConfig.ROUTE_API_URL}?data=${jsonString}&access_token=${ApiConfig.NE_ACCESS_TOKEN}`;
 
-        console.log(url,'url')
+        // console.log(url,'url')
         
         const response = await fetch(url, {
             method: 'GET',

@@ -79,13 +79,19 @@ export const rideStyles = StyleSheet.create({
       flexDirection: 'row',
     },
     profileImage: {
-      width: '100%',
-      backgroundColor: 'yellow',
-      aspectRatio: 1,
-      borderRadius: 50,
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      resizeMode: 'cover',
+      borderWidth:1,
+      borderColor:colors.grey_dark,
+      marginBottom:10,
+      alignSelf:'center'
     },
     profileContainer: {
       width: '20%',
+      alignItems: 'center',
+      overflow: 'hidden',
     },
     rating: {
       backgroundColor: colors.white,
@@ -94,9 +100,9 @@ export const rideStyles = StyleSheet.create({
       paddingHorizontal: 10,
       borderRadius: 5,
       elevation: 5,
-      fontFamily: Fonts.regular,
-      fontSize: 12,
-      color: colors.black,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 2,
     },
     profileNameContainer: {
       width: '50%',
@@ -195,10 +201,10 @@ export const rideStyles = StyleSheet.create({
       borderRadius:15
     },
     profilePic:{
-      width:'25%',
-      backgroundColor:'yellow',
-      aspectRatio:1,
-      borderRadius:50,
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      resizeMode: 'cover',
       alignSelf:'center'
     },
     profileName:{

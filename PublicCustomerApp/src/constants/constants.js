@@ -6,12 +6,19 @@ export const Fonts = {
   semi_bold: 'Outfit-SemiBold',
 };
 
+// langRatios.js
+export const languageFontRatio = {
+  en: 1,
+  ta: 0.8 ,
+  // Add more as needed
+};
+
+
 export const colors = {
   white: "#FFFFFF",
   grey_xlight: "#eeeeee",
   font_black: "#000000",
   handle_grey: "#616161",
-
   black: '#212121',
   dark: '#0A0A0A',
   white: '#FFFFFF',

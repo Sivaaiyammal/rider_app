@@ -9,10 +9,10 @@ const usePostQuery = ({ onSuccess, onError }) => {
     const postQuery = async ({ queryKey, url, payload }) => {
 
         const access_token = await DataStore.loadData('access_token');
-
+        
         const apiRequest = new APIRequest();
         const res = await apiRequest.request(url, 'POST', payload, access_token.data);
-
+     
         queryClient.invalidateQueries(queryKey);
 
         return res;

@@ -73,6 +73,7 @@ export const SearchResultV2 = (props) => {
     const { searchTxt, search_data, selectedCallBack } = props;
     
     const sections = transformData(search_data?.searchData);
+    console.log("sections",sections)
    
     const [expandedSections, setExpandedSections] = useState({});
 

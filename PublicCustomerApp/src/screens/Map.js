@@ -101,14 +101,14 @@ const MapContainer = ({ mapStyle }) => {
         onNavigationEnd={(e) => console.log('hari--->>navigationEnd-->>', e)}
       />
       <View style={styles.mapButtons}>
-      <View style={styles.zoomButtons}>
+      {/* <View style={styles.zoomButtons}>
         <TouchableOpacity style={styles.zoomButton} >
           <Ionicons name="add-outline" size={20} color="black" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.zoomButton}>
           <Ionicons name="remove-outline" size={20} color="black" />
         </TouchableOpacity>
-      </View>
+      </View> */}
         <TouchableOpacity style={styles.currentLocationButton} onPress={onPressCurrentLocation}>
           <Ionicons name="locate-outline" size={20} color="black" />
           {/* <ion-icon name="locate-outline"></ion-icon> */}
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   mapButtons: {
     position: 'absolute',
     right: 16,
-    top: "10%",
+    top: "12%",
     shadowColor: '#000',
     display: 'flex',
     flexDirection: 'column',

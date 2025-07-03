@@ -1,4 +1,4 @@
-package com.publiccustomerapp;
+package com.vmtrackers.customerapp;    
 
 import android.content.Intent;
 import android.net.Uri;
@@ -7,7 +7,7 @@ import android.provider.Settings;
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
 import com.facebook.react.ReactRootView;
-import com.publiccustomerapp.BuildConfig;
+import com.vmtrackers.customerapp.BuildConfig;
 
 public class MainActivity extends ReactActivity {
   
@@ -18,7 +18,7 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "PublicCustomerApp";
+    return "CustomerApp";
   }
 
   /**

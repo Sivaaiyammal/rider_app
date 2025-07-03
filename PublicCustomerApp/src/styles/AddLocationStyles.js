@@ -355,7 +355,7 @@ export const vehicleList = StyleSheet.create({
   },
   totalPrice: {
     fontFamily: Fonts.medium,
-    fontSize: 24,
+    fontSize: 20,
     color: colors.black,
   },
   discountPrice: {

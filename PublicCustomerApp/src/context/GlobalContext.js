@@ -1,62 +1,128 @@
-import {useColorScheme} from 'react-native';
 import React, {createContext, useEffect, useState, useCallback} from 'react';
 import PropTypes from 'prop-types';
+import {useColorScheme} from 'react-native';
 
 import { DataStore } from '../controllers/DataStore';
 import wsService from '../controllers/SocketServices';
+import { lightTheme, darkTheme } from '../constants/theme';
+
 export const GlobalContext = createContext();
 
 export const ContextProvider = ({children}) => {
-  const [themeValue, setThemeValue] = useState('');
-  const themes = useColorScheme();
+  const systemColorScheme = useColorScheme();
+  const [theme, setTheme] = useState(() => {
+    // Initialize with device theme immediately
+    return systemColorScheme === 'dark' ? darkTheme : lightTheme;
+  });
+  const [themeMode, setThemeMode] = useState('default'); // 'light', 'dark', 'default'
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const themeOperations = theme => {
-    switch (theme) {
+  const themeOperations = useCallback((mode) => {
+    let newTheme;
+    let isDefault = false;
+    
+    switch (mode) {
       case 'dark':
-        setTheme(theme, false);
-        return;
+        newTheme = darkTheme;
+        isDefault = false;
+        break;
       case 'light':
-        setTheme(theme, false);
-        return;
+        newTheme = lightTheme;
+        isDefault = false;
+        break;
       case 'default':
-        setTheme(themes, true);
-        return;
+        newTheme = systemColorScheme === 'dark' ? darkTheme : lightTheme;
+        isDefault = true;
+        break;
+      default:
+        newTheme = lightTheme;
+        isDefault = false;
     }
-  };
+    
+    setTheme(newTheme);
+    setThemeMode(mode);
+    saveThemeSettings(mode, isDefault);
+  }, [systemColorScheme]);
+
+  const saveThemeSettings = useCallback(async (mode, isDefault) => {
+    try {
+      await DataStore.storeData('ThemeMode', mode);
+      await DataStore.storeData('IsDefault', isDefault);
+    } catch (error) {
+      console.error('Error saving theme settings:', error);
+    }
+  }, []);
 
   const getAppTheme = useCallback(async () => {
-    const theme = await DataStore.loadData('Theme');
-    const isDefault = await DataStore.loadData('IsDefault');
-    isDefault.data ? themeOperations('default') : themeOperations(theme.data);
-    setThemeValue(theme.data);
-  }, []);
+    try {
+      const savedThemeMode = await DataStore.loadData('ThemeMode');
+      const isDefault = await DataStore.loadData('IsDefault');
+      
+      if (savedThemeMode?.data) {
+        // User has explicitly set a theme
+        themeOperations(savedThemeMode.data);
+      } else if (isDefault?.data) {
+        // User has chosen to follow system theme
+        themeOperations('default');
+      } else {
+        // First time app launch - use current device theme
+        console.log('First time launch - using device theme:', systemColorScheme);
+        themeOperations('default');
+      }
+    } catch (error) {
+      console.error('Error loading theme settings:', error);
+      // Fallback to current device theme
+      console.log('Fallback to device theme:', systemColorScheme);
+      themeOperations('default');
+    } finally {
+      setIsInitialized(true);
+    }
+  }, [themeOperations, systemColorScheme]);
 
-  const setTheme = useCallback(async (theme, isDefault) => {
-    DataStore.storeData('Theme', theme);
-    DataStore.storeData('IsDefault', isDefault);
-    setThemeValue(theme);
-  }, []);
+  const toggleTheme = useCallback(() => {
+    const newMode = themeMode === 'light' ? 'dark' : 'light';
+    themeOperations(newMode);
+  }, [themeMode, themeOperations]);
+
+  const resetToSystemTheme = useCallback(() => {
+    themeOperations('default');
+  }, [themeOperations]);
+
+  const getCurrentDeviceTheme = useCallback(() => {
+    return systemColorScheme;
+  }, [systemColorScheme]);
 
   const addListener = useCallback(token => {
     wsService.initSocket(token);
   }, []);
 
-
+  // Update theme when system color scheme changes (only if using default mode)
   useEffect(() => {
-    const initialize = async () => {
-      await getAppTheme();
-    };
+    if (themeMode === 'default' && isInitialized) {
+      const newTheme = systemColorScheme === 'dark' ? darkTheme : lightTheme;
+      setTheme(newTheme);
+      console.log('System theme changed to:', systemColorScheme);
+    }
+  }, [systemColorScheme, themeMode, isInitialized]);
 
-    initialize();
-  }, []);
+  // Initialize theme on component mount
+  useEffect(() => {
+    getAppTheme();
+  }, [getAppTheme]);
 
   return (
     <GlobalContext.Provider
       value={{
-        setTheme,
-        themeOperations,
-        themeValue,
-        addListener
+        theme,
+        themeMode,
+        setTheme: themeOperations,
+        toggleTheme,
+        resetToSystemTheme,
+        getCurrentDeviceTheme,
+        addListener,
+        isDarkMode: themeMode === 'dark' || (themeMode === 'default' && systemColorScheme === 'dark'),
+        systemColorScheme,
+        isInitialized
       }}>
       {children}
     </GlobalContext.Provider>

@@ -1,8 +1,6 @@
 import {create} from 'zustand';
 import { rideType, tripType } from '../constants/JsonData';
-const tripFor = ['For Myself']
-
-
+const tripFor = ['For Myself'];
 
 const useRideSelectionStore = create(set => ({
   selectedTrip: tripType[0],
@@ -11,7 +9,7 @@ const useRideSelectionStore = create(set => ({
   selectedRide: rideType[0],
   setSelectedRide: selectedRide => set({selectedRide}),
 
-  tripFor:tripFor[0],
+  tripFor: tripFor[0],
   setTripFor: tripFor => set({tripFor}),
 
   contactDetails: [],
@@ -32,7 +30,24 @@ const useRideSelectionStore = create(set => ({
   bookingDetails: null,
   setBookingDetails: (bookingDetails) => set({bookingDetails}),
 
-  assignedDriver:null,
+  updateBookingStatus: (status) => set(state => ({
+    bookingDetails: {
+      ...state.bookingDetails,
+      status
+    }
+  })),
+
+  updateOtp: (otp) => set(state => ({
+    bookingDetails: {
+      ...state.bookingDetails,
+      otp
+    }
+  })),
+
+  currentFare: null,
+  setCurrentFare: (currentFare) => set({currentFare}),
+
+  assignedDriver: null,
   setAssignedDriver: (assignedDriver) => set({assignedDriver}),
 
   otp: "8949",
@@ -50,6 +65,5 @@ const useRideSelectionStore = create(set => ({
   finalFareDetails: null,
   setFinalFareDetails: (finalFareDetails) => set({finalFareDetails}),
 }));
-
 
 export default useRideSelectionStore;

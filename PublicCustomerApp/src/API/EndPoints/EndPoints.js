@@ -2,20 +2,20 @@ import apiClient from "../APIClient";
 
 // request OTP
 export const requestOTP = async (payload) => {
-  const { data } = await apiClient.post('/customer/auth/login', payload);
+   const { data } = await apiClient.post('/publicrides/customer/login', payload);
+  // const data = {
+  //   success: true,
+  //   message: 'OTP Sent',
+  // };
   return data;
 };
 
-export const testlogin = async (payload) => {
-  const { data } = await apiClient.post('/publicrides/customer/login', payload);
-  return data;
-};
 
 
 
 // verify OTP
 export const verifyOTP = async (payload) => {
-  const { data } = await apiClient.post('/customer/auth/verifyOTP', payload);
+  const { data } = await apiClient.post('publicrides/customer/verifyotp', payload);
   return data;
 };
 
@@ -44,7 +44,18 @@ export const bookRide = async (payload)=> {
 }
 
 // cancel Ride
-export const cancelRide = async (payload)=> {
-  const {data} = await apiClient.post('/customer/ride/cancelRide', payload)
+
+
+export const checkOnGoingRide = async ()=> {
+  const {data} = await apiClient.get('/publicrides/customer/getOngoingTrip')
   return data
 }
+
+export const cancelRide = async (payload)=> {
+  console.log('payload', payload)
+  const {data} = await apiClient.post('publicrides/customer/cancelTrip', payload)
+  return data
+}
+
+
+

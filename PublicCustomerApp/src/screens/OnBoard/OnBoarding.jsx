@@ -3,20 +3,22 @@ import React, { useCallback, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { FlatList, View, Text, TouchableOpacity } from 'react-native';
 
-import { onBoardingSlides } from '../constants/JsonData';
-import { onBoardingStyles } from '../styles/SplashStyles';
-import { width } from '../utils/Utils';
-import { DataStore } from '../controllers/DataStore';
+import { onBoardingSlides } from '../../constants/JsonData';
+import { onBoardingStyles } from '../../styles/SplashStyles';
+import { width } from '../../utils/Utils';
+import { DataStore } from '../../controllers/DataStore';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 const Slide = ({ data }) => {
+  const { t } = useTranslation();
   return (
     <View style={onBoardingStyles.slide}>
       <View style={[onBoardingStyles.slideImageContainer]}>
         {data.image}
       </View>
-      <Text style={onBoardingStyles.slideTitle}>{data.title}</Text>
-      <Text style={onBoardingStyles.slideSubtitle}>{data.description}</Text>
+      <Text style={onBoardingStyles.slideTitle}>{t(data.title)}</Text>
+      <Text style={onBoardingStyles.slideSubtitle}>{t(data.description)}</Text>
     </View>
   );
 };
@@ -50,6 +52,7 @@ Pagination.propTypes = {
 
 export default function OnBoarding() {
   const navigation = useNavigation()
+  const { t } = useTranslation();
   const totalSlides = onBoardingSlides.length;
   const [index, setIndex] = useState(0);
   const indexRef = useRef(index);
@@ -132,7 +135,7 @@ export default function OnBoarding() {
         style={onBoardingStyles.nextBtn}
         onPress={() => handleNext()}>
         <Text testID="next" style={onBoardingStyles.nextText}>
-          {index === onBoardingSlides.length - 1 ? 'Get Started' : 'Next'}
+          {index === onBoardingSlides.length - 1 ? t('get_started') : t('next')}
         </Text>
       </TouchableOpacity>
     </View>

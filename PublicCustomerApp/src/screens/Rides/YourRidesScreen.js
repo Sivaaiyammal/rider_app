@@ -82,9 +82,7 @@ const YourRidesScreen = () => {
     }
 
     const onGetRidesSuccess = async (data) => {
-        console.log(data, 'data');
-
-
+        console.log('data', data);
         setIsRefreshing(false);
         if (data.success) {
 
@@ -116,10 +114,13 @@ const YourRidesScreen = () => {
         console.log('LoadRides');
 
         let payload = {
-            status: FilterTripType || 'completed',
+            status: FilterTripType || 'COMPLETED',
         }
-        if (FilterStart) payload.startTime = FilterStart;
-        if (FilterEnd) payload.endTime = FilterEnd;
+        const today = new Date();
+        const startOfDay = today.setHours(0, 0, 0, 0);
+        const endOfDay = today.setHours(23, 59, 59, 999);
+        payload.startTime = startOfDay;
+        payload.endTime = endOfDay;
 
         setIsRefreshing(true);
         await GetRidesMutate({

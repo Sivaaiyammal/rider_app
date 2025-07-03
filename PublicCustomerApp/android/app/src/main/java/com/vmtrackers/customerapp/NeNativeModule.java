@@ -1,5 +1,5 @@
-package com.publiccustomerapp;
-
+package com.vmtrackers.customerapp;
+    
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.PointF;
