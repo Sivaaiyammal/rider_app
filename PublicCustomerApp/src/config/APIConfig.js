@@ -10,4 +10,5 @@ module.exports = {
     // ROOT_API_URL:'https://d637-2406-7400-ff03-ad2b-7069-a339-5b33-1023.ngrok-free.app',
     ROOT_API_URL: 'http://localhost:3000',
     ROUTE_API_URL: 'https://ne.vmmaps.com/routing/v1/route',
+
 }
