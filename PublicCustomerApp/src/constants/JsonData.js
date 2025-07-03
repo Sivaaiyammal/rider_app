@@ -10,42 +10,62 @@ import StopsTrip from '../assets/image/svgIcons/stopsTrip.svg';
 export const languages = [
   {
     id: 1,
-    name: 'தமிழ்',
-    code: 'ta',
-  },
-  {
-    id: 2,
     name: 'English',
+    name_en: 'English',
     code: 'en',
   },
   {
+    id: 2,
+    name: 'தமிழ்',
+    name_en: 'Tamil',
+    code: 'ta',
+  },
+ 
+  {
     id: 3,
     name: 'हिन्दी',
+    name_en: 'Hindi',
     code: 'hi',
   },
+  {
+    id: 4,
+    name: 'ಕನ್ನಡ',
+    name_en: 'Kannada',
+    code: 'kn',
+  },
+  {
+    id: 5,
+    name: 'മലയാളം',
+    name_en: 'Malayalam',
+    code: 'ml',
+  },
+ 
+  {
+    id: 6 ,
+    name: 'తెలుగు',
+    name_en: 'Telugu',
+    code: 'te',
+  }
 ];
 
 export const onBoardingSlides = [
   {
     id: 1,
-    title: 'Quick and Easy Bookings',
+    title: 'quick_and_easy_bookings',
     image: <OnBoardA />,
-    description:
-      "Choose your destination, pick your ride, and you're on your way in just a few taps.",
+    description: 'quick_and_easy_bookings_description',
   },
   {
     id: 2,
-    title: 'Set Your Destination',
+    title: 'set_your_destination',
     image: <OnBoardB />,
-    description:
-      'Whether it`s a ride home, the office, or an adventure, "Namma Ooru Taxi ®" is ready to take you there.',
+    description: 'set_your_destination_description',
   },
   {
     id: 3,
-    title: 'Track Your Ride',
+    title: 'track_your_ride',
     image: <OnBoardC />,
-    description:
-      "Watch your driver's arrival in real-time and stay updated with their location. No more guessing when your ride will arrive.",
+    description: 'track_your_ride_description',
   },
 ];
 
