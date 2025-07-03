@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, DeviceEventEmitter } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useFocusEffect } from '@react-navigation/native';
+import PropTypes from 'prop-types';
 import { colors, Fonts } from '../constants/constants';
 import { DataStore } from '../controllers/DataStore';
 
@@ -10,35 +10,45 @@ const HistoryCard = ({ selectCallback }) => {
   
   const setRecentSearches = useCallback(async () => {
     const recentSearches = await DataStore.loadData('recentSearches');
-    setHistoryItems(recentSearches.data);
+    setHistoryItems(recentSearches?.data || []);
   }, []);
 
   useEffect(() => {
     setRecentSearches();
   }, [setRecentSearches]);
 
- 
-
-  
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Recent</Text>
-      {historyItems?.length > 0 && historyItems.map((item, index) => (
-        <TouchableOpacity key={index} onPress={() => selectCallback(item)}>
-          <View style={styles.historyItem}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="time" size={20} color={colors.grey} />
+      {historyItems?.length > 0 && <Text style={styles.title}>Recent</Text>}
+      {historyItems?.length > 0 ? (
+        historyItems.map((item, index) => (
+          <TouchableOpacity key={index} onPress={() => selectCallback(item)}>
+            <View style={styles.historyItem}>
+              <View style={styles.iconContainer}>
+                <Ionicons name="time" size={20} color={colors.grey} />
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={styles.name}>{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</Text>
+                <Text style={styles.address}>{item.address}</Text>
+              </View>
             </View>
-            <View style={styles.textContainer}>
-              <Text style={styles.name}>{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</Text>
-              <Text style={styles.address}>{item.address}</Text>
-            </View>
+          </TouchableOpacity>
+        ))
+      ) : (
+        <View style={styles.noHistoryContainer}>
+          <View style={styles.noHistoryIconContainer}>
+            <Ionicons name="search-outline" size={40} color={colors.grey} />
           </View>
-        </TouchableOpacity>
-      ))}
+          <Text style={styles.noHistoryText}>No recent searches</Text>
+          <Text style={styles.noHistorySubtext}>Your recent searches will appear here</Text>
+        </View>
+      )}
     </View>
   );
+};
+
+HistoryCard.propTypes = {
+  selectCallback: PropTypes.func.isRequired,
 };
 
 const styles = StyleSheet.create({
@@ -81,6 +91,31 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     color: colors.black,
     marginBottom: 10,
+  },
+  noHistoryContainer: {
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  noHistoryIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  noHistoryText: {
+    fontSize: 16,
+    fontFamily: Fonts.medium,
+    color: colors.black,
+    marginBottom: 5,
+  },
+  noHistorySubtext: {
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: colors.grey,
+    textAlign: 'center',
   },
 });
 

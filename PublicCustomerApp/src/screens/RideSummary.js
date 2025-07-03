@@ -9,8 +9,6 @@ import {
 import React from 'react';
 import {vehicleDetailsStyles} from '../styles/VehicleDetails';
 import useLocationStore from '../store/useLocationStore';
-import Rocket from '../assets/image/svgIcons/rocket.svg';
-import EndBlack from '../assets/image/svgIcons/end_black.svg';
 import DistanceBlue from '../assets/image/svgIcons/distanceBlue.svg';
 import Watch from '../assets/image/svgIcons/watch.svg';
 import Fare from '../assets/image/svgIcons/fare.svg';
@@ -23,13 +21,49 @@ import {Rating} from 'react-native-ratings';
 import AddressContainer from '../components/Trips/AddressContainer';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { Image } from 'react-native';
-import  useRideSelectionStore   from '../store/useRideSelectionStore';
+import useRideSelectionStore from '../store/useRideSelectionStore';
+import {useStackScreenStore} from '../store/useStackScreenStore';
+import useMapStore from '../store/useMapStore';
+import useMapStyleStore from '../store/useMapStyleStore';
+import locationTask from '../controllers/GetCurrentLocation';
+import DriverProfileImage from '../assets/image/driver.png';
 
 const RideSummary = () => {
-  const {directions} = useLocationStore();
-  const {assignedDriver,bookingDetails,rideDistance} = useRideSelectionStore();
+  const {directions, setDirections} = useLocationStore();
+  const {assignedDriver, bookingDetails, rideDistance, setBookingDetails, setAssignedDriver, setRideStatus} = useRideSelectionStore();
+  const {reset: resetStackScreen} = useStackScreenStore();
+  const {setOnSearchResults, setMapMarkers, setDirectionPoints, setSearchUnit} = useMapStore();
+  const {resetMapStyle} = useMapStyleStore();
 
   const isCompleted = false;
+
+  const handleGoToHome = async () => {
+    // Reset all ride-related data
+    setBookingDetails(null);
+    setAssignedDriver(null);
+    setRideStatus(null);
+    
+    // Reset location data
+    setDirections([
+      { id: 1, name: 'Start', location: [], locationName: '' },
+      { id: 2, name: 'End', location: [], locationName: '' },
+    ]);
+    
+    // Reset map data
+    setOnSearchResults(null);
+    setMapMarkers([]);
+    setDirectionPoints(null);
+    setSearchUnit('');
+    
+    // Reset map style
+    resetMapStyle();
+    
+    // Reset navigation stack to home
+    resetStackScreen();
+    
+    // Get current location
+    await locationTask.getCurrentLocation();
+  };
 
   return (
     <View style={{flex:1, backgroundColor:colors.white,paddingVertical:20}}>
@@ -55,16 +89,13 @@ const RideSummary = () => {
         <View style={rideStyles.driverDetails}>
             <View style={rideStyles.profileContainer}>
               <Image
-                source={{
-                  uri:
-                    assignedDriver?.photo ||
-                    'https://letsenhance.io/static/73136da51c245e80edc6ccfe44888a99/1015f/MainBefore.jpg',
-                }}
+                source={DriverProfileImage}
                 style={rideStyles.profileImage}
               />
-              <Text style={rideStyles.rating}>
-                <AntDesign name="star" color={colors.yellow} size={10} /> 4.8
-              </Text>
+              <View style={rideStyles.rating}>
+                <AntDesign name="star" color={colors.yellow} size={10} />
+                <Text style={{ fontFamily: Fonts.regular, fontSize: 12, color: colors.black, marginLeft: 2 }}>4.8</Text>
+              </View>
             </View>
 
             <View style={rideStyles.profileNameContainer}>
@@ -161,11 +192,14 @@ const RideSummary = () => {
       
       {isCompleted ? (
         <TouchableOpacity
-          style={[rideSummary.payBtn, {backgroundColor: colors.black}]}>
+          style={[rideSummary.payBtn, {backgroundColor: colors.black}]}
+          onPress={handleGoToHome}>
           <Text style={rideSummary.payBtnTxt}>HOME</Text>
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity style={rideSummary.payBtn}>
+        <TouchableOpacity 
+          style={rideSummary.payBtn}
+          onPress={handleGoToHome}>
           <Text style={rideSummary.payBtnTxt}>PAY ₹{bookingDetails?.estimatedFare}</Text>
         </TouchableOpacity>
       )}

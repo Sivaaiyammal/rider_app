@@ -62,6 +62,7 @@ export const loginStyles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: colors.black,
     fontSize: 16,
+    marginLeft: 10,
   },
   otpBtn: {
     position: 'absolute',

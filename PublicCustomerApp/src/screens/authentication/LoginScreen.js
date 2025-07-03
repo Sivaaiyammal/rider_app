@@ -1,7 +1,7 @@
 import {Text, TextInput, TouchableOpacity, View} from 'react-native';
-import React, {useRef, useState, useCallback, useContext} from 'react';
+import React, {useState} from 'react';
 
-import CountryPicker, {FlagButton} from 'react-native-country-picker-modal';
+
 import {loginStyles} from '../../styles/UserStyles';
 import Logo from '../../assets/image/logo.svg';
 import Phone from '../../assets/image/svgIcons/phone.svg';
@@ -9,17 +9,12 @@ import {CommonActions, useNavigation} from '@react-navigation/native';
 import {showNotification} from '../../components/NotificationManger';
 import {DataStore} from '../../controllers/DataStore';
 
-import {requestOTPMutation, testLogin} from '../../API/APICalls/UserAPICalls';
+import {requestOTPMutation} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
-import useUserInfoStore from '../../store/useUserInfoStore';
-import { GlobalContext } from '../../context/GlobalContext';
-import messaging from '@react-native-firebase/messaging';
-import DeviceInfo from 'react-native-device-info';  
+
 const LoginScreen = () => {
   const navigation = useNavigation();
-  const {addListener} = useContext(GlobalContext);
-  const [countryCode, setCountryCode] = useState('IN');
-  const [country, setCountry] = useState({
+  const country = {
     callingCode: ['91'],
     cca2: 'IN',
     currency: ['INR'],
@@ -27,128 +22,66 @@ const LoginScreen = () => {
     name: 'India',
     region: 'Asia',
     subregion: 'Southern Asia',
-  });
-  const [visible, setVisible] = useState(false);
+  };
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [password, setPassword] = useState('');
-  const [phoneNumErr, setPhoneNumErr] = useState(null);
-  const {setUserdetails} = useUserInfoStore();
+  const [phoneNumErr, setPhoneNumErr] = useState('');
+
   const handleLoginSuccess = (data) => {
     if (data) {
-      showNotification('Logged In', 'Logged in Successfully', 'success');
-      console.log(data, 'data');
-      let {token} = data?.user;
-      console.log("token", token)
-      DataStore.storeData('access_token', token);
-      DataStore.storeData('userdetails', data?.user);
-      setUserdetails(data?.user);
-      addListener(token);
-     
+      showNotification('OTP Sent', 'OTP Sent to your mobile number', 'success');
+      console.log('data', data);
       navigation.dispatch(
         CommonActions.navigate({
-          name: 'HomeScreen',
+          name: 'OTPScreen',
+          params: {
+            countryCode: country.callingCode[0],
+            phoneNumber: phoneNumber,
+          },
         }),
       );
     }
   };
 
-  const {mutate: testLogins, isLoading: isLoading} = testLogin(
+  const {mutate: requestOTPMutate, isLoading: isLoading} = requestOTPMutation(
     handleLoginSuccess,
   );
 
-  const onSelect = country => {
-    setCountryCode(country.cca2);
-    setCountry(country);
-  };
-
-  const renderCustomFlagButton = () => (
-    <TouchableOpacity
-      onPress={() => setVisible(true)}
-      style={loginStyles.countryPicker}>
+  const renderCountryCode = () => (
+    <View style={loginStyles.countryPicker}>
       <View>
-        <FlagButton
-          withEmoji={true}
-          countryCode={country.cca2}
-          onOpen={() => setVisible(true)}
-        />
+        <Text style={loginStyles.flag}>🇮🇳</Text>
       </View>
       <Text style={loginStyles.callingCode}>
-        {country ? '+' + country.callingCode : '+91'}
+        +{country.callingCode[0]}
       </Text>
-    </TouchableOpacity>
+    </View>
   );
 
-  const renderCountryPicker = () => {
-    return (
-      <CountryPicker
-        {...{
-          countryCode,
-          withFilter: true,
-          withFlag: true,
-          withCountryNameButton: true,
-          withAlphaFilter: true,
-          withCallingCode: true,
-          withEmoji: true,
-          onSelect,
-        }}
-        visible={visible}
-        onClose={() => setVisible(false)}
-        renderFlagButton={renderCustomFlagButton}></CountryPicker>
-    );
-  };
-  const getFcmToken = async () => {
-    try {
-      const fcmToken = await messaging().getToken();
-      return fcmToken;
-    } catch (error) {
-      console.log('Error getting FCM token: ', error);
-    }
-  };
-
   const requestOTP = async () => {
-    if (phoneNumber.length === 0) {
-      setPhoneNumErr('Please Enter Mobile Number');
-    } else if (phoneNumber.length < 10) {
-      setPhoneNumErr('Please Enter Valid Mobile Number');
-    } else {
-      const fcmToken = await getFcmToken();
-      const deviceImei = await DeviceInfo.getUniqueId().catch(error => {
-        console.log('Error getting device IMEI: ', error);
-      });
-      const tokenCred = {
-        token: fcmToken,
-        deviceImei: deviceImei,
-      };
-      
-      const payload = {
-        phone: '+91' + phoneNumber,
-        password: password,
-        fcmToken: tokenCred,
-        
-      };
-      console.log(payload)
-      DataStore.storeData('login_phoneNumber', phoneNumber);
-      testLogins(payload);
-    }
+    const payload = {
+      phone: `+${country.callingCode[0]}${phoneNumber}`,
+    };
+    DataStore.storeData('login_phoneNumber', phoneNumber);
+    requestOTPMutate(payload);
   };
 
   const handleChange = text => {
     const numericValue = text.replace(/[^0-9]/g, '');
     setPhoneNumber(numericValue);
+    
+    // Update error message based on phone number length
+    if (numericValue.length === 0) {
+      setPhoneNumErr('');
+    } else if (numericValue.length < 10) {
+      setPhoneNumErr('Phone number must be 10 digits');
+    } else if (numericValue.length > 10) {
+      setPhoneNumErr('Phone number must be 10 digits');
+    } else {
+      setPhoneNumErr('');
+    }
   };
 
-  const PasswordHandle= text => {
-    setPassword(text)
-  }
 
-  const navigateRegisterPage = () => {
-    navigation.dispatch(
-      CommonActions.navigate({
-        name: 'RegisterationScreen',
-      }),
-    );
-
-  }
 
   return (
     <>
@@ -165,7 +98,7 @@ const LoginScreen = () => {
             Sign In by using Mobile Number
           </Text>
           <View style={loginStyles.inputConatiner}>
-            {renderCountryPicker()}
+            {renderCountryCode()}
             <TextInput
               style={loginStyles.input}
               placeholder="Mobile Number"
@@ -178,33 +111,19 @@ const LoginScreen = () => {
               <Phone />
             </View>
           </View>
-          {/* {(phoneNumber.length === 0 || phoneNumber.length < 10) && (
+          {phoneNumErr !== '' && (
             <Text style={loginStyles.errTxt}>{phoneNumErr}</Text>
-          )} */}
+          )}
         </View>
-        <View style={loginStyles.contectContainer}>
-          <View style={loginStyles.inputConatiner}>
-            <TextInput
-              style={loginStyles.input}
-              placeholder="Password"
-              onChangeText={PasswordHandle}
-              value={password}
-            />
-          </View>
-        </View>
+       
         <TouchableOpacity
-          style={loginStyles.newUserBtn}
-          onPress={() => navigateRegisterPage()}>
-          <Text style={{ flexDirection: "row" }}>
-            <Text>New User? </Text>
-            <Text style={loginStyles.registerPageBtn}>Register</Text>
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={loginStyles.otpBtn}
-          onPress={() => requestOTP()}>
-          <Text style={loginStyles.otptxt}>Login</Text>
+          style={[
+            loginStyles.otpBtn,
+            phoneNumber.length !== 10 && {opacity: 0.5}
+          ]}
+          onPress={() => requestOTP()}
+          disabled={phoneNumber.length !== 10}>
+          <Text style={loginStyles.otptxt}>Request OTP</Text>
         </TouchableOpacity>
       </View>
     </>

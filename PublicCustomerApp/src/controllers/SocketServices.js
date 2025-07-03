@@ -37,7 +37,7 @@ class WSService {
   }
 
   onRideStatus(data){
-    console.log(data)
+    console.log("onRideStatus",JSON.stringify(data))
     if(data?.tripStatus){
       if(data?.tripStatus === 'CANCELLED'){
         try {
@@ -50,9 +50,12 @@ class WSService {
         } catch (error) {
           console.error('Error handling ride cancellation:', error);
         }
-        
+
         
       }
+
+    this.useRideSelectionStore.getState().setRideStatus(data?.tripStatus);
+    this.useRideSelectionStore.getState().updateBookingStatus(data?.tripStatus);
       
     }
     if(data?.fareDetails){

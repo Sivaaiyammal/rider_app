@@ -27,7 +27,7 @@ const SearchLoader = ({ handleSwipeSuccess }) => {
       <Pulse />
       <View style={styles.contentContainer}>
         <VehicleSearch />
-        <Text style={styles.mainText}>Searching for Taxi...</Text>
+        <Text style={styles.mainText}>Searching for Auto...</Text>
         <View style={styles.fareContainer}>{fareText()}</View>
       </View>
       <View style={styles.swipeButtonContainer}>

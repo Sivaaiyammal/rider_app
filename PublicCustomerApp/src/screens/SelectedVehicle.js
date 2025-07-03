@@ -27,7 +27,7 @@ const SelectedVehicle = () => {
   const {selectedVehicle} = useSelectedVehicleStore();
 
   const {directions, setDirections} = useLocationStore();
-  const {setBookingDetails, tripFor, selectedContact, paymentMethod, rideDuration, selectedRide} = useRideSelectionStore();
+  const {setBookingDetails, tripFor, selectedContact, paymentMethod, rideDuration, selectedRide, rideDistance} = useRideSelectionStore();
   const {setMapStyle,resetMapStyle} = useMapStyleStore();
   const {
     setOnSearchResults,
@@ -133,7 +133,7 @@ const SelectedVehicle = () => {
     let maxFare = selectedVehicle.fareMax;
     
    
-    let distance = 3000;
+    let distance = rideDistance * 1000; // Convert to meters
     let estimatedDuration = rideDuration;
     let bookingFor = tripFor == "For Myself" ? "MYSELF" : "OTHERS";
     let bookingForName = selectedContact.name 

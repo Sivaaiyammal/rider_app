@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   mapButtons: {
     position: 'absolute',
     right: 16,
-    top: "20%",
+    top: "12%",
     shadowColor: '#000',
     display: 'flex',
     flexDirection: 'column',

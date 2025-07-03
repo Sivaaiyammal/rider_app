@@ -121,7 +121,7 @@ const DriverArrival = () => {
         if(driverLocation){
           const driverAngles = driverAngle || 0
           const driverMarker = new Marker(
-          'car',
+          'auto',
           vehicleType,
           driverLocation[0],
           driverLocation[1],

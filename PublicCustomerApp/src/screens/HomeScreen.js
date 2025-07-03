@@ -1,51 +1,66 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import MapScreen from './MapScreen';
 import MapContainer from './Map';
-import { checkFineLocationPermissions, RequestFineLocationPermission } from '../controllers/PermissionHandler';
+import { RequestAllPermissions } from '../controllers/PermissionHandler';
 import locationTask from '../controllers/GetCurrentLocation';
 import SearchLocationScreen from './SearchLocation/SearchLocationScreen';
 import VehicleListScreen from './VehicleListScreen';
 import SelectedVehicle from './SelectedVehicle';
-import VehicleSearchLoader from './VehicleSearchLoader';  
 import TripScreenManager from './driverAssigned/TripScreenManager';
 import RideSummary from './RideSummary';
 import SearchScreen from './SearchScreen';
-import NotificationScreen from './NotificationScreen';
-import ContactScreen from './ContactScreen';
 import VehicleSearchScreen from './vehicleSearchScreen';
 import { useQuery } from 'react-query';
 import { checkOnGoingRide } from '../API/EndPoints/EndPoints';
 import useRideSelectionStore from '../store/useRideSelectionStore';
+import useMapStore from '../store/useMapStore';
+
 
 const HomeScreen = () => {
   const { stackScreen, setStackScreen } = useStackScreenStore();
-  const { setBookingDetails, setAssignedDriver ,setRideStatus} = useRideSelectionStore();
+  const { setBookingDetails, setAssignedDriver, setRideStatus } = useRideSelectionStore();
+  const permissionsRequested = useRef(false);
+  const [mapReady, setMapReady] = useState(false);
+  const {setGeometries} = useMapStore();
 
-  const checkLocationPermission = async () => {
-    const locationPermissionCheck = await checkFineLocationPermissions()
-    if (locationPermissionCheck) {
-      await locationTask.getCurrentLocation()
-    } else {
-      await RequestFineLocationPermission()
+
+  useEffect(() => {
+    console.log('mapLocation-->>')
+    setGeometries([]);
+  }, [stackScreen]);
+  
+
+  const checkAllPermissions = async () => {
+    if (permissionsRequested.current) return;
+    
+    permissionsRequested.current = true;
+    const permissions = await RequestAllPermissions();
+    
+    if (permissions.location) {
+      await locationTask.getCurrentLocation();
+      setMapLocation(true);
     }
+    
+    // Log permission status for debugging
+    console.log('Location permission:', permissions.location);
+    console.log('Notification permission:', permissions.notification);
   };
+  
 
-  const { data: onGoingRide } = useQuery('checkOnGoingRide', checkOnGoingRide, {
+
+  useQuery('checkOnGoingRide', checkOnGoingRide, {
     onSuccess: (data) => {
-      console.log("data",data)
+      console.log("dataggg", data);
       if (data) {
         if (data?.trip?.status === 'PENDING') {
           setBookingDetails(data?.trip);
           setStackScreen('VehicleSearchScreen');
         } else if (data?.trip?.status === 'ACCEPTED') {
-          
           setBookingDetails(data?.trip);
           setAssignedDriver(data?.assignDriver);
           setStackScreen('TripScreenManager');
-        }
-        else if (data?.trip?.status === 'PICKEDUP') {
-          
+        } else if (data?.trip?.status === 'PICKEDUP') {
           setBookingDetails(data?.trip);
           setAssignedDriver(data?.assignDriver);
           setRideStatus('STARTED');
@@ -56,8 +71,8 @@ const HomeScreen = () => {
   });
 
   useEffect(() => {
-    checkLocationPermission();
-  }, [])
+    checkAllPermissions();
+  }, []);
 
   const renderContent = () => {
     switch (stackScreen[stackScreen.length - 1]) {
@@ -85,7 +100,10 @@ const HomeScreen = () => {
   return (
     <>
       {renderContent()}
-      <MapContainer />
+      <MapContainer
+        mapReady={mapReady}
+        setMapReady={setMapReady}
+      />
     </>
   );
 };

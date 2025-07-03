@@ -14,17 +14,16 @@ class currentLocation {
     return new Promise((resolve, reject) => {
       Geolocation.getCurrentPosition(
         position => {
-          console.log(
-            'hari-->>community-->>Position-->>',
-            position.coords.longitude,
-          );
+          
           resolve(position);
           setLocation([position.coords.longitude, position.coords.latitude]);
-          setMapLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            zoom: 25,
-          });
+          setTimeout(() => {
+            setMapLocation({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+              zoom: 25,
+            });
+          }, 1000);
         },
         error => {
           reject(error);

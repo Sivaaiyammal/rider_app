@@ -1,5 +1,5 @@
 import { Text, View, Image, TouchableOpacity, StatusBar, Dimensions, Animated, Easing } from 'react-native'; // Import Easing here
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { vehicleList } from '../styles/AddLocationStyles';
 import Duration from '../assets/image/duration.svg';
 import People from '../assets/image/people.svg';
@@ -9,7 +9,6 @@ import { Fonts, colors } from '../constants/constants';
 import useRideSelectionStore from '../store/useRideSelectionStore';
 import NavBar from '../components/NavBar';
 import { useStackScreenStore } from '../store/useStackScreenStore';
-import { shallow } from 'zustand/shallow';
 import useMapStyleStore from '../store/useMapStyleStore';
 import useVehicleLocationStore from '../store/useVehicleLoactionStore';
 import SelectedVehicle from './SelectedVehicle';
@@ -23,11 +22,26 @@ const VehicleListScreen = () => {
   const { vehicleList: vehicles } = useRideSelectionStore();
   const { setMapStyle, resetMapStyle } = useMapStyleStore();
   const { location } = useLocationStore();
-  const { vehicleLocations,currentVehicleType,setCurrentVehicleType,clearVehicleLocations } = useVehicleLocationStore();
+  const { setCurrentVehicleType } = useVehicleLocationStore();
   const { setMapMarkers, mapMarkers } = useMapStore();
   
   const screenHeight = Dimensions.get('window').height;
   const slideAnim = useRef(new Animated.Value(0)).current;
+
+  // Function to calculate map height based on vehicle count
+  const calculateMapHeight = (vehicleCount) => {
+    if (vehicleCount === 0) {
+      return "90%"; // Full height when no vehicles
+    } else if (vehicleCount === 1) {
+      return "85%"; // Slightly less for single vehicle
+    } else if (vehicleCount === 2) {
+      return "80%"; // Medium height for 2 vehicles
+    } else if (vehicleCount <= 4) {
+      return "75%"; // Standard height for 3-4 vehicles
+    } else {
+      return "70%"; // Reduced height for 5+ vehicles
+    }
+  };
 
   const handleVehicleSelect = (vehicle) => {
     setSelectedVehicle(vehicle);
@@ -106,7 +120,7 @@ const VehicleListScreen = () => {
     setTimeout(() => {
       setMapStyle({
         width: "100%",
-        height: "70%",
+        height: calculateMapHeight(vehicles.length),
         transition: 'all 5s ease-in-out',
       });
     }, 50);
@@ -116,7 +130,7 @@ const VehicleListScreen = () => {
     if (vehicles.length > 0) {
       handleVehicleSelect(vehicles[0]);
     }
-  }, []);
+  }, [vehicles.length]);
 
   const onBackPress = () => {
     setSelectedVehicle(null)

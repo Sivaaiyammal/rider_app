@@ -1,5 +1,5 @@
 import {Text, TextInput, TouchableOpacity, View} from 'react-native';
-import React, {useRef, useState, useCallback} from 'react';
+import React, {useState, useContext} from 'react';
 
 import CountryPicker, {FlagButton} from 'react-native-country-picker-modal';
 import {loginStyles} from '../../styles/UserStyles';
@@ -9,11 +9,15 @@ import {CommonActions, useNavigation} from '@react-navigation/native';
 import {showNotification} from '../../components/NotificationManger';
 import {DataStore} from '../../controllers/DataStore';
 
-import {requestOTPMutation} from '../../API/APICalls/UserAPICalls';
+import {testLogin} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
-
+import useUserInfoStore from '../../store/useUserInfoStore';
+import { GlobalContext } from '../../context/GlobalContext';
+import messaging from '@react-native-firebase/messaging';
+import DeviceInfo from 'react-native-device-info';  
 const LoginScreen = () => {
   const navigation = useNavigation();
+  const {addListener} = useContext(GlobalContext);
   const [countryCode, setCountryCode] = useState('IN');
   const [country, setCountry] = useState({
     callingCode: ['91'],
@@ -26,23 +30,29 @@ const LoginScreen = () => {
   });
   const [visible, setVisible] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
   const [phoneNumErr, setPhoneNumErr] = useState(null);
-
+  const {setUserdetails} = useUserInfoStore();
   const handleLoginSuccess = (data) => {
     if (data) {
-      showNotification('OTP Sent', 'OTP Sent to your mobile number', 'success');
+      showNotification('Logged In', 'Logged in Successfully', 'success');
+      console.log(data, 'data');
+      let {token} = data.user || {};
+      console.log("token", token)
+      DataStore.storeData('access_token', token);
+      DataStore.storeData('userdetails', data?.user);
+      setUserdetails(data?.user);
+      addListener(token);
+     
       navigation.dispatch(
         CommonActions.navigate({
-          name: 'OTPScreen',
-          params: {
-            phoneNumber: phoneNumber,
-          },
+          name: 'HomeScreen',
         }),
       );
     }
   };
 
-  const {mutate: requestOTPMutate, isLoading: isLoading} = requestOTPMutation(
+  const {mutate: testLogins, isLoading: isLoading} = testLogin(
     handleLoginSuccess,
   );
 
@@ -86,6 +96,14 @@ const LoginScreen = () => {
         renderFlagButton={renderCustomFlagButton}></CountryPicker>
     );
   };
+  const getFcmToken = async () => {
+    try {
+      const fcmToken = await messaging().getToken();
+      return fcmToken;
+    } catch (error) {
+      console.log('Error getting FCM token: ', error);
+    }
+  };
 
   const requestOTP = async () => {
     if (phoneNumber.length === 0) {
@@ -93,11 +111,25 @@ const LoginScreen = () => {
     } else if (phoneNumber.length < 10) {
       setPhoneNumErr('Please Enter Valid Mobile Number');
     } else {
-      const payload = {
-        phoneNumber: phoneNumber,
+      setPhoneNumErr(null);
+      const fcmToken = await getFcmToken();
+      const deviceImei = await DeviceInfo.getUniqueId().catch(error => {
+        console.log('Error getting device IMEI: ', error);
+      });
+      const tokenCred = {
+        token: fcmToken,
+        deviceImei: deviceImei,
       };
+      
+      const payload = {
+        phone: '+' + country.callingCode[0] + phoneNumber,
+        password: password,
+        fcmToken: tokenCred,
+        
+      };
+      console.log("Login payload", payload)
       DataStore.storeData('login_phoneNumber', phoneNumber);
-      requestOTPMutate(payload);
+      testLogins(payload);
     }
   };
 
@@ -105,6 +137,10 @@ const LoginScreen = () => {
     const numericValue = text.replace(/[^0-9]/g, '');
     setPhoneNumber(numericValue);
   };
+
+  const PasswordHandle= text => {
+    setPassword(text)
+  }
 
   const navigateRegisterPage = () => {
     navigation.dispatch(
@@ -143,19 +179,33 @@ const LoginScreen = () => {
               <Phone />
             </View>
           </View>
-          {(phoneNumber.length === 0 || phoneNumber.length < 10) && (
+          {phoneNumErr && (
             <Text style={loginStyles.errTxt}>{phoneNumErr}</Text>
           )}
         </View>
+        <View style={loginStyles.contectContainer}>
+          <View style={loginStyles.inputConatiner}>
+            <TextInput
+              style={loginStyles.input}
+              placeholder="Password"
+              onChangeText={PasswordHandle}
+              value={password}
+            />
+          </View>
+        </View>
         <TouchableOpacity
-       
+          style={loginStyles.newUserBtn}
           onPress={() => navigateRegisterPage()}>
-          <Text>New User</Text>
+          <Text style={{ flexDirection: "row" }}>
+            <Text>New User? </Text>
+            <Text style={loginStyles.registerPageBtn}>Register</Text>
+          </Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={loginStyles.otpBtn}
           onPress={() => requestOTP()}>
-          <Text style={loginStyles.otptxt}>Request OTP</Text>
+          <Text style={loginStyles.otptxt}>Login</Text>
         </TouchableOpacity>
       </View>
     </>

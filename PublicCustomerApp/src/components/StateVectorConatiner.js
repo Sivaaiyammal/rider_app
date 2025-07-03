@@ -13,7 +13,11 @@ const StateVectorConatiner = (props) => {
     removeStateVecotr(item);
   };
 
-  const stateVectorArray = stateVectorArr?.searchData?.matchedStrings.filter((item) => item.key !== "");
+  console.log("stateVectorArr",stateVectorArr)
+
+  const stateVectorArray = stateVectorArr?.searchData?.matchedStrings 
+    ? stateVectorArr.searchData.matchedStrings.filter((item) => item?.key !== "")
+    : [];
 
   return stateVectorArray ? (
     <View style={styles.vectorContainer}>

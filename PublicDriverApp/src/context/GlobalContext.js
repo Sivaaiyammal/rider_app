@@ -10,7 +10,7 @@ export const ContextProvider = ({children}) => {
   const [themeValue, setThemeValue] = useState('');
   const themes = useColorScheme();
 
-  const themeOperations = theme => {
+  const themeOperations = useCallback(theme => {
     switch (theme) {
       case 'dark':
         setTheme(theme, false);
@@ -22,14 +22,14 @@ export const ContextProvider = ({children}) => {
         setTheme(themes, true);
         return;
     }
-  };
+  }, [themes]);
 
   const getAppTheme = useCallback(async () => {
     const theme = await DataStore.loadData('Theme');
     const isDefault = await DataStore.loadData('IsDefault');
     isDefault.data ? themeOperations('default') : themeOperations(theme.data);
     setThemeValue(theme.data);
-  }, []);
+  }, [themeOperations]);
 
   const setTheme = useCallback(async (theme, isDefault) => {
     DataStore.storeData('Theme', theme);
@@ -38,12 +38,8 @@ export const ContextProvider = ({children}) => {
   }, []);
 
   useEffect(() => {
-    const initialize = async () => {
-      await getAppTheme();
-    };
-
-    initialize();
-  }, []);
+    getAppTheme();
+  }, [getAppTheme]);
 
   return (
     <GlobalContext.Provider

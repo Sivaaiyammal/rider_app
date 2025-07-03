@@ -28,7 +28,7 @@ const FloatingButton = () => {
   const [onOfflineModal, setOfflineModal] = useState(false);
   const [breakModal, setBreakModal] = useState(false);
 
-  const [selectedBreak, setSelectedBreak] = useState(breakData[0])
+  const [selectedBreak, setSelectedBreak] = useState(breakData[0]);
   const [remainingTime, setRemainingTime] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
 
