@@ -8,6 +8,18 @@ const useUserInfoStore = create(set => ({
   userdetails: null,
   setUserdetails: userdetails => set({ userdetails }),
 
+  homelocation:null,
+  setHomelocation: homelocation => set({ homelocation }),
+
+  worklocation:null,
+  setWorklocation: worklocation => set({ worklocation }), 
+
+  isFavouriteLocationSearchEnabled:false,
+  setIsFavouriteLocationSearchEnabled: isFavouriteLocationSearchEnabled => set({ isFavouriteLocationSearchEnabled }),
+
+  CurrentSearchFavouriteLocation:null,
+  setCurrentSearchFavouriteLocation: CurrentSearchFavouriteLocation => set({ CurrentSearchFavouriteLocation }),
+
 
 }));
 

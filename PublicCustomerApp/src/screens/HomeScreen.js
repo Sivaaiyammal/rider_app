@@ -11,27 +11,20 @@ import TripScreenManager from './driverAssigned/TripScreenManager';
 import RideSummary from './RideSummary';
 import SearchScreen from './SearchScreen';
 import VehicleSearchScreen from './vehicleSearchScreen';
-import { useQuery } from 'react-query';
-import { checkOnGoingRide } from '../API/EndPoints/EndPoints';
 import useRideSelectionStore from '../store/useRideSelectionStore';
-import useMapStore from '../store/useMapStore';
 import WaypointScreen from './WaypointScreen';
 import { StatusBar } from 'react-native';
+import useUserInfoStore from '../store/useUserInfoStore';
+import { getLocation} from '../storage/userLocalStorage';
+import PickLocationScreen from './PickLocationScreen';
+import { useCustomBackHandler } from '../hooks/useCustomBackHandler';
 
 
 const HomeScreen = () => {
-  const { stackScreen, setStackScreen } = useStackScreenStore();
-  const { setBookingDetails, setAssignedDriver, setRideStatus } = useRideSelectionStore();
+  const { stackScreen } = useStackScreenStore();
   const permissionsRequested = useRef(false);
   const [mapReady, setMapReady] = useState(false);
-  const {setGeometries} = useMapStore();
-
-
-  useEffect(() => {
-    console.log('mapLocation-->>')
-    setGeometries([]);
-  }, [stackScreen]);
-  
+  const { setHomelocation, setWorklocation} = useUserInfoStore();
 
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
@@ -41,61 +34,54 @@ const HomeScreen = () => {
     
     if (permissions.location) {
       await locationTask.getCurrentLocation();
-      setMapLocation(true);
     }
-    
-    // Log permission status for debugging
-    console.log('Location permission:', permissions.location);
-    console.log('Notification permission:', permissions.notification);
+   
   };
-  
+
+  const checkFavouriteLocation = async () => {
+    const homeLocation = await getLocation('Home');
+    const workLocation = await getLocation('Work');
+ 
+    setHomelocation(homeLocation);
+    setWorklocation(workLocation);
+  };
 
 
-  useQuery('checkOnGoingRide', checkOnGoingRide, {
-    onSuccess: (data) => {
-      console.log("dataggg", data);
-      if (data) {
-        if (data?.trip?.status === 'PENDING') {
-          setBookingDetails(data?.trip);
-          setStackScreen('VehicleSearchScreen');
-        } else if (data?.trip?.status === 'ACCEPTED') {
-          setBookingDetails(data?.trip);
-          setAssignedDriver(data?.assignDriver);
-          setStackScreen('TripScreenManager');
-        } else if (data?.trip?.status === 'PICKEDUP') {
-          setBookingDetails(data?.trip);
-          setAssignedDriver(data?.assignDriver);
-          setRideStatus('STARTED');
-          setStackScreen('TripScreenManager');
-        }
-      }
-    }
-  });
+ 
 
   useEffect(() => {
     checkAllPermissions();
+    checkFavouriteLocation();
   }, []);
 
+  
+  useCustomBackHandler();
+
   const renderContent = () => {
-    switch (stackScreen[stackScreen.length - 1]) {
+    const current = stackScreen[stackScreen.length - 1];
+    const { name, params } = current;
+
+    switch (name) {
       case 'Home':
-        return <MapScreen />;
+        return <MapScreen {...params} />;
       case 'SearchLocationScreen':
-        return <SearchLocationScreen />;
+        return <SearchLocationScreen {...params} />;
       case 'SearchScreen':
-        return <SearchScreen />;
+        return <SearchScreen {...params} />;
       case 'VehicleList':
-        return <VehicleListScreen />;
+        return <VehicleListScreen {...params} />;
       case 'SelectedVehicle':
-        return <SelectedVehicle />;
+        return <SelectedVehicle {...params} />;
       case 'TripScreenManager':
-        return <TripScreenManager />;
+        return <TripScreenManager {...params} />;
       case 'RideSummary':
-        return <RideSummary />;
+        return <RideSummary {...params} />;
       case 'VehicleSearchScreen':
-        return <VehicleSearchScreen />;
+        return <VehicleSearchScreen {...params} />;
       case 'WaypointScreen':
-        return <WaypointScreen />;
+        return <WaypointScreen {...params} />;
+      case 'PickLocationScreen':
+        return <PickLocationScreen {...params} />;
       default:
         return null;
     }

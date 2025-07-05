@@ -1,9 +1,10 @@
 /* eslint-disable react/display-name */
 import React, { useRef } from 'react';
-import { View, KeyboardAvoidingView, Dimensions, StyleSheet } from 'react-native';
+import { View, KeyboardAvoidingView, Dimensions, StyleSheet, Text } from 'react-native';
 import { Modalize } from 'react-native-modalize';
+import { height } from '../utils/Utils';
 
-const BottomSheet = React.memo(({ children, minHeight, maxHeight, panGestureEnabled = true, reference = null }) => {
+const BottomSheet = React.memo(({ children, minHeight, maxHeight, panGestureEnabled = true, reference = null, HeaderComponent = null }) => {
   const modalizeRef = reference || useRef(null);
   const screenHeight = Dimensions.get('window').height;
 
@@ -21,6 +22,7 @@ const BottomSheet = React.memo(({ children, minHeight, maxHeight, panGestureEnab
         panGestureEnabled={panGestureEnabled}
         withHandle={panGestureEnabled}
         disableScrollIfPossible={false}
+        HeaderComponent={<View style={styles.headerContainer}>{HeaderComponent}</View>}
       >
         <KeyboardAvoidingView behavior={null}>
           <View style={{ paddingTop: 20 }}>{children}</View>
@@ -40,5 +42,15 @@ const styles = StyleSheet.create({
     
     backgroundColor: '#fff',
   },
+  
+    headerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      position: 'absolute',
+      top: -height * 0.04,
+      zIndex: 9,
+      left:10
+    },
+  
 });
 export default BottomSheet;

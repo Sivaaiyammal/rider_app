@@ -29,6 +29,7 @@ class currentLocation {
           setLoading(false); // Set loading to false after successfully getting the position
         },
         error => {
+          console.log('hari-->>community-->>Error-->>',error);
           reject(error);
           setLocation(null);
           setLoading(false); // Set loading to false if there is an error

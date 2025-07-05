@@ -24,9 +24,11 @@ import { clearSingleStateVector } from "../components/Native/NESearch";
 import FullScreenLoader from '../components/Loaders/FullScreenLoader';
 import HistoryCard from '../components/historyCard';
 import { DataStore } from '../controllers/DataStore';
-const SearchScreen = () => {
+import useUserInfoStore from '../store/useUserInfoStore';
+import {setLocation} from '../storage/userLocalStorage';
+const SearchScreen = ({onPlaceSave=null}) => {
   const [searchTxt,setSearchTxt] = useState("");
-  const {goBack} = useStackScreenStore();
+  const {goBack,setStackScreen} = useStackScreenStore();
   const [isLoading,setIsLoading] = useState(false);
   const {
     setSearchUnit,
@@ -39,6 +41,7 @@ const SearchScreen = () => {
     directionPoints,
   } = useMapStore();
   const {location, selectedInput, setSelectedInput,setDirections, directions} = useLocationStore();
+  const {isFavouriteLocationSearchEnabled,setIsFavouriteLocationSearchEnabled,setCurrentSearchFavouriteLocation,CurrentSearchFavouriteLocation,setHomelocation,setWorklocation} = useUserInfoStore();
   const storeRecentSearch = async (item) => {
     try {
       const recentSearches = await DataStore.loadData('recentSearches');
@@ -218,7 +221,28 @@ const SearchScreen = () => {
 
   // onpress on search results
   const onLocationNamePress = useCallback(
-    item => {
+    async (item) => {
+
+      onPlaceSave(item);
+    
+
+      if(isFavouriteLocationSearchEnabled){
+       
+        if(CurrentSearchFavouriteLocation === 'Home'){
+          item.label = CurrentSearchFavouriteLocation;
+          await setLocation(CurrentSearchFavouriteLocation,item);
+          setHomelocation(item);
+        }else if(CurrentSearchFavouriteLocation === 'Work'){
+          item.label = CurrentSearchFavouriteLocation;
+          await setLocation(CurrentSearchFavouriteLocation,item);
+          setWorklocation(item);
+        }
+        setIsFavouriteLocationSearchEnabled(false);
+        setOnSearchResults(null);
+        setSearchUnit('');
+        goBack();
+        return;
+      }
       storeRecentSearch(item);
       const input = selectedInput?.id - 1;
       const newDirections = directions.map((dir, index) =>
@@ -257,6 +281,10 @@ const SearchScreen = () => {
   const onGoBack = () =>{
     goBack(),
     setSelectedInput(null) // to disable locate on map when goBack
+  }
+
+  const handleLocateOnMap = () =>{
+    setStackScreen('PickLocationScreen');
   }
 
   return (
@@ -300,7 +328,7 @@ const SearchScreen = () => {
       )} */}
       {onSearchResults? <SearchResultV2 searchTxt={searchTxt} search_data={onSearchResults} selectedCallBack={selectedCallBack}/>:<HistoryCard selectCallback={onLocationNamePress}/>}
       
-      <TouchableOpacity style={styles.bottomBtn} onPress={()=>goBack()}>
+      <TouchableOpacity style={styles.bottomBtn} onPress={()=>handleLocateOnMap()}>
         <Entypo name="location" size={18} color={colors.black} />
         <Text style={styles.bottomBtnTxt}>Locate on Map</Text>
       </TouchableOpacity>

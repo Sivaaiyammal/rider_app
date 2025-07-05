@@ -12,12 +12,15 @@ import firebaseConfig from '../firebaseConfig';
 import messaging from '@react-native-firebase/messaging';
 import PushNotifications from './controllers/PushNotification';
 
+
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
 const MainApp = () => {
   const appearance = useColorScheme();
+
+  
   
   const setAppTheme = useCallback(async () => {
     const IS_FIRST = await DataStore.loadData('IS_FIRST');
@@ -57,6 +60,8 @@ const MainApp = () => {
       });
 
     return unsubscribe;
+
+
   }, []);
 
   return (

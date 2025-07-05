@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="43" viewBox="0 0 60 43">
+    <defs>
+        <filter id="1d6gmfyyza">
+            <feOffset dy="-1"/>
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feFlood flood-opacity=".161" result="color"/>
+            <feComposite operator="out" in="SourceGraphic" in2="blur"/>
+            <feComposite operator="in" in="color"/>
+            <feComposite operator="in" in2="SourceGraphic"/>
+        </filter>
+        <filter id="oajg5r5cgb" x="23" y="7" width="14" height="14" filterUnits="userSpaceOnUse">
+            <feOffset dy="2"/>
+            <feGaussianBlur stdDeviation="1" result="blur-2"/>
+            <feFlood flood-opacity=".239"/>
+            <feComposite operator="in" in2="blur-2"/>
+            <feComposite in="SourceGraphic"/>
+        </filter>
+    </defs>
+    <g data-name="Group 43898" transform="translate(-70 -320)">
+        <ellipse data-name="Ellipse 3376" cx="30" cy="12" rx="30" ry="12" transform="translate(70 339)" style="fill:rgba(246,63,63,.16)"/>
+        <ellipse data-name="Ellipse 3375" cx="17" cy="7" rx="17" ry="7" transform="translate(83 344)" style="fill:rgba(246,63,63,.16)"/>
+        <ellipse data-name="Ellipse 3374" cx="5" cy="2" rx="5" ry="2" transform="translate(95 349)" style="fill:rgba(246,63,63,.16)"/>
+        <circle data-name="Ellipse 3373" cx="12" cy="12" r="12" transform="translate(88 320)" style="fill:#fff"/>
+        <g data-type="innerShadowGroup">
+            <circle data-name="Ellipse 3371" cx="11" cy="11" r="11" transform="translate(89 321)" style="fill:#f63f3f"/>
+            <g style="filter:url(#1d6gmfyyza)">
+                <circle data-name="Ellipse 3371" cx="11" cy="11" r="11" transform="translate(89 321)" style="fill:#fff"/>
+            </g>
+            <g data-name="Ellipse 3371" transform="translate(89 321)" style="stroke:#d80000;fill:none">
+                <circle cx="11" cy="11" r="11" style="stroke:none"/>
+                <circle cx="11" cy="11" r="10.5" style="fill:none"/>
+            </g>
+        </g>
+        <g style="filter:url(#oajg5r5cgb)">
+            <g data-name="Ellipse 3372" transform="translate(96 328)" style="stroke:#fff;fill:#fff">
+                <circle cx="4" cy="4" r="4" style="stroke:none"/>
+                <circle cx="4" cy="4" r="3.5" style="fill:none"/>
+            </g>
+        </g>
+        <rect data-name="Rectangle 10939" width="2" height="8" rx="1" transform="translate(99 343)" style="fill:#fff"/>
+    </g>
+</svg>

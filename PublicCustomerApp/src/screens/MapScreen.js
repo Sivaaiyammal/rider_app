@@ -11,7 +11,6 @@ import {
 import React, {useEffect, useRef, useState, useCallback} from 'react';
 import SideDrawer from '../components/Drawer/SideDrawer';
 import {colors, Fonts} from '../constants/constants';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import BottomSheet from '../components/BottomSheet';
 import {useStackScreenStore} from '../store/useStackScreenStore';
 import MapScreenHeader from '../components/MapScreenHeader';
@@ -21,16 +20,15 @@ import Marker from '../controllers/NEMap/Marker';
 import useMapStore from '../store/useMapStore';
 import LinearGradient from 'react-native-linear-gradient';
 import SearchIcon from '../assets/icons/SearchIcon.svg';
-import HomeIcon from '../assets/icons/HomeIcon.svg';
-import { width } from '../utils/Utils';
-import WorkIcon from '../assets/icons/WorkIcon.svg';
+import FavouriteAddressCard from '../components/FavouriteAddressCard';
+import useUserInfoStore from '../store/useUserInfoStore';
+import MapIcon from '../components/Map/MapIcon';
 
 const MapScreen = () => {
   // State management
   const [showMenu, setShowMenu] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const responsiveMaxWidth = width * 0.8;
   // Store hooks
   const {setStackScreen} = useStackScreenStore();
   const {
@@ -41,7 +39,7 @@ const MapScreen = () => {
     setSelectedInput
   } = useLocationStore(); 
   const {setMapMarkers, setDirectionPoints} = useMapStore();
-
+  const {homelocation, worklocation,setIsFavouriteLocationSearchEnabled,setCurrentSearchFavouriteLocation} = useUserInfoStore();
   // Animation refs
   const scaleValue = useRef(new Animated.Value(1)).current;
   const offsetValue = useRef(new Animated.Value(0)).current;
@@ -280,6 +278,7 @@ const MapScreen = () => {
       if (!item) {
         throw new Error('Invalid history item');
       }
+      console.log('History item:', item);
       onSearchPress('rideNow', item);
     } catch (error) {
       handleError(error, 'onHistoryPress');
@@ -309,20 +308,38 @@ const MapScreen = () => {
     )
   );
 
+  const handlePlaceSave = useCallback((location) => {
+    console.log('Place save:', location);
+  }, []);
+
+  const handleFavouriteLocationPress = useCallback((locationType,location) => {
+    console.log('Favourite location press:', locationType,location);
+    if(location){
+      onSearchPress('rideNow', location);
+      return;
+    }
+    setIsFavouriteLocationSearchEnabled(true);
+    setCurrentSearchFavouriteLocation(locationType);
+    setStackScreen('SearchScreen',{
+      onPlaceSave: handlePlaceSave
+    });
+    
+  }, []);
+
   return (
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      
-      <LinearGradient 
-        colors={['#FFFFFF', '#FFFFFF', 'rgba(255,255,255,0)']} 
-        style={styles.gradientOverlay} 
+
+      <LinearGradient
+        colors={['#FFFFFF', '#FFFFFF', 'rgba(255,255,255,0)']}
+        style={styles.gradientOverlay}
       />
-     
+
       <Animated.View style={styles.headerContainer}>
         <MapScreenHeader toggleMenu={toggleMenu} showMenu={showMenu} />
       </Animated.View>
-      
-      <BottomSheet minHeight={300}>
+
+      <BottomSheet minHeight={300}  HeaderComponent={<MapIcon />}>
         <TouchableOpacity
           style={styles.searchContainer}
           onPress={() => onSearchPress('searchBox')}
@@ -334,34 +351,17 @@ const MapScreen = () => {
           </Text>
         </TouchableOpacity>
 
-        <View style={styles.FavouriteAddressContainer}>
-            <View style={styles.FavouriteAddressItem}>
-              <View style={styles.FavouriteAddressItemIcon}>
-                <HomeIcon width={50} height={50} />
-              </View>
-              <View style={styles.FavouriteAddressItemTextContainer}>
-                <Text style={styles.FavouriteAddressItemText}>Home</Text>
-                <Text numberOfLines={1} ellipsizeMode="tail"  style={[styles.FavouriteAddressItemSubText, {maxWidth: responsiveMaxWidth}]}>123uuuuuuuuuuuuyyyyyyyyyy Main St, Anytown, USA</Text>
-              </View>
-            </View>
-            <View style={styles.FavouriteAddressItem}>
-              <View style={styles.FavouriteAddressItemIcon}>
-                <WorkIcon width={50} height={50} />
-              </View>
-              <View style={styles.FavouriteAddressItemTextContainer}>
-                <Text style={styles.FavouriteAddressItemText}>Work</Text>
-                <Text numberOfLines={1} ellipsizeMode="tail"  style={[styles.FavouriteAddressItemSubText, {maxWidth: responsiveMaxWidth}]}>123uuuuuuuuuuuuyyyyyyyyyy Main St, Anytown, USA</Text>
-              </View>
-            </View>
-        </View>
-         
-       
-        
-        <HistoryCard selectCallback={onHistoryPress} header={false} bottomborder={false}/>
+        <FavouriteAddressCard
+          homeLocation={homelocation}
+          workLocation={worklocation}
+          LocationPress={handleFavouriteLocationPress}
+        />
+
+        <HistoryCard selectCallback={onHistoryPress} header={false} bottomborder={false} />
       </BottomSheet>
-       
+
       {showMenu && <SideDrawer handleMenu={handleMenu} />}
-      
+
       {isLoading && <LoadingOverlay />}
       <ErrorMessage />
     </>
@@ -469,41 +469,4 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 12,
   },
- 
-  FavouriteAddressItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 0,
-    borderRadius: 16,
-   
-  },
-  FavouriteAddressContainer:{
-    gap: 20,
-    marginTop: 20,
-  },
-  FavouriteAddressItemIcon: {
-  
- 
-  
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  FavouriteAddressItemTextContainer: {
-    gap: 5,
-  },
-  FavouriteAddressItemText: {
-    fontFamily: Fonts.regular,
-    fontSize: 16,
-    textAlign: 'left',
-    color: '#212121',
-  },
-  FavouriteAddressItemSubText: {
-    fontFamily: Fonts.regular,
-    fontSize: 14,
-    color: '#757575',
-    textAlign: 'left',
-  },
-  
 });

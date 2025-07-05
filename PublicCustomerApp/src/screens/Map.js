@@ -39,10 +39,11 @@ const MapContainer = ({ mapStyle }) => {
     setDisduration,
     setSearchPOIError,
     loading,
+  
    
   } = useMapStore();
  
-  const { defaultStyle,mapbuttonStyle } = useMapStyleStore();
+  const { defaultStyle,mapbuttonStyle,isMapButtonVisible } = useMapStyleStore();
 
   const { location } = useLocationStore();
 
@@ -103,21 +104,15 @@ const MapContainer = ({ mapStyle }) => {
         onSearchPOIError={setSearchPOIError}
         onNavigationEnd={(e) => console.log('hari--->>navigationEnd-->>', e)}
       />
-       <View style={[styles.mapButtons,mapbuttonStyle]}>
-      {/* <View style={styles.zoomButtons}>
-        <TouchableOpacity style={styles.zoomButton} >
-          <Ionicons name="add-outline" size={20} color="black" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.zoomButton}>
-          <Ionicons name="remove-outline" size={20} color="black" />
-        </TouchableOpacity>
-      </View> */}
+       {isMapButtonVisible   && <View style={[styles.mapButtons,mapbuttonStyle]}>
+     
         <TouchableOpacity style={styles.currentLocationButton} onPress={onPressCurrentLocation}>
           <CurrentLocationIcon width={22} height={22} />
           {/* <ion-icon name="locate-outline"></ion-icon> */}
         </TouchableOpacity>
 
       </View>
+} 
 
     </Animated.View>
     

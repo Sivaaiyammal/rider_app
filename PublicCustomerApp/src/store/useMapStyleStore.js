@@ -15,7 +15,7 @@ const defaultMapButtonStyle = {
 const useMapStyleStore = create((set) => ({
   defaultStyle: defaultStyles,
   mapbuttonStyle: defaultMapButtonStyle,
-
+  isMapButtonVisible: true,
   // Method to update the map style
   setMapStyle: (newStyle) => set({ defaultStyle: {...newStyle } }),
 
@@ -24,6 +24,9 @@ const useMapStyleStore = create((set) => ({
  
 
   setMapButtonStyle: (newStyle) => set({ mapbuttonStyle: {...newStyle } }),
+
+  setIsMapButtonVisible: (value) => set({ isMapButtonVisible: value }),
+  
 }));
 
 export default useMapStyleStore;

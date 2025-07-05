@@ -1,23 +1,30 @@
 import {create} from 'zustand';
 
 export const useStackScreenStore = create((set, get) => ({
-  stackScreen: ['Home'],
+  stackScreen: [{ name: 'Home', params: null }],
   
-  setStackScreen: stackScreen => {
-    const arr = [];
-    arr.push(...get().stackScreen, stackScreen);
-    set({stackScreen: arr});
+  setStackScreen: (screenName, params = null) => {
+    const newStack = [...get().stackScreen, { name: screenName, params }];
+    set({stackScreen: newStack});
   },
+  
   goBack: () => {
-    if(get().stackScreen.length > 1){
-      const arr = get().stackScreen.slice(0, -1);
+    const stack = get().stackScreen;
+    if(stack.length > 1){
+      const arr = stack.slice(0, -1);
       set({stackScreen: arr});
     }
     else{
-      set({stackScreen: ['Home']});
+      set({stackScreen: [{ name: 'Home', params: null }]});
     }
   },
+  
   reset: () => {
-    set({stackScreen: ['Home']});
+    set({stackScreen: [{ name: 'Home', params: null }]});
+  },
+
+  getCurrentScreen: () => {
+    const stack = get().stackScreen;
+    return stack[stack.length - 1];
   }
 }));

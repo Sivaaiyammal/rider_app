@@ -52,3 +52,6 @@ export const colors = {
   commonWhite:"#FFFFFF",
   danger:'red'
 };
+
+export const webPortalURL = 'https://tracker.vmmaps.com';
+export const mapcopyrightURL = 'https://www.openstreetmap.org/copyright';

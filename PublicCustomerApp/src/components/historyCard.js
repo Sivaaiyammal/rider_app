@@ -24,7 +24,7 @@ const HistoryCard = ({ selectCallback, header = true, bottomborder = true }) => 
       {historyItems?.length > 0 ? (
         historyItems.map((item, index) => (
           <TouchableOpacity key={index} onPress={() => selectCallback(item)}>
-            <View style={[styles.historyItem, {borderBottomWidth: index === historyItems.length - 1 ? 0 : 0.5}]}>
+            <View style={[styles.historyItem, bottomborder && {borderBottomWidth: index === historyItems.length - 1 ? 0 : 0.5} ]}>
               <View style={styles.iconContainer}>
                 <HistoryIcon width={50} height={50} />
               </View>
@@ -37,11 +37,12 @@ const HistoryCard = ({ selectCallback, header = true, bottomborder = true }) => 
         ))
       ) : (
         <View style={styles.noHistoryContainer}>
+        
+          <Text style={styles.noHistoryText}>No recent searches</Text>
+          <Text style={styles.noHistorySubtext}>Your recent searches will appear here</Text>
           <View style={styles.noHistoryIconContainer}>
             <Ionicons name="search-outline" size={40} color={colors.grey} />
           </View>
-          <Text style={styles.noHistoryText}>No recent searches</Text>
-          <Text style={styles.noHistorySubtext}>Your recent searches will appear here</Text>
         </View>
       )}
     </View>
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center', 
     paddingVertical: 10,
-    borderBottomWidth: 0.5,
+
     borderBottomColor: colors.grey,
     gap: 20,
   },
@@ -108,6 +109,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
+    marginTop: 15,
   },
   noHistoryText: {
     fontSize: 16,
