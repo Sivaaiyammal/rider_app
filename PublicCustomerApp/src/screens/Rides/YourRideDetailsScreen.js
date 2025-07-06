@@ -22,7 +22,7 @@ import PaymentMode from '../../assets/image/Trips/Summary/PaymentMode.svg';
 
 import NavBar from '../../components/NavBar';
 import TripSummaryWaypoints from '../../components/Trips/TripSummaryWaypoints';
-import MapContainer from '../Map';
+import MapContainer from '../../features/map/components/MapContainer';
 
 const YourRideDetailsScreen = ({ route }) => {
 

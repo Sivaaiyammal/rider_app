@@ -14,7 +14,7 @@ import useVehicleLocationStore from '../store/useVehicleLoactionStore';
 import SelectedVehicle from './SelectedVehicle';
 import { Directions } from 'react-native-gesture-handler';
 import Marker from "../controllers/NEMap/Marker";
-import useMapStore from '../store/useMapStore';
+import useMapStore from '../features/map/store/useMapStore';
 import useLocationStore from '../store/useLocationStore';
 const VehicleListScreen = () => {
   const { goBack, setStackScreen } = useStackScreenStore();

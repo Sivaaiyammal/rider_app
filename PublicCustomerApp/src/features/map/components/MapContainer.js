@@ -1,18 +1,19 @@
 import React, { useEffect } from "react";
 import { View, StyleSheet, TouchableOpacity, Animated } from "react-native";
 import PropTypes from 'prop-types';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import useMapStore from "../store/useMapStore";
-import NEMap from "../components/Native/NEMap";
-import Loaders from "../components/Loaders/FullScreenLoader";
-import useLocationStore from "../store/useLocationStore";
-import useMapStyleStore from "../store/useMapStyleStore";
-import useVehicleLocationStore from "../store/useVehicleLoactionStore";
 
-import locationTask from "../controllers/GetCurrentLocation";
-import FullScreenLoader from "../components/Loaders/FullScreenLoader";
-import CurrentLocationIcon from '../assets/icons/CurrentLocationIcon.svg';
+import useMapStore  from "../store/useMapStore";
+import NEMap from "../../../components/Native/NEMap";
+import Loaders from "../../../components/Loaders/FullScreenLoader";
+import useLocationStore from "../../../store/useLocationStore";
+import useMapStyleStore from "../../../store/useMapStyleStore";
+
+
+import locationTask from "../../../controllers/GetCurrentLocation";
+import FullScreenLoader from "../../../components/Loaders/FullScreenLoader";
+import CurrentLocationIcon from '../../../assets/icons/CurrentLocationIcon.svg';
+import MapTopOverley from "./MapTopOverley";
 
 
 const MapContainer = ({ mapStyle }) => {
@@ -66,17 +67,13 @@ const MapContainer = ({ mapStyle }) => {
     console.log('hari--->>onPressCurrentLocation-->>');
     await locationTask.getCurrentLocation();
   }
-  const onPressZoomIn = () => {
-    setZoomLevel(zoomLevel + 1);
-  }
-  const onPressZoomOut = () => {
-    setZoomLevel(zoomLevel - 1);
-  }
+ 
 
   return (
     <Animated.View style={[styles.mapContainer, defaultStyle, { transition: 'all 20s ease-in-out' }]}>
       {!mapReady && <Loaders message="Setting up Map" />}
       {loading && <FullScreenLoader />}
+      <MapTopOverley />
       <NEMap
         mapStyle={mapStyle || styles.mapStyles}
         homeLocation={mapLocation}

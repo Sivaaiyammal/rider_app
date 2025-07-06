@@ -4,7 +4,7 @@
 
 import Geolocation from 'react-native-geolocation-service';
 import useLocationStore from '../store/useLocationStore';
-import useMapStore from '../store/useMapStore';
+import useMapStore from '../features/map/store/useMapStore';
 
 class currentLocation {
   constructor() {}

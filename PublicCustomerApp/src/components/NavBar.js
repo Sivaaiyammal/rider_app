@@ -16,7 +16,7 @@ const NavBar = props => {
     withShadow = false, 
   } = props;
   return (
-    <LinearGradient colors={['#FFFFFF', '#FFFFFF', withBg ? '#FFFFFF' : 'rgba(255,255,255,0)']} >
+   
     <View
       style={[
         navStyles.navContainer,
@@ -26,31 +26,33 @@ const NavBar = props => {
         },
       ]}>
 
-      <TouchableOpacity style={navStyles.leftIcon} onPress={onBackPress}>
-        {onBackPress && (
+     {onBackPress && ( <TouchableOpacity style={navStyles.leftIcon} onPress={onBackPress}>
+       
           <View style={navStyles.leftBtn}>
-            <Ionicons name="chevron-back" size={20} color={colors.black} />
+            <Ionicons name="chevron-back" size={25} color={colors.black} />
           </View>
-        )}
+       
         
       </TouchableOpacity>
+       )}
       {leftTitle && (
-        <TouchableOpacity style={navStyles.leftcontent}>
+        <View style={navStyles.leftcontent}>
           <Text style={navStyles.leftcontentTxt}>{leftTitle}</Text>
-        </TouchableOpacity>
+        </View>
       )}
-      <TouchableOpacity style={navStyles.content}>
+      <View style={navStyles.content}>
         <Text style={navStyles.contentTxt}>{title}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={navStyles.rightIcon} onPress={onrightIconPress}>
-        {rightIcon && (
+      </View>
+      {rightIcon && (<TouchableOpacity style={navStyles.rightIcon} onPress={onrightIconPress}>
+      
           <View style={navStyles.leftBtn}>
             <Text>{rightIcon}</Text>
           </View>
-        )}
+       
       </TouchableOpacity>
+       )}
     </View>
-    </LinearGradient>
+  
   );
 };
 

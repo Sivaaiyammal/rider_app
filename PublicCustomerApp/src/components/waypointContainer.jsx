@@ -8,11 +8,13 @@ import {
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import PropTypes from 'prop-types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import SkeletonLoader from './Loaders/SkeletonLoader';
 
 const ITEM_HEIGHT = 50;
 
 const WaypointContainer = ({ waypoints }) => {
   const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   console.log(waypoints.length-1,"waypoints");
   const [lastAddStopIndex, setLastAddStopIndex] = useState(waypoints.length-1);
   
@@ -26,6 +28,13 @@ const WaypointContainer = ({ waypoints }) => {
       type: index === 0 ? 'pickup' : 'waypoint',
     }));
     setData(transformedData);
+    
+    // Simulate loading time for skeleton
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 800);
+    
+    return () => clearTimeout(timer);
   }, [waypoints]);
 
   const finalData = useMemo(() => {
@@ -160,6 +169,47 @@ const WaypointContainer = ({ waypoints }) => {
     );
   }, [data, handleAddWaypoint, handleRemoveWaypoint]);
 
+  const renderSkeletonLoader = () => {
+    const skeletonItems = Array.from({ length: Math.max(2, waypoints.length) }, (_, index) => index);
+    
+    return (
+      <View style={styles.container}>
+        <View>
+          <View style={styles.iconContainer}>
+            {skeletonItems.map((_, index) => (
+              <View key={index} style={styles.iconItemContainer}>
+                <View style={[styles.line, index === 0 && { borderColor: 'transparent', borderWidth: 1 }]} />
+                <View style={styles.iconItem}>
+                  <SkeletonLoader width={25} height={25} borderRadius={15} />
+                </View>
+                <View style={[styles.line, index === skeletonItems.length - 1 && { borderColor: 'transparent' }]} />
+              </View>
+            ))}
+          </View>
+        </View>
+        <View style={styles.listContainer}>
+          {skeletonItems.map((_, index) => (
+            <View key={index} style={styles.row}>
+              <View style={styles.draggableArea}>
+                <View style={styles.AddressContainer}>
+                  <View style={styles.labelCol}>
+                    <SkeletonLoader width="80%" height={16} borderRadius={4} />
+                  </View>
+                  <View style={styles.actionCol}>
+                    <SkeletonLoader width={24} height={24} borderRadius={4} />
+                  </View>
+                </View>
+                <View style={styles.actionBtn}>
+                  <SkeletonLoader width={20} height={20} borderRadius={10} />
+                </View>
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
+
   const renderIcon = (data) => {
     return (
       <View style={styles.iconContainer}>
@@ -170,6 +220,10 @@ const WaypointContainer = ({ waypoints }) => {
               {index == 0 ?
                 <View style={[styles.iconItem, {backgroundColor: "#4caf50"+"30"}]}>
                   <View style={styles.iconSubItem} />
+                </View>
+                :index == data.length-1 ?
+                <View style={[styles.iconItem, { backgroundColor: "#ff5151"+"30" }]} >
+                  <View style={[styles.iconSubItem, { backgroundColor: "#ff5151" }]} />
                 </View>
                 :
                 <View style={styles.iconItem}>
@@ -183,6 +237,10 @@ const WaypointContainer = ({ waypoints }) => {
       </View>
     );
   };
+
+  if (isLoading) {
+    return renderSkeletonLoader();
+  }
 
   return (
     <View style={styles.container}>
@@ -232,13 +290,13 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     borderRadius: 10,
     paddingHorizontal: 5,
-    paddingVertical: 10,
+    paddingVertical: 5,
 
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: 12,
+   
     height: ITEM_HEIGHT,
     
     
@@ -355,7 +413,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingBottom: 15,
+   
     flexGrow: 1,
   },
   iconContainer: {
@@ -384,7 +442,7 @@ const styles = StyleSheet.create({
   iconSubItem: {
     width: 10,
     height: 10,
-    borderRadius: 5,
+    borderRadius: 10,
     backgroundColor: '#4caf50',
   },
   iconText: {

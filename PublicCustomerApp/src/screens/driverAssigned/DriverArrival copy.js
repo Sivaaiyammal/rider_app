@@ -13,7 +13,7 @@ import { colors } from '../../constants/constants';
 
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import useMapStore from '../../store/useMapStore';
+import useMapStore from '../features/map/store/useMapStore';
 import { rideStyles } from '../../styles/RideStyles';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
 import useRideSelectionStore from '../../store/useRideSelectionStore';

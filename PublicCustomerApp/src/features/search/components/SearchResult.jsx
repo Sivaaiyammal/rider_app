@@ -1,11 +1,11 @@
 import React,{useState,useContext} from 'react';
 import { View, Text, SectionList ,TouchableOpacity,StyleSheet} from 'react-native';
 import Feather from "react-native-vector-icons/Feather";
-import GlobalContext from "../context/GlobalContext"
-import { utils } from "../utils/Utils";
-import useMapStore from "../features/map/store/useMapStore";
-import { colors, Fonts } from "../constants/constants";
-import { clearAllStateVectors } from '../components/Native/NESearch';
+import GlobalContext from "../../../context/GlobalContext"
+import { utils } from "../../../utils/Utils";
+import useMapStore from "../../../features/map/store/useMapStore";
+import { colors, Fonts } from "../../../constants/constants";
+import { clearAllStateVectors } from '../../../components/Native/NESearch';
 const transformData = (data) => {
     if (!data || Object.keys(data).length === 0) {
       return [];

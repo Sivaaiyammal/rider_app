@@ -12,7 +12,7 @@ import useLocationStore from '../../store/useLocationStore';
 import {useStackScreenStore} from '../../store/useStackScreenStore';
 import {scheduleContainerStyles} from '../../styles/AddLocationStyles';
 import { StatusBar } from 'react-native';
-import useMapStore from '../../store/useMapStore';
+import useMapStore from '../../features/map/store/useMapStore';
 import useRideSelectionStore from '../../store/useRideSelectionStore';
 import { Image } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';

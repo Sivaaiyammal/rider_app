@@ -1,26 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useStackScreenStore } from '../store/useStackScreenStore';
-import MapScreen from './MapScreen';
-import MapContainer from './Map';
+import Homescreen from '../features/home/screens/HomeScreen.jsx'
+import MapContainer from '../features/map/components/MapContainer.js';
 import { RequestAllPermissions } from '../controllers/PermissionHandler';
 import locationTask from '../controllers/GetCurrentLocation';
-import SearchLocationScreen from './SearchLocation/SearchLocationScreen';
 import VehicleListScreen from './VehicleListScreen';
 import SelectedVehicle from './SelectedVehicle';
 import TripScreenManager from './driverAssigned/TripScreenManager';
 import RideSummary from './RideSummary';
-import SearchScreen from './SearchScreen';
+import SearchScreen from '../features/search/screens/SearchScreen';
 import VehicleSearchScreen from './vehicleSearchScreen';
-import useRideSelectionStore from '../store/useRideSelectionStore';
 import WaypointScreen from './WaypointScreen';
 import { StatusBar } from 'react-native';
 import useUserInfoStore from '../store/useUserInfoStore';
 import { getLocation} from '../storage/userLocalStorage';
 import PickLocationScreen from './PickLocationScreen';
 import { useCustomBackHandler } from '../hooks/useCustomBackHandler';
+import PlanRideScreen from '../features/booking/screens/PlanRideScreen.jsx';
 
 
-const HomeScreen = () => {
+const Home = () => {
   const { stackScreen } = useStackScreenStore();
   const permissionsRequested = useRef(false);
   const [mapReady, setMapReady] = useState(false);
@@ -63,9 +62,9 @@ const HomeScreen = () => {
 
     switch (name) {
       case 'Home':
-        return <MapScreen {...params} />;
-      case 'SearchLocationScreen':
-        return <SearchLocationScreen {...params} />;
+        return <Homescreen {...params} />;
+      case 'PlanRideScreen':
+        return <PlanRideScreen {...params} />;
       case 'SearchScreen':
         return <SearchScreen {...params} />;
       case 'VehicleList':
@@ -99,4 +98,4 @@ const HomeScreen = () => {
   );
 };
 
-export default HomeScreen;
+export default Home;

@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SplashScreen from '../screens/SplashScreen';
 import LanguageScreen from '../screens/OnBoard/LanguageScreen.jsx';
 import OnBoarding from '../screens/OnBoard/OnBoarding.jsx';
-import HomeScreen from '../screens/HomeScreen';
+import Home from '../screens/Home';
 import LoginScreen from '../screens/authentication/LoginScreen';
 import RegisterationScreen from '../screens/authentication/RegisterationScreen';
 import OTPScreen from '../screens/authentication/OTPScreen';
@@ -26,7 +26,7 @@ const Navigation = () => {
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="RegisterationScreen" component={RegisterationScreen} />
       <Stack.Screen name="OTPScreen" component={OTPScreen} />
-      <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Screen name="HomeScreen" component={Home} />
       <Stack.Screen name="YourRidesScreen" component={YourRidesScreen} />
       <Stack.Screen name="YourRideDetailsScreen" component={YourRideDetailsScreen} />
       <Stack.Screen name="MyAccountScreen" component={MyAccountScreen} />

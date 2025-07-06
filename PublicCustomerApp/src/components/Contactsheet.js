@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, Animated } from 'react-native';
-import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import React, { useState } from 'react';
 import { colors, Fonts } from '../constants/constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useRideSelectionStore from '../store/useRideSelectionStore';
@@ -13,25 +13,8 @@ const Contactsheet = ({ onClose, onConfirm }) => {
   const [showAddContact, setShowAddContact] = useState(false);
   const [newContact, setNewContact] = useState({ name: '', phone: '' });
 
-  const slideAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.spring(slideAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-      tension: 50,
-      friction: 7
-    }).start();
-  }, []);
-
   const handleClose = () => {
-    Animated.timing(slideAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true
-    }).start(() => {
-      onClose();
-    });
+    onClose();
   };
 
   const validatePhoneNumber = (phone) => {
@@ -96,26 +79,10 @@ const Contactsheet = ({ onClose, onConfirm }) => {
   };
 
   return (
-    <Animated.View 
-      style={[
-        styles.container,
-        {
-          transform: [
-            {
-              translateY: slideAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [300, 0]
-              })
-            }
-          ]
-        }
-      ]}
-    >
+    <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Book For</Text>
-        <TouchableOpacity onPress={handleClose}>
-          <Ionicons name="close" size={24} color={colors.black} />
-        </TouchableOpacity>
+      
       </View>
 
       <TouchableOpacity 
@@ -199,7 +166,7 @@ const Contactsheet = ({ onClose, onConfirm }) => {
           </View>
         </View>
       )}
-    </Animated.View>
+    </View>
   );
 };
 
@@ -209,8 +176,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
-    position: 'absolute',
-    bottom: 0,
+   
     width: '100%'
   },
   header: {

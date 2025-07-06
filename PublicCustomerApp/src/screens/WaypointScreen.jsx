@@ -13,7 +13,12 @@ import WaypointContainer from '../components/waypointContainer';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 
 const WaypointScreen = () => {
-  const [waypoints, setWaypoints] = useState([]);
+  const [waypoints, setWaypoints] = useState([
+    { id: 1, name: 'Covai Tech Park', address: '123 Main Street, City' },
+    { id: 2, name: 'Singanallur', address: '456 Oak Avenue, City'},
+   
+   
+  ]);
   const [isLoading] = useState(false);
   const { setMapStyle, setMapButtonStyle } = useMapStyleStore();
   const { goBack, setStackScreen } = useStackScreenStore();
@@ -27,21 +32,16 @@ const WaypointScreen = () => {
 
   useEffect(() => {
     // Dummy data initialization
-    setWaypoints([
-      { id: 1, name: 'Covai Tech Park', address: '123 Main Street, City' },
-      { id: 2, name: 'Singanallur', address: '456 Oak Avenue, City'},
-     
-     
-    ]);
+    
 
-    setMapStyle({
-      width: "100%",
-      height: "100%",
-    });
-    setMapButtonStyle({
-      right: 15,
-      bottom: 80,
-    });
+    // setMapStyle({
+    //   width: "100%",
+    //   height: "100%",
+    // });
+    // setMapButtonStyle({
+    //   right: 15,
+    //   bottom: 80,
+    // });
   }, []);
 
   // Add a dummy waypoint between pickup and drop
@@ -99,8 +99,12 @@ const WaypointScreen = () => {
 
 const styles = StyleSheet.create({
   topContainer: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 10,
    
   },
   content: {

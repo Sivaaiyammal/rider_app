@@ -13,7 +13,7 @@ import {debounce} from 'lodash';
 import {colors, Fonts} from '../constants/constants';
 import NavBar from '../components/NavBar';
 import {useStackScreenStore} from '../store/useStackScreenStore';
-import useMapStore from '../store/useMapStore';
+import useMapStore from '../features/map/store/useMapStore';
 import useLocationStore from '../store/useLocationStore';
 import Marker from '../controllers/NEMap/Marker';
 

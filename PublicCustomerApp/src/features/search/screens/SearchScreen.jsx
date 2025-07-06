@@ -11,22 +11,22 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Entypo from 'react-native-vector-icons/Entypo';
 import {debounce} from 'lodash';
-import {colors, Fonts} from '../constants/constants';
-import NavBar from '../components/NavBar';
-import {useStackScreenStore} from '../store/useStackScreenStore';
-import useMapStore from '../features/map/store/useMapStore';
-import useLocationStore from '../store/useLocationStore';
-import Marker from '../controllers/NEMap/Marker';
-import { performSearch } from '../components/Native/NESearch';
-import { SearchResultV2 } from './searchResult';
-import StateVectorConatiner from '../components/StateVectorConatiner';
-import { clearSingleStateVector } from "../components/Native/NESearch";
-import FullScreenLoader from '../components/Loaders/FullScreenLoader';
-import HistoryCard from '../components/historyCard';
-import { DataStore } from '../controllers/DataStore';
-import useUserInfoStore from '../store/useUserInfoStore';
-import {setLocation} from '../storage/userLocalStorage';
-const SearchScreen = ({onPlaceSave=null}) => {
+import {colors, Fonts} from '../../../constants/constants';
+import NavBar from '../../../components/NavBar';
+import {useStackScreenStore} from '../../../store/useStackScreenStore';
+import useMapStore from '../../../features/map/store/useMapStore';
+import useLocationStore from '../../../store/useLocationStore';
+import Marker from '../../../controllers/NEMap/Marker';
+import { performSearch } from '../../../components/Native/NESearch';
+import { SearchResultV2 } from '../components/SearchResult';
+import StateVectorConatiner from '../../../components/StateVectorConatiner';
+import { clearSingleStateVector } from "../../../components/Native/NESearch";
+import FullScreenLoader from '../../../components/Loaders/FullScreenLoader';
+import HistoryCard from '../../shared/component/HistoryCard';
+import { DataStore } from '../../../controllers/DataStore';
+import useUserInfoStore from '../../../store/useUserInfoStore';
+import {setLocation} from '../../../storage/userLocalStorage';
+const SearchScreen = ({onSearchClick=null,searchType}) => {
   const [searchTxt,setSearchTxt] = useState("");
   const {goBack,setStackScreen} = useStackScreenStore();
   const [isLoading,setIsLoading] = useState(false);
@@ -132,54 +132,9 @@ const SearchScreen = ({onPlaceSave=null}) => {
     }
   };
 
-  // Set route direction when markers are updated
-  const setRouteDirection = useCallback(
-    directions => {
-      if (directions.length >= 2) {
-       
-        const sortedDirections = directions.sort((a, b) => a.id - b.id);
-        const routeData = sortedDirections.map(direction => ({
-          lat: direction.lat,
-          lon: direction.lng,
-        }));
-        setMapMarkers([]);
-        
+  
 
-        setDirectionPoints({locations: routeData, type: 'car'});
-      } else {
-        setDirectionPoints(null);
-      }
-    },
-    [setDirectionPoints, setMapMarkers],
-  );
-
-  // Set route direction when markers are removed
-  const updateRouteDirections = useCallback(
-    newData => {
-      
-      const input = selectedInput.id;
-      const routeData = directions.map(item => {
-        if (item.id === input) {
-          return {
-            lat: newData.latitude,
-            lon: newData.longitude,
-            locationName: newData.address,
-          };
-        } else if (item.location && item.location.length > 1) {
-          return {
-            lat: item.location[1] !== undefined ? item.location[1] : null,
-            lon: item.location[0] !== undefined ? item.location[0] : null,
-          };
-        } else {
-          return null;
-        }
-      }).filter(point => point !== null && point.lat !== null && point.lon !== null);
-      // console.log('hari-->>route-->>', routeData);
-      setDirectionPoints({ locations: routeData, type: 'car' });
-      goBack();
-    },
-    [selectedInput, directions]
-  );
+  
   
   const removeStateVecotr = async (item) =>{
      clearSingleStateVector(item.key, item.index)
@@ -220,57 +175,16 @@ const SearchScreen = ({onPlaceSave=null}) => {
   );
 
   // onpress on search results
-  const onLocationNamePress = useCallback(
-    async (item) => {
-
-      onPlaceSave(item);
+  const onLocationNamePress = ((item)=>{
     
 
-      if(isFavouriteLocationSearchEnabled){
-       
-        if(CurrentSearchFavouriteLocation === 'Home'){
-          item.label = CurrentSearchFavouriteLocation;
-          await setLocation(CurrentSearchFavouriteLocation,item);
-          setHomelocation(item);
-        }else if(CurrentSearchFavouriteLocation === 'Work'){
-          item.label = CurrentSearchFavouriteLocation;
-          await setLocation(CurrentSearchFavouriteLocation,item);
-          setWorklocation(item);
-        }
-        setIsFavouriteLocationSearchEnabled(false);
-        setOnSearchResults(null);
-        setSearchUnit('');
-        goBack();
-        return;
-      }
-      storeRecentSearch(item);
-      const input = selectedInput?.id - 1;
-      const newDirections = directions.map((dir, index) =>
-        index === input
-          ? {
-              ...dir,
-              locationName:  item.name,
-              locationAddress: item.address?.charAt(0).toUpperCase() + item.address?.slice(1),
-              location: [item.longitude, item.latitude],
-            }
-          : dir,
-      );
-     
-      setDirections(newDirections);
-      setOnSearchResults(null);
-      setSearchUnit('');
+    onSearchClick(item,searchType);
+    storeRecentSearch(item);
 
-      if (selectedInput.id === 1) {
-        addMapMarkers(item, 'marker_start');
-      } else if (input === directions.length - 1) {
-        
-        addMapMarkers(item, 'marker_end');
-      } else {
-        addMapMarkers(item, 'marker_waypoint');
-      }
-      setSelectedInput(null);
-    },
-    [directions],
+    }
+    
+     
+   
   );
 
 
@@ -283,8 +197,17 @@ const SearchScreen = ({onPlaceSave=null}) => {
     setSelectedInput(null) // to disable locate on map when goBack
   }
 
+
+  const handleLocateOnMapCallback=(item)=>{
+    goBack()
+    onSearchClick(item)
+    
+  }
+
   const handleLocateOnMap = () =>{
-    setStackScreen('PickLocationScreen');
+    setStackScreen('PickLocationScreen',{
+        onPickLocationResultCallback:handleLocateOnMapCallback
+      })
   }
 
   return (

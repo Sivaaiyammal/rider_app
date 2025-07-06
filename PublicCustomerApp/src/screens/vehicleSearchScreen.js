@@ -8,7 +8,7 @@ import { cancelRide } from '../API/EndPoints/EndPoints';
 import { showNotification } from '../components/NotificationManger';
 import locationTask from '../controllers/GetCurrentLocation';
 import useLocationStore from '../store/useLocationStore';
-import useMapStore from '../store/useMapStore';
+import useMapStore from '../features/map/store/useMapStore';
 import useMapStyleStore from '../store/useMapStyleStore';
 const VehicleSearchScreen = () => {
    const { bookingDetails , updateBookingStatus} = useRideSelectionStore();

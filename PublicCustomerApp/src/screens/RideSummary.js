@@ -23,7 +23,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import { Image } from 'react-native';
 import useRideSelectionStore from '../store/useRideSelectionStore';
 import {useStackScreenStore} from '../store/useStackScreenStore';
-import useMapStore from '../store/useMapStore';
+import useMapStore from '../features/map/store/useMapStore';
 import useMapStyleStore from '../store/useMapStyleStore';
 import locationTask from '../controllers/GetCurrentLocation';
 import DriverProfileImage from '../assets/image/driver.png';

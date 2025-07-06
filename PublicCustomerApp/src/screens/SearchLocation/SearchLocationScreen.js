@@ -4,7 +4,7 @@ import NavBar from '../../components/NavBar';
 import {useStackScreenStore} from '../../store/useStackScreenStore';
 import AddLocationCard from './AddLocationCard';
 import useLocationStore from '../../store/useLocationStore';
-import useMapStore from '../../store/useMapStore';
+import useMapStore from '../../features/map/store/useMapStore';
 import locationTask from '../../controllers/GetCurrentLocation';
 import {addLocation} from '../../styles/AddLocationStyles';
 import Ionicons from 'react-native-vector-icons/Ionicons';

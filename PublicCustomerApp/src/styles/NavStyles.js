@@ -5,35 +5,28 @@ export const navStyles = StyleSheet.create({
   navContainer: {
     width: '100%',
     zIndex: 3,
+    minHeight:50,
     alignItems: 'center',
     justifyContent: 'space-between',
     flexDirection: 'row',
     alignSelf: 'center',
   },
   leftIcon: {
-    width: '20%',
-    padding: 10,
+    position:'absolute',
+    left:0,
+    padding: 15,
+   
     alignItems: 'center',
   },
   leftBtn: {
-    borderRadius: 50,
-    backgroundColor: colors.white,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    padding:6
+   
   },
   rightIcon: {
     width: '20%',
     padding: 13,
   },
   content: {
-    width: '60%',
-    padding: 10,
+    flex:1,
     alignItems: 'center',
   },
   leftcontent: {
@@ -42,7 +35,7 @@ export const navStyles = StyleSheet.create({
   contentTxt: {
     fontFamily: Fonts.regular,
     color: colors.black,
-    fontSize: 16,
+    fontSize: 17,
     textAlign:'center'
   },
   leftcontentTxt: {

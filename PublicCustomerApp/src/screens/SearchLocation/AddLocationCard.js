@@ -15,7 +15,7 @@ import {addLocation} from '../../styles/AddLocationStyles';
 import DragAndDropCard from '../../components/DragAndDropCard';
 import {colors} from '../../constants/constants';
 import useLocationStore from '../../store/useLocationStore';
-import useMapStore from '../../store/useMapStore';
+import useMapStore from '../../features/map/store/useMapStore';
 import Marker from '../../controllers/NEMap/Marker';
 import {useStackScreenStore} from '../../store/useStackScreenStore';
 import SearchAPI from '../../controllers/NEMap/Search';

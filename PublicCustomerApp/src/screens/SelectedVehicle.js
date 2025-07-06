@@ -5,7 +5,7 @@ import {useStackScreenStore} from '../store/useStackScreenStore';
 import useSelectedVehicleStore from '../store/useSelectedVehicleStore';
 import useLocationStore from '../store/useLocationStore';
 import useRideSelectionStore from '../store/useRideSelectionStore';
-import useMapStore from '../store/useMapStore';
+import useMapStore from '../features/map/store/useMapStore';
 
 import BottomSheet from '../components/BottomSheet';
 import {vehicleDetailsStyles} from '../styles/VehicleDetails';

@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import {useStackScreenStore} from '../store/useStackScreenStore';
 import NavBar from '../components/NavBar';
-import useMapStore from '../store/useMapStore';
+import useMapStore from '../features/map/store/useMapStore';
 import PickIcon from '../assets/icons/pickupIcon.webp';
 import { colors, Fonts   } from '../constants/constants';
 import { height} from '../utils/Utils';
@@ -20,7 +20,7 @@ import useMapStyleStore from '../store/useMapStyleStore';
 import CurrentLocationIcon from '../assets/icons/CurrentLocationIcon.svg';
 import locationTask from "../controllers/GetCurrentLocation";
 import usePropsStore from '../store/usePropsStore';
-const PickLocationScreen = () => {
+const PickLocationScreen = ({onPickLocationResultCallback}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers} = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -134,7 +134,7 @@ const PickLocationScreen = () => {
                   </View>
 
               </View>
-              <TouchableOpacity style={styles.bottomContainerButton}>
+              <TouchableOpacity style={styles.bottomContainerButton} onPress={()=>onPickLocationResultCallback(pickedLocation)}>
                   <Text style={styles.bottomContainerButtonText}>Confirm Location</Text>
               </TouchableOpacity>
 

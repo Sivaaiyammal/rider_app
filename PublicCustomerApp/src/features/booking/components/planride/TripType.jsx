@@ -1,23 +1,19 @@
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import React from 'react';
-import {addLocation} from '../../styles/AddLocationStyles';
-import {colors} from '../../constants/constants';
-import {tripType} from '../../constants/JsonData';
+import {addLocation} from '../../../../styles/AddLocationStyles';
+import {colors} from '../../../../constants/constants';
+import {rideType} from '../../../../constants/JsonData';
 
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const TripType = props => {
-  const {_toggleSubview, onTripSelect, selectedTrip} = props;
+  const {_toggleSubview, onTripSelect, selectedRide} = props;
   
   return (
     <View style={addLocation.rideOptionBottom}>
-      <TouchableOpacity
-        style={addLocation.closeBtn}
-        onPress={() => _toggleSubview()}>
-        <AntDesign name="closecircleo" color={colors.black} size={24} />
-      </TouchableOpacity>
-      {tripType.map(item => {
+     
+      {rideType.map(item => {
         return (
           <TouchableOpacity
             style={addLocation.tripSelectionBtn}
@@ -29,7 +25,7 @@ const TripType = props => {
             </View>
             <MaterialCommunityIcons
               name={
-                selectedTrip.name === item.name
+                selectedRide.name === item.name
                   ? 'circle-slice-8'
                   : 'circle-outline'
               }

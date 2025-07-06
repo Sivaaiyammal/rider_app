@@ -101,7 +101,7 @@ export const addLocation = StyleSheet.create({
     fontSize: 16,
   }, 
   rideSelectionContainer: {
-    width: '95%',
+    width: '100%',
     paddingVertical: 10,
     backgroundColor: colors.white,
     flexDirection: 'row',
@@ -154,9 +154,10 @@ export const addLocation = StyleSheet.create({
   },
   rideOptionBottom: {
     position: 'absolute',
+    width:'100%',
     bottom: 0,
     backgroundColor: colors.white,
-    width: '100%',
+  
     borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
     padding: 10

@@ -12,11 +12,7 @@ const RideType = props => {
   
   return (
     <View style={addLocation.rideOptionBottom}>
-      <TouchableOpacity
-        style={addLocation.closeBtn}
-        onPress={() => _toggleSubview()}>
-        <AntDesign name="closecircleo" color={colors.black} size={24} />
-      </TouchableOpacity>
+     
       {rideType.map(item => {
         return (
           <TouchableOpacity

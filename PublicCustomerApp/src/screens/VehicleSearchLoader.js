@@ -5,7 +5,7 @@ import { HomeScreenContext } from '../Home/HomeScreen';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import useSelectedVehicleStore from '../store/useSelectedVehicleStore';
 import useLocationStore from '../store/useLocationStore';
-import useMapStore from '../store/useMapStore';
+import useMapStore from '../features/map/store/useMapStore';
 import useRideSelectionStore from '../store/useRideSelectionStore';
 
 import Pulse from '../components/Pulse';

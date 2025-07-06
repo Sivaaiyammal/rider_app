@@ -1,7 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import Entypo from "react-native-vector-icons/Entypo";
-import useMapStore from "../store/useMapStore";
+import useMapStore from "../features/map/store/useMapStore";
 import { colors, Fonts } from "../constants/constants";
 
 
