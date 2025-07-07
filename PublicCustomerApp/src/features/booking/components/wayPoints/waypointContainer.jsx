@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,50 +8,54 @@ import {
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import PropTypes from 'prop-types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import SkeletonLoader from './Loaders/SkeletonLoader';
+import SkeletonLoader from '../../../../components/Loaders/SkeletonLoader';
+import LocationTypes from '../../types/LocationTypes.json';
+import { useStackScreenStore } from '../../../../store/useStackScreenStore';
+import useWayPointReorderStore from '../../store/useWayPointReorderStore';
+import { utils } from '../../../../utils/Utils';
 
 const ITEM_HEIGHT = 50;
 
-const WaypointContainer = ({ waypoints }) => {
-  const [data, setData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  console.log(waypoints.length-1,"waypoints");
-  const [lastAddStopIndex, setLastAddStopIndex] = useState(waypoints.length-1);
-  
+const WaypointContainer = () => {
+
+  // const [data, setData] = useState([]);
+  // const [isLoading, setIsLoading] = useState(true);
+  const { setStackScreen,goBack } = useStackScreenStore();
+  const { 
+    reOrderWaypoints, 
+    setReOrderWaypoints, 
+    setLastAddStopIndex,
+    lastAddStopIndex,
+    isLoading
+  } = useWayPointReorderStore();
+  // const [lastAddStopIndex, setLastAddStopIndex] = useState(waypoints.length-1);
   useEffect(() => {
-    setLastAddStopIndex(waypoints.length-1);
-  }, [waypoints]);
+    if (reOrderWaypoints.length > 0) {
+      if(reOrderWaypoints.length == 1){
+        setLastAddStopIndex(reOrderWaypoints.length);
+      }else{
+        setLastAddStopIndex(reOrderWaypoints.length-1);
+      }
+    }
+  }, [reOrderWaypoints.length]);
   
-  useEffect(() => {
-    const transformedData = waypoints.map((item, index) => ({
-      ...item,
-      type: index === 0 ? 'pickup' : 'waypoint',
-    }));
-    setData(transformedData);
-    
-    // Simulate loading time for skeleton
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
-    
-    return () => clearTimeout(timer);
-  }, [waypoints]);
+
 
   const finalData = useMemo(() => {
-    if (data.length === 0) return [];
-
+    if (reOrderWaypoints.length === 0) return [];
+    console.log(reOrderWaypoints,"reOrderWaypoints");
     const addStopItem = { type: 'add-stop', key: 'add-stop', id: 'add-stop' };
     console.log(lastAddStopIndex,"lastAddStopIndex");
-    if (data.length < 6) {
-      const newData = [...data];
+    if (reOrderWaypoints.length < 6) {
+      const newData = [...reOrderWaypoints];
       if (!newData.find(d => d.id === 'add-stop')) {
         newData.splice(lastAddStopIndex, 0, addStopItem);
       }
       return newData;
     }
 
-    return data;
-  }, [data, lastAddStopIndex]);
+      return reOrderWaypoints;
+  }, [reOrderWaypoints, lastAddStopIndex]);
 
   const handleReorder = useCallback(({ data: reorderedData }) => {
     // Process the reordered data immediately without delay
@@ -59,60 +63,92 @@ const WaypointContainer = ({ waypoints }) => {
     const filteredData = reorderedData.filter(item => item.type !== 'add-stop');
     
     if (filteredData.length > 0) {
-      const processedData = filteredData.map((item, index) => ({
-        ...item,
-        type: index === 0 ? 'pickup' : 'waypoint',
-      }));
+      const processedData = filteredData.map((item,index)=>{
+        return {
+          ...item,
+          type: index === 0 ? LocationTypes.START_LOCATION :LocationTypes.WAYPOINT_LOCATION
+        }
+      })
 
       // Use React's automatic batching for smoother updates
-      setData([...processedData]);
+      setReOrderWaypoints([...processedData]);
       setLastAddStopIndex(lastAddStopIndex);
     }
   }, []);
 
-  const handleAddWaypoint = useCallback(() => {
-    const newWaypoint = {
-      id: `waypoint-${Date.now()}`,
-      name: 'New Stop',
-      address: 'Tap to add location',
-      type: 'waypoint'
-    };
-
-    setData(currentData => {
-      const currentFinalData = [...currentData];
-      if (currentData.length < 6) {
-        const addStopItem = { type: 'add-stop', key: 'add-stop', id: 'add-stop' };
-        if (!currentFinalData.find(d => d.id === 'add-stop')) {
-          currentFinalData.splice(lastAddStopIndex, 0, addStopItem);
-        }
+  const handleAddWaypoint = (waypointItem) => {
+    // Map separately first
+    const currentData = [...reOrderWaypoints];
+    const currentFinalData = [...currentData];
+    
+    if (currentData.length < 6) {
+      const addStopItem = { type: 'add-stop', key: 'add-stop', id: 'add-stop' };
+      if (!currentFinalData.find(d => d.id === 'add-stop')) {
+        currentFinalData.splice(lastAddStopIndex, 0, addStopItem);
       }
-      
-      const AddStopIndex = currentFinalData.findIndex(item => item.type === 'add-stop');
-      const updatedData = [...currentData];
-      updatedData.splice(AddStopIndex, 0, newWaypoint);
-      
-      setLastAddStopIndex(AddStopIndex + 1);
-      return updatedData;
-    });
-  }, [lastAddStopIndex]);
+    }
+    
+    const AddStopIndex = currentFinalData.findIndex(item => item.type === 'add-stop');
+    const updatedData = [...currentData];
+    updatedData.splice(AddStopIndex, 0, waypointItem);
+    
+    // Transform the updated data with proper types
+    const transformedData = updatedData.map((item, index) => ({
+      ...item,
+      id: item.id || `waypoint-${index}-${Date.now()}`,
+      type: index === 0 ? LocationTypes.START_LOCATION :LocationTypes.WAYPOINT_LOCATION
+    }));
+    
+    // Set into store after mapping
+    setLastAddStopIndex(AddStopIndex + 1);
+    setReOrderWaypoints(transformedData);
+  }
+  ;
 
   const handleRemoveWaypoint = useCallback((index) => {
-    setData(currentData => currentData.filter((_, i) => i !== index));
-  }, []);
+    const filteredData = reOrderWaypoints.filter((_, i) => i !== index);
+    
+    // Transform the filtered data with proper types
+    const transformedData = filteredData.map((item, index) => ({
+      ...item,
+      id: item.id || `waypoint-${index}-${Date.now()}`,
+      type: index === 0 ? LocationTypes.START_LOCATION :  LocationTypes.WAYPOINT_LOCATION
+    }));
+    
+    setReOrderWaypoints(transformedData);
+  }, [reOrderWaypoints]);
 
+
+  const onSearchClickResultCallback=(item)=>{
+    handleAddWaypoint(item)
+    goBack()
+    
+  }
+
+
+  const onClickAddWayPoint=()=>{
+    
+      setStackScreen("SearchScreen",{
+        onSearchClick:onSearchClickResultCallback,
+        searchType:LocationTypes.WAYPOINT_LOCATION
+      })
+    }
+  
   const renderItem = useCallback(({ item, drag, isActive }) => {
+    const index = finalData.findIndex(i => i === item);
+    
     if (item.type === 'add-stop') {
       return (
         <View style={[styles.row]}>
           <TouchableOpacity 
             style={styles.draggableArea}
-            onPress={handleAddWaypoint}
+            onPress={onClickAddWayPoint}
             onLongPress={drag}
             delayLongPress={100}
           >
             <View style={[styles.AddressContainer,isActive && styles.draggingItem]}>
             <View style={styles.labelCol}>
-              <Text style={styles.addLabel}>Add a Stop</Text>
+              <Text style={styles.addLabel}>{index == 0 ? "Add a Pickup Location" :index == finalData.length-1 ? "Add a Drop Location" : "Add a Stop"}</Text>
             </View>
             <View style={styles.actionCol}>
               <MaterialIcons name="drag-handle" size={24} color="black" />
@@ -128,8 +164,12 @@ const WaypointContainer = ({ waypoints }) => {
       );
     }
 
-    const isWaypoint = item.type === 'waypoint';
-    const actualIndex = data.findIndex(dataItem => dataItem.id === item.id);
+    const isWaypoint = item.type === LocationTypes.WAYPOINT_LOCATION;
+    
+    const actualIndex = reOrderWaypoints.findIndex(dataItem => 
+      dataItem.name === item.name && 
+      dataItem.address === item.address
+    );
 
     return (
       <View style={[styles.row]}>
@@ -141,7 +181,7 @@ const WaypointContainer = ({ waypoints }) => {
           <View style={[styles.AddressContainer,isActive && styles.draggingItem]}>
           <View style={styles.labelCol}>
             <Text style={styles.labelText} numberOfLines={1}>
-            {item.address}
+           {utils.formatAddressName(item)}
             </Text>
            
           </View>
@@ -167,10 +207,10 @@ const WaypointContainer = ({ waypoints }) => {
         </TouchableOpacity>
       </View>
     );
-  }, [data, handleAddWaypoint, handleRemoveWaypoint]);
+  }, [reOrderWaypoints, handleAddWaypoint, handleRemoveWaypoint]);
 
   const renderSkeletonLoader = () => {
-    const skeletonItems = Array.from({ length: Math.max(2, waypoints.length) }, (_, index) => index);
+    const skeletonItems = Array.from({ length: Math.max(2, 3) }, (_, index) => index);
     
     return (
       <View style={styles.container}>
@@ -250,7 +290,13 @@ const WaypointContainer = ({ waypoints }) => {
       <View style={styles.listContainer}>
         <DraggableFlatList
           data={finalData}
-          keyExtractor={(item) => item.id?.toString() || `item-${item.key}`}
+          keyExtractor={(item, index) => {
+            if (item.id) return item.id.toString();
+            if (item.key) return item.key.toString();
+            if (item.type === 'add-stop') return 'add-stop';
+            // Use a combination of properties to create a unique key
+            return `${item.name}-${item.address}-${index}`;
+          }}
           renderItem={renderItem}
           onDragEnd={handleReorder}
           scrollEnabled={true}

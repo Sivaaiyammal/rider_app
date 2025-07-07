@@ -12,11 +12,18 @@ import {
   import SearchAPI from '../../../controllers/NEMap/Search';
   import HomeMenuIcon from '../../../assets/icons/HomeMenu.svg';
   import {width} from '../../../utils/Utils';
+import CurrentLocationIcon from '../../../assets/icons/CurrentLocationIcon.svg';
+import { height } from '../../../utils/Utils';
+import locationTask from '../../../controllers/GetCurrentLocation';
   
   const LocationHeader = (props) => {
     const {toggleMenu} = props;
     const {location, currentLocationName, setCurrentLocationName} = useLocationStore();
-  
+   
+    const handleCurrentLocation = async () => {
+      await locationTask.getCurrentLocation();
+      
+    }
     // Calculate responsive maxWidth (70% of screen width)
     const responsiveMaxWidth = width * 0.7;
   
@@ -44,27 +51,31 @@ import {
     }, [location]); 
   
     return (
-      <View style={styles.addressContainer}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 5,
-          }}>
-          <TouchableOpacity style={styles.homeMenuIcon} onPress={() => toggleMenu()}>
-            <HomeMenuIcon  />
-            
-          </TouchableOpacity>
-          <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
-            <ProfileImage />
-          </TouchableOpacity>
+      <View style={styles.headerWrapper}>
+        <View style={styles.addressContainer}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 5,
+            }}>
+            <TouchableOpacity style={styles.homeMenuIcon} onPress={() => toggleMenu()}>
+              <HomeMenuIcon  />
+            </TouchableOpacity>
+            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
+              <ProfileImage />
+            </TouchableOpacity>
+          </View>
+          <View style={{marginLeft: 10}}>
+            <Text style={styles.title}>{'Your Location'}</Text>
+            <Text style={[styles.address, {maxWidth: responsiveMaxWidth-10}]} numberOfLines={1} ellipsizeMode="tail">
+              {currentLocationName ? currentLocationName : <ActivityIndicator />}
+            </Text>
+          </View>
         </View>
-        <View style={{marginLeft: 10}}>
-          <Text style={styles.title}>{'Your Location'}</Text>
-          <Text style={[styles.address, {maxWidth: responsiveMaxWidth-10}]} numberOfLines={1} ellipsizeMode="tail">
-            {currentLocationName ? currentLocationName : <ActivityIndicator />}
-          </Text>
-        </View>
+        <TouchableOpacity style={styles.currentLocationIconContainer} onPress={handleCurrentLocation}>
+          <CurrentLocationIcon width={25} height={25} />
+        </TouchableOpacity>
       </View>
     );
   };
@@ -72,9 +83,18 @@ import {
   export default LocationHeader;
   
   const styles = StyleSheet.create({
+    headerWrapper: {
+      position: 'relative',
+      width: '100%',
+      // Ensures the wrapper takes up space for absolute positioning
+      minHeight: 80,
+      zIndex: 100,
+    },
     addressContainer: {
       position: 'absolute',
       top: 20,
+      left: '5%',
+      right: '5%',
       zIndex: 100,
       flexDirection: 'row',
       padding: 8,
@@ -86,7 +106,6 @@ import {
       boxShadow: '0 3px 6px 0 rgba(0, 0, 0, 0.05)',
       border: 'solid 0.5px #e0e0e0',
       backgroundColor: '#fff',
-      
     },
     homeMenuIcon: {
       paddingHorizontal: 10,
@@ -99,9 +118,7 @@ import {
     title: {
       fontFamily: Fonts.regular,
       fontSize: 12,
-     
       color: '#757575',
-      
     },
     address: {
       color: '#212121',
@@ -110,5 +127,19 @@ import {
       marginTop: 2,
       fontFamily: Fonts.medium,
     },
+    currentLocationIconContainer: {
+      position: 'absolute',
+      height: 40,
+      width: 40,
+      right: 30,
+      bottom: -height*0.06,
+      zIndex: 101,
+      backgroundColor: 'white',
+      padding: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 30,
+      elevation: 10,
+     
+    },
   });
-  

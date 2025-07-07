@@ -15,13 +15,13 @@ const ICONS = {
   },
 };
 
-const FavPlacesItem = ({ type, onPress }) => {
+  const FavPlacesItem = ({ type, onPress,isDataExist }) => {
   const iconData = ICONS[type] || ICONS.home;
   return (
     <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.iconLabelRow}>
         <MaterialIcons name={iconData.name} size={20} color="#757575" style={styles.icon} />
-        <Text style={styles.label}>{iconData.label}</Text>
+        <Text style={styles.label}>{!isDataExist && "Add "}{iconData.label}</Text>
       </View>
     </TouchableOpacity>
   );

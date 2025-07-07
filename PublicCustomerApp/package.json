@@ -26,6 +26,7 @@
     "@mapbox/polyline": "^1.2.1",
     "@react-native-async-storage/async-storage": "^2.0.0",
     "@react-native-community/checkbox": "^0.5.17",
+    "@react-native-community/netinfo": "^11.4.1",
     "@react-native-firebase/app": "^21.13.0",
     "@react-native-firebase/messaging": "^21.13.0",
     "@react-navigation/native": "^6.1.18",

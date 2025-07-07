@@ -141,7 +141,8 @@ export const addLocation = StyleSheet.create({
     fontFamily: Fonts.regular,
     fontSize: 14,
     display: 'flex',
-    paddingLeft:5
+    paddingLeft:5,
+    textTransform:'capitalize'
 
   },
   rideOptionContainer: {

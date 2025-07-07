@@ -339,4 +339,25 @@ export const utils = {
     const formattedTime = momentObj.format('h:mm a');
     return [dateComparison, formattedTime];
   },
+
+  formatAddressName: (address) => {
+    if(address.locationFrom === "MAP"){
+      return address.address.charAt(0).toUpperCase() + address.address.slice(1)
+    }else if(address.locationFrom === "SEARCH"){
+      return `${address.name},${address.address}`.charAt(0).toUpperCase() + `${address.name},${address.address}`.slice(1)
+    }else{
+
+      if (address.address){
+        return address.address.charAt(0).toUpperCase() + address.address.slice(1)
+
+      }
+      else if(address.name){
+        return address.name.charAt(0).toUpperCase() + address.name.slice(1)
+      }
+      else{
+        return ""
+      }
+      
+    }
+  }
 };

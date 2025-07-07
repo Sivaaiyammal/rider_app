@@ -5,7 +5,8 @@ import {
   TouchableOpacity, 
   StatusBar, 
   ActivityIndicator,
-  View
+  View,
+  Alert
 } from 'react-native';
 import React, {useEffect, useRef, useState, useCallback} from 'react';
 
@@ -15,27 +16,28 @@ import {colors, Fonts} from '../../../constants/constants';
 import BottomSheet from '../../../components/BottomSheet';
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import LocationHeader from '../components/LocationHeader';
-import HistoryCard from '../../../components/historyCard';
+import HistoryCard from '../../shared/component/HistoryCard';
 import LinearGradient from 'react-native-linear-gradient';
 import SearchIcon from '../../../assets/icons/SearchIcon.svg';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import MapIcon from '../../../components/Map/MapIcon';
 import FavLabelItems from '../components/FavLabelItems';
 import useLocationStore from '../../../store/useLocationStore';
-import { LocationTypes } from '../../booking/types/LocationTypes';  
+import  LocationTypes  from '../../booking/types/LocationTypes.json';  
 import useRideBookingLocationStore from '../../booking/store/useRideBookingLocationStore'
+import {storeLocation}   from '../../../storage/userLocalStorage'
 const MapScreen = () => {
 
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState(null);
-  const {setStackScreen} = useStackScreenStore();
+  const {setStackScreen,goBack} = useStackScreenStore();
   const {location,currentLocationName} = useLocationStore();
 
     
-  const {  setRideStartLocation } = useRideBookingLocationStore()
+  const {  setRideStartLocation,setRideEndLocation } = useRideBookingLocationStore()
  
   
-  const {homelocation, worklocation,setIsFavouriteLocationSearchEnabled,setCurrentSearchFavouriteLocation} = useUserInfoStore();
+  const {homelocation, worklocation,setHomelocation,setWorklocation} = useUserInfoStore();
  
   
   const scaleValue = useRef(new Animated.Value(1)).current;
@@ -107,20 +109,25 @@ const MapScreen = () => {
       if (!item) {
         throw new Error('Invalid history item');
       }
-      console.log('History item:', item);
+      
+      const locationData ={
+        name:"Current Location",
+        latitude:location[1],
+        longitude:location[0],
+        address:currentLocationName,
+        type:LocationTypes.START_LOCATION,
+        locationFrom:"MAP"
+      }
+      setRideStartLocation(locationData)
+      setRideEndLocation(item)
+      setStackScreen("PlanRideScreen",{})
+     
      
     } catch (error) {
       console.log(error, 'onHistoryPress');
     }
   }, []);
 
-  // Loading component
-  const LoadingOverlay = () => (
-    <View style={styles.loadingOverlay}>
-      <ActivityIndicator size="large" color={colors.primary || '#4b48ab'} />
-      <Text style={styles.loadingText}>Processing...</Text>
-    </View>
-  );
 
   // Error component
   const ErrorMessage = () => (
@@ -137,34 +144,64 @@ const MapScreen = () => {
     )
   );
 
-  const handlePlaceSave = useCallback((location) => {
-    console.log('Place save:', location);
+  const handlePlaceSave = useCallback((location,locationType) => {
+   
+    if(locationType === "Home"){
+      setHomelocation(location)
+    }else{
+      setWorklocation(location)
+    }
+    storeLocation(locationType,location)
+    goBack()
+   
   }, []);
 
-  const handleFavouriteLocationPress = useCallback((locationType,location) => {
+  const handleFavouriteLocationPress = useCallback((locationType,Labelocation) => {
     console.log('Favourite location press:', locationType,location);
-    if(location){
+    if(Labelocation){
+     
+      const locationData ={
+        name:"Current Location",
+        latitude:location[1],
+        longitude:location[0],
+        address:currentLocationName,
+        type:LocationTypes.START_LOCATION,
+        locationFrom:"MAP"
+      }
+
+      setRideStartLocation(locationData)
+      setRideEndLocation(Labelocation)
+      setStackScreen("PlanRideScreen",{})
+
+
       
       return;
     }
-    setIsFavouriteLocationSearchEnabled(true);
-    setCurrentSearchFavouriteLocation(locationType);
+   
     setStackScreen('SearchScreen',{
-      onPlaceSave: handlePlaceSave
+      onSearchClick: handlePlaceSave,
+      searchType:locationType
     });
     
   }, []);
 
   const makeRidePlan=()=>{
 
+    if(!location || !currentLocationName || !location.length){
+      Alert.alert("Location not found")
+      return;
+    }
+
     const locationData ={
       name:"Current Location",
       latitude:location[1],
       longitude:location[0],
       address:currentLocationName,
-      type:LocationTypes.START_LOCATION
+      type:LocationTypes.START_LOCATION,
+      locationFrom:"MAP"
     }
     setRideStartLocation(locationData)
+  
     setStackScreen("PlanRideScreen",{})
   }
 

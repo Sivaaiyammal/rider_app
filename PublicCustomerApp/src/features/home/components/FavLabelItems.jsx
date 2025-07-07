@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Fonts } from '../../../constants/constants';
 import HomeIcon from '../../../assets/icons/HomeIcon.svg';
 import WorkIcon from '../../../assets/icons/WorkIcon.svg';
-import { utils, width } from '../../../utils/Utils';
+import {  utils, width } from '../../../utils/Utils';
 
 
 const FavLabelItems = ({ 
@@ -13,6 +13,9 @@ const FavLabelItems = ({
   
 }) => {
   const responsiveMaxWidth = width * 0.8;
+
+  console.log("homeLocation",homeLocation)
+  console.log("workLocation",workLocation)
 
   
   return (
@@ -26,7 +29,7 @@ const FavLabelItems = ({
               {homeLocation ? 
               <View style={styles.FavouriteAddressItemTextContainer}>
                   <Text style={styles.FavouriteAddressItemText}>Home</Text>
-                  <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth }]}>{utils.toTitleCaseName(homeLocation?.name)}, {homeLocation.address}</Text>
+                  <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth }]}>{utils.formatAddressName(homeLocation)}</Text>
               </View> : <View style={styles.addLocation}>
                
                 <Text style={[styles.addLocationText, {color: "#37f"}]}>Add Home</Text>
@@ -41,14 +44,14 @@ const FavLabelItems = ({
               {workLocation ? 
               <View style={styles.FavouriteAddressItemTextContainer}>
                   <Text style={styles.FavouriteAddressItemText}>Work</Text>
-                  <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth }]}>{utils.toTitleCaseName(workLocation?.name)}, {workLocation.address}</Text>
+                  <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth }]}>{utils.formatAddressName(workLocation)}</Text>
               </View> : <View style={styles.addLocation}>
              
                 <Text style={[styles.addLocationText, {color: "#0cb400"}]}>Add Work </Text>
             
               </View>}
           </TouchableOpacity>
-    </View>
+    </View> 
 
 
   );

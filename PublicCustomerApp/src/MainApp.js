@@ -8,20 +8,19 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import { DataStore } from './controllers/DataStore';
 import { ContextProvider } from './context/GlobalContext';
 import firebaseConfig from '../firebaseConfig';
-
 import messaging from '@react-native-firebase/messaging';
 import PushNotifications from './controllers/PushNotification';
-
+import { NetworkProvider, useNetwork } from './context/NetworkContext';
+import NoNetworkOverlay from './components/NoNetworkOverlay';
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-const MainApp = () => {
+const MainAppContent = () => {
   const appearance = useColorScheme();
+  const { isConnected, checkConnection } = useNetwork();
 
-  
-  
   const setAppTheme = useCallback(async () => {
     const IS_FIRST = await DataStore.loadData('IS_FIRST');
     if (IS_FIRST.data === null) {
@@ -60,8 +59,6 @@ const MainApp = () => {
       });
 
     return unsubscribe;
-
-
   }, []);
 
   return (
@@ -71,10 +68,19 @@ const MainApp = () => {
           <NavigationContainer>
             <Navigation />
           </NavigationContainer>
+          {!isConnected && (
+            <NoNetworkOverlay onRetry={checkConnection} />
+          )}
       </AlertNotificationRoot>
       </ContextProvider>
     </GestureHandlerRootView>
   );
 };
+
+const MainApp = () => (
+  <NetworkProvider>
+    <MainAppContent />
+  </NetworkProvider>
+);
 
 export default MainApp;

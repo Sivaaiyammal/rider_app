@@ -1,6 +1,5 @@
-import React, {useCallback, useMemo,useState,useContext} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -10,7 +9,6 @@ import {
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Entypo from 'react-native-vector-icons/Entypo';
-import {debounce} from 'lodash';
 import {colors, Fonts} from '../../../constants/constants';
 import NavBar from '../../../components/NavBar';
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
@@ -25,7 +23,8 @@ import FullScreenLoader from '../../../components/Loaders/FullScreenLoader';
 import HistoryCard from '../../shared/component/HistoryCard';
 import { DataStore } from '../../../controllers/DataStore';
 import useUserInfoStore from '../../../store/useUserInfoStore';
-import {setLocation} from '../../../storage/userLocalStorage';
+import { useDebouncedSearch } from '../../../hooks/useDebounce';
+import { LocationTypes } from '../../booking/types/LocationTypes';
 const SearchScreen = ({onSearchClick=null,searchType}) => {
   const [searchTxt,setSearchTxt] = useState("");
   const {goBack,setStackScreen} = useStackScreenStore();
@@ -53,7 +52,7 @@ const SearchScreen = ({onSearchClick=null,searchType}) => {
         
         if (!exists) {
           // Add new item to start of array, limit to 5 items
-          updatedSearches = [item, ...recentSearches.data].slice(0, 5);
+          updatedSearches = [item, ...recentSearches.data].slice(0, 4);
         } else {
           // Move existing item to start
           updatedSearches = [
@@ -71,7 +70,7 @@ const SearchScreen = ({onSearchClick=null,searchType}) => {
     }
   }
   // Debounce the search input to limit API calls 
-  const searchAPI = async (value,statevectore={},fullSearch=false) => {
+  const searchAPI = useCallback(async (value,statevectore={},fullSearch=false) => {
 
     
     const searchParams = {
@@ -102,12 +101,9 @@ const SearchScreen = ({onSearchClick=null,searchType}) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [location, setOnSearchResults]);
 
-  const debouncedSetSearchUnit = useMemo(
-    () => debounce(searchAPI, 500),
-    [setSearchUnit]
-  );
+  const debouncedSetSearchUnit = useDebouncedSearch(searchAPI, 500);
 
   // Memoize the input change handler to avoid unnecessary re-renders
   const _onChangeText = useCallback(
@@ -141,51 +137,19 @@ const SearchScreen = ({onSearchClick=null,searchType}) => {
      await searchAPI(searchTxt, null)
   }
 
-  // add map markers if route not added
-  const addMapMarkers = useCallback(
-    (item, markerType) => {
-      if (!directionPoints) {
-        const marker = new Marker(
-          String(selectedInput.id),
-          item?.name || Math.random().toString(),
-          item?.longitude,
-          item?.latitude,
-          markerType,
-          36,
-          true,
-        );
-        const updatedMarkers = [...mapMarkers];
-        const existingIndex = updatedMarkers.findIndex(
-          m => m.type === markerType,
-        );
-        if (existingIndex !== -1) {
-          updatedMarkers[existingIndex] = marker;
-        } else {
-          updatedMarkers.push(marker);
-        }
-        setMapMarkers(updatedMarkers);
-        setRouteDirection(updatedMarkers);
-        marker.setFocus(true);
-        goBack();
-      } else {
-        updateRouteDirections(item);
-      }
-    },
-    [directionPoints],
-  );
+  
 
   // onpress on search results
-  const onLocationNamePress = ((item)=>{
-    
+  const onLocationNamePress = useCallback((item)=>{
 
-    onSearchClick(item,searchType);
+    item["locationFrom"]="SEARCH"
     storeRecentSearch(item);
-
-    }
     
-     
-   
-  );
+    
+    onSearchClick(item,searchType);
+    
+
+  }, [onSearchClick, searchType]);
 
 
   const fullSearch = () =>{
@@ -199,14 +163,16 @@ const SearchScreen = ({onSearchClick=null,searchType}) => {
 
 
   const handleLocateOnMapCallback=(item)=>{
+    
+    onSearchClick(item,searchType)
     goBack()
-    onSearchClick(item)
     
   }
 
   const handleLocateOnMap = () =>{
     setStackScreen('PickLocationScreen',{
-        onPickLocationResultCallback:handleLocateOnMapCallback
+        onPickLocationResultCallback:handleLocateOnMapCallback,
+        locationTypes:searchType
       })
   }
 

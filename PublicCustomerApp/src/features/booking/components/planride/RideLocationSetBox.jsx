@@ -6,15 +6,33 @@ import DestinationIcon from '../../../../assets/icons/destinationIcon';
 import { Fonts } from '../../../../constants/constants';
 import LocationTypes from '../../types/LocationTypes.json';
 
+import useRideBookingLocationStore from '../../store/useRideBookingLocationStore';
+import {utils} from '../../../../utils/Utils';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
 
 
 const LineWidth = 2;
 const RideLocationSetBox = ({
-  pickup = '1, Kambar Street, Alandur, Chennai...',
-  destination = 'Search Destination',
   onAddWaypoint,
   onLocationClick,
+  onWaypointClick,
 }) => {
+
+
+
+  const {rideStartLocation,rideEndLocation,rideWayPoints} = useRideBookingLocationStore()
+
+  
+
+  const destination = rideEndLocation ? utils.formatAddressName(rideEndLocation) : "Search Destination"
+  const pickup = rideStartLocation ? utils.formatAddressName(rideStartLocation) : "Search Destination"
+
+  const startLocationLable = rideStartLocation?.name === "Current Location" ? "Current Location" : "Pickup Location"
+
+  
+
+
   return (
     <View style={styles.container}>
       {/* Pickup Row */}
@@ -28,23 +46,42 @@ const RideLocationSetBox = ({
         <View style={styles.dottedVerticalLine} />
         </View>
         <View style={[styles.locationContainer]}>
-          <Text style={styles.label}>Your Location</Text>
-          <Text style={styles.address} numberOfLines={1}>{pickup}</Text>
+          <Text style={styles.label}>{startLocationLable}</Text>
+          {rideStartLocation ? <Text style={styles.address} numberOfLines={1}>{pickup}</Text>:<Text style={styles.placeHolder}>Search Pickup Location</Text>}
         </View>
       </TouchableOpacity>
       <TouchableOpacity style={styles.stopContainer} onPress={()=>onLocationClick(LocationTypes.WAYPOINT_LOCATION)}>
         <View style={styles.iconContainer}>
         <View style={styles.dottedVerticalLine} />
+        { rideWayPoints.length > 0 && 
+        <>
+        <View style={styles.iconItem}>
+          <View style={[styles.iconSubItem,{backgroundColor:'black'}]} />
         </View>
-        <View style={styles.stopLocationContainer}>
+         <View style={styles.dottedVerticalLine} />
+         </>
+        }
+        </View>
+       
+   
+        {
+          rideWayPoints.length > 0 ?
+           <View style={styles.stopLocationMainContainer}>
+          
+           <View style={styles.stopCountContainer}>
+             <Text style={styles.stopCountText}> {rideWayPoints.length} Stop</Text>
+           </View>
+           <View style={styles.stopLloctiondashedHorozontalLine}/>
+          </View>
+          : <View style={styles.stopLocationContainer}/>
+        }
+          
          
-        </View>
+        
       </TouchableOpacity>
         <TouchableOpacity style={styles.addStopBtnAbsolute} onPress={()=>onAddWaypoint(LocationTypes.WAYPOINT_LOCATION)}>
             <View style={styles.plusIconBg}>
-            <Svg width="18" height="18" viewBox="0 0 18 18">
-                <Path d="M9 4v10M4 9h10" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-            </Svg>
+            {rideWayPoints.length ?<Icon name="edit" size={20} color="white" /> : <Icon name="add" size={20} color="white" />}
             </View>
         </TouchableOpacity>
      
@@ -60,7 +97,7 @@ const RideLocationSetBox = ({
         </View>
         <View style={[styles.locationContainer]}>
           <Text style={styles.label}>Destination</Text>
-          <Text style={styles.placeHolder}>{destination}</Text>
+          {rideEndLocation ? <Text style={styles.address} numberOfLines={1}>{destination}</Text>:<Text style={styles.placeHolder}>Search Destination</Text>}
         </View>
       </TouchableOpacity>
    
@@ -80,7 +117,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     paddingHorizontal: 15,
-   
+    paddingVertical:5,
     shadowColor: '#000',
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -126,17 +163,18 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   address: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
     textAlign: 'left',
     color: '#212121',
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.medium,
+    maxWidth: '95%',
   },
   placeHolder: {
-    fontSize: 14,
-    color: '#212121',
+    fontSize: 15,
+    color: '#A0A0A0',
    
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.medium,
   },
   dottedVerticalLine: {
     width: 1,
@@ -201,6 +239,31 @@ const styles = StyleSheet.create({
     
    
     
+  },
+  stopCountContainer: {
+    backgroundColor:  '#E0E0E0',
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    marginVertical:5,
+  },
+  stopCountText: {
+    fontSize: 14,
+    color: 'black',
+    fontFamily: Fonts.medium,
+  },
+  stopLocationMainContainer: {
+    flex:1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft:15,
+  },
+  stopLloctiondashedHorozontalLine: {
+    height: 2,
+    flex:1,
+    borderBottomWidth: 1,
+    borderBottomColor:  '#eee',
   },
 });
 

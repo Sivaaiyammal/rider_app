@@ -1,12 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-async function setLocation(type, location) {
+async function storeLocation(type, location) {
   await AsyncStorage.setItem(`@location_${type}`, JSON.stringify(location));
 }
 
-async function getLocation(type) {
+async function getStoredLocation(type) {
   const val = await AsyncStorage.getItem(`@location_${type}`);
   return val ? JSON.parse(val) : null;
 }
 
-export { setLocation, getLocation };
+export { storeLocation, getStoredLocation };

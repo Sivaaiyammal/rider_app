@@ -6,7 +6,7 @@ import { colors, Fonts } from '../../../constants/constants';
 import { DataStore } from '../../../controllers/DataStore';
 import HistoryIcon from '../../../assets/icons/HistoryIcon.svg';
 
-const HistoryCard = ({ selectCallback, header = true, bottomborder = true }) => {
+const HistoryCard = ({ selectCallback, header = true, bottomborder = true,fromSearchScreen=false }) => {
   const [historyItems, setHistoryItems] = useState([]);
   
   const setRecentSearches = useCallback(async () => {
@@ -30,8 +30,8 @@ const HistoryCard = ({ selectCallback, header = true, bottomborder = true }) => 
                 <HistoryIcon width={50} height={50} />
               </View>
               <View style={styles.textContainer}>
-                <Text style={styles.name}>{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</Text>
-                {item.address && <Text style={styles.address}>{item.address}</Text>}
+                <Text style={[styles.name,fromSearchScreen&&{fontSize:15}]}>{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</Text>
+                {item.address && <Text style={[styles.address,fromSearchScreen&&{fontSize:14}]} numberOfLines={1} ellipsizeMode="tail">{item.address}</Text>}
               </View>
             </View>
           </TouchableOpacity>
@@ -42,7 +42,7 @@ const HistoryCard = ({ selectCallback, header = true, bottomborder = true }) => 
           <Text style={styles.noHistoryText}>No recent searches</Text>
           <Text style={styles.noHistorySubtext}>Your recent searches will appear here</Text>
           <View style={styles.noHistoryIconContainer}>
-            <Ionicons name="search-outline" size={40} color={colors.grey} />
+            <Ionicons name="search-outline" size={40} color={"#757575"} />
           </View>
         </View>
       )}
@@ -83,13 +83,13 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontFamily: Fonts.medium,
-    color: colors.black,
+    fontFamily: Fonts.regular,
+    color: '#212121',
   },
   address: {
     fontSize: 14,
     fontFamily: Fonts.regular,
-    color: colors.grey,
+    color: '#757575',
     marginTop: 2,
   },
   title: {
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   noHistorySubtext: {
     fontSize: 14,
     fontFamily: Fonts.regular,
-    color: colors.grey,
+    color: "#757575",
     textAlign: 'center',
   },
 });

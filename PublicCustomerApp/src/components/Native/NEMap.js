@@ -52,33 +52,7 @@ class NEMap extends Component {
   }
 
   componentDidMount() {
-     /* TEST SEARCH */
-    setTimeout(async () => {
-      const searchResponse = await NeNativeModule.search(
-        13.0827,     // Chennai latitude
-        80.2707,     // Chennai longitude
-        "hotel",      // searchString - Text to search for
-        "india", // mapUnitName - Map region/zone name
-        {},          // stateVectorForMatches - State vector for matching results
-        10,          // resultCount - Number of results to return
-        "en",        // lang_code - Language code for results
-        true,        // debug - Enable debug mode
-        false,        // onlineOnly - Search only online results
-        false,        // makeFullSearch - Perform full search
-        false,        // isPoiSearch - Search for points of interest
-        50000,        // radius - Search radius in meters
-        '["restaurant", "cafe", "fast food"]'           // category - POI category filter
-      );
-      console.log("SEARCH RESPONSE", JSON.stringify(searchResponse.searchData.fast_match))
-      console.log("SEARCH RESPONSE", JSON.stringify(searchResponse.searchData.matchedStrings))
-
-      /* To clear a single state vector */
-      NeNativeModule.removeStateVector("place_name", 0)
-
-      /* To clear all state vectors */
-      NeNativeModule.clearStateVector()
-
-    }, 15000);
+  
     // Initialize map after short delay
     setTimeout(() => {
       this.setState(prevState => ({

@@ -13,7 +13,7 @@ import { colors } from '../../../constants/constants';
 
 const { height } = Dimensions.get('window');
 
-export default function AnimatedBottomSheetWrapper({ children, onClose }) {
+export default function AnimatedBottomSheetWrapper({ children, onClose,zIndex=false }) {
     const bounceValue = useRef(new Animated.Value(height)).current;
     const overlayOpacity = useRef(new Animated.Value(0)).current;
   
@@ -50,7 +50,7 @@ export default function AnimatedBottomSheetWrapper({ children, onClose }) {
     };
   
     return (
-      <View style={styles.wrapper}>
+      <View style={[styles.wrapper,{zIndex:zIndex ? zIndex : 9998}]}>
         <Animated.View
           style={[
             styles.overlay,
@@ -147,4 +147,5 @@ const styles = StyleSheet.create({
 AnimatedBottomSheetWrapper.propTypes = {
   children: PropTypes.node,
   onClose: PropTypes.func,
+  zIndex: PropTypes.number,
 };

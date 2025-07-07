@@ -4,19 +4,19 @@ import Homescreen from '../features/home/screens/HomeScreen.jsx'
 import MapContainer from '../features/map/components/MapContainer.js';
 import { RequestAllPermissions } from '../controllers/PermissionHandler';
 import locationTask from '../controllers/GetCurrentLocation';
-import VehicleListScreen from './VehicleListScreen';
 import SelectedVehicle from './SelectedVehicle';
 import TripScreenManager from './driverAssigned/TripScreenManager';
 import RideSummary from './RideSummary';
 import SearchScreen from '../features/search/screens/SearchScreen';
 import VehicleSearchScreen from './vehicleSearchScreen';
-import WaypointScreen from './WaypointScreen';
+import WaypointScreen from '../features/booking/screens/WaypointScreen';
 import { StatusBar } from 'react-native';
 import useUserInfoStore from '../store/useUserInfoStore';
-import { getLocation} from '../storage/userLocalStorage';
+import { getStoredLocation} from '../storage/userLocalStorage';
 import PickLocationScreen from './PickLocationScreen';
 import { useCustomBackHandler } from '../hooks/useCustomBackHandler';
 import PlanRideScreen from '../features/booking/screens/PlanRideScreen.jsx';
+import BookRideScreen from '../features/booking/screens/BookRideScreen.jsx';
 
 
 const Home = () => {
@@ -38,8 +38,8 @@ const Home = () => {
   };
 
   const checkFavouriteLocation = async () => {
-    const homeLocation = await getLocation('Home');
-    const workLocation = await getLocation('Work');
+    const homeLocation = await getStoredLocation('Home');
+    const workLocation = await getStoredLocation('Work');
  
     setHomelocation(homeLocation);
     setWorklocation(workLocation);
@@ -67,8 +67,8 @@ const Home = () => {
         return <PlanRideScreen {...params} />;
       case 'SearchScreen':
         return <SearchScreen {...params} />;
-      case 'VehicleList':
-        return <VehicleListScreen {...params} />;
+      case 'BookRideScreen':
+        return <BookRideScreen {...params} />;
       case 'SelectedVehicle':
         return <SelectedVehicle {...params} />;
       case 'TripScreenManager':

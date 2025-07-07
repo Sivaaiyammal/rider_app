@@ -2,10 +2,7 @@ import {Text, TouchableOpacity, View, StyleSheet} from 'react-native';
 import React, {useCallback, useState,useEffect} from 'react';
 import NavBar from '../../../components/NavBar';
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
-import AddLocationCard from '../../../screens/SearchLocation/AddLocationCard';
-import useLocationStore from '../../../store/useLocationStore';
 import useMapStore from '../../../features/map/store/useMapStore';
-import locationTask from '../../../controllers/GetCurrentLocation';
 import {addLocation} from '../../../styles/AddLocationStyles';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -19,19 +16,25 @@ import TripType from '../components/planride/TripType';
 import ScheduleContainer from '../../../screens/SearchLocation/ScheduleContainer';
 import { rideType } from '../../../constants/JsonData';
 import { utils } from '../../../utils/Utils';
-import useMapStyleStore from '../../../store/useMapStyleStore';
 import { colors } from '../../../constants/constants';
-import Contactsheet from '../../../components/Contactsheet';
+import Contactsheet from '../components/planride/Contactsheet';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import RideLocationSetBox from '../components/planride/RideLocationSetBox';
 import FavPlacesItem from '../components/planride/FavPlacesItem';
 import HistoryContainer from '../../shared/component/HistoryCard';
 import PickLocationButton from '../../shared/component/PickLocationButton';
+import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
+import LocationTypes from '../types/LocationTypes.json';
+import { useDebouncedAPICall } from '../../../hooks/useDebounce';
+import useRideBookingInfo from '../store/useRideBookingInfo';
+import { width } from '../../../utils/Utils';
+import { Fonts } from '../../../constants/constants';
+import { storeLocation } from '../../../storage/userLocalStorage';    
 
 const PlanRideScreen = () => {
-  const {userdetails} = useUserInfoStore();
+  const {userdetails,homelocation,worklocation,setHomelocation,setWorklocation} = useUserInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
- 
+  const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
   const {
     setOnSearchResults,
     setMapMarkers,
@@ -40,28 +43,77 @@ const PlanRideScreen = () => {
    
   } = useMapStore();
 
-  const {selectedRide, setSelectedRide, scheduleDateTime, setScheduleDateTime,vehicleList, setVehicleList, tripFor, setSelectedContact,setRideDistance,setRideDuration,rideDistance} =
+  const {selectedRide, setSelectedRide, scheduleDateTime, setScheduleDateTime, tripFor} =
     useRideSelectionStore();
+  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails} = useRideBookingInfo()
 
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showTripFor, setShowTripFor] = useState(false);
   const [showScheduleContainer, setShowScheduleContainer] = useState(false);
-
+  const isContinueButtonVisible = rideStartLocation && rideEndLocation
   const _toggleSubview = useCallback(() => {
     setShowBottomSheet(!showBottomSheet);
   }, [showBottomSheet]);
 
   const onBackPress = async () => {
-   
+    resetRideBookingLocation()
     goBack();
    
    
     
   };
 
-  useEffect(() => {
+  const handlePlaceSave = useCallback((location,locationType) => {
+   
+    if(locationType === "Home"){
+      location.type = LocationTypes.HOME_LOCATION
+      setHomelocation(location)
+    }else{
+      location.type = LocationTypes.WORK_LOCATION
+      setWorklocation(location)
+    }
+    storeLocation(locationType,location)
+    goBack()
     
-    setSelectedContact({name:userdetails.name,phone:userdetails.phone})
+   
+  }, []);
+
+  const handleFavouriteLocationPress = useCallback((locationType) => {
+    if(locationType === "Home"){
+      console.log("homelocation",homelocation)
+      if(homelocation){
+        setRideEndLocation(homelocation)
+        setStackScreen("BookRideScreen",{})
+      }else{
+
+        setStackScreen('SearchScreen',{
+          onSearchClick: handlePlaceSave,
+          searchType:locationType
+        });
+
+      }
+      
+    }else if(locationType === "Work"){
+      if(worklocation){
+        setRideEndLocation(worklocation)
+        setStackScreen("BookRideScreen",{})
+      }else{
+
+        setStackScreen('SearchScreen',{
+          onSearchClick: handlePlaceSave,
+          searchType:locationType
+        });
+
+      }
+    }
+    
+  }, []);
+
+  useEffect(() => {
+    if (userdetails){
+      setRideBookMode('MYSELF')
+      setPassangerDetails({name:userdetails.name,phone:userdetails.phone})
+    }
   }, []);
 
 
@@ -108,9 +160,29 @@ const PlanRideScreen = () => {
     setStackScreen('WaypointScreen');
   }
 
-  const onSearchClickResultCallback = (item) =>{
-    goBack()
-    console.log(item)
+
+  const HandsetRideLocation = (item,type)=>{
+    if (type === LocationTypes.START_LOCATION){
+      setRideStartLocation(item)
+    }else if (type === LocationTypes.DESTINATION_LOCATION){
+      setRideEndLocation(item)
+    }else if (type === LocationTypes.WAYPOINT_LOCATION){
+      addRideWayPoint(item)
+    }
+  }
+
+  // Debounced search callback to prevent excessive API calls
+  const debouncedSearchCallback = useDebouncedAPICall((item, type) => {
+    HandsetRideLocation(item, type);
+    goBack();
+    setStackScreen('BookRideScreen',{})
+  }, 300);
+
+  const onSearchClickResultCallback = (item,type) =>{
+    debouncedSearchCallback(item,type)
+   
+
+    
   }
 
   const onSearchClick = (type) =>{
@@ -121,6 +193,7 @@ const PlanRideScreen = () => {
   }
 
   const handleLocationClick=(type)=>{
+    
 
     onSearchClick(type)
 
@@ -128,23 +201,37 @@ const PlanRideScreen = () => {
 
   }
 
-  const onPickLocationResultCallback = (item) =>{
+  // Debounced pick location callback
+  const debouncedPickLocationCallback = useDebouncedAPICall((item, type) => {
+    console.log(item,type,"fromPickup")
+    HandsetRideLocation(item,type)
     goBack()
+    setStackScreen('BookRideScreen',{})
+  }, 300);
+
+  const onPickLocationResultCallback = (item,type) =>{
+    debouncedPickLocationCallback(item,type)
     
   }
 
   const handlePickLocation = () =>{
     console.log("pick location")
     setStackScreen('PickLocationScreen',{
-      onPickLocationResultCallback:onPickLocationResultCallback
+      onPickLocationResultCallback:onPickLocationResultCallback,
+      locationType:LocationTypes.DESTINATION_LOCATION
     })
   }
 
-  const handleHistoryLocationClick=()=>{
+  // Debounced history location callback
+  const debouncedHistoryCallback = useDebouncedAPICall((item) => {
+    HandsetRideLocation(item,LocationTypes.DESTINATION_LOCATION)
+  }, 300);
+
+  const handleHistoryLocationClick=(item)=>{
+    debouncedHistoryCallback(item)
+    setStackScreen('BookRideScreen',{})
 
   }
-
- 
 
 
 const scheduleDate = scheduleDateTime?.date ? utils.formatDate(scheduleDateTime?.date) : ""
@@ -171,7 +258,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
           <TouchableOpacity style={addLocation.rideSelection} onPress={() => onTripForPress()}>
             <Ionicons name="person" size={18} color={colors.white} />
-            <Text style={addLocation.rideSelectionTxt}>{tripFor}</Text>
+            <Text style={addLocation.rideSelectionTxt}>{rideBookMode === 'MYSELF' ? 'Myself' : passangerDetails?.name || 'Others'}</Text>
             <Ionicons name="chevron-down" size={18} color={colors.white} />
           </TouchableOpacity>
         </View>
@@ -182,18 +269,30 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
         
         />
         <View style={styles.favPlacesContainer}>  
-          <FavPlacesItem type="home" onPress={() => {}} />
-          <FavPlacesItem type="work" onPress={() => {}} />
+          <FavPlacesItem type="home" isDataExist={homelocation?true:false} onPress={() => {
+            handleFavouriteLocationPress("Home")
+          }} />
+          <FavPlacesItem type="work" isDataExist={worklocation?true:false} onPress={() => {
+            handleFavouriteLocationPress("Work")
+          }} />
         </View>
         <View style={styles.dottedLine}/>
-        <HistoryContainer selectCallback={handleHistoryLocationClick}/>
+        <HistoryContainer selectCallback={handleHistoryLocationClick} bottomborder = {false} fromSearchScreen={true}/>
 
         <View style={styles.pickLocationContainer}> 
           <PickLocationButton
           onPress={handlePickLocation}
        
           />
+         {
+          isContinueButtonVisible && (
+            <TouchableOpacity style={styles.continueButton} onPress={()=>setStackScreen("BookRideScreen",{})}>
+              <Text style={styles.continueButtonText}>Continue</Text>
+            </TouchableOpacity>
+          )
+         }
         </View>
+       
 
         {showBottomSheet  && (
           <AnimatedBottomSheetWrapper onClose={_toggleSubview}>
@@ -249,6 +348,20 @@ const styles = StyleSheet.create({
     alignSelf:'center',
     paddingHorizontal: 5,
    
+  },
+  continueButton:{
+    backgroundColor:"#000",
+    width:"100%",
+    padding:15,
+    borderRadius:10,
+    alignItems:'center',
+    justifyContent:'center',
+    marginVertical:10,
+  },
+  continueButtonText:{
+    color:"#fff",
+    fontSize:16,
+    fontFamily:Fonts.medium,
   },
 });
 

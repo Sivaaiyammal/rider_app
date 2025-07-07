@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   Text,
@@ -20,14 +20,17 @@ import useMapStyleStore from '../store/useMapStyleStore';
 import CurrentLocationIcon from '../assets/icons/CurrentLocationIcon.svg';
 import locationTask from "../controllers/GetCurrentLocation";
 import usePropsStore from '../store/usePropsStore';
-const PickLocationScreen = ({onPickLocationResultCallback}) => {
+import { useDebouncedAPICall } from '../hooks/useDebounce';
+
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers} = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const {currentLocationName,location} = useLocationStore();
   const {setIsMapButtonVisible} = useMapStyleStore();
   const {pickedLocation,setPickedLocation} = usePropsStore();
-  const fetchAddressName = async (lat, lng) => {
+  
+  const fetchAddressName = useCallback(async (lat, lng) => {
     const coordinates = [lat, lng];
   
     try {
@@ -45,21 +48,25 @@ const PickLocationScreen = ({onPickLocationResultCallback}) => {
       return "";
     }
     
-  };
-  const onmapCenterChanged = async (data)=>{
+  }, []);
+
+  // Debounced map center change handler to prevent excessive API calls
+  const debouncedMapCenterChange = useDebouncedAPICall(async (data) => {
     setIsAddressLoading(true);
     const address = await fetchAddressName(data.longitude, data.latitude, true);
     let item = {
-      latitude: data.latitude,
-      longitude: data.longitude,
+      latitude: data.longitude,
+      longitude: data.latitude,
       address: address,
+      type:locationType,
+      locationFrom:"MAP"
     }
     setPickedLocation(item);
     setIsAddressLoading(false);
-   
+  }, 300);
 
-      
-  
+  const onmapCenterChanged = async (data)=>{
+    debouncedMapCenterChange(data);
   }
 
   useEffect(()=>{
@@ -68,6 +75,8 @@ const PickLocationScreen = ({onPickLocationResultCallback}) => {
       latitude:location[1], 
       longitude: location[0],
       address: currentLocationName,
+      type:locationType,
+      locationFrom:"MAP"
     });
     setIsMapButtonVisible(false);
     setMapMarkers([]);   
@@ -134,8 +143,18 @@ const PickLocationScreen = ({onPickLocationResultCallback}) => {
                   </View>
 
               </View>
-              <TouchableOpacity style={styles.bottomContainerButton} onPress={()=>onPickLocationResultCallback(pickedLocation)}>
-                  <Text style={styles.bottomContainerButtonText}>Confirm Location</Text>
+              <TouchableOpacity 
+                style={[
+                  styles.bottomContainerButton, 
+                  isAddressLoading && styles.bottomContainerButtonDisabled
+                ]} 
+                onPress={()=>onPickLocationResultCallback(pickedLocation,locationType)}
+                disabled={isAddressLoading}
+              >
+                  <Text style={[
+                    styles.bottomContainerButtonText,
+                    isAddressLoading && styles.bottomContainerButtonTextDisabled
+                  ]}>Confirm Location</Text>
               </TouchableOpacity>
 
 
@@ -240,6 +259,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: Fonts.regular,
     textAlign: 'center',
+  },
+  bottomContainerButtonDisabled: {
+    backgroundColor: '#757575',
+    opacity: 0.6,
+  },
+  bottomContainerButtonTextDisabled: {
+    color: '#BDBDBD',
   },
   mapIconContainer: {
    position: 'absolute',

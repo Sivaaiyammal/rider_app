@@ -101,15 +101,7 @@ const MapContainer = ({ mapStyle }) => {
         onSearchPOIError={setSearchPOIError}
         onNavigationEnd={(e) => console.log('hari--->>navigationEnd-->>', e)}
       />
-       {isMapButtonVisible   && <View style={[styles.mapButtons,mapbuttonStyle]}>
-     
-        <TouchableOpacity style={styles.currentLocationButton} onPress={onPressCurrentLocation}>
-          <CurrentLocationIcon width={22} height={22} />
-          {/* <ion-icon name="locate-outline"></ion-icon> */}
-        </TouchableOpacity>
 
-      </View>
-} 
 
     </Animated.View>
     
