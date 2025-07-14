@@ -1,143 +1,167 @@
-# Debounce Hooks
+# Custom Hooks
 
-This directory contains custom hooks for implementing debounce functionality to optimize API calls and user interactions.
+This directory contains custom React hooks for the PublicCustomerApp.
 
 ## Available Hooks
 
-### `useDebounce`
-General-purpose debounce hook for any function.
+### useRideMatching
+
+A custom hook that manages ride matching status and integrates with the ride matching socket service.
+
+#### Features
+
+- **Socket Management**: Automatically initializes and manages the ride matching socket connection
+- **Status Tracking**: Tracks matching status (searching, success, failed, cancelled)
+- **Driver Information**: Stores and provides access to driver details and location
+- **Retry Logic**: Provides retry functionality for failed matching attempts
+- **State Management**: Integrates with Zustand store for persistent state
+
+#### Usage
 
 ```javascript
-import { useDebounce } from '../hooks/useDebounce';
+import useRideMatching from '../hooks/useRideMatching';
 
-const debouncedFunction = useDebounce((value) => {
-  // Your function logic here
-  console.log('Debounced:', value);
-}, 500);
-```
+const MyComponent = () => {
+  const {
+    // State
+    status,
+    message,
+    driverName,
+    driverLocation,
+    
+    // Computed states
+    isMatchingActive,
+    isMatchingFailed,
+    isDriverFound,
+    
+    // Methods
+    startMatching,
+    stopMatching,
+    retryMatching,
+    resetMatching,
+    getMatchingStatus,
+  } = useRideMatching();
 
-### `useDebouncedAPICall`
-Specifically designed for API calls with a default 500ms delay.
-
-```javascript
-import { useDebouncedAPICall } from '../hooks/useDebounce';
-
-const debouncedAPICall = useDebouncedAPICall(async (data) => {
-  const response = await fetch('/api/endpoint', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  });
-  return response.json();
-}, 300);
-```
-
-### `useDebouncedSearch`
-Optimized for search functionality with a default 300ms delay.
-
-```javascript
-import { useDebouncedSearch } from '../hooks/useDebounce';
-
-const debouncedSearch = useDebouncedSearch((searchTerm) => {
-  performSearch(searchTerm);
-}, 300);
-
-// Usage in TextInput
-<TextInput onChangeText={debouncedSearch} />
-```
-
-### `useDebouncedMapInteraction`
-Designed for map interactions like center changes with a default 200ms delay.
-
-```javascript
-import { useDebouncedMapInteraction } from '../hooks/useDebounce';
-
-const debouncedMapCenterChange = useDebouncedMapInteraction((coordinates) => {
-  reverseGeocode(coordinates);
-}, 200);
-```
-
-## Implementation Examples
-
-### Search Screen
-```javascript
-const SearchScreen = () => {
-  const searchAPI = useCallback(async (value) => {
-    const searchResults = await performSearch(searchParams);
-    setOnSearchResults(searchResults);
-  }, [location, setOnSearchResults]);
-
-  const debouncedSearch = useDebouncedSearch(searchAPI, 500);
-
-  const handleTextChange = useCallback((value) => {
-    debouncedSearch(value);
-    setSearchTxt(value);
-  }, [debouncedSearch]);
-};
-```
-
-### Pick Location Screen
-```javascript
-const PickLocationScreen = () => {
-  const fetchAddressName = useCallback(async (lat, lng) => {
-    const search = new SearchAPI();
-    const response = await search.reverseGeocode([lat, lng]);
-    return response.properties.street || response.properties.name;
-  }, []);
-
-  const debouncedMapCenterChange = useDebouncedMapInteraction(async (data) => {
-    setIsAddressLoading(true);
-    const address = await fetchAddressName(data.longitude, data.latitude);
-    setPickedLocation({
-      latitude: data.latitude,
-      longitude: data.longitude,
-      address: address,
-    });
-    setIsAddressLoading(false);
-  }, 300);
-
-  const onMapCenterChanged = (data) => {
-    debouncedMapCenterChange(data);
+  const handleBookRide = async (tripId) => {
+    const success = await startMatching(tripId);
+    if (success) {
+      console.log('Ride matching started successfully');
+    }
   };
+
+  const handleRetry = async (tripId) => {
+    const success = await retryMatching(tripId);
+    if (success) {
+      console.log('Ride matching retry started');
+    }
+  };
+
+  const handleCancel = () => {
+    stopMatching();
+  };
+
+  return (
+    <View>
+      {isMatchingActive && (
+        <Text>Searching for drivers...</Text>
+      )}
+      
+      {isMatchingFailed && (
+        <Button onPress={() => handleRetry(tripId)} title="Retry" />
+      )}
+      
+      {isDriverFound && (
+        <Text>Driver found: {driverName}</Text>
+      )}
+    </View>
+  );
 };
 ```
 
-### Plan Ride Screen
-```javascript
-const PlanRideScreen = () => {
-  const debouncedSearchCallback = useDebouncedAPICall((item, type) => {
-    HandsetRideLocation(item, type);
-    goBack();
-  }, 300);
+#### API Reference
 
-  const debouncedPickLocationCallback = useDebouncedAPICall((item, type) => {
-    HandsetRideLocation(item, type);
-    goBack();
-  }, 300);
+##### State Properties
 
-  const debouncedHistoryCallback = useDebouncedAPICall((item) => {
-    HandsetRideLocation(item, LocationTypes.DESTINATION_LOCATION);
-  }, 300);
-};
-```
+- `status`: Current matching status ('searching', 'success', 'failed', 'cancelled', null)
+- `message`: Status message for display
+- `driverName`: Name of the assigned driver (if found)
+- `driverLocation`: Object with `latitude` and `longitude` of driver location
 
-## Benefits
+##### Computed States
 
-1. **Reduced API Calls**: Prevents excessive API calls during rapid user input
-2. **Better Performance**: Improves app responsiveness and reduces server load
-3. **Cost Optimization**: Reduces API usage costs
-4. **Better UX**: Prevents UI flickering from rapid state updates
+- `isMatchingActive`: Boolean indicating if matching is currently active
+- `isMatchingFailed`: Boolean indicating if matching failed
+- `isDriverFound`: Boolean indicating if a driver was found
+
+##### Methods
+
+- `initializeSocket()`: Initialize the socket connection (called automatically)
+- `startMatching(tripId, passengerId?)`: Start the ride matching process
+- `stopMatching()`: Stop the current matching process
+- `retryMatching(tripId)`: Retry the matching process for a trip
+- `resetMatching()`: Reset all matching state
+- `getMatchingStatus()`: Get complete matching status object
+
+#### Integration with Existing Components
+
+The hook is already integrated with:
+
+1. **SearchLoader Component**: Uses the hook for retry functionality and status display
+2. **Booking Service**: Uses the hook to start matching after successful booking
+
+#### Socket Events
+
+The hook automatically listens for these socket events:
+
+- `matching_update`: Updates matching status and driver information
+- `connect`: Handles successful socket connection
+- `connect_error`: Handles connection errors
+- `disconnect`: Handles socket disconnection
+
+### useDebounce
+
+A hook that debounces function calls to prevent excessive API calls.
+
+### useCustomBackHandler
+
+A hook that handles custom back button behavior in React Native.
+
+### useQuery
+
+A hook that provides query functionality with success and error callbacks.
+
+## Usage Guidelines
+
+1. **Import hooks at the top of your component**:
+   ```javascript
+   import useRideMatching from '../hooks/useRideMatching';
+   ```
+
+2. **Use hooks at the beginning of your component**:
+   ```javascript
+   const MyComponent = () => {
+     const { status, startMatching } = useRideMatching();
+     // ... rest of component
+   };
+   ```
+
+3. **Handle loading and error states**:
+   ```javascript
+   if (isMatchingActive) {
+     return <LoadingSpinner />;
+   }
+   
+   if (isMatchingFailed) {
+     return <ErrorMessage message={message} />;
+   }
+   ```
+
+4. **Clean up on component unmount** (handled automatically by the hook)
 
 ## Best Practices
 
-1. **Choose Appropriate Delays**:
-   - Search: 300-500ms
-   - Map interactions: 200-300ms
-   - General API calls: 500ms
-
-2. **Use useCallback** for the functions passed to debounce hooks to prevent unnecessary re-renders
-
-3. **Handle Loading States**: Show loading indicators while debounced functions are pending
-
-4. **Error Handling**: Always wrap debounced API calls in try-catch blocks
-
-5. **Cleanup**: Consider canceling pending debounced calls when components unmount 
+- Always check the return values of async methods
+- Use the computed states (`isMatchingActive`, `isMatchingFailed`, etc.) for conditional rendering
+- Handle errors gracefully with try-catch blocks
+- Use the `getMatchingStatus()` method when you need the complete status object
+- Reset matching state when starting a new booking flow 

@@ -24,11 +24,12 @@ import { useDebouncedAPICall } from '../hooks/useDebounce';
 
 const PickLocationScreen = ({onPickLocationResultCallback,locationType=null}) => {
   const {goBack} = useStackScreenStore();
-  const { setOnMapCenterChanged,setMapMarkers} = useMapStore();
+  const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged} = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const {currentLocationName,location} = useLocationStore();
   const {setIsMapButtonVisible} = useMapStyleStore();
   const {pickedLocation,setPickedLocation} = usePropsStore();
+  const [mapMoving,setMapMoving] = useState(false)
   
   const fetchAddressName = useCallback(async (lat, lng) => {
     const coordinates = [lat, lng];
@@ -66,15 +67,21 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null}) =>
   }, 300);
 
   const onmapCenterChanged = async (data)=>{
+    setMapMoving(false);
     debouncedMapCenterChange(data);
+  }
+
+  const onMapRotationChangedCallback = async ()=>{
+    setMapMoving(true);
   }
 
   useEffect(()=>{
     setOnMapCenterChanged(onmapCenterChanged);
+    setOnMapRotationChanged(onMapRotationChangedCallback);
     setPickedLocation({
       latitude:location[1], 
       longitude: location[0],
-      address: currentLocationName,
+      address: currentLocationName, 
       type:locationType,
       locationFrom:"MAP"
     });
@@ -102,9 +109,15 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null}) =>
         title="Locate on Map"
         onBackPress={()=>goBack()}
     />
-    <View style={styles.container}>
+    <View style={[styles.container]}>
+        <View style={{alignSelf:'center',alignItems:'center',marginBottom:mapMoving?10:0}}>
         <Image source={PickIcon} style={styles.pickIcon} />
         <View style={styles.pickIconVerticalLine}></View>
+        </View>
+        <View style={[styles.shadowContainer]}>
+          <View style={[styles.shadow]}>
+          </View>
+        </View>
     </View>
           <View style={styles.bottomContainer}>
             <View style={styles.mapIconContainer}>
@@ -288,6 +301,19 @@ const styles = StyleSheet.create({
     elevation: 10,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  shadowContainer: {
+   
+  
+    height: 10,
+    width: 10,
+    top: -5,
+   
+    backgroundColor: '#101010'+'50',
+    alignSelf: 'center',
+    marginBottom: 10,
+    borderRadius: 50,
+    transform: [{ scaleX: 2 }],
   },
 });
 

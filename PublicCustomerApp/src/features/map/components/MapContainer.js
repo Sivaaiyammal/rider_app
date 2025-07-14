@@ -22,6 +22,7 @@ const MapContainer = ({ mapStyle }) => {
     mapMarkers,
     searchUnit,
     onMapCenterChanged,
+    onMapRotationChanged,
     geometries,
     directionPoints,
     setOnSearchResults,
@@ -80,7 +81,7 @@ const MapContainer = ({ mapStyle }) => {
         onMapReady={() => {
           setMapReady(true);
         }}
-        onMapMoving={setMapMoving}
+        onMapRotationChanged={onMapRotationChanged}
         markers={mapMarkers}
         searchUnit={searchStr}
         autoPOISearch={searchPOI}

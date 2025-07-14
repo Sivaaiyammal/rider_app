@@ -47,6 +47,7 @@ export const bookRide = async (payload)=> {
 
 
 export const checkOnGoingRide = async ()=> {
+  console.log('checkOnGoingRideoo')
   const {data} = await apiClient.get('/publicrides/customer/getOngoingTrip')
   return data
 }

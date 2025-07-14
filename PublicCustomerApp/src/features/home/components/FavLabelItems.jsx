@@ -14,8 +14,6 @@ const FavLabelItems = ({
 }) => {
   const responsiveMaxWidth = width * 0.8;
 
-  console.log("homeLocation",homeLocation)
-  console.log("workLocation",workLocation)
 
   
   return (

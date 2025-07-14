@@ -434,7 +434,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             camera.longitude = homeLocation.getDouble("lng");
             camera.latitude = homeLocation.getDouble("lat");
             camera.zoom = homeLocation.getInt("zoom");
-            mapController.flyToCameraPosition(camera, 100, null);
+            mapController.flyToCameraPosition(camera, 1000, null);
         }
 
     }
@@ -1063,6 +1063,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             double currBearingInDegrees = 0;
             directions.getInstance().getRouteAsync(reactNativeContext, request, currBearingInDegrees);
 
+
+
         } else {
             Log.e("routeLOG", "inside remove 1");
 
@@ -1094,6 +1096,9 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         public void onSuccess(RouteResponse routeResponse) {
             Log.e("Success", "Res Success message");
             handleResponse(routeResponse);
+
+
+           
 
             RouteCount routeCount = Directions.getInstance().getPrimaryRoute();
             int index = (int) routeCount.getPrimaryRouteIndex() + 1;
@@ -1160,8 +1165,10 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 RouteCount routeCount = directions.getInstance().getPrimaryRoute();
                 // Log.e("NENative", "RC: " + routeCount.getRouteCount() + " sel route " +
                 // routeCount.getSelectedRoute());
-                int[] padding = { 50, 20, 30, 40 };
-                directions.getInstance().zoomRoute(padding, 1, -1);
+                int[] margin = {50, 50, 50, 700};
+                Log.e("DIRECTION","zoom called");
+                directions.getInstance().zoomRoute(margin, 0.8f, -1);
+                Log.e("DIRECTION","zoom called 2");
                 mapController.setCurrentLocationEnabled(true);
                 SharedDirections.updateSharedArray(routeInstructionsDisplay);
             } else {
@@ -1205,7 +1212,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             int routeIndex = 0;
             directions.getInstance().getRouteInstructions(routeIndex);
             RouteCount routeCount = directions.getInstance().getPrimaryRoute();
-            int[] padding = { 50, 20, 30, 40 };
+            int[] padding = { 50, 20, 30, 300 };
             directions.getInstance().zoomRoute(padding, 1, -1);
             if (mapController != null) {
                 mapController.setCurrentLocationEnabled(true);

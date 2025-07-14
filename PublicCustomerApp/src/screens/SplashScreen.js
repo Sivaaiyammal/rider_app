@@ -11,7 +11,7 @@ import { GlobalContext } from '../context/GlobalContext';
 const SplashScreen = () => {
   const navigation = useNavigation();
   const {addListener} = useContext(GlobalContext);
-  const {setUserdetails} = useUserInfoStore();
+  const {setUserdetails,setID} = useUserInfoStore();
   useEffect(() => {
     setTimeout(() => {
       nextScreen();
@@ -29,6 +29,7 @@ const SplashScreen = () => {
     if (access_token.data) {
       if(userdetails.data){
         setUserdetails(userdetails.data);
+        setID(userdetails.data._id);
       }
       addListener(access_token.data);
 

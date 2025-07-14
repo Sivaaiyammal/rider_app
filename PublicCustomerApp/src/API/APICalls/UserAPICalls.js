@@ -3,6 +3,7 @@ import {
   getUserDetails,
   profileUpdate,
   requestOTP,
+  checkOnGoingRide,
   testlogin,
   verifyOTP,
 } from '../EndPoints/EndPoints';
@@ -101,6 +102,25 @@ export const profileUpdateMutations = onSuccessCallback => {
     },
   });
 };
+
+
+export const getOngoingRide = onSuccessCallback => {
+ 
+  return useQuery(['getOngoingRide'], checkOnGoingRide, {
+    onSuccess: data => {
+      console.log('data', data)
+      if (data.success) {
+        if (onSuccessCallback) {
+          
+          onSuccessCallback(data);
+        }
+      }
+    },
+    onError: error => {
+      showNotification(`${error.status}`, error.message, 'danger');
+    },
+  });
+}
 
 // query user profile
 export const fetchUserDetails = () => {

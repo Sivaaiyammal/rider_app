@@ -179,9 +179,9 @@ class NEMap extends Component {
     )
 
     this.mapMovingListener = DeviceEventEmitter.addListener(
-      'onMapMoving',
+      'onMapRotationChanged',
       (data) => {
-        this.props.onMapMoving?.(data);
+        this.props.onMapRotationChanged?.(data);
       }
     )
 
@@ -277,7 +277,7 @@ NEMap.propTypes = {
   onSearchPOIResults: PropTypes.func,
   onSearchPOIError: PropTypes.func,
   onMapCenterChanged: PropTypes.func,
-  onMapMoving: PropTypes.func,
+  onMapRotationChanged: PropTypes.func,
   onNavigationEnd: PropTypes.func,
   mapStyle: PropTypes.object,
   markers: PropTypes.array,

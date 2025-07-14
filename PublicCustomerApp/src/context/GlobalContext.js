@@ -92,8 +92,16 @@ export const ContextProvider = ({children}) => {
     return systemColorScheme;
   }, [systemColorScheme]);
 
-  const addListener = useCallback(token => {
-    wsService.initSocket(token);
+  const addListener = useCallback(async token => {
+    try {
+      // Initialize main socket service
+      await wsService.initSocket(token);
+      
+      // Initialize ride matching socket service (optional)
+     
+    } catch (error) {
+      console.error('Error initializing main socket:', error);
+    }
   }, []);
 
   // Update theme when system color scheme changes (only if using default mode)

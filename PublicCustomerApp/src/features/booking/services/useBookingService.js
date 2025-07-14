@@ -4,6 +4,9 @@ import { showNotification } from '../../../components/NotificationManger';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import useRideBookingInfo from '../store/useRideBookingInfo';
 import useRideVehicleStore from '../store/useRideVehicleStore';
+import useRideMatching from '../../../hooks/useRideMatching';
+import useRideMatchStore from '../../rideStatus/store/useRideMatchStore';
+import useUserInfoStore from '../../../store/useUserInfoStore';
 
 /**
  * Hook to handle trip booking with API integration
@@ -28,13 +31,14 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
   } = useRideBookingInfo();
   
   const { selectedVehicle } = useRideVehicleStore();
-
+  const { resetRideMatchStatus } = useRideMatchStore();
+  const { initializeSocket, startMatching } = useRideMatching();
+  const { id: userId } = useUserInfoStore();
   /**
    * Prepare booking payload with dummy values for testing
-   * @param {Object} customData - Optional custom data to override defaults
    * @returns {Object} Formatted payload for booking API
    */
-  const prepareBookingPayload = (customData = {}) => {
+  const prepareBookingPayload = () => {
     // Validate required data
     if (!rideStartLocation || !rideEndLocation) {
       throw new Error('Start and end locations are required');
@@ -84,7 +88,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       pickupTime: Date.now().toString(), 
       
       // Pricing data
-      estimatedFare: selectedVehicle.basePrice || 100, 
+      minFare: selectedVehicle.basePrice || 100, 
       distance: rideDistance || 5, 
       estimatedDuration: estimatedDuration || 15, 
       maxFare: selectedVehicle.maxPrice || 150, 
@@ -108,12 +112,16 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     mutationFn: async (customPayload = null) => {
       const payload = customPayload || prepareBookingPayload();
       console.log('Booking payload:', JSON.stringify(payload));
-    //   return await bookRide(payload);
+      
+      return await bookRide(payload);
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log('Booking success:', data);
       
       if (data.success) {
+        resetRideMatchStatus();        
+        await initializeSocket();
+        startMatching(data.tripId, userId);
         showNotification('Booking Successful', 'Your ride has been booked successfully!', 'success');
         
         if (onSuccess) {

@@ -70,6 +70,9 @@ const useMapStore = create((set) => ({
     onMapCenterChanged: null,
     setOnMapCenterChanged: callback => set({ onMapCenterChanged: callback }),
 
+    onMapRotationChanged: null,
+    setOnMapRotationChanged: callback => set({ onMapRotationChanged: callback }),
+
     mapMoving: true,
     setMapMoving: mapMoving => set({ mapMoving }),
 

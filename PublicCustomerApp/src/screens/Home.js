@@ -4,11 +4,9 @@ import Homescreen from '../features/home/screens/HomeScreen.jsx'
 import MapContainer from '../features/map/components/MapContainer.js';
 import { RequestAllPermissions } from '../controllers/PermissionHandler';
 import locationTask from '../controllers/GetCurrentLocation';
-import SelectedVehicle from './SelectedVehicle';
-import TripScreenManager from './driverAssigned/TripScreenManager';
+
 import RideSummary from './RideSummary';
 import SearchScreen from '../features/search/screens/SearchScreen';
-import VehicleSearchScreen from './vehicleSearchScreen';
 import WaypointScreen from '../features/booking/screens/WaypointScreen';
 import { StatusBar } from 'react-native';
 import useUserInfoStore from '../store/useUserInfoStore';
@@ -17,6 +15,9 @@ import PickLocationScreen from './PickLocationScreen';
 import { useCustomBackHandler } from '../hooks/useCustomBackHandler';
 import PlanRideScreen from '../features/booking/screens/PlanRideScreen.jsx';
 import BookRideScreen from '../features/booking/screens/BookRideScreen.jsx';
+import { checkOnGoingRide } from '../API/EndPoints/EndPoints';
+import RideStatus from '../features/rideStatus';
+import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 
 
 const Home = () => {
@@ -24,7 +25,8 @@ const Home = () => {
   const permissionsRequested = useRef(false);
   const [mapReady, setMapReady] = useState(false);
   const { setHomelocation, setWorklocation} = useUserInfoStore();
-
+  const { setStackScreen } = useStackScreenStore();
+  const { setCurrentRideInfo } = useCurrentRideInfoStore();
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
     
@@ -45,11 +47,25 @@ const Home = () => {
     setWorklocation(workLocation);
   };
 
+  const checkOnGoingRideAndLog = async () => {
+    try {
+      const Response = await checkOnGoingRide();
+      console.log('Response', Response)
+      if(Response?.success && Response?.trip){
+        setCurrentRideInfo(Response?.trip);
+        setStackScreen('RideStatus', { });
+      }
+    } catch (error) {
+      console.error('Error fetching ongoing ride:', error);
+    }
+  }
+
 
  
 
   useEffect(() => {
     checkAllPermissions();
+    checkOnGoingRideAndLog();
     checkFavouriteLocation();
   }, []);
 
@@ -69,14 +85,8 @@ const Home = () => {
         return <SearchScreen {...params} />;
       case 'BookRideScreen':
         return <BookRideScreen {...params} />;
-      case 'SelectedVehicle':
-        return <SelectedVehicle {...params} />;
-      case 'TripScreenManager':
-        return <TripScreenManager {...params} />;
-      case 'RideSummary':
-        return <RideSummary {...params} />;
-      case 'VehicleSearchScreen':
-        return <VehicleSearchScreen {...params} />;
+      case 'RideStatus':
+        return <RideStatus {...params} />;
       case 'WaypointScreen':
         return <WaypointScreen {...params} />;
       case 'PickLocationScreen':
@@ -86,6 +96,8 @@ const Home = () => {
     }
   };
 
+  
+
   return (
     <>
      <StatusBar barStyle="dark-content" backgroundColor={"white"} />
@@ -94,6 +106,9 @@ const Home = () => {
         mapReady={mapReady}
         setMapReady={setMapReady}
       />
+      {/* {overlayStatuses.includes(tripStatus) && (
+        <TripStatusOverlay status={tripStatus} />
+      )} */}
     </>
   );
 };

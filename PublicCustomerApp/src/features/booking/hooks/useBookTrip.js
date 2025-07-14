@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import useBookingService from '../services/useBookingService';
+import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
 
 /**
  * Simple hook for booking trips with navigation handling
@@ -8,16 +9,17 @@ import useBookingService from '../services/useBookingService';
  */
 const useBookTrip = () => {
   const { setStackScreen } = useStackScreenStore();
-
+  const { setTripData } = useCurrentRideInfoStore();
   // Booking success callback - navigate to appropriate screen
   const handleBookingSuccess = useCallback((data) => {
-    console.log('Booking successful, navigating to ride status screen');
-    
-    // Navigate to ride status screen with booking data
-    setStackScreen('DriverArrival', {
-      bookingData: data.data,
-      tripId: data.data?.tripId || data.data?.bookingId
-    });
+      //  console.log('data', data)
+      // Navigate to ride status screen with booking data
+      setStackScreen('TripScreenManager', {
+        bookingData: data.data,
+        tripId: data.data?.tripId || data.data?.bookingId
+      });
+
+
   }, [setStackScreen]);
 
   // Booking error callback
@@ -47,6 +49,15 @@ const useBookTrip = () => {
 
       // Execute booking
       const result = await bookingService.bookTrip(customData);
+
+      
+      if(result?.success && result?.trip){
+        setTripData(result.trip);
+        setStackScreen('RideStatus', {
+         
+        });
+        return result;
+      }
       return result;
       
     } catch (error) {

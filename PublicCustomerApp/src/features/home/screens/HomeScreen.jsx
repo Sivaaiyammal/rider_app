@@ -118,6 +118,7 @@ const MapScreen = () => {
         type:LocationTypes.START_LOCATION,
         locationFrom:"MAP"
       }
+      console.log("locationData",locationData);
       setRideStartLocation(locationData)
       setRideEndLocation(item)
       setStackScreen("PlanRideScreen",{})

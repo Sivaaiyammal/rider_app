@@ -496,37 +496,6 @@ const commonStyles = StyleSheet.create({
     borderRadius: 10
   },
 
-  search_container_driver: {
-    width: '100%',
-    padding: 10,
-  },
-  search_pulseContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: 200,
-    overflow: 'hidden',
-    zIndex: -200,
-  },
-  searchVehicle_textContainer: {
-    gap: 20,
-    padding: 15,
-    zIndex: 200,
-    position: 'relative',
-  },
-  search_containercenter: {
-    gap: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 10,
-  },
-  search_image: {
-    width: 50,
-    height: 50,
-    objectFit: 'contain',
-  },
-  search_boldText: {
-    fontWeight: 'bold',
-  },
   carDetailsContainer: {
     width: '100%',
     flexDirection: 'row',

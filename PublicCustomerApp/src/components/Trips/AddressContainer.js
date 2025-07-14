@@ -1,42 +1,43 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import PropTypes from 'prop-types';
 import { colors, Fonts } from '../../constants/constants';
 import Rocket from '../../assets/image/svgIcons/rocket.svg';
 import EndBlack from '../../assets/image/svgIcons/end_black.svg';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const getLocationIcon = (item) => {
-  switch (item.name) {
-    case 'Start':
-    case 'Pickup Point':
-      return <Rocket />;
-    case 'End':
-    case 'Drop Point':
-      return <EndBlack />;
+const getLocationIcon = (item,index,length) => {
+  switch (index) {
+    case 0:
+      return <Rocket height={15} width={15} />;
+    case length-1:
+      return <EndBlack height={15} width={15} />;
     default:
-      if (item.name && item.name.startsWith('Waypoint')) {
-        return <EndBlack />;
-      }
-      return null;
+      return <Rocket />;
   }
 };
 
 const AddressContainer = ({ directions }) => {
-  console.log('directions', directions)
+  
   return (
     <View style={styles.locationContainer}>
       {directions.map((item, index) => {
         return (
           <View key={item.id} style={styles.locationNames}>
-            {getLocationIcon(item)}
+            {getLocationIcon(item,index,directions.length)}
             <View style={styles.locationTxtContainer}>
-              <Text style={{ color:colors.grey}}>
-                {index == 0 ? 'From' : index != directions.length-1 ? 'Stop' : 'To'}
+              <Text style={{fontSize:14, color:'#212121',fontFamily:Fonts.regular}}>
+                {index == 0 ? 'Pickup' : index != directions.length-1 ? 'Stop' : 'Drop'}
               </Text>
               <Text numberOfLines={1} ellipsizeMode="tail" style={styles.locationTxt}>
                 {(item.address || item.locationName)?.charAt(0).toUpperCase() + (item.address || item.locationName)?.slice(1)}
               </Text>
+             
+             
             </View>
+            <TouchableOpacity style={{paddingTop:10}}>  
+            <Icon name="edit" size={20} color={colors.black} />
+            </TouchableOpacity>
           </View>
         );
       })}
@@ -57,12 +58,11 @@ AddressContainer.propTypes = {
 const styles = StyleSheet.create({
   locationContainer: {
     backgroundColor: colors.white_dirt,
-    width: '90%',
+    width: '100%',
     alignSelf: 'center',
     borderRadius: 10,
-    marginTop: 10,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
     display: 'flex',
     flexDirection: 'column',
     gap: 10,
@@ -71,7 +71,8 @@ const styles = StyleSheet.create({
   locationNames: {
     flexDirection: 'row',
     gap: 10,
-    alignItems: 'center'
+    alignItems: 'center',
+   
   },
   locationTxtContainer: {
     flex: 1,

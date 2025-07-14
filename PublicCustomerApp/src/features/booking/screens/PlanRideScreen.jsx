@@ -80,7 +80,7 @@ const PlanRideScreen = () => {
 
   const handleFavouriteLocationPress = useCallback((locationType) => {
     if(locationType === "Home"){
-      console.log("homelocation",homelocation)
+      
       if(homelocation){
         setRideEndLocation(homelocation)
         setStackScreen("BookRideScreen",{})
