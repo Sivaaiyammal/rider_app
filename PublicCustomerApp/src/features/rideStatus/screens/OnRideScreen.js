@@ -1,89 +1,81 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { getVehicleImage } from '../types/vehicleImd';
+import {Fonts} from '../../../constants/constants';
+import AddressContainer from '../../../components/Trips/AddressContainer';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import useAssignedDriverInfoStore from '../store/useAssignedDriverInfoStore';
+import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
+const OnRideScreen = ({onPaymentMethodChange}) => {
+  const {driverName,rating,phone,vehicleNumber,model,brand,color,driverPhoto,setDummyDriverInfo} = useAssignedDriverInfoStore();
+    const {stops,otp,distance,minFare,maxFare,duration,estDropTime,totalDistance,vehicleType,paymentMethod} = useCurrentRideInfoStore();
 
-const OnRideScreen = () => {
-  // Dummy data
-  const driver = {
-    name: 'John Doe',
-    photo: 'https://letsenhance.io/static/73136da51c245e80edc6ccfe44888a99/1015f/MainBefore.jpg',
-  };
-  const vehicle = {
-    brand: 'Maruti Suzuki',
-    model: 'Swift Dzire',
-    color: 'White',
-    number: 'TN 01 AB 1234',
-    image: 'https://cdn.pixabay.com/photo/2012/05/29/00/43/car-49278_1280.jpg',
-  };
-  const stops = [
-    { label: 'Home', address: '1, Kambar Street, Alandur, Chennai...', icon: '🏠' },
-    { label: 'Virtualmaze', address: '12, Kambar Street, OMR, Chennai...', icon: '📍' },
-  ];
+    useEffect(()=>{
+      setDummyDriverInfo();
+    },[driverName])
   return (
-    <View style={styles.root}>
+    <>
       {/* Top info bar */}
-      <View style={styles.topBar}>
-        <Text style={styles.topBarText}>Reach your destination in</Text>
+      <View style={[styles.containerTop,{backgroundColor:'#0f223c'}]}>
+       
+        <Text style={styles.topBarText}>Your driver will arrive in</Text>
         <View style={styles.timeBox}>
-          <Text style={styles.timeText}>28:30 Mins · 15 Km</Text>
-        </View>
-      </View>
+          <Text style={styles.timeText}>05:30 Mins</Text>
+            </View>
+        
+    </View>
+
+    <View style={[styles.root,{backgroundColor:'white'}]}>
 
       {/* Card */}
-      <View style={styles.card}>
+     
         {/* Vehicle and driver images */}
         <View style={styles.imagesRow}>
-          <Image source={{ uri: vehicle.image }} style={styles.vehicleImg} />
+        {getVehicleImage(vehicleType,styles.vehicleImg)}
           <View style={styles.driverImgWrap}>
-            <Image source={{ uri: driver.photo }} style={styles.driverImg} />
+            <Image source={{ uri: driverPhoto }} style={styles.driverImg} />
           </View>
           <View style={styles.onRideBadge}><Text style={styles.onRideBadgeText}>On Ride</Text></View>
         </View>
         {/* Driver and vehicle info */}
-        <Text style={styles.driverName}>{driver.name}</Text>
-        <Text style={styles.vehicleDesc}>{vehicle.brand} {vehicle.model} · {vehicle.number}</Text>
+        <Text style={styles.driverName}>{driverName}</Text>
+        <Text style={styles.vehicleDesc}>{brand} {model} · {vehicleNumber}</Text>
         {/* Estimated amount */}
         <View style={styles.amountBox}>
           <Text style={styles.amountIcon}>🧾</Text>
           <Text style={styles.amountLabel}>Estimated Amount to be Paid</Text>
-          <Text style={styles.amountValue}>₹120</Text>
+          <Text style={styles.amountValue}>₹{minFare || "--"} - ₹{maxFare || "--"}</Text>
         </View>
         {/* Ride info */}
         <View style={styles.rideInfoRow}>
           <View style={styles.rideInfoItem}>
             <Text style={styles.rideInfoLabel}>Arrival</Text>
-            <Text style={styles.rideInfoValue}>3:20 PM</Text>
+            <Text style={styles.rideInfoValue}>{estDropTime}</Text>
           </View>
           <View style={styles.rideInfoItem}>
             <Text style={styles.rideInfoLabel}>Duration</Text>
-            <Text style={styles.rideInfoValue}>30 Min</Text>
+            <Text style={styles.rideInfoValue}>{duration} Min</Text>
           </View>
           <View style={styles.rideInfoItem}>
             <Text style={styles.rideInfoLabel}>Distance</Text>
-            <Text style={styles.rideInfoValue}>15 Km</Text>
+            <Text style={styles.rideInfoValue}>{totalDistance} Km</Text>
           </View>
         </View>
         {/* Stops */}
-        <View style={styles.stopsBox}>
-          {stops.map((stop, idx) => (
-            <View key={idx} style={styles.stopRow}>
-              <Text style={styles.stopIcon}>{stop.icon}</Text>
-              <View>
-                <Text style={styles.stopLabel}>{stop.label}</Text>
-                <Text style={styles.stopAddress}>{stop.address}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
+        <View style={{width:"100%",paddingHorizontal:20}}>
+       <AddressContainer directions={stops} edit={false} />
+       </View>
         {/* Payment method */}
-        <TouchableOpacity style={styles.paymentRow}>
+        <TouchableOpacity style={styles.paymentRow} onPress={onPaymentMethodChange}>
           <Text style={styles.paymentLabel}>Change Payment Method</Text>
           <View style={styles.paymentValueWrap}>
-            <Text style={styles.paymentValue}>Cash</Text>
-            <Text style={styles.paymentArrow}>›</Text>
+            <Text style={styles.paymentValue}>{paymentMethod}</Text>
+            <Icon name="chevron-right" size={20} color="#888" />
           </View>
         </TouchableOpacity>
       </View>
-    </View>
+    
+    </>
   );
 };
 
@@ -93,22 +85,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F7F7',
     padding: 0,
     alignItems: 'center',
-  },
-  topBar: {
-    backgroundColor: '#174EA6',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    padding: 16,
+  },
+  containerTop: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 0,
+    alignItems: 'center',
+   
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+   
+    zIndex: 100,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  vehicleImg: {
+    width: 70,
+    height: 70,
+    resizeMode: 'contain',
+    transform: [{ scaleX: -1 }],
   },
   topBarText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily:Fonts.regular,
   },
   timeBox: {
     backgroundColor: '#04713B',
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontFamily:Fonts.regular,
     fontSize: 15,
   },
   card: {
@@ -139,16 +140,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 8,
     marginTop: 8,
+    width:"100%"
   },
-  vehicleImg: {
-    width: 60,
-    height: 40,
-    resizeMode: 'contain',
-    marginRight: -20,
-    zIndex: 1,
-  },
+  
   driverImgWrap: {
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: '#fff',
     borderRadius: 32,
     overflow: 'hidden',
@@ -158,32 +154,33 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   driverImg: {
-    width: 48,
-    height: 48,
+    width: 60,
+    height: 60,
     borderRadius: 24,
   },
   onRideBadge: {
     position: 'absolute',
-    right: 0,
+    right: 10,
     top: 0,
     backgroundColor: '#2563EB',
-    borderRadius: 16,
+    borderRadius: 30,
     paddingHorizontal: 14,
-    paddingVertical: 4,
+    paddingVertical: 10,
   },
   onRideBadgeText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontFamily:Fonts.regular,
     fontSize: 14,
   },
   driverName: {
-    fontWeight: 'bold',
+    fontFamily:Fonts.regular,
     fontSize: 20,
     textAlign: 'center',
     marginTop: 4,
   },
   vehicleDesc: {
     color: '#555',
+    fontFamily:Fonts.regular,
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 8,
@@ -198,6 +195,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 10,
     marginVertical: 8,
+    marginHorizontal:20,
+    borderStyle:'dashed'
   },
   amountIcon: {
     fontSize: 18,
@@ -207,10 +206,11 @@ const styles = StyleSheet.create({
     color: '#333',
     fontSize: 14,
     flex: 1,
+    fontFamily:Fonts.regular,
   },
   amountValue: {
     color: '#04713B',
-    fontWeight: 'bold',
+    fontFamily:Fonts.medium,
     fontSize: 20,
     marginLeft: 8,
   },
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   rideInfoValue: {
-    fontWeight: 'bold',
+    fontFamily:Fonts.regular,
     fontSize: 15,
   },
   stopsBox: {
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   stopLabel: {
-    fontWeight: 'bold',
+    fontFamily:Fonts.regular,
     fontSize: 15,
     color: '#222',
   },
@@ -260,6 +260,7 @@ const styles = StyleSheet.create({
     maxWidth: 220,
   },
   paymentRow: {
+    width:"100%",
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -267,11 +268,12 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: '#eee',
     marginTop: 8,
+    paddingHorizontal:20
   },
   paymentLabel: {
     color: '#222',
     fontSize: 16,
-    fontWeight: '500',
+    fontFamily:Fonts.regular,
   },
   paymentValueWrap: {
     flexDirection: 'row',
@@ -279,7 +281,7 @@ const styles = StyleSheet.create({
   },
   paymentValue: {
     color: '#04713B',
-    fontWeight: 'bold',
+    fontFamily:Fonts.regular,
     fontSize: 16,
     marginRight: 4,
   },

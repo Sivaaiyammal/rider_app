@@ -1,0 +1,44 @@
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { colors, Fonts } from '../../../constants/constants';
+import { ImageBackground } from 'react-native';
+import rideFareBackground from "../../../assets/image/rideFareBackground.webp"
+
+const FareHeader = ({ fare = '₹117.50' }) => (
+  <View style={styles.headerContainer}>
+  <ImageBackground source={rideFareBackground} style={styles.imageBackground}>
+    <Text style={styles.label}>Ride Fare</Text>
+    <Text style={styles.fare}>{fare}</Text>
+  </ImageBackground>
+  </View>
+);
+
+const styles = StyleSheet.create({
+  headerContainer: {
+    width: '100%',
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
+  },
+  imageBackground: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  label: {
+    color: colors.white,
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  fare: {
+    color: colors.white,
+    fontFamily: Fonts.bold,
+    fontSize: 28,
+  },
+});
+
+export default FareHeader; 

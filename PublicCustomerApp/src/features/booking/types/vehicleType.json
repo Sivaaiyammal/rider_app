@@ -1,0 +1,25 @@
+[  {
+    "type":"BIKE",
+    "capacity":1
+},
+    {
+        "type":"AUTO",
+        "capacity":2
+    },
+    {
+        "type":"HATCHBACK",
+        "capacity":3
+    },
+    {
+        "type":"SEDAN",
+        "capacity":4       
+    },
+    {
+        "type":"SUV",
+        "capacity":5
+    },
+    {
+        "type":"ExSEDAN",
+        "capacity":6
+    }
+]

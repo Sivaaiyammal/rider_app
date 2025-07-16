@@ -8,7 +8,8 @@ const queryClient = new QueryClient();
 export const rideEstimation = onSuccessCallback => {
   return useMutation(['getRideEstimation'], getRideEstimation, {
     onSuccess: data => {
-      if (data.success) {
+      console.log("yes",data)
+      if (data.result.success) {
         if (onSuccessCallback) {
           queryClient.invalidateQueries('getRideEstimation');
           onSuccessCallback(data);

@@ -7,6 +7,7 @@ import useRideVehicleStore from '../store/useRideVehicleStore';
 import useRideMatching from '../../../hooks/useRideMatching';
 import useRideMatchStore from '../../rideStatus/store/useRideMatchStore';
 import useUserInfoStore from '../../../store/useUserInfoStore';
+import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
 
 /**
  * Hook to handle trip booking with API integration
@@ -34,6 +35,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
   const { resetRideMatchStatus } = useRideMatchStore();
   const { initializeSocket, startMatching } = useRideMatching();
   const { id: userId } = useUserInfoStore();
+  const { setCurrentRideInfo } = useCurrentRideInfoStore();
   /**
    * Prepare booking payload with dummy values for testing
    * @returns {Object} Formatted payload for booking API
@@ -122,6 +124,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         resetRideMatchStatus();        
         await initializeSocket();
         startMatching(data.tripId, userId);
+        setCurrentRideInfo(data)
         showNotification('Booking Successful', 'Your ride has been booked successfully!', 'success');
         
         if (onSuccess) {

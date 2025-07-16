@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import DriverArrivalScreen from './screens/DriverArrivalScreen';
 import OnRideScreen from './screens/OnRideScreen';
 import DriverSearchScreen from './screens/DriverSearchScreen';
+import CompletedRideScreen from './screens/RideCompletedScreen';
 import { TripStatus } from './types/TripStatus';
 import useCurrentRideInfoStore from './store/useCurrentRideInfoStore';
 import NavBar from '../../components/NavBar';
@@ -16,19 +17,23 @@ import CancelComponent from './component/CancelComponent';
 import AnimatedBottomSheetWrapper from '../shared/component/AnimatedBottomSheetWrapper';
 import { cancelRideMutation } from '../../API/APICalls/RideAPICalls';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
+import PaymentType from '../booking/components/bookRide/PaymentType';
 
 const RideStatus = () => {
   const { tripStatus,tripId } = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const {setStackScreen} = useStackScreenStore();
-
+  const [isPaymentMethodChangeShow,setIspaymentMethodChangeShow] = useState(false);
+  const [paymentType,setPaymentType] = useState('CASH');
   const renderScreen = () => {
     console.log('tripStatus',tripStatus);
     switch (tripStatus) {
       case TripStatus.PICKEDUP:
-        return <OnRideScreen onCancel={()=>{setShowBottomSheet(true)}} />;
+        return <OnRideScreen onCancel={()=>{setShowBottomSheet(true)}} onPaymentMethodChange={()=>{setIspaymentMethodChangeShow(true)}} />;
       case TripStatus.ACCEPTED:
         return <DriverArrivalScreen onCancel={()=>{setShowBottomSheet(true)}} />;
+      case TripStatus.DROPPED:
+        return <CompletedRideScreen />;
       default:
         return <DriverSearchScreen  onCancel={()=>{setShowBottomSheet(true)}} />;
     }
@@ -55,6 +60,13 @@ const RideStatus = () => {
    
   }
 
+
+  const handlePaymentMethodChange = (paymentType) => {
+    console.log('paymentType',paymentType);
+    setIspaymentMethodChangeShow(false);
+    setPaymentType(paymentType);
+  }
+
     return <>
         <NavBar title="Finding Driver" />
         <View style={styles.container}>
@@ -68,7 +80,7 @@ const RideStatus = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={styles.container_inner}>
+            <View style={[styles.container_inner,{backgroundColor:tripStatus === TripStatus.DROPPED ? '#13B15A' : '#0f223c'}]}>
                 {renderScreen()}
             </View>
         </View>
@@ -80,6 +92,12 @@ const RideStatus = () => {
       </AnimatedBottomSheetWrapper>
       
      
+    }
+    {
+      isPaymentMethodChangeShow &&
+      <AnimatedBottomSheetWrapper onClose={()=>{setIspaymentMethodChangeShow(false)}}>
+        <PaymentType onSelect={handlePaymentMethodChange} initialValue={paymentType} />
+      </AnimatedBottomSheetWrapper>
     }
     </>;
 };
@@ -94,7 +112,7 @@ const styles = StyleSheet.create({
   },
   containerTop: {
     
-    backgroundColor:' #0f223c',
+   
    
     zIndex: 100,
     borderTopLeftRadius: 20,

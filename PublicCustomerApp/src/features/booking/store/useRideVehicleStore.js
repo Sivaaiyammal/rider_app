@@ -59,7 +59,7 @@ const VEHICLE_TYPES = [
   ];
 const useRideVehicleStore = create((set,get) => ({
   // State
-  availableVehicles: VEHICLE_TYPES,
+  availableVehicles: null,
   selectedVehicle: null,
 
   // Actions

@@ -54,7 +54,7 @@ const OTPScreen = ({route}) => {
       showNotification('OTP Verified', 'OTP Verified Successfully', 'success');
       console.log(data, 'data');
       let {  user,isNewUser} = data;
-
+      console.log(user?.token)
       console.log(user?.token)
       console.log(user)
       console.log(isNewUser)

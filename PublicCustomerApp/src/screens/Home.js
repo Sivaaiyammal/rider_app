@@ -18,6 +18,7 @@ import BookRideScreen from '../features/booking/screens/BookRideScreen.jsx';
 import { checkOnGoingRide } from '../API/EndPoints/EndPoints';
 import RideStatus from '../features/rideStatus';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
+import PaymentScreen from '../features/payment/screens/PaymentScreen';
 
 
 const Home = () => {
@@ -91,6 +92,8 @@ const Home = () => {
         return <WaypointScreen {...params} />;
       case 'PickLocationScreen':
         return <PickLocationScreen {...params} />;
+      case 'PaymentScreen':
+        return <PaymentScreen {...params} />;
       default:
         return null;
     }

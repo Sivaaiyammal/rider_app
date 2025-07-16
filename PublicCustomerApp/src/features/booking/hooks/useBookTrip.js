@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import useBookingService from '../services/useBookingService';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
+import { setDummyDriverInfo } from '../../rideStatus/store/useAssignedDriverInfoStore';
 
 /**
  * Simple hook for booking trips with navigation handling
@@ -9,7 +10,7 @@ import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoSt
  */
 const useBookTrip = () => {
   const { setStackScreen } = useStackScreenStore();
-  const { setTripData } = useCurrentRideInfoStore();
+  const { setCurrentRideInfo } = useCurrentRideInfoStore();
   // Booking success callback - navigate to appropriate screen
   const handleBookingSuccess = useCallback((data) => {
       //  console.log('data', data)
@@ -52,9 +53,9 @@ const useBookTrip = () => {
 
       
       if(result?.success && result?.trip){
-        setTripData(result.trip);
+        setCurrentRideInfo(result.trip);
+        setDummyDriverInfo();
         setStackScreen('RideStatus', {
-         
         });
         return result;
       }

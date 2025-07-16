@@ -17,7 +17,7 @@ const getLocationIcon = (item,index,length) => {
   }
 };
 
-const AddressContainer = ({ directions }) => {
+const AddressContainer = ({ directions,edit=false }) => {
   
   return (
     <View style={styles.locationContainer}>
@@ -35,9 +35,11 @@ const AddressContainer = ({ directions }) => {
              
              
             </View>
-            <TouchableOpacity style={{paddingTop:10}}>  
-            <Icon name="edit" size={20} color={colors.black} />
-            </TouchableOpacity>
+            {edit && (
+              <TouchableOpacity style={{paddingTop:10}}>  
+              <Icon name="edit" size={20} color={colors.black} />
+              </TouchableOpacity>
+            )}
           </View>
         );
       })}

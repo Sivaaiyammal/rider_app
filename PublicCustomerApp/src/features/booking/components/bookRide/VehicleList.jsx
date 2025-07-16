@@ -16,8 +16,8 @@ import LinearGradient from 'react-native-linear-gradient';
 
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ExSEDAN };
 
-const VehicleList = ({ isLoading = false }) => {
-  const {availableVehicles,selectedVehicle,setSelectedVehicle} = useRideVehicleStore()
+const VehicleList = ({ isLoading = false ,availableVehicles}) => {
+  const {selectedVehicle,setSelectedVehicle} = useRideVehicleStore()
   const [slideAnim] = useState(new Animated.Value(0));
 
   useEffect(() => {
@@ -28,6 +28,13 @@ const VehicleList = ({ isLoading = false }) => {
       useNativeDriver: true,
     }).start();
   }, []);
+
+  // Add new useEffect to set default selected vehicle
+  useEffect(() => {
+    if (availableVehicles && availableVehicles.length > 0 && !selectedVehicle) {
+      setSelectedVehicle(availableVehicles[0]);
+    }
+  }, [availableVehicles, selectedVehicle, setSelectedVehicle]);
 
   const handleVehicleSelect = (vehicle) => {
     setSelectedVehicle(vehicle);
@@ -117,14 +124,14 @@ const VehicleList = ({ isLoading = false }) => {
               <View style={styles.vehicleInfoContainer}>
                 <View style={styles.rowBetween}>
                   <Text style={[styles.vehicleName]}>{VEHICLE_LABELS[vehicle.type] || vehicle.name}</Text>
-                  <Text style={[styles.price]}>{vehicle.maxPrice ? `₹${vehicle.basePrice} - ₹${vehicle.maxPrice}` : `₹${vehicle.basePrice}`}</Text>
+                  <Text style={[styles.price]}>{ `₹${vehicle.minFare} - ₹${vehicle.maxFare}`}</Text>
                 </View>
                 <View style={styles.rowBetween}>
                   <View style={styles.timeRow}>
                     <MaterialCommunityIcons name="clock" size={16} color={"#757575"} />
-                    <Text style={[styles.timeText]}>{vehicle.timeToPickup} min</Text>
-                    <Text style={[styles.dot]}>·</Text>
-                    <Text style={[styles.dropTime]}>{vehicle.dropat}</Text>
+                    <Text style={[styles.timeText]}>{vehicle.estimatedDuration} min</Text>
+                    {/* <Text style={[styles.dot]}>·</Text>
+                    <Text style={[styles.dropTime]}>{vehicle.dropat}</Text> */}
                   </View>
                   <View style={styles.passengerRow}>
                     <MaterialCommunityIcons name="account" size={16} color={ "#757575"} />

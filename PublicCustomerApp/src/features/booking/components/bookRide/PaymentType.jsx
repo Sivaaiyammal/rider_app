@@ -7,12 +7,12 @@ import { colors } from '../../../../constants/constants';
 import { Fonts } from '../../../../constants/constants';
 
 const PAYMENT_OPTIONS = [
-  { key: 'cash', label: 'Cash', Icon: PaymentCashIcon,value:"Cash" },
+  { key: 'cash', label: 'Cash', Icon: PaymentCashIcon,value:"CASH" },
   { key: 'upi', label: 'UPI', Icon: PaymentUPIIcon,value:"UPI" },
 ];
 
 const PaymentType = ({ onSelect, initialValue }) => {
-  const [selected, setSelected] = useState(initialValue || 'cash');
+  const [selected, setSelected] = useState(initialValue || 'CASH');
 
   const handleSelect = (key) => {
     setSelected(key);

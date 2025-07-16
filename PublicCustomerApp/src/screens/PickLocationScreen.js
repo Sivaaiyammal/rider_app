@@ -22,9 +22,9 @@ import locationTask from "../controllers/GetCurrentLocation";
 import usePropsStore from '../store/usePropsStore';
 import { useDebouncedAPICall } from '../hooks/useDebounce';
 
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null}) => {
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null}) => {
   const {goBack} = useStackScreenStore();
-  const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged} = useMapStore();
+  const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation} = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const {currentLocationName,location} = useLocationStore();
   const {setIsMapButtonVisible} = useMapStyleStore();
@@ -76,8 +76,28 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null}) =>
   }
 
   useEffect(()=>{
+
+    console.log("defaultLocation",defaultLocation)
     setOnMapCenterChanged(onmapCenterChanged);
     setOnMapRotationChanged(onMapRotationChangedCallback);
+    if (defaultLocation){
+      setPickedLocation({
+        latitude:defaultLocation.location[1],
+        longitude:defaultLocation.location[0],
+        address:defaultLocation.address,
+        type:locationType,
+        locationFrom:"MAP"
+      });
+
+      console.log("defaultLocation",defaultLocation)
+      
+        setMapLocation({
+          lat: defaultLocation.location[1],
+          lng: defaultLocation.location[0],
+          zoom: 25,
+        });
+      
+    }else{
     setPickedLocation({
       latitude:location[1], 
       longitude: location[0],
@@ -93,7 +113,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null}) =>
       setIsMapButtonVisible(true);
      }
   
-  },[]);
+  }},[]);
 
   const handleCurrentLocation = async () => {
     await locationTask.getCurrentLocation();

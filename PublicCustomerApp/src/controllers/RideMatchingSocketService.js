@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 
 // You can change this URL to your ride matching socket server
-const RIDE_MATCHING_SOCKET_URL = 'http://localhost:5001'; // Replace with your actual ride matching socket URL
+const RIDE_MATCHING_SOCKET_URL = 'http://192.168.1.125:5001'; // Replace with your actual ride matching socket URL
 
 class RideMatchingSocketService {
   constructor() {

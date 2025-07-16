@@ -33,7 +33,7 @@ export const getUserDetails = async ()=> {
 
 // get ride estimate
 export const getRideEstimation = async (payload)=> {
-  const {data} = await apiClient.post('/publicrides/customer/getRideEstimations', payload)
+  const {data} = await apiClient.post('/publicrides/customer/getRideEstimation', payload)
   return data
 }
 

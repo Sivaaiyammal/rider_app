@@ -1,8 +1,8 @@
 import io from 'socket.io-client';
 import Config from '../Config/APIConfig';
-import useRideSelectionStore from '../store/useRideSelectionStore';
-import useDriverLocationStore from '../store/useDriverLocationStore';
 import { useStackScreenStore } from '../store/useStackScreenStore';
+import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
+import useAssignedDriverInfoStore from '../features/rideStatus/store/useAssignedDriverInfoStore';
 
 const SOCKET_URL = Config.ROOT_API_URL;
 
@@ -19,23 +19,19 @@ class WSService {
     this.onRideStatus = this.onRideStatus.bind(this)
     this.driverTestSimulation = this.driverTestSimulation.bind(this)
     // this.driverFareUpdate = this.driverFareUpdate.bind(this)
-    this.useRideSelectionStore = useRideSelectionStore
-    this.useDriverLocationStore = useDriverLocationStore
     this.useStackScreenStore = useStackScreenStore
+    this.useCurrentRideInfoStore = useCurrentRideInfoStore
+    this.useAssignedDriverInfoStore = useAssignedDriverInfoStore
   }
 
   driverAllocated(data){
     if(data?.driver && data?.otp){
-      this.useRideSelectionStore.getState().updateBookingStatus(data?.tripStatus);
-      this.useRideSelectionStore.getState().setAssignedDriver(data?.driver);
-      this.useRideSelectionStore.getState().updateOtp(data?.otp);
-      this.useStackScreenStore.getState().setStackScreen('TripScreenManager');
-      
+      this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
+      this.useAssignedDriverInfoStore.getState().setDriverInfo(data?.driver);
+      this.useCurrentRideInfoStore.getState().setOtp(data?.otp);
+      this.useStackScreenStore.getState().setStackScreen('RideStatus',{});
     }
-   
-    
   }
-
   onRideStatus(data){
     console.log("onRideStatus",JSON.stringify(data))
     if(data?.tripStatus){
@@ -43,10 +39,10 @@ class WSService {
         try {
           console.log('CANCELLED');
           console.log(data?.tripStatus);
-          this.useStackScreenStore.getState().setStackScreen('TripScreenManager');
-          this.useRideSelectionStore.getState().setOtp(null);
-          this.useRideSelectionStore.getState().setAssignedDriver(null);
-          this.useRideSelectionStore.getState().updateBookingStatus(data?.tripStatus);
+          this.useStackScreenStore.getState().setStackScreen('RideStatus',{});
+          this.useCurrentRideInfoStore.getState().setOtp(null);
+          this.useAssignedDriverInfoStore.getState().setDriverInfo(null);
+          this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
         } catch (error) {
           console.error('Error handling ride cancellation:', error);
         }
@@ -54,21 +50,20 @@ class WSService {
         
       }
 
-    this.useRideSelectionStore.getState().setRideStatus(data?.tripStatus);
-    this.useRideSelectionStore.getState().updateBookingStatus(data?.tripStatus);
+    this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
       
     }
-    if(data?.fareDetails){
-      this.useRideSelectionStore.getState().setFinalFareDetails(data?.fareDetails);
-    }
+   
   }
  
+  
   driverLocationUpdate(data){
     if(data){
       try {
-        this.useDriverLocationStore.getState().setDriverLocation(data?.data?.location?.coordinates);
-        this.useDriverLocationStore.getState().setDriverAngle(data?.data?.liveStats?.course);
-        this.useDriverLocationStore.getState().setDriverMaxSpeed(data?.data?.liveStats?.speed) || 0;
+        this.useAssignedDriverInfoStore.getState().setDriverLatitude(data?.data?.location?.coordinates[1]);
+        this.useAssignedDriverInfoStore.getState().setDriverLongitude(data?.data?.location?.coordinates[0]);
+        this.useAssignedDriverInfoStore.getState().setDriverAngle(data?.data?.liveStats?.course);
+        this.useAssignedDriverInfoStore.getState().setDriverMaxSpeed(data?.data?.liveStats?.speed) || 0;
       } catch (error) {
         console.error('Error updating driver location:', error);
       }
@@ -91,9 +86,10 @@ class WSService {
     if(data){
       console.log('simulate sdata-->>', data)
       try {
-        this.useDriverLocationStore.getState().setDriverLocation(data?.data?.location?.coordinates);
-        this.useDriverLocationStore.getState().setDriverAngle(data?.data?.liveStats?.course);
-        this.useDriverLocationStore.getState().setDriverMaxSpeed(data?.data?.liveStats?.speed) || 0;
+        this.useAssignedDriverInfoStore.getState().setDriverLatitude(data?.data?.location?.coordinates[1]);
+        this.useAssignedDriverInfoStore.getState().setDriverLongitude(data?.data?.location?.coordinates[0]);
+        this.useAssignedDriverInfoStore.getState().setDriverAngle(data?.data?.liveStats?.course);
+        this.useAssignedDriverInfoStore.getState().setDriverMaxSpeed(data?.data?.liveStats?.speed) || 0;
       } catch (error) {
         console.error('Error updating driver location:', error);
       }

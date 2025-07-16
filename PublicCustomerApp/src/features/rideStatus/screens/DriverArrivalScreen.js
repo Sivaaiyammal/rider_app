@@ -1,47 +1,38 @@
-import React, { useRef, useState } from 'react';
+        import React, { useRef, useState,useEffect     } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
 import { Fonts, colors } from '../../../constants/constants';
 import { getVehicleImage } from '../types/vehicleImd';
 import AddressContainer from '../../../components/Trips/AddressContainer';
-import { height } from '../../../utils/Utils';
+
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import CancelComponent from '../component/CancelComponent';
-import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
-  
+
+import {useStackScreenStore} from '../../../store/useStackScreenStore';
+import  LocationTypes  from '../../booking/types/LocationTypes.json';
+import useAssignedDriverInfoStore from '../store/useAssignedDriverInfoStore';
+import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
   const DriverArrivalScreen = ({onCancel}) => {
   // Dummy data
-  const driver = {
-    name: 'John Doe',
-    rating: 4.8,
-    photo: 'https://picsum.photos/id/237/200/300',
-    otp: '4730',
-  };
-  const vehicle = {
-    number: 'TN 01 AB 1234',
-    brand: 'Maruti Suzuki',
-    model: 'Swift Dzire',
-    color: 'White',
-    image: 'https://cdn.pixabay.com/photo/2012/05/29/00/43/car-49278_1280.jpg', // placeholder
-  };
+  const {driverName,rating,phone,vehicleNumber,model,brand,color,driverPhoto,setDummyDriverInfo} = useAssignedDriverInfoStore();
+  const {stops,otp,distance,minFare,maxFare,duration,estDropTime,totalDistance} = useCurrentRideInfoStore();
+  const {goBack,setStackScreen} = useStackScreenStore();
 
-  const stops=[
-    {
-      "name": "Pickup Point",
-      "location": [
-        77.0430626347661,
-        11.04180351593615
-      ],
-      "address": "90, Avinashi Rd, near Coimbatore Medical College, Civil Aerodrome Post, Coimbatore, Tamil Nadu 641014"
-    },
-    {
-      "name": "Drop Point",
-      "location": [
-        77.02914,
-        11.00248
-      ],
-      "address": "East zone, Coimbatore, Coimbatore north, Tamil nadu"
-    }
-  ]
+    const handlePickLocation = (item) => {
+    console.log("pick location",item)
+    goBack()
+  }
+
+  const handleChangeLocation = (item) => {
+    setStackScreen('PickLocationScreen',{
+      onPickLocationResultCallback:handlePickLocation,
+      locationType:LocationTypes.START_LOCATION,
+      defaultLocation:item
+    })
+  }
+
+
+  useEffect(()=>{
+    setDummyDriverInfo();
+  },[driverName])
 
 
 
@@ -90,31 +81,31 @@ import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomShe
     
       {/* Vehicle details */}
       <View style={styles.vehicleCard}>
-        {getVehicleImage(vehicle.type,styles.vehicleImg)}
+        {getVehicleImage(vehicleNumber,styles.vehicleImg)}
         <View style={styles.vehicleInfo}>
-          <Text style={styles.vehicleNum}>{vehicle.number}</Text>
-          <Text style={styles.vehicleDesc}>{vehicle.brand} {vehicle.model}  .  {vehicle.color}</Text>
+          <Text style={styles.vehicleNum}>{vehicleNumber}</Text>
+          <Text style={styles.vehicleDesc}>{brand} {model}  .  {color}</Text>
               </View>
             </View>
   
       {/* Driver details and OTP */}
       <View style={styles.driverRow}>
         <View style={styles.driverProfile}>
-            <Image source={{uri: driver.photo}} style={styles.driverImg} resizeMode='cover' />
+              <Image source={{uri:driverPhoto}} style={styles.driverImg} resizeMode='cover' />
           
           <View style={styles.ratingRow}>
             <Text style={styles.star}>★</Text>
-            <Text style={styles.ratingText}>{driver.rating}</Text>
+            <Text style={styles.ratingText}>{rating}</Text>
           </View>
         </View>
         <View style={styles.driverInfo}>
-          <Text style={styles.driverName}>{driver.name}</Text>
+          <Text style={styles.driverName}>{driverName}</Text>
         
         </View>
         <View style={styles.otpBox}>
           <Text style={styles.otpLabel}>OTP</Text>
           <View style={styles.otpRow}>
-            {driver.otp.split('').map((d, i) => (
+            {otp.split('').map((d, i) => (
               <Text key={i} style={styles.otpDigit}>{d}</Text>
                   ))}
                 </View>
@@ -130,7 +121,9 @@ import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomShe
             {stops[0]?.address}
           </Text>
         </View>
-        <TouchableOpacity style={{borderColor: '#4289e5', borderWidth:1, borderRadius: 8, paddingVertical: 8, paddingHorizontal: 12 }}>
+          <TouchableOpacity style={{borderColor: '#4289e5', borderWidth:1, borderRadius: 8, paddingVertical: 8, paddingHorizontal: 12 }} onPress={()=>{
+            handleChangeLocation(stops[0])
+          }}>
           <Text style={{ color:colors.blue, fontSize: 14, fontFamily:Fonts.regular }}>Change</Text>
         </TouchableOpacity>
       </View>
@@ -150,23 +143,23 @@ import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomShe
     
     {expanded && (
       <>
-      <AddressContainer directions={stops} />
+      <AddressContainer directions={stops} edit={false} />
       <View style={{ flexDirection: 'row', flex: 1 }}>
-        <View style={styles.rideInfoItem}>
+        {/* <View style={styles.rideInfoItem}>
           <Text style={styles.rideInfoLabel}>Arrival</Text>
-          <Text style={styles.rideInfoValue}>3:20 PM</Text>
-        </View>
+          <Text style={styles.rideInfoValue}>{estDropTime || '--'}</Text>
+        </View> */}
         <View style={styles.rideInfoItem}>
           <Text style={styles.rideInfoLabel}>Duration</Text>
-          <Text style={styles.rideInfoValue}>30 Min</Text>
+          <Text style={styles.rideInfoValue}>{duration || '--'} Min</Text>
         </View>
         <View style={styles.rideInfoItem}>
           <Text style={styles.rideInfoLabel}>Distance</Text>
-          <Text style={styles.rideInfoValue}>15 Km</Text>
+          <Text style={styles.rideInfoValue}>{totalDistance || '--'} Km</Text>
         </View>
         <View style={styles.rideInfoItem}>
           <Text style={styles.rideInfoLabel}>Est. Price</Text>
-          <Text style={styles.rideInfoValue}>₹120</Text>
+          <Text style={styles.rideInfoValue}>₹{minFare || '--'} - ₹{maxFare || '--'}</Text>
         </View>
       </View>
       </>

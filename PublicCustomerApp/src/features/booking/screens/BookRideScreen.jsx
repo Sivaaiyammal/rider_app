@@ -17,13 +17,17 @@ import useRideBookingInfo from '../store/useRideBookingInfo';
 import useDirectionLoad from '../hooks/useDirectionLoad';
 import useMapStore from '../../../features/map/store/useMapStore';
 import useBookTrip from '../hooks/useBookTrip';
+// Import the ride estimation mutation
+import { rideEstimation } from '../../../API/APICalls/RideAPICalls';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
 import PaymentType from '../components/bookRide/PaymentType';
 import VehicleList from '../components/bookRide/VehicleList';
 import locationTask from '../../../controllers/GetCurrentLocation';
-
+import { setAPNSToken } from '@react-native-firebase/messaging';
+import useRideVehicleStore from '../store/useRideVehicleStore'; 
+import vehicleType from '../types/vehicleType.json'
 const BottomSheetHeader = () => {
     const {setStackScreen,goBack} = useStackScreenStore()
     const handleAddStop = () => {
@@ -50,10 +54,10 @@ const BottomSheetHeader = () => {
 }
 const BookRideScreen = () => {
     const {goBack} = useStackScreenStore()
-    const {paymentType,setPaymentType} = useRideBookingInfo()
+        const {paymentType,setPaymentType} = useRideBookingInfo()
     const [isPaymentTypeOpen,setIsPaymentTypeOpen] = useState(false)
-    const [isLoading,setIsLoading] = useState(true)
     
+    const {setAvailableVehicles,availableVehicles} = useRideVehicleStore()
     // Use the direction load hook to transform ride locations to direction points
     const { 
         transformRideLocationsToDirectionPoints, 
@@ -72,52 +76,86 @@ const BookRideScreen = () => {
         getCurrentBookingPayload
     } = useBookTrip();
 
-    useEffect(()=>{
-       setTimeout(()=>{
-        setIsLoading(false)
-       },1000)
-    },[])
+    const transformEstimateDatStore=(data)=>{
+        console.log("data",data)
+        let vehicleList=[]
+
+        vehicleType.forEach((item,index)=>{
+            // Check if the data contains the vehicle type
+            if(data && data[item.type]){
+                const VehicleItem={
+                    id:index,
+                    type:item.type,
+                    capacity:item.capacity,
+                    minFare:data[item.type].minFare || item.minFare,
+                    maxFare:data[item.type].maxFare || item.maxFare,
+                    currency:data[item.type].currency || item.currency,
+                    estimatedDuration:data[item.type].estimatedDuration || item.estimatedDuration,
+                   
+                }
+                vehicleList.push(VehicleItem)
+            }
+        })
+
+        setAvailableVehicles(vehicleList)
+    }
+
+    // Ride estimation mutation
+    const onEstimationSuccess = (data) => {
+        console.log('Ride estimation success:', JSON.stringify(data));
+        if (data?.result?.success) {
+            // Handle successful estimation
+          
+            transformEstimateDatStore(data?.result?.data?.fareRanges)
+                   
+        } else {
+            console.log('Estimation failed:', data?.message);
+        }
+    };
+
+    const { mutate: estimationMutate , isLoading: isEstimationLoading } = 
+        rideEstimation(onEstimationSuccess);
+
+    const getEstimatedFare = async () => {
+      
+
+        const payload = {
+           
+            distance: 10, 
+            duration: 20, 
+           
+        };
+
+        console.log('Calling ride estimation with payload:', payload);
+        estimationMutate(payload);
+    };
+
+    useEffect(() => {
+        getEstimatedFare();
+    }, []);
 
     // Get setDirectionPoints from useMapStore for cleanup
     const { setDirectionPoints } = useMapStore();
 
-    // Memoize a hash of the locations to optimize effect
-    const locationsHash = useMemo(() => {
-        return JSON.stringify({
-            start: rideStartLocation,
-            end: rideEndLocation,
-            waypoints: rideWayPoints,
-        });
-    }, [rideStartLocation, rideEndLocation, rideWayPoints]);
-
-    // Debounce ref
-    const debounceTimeout = useRef();
-
-    // Debounced effect for setting direction points
+    // Effect for setting direction points (removed debounce)
     useEffect(() => {
         if (isRideLocationsReady()) {
-            if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-            debounceTimeout.current = setTimeout(() => {
-                console.log('Debounced direction effect running with hash:', locationsHash, {
-                  rideStartLocation,
-                  rideEndLocation,
-                  rideWayPoints,
-                });
-                const result = transformRideLocationsToDirectionPoints({
-                    clearMarkers: true,
-                    vehicleType: 'car'
-                });
-                if (result.success) {
-                    console.log('Direction points set successfully:', result.locationCount, 'locations');
-                } else {
-                    console.log('Failed to set direction points:', result.error);
-                }
-            }, 200); // 200ms debounce
+            console.log('Setting direction points with:', {
+                rideStartLocation,
+                rideEndLocation,
+                rideWayPoints,
+            });
+            const result = transformRideLocationsToDirectionPoints({
+                clearMarkers: true,
+                vehicleType: 'car'
+            });
+            if (result.success) {
+                console.log('Direction points set successfully:', result.locationCount, 'locations');
+            } else {
+                console.log('Failed to set direction points:', result.error);
+            }
         }
-        return () => {
-            if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-        };
-    }, [locationsHash, isRideLocationsReady, transformRideLocationsToDirectionPoints]);
+    }, [rideStartLocation, rideEndLocation, rideWayPoints, isRideLocationsReady, transformRideLocationsToDirectionPoints]);
 
     // Cleanup effect to clear direction points when component unmounts
     useEffect(() => {
@@ -166,7 +204,7 @@ const BookRideScreen = () => {
         HeaderComponent={<BottomSheetHeader />}
    >
     <View style={styles.bottomSheetContent}>
-        <VehicleList isLoading={isLoading} />
+        <VehicleList isLoading={isEstimationLoading}  availableVehicles={availableVehicles}/>
        
     </View>
    </BottomSheet>

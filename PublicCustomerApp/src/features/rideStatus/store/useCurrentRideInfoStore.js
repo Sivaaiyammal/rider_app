@@ -65,30 +65,7 @@ const useCurrentRideInfoStore = create((set) => ({
     publicRidesTrip: typeof info.publicRidesTrip === 'boolean' ? info.publicRidesTrip : null,
   }),
 
-  // New method to set trip data from API response
-  setTripData: (tripData) => set({
-    tripId: tripData._id || tripData.tripId || null,
-    tripStatus: tripData.status || 'PENDING',
-    rideStartLocation: tripData.startLocation || null,
-    rideEndLocation: tripData.endLocation || null,
-    stops: tripData.stops || [],
-    duration: tripData.estimatedDuration || null,
-    basePrice: tripData.estimatedFare || null,
-    maxPrice: tripData.maxFare || null,
-    totalDistance: tripData.distance || null,
-    currentDistance: tripData.distance || null,
-    paymentMethod: tripData.paymentMethod || null,
-    // Additional fields
-    bookingFor: tripData.bookingFor || null,
-    bookingForName: tripData.bookingForName || null,
-    bookingForPhone: tripData.bookingForPhone || null,
-    bookingTime: tripData.bookingTime || null,
-    pickupTime: tripData.pickupTime || null,
-    passangerCount: tripData.passangerCount || null,
-    passangerId: tripData.passangerId || null,
-    vehicleType: tripData.vehicleType || null,
-    publicRidesTrip: tripData.publicRidesTrip || null,
-  }),
+  setFareDetails: (fareDetails) => set({ fareDetails }),
 
   resetCurrentRideInfo: () => set({
     tripId: null,
