@@ -43,8 +43,8 @@ const useMapStore = create((set) => ({
     geometriesType: '',
     setGeometriesType: geometriesType => set({ geometriesType }),
     
-    directionReadyCallback: null,
-    setDirectionReadyCallback: (directionReadyCallback) => set({ directionReadyCallback }),
+    directionReady: null,
+    setDirectionReady: (callback) => set({ directionReady: callback }),
 
     directionPoints: null,
     setDirectionPoints: (directionPoints) => set({ directionPoints }),

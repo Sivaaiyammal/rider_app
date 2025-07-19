@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -15,19 +15,24 @@ import { height } from '../../../utils/Utils';
 import { colors, Fonts } from '../../../constants/constants';
 import useRideBookingInfo from '../store/useRideBookingInfo';
 import useDirectionLoad from '../hooks/useDirectionLoad';
-import useMapStore from '../../../features/map/store/useMapStore';
+import useMapStore from '../../map/store/useMapStore';
 import useBookTrip from '../hooks/useBookTrip';
 // Import the ride estimation mutation
 import { rideEstimation } from '../../../API/APICalls/RideAPICalls';
-
+import RideInfo from '../components/bookRide/RideInfo';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+
+
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
 import PaymentType from '../components/bookRide/PaymentType';
 import VehicleList from '../components/bookRide/VehicleList';
 import locationTask from '../../../controllers/GetCurrentLocation';
-import { setAPNSToken } from '@react-native-firebase/messaging';
 import useRideVehicleStore from '../store/useRideVehicleStore'; 
 import vehicleType from '../types/vehicleType.json'
+import BookingOptions from '../components/bookRide/BookingOptions';
+import RidePreference from '../components/bookRide/RidePreference';
+import CouponContainer from '../components/bookRide/CouponConatiner';
 const BottomSheetHeader = () => {
     const {setStackScreen,goBack} = useStackScreenStore()
     const handleAddStop = () => {
@@ -54,10 +59,12 @@ const BottomSheetHeader = () => {
 }
 const BookRideScreen = () => {
     const {goBack} = useStackScreenStore()
-        const {paymentType,setPaymentType} = useRideBookingInfo()
-    const [isPaymentTypeOpen,setIsPaymentTypeOpen] = useState(false)
+        const {paymentType,setPaymentType, setRideDistance ,setEstimatedDuration,rideDistance,estimatedDuration,couponCode} = useRideBookingInfo()
+    const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false)
     
-    const {setAvailableVehicles,availableVehicles} = useRideVehicleStore()
+    const {setAvailableVehicles,availableVehicles,clearAvailableVehicles} = useRideVehicleStore()
+
+    const [showPreference,setShowPreference] = useState(false)
     // Use the direction load hook to transform ride locations to direction points
     const { 
         transformRideLocationsToDirectionPoints, 
@@ -66,6 +73,11 @@ const BookRideScreen = () => {
         rideEndLocation,
         rideWayPoints
     } = useDirectionLoad();
+
+
+    const { setDirectionReady} = useMapStore()     
+
+    
 
     // Use the booking hook for trip booking
     const {
@@ -76,8 +88,29 @@ const BookRideScreen = () => {
         getCurrentBookingPayload
     } = useBookTrip();
 
+
+    const [showCoupon,setShowCoupon] = useState(false)
+
+    const handleDirectionReady = (data) => {
+        console.log("=====> Direction ready", data);
+        // Extract distance and duration from direction data
+        if (data?.distance && data?.duration) {
+            const distance = data.distance/1000; // Distance in meters
+            const duration = data.duration/60; 
+            // Duration in seconds
+            setRideDistance(Math.round(distance))
+            setEstimatedDuration(Math.round(duration))
+            
+        }
+    }
+
+    useEffect(() => {
+        setDirectionReady(handleDirectionReady)
+    }, [])
+
+
     const transformEstimateDatStore=(data)=>{
-        console.log("data",data)
+    
         let vehicleList=[]
 
         vehicleType.forEach((item,index)=>{
@@ -102,7 +135,7 @@ const BookRideScreen = () => {
 
     // Ride estimation mutation
     const onEstimationSuccess = (data) => {
-        console.log('Ride estimation success:', JSON.stringify(data));
+       
         if (data?.result?.success) {
             // Handle successful estimation
           
@@ -117,27 +150,32 @@ const BookRideScreen = () => {
         rideEstimation(onEstimationSuccess);
 
     const getEstimatedFare = async () => {
-      
-
+        // Use direction data if available, otherwise use default values
         const payload = {
-           
-            distance: 10, 
-            duration: 20, 
-           
+            distance: rideDistance, 
+            duration: estimatedDuration, 
         };
 
-        console.log('Calling ride estimation with payload:', payload);
+        console.log("Sending estimation payload:", payload);
         estimationMutate(payload);
     };
 
-    useEffect(() => {
-        getEstimatedFare();
-    }, []);
+   
 
-    // Get setDirectionPoints from useMapStore for cleanup
+    // Add effect to trigger estimation when direction data is available
+    useEffect(() => {
+        if (rideDistance && estimatedDuration) {
+            getEstimatedFare();
+        }
+    }, [rideDistance, estimatedDuration]);
+
+
+    
+
+  
     const { setDirectionPoints } = useMapStore();
 
-    // Effect for setting direction points (removed debounce)
+    
     useEffect(() => {
         if (isRideLocationsReady()) {
             console.log('Setting direction points with:', {
@@ -193,52 +231,108 @@ const BookRideScreen = () => {
             console.error('Booking failed:', error);
         }
     }
+
+    const handleFemaleDriverToggle = () => {
+      console.log("Female Driver option clicked")
+        };
+
+const handleBackPress = () => {
+    clearAvailableVehicles()
+    setRideDistance(null)
+    setEstimatedDuration(null)
+    goBack()
+}
+
+const handleCouponPress = () => {
+    setShowCoupon(true)
+}
   return (
     <>
    <View>
-    <NavBar onBackPress={goBack} />
+    <NavBar onBackPress={handleBackPress} />
 
    </View>
    <BottomSheet
         minHeight={height*0.55}
         HeaderComponent={<BottomSheetHeader />}
    >
+ 
     <View style={styles.bottomSheetContent}>
-        <VehicleList isLoading={isEstimationLoading}  availableVehicles={availableVehicles}/>
-       
+        <View style={styles.contentContainer}>
+            <RideInfo distance={rideDistance} duration={estimatedDuration} showPreference={setShowPreference}/>
+            <BookingOptions label="Female Driver" onPress={handleFemaleDriverToggle} />
+            <VehicleList isLoading={isEstimationLoading} availableVehicles={availableVehicles}/>
+           
+        </View>
     </View>
    </BottomSheet>
-   <View style={styles.BookingButtonContainer}>
-    <TouchableOpacity style={styles.BookingPaymentContainer} onPress={handlePaymentType}>
-        <View style={styles.BookingPaymentHeader}>
-            <Text style={styles.BookingPaymentHeaderText}>Pay by</Text>
-            <View style={styles.BookingPaymentMode}>
-                <Text style={styles.BookingPaymentModeText}>{paymentType}</Text>
-                <Icon name="arrow-drop-down" color={colors.white} style={{fontSize:20}}></Icon>
-                
+ 
+          <View style={styles.bottomContainer}>
+              <TouchableOpacity style={styles.CouponContainer} onPress={handleCouponPress}>
+                 {!couponCode ? (
+                   <>
+                     <FontAwesome6 name="percent" size={20} color={colors.black} />
+                     <Text style={styles.CouponText}>Offer Coupons</Text>
+                     <Icon name="chevron-right" size={20} color="#888" />
+                   </>
+                 ) : (
+                   <>
+                    <FontAwesome6 name="percent" size={16} color={colors.grey_dark} />
+                     <Text >Coupon</Text>
+                     <Text style={[styles.CouponText, {fontFamily:Fonts.semi_bold}]}>{couponCode}</Text>
+                     <Text>Applied</Text>
+                   </>
+                 )}
 
-            </View>
-        </View>
-    </TouchableOpacity>
-    <View style={styles.BookingButtonSection}>
-        <TouchableOpacity 
-            style={[styles.BookingButton, isBookingLoading && styles.BookingButtonDisabled]} 
-            onPress={handleConfirmRide}
-            disabled={isBookingLoading}
-        >
-            <Text style={styles.BookingButtonText}>
-                {isBookingLoading ? 'BOOKING...' : 'CONFIRM RIDE'}
-            </Text>
-        </TouchableOpacity>
-    </View>
+              </TouchableOpacity>
+              <View style={styles.BookingButtonContainer}>
+                  <TouchableOpacity style={styles.BookingPaymentContainer} onPress={handlePaymentType}>
+                      <View style={styles.BookingPaymentHeader}>
+                          <Text style={styles.BookingPaymentHeaderText}>Pay by</Text>
+                          <View style={styles.BookingPaymentMode}>
+                              <Text style={styles.BookingPaymentModeText}>{paymentType}</Text>
+                              <Icon name="arrow-drop-down" color={colors.white} style={{ fontSize: 20 }}></Icon>
+                          </View>
+                      </View>
+                  </TouchableOpacity>
 
-   </View>
+                  <View style={styles.BookingButtonSection}>
+                      <TouchableOpacity
+                          style={[styles.BookingButton, isBookingLoading && styles.BookingButtonDisabled]}
+                          onPress={handleConfirmRide}
+                          disabled={isBookingLoading}
+                      >
+                          <Text style={styles.BookingButtonText}>
+                              {isBookingLoading ? 'BOOKING...' : 'CONFIRM RIDE'}
+                          </Text>
+                      </TouchableOpacity>
+                  </View>
+
+              </View>
+          </View>
 
    {isPaymentTypeOpen  && (
           <AnimatedBottomSheetWrapper onClose={()=>setIsPaymentTypeOpen(false)} zIndex={100000}>
             <PaymentType onSelect={handlePaymentSelect} initialValue={paymentType} />
           </AnimatedBottomSheetWrapper>
         )}
+
+        {
+            showPreference && (
+                <AnimatedBottomSheetWrapper onClose={()=>setShowPreference(false)} zIndex={100000}>
+                    <RidePreference  />
+                </AnimatedBottomSheetWrapper>
+            )
+        }
+
+        {
+            showCoupon && 
+            (
+            <AnimatedBottomSheetWrapper onClose={()=>setShowCoupon(false)} zIndex={100000}>
+                    <CouponContainer />
+            </AnimatedBottomSheetWrapper>
+            )
+        }
    </>
   );
 };
@@ -252,6 +346,7 @@ const styles = StyleSheet.create({
         top:-height*0.085,
         paddingHorizontal:5,
        
+       
     },
     mapActionContainer:{
         flexDirection:"column",
@@ -264,6 +359,11 @@ const styles = StyleSheet.create({
     bottomSheetContent: {
         paddingHorizontal: 15,
         alignItems: 'center',
+    },
+    contentContainer: {
+        width: '100%',
+        flex: 1,
+       
     },
     bottomSheetTitle: {
         fontSize: 18,
@@ -287,9 +387,20 @@ const styles = StyleSheet.create({
         backgroundColor:"white",
         elevation:5
     },
-    BookingButtonContainer:{
+    bottomContainer:{
         position:"absolute",
         bottom:0,
+        left:0,
+        right:0,
+        zIndex:100000,
+        elevation:10,
+        backgroundColor:"white",
+        borderTopWidth:1,
+        borderColor:'#e0e0e0',
+       
+    },
+    BookingButtonContainer:{
+      
         backgroundColor: "#0f223c",
         width:"100%",
         borderTopLeftRadius:20,
@@ -298,7 +409,7 @@ const styles = StyleSheet.create({
         padding:10,
        
         elevation:5,
-        zIndex:10000
+       
     },
     BookingPaymentContainer:{
         width:"30%",
@@ -359,6 +470,74 @@ const styles = StyleSheet.create({
        
        
     },
+    advanceOptionsContainer:{
+        width:"100%",
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderBottomWidth:1,
+        borderBottomColor: '#E0E0E0',
+        backgroundColor:"red",
+        zIndex:100000
+    },
+    toggleRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    toggleItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flex: 1,
+        paddingHorizontal: 10,
+    },
+    toggleLabel: {
+        fontSize: 14,
+        fontFamily: Fonts.regular,
+        color: colors.black,
+        marginRight: 10,
+    },
+    customToggle: {
+        width: 40,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: '#E0E0E0',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 2,
+    },
+    customToggleActive: {
+        backgroundColor: '#008d34',
+    },
+    toggleThumb: {
+        width: 16,
+        height: 16,
+        borderRadius: 8,
+        backgroundColor: 'white',
+        position: 'absolute',
+        left: 2,
+    },
+    toggleThumbActive: {
+        left: 22,
+        },
+    CouponContainer:{
+        width:"100%",
+        paddingHorizontal:15,
+        paddingVertical:10,
+      
+        zIndex:100000,
+        justifyContent:"center",
+        alignItems:"center",
+        flexDirection:"row",
+        gap:10,
+        backgroundColor:"#fffae2",
+        
+    },
+    CouponText:{
+        fontSize:16,
+        fontFamily:Fonts.regular,
+        color:colors.black,
+    }
 
 });
 

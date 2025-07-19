@@ -12,9 +12,13 @@ const useDirectionLoad = () => {
     rideEndLocation, 
     rideWayPoints 
   } = useRideBookingLocationStore();
-  
-  const { setDirectionPoints, setMapMarkers } = useMapStore();
 
+  
+  const { setDirectionPoints, setMapMarkers,setDirectionReadyCallback } = useMapStore();
+
+
+  
+  
   /**
    * Transforms ride location data into direction points format
    * @param {Object} options - Configuration options
@@ -78,9 +82,6 @@ const useDirectionLoad = () => {
         type: vehicleType
       };
 
-
-      console.log(directionPoints,"directionPoints")
-      
       setDirectionPoints(directionPoints);
       
       return {
@@ -112,6 +113,7 @@ const useDirectionLoad = () => {
   /**
    * Get all ride locations in order
    */
+
   const getAllRideLocations = useCallback(() => {
     const locations = [];
     
@@ -132,7 +134,7 @@ const useDirectionLoad = () => {
     getAllRideLocations,
     rideStartLocation,
     rideEndLocation,
-    rideWayPoints
+    rideWayPoints,
   };
 };
 

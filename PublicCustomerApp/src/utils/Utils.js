@@ -359,5 +359,20 @@ export const utils = {
       }
       
     }
+  },
+
+  formatISOToHumanReadable(isoString, format = 'DD MMM YYYY') {
+    if (!isoString) return '';
+    
+    // Handle ISO date strings like "2025-12-31T00:00:00.000Z"
+    const momentObj = moment(isoString);
+    
+    if (!momentObj.isValid()) {
+      console.warn('Invalid ISO date string:', isoString);
+      return '';
+    }
+    
+    // Convert to local timezone and format
+    return momentObj.tz(currentTimezone).format(format);
   }
 };

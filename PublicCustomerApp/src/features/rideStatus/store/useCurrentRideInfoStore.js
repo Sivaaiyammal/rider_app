@@ -7,8 +7,8 @@ const useCurrentRideInfoStore = create((set) => ({
   rideEndLocation: null,
   stops: [],
   duration: null,
-  basePrice: null,
-  maxPrice: null,
+  minFare: null,
+  maxFare: null,
   totalDistance: null,
   currentDistance: null,
   otp: null,
@@ -24,6 +24,16 @@ const useCurrentRideInfoStore = create((set) => ({
   passangerId: null,
   vehicleType: null,
   publicRidesTrip: null,
+  estimatedPickuoMins:null,
+
+
+
+
+  finalFare:"",
+  breakdownFare:[],
+  finalDuration:"",
+  finalDistance:"",
+
 
   setTripId: (tripId) => set({ tripId }),
   setTripStatus: (tripStatus) => set({ tripStatus }),
@@ -31,14 +41,54 @@ const useCurrentRideInfoStore = create((set) => ({
   setRideEndLocation: (rideEndLocation) => set({ rideEndLocation }),
   setStops: (stops) => set({ stops }),
   setDuration: (duration) => set({ duration }),
-  setBasePrice: (basePrice) => set({ basePrice }),
-  setMaxPrice: (maxPrice) => set({ maxPrice }),
+  setMinFare: (minFare) => set({ minFare }),
+  setMaxFare: (maxFare) => set({ maxFare }),
   setTotalDistance: (totalDistance) => set({ totalDistance }),
   setCurrentDistance: (currentDistance) => set({ currentDistance }),
   setOtp: (otp) => set({ otp }),
   setEstArrivalTime: (estArrivalTime) => set({ estArrivalTime }),
   setPaymentMethod: (paymentMethod) => set({ paymentMethod }),
+  setEstimatedPickuoMins: (estimatedPickuoMins) => set({ estimatedPickuoMins }),
+  setBreakdownFare: (breakdownFare) => set({ breakdownFare }),
 
+  setFinalFare: (finalFare) => {
+    set({finalFare})
+  },
+  setFinalDuration: (finalDuration) => {
+    set({finalDuration})
+  },
+  setFinalDistance: (finalDistance) => {
+    set({finalDistance})
+  },
+   
+
+  setFareDetails: (fareDetails) => {
+    set({finalFare:fareDetails.fare})
+    const breakdown =[]
+
+    if(fareDetails?.breakdown?.subtotal){
+      breakdown.push({
+        name:"Trip Bill",
+        amount:fareDetails?.breakdown?.subtotal
+      })
+    }
+
+    if (fareDetails?.breakdown?.fees?.breakdown) {
+      const platformFee = fareDetails?.breakdown?.fees?.breakdown?.platformFee || 0 + fareDetails?.breakdown?.fees?.incentives || 0
+      breakdown.push({
+        name:"Platform Fee",
+        amount:platformFee
+      })
+
+      const breakdown = Object.keys(fareDetails?.breakdown?.fees?.breakdown).filter(key => key !== "platformFee" && key !== "incentives").map(key => ({
+        name: key,
+        amount: fareDetails?.breakdown?.fees?.breakdown[key]
+      }))
+    }
+
+    set({breakdownFare:breakdown})
+
+  },
   setCurrentRideInfo: (info) => set({
     tripId: info._id || info.tripId || null,
     tripStatus: info.status || info.tripStatus || null,
@@ -46,8 +96,8 @@ const useCurrentRideInfoStore = create((set) => ({
     rideEndLocation: info.endLocation || info.rideEndLocation || null,
     stops: info.stops || [],
     duration: info.estimatedDuration || info.duration || null,
-    basePrice: info.minFare || info.basePrice || null,
-    maxPrice: info.maxFare || info.maxPrice || null,
+    minFare: info.minFare || info.basePrice || null,
+    maxFare: info.maxFare || info.maxPrice || null,
     totalDistance: info.distance || info.totalDistance || null,
     currentDistance: info.distance || info.currentDistance || null,
     otp: info.otp ?? null,
@@ -65,8 +115,6 @@ const useCurrentRideInfoStore = create((set) => ({
     publicRidesTrip: typeof info.publicRidesTrip === 'boolean' ? info.publicRidesTrip : null,
   }),
 
-  setFareDetails: (fareDetails) => set({ fareDetails }),
-
   resetCurrentRideInfo: () => set({
     tripId: null,
     tripStatus: 'ACCEPTED',
@@ -74,8 +122,8 @@ const useCurrentRideInfoStore = create((set) => ({
     rideEndLocation: null,
     stops: [],
     duration: null,
-    basePrice: null,
-    maxPrice: null,
+    minFare: null,
+    maxFare: null,
     totalDistance: null,
     currentDistance: null,
     otp: null,
@@ -91,6 +139,7 @@ const useCurrentRideInfoStore = create((set) => ({
     passangerId: null,
     vehicleType: null,
     publicRidesTrip: null,
+    estimatedPickuoMins:null
   }),
 }));
 

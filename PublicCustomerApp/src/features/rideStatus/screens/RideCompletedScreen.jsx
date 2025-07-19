@@ -4,13 +4,18 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Fonts } from '../../../constants/constants';
 import DroppedTickIcon from '../../../assets/icons/DroppedTickIcon.svg';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
-
+import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 const RideCompletedScreen = () => {
   const { setStackScreen } = useStackScreenStore();
+  const { finalFare, finalDuration, finalDistance ,breakdownFare} = useCurrentRideInfoStore();
   // Dummy data
-  const fare = '₹117.50';
-  const duration = '30 Min';
-  const distance = '15 Km';
+  const fare = finalFare;
+  const duration = finalDuration;
+  const distance = finalDistance;
+
+
+  console.log("breakdownFare",breakdownFare)
+  console.log("finalFare",finalFare)
 
   const handleMoreDetails = () => {
     setStackScreen('PaymentScreen',{});

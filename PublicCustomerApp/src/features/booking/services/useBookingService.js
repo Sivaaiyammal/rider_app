@@ -28,7 +28,10 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     estimatedDuration, 
     paymentType,
     rideBookMode,
-    passangerDetails
+    passangerDetails,
+    safeNightRides,
+    femaleDriverOnly,
+    couponCode
   } = useRideBookingInfo();
   
   const { selectedVehicle } = useRideVehicleStore();
@@ -102,7 +105,14 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       
       // Payment method
       paymentMethod: paymentType || 'CASH',
+      nightRide:safeNightRides,
+      femaleOnly:femaleDriverOnly,
+     
+
     };
+    if(couponCode){
+      payload.offerCoupon = couponCode
+    }
 
     return payload;
   };

@@ -33,7 +33,8 @@ const MapContainer = ({ mapStyle }) => {
     mapReady,
     mapClickCallback,
     startNavigation,
-    setDirectionReadyCallback,
+
+    directionReady,
     searchPOI,
     setSearchPOIResults,
     setUserLocation,
@@ -96,7 +97,7 @@ const MapContainer = ({ mapStyle }) => {
         findRoute={directionPoints}
         onMapDblclick={mapDblclickCallback}
         navigation={startNavigation}
-        onDirectionReady={setDirectionReadyCallback}
+        onDirectionReady={directionReady}
         onUserLocationChange={(location) => setUserLocation([location.latitude, location.longitude])}
         distanceListner={setDisduration}
         onSearchPOIError={setSearchPOIError}

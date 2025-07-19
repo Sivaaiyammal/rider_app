@@ -1,0 +1,73 @@
+import React from 'react';
+import { View, Text, StyleSheet,TouchableOpacity } from 'react-native';
+import PropTypes from 'prop-types';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import TripRouteIcon from "../../../../assets/icons/tripRouteIcon.svg"
+import RupeeIcon from "../../../../assets/icons/rupeeIcon.svg"
+import DurationIcon from "../../../../assets/icons/durationIcon.svg"
+import { Fonts } from "../../../../constants/constants"
+import PreferenceIcon from "../../../../assets/icons/PrefrenceIcon.svg"
+const RideInfo = ({
+  distance = '30',
+  showPreference =null
+}) => {
+  return (
+    
+    <View style={[styles.container, ]}>
+      <View style={styles.infoItem}>
+        <TripRouteIcon width={16} height={16}/>
+        <Text style={[styles.infoText]}>{distance} Km</Text>
+      </View>
+      
+      {/* <View style={styles.infoItem}>
+        <DurationIcon width={16} height={16}/>
+                    <Text style={[styles.infoText, textStyle]}>{minDuration} - {maxDuration} min</Text>
+      </View>
+      <View style={styles.infoItem}>
+                        <RupeeIcon width={16} height={16}/>
+            <Text style={[styles.infoText, textStyle]}>₹{minFare} - ₹{maxFare}</Text>
+      </View> */}
+      <TouchableOpacity style={styles.preferenceContainer} onPress={()=>{showPreference(true)}}> 
+            <PreferenceIcon width={35} height={35}/>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+RideInfo.propTypes = {
+  distance: PropTypes.string,
+  duration: PropTypes.string,
+  fare: PropTypes.string,
+  containerStyle: PropTypes.object,
+  textStyle: PropTypes.object,
+  iconColor: PropTypes.string,
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    zIndex:1000,
+    paddingHorizontal:10,
+    alignItems:"center",
+    
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap:10,
+   
+  },
+  icon: {
+    marginRight: 6,
+    
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#888',
+    fontFamily:Fonts.regular
+  },
+  
+});
+
+export default RideInfo;

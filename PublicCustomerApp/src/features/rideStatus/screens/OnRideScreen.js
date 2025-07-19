@@ -6,13 +6,25 @@ import AddressContainer from '../../../components/Trips/AddressContainer';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import useAssignedDriverInfoStore from '../store/useAssignedDriverInfoStore';
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
-const OnRideScreen = ({onPaymentMethodChange}) => {
-  const {driverName,rating,phone,vehicleNumber,model,brand,color,driverPhoto,setDummyDriverInfo} = useAssignedDriverInfoStore();
-    const {stops,otp,distance,minFare,maxFare,duration,estDropTime,totalDistance,vehicleType,paymentMethod} = useCurrentRideInfoStore();
+import useTrackHook from '../hooks/useTrackHook';
 
-    useEffect(()=>{
-      setDummyDriverInfo();
-    },[driverName])
+const OnRideScreen = ({onPaymentMethodChange}) => {
+  const {driverName,vehicleNumber,model,brand,driverPhoto} = useAssignedDriverInfoStore();
+  const {stops,minFare,maxFare,duration,estDropTime,totalDistance,vehicleType,paymentMethod} = useCurrentRideInfoStore();
+
+  // Initialize tracking hook for on ride screen with polyline support
+  const { cleanupMarkers } = useTrackHook('on-ride');
+
+  // Cleanup markers and polylines when component unmounts
+  useEffect(() => {
+    return () => {
+      cleanupMarkers();
+    };
+  }, [cleanupMarkers]);
+
+  // Check if driver photo URL is valid
+  const driverPhotoUri = driverPhoto && driverPhoto.trim() !== '' ? driverPhoto : null;
+  
   return (
     <>
       {/* Top info bar */}
@@ -33,7 +45,7 @@ const OnRideScreen = ({onPaymentMethodChange}) => {
         <View style={styles.imagesRow}>
         {getVehicleImage(vehicleType,styles.vehicleImg)}
           <View style={styles.driverImgWrap}>
-            <Image source={{ uri: driverPhoto }} style={styles.driverImg} />
+            <Image source={{ uri: driverPhotoUri }} style={styles.driverImg} />
           </View>
           <View style={styles.onRideBadge}><Text style={styles.onRideBadgeText}>On Ride</Text></View>
         </View>

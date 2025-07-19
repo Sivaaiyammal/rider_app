@@ -3,7 +3,7 @@ import { create } from 'zustand';
 const useAssignedDriverInfoStore = create((set) => ({
   driverName: '',
   driverPhoto: '',
-    rating: null,
+  rating: null,
   phone: '',
   vehicleNumber: '',
   model: '',
@@ -13,6 +13,7 @@ const useAssignedDriverInfoStore = create((set) => ({
   driverLongitude: null,
   driverAngle: null,
   driverMaxSpeed: null,
+  driverUPIId: null,
 
   setDriverInfo: (info) =>
     set((state) => ({
@@ -21,20 +22,20 @@ const useAssignedDriverInfoStore = create((set) => ({
     })),
 
 
-  setDummyDriverInfo: () =>
+  setAllocatedDriverInfo: (info) =>
     set({
-      driverName: "John Doe",
-      driverPhoto: "https://picsum.photos/id/237/200/300",
-      rating: 4.8,
-      phone: "9876543210",
-      vehicleNumber: "TN 01 AB 1234",
-      model: "Swift Dzire",
-      brand: "Maruti Suzuki",
-      color: "White",
-      driverLatitude: 11.04180351593615,
-      driverLongitude: 77.0430626347661,
-      driverAngle: 0,
-      driverMaxSpeed: 100,
+      driverName: info.driverName,
+      driverPhoto: info?.driverImage,
+      rating: info.driverRating,
+      phone: info.driverPhone,
+      vehicleNumber: info.vehicleNumber,
+      model: info.vehicleModel,
+      brand: info.vehicleBrand,
+      color: info.vehicleColor,
+      driverLatitude: info?.driverLocaiton?.coordinates[1],
+      driverLongitude: info?.driverLocaiton?.coordinates[0],
+      driverUPIId: info?.driverLocaiton?.upiId,
+
     }),
 
   clearDriverInfo: () =>

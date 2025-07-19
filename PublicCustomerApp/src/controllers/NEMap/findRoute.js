@@ -2,7 +2,7 @@ import ApiConfig from '../../Config/APIConfig';
 
 export async function findRoute(points) {
     if (!points) return null;
-    
+    console.log('points',points);
     const latlngs = points.map(item => {
         return {
             lat: item.location ? item.location[1] : item.lat,
@@ -36,6 +36,8 @@ export async function findRoute(points) {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        console.log('response',response);
         
         const routeData = await response.json();
         return routeData;

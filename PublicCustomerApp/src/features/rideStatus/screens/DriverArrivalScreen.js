@@ -1,8 +1,9 @@
         import React, { useRef, useState,useEffect     } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Easing, Linking } from 'react-native';
 import { Fonts, colors } from '../../../constants/constants';
 import { getVehicleImage } from '../types/vehicleImd';
 import AddressContainer from '../../../components/Trips/AddressContainer';
+import useTrackHook from '../hooks/useTrackHook';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -10,16 +11,35 @@ import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import  LocationTypes  from '../../booking/types/LocationTypes.json';
 import useAssignedDriverInfoStore from '../store/useAssignedDriverInfoStore';
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
+import { changeStopLocation } from '../services/StopLocationChangeService';
+import {showNotification} from '../../../components/NotificationManger';
   const DriverArrivalScreen = ({onCancel}) => {
   // Dummy data
-  const {driverName,rating,phone,vehicleNumber,model,brand,color,driverPhoto,setDummyDriverInfo} = useAssignedDriverInfoStore();
-  const {stops,otp,distance,minFare,maxFare,duration,estDropTime,totalDistance} = useCurrentRideInfoStore();
+  const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone} = useAssignedDriverInfoStore();
+  const {stops,otp,minFare,maxFare,duration,totalDistance,estimatedPickuoMins} = useCurrentRideInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
 
-    const handlePickLocation = (item) => {
-    console.log("pick location",item)
-    goBack()
-  }
+  // Initialize tracking hook for driver arrival screen with polyline support
+  const { cleanupMarkers } = useTrackHook('arrival');
+
+  // Cleanup markers and polylines when component unmounts
+  useEffect(() => {
+    return () => {
+      cleanupMarkers();
+    };
+  }, [cleanupMarkers]);
+
+    const handlePickLocation = async (item) => {
+      try {
+        const res =  await changeStopLocation(item)
+        if (res.success) {
+          showNotification('Pickup Location', 'Updated successfully', 'success');
+          goBack()
+        }
+      } catch (error) {
+        console.log('error',error);
+      }
+    }
 
   const handleChangeLocation = (item) => {
     setStackScreen('PickLocationScreen',{
@@ -29,11 +49,12 @@ import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
     })
   }
 
-
-  useEffect(()=>{
-    setDummyDriverInfo();
-  },[driverName])
-
+  const handleCallDriver = () => {
+    console.log('driverPhone',phone);
+    if (phone) {
+      Linking.openURL(`tel:${phone}`);
+    }
+  }
 
 
   // Animation state for trip details
@@ -62,10 +83,8 @@ import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
     outputRange: ['0deg', '90deg'],
   });
 
-    const _toggleSubview = () => {
-      console.log('toggleSubview');
-      setShowBottomSheet(!showBottomSheet);
-    };
+  // Check if driver photo URL is valid
+  const driverPhotoUri = driverPhoto && driverPhoto.trim() !== '' ? driverPhoto : null;
 
     return (
         <> 
@@ -73,7 +92,7 @@ import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
        
         <Text style={styles.topBarText}>Your driver will arrive in</Text>
         <View style={styles.timeBox}>
-          <Text style={styles.timeText}>05:30 Mins</Text>
+          <Text style={styles.timeText}>{estimatedPickuoMins || '--'} Mins</Text>
             </View>
         
     </View>
@@ -91,7 +110,7 @@ import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
       {/* Driver details and OTP */}
       <View style={styles.driverRow}>
         <View style={styles.driverProfile}>
-              <Image source={{uri:driverPhoto}} style={styles.driverImg} resizeMode='cover' />
+              <Image source={{uri:driverPhotoUri}} style={styles.driverImg} resizeMode='cover' />
           
           <View style={styles.ratingRow}>
             <Text style={styles.star}>★</Text>
@@ -105,7 +124,7 @@ import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
         <View style={styles.otpBox}>
           <Text style={styles.otpLabel}>OTP</Text>
           <View style={styles.otpRow}>
-            {otp.split('').map((d, i) => (
+            {otp?.split('').map((d, i) => (
               <Text key={i} style={styles.otpDigit}>{d}</Text>
                   ))}
                 </View>
@@ -168,13 +187,13 @@ import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 
       {/* Action buttons */}
       <View style={styles.actionRow}>
-        <TouchableOpacity style={styles.callBtn}>
+        <TouchableOpacity style={styles.callBtn} onPress={handleCallDriver}>
           <Icon name="phone" size={20} color={colors.white} />
           <Text style={styles.callBtnText}>CALL DRIVER</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.shareBtn}>
+        {/* <TouchableOpacity style={styles.shareBtn}>
           <Icon name="share" size={25} color={colors.white} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
           <TouchableOpacity style={styles.cancelBtn} onPress={()=>{
             onCancel();
           }}>

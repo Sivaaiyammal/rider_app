@@ -54,7 +54,6 @@ const useBookTrip = () => {
       
       if(result?.success && result?.trip){
         setCurrentRideInfo(result.trip);
-        setDummyDriverInfo();
         setStackScreen('RideStatus', {
         });
         return result;

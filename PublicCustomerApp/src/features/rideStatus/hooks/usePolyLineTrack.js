@@ -1,0 +1,416 @@
+import { useEffect, useRef, useMemo, useCallback } from 'react';
+import { findRoute } from '../../../controllers/NEMap/findRoute';
+import Polyline from '../../../controllers/NEMap/Polyline';
+import useMapStore from '../../map/store/useMapStore';
+import useAssignedDriverInfoStore from '../store/useAssignedDriverInfoStore';
+import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
+import polyline from '@mapbox/polyline';
+
+const usePolyLineTrack = (screenMode = 'arrival') => {
+  const {
+    driverLatitude,
+    driverLongitude
+  } = useAssignedDriverInfoStore();
+
+  const {
+    rideStartLocation,
+    rideEndLocation,
+    setEstimatedPickuoMins
+  } = useCurrentRideInfoStore();
+
+  const {
+    setGeometries
+  } = useMapStore();
+
+  const polylineRef = useRef(null);
+  const lastRoutePointsRef = useRef(null);
+  const originalCoordinatesRef = useRef(null);
+  const lastDriverLocationRef = useRef(null);
+  const routeSummaryRef = useRef(null);
+  const deviationThreshold = 100; // meters - distance threshold for considering driver off-route
+
+  // Function to calculate distance between two points in meters
+  const calculateDistance = useCallback((lat1, lon1, lat2, lon2) => {
+    const R = 6371e3; // Earth's radius in meters
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+  }, []);
+
+  // Function to calculate total distance of remaining coordinates
+  const calculateRemainingDistance = useCallback((coordinates) => {
+    if (!coordinates || coordinates.length < 2) return 0;
+
+    let totalDistance = 0;
+    for (let i = 0; i < coordinates.length - 1; i++) {
+      const [lon1, lat1] = coordinates[i];
+      const [lon2, lat2] = coordinates[i + 1];
+      totalDistance += calculateDistance(lat1, lon1, lat2, lon2);
+    }
+    return totalDistance;
+  }, [calculateDistance]);
+
+  // Function to calculate estimated time based on remaining distance and original time
+  const calculateEstimatedTime = useCallback((remainingDistance, originalTime, originalDistance) => {
+    if (!originalTime || !originalDistance || originalDistance === 0) return null;
+    
+    // Calculate time per meter from original route
+    const timePerMeter = originalTime / originalDistance;
+    
+    // Calculate estimated time for remaining distance
+    const estimatedTimeSeconds = remainingDistance * timePerMeter;
+    
+    // Convert to minutes and round to nearest minute
+    const estimatedTimeMinutes = Math.round(estimatedTimeSeconds / 60);
+    
+    return Math.max(1, estimatedTimeMinutes); // Minimum 1 minute
+  }, []);
+
+  // Function to update estimated pickup time
+  const updateEstimatedPickupTime = useCallback((coordinates) => {
+    if (!routeSummaryRef.current || !coordinates) return;
+
+    const { time: originalTime, length: originalDistance } = routeSummaryRef.current;
+    const remainingDistance = calculateRemainingDistance(coordinates);
+    
+    // Convert original distance from km to meters
+    const originalDistanceMeters = originalDistance * 1000;
+    
+    const estimatedMinutes = calculateEstimatedTime(remainingDistance, originalTime, originalDistanceMeters);
+    
+    if (estimatedMinutes !== null) {
+      console.log(`Updating estimated pickup time: ${estimatedMinutes} minutes (remaining distance: ${Math.round(remainingDistance)}m)`);
+      setEstimatedPickuoMins(estimatedMinutes);
+    }
+  }, [calculateRemainingDistance, calculateEstimatedTime, setEstimatedPickuoMins]);
+
+  // Function to find the closest point on polyline to driver location
+  const findClosestPointOnPolyline = useCallback((driverLat, driverLon, coordinates) => {
+    if (!coordinates || coordinates.length === 0) return { index: -1, distance: Infinity };
+
+    let minDistance = Infinity;
+    let closestIndex = -1;
+
+    coordinates.forEach((coord, index) => {
+      const distance = calculateDistance(driverLat, driverLon, coord[1], coord[0]);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    return { index: closestIndex, distance: minDistance };
+  }, [calculateDistance]);
+
+  // Function to check if driver has deviated significantly from route
+  const hasDriverDeviated = useCallback((driverLat, driverLon, coordinates) => {
+    if (!coordinates || coordinates.length === 0) return true;
+
+    const { distance } = findClosestPointOnPolyline(driverLat, driverLon, coordinates);
+    return distance > deviationThreshold;
+  }, [findClosestPointOnPolyline, deviationThreshold]);
+
+  // Function to update polyline by removing passed coordinates
+  const updatePolylineProgress = useCallback((driverLat, driverLon, coordinates) => {
+    if (!coordinates || coordinates.length === 0) return coordinates;
+
+    const { index: closestIndex, distance } = findClosestPointOnPolyline(driverLat, driverLon, coordinates);
+    
+    if (closestIndex === -1) return coordinates;
+
+    // If driver is close to a point, remove all coordinates up to that point
+    // Add some buffer to avoid removing too many points at once
+    const bufferDistance = 50; // meters
+    if (distance <= bufferDistance) {
+      // Remove coordinates up to the closest point, keeping some ahead for smooth display
+      const keepAhead = Math.min(5, coordinates.length - closestIndex - 1);
+      const updatedCoordinates = coordinates.slice(closestIndex + 1, coordinates.length - keepAhead);
+      
+      // Update estimated pickup time based on remaining coordinates
+      updateEstimatedPickupTime(updatedCoordinates);
+      
+      return updatedCoordinates;
+    }
+
+    return coordinates;
+  }, [findClosestPointOnPolyline, updateEstimatedPickupTime]);
+
+  // Function to organize polyline coordinates from route data
+  const getOrganizedPolylineCoordinates = useCallback((routeData) => {
+    
+    console.log('getOrganizedPolylineCoordinates input:', routeData);
+
+    if (!routeData?.trip?.legs || routeData.trip.legs.length === 0) {
+      console.log('No trip legs found in route data');
+      return [];
+    }
+
+    console.log('Trip legs found:', routeData.trip.legs);
+
+    const coordinates = routeData.trip.legs.map(leg => {
+      console.log('Processing leg:', leg);
+      if (!leg.shape) {
+        console.log('No shape found in leg');
+        return [];
+      }
+      const decoded = polyline.decode(leg.shape, 6);
+      console.log('Decoded coordinates:', decoded);
+      return decoded.map(([lat, lon]) => [lon, lat]);
+    }).flat();
+
+    console.log('Final organized coordinates:', coordinates);
+    return coordinates;
+  }, []);
+
+  // Function to extract route summary from route data
+  const extractRouteSummary = useCallback((routeData) => {
+    if (!routeData?.trip?.legs || routeData.trip.legs.length === 0) {
+      return null;
+    }
+
+    // Get the first leg's summary (assuming single leg for simplicity)
+    const leg = routeData.trip.legs[0];
+    if (leg.summary) {
+      console.log('Route summary extracted:', leg.summary);
+      return leg.summary;
+    }
+
+    return null;
+  }, []);
+
+  // Function to get route points based on screen mode
+  const getRoutePoints = useCallback(() => {
+    if (screenMode === 'arrival') {
+      // Driver to start location
+      if (driverLatitude && driverLongitude && rideStartLocation) {
+        return [
+          { lat: driverLatitude, lon: driverLongitude },
+          { 
+            lat: rideStartLocation.latitude || rideStartLocation.lat || rideStartLocation[1], 
+            lon: rideStartLocation.longitude || rideStartLocation.lng || rideStartLocation[0]
+          }
+        ];
+      }
+    } else if (screenMode === 'on-ride') {
+      // Start to end location
+      if (rideStartLocation && rideEndLocation) {
+        return [
+          { 
+            lat: rideStartLocation.latitude || rideStartLocation.lat || rideStartLocation[1], 
+            lon: rideStartLocation.longitude || rideStartLocation.lng || rideStartLocation[0]
+          },
+          { 
+            lat: rideEndLocation.latitude || rideEndLocation.lat || rideEndLocation[1], 
+            lon: rideEndLocation.longitude || rideEndLocation.lng || rideEndLocation[0]
+          }
+        ];
+      }
+    }
+    return null;
+  }, [screenMode, driverLatitude, driverLongitude, rideStartLocation, rideEndLocation]);
+
+  // Memoized route points to prevent unnecessary API calls
+  const routePoints = useMemo(() => {
+    return getRoutePoints();
+  }, [getRoutePoints]);
+
+  // Function to fetch route and create polyline
+  const fetchRouteAndCreatePolyline = useCallback(async (points) => {
+    if (!points || points.length < 2) {
+      console.log('Invalid route points');
+      return null;
+    }
+
+    try {
+      console.log('Fetching route for points:', points);
+      const routeData = await findRoute(points);
+      
+      if (!routeData) {
+        console.log('No route data received');
+        return null;
+      }
+
+      const coordinates = getOrganizedPolylineCoordinates(routeData);
+      console.log('coordinates', coordinates);
+      if (coordinates.length === 0) {
+        console.log('No coordinates extracted from route data');
+        return null;
+      }
+
+      // Extract and store route summary for time calculations
+      const routeSummary = extractRouteSummary(routeData);
+      if (routeSummary) {
+        routeSummaryRef.current = routeSummary;
+        
+        // Set initial estimated pickup time
+        const originalDistanceMeters = routeSummary.length * 1000;
+        const estimatedMinutes = Math.round(routeSummary.time / 60);
+        console.log(`Initial estimated pickup time: ${estimatedMinutes} minutes (total distance: ${Math.round(originalDistanceMeters)}m)`);
+        setEstimatedPickuoMins(estimatedMinutes);
+      }
+
+      // Store original coordinates for progress tracking
+      originalCoordinatesRef.current = [...coordinates];
+
+      // Create polyline based on screen mode
+      const polylineId = screenMode === 'arrival' ? 'driver-to-start' : 'start-to-end';
+      const polylineName = screenMode === 'arrival' ? 'Driver to Pickup' : 'Route to Destination';
+      const polylineColor = '#000000';
+
+      const polylineObj = new Polyline(
+        polylineId,
+        polylineName,
+        coordinates,
+        polylineColor,
+        'small'
+      );
+
+      polylineObj.setPadding([20,50,20,250]);
+
+      polylineRef.current = polylineObj;
+      return polylineObj;
+
+    } catch (error) {
+      console.error('Error fetching route and creating polyline:', error);
+      return null;
+    }
+  }, [screenMode, getOrganizedPolylineCoordinates, extractRouteSummary, setEstimatedPickuoMins]);
+
+  // Function to update polyline with current coordinates
+  const updatePolylineWithCoordinates = useCallback((coordinates) => {
+    if (!coordinates || coordinates.length === 0) {
+      console.log('No coordinates to update polyline with');
+      setGeometries([]);
+      return;
+    }
+
+    const polylineId = screenMode === 'arrival' ? 'driver-to-start' : 'start-to-end';
+    const polylineName = screenMode === 'arrival' ? 'Driver to Pickup' : 'Route to Destination';
+    const polylineColor = '#000000';
+
+    const polylineObj = new Polyline(
+      polylineId,
+      polylineName,
+      coordinates,
+      polylineColor,
+      'small'
+    );
+
+    polylineRef.current = polylineObj;
+    setGeometries([polylineObj]);
+  }, [screenMode, setGeometries]);
+
+  // Effect to handle route updates (initial route fetch)
+  useEffect(() => {
+    if (!routePoints) {
+      console.log('No route points available');
+      return;
+    }
+
+    // Check if route points have changed
+    const currentPoints = JSON.stringify(routePoints);
+    if (lastRoutePointsRef.current === currentPoints) {
+      console.log('Route points unchanged, skipping route fetch');
+      return;
+    }
+
+    lastRoutePointsRef.current = currentPoints;
+
+    const updatePolyline = async () => {
+      const polylineObj = await fetchRouteAndCreatePolyline(routePoints);
+      
+      if (polylineObj) {
+        console.log('Setting geometries with polyline:', polylineObj);
+        setGeometries([polylineObj]);
+      } else {
+        console.log('Failed to create polyline, clearing geometries');
+        setGeometries([]);
+      }
+    };
+
+    updatePolyline();
+  }, [routePoints, fetchRouteAndCreatePolyline, setGeometries]);
+
+  // Effect to handle driver location updates and polyline progress
+  useEffect(() => {
+    if (!driverLatitude || !driverLongitude || !originalCoordinatesRef.current) {
+      return;
+    }
+
+    const currentLocation = `${driverLatitude},${driverLongitude}`;
+    if (lastDriverLocationRef.current === currentLocation) {
+      return; // Driver location hasn't changed
+    }
+
+    lastDriverLocationRef.current = currentLocation;
+
+    // Check if driver has deviated significantly from the route
+    if (hasDriverDeviated(driverLatitude, driverLongitude, originalCoordinatesRef.current)) {
+      console.log('Driver has deviated from route, fetching new route');
+      // Reset and fetch new route
+      originalCoordinatesRef.current = null;
+      lastRoutePointsRef.current = null;
+      routeSummaryRef.current = null;
+      
+      // Trigger new route fetch by updating route points
+      const newRoutePoints = getRoutePoints();
+      if (newRoutePoints) {
+        fetchRouteAndCreatePolyline(newRoutePoints).then(polylineObj => {
+          if (polylineObj) {
+            setGeometries([polylineObj]);
+          }
+        });
+      }
+    } else {
+      // Update polyline progress by removing passed coordinates
+      const updatedCoordinates = updatePolylineProgress(
+        driverLatitude, 
+        driverLongitude, 
+        originalCoordinatesRef.current
+      );
+      
+      if (updatedCoordinates.length !== originalCoordinatesRef.current.length) {
+        console.log('Updating polyline progress, removed passed coordinates');
+        originalCoordinatesRef.current = updatedCoordinates;
+        updatePolylineWithCoordinates(updatedCoordinates);
+      }
+    }
+  }, [driverLatitude, driverLongitude, hasDriverDeviated, updatePolylineProgress, updatePolylineWithCoordinates, getRoutePoints, fetchRouteAndCreatePolyline, setGeometries]);
+
+  // Function to clear polyline
+  const clearPolyline = useCallback(() => {
+    setGeometries([]);
+    polylineRef.current = null;
+    lastRoutePointsRef.current = null;
+    originalCoordinatesRef.current = null;
+    lastDriverLocationRef.current = null;
+    routeSummaryRef.current = null;
+  }, [setGeometries]);
+
+  // Function to update polyline (for manual updates)
+  const updatePolyline = useCallback(async () => {
+    if (routePoints) {
+      const polylineObj = await fetchRouteAndCreatePolyline(routePoints);
+      if (polylineObj) {
+        setGeometries([polylineObj]);
+      }
+    }
+  }, [routePoints, fetchRouteAndCreatePolyline, setGeometries]);
+
+  return {
+    clearPolyline,
+    updatePolyline,
+    polyline: polylineRef.current,
+    routePoints
+  };
+};
+
+export default usePolyLineTrack;

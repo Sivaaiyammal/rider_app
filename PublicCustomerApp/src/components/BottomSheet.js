@@ -48,8 +48,9 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       position: 'absolute',
       top: -height * 0.04,
-      zIndex: 9,
-      left:10
+      zIndex: 0,
+      left:10,
+     
     },
   
 });

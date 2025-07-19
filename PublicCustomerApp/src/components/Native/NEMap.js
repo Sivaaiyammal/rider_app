@@ -88,7 +88,7 @@ class NEMap extends Component {
     // Map click event - provides lat/lng coordinates
     this.mapClickListener = DeviceEventEmitter.addListener(
       'onMapClick',
-      data => {
+      (data) => {
         const fixedData = {
           longitude: parseFloat(data.longitude.toFixed(5)),
           latitude: parseFloat(data.latitude.toFixed(5)),
@@ -112,7 +112,7 @@ class NEMap extends Component {
     // Route/navigation related events
     this.directionReadyListener = DeviceEventEmitter.addListener(
       'direction-ready',
-      data => {
+      data=> {
         this.props.onDirectionReady?.(data);
       },
     );

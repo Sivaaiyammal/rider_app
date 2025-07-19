@@ -23,11 +23,23 @@ const useRideBookingInfo = create(set => ({
   bookingFor: null,
   setBookingFor: (bookingFor) => set({ bookingFor }),
 
+
+  femaleDriverOnly: false,
+  setFemaleDriverOnly: (femaleDriverOnly) => set({ femaleDriverOnly }),
+
+  safeNightRides: false,
+  setSafeNightRides: (safeNightRides) => set({ safeNightRides }),
+
+
+  couponCode: null,
+  setCouponCode: (couponCode) => set({ couponCode }),
+
   // Reset all booking info
   resetBookingInfo: () => set({
     rideDistance: null,
     estimatedDuration: null,
-    paymentType: "CASH"
+    paymentType: "CASH",
+    couponCode: null,
   }),
 
   

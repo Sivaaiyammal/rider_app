@@ -31,11 +31,24 @@ export const getUserDetails = async ()=> {
   return data
 }
 
+export const getAvaliableCoupons = async (payload)=> {
+  const {data} = await apiClient.post('/publicrides/customer/getPassengerAvaliableCoupons',payload)
+  return data
+}
+
 // get ride estimate
 export const getRideEstimation = async (payload)=> {
   const {data} = await apiClient.post('/publicrides/customer/getRideEstimation', payload)
   return data
 }
+
+
+export const updateTripStops = async (payload)=> {
+  const {data} = await apiClient.post('/publicrides/customer/tripStopsChange', payload)
+  return data
+}
+
+
 
 // Book Ride
 export const bookRide = async (payload)=> {

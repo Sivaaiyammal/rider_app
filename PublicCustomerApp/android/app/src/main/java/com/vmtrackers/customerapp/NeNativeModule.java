@@ -955,11 +955,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             Map<String, Object> walkOptions = new HashMap<>();
             String directionsCriteria = DirectionsCriteria.KILOMETERS;
 
-            if (settingsProps.get("distanceFormate").equals("Kilometers(km)/ Meters(m)")) {
-                directionsCriteria = DirectionsCriteria.KILOMETERS;
-            } else {
-                directionsCriteria = DirectionsCriteria.MILES;
-            }
+           
+           
 
             switch (settingsProps.get("highways")) {
                 case "Prefer":
@@ -1131,8 +1128,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
             // You might want to add more route information to the eventData here
             // For example:
-            // eventData.putDouble("distance", route.getTotalDistance());
-            // eventData.putDouble("duration", route.getTotalDuration());
+             eventData.putDouble("distance" , routeResponse.getRouteInstructions().getTotalDistance());
+             eventData.putDouble("duration", routeResponse.getRouteInstructions().getTotalDuration());
 
             reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                     .emit("direction-ready", eventData);

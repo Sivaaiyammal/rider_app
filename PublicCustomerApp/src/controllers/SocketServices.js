@@ -25,9 +25,11 @@ class WSService {
   }
 
   driverAllocated(data){
+
+    console.log("driverAllocated",JSON.stringify(data))
     if(data?.driver && data?.otp){
       this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
-      this.useAssignedDriverInfoStore.getState().setDriverInfo(data?.driver);
+      this.useAssignedDriverInfoStore.getState().setAllocatedDriverInfo(data?.driver);
       this.useCurrentRideInfoStore.getState().setOtp(data?.otp);
       this.useStackScreenStore.getState().setStackScreen('RideStatus',{});
     }
@@ -50,7 +52,13 @@ class WSService {
         
       }
 
-    this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
+      if(data?.tripStatus === 'DROPPED'){
+        
+        this.useCurrentRideInfoStore.getState().setFareDetails(data?.fareData);
+        
+      }
+
+      this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
       
     }
    

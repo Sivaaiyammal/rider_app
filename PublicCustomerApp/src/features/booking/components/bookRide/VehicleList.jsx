@@ -78,7 +78,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
     );
   };
 
-  if (isLoading) {
+  if (isLoading || !availableVehicles) {
     return renderSkeletonLoader();
   }
 
@@ -100,7 +100,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
     >
       
       
-      {availableVehicles.map((vehicle) => {
+      {availableVehicles?.map((vehicle) => {
         const isSelected = selectedVehicle?.id === vehicle.id;
         return (
           <TouchableOpacity
