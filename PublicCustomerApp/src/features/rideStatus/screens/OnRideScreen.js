@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
 import { getVehicleImage } from '../types/vehicleImd';
 import {Fonts} from '../../../constants/constants';
 import AddressContainer from '../../../components/Trips/AddressContainer';
@@ -7,13 +7,18 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import useAssignedDriverInfoStore from '../store/useAssignedDriverInfoStore';
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 import useTrackHook from '../hooks/useTrackHook';
+import {utils} from '../../../utils/Utils';
 
 const OnRideScreen = ({onPaymentMethodChange}) => {
   const {driverName,vehicleNumber,model,brand,driverPhoto} = useAssignedDriverInfoStore();
-  const {stops,minFare,maxFare,duration,estDropTime,totalDistance,vehicleType,paymentMethod} = useCurrentRideInfoStore();
+  const {stops,minFare,maxFare,duration,totalDistance,vehicleType,paymentMethod,estimatedPickuoMins} = useCurrentRideInfoStore();
 
   // Initialize tracking hook for on ride screen with polyline support
   const { cleanupMarkers } = useTrackHook('on-ride');
+
+  // Animation state for trip details
+  const [expanded, setExpanded] = useState(false);
+  const animation = useRef(new Animated.Value(0)).current;
 
   // Cleanup markers and polylines when component unmounts
   useEffect(() => {
@@ -21,6 +26,30 @@ const OnRideScreen = ({onPaymentMethodChange}) => {
       cleanupMarkers();
     };
   }, [cleanupMarkers]);
+
+  const toggleExpand = () => {
+    setExpanded(prev => {
+      Animated.timing(animation, {
+        toValue: prev ? 0 : 1,
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: false,
+      }).start();
+      return !prev;
+    });
+  };
+
+  // Interpolate height for animation
+  const rideInfoHeight = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 250], // adjust to fit your content
+  });
+  const chevronRotation = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '90deg'],
+  });
+
+  const ArrivalTime =utils.getTimeAfterMinutes(estimatedPickuoMins)
 
   // Check if driver photo URL is valid
   const driverPhotoUri = driverPhoto && driverPhoto.trim() !== '' ? driverPhoto : null;
@@ -30,9 +59,9 @@ const OnRideScreen = ({onPaymentMethodChange}) => {
       {/* Top info bar */}
       <View style={[styles.containerTop,{backgroundColor:'#0f223c'}]}>
        
-        <Text style={styles.topBarText}>Your driver will arrive in</Text>
+        <Text style={styles.topBarText}>Reach your destination in</Text>
         <View style={styles.timeBox}>
-          <Text style={styles.timeText}>05:30 Mins</Text>
+          <Text style={styles.timeText}>{estimatedPickuoMins} Mins</Text>
             </View>
         
     </View>
@@ -58,25 +87,47 @@ const OnRideScreen = ({onPaymentMethodChange}) => {
           <Text style={styles.amountLabel}>Estimated Amount to be Paid</Text>
           <Text style={styles.amountValue}>₹{minFare || "--"} - ₹{maxFare || "--"}</Text>
         </View>
-        {/* Ride info */}
-        <View style={styles.rideInfoRow}>
-          <View style={styles.rideInfoItem}>
-            <Text style={styles.rideInfoLabel}>Arrival</Text>
-            <Text style={styles.rideInfoValue}>{estDropTime}</Text>
+
+        <>
+             
+              <View style={styles.rideInfoRow}>
+                <View style={styles.rideInfoItem}>
+                  <Text style={styles.rideInfoLabel}>Arrival</Text>
+                  <Text style={styles.rideInfoValue}>{ArrivalTime}</Text>
+                </View>
+                <View style={styles.rideInfoItem}>
+                  <Text style={styles.rideInfoLabel}>Duration</Text>
+                  <Text style={styles.rideInfoValue}>{duration} Min</Text>
+                </View>
+                <View style={styles.rideInfoItem}>
+                  <Text style={styles.rideInfoLabel}>Distance</Text>
+                  <Text style={styles.rideInfoValue}>{totalDistance} Km</Text>
+                </View>
+              </View>
+            </>
+
+        
+
+       
+
+        {/* Trip Details row with chevron */}
+        <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
+          <Text style={styles.tripDetailsLabel}>Trip Details</Text>
+          <Animated.View style={{ transform: [{ rotate: chevronRotation }] }}>
+            <Icon name="keyboard-arrow-right" size={25} color="#000" />
+          </Animated.View>
+        </TouchableOpacity>
+
+        {
+          expanded  && (
+            <View style={{width: "100%", paddingHorizontal: 20}}>
+            <AddressContainer directions={stops} edit={false} />
           </View>
-          <View style={styles.rideInfoItem}>
-            <Text style={styles.rideInfoLabel}>Duration</Text>
-            <Text style={styles.rideInfoValue}>{duration} Min</Text>
-          </View>
-          <View style={styles.rideInfoItem}>
-            <Text style={styles.rideInfoLabel}>Distance</Text>
-            <Text style={styles.rideInfoValue}>{totalDistance} Km</Text>
-          </View>
-        </View>
-        {/* Stops */}
-        <View style={{width:"100%",paddingHorizontal:20}}>
-       <AddressContainer directions={stops} edit={false} />
-       </View>
+          )
+        }
+
+       
+
         {/* Payment method */}
         <TouchableOpacity style={styles.paymentRow} onPress={onPaymentMethodChange}>
           <Text style={styles.paymentLabel}>Change Payment Method</Text>
@@ -244,6 +295,24 @@ const styles = StyleSheet.create({
     fontFamily:Fonts.regular,
     fontSize: 15,
   },
+  tripDetailsRow: {
+    width:'90%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    paddingHorizontal: 5,
+    paddingVertical: 14,
+  
+    borderTopWidth: 1,
+    borderColor: '#e0e0e0',
+    marginTop: 10,
+  },
+  tripDetailsLabel: {
+    color: '#757575',
+    fontSize: 16,
+    fontFamily: Fonts.regular,
+  },
   stopsBox: {
     backgroundColor: '#F7F7F7',
     borderRadius: 12,
@@ -272,7 +341,7 @@ const styles = StyleSheet.create({
     maxWidth: 220,
   },
   paymentRow: {
-    width:"100%",
+    width:"90%",
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -280,7 +349,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: '#eee',
     marginTop: 8,
-    paddingHorizontal:20
+    backgroundColor:"#eee",
+    paddingHorizontal:10,
+    marginBottom:10,
+    borderRadius:10
+
   },
   paymentLabel: {
     color: '#222',

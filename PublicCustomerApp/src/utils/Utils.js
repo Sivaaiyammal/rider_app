@@ -374,5 +374,18 @@ export const utils = {
     
     // Convert to local timezone and format
     return momentObj.tz(currentTimezone).format(format);
+  },
+
+  getTimeAfterMinutes(minutes) {
+    if (!minutes || minutes < 0) {
+      console.warn('Invalid minutes provided:', minutes);
+      return '';
+    }
+    
+    // Get current time and add the specified minutes
+    const futureTime = moment().add(minutes, 'minutes');
+    
+    // Format as 12-hour time with AM/PM
+    return futureTime.format('h:mm A');
   }
 };

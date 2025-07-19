@@ -25,7 +25,7 @@ const useAssignedDriverInfoStore = create((set) => ({
   setAllocatedDriverInfo: (info) =>
     set({
       driverName: info.driverName,
-      driverPhoto: info?.driverImage,
+      driverPhoto: info?.driverPhoto,
       rating: info.driverRating,
       phone: info.driverPhone,
       vehicleNumber: info.vehicleNumber,

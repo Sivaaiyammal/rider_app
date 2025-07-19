@@ -25,6 +25,7 @@ const useCurrentRideInfoStore = create((set) => ({
   vehicleType: null,
   publicRidesTrip: null,
   estimatedPickuoMins:null,
+  estimatedArrivalMins:null,
 
 
 
@@ -49,6 +50,7 @@ const useCurrentRideInfoStore = create((set) => ({
   setEstArrivalTime: (estArrivalTime) => set({ estArrivalTime }),
   setPaymentMethod: (paymentMethod) => set({ paymentMethod }),
   setEstimatedPickuoMins: (estimatedPickuoMins) => set({ estimatedPickuoMins }),
+  setEstimatedArrivalMins: (estimatedArrivalMins) => set({ estimatedArrivalMins }),
   setBreakdownFare: (breakdownFare) => set({ breakdownFare }),
 
   setFinalFare: (finalFare) => {
@@ -139,7 +141,9 @@ const useCurrentRideInfoStore = create((set) => ({
     passangerId: null,
     vehicleType: null,
     publicRidesTrip: null,
-    estimatedPickuoMins:null
+    estimatedPickuoMins:null,
+    estimatedArrivalMins:null
+
   }),
 }));
 
