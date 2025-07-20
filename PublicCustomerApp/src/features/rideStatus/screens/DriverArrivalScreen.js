@@ -16,7 +16,7 @@ import {showNotification} from '../../../components/NotificationManger';
   const DriverArrivalScreen = ({onCancel}) => {
   // Dummy data
   const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone} = useAssignedDriverInfoStore();
-  const {stops,otp,minFare,maxFare,duration,totalDistance,estimatedPickuoMins} = useCurrentRideInfoStore();
+  const {stops,otp,minFare,maxFare,duration,totalDistance,estimatedPickuoMins,vehicleType} = useCurrentRideInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
 
   // Initialize tracking hook for driver arrival screen with polyline support
@@ -100,7 +100,7 @@ import {showNotification} from '../../../components/NotificationManger';
     
       {/* Vehicle details */}
       <View style={styles.vehicleCard}>
-        {getVehicleImage(vehicleNumber,styles.vehicleImg)}
+        {getVehicleImage(vehicleType,styles.vehicleImg)}
         <View style={styles.vehicleInfo}>
           <Text style={styles.vehicleNum}>{vehicleNumber}</Text>
           <Text style={styles.vehicleDesc}>{brand} {model}  .  {color}</Text>

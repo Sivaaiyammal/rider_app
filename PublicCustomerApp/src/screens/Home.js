@@ -20,14 +20,14 @@ import RideStatus from '../features/rideStatus';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 import PaymentScreen from '../features/payment/screens/PaymentScreen';
 import useAssignedDriverInfoStore  from '../features/rideStatus/store/useAssignedDriverInfoStore';
-
+import TripFeedbackScreen from '../features/rating/screens/TripFeedbackScreen';
 const Home = () => {
   const { stackScreen } = useStackScreenStore();
   const permissionsRequested = useRef(false);
   const [mapReady, setMapReady] = useState(false);
   const { setHomelocation, setWorklocation} = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
-  const { setCurrentRideInfo } = useCurrentRideInfoStore();
+  const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
@@ -52,10 +52,16 @@ const Home = () => {
   const checkOnGoingRideAndLog = async () => {
     try {
       const Response = await checkOnGoingRide();
-      
+      console.log('Response',JSON.stringify(Response));
       if(Response?.success && Response?.trip){
         setCurrentRideInfo(Response?.trip);
-        setAllocatedDriverInfo(Response?.assignDriver);
+        if(Response?.assignDriver){
+         
+          setAllocatedDriverInfo(Response?.assignDriver);
+        }
+        if(Response?.trip?.fareDetails){
+           setFareDetails(Response?.trip?.fareDetails)
+        }
         setStackScreen('RideStatus', { });
       }
     } catch (error) {
@@ -96,6 +102,8 @@ const Home = () => {
         return <PickLocationScreen {...params} />;
       case 'PaymentScreen':
         return <PaymentScreen {...params} />;
+      case 'TripFeedbackScreen':
+        return <TripFeedbackScreen {...params} />;
       default:
         return null;
     }
@@ -111,6 +119,7 @@ const Home = () => {
         mapReady={mapReady}
         setMapReady={setMapReady}
       />
+
       {/* {overlayStatuses.includes(tripStatus) && (
         <TripStatusOverlay status={tripStatus} />
       )} */}

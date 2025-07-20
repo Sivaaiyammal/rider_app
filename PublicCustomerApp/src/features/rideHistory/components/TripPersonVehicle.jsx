@@ -4,16 +4,24 @@ import { getVehicleImage } from '../../rideStatus/types/vehicleImd';
 import { Fonts, colors } from '../../../constants/constants';
 
 const TripPersonVehicle = ({
-  driver = { name: 'John Doe', profile: require('../../../assets/image/account/Profile.webp') },
-  vehicle = { type: 'SEDAN', brand: 'Maruti Suzuki', model: 'Swift Dzire', number: 'TN 01 AB 1234' },
+  driverName,
+  driverPhoto,
+  vehicleType,
+  vehicleBrand,
+  vehicleModel,
+  vehicleNumber,
+  layoutStyle,
+  descriptonSize=15
 }) => (
-  <View style={styles.container}>
+  <View style={[styles.container,layoutStyle=="row"&&{flexDirection:"row",gap:15}]}>
     <View style={styles.imagesRow}>
-      {getVehicleImage(vehicle.type, styles.vehicleImg)}
-      <Image source={driver.profile} style={styles.profileImg} />
+      {getVehicleImage(vehicleType, styles.vehicleImg)}
+      <Image source={{uri:driverPhoto}} style={styles.profileImg} />
     </View>
-    <Text style={styles.driverName}>{driver.name}</Text>
-    <Text style={styles.vehicleDesc}>{vehicle.brand} {vehicle.model} 0 {vehicle.number}</Text>
+    <View style={layoutStyle=="row"&&{alignItems:"flex-start"}}>
+    <Text style={styles.driverName}>{ driverName}</Text>
+    <Text style={[styles.vehicleDesc,{fontSize:descriptonSize}]}>{vehicleBrand} {vehicleModel} . {vehicleNumber}</Text>
+    </View>
   </View>
 );
 
@@ -35,6 +43,8 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     marginRight: -20,
     zIndex: 1,
+    transform: [{ scaleX: -1 }],
+    
   },
   profileImg: {
     width: 70,

@@ -8,7 +8,7 @@ const FareHeader = ({ fare = '₹117.50' }) => (
   <View style={styles.headerContainer}>
   <ImageBackground source={rideFareBackground} style={styles.imageBackground}>
     <Text style={styles.label}>Ride Fare</Text>
-    <Text style={styles.fare}>{fare}</Text>
+    <Text style={styles.fare}>₹ {fare}</Text>
   </ImageBackground>
   </View>
 );

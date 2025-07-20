@@ -13,14 +13,13 @@ const OnRideScreen = ({onPaymentMethodChange}) => {
   const {driverName,vehicleNumber,model,brand,driverPhoto} = useAssignedDriverInfoStore();
   const {stops,minFare,maxFare,duration,totalDistance,vehicleType,paymentMethod,estimatedPickuoMins} = useCurrentRideInfoStore();
 
-  // Initialize tracking hook for on ride screen with polyline support
+ 
   const { cleanupMarkers } = useTrackHook('on-ride');
 
-  // Animation state for trip details
+  
   const [expanded, setExpanded] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
 
-  // Cleanup markers and polylines when component unmounts
   useEffect(() => {
     return () => {
       cleanupMarkers();
@@ -39,11 +38,7 @@ const OnRideScreen = ({onPaymentMethodChange}) => {
     });
   };
 
-  // Interpolate height for animation
-  const rideInfoHeight = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 250], // adjust to fit your content
-  });
+ 
   const chevronRotation = animation.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '90deg'],

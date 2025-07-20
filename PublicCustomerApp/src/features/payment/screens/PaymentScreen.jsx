@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, View, StyleSheet } from 'react-native';
+import { ScrollView, View, StyleSheet ,Text} from 'react-native';
 import FareHeader from '../../rideHistory/components/FareHeader';
 import TripMetaInfo from '../../rideHistory/components/TripMetaInfo';
 import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
@@ -8,6 +8,9 @@ import PaymentDetails from '../../rideHistory/components/PaymentDetails';
 import SupportSection from '../../rideHistory/components/SupportSection';
 import PayButton from '../../rideHistory/components/PayButton';
 import AddressContainer from '../../../components/Trips/AddressContainer';
+import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
+import useAssignedDriverInfoStore from '../../rideStatus/store/useAssignedDriverInfoStore';
+import {Fonts} from '../../../constants/constants';
 
 const dummyDirections = [
   {
@@ -22,19 +25,33 @@ const dummyDirections = [
   },
 ];
 
-const PaymentScreen = () => {
+const PaymentScreen = ({handlePayNow}) => {
+  const {tripId,stops,vehicleType,finalDistance,finalDuration,finalFare,breakdownFare,paymentMethod}=useCurrentRideInfoStore()
+  const {driverPhoto,driverName,brand,model,vehicleNumber}=useAssignedDriverInfoStore()
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <FareHeader fare="₹117.50" />
-        <TripMetaInfo date="Mon, Jan 01 2022 3:00 PM" tripId="ABC01234" />
-        <AddressContainer directions={dummyDirections} />
-        <TripPersonVehicle />
-        <TripStats />
-        <PaymentDetails />
+        <FareHeader fare={finalFare} />
+        {paymentMethod == 'CASH' && (
+          <View 
+            style={[
+              styles.cashPayment,
+             
+            ]}
+          >
+          
+            <Text style={styles.cashPaymentText}>Please PAY Trip Fare ₹ {finalFare} to Driver</Text>
+          
+          </View>
+        )}
+        <TripMetaInfo date="Mon, Jan 01 2022 3:00 PM" tripId={tripId} />
+        <AddressContainer directions={stops} />
+        <TripPersonVehicle driverName={driverName} driverPhoto={driverPhoto} vehicleType={vehicleType} vehicleBrand={brand} vehicleModel={model} vehicleNumber={vehicleNumber} />
+        <TripStats totalDistance={finalDistance} totalDuration={finalDuration} totalFare={finalFare} />
+        <PaymentDetails finalFare={finalFare} breakdownFare={breakdownFare}/>
         <SupportSection onPress={() => {}} />
       </ScrollView>
-      <PayButton amount="₹117.50" onPress={() => {}} />
+      <PayButton amount={finalFare} onPress={handlePayNow} paymentMethod={paymentMethod} />
     </View>
   );
 };
@@ -47,6 +64,25 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 16,
     paddingBottom: 32,
+  },
+  cashPayment: {
+    backgroundColor: '#FFF8E1',
+    borderRadius: 16,
+    padding: 20,
+    marginVertical: 20,
+    width: '100%',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FFD54F',
+    borderStyle:'dashed'
+  },
+ 
+  cashPaymentText: {
+    fontSize: 16,
+    fontFamily: Fonts.semi_bold,
+    color: 'black',
+    textAlign: 'center',
+   
   },
 });
 

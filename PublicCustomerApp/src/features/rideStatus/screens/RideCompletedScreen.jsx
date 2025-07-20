@@ -1,57 +1,103 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Fonts } from '../../../constants/constants';
-import DroppedTickIcon from '../../../assets/icons/DroppedTickIcon.svg';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
+import { utils} from '../../../utils/Utils';
+import RideStatusHeader from '../components/RideStatusHeader';
+
 const RideCompletedScreen = () => {
   const { setStackScreen } = useStackScreenStore();
-  const { finalFare, finalDuration, finalDistance ,breakdownFare} = useCurrentRideInfoStore();
+  const { finalFare, finalDuration, finalDistance ,paymentMethod} = useCurrentRideInfoStore();
+  
+  // Animation refs
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  
   // Dummy data
   const fare = finalFare;
   const duration = finalDuration;
   const distance = finalDistance;
 
-
-  console.log("breakdownFare",breakdownFare)
-  console.log("finalFare",finalFare)
+  useEffect(() => {
+    // Start animation when component mounts
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const handleMoreDetails = () => {
-    setStackScreen('PaymentScreen',{});
+     setStackScreen('PaymentScreen',{
+      handlePayNow:handlePayNow
+     })
     // Dummy handler
   };
   const handlePayNow = () => {
-    
+
+    setStackScreen('TripFeedbackScreen',{})
+   
   };
 
   return (
    <>
-      {/* Top Bar */}
+      
       <View style={[styles.containerTop,{backgroundColor:'#13B15A'}]}>
        
         <Text style={styles.topBarText}>Your ride is completed</Text>
             </View>
         
         
-      {/* Card */}
+    
       <View style={styles.root}>
-        <View style={styles.iconWrap}>
-          <DroppedTickIcon width={50} height={50} />
-        </View>
-        <Text style={styles.completedText}>Your ride is completed.</Text>
-        <Text style={styles.subText}>Please proceed with the payment</Text>
-        <Text style={styles.fare}>{fare}</Text>
-        <Text style={styles.info}>{duration}  .  {distance}</Text>
+        <RideStatusHeader 
+          title="Your ride is completed."
+          subtitle="Please proceed with the payment"
+        />
+        <Text style={styles.fare}>₹ {fare}</Text>
+        <Text style={styles.info}>{utils.formatMinutesToReadable(duration)}  .  {distance} Km</Text>
+        {paymentMethod == 'CASH' && (
+          <Animated.View 
+            style={[
+              styles.cashPayment,
+              {
+                opacity: fadeAnim,
+                transform: [{ scale: scaleAnim }]
+              }
+            ]}
+          >
+          
+            <Text style={styles.cashPaymentText}>Please PAY Trip Fare ₹ {finalFare} to Driver</Text>
+          
+          </Animated.View>
+        )}
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.outlineBtn} onPress={handleMoreDetails}>
             <Text style={styles.outlineBtnText}>MORE DETAILS</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.filledBtn} onPress={handlePayNow}>
-            <Text style={styles.filledBtnText}>PAY NOW</Text>
+            <Text style={styles.filledBtnText}>{paymentMethod == 'CASH' ? 'PAY  THROUGH  UPI' : 'PAY NOW'}</Text>
           </TouchableOpacity>
         </View>
       </View>
+      
+      
+
+
+    
+      
+      
+
+      
     </>
   );
 };
@@ -100,26 +146,6 @@ const styles = StyleSheet.create({
     elevation: 2,
     marginTop: 0,
   },
-  iconWrap: {
-    backgroundColor: '#E8F5E9',
-    borderRadius: 32,
-    padding: 8,
-    marginBottom: 10,
-  },
-  completedText: {
-    fontSize: 17,
-    color: '#222',
-    fontFamily: Fonts.medium,
-    marginBottom: 2,
-    textAlign: 'center',
-  },
-  subText: {
-    fontSize: 15,
-    color: '#888',
-    marginBottom: 18,
-    textAlign: 'center',
-    fontFamily: Fonts.regular,
-  },
   fare: {
     fontSize: 32,
     fontWeight: 'bold',
@@ -164,6 +190,31 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontFamily: Fonts.medium,
+  },
+  cashPayment: {
+    backgroundColor: '#FFF8E1',
+    borderRadius: 16,
+    padding: 20,
+    marginVertical: 20,
+    width: '100%',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FFD54F',
+    borderStyle:'dashed'
+  },
+ 
+  cashPaymentText: {
+    fontSize: 16,
+    fontFamily: Fonts.semi_bold,
+    color: 'black',
+    textAlign: 'center',
+   
+  },
+  cashPaymentSubtext: {
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#F57C00',
+    textAlign: 'center',
   },
 });
 

@@ -387,5 +387,25 @@ export const utils = {
     
     // Format as 12-hour time with AM/PM
     return futureTime.format('h:mm A');
+  },
+
+  formatMinutesToReadable(minutes) {
+    if (!minutes || minutes < 0) {
+      console.warn('Invalid minutes provided:', minutes);
+      return '';
+    }
+    
+    if (minutes >= 60) {
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+      
+      if (remainingMinutes === 0) {
+        return `${hours} hr`;
+      } else {
+        return `${hours} hr ${remainingMinutes} Min`;
+      }
+    } else {
+      return `${minutes} Mins`;
+    }
   }
 };

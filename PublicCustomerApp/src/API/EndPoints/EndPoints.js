@@ -48,6 +48,11 @@ export const updateTripStops = async (payload)=> {
   return data
 }
 
+export const submitTripFeedback = async (payload)=> {
+  const {data} = await apiClient.post('/publicrides/customer/passengerDriverRating',payload)
+  return data
+}
+
 
 
 // Book Ride

@@ -4,27 +4,25 @@ import DistanceIcon from '../../../assets/image/svgIcons/distanceBlue.svg';
 import WatchIcon from '../../../assets/image/svgIcons/watch.svg';
 import FareIcon from '../../../assets/image/svgIcons/fare.svg';
 import { Fonts, colors } from '../../../constants/constants';
-
+import { utils } from '../../../utils/Utils';
 const TripStats = ({
-  distance = '12 Km',
-  duration = '30 min',
-  fare = '₹117.50',
+  totalDistance,totalDuration,totalFare
 }) => (
   <View style={styles.statsRow}>
     <View style={[styles.statBox, { backgroundColor: '#E6F3FF' }]}>
       <DistanceIcon width={24} height={24} style={styles.icon} />
       <Text style={styles.label}>Distance</Text>
-      <Text style={styles.value}>{typeof distance === 'string' ? distance : String(distance)}</Text>
+      <Text style={styles.value}>{typeof totalDistance === 'string' ? totalDistance : String(totalDistance)} Km</Text>
     </View>
     <View style={[styles.statBox, { backgroundColor: '#FFF7E6' }]}>
       <WatchIcon width={24} height={24} style={styles.icon} />
       <Text style={styles.label}>Duration</Text>
-      <Text style={styles.value}>{typeof duration === 'string' ? duration : String(duration)}</Text>
+      <Text style={styles.value}>{utils.formatMinutesToReadable(totalDuration)}</Text>
     </View>
     <View style={[styles.statBox, { backgroundColor: '#E6F7F1' }]}>
       <FareIcon width={24} height={24} style={styles.icon} />
       <Text style={styles.label}>Fare</Text>
-      <Text style={styles.value}>{typeof fare === 'string' ? fare : String(fare)}</Text>
+      <Text style={styles.value}>₹ {typeof totalFare === 'string' ? totalFare : String(totalFare)}</Text>
     </View>
   </View>
 );
@@ -49,13 +47,14 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: Fonts.regular,
-    fontSize: 14,
+    fontSize: 12,
     color: colors.black,
     marginBottom: 2,
+    marginTop:5
   },
   value: {
-    fontFamily: Fonts.bold,
-    fontSize: 20,
+    fontFamily: Fonts.medium,
+    fontSize: 18,
     color: colors.black,
     marginTop: 2,
   },

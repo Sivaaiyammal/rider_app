@@ -3,23 +3,20 @@ import { View, Text, StyleSheet } from 'react-native';
 import { colors, Fonts } from '../../../constants/constants';
 
 const PaymentDetails = ({
-  tripBill = '₹96.35',
-  gst = '₹21.15',
-  total = '₹117.50',
+ finalFare,breakdownFare
 }) => (
   <View style={styles.container}>
     <Text style={styles.header}>Payment Details</Text>
+    {breakdownFare?.map((item,index)=>(
+      <View key={index} style={styles.row}>
+        <Text style={styles.label}>{item.name}</Text>
+        <Text style={styles.value}> ₹{item.amount}</Text>
+      </View>
+    ))}
+    
     <View style={styles.row}>
-      <Text style={styles.label}>Trip Bill</Text>
-      <Text style={styles.value}>{tripBill}</Text>
-    </View>
-    <View style={styles.row}>
-      <Text style={styles.label}>GST 18%</Text>
-      <Text style={styles.value}>{gst}</Text>
-    </View>
-    <View style={styles.row}>
-      <Text style={styles.totalLabel}>Total Bill</Text>
-      <Text style={styles.totalValue}>{total}</Text>
+      <Text style={styles.totalLabel}>Total Fare</Text>
+      <Text style={styles.totalValue}>{finalFare}</Text>
     </View>
   </View>
 );

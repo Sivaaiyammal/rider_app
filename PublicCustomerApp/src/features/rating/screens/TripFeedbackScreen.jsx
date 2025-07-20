@@ -1,0 +1,354 @@
+import React, { useRef, useEffect } from 'react';
+import {
+  Animated,
+  View,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  Pressable,
+  Text,
+  ScrollView,
+} from 'react-native';
+import PropTypes from 'prop-types';
+import Icons from 'react-native-vector-icons/MaterialIcons';
+import { colors } from '../../../constants/constants';
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
+const { height } = Dimensions.get('window');
+import RatingBox from '../components/RatingBox';    
+import useAssignedDriverInfoStore  from '../../rideStatus/store/useAssignedDriverInfoStore';
+import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
+import RideStatusHeader from '../../rideStatus/components/RideStatusHeader';
+import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
+import { Fonts } from '../../../constants/constants';
+import { utils } from '../../../utils/Utils';
+import { submitTripFeedback } from '../../../API/EndPoints/EndPoints';
+import { showNotification } from '../../../components/NotificationManger';
+export default function TripFeedbackScreen() {
+    const { driverName,driverPhoto,brand,model,vehicleNumber }=useAssignedDriverInfoStore()
+    const {finalFare,finalDistance,finalDuration,vehicleType,tripId} = useCurrentRideInfoStore()
+  const bounceValue = useRef(new Animated.Value(height)).current;
+  const overlayOpacity = useRef(new Animated.Value(0)).current;
+  const { goBack } = useStackScreenStore();
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(bounceValue, {
+        toValue: 0,
+        useNativeDriver: true,
+        bounciness: 4,
+        speed: 12,
+      }),
+      Animated.timing(overlayOpacity, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+
+  const OnClose = () => {
+    goBack()
+  }
+
+  const handleSubmit = async (ratingData) => {
+    ratingData.tripId = tripId
+    
+    const feedback = await submitTripFeedback(ratingData)
+    if(feedback.success){
+      showNotification('Success','Feedback submitted successfully',colors.success)
+      goBack()
+    }else{
+      showNotification('Error','Something went wrong',colors.error)
+    }
+  }
+
+  const handleClose = () => {
+    // Animated.parallel([
+    //   Animated.timing(bounceValue, {
+    //     toValue: height,
+    //     duration: 250,
+    //     useNativeDriver: true,
+    //   }),
+    //   Animated.timing(overlayOpacity, {
+    //     toValue: 0,
+    //     duration: 250,
+    //     useNativeDriver: true,
+    //   }),
+    // ]).start(() => {
+    //   if (OnClose) OnClose();
+    // });
+    if(OnClose) OnClose()
+  };
+
+  return (
+    <View style={[styles.wrapper, { zIndex: 999999 }]}>
+      <Animated.View
+        style={[
+          styles.overlay,
+          {
+            opacity: overlayOpacity,
+          },
+        ]}
+      >
+        <Pressable style={StyleSheet.absoluteFill} onPress={handleClose} />
+      </Animated.View>
+
+      <Animated.View
+        style={[
+          styles.bottomSheetWrapper,
+          {
+            transform: [{ translateY: bounceValue }],
+          },
+        ]}
+      >
+       
+
+        <View style={styles.bottomSheet}>
+          <View style={styles.contentContainer}>
+          <View style={styles.header}>
+          <RideStatusHeader 
+          title="Your ride is completed."
+        
+            />
+        </View>
+        <View style={styles.dottedLine}></View>
+        <View style={styles.Rideisnfo}>   
+            <Text style={styles.RideFareText}>
+            ₹ {finalFare}
+            </Text>
+            <View style={[styles.RideInfoContainer,]}>
+                <View style={[styles.seprator]}/>
+
+              
+                <View style={styles.RideInfoContainerBox}>
+                    <Text style={styles.RideInfoText}>
+                        {finalDistance} Km  .  {utils.formatMinutesToReadable(finalDuration)}
+                    </Text>
+
+                </View>
+                   <View style={[styles.seprator]}/>
+
+               
+            </View>
+        </View>
+      
+          <View style={{marginVertical:10}}>
+            <TripPersonVehicle driverName={driverName} driverPhoto={driverPhoto} vehicleType={vehicleType} vehicleBrand={brand} vehicleModel={model} vehicleNumber={vehicleNumber} layoutStyle={"row"} descriptonSize={12}/>
+            </View>
+           <RatingBox onRatingSubmit={handleSubmit}/>
+           <TouchableOpacity onPress={handleClose}>
+          <Text style={styles.LATERText}>
+            LATER
+          </Text>
+        </TouchableOpacity>
+          </View>
+          
+        </View>
+       
+      </Animated.View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    zIndex: 9998,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.75)', // 75% opacity as requested
+    zIndex: 9999,
+  },
+  bottomSheetWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    zIndex: 10000,
+  },
+  bottomSheet: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  
+  },
+  closeButtonContainer: {
+    alignSelf: 'flex-end',
+    marginRight: 20,
+    marginBottom: 20,
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: "white",
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  contentContainer: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 30,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.black,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+  },
+  feedbackContent: {
+    flex: 1,
+  },
+  ratingSection: {
+    marginBottom: 30,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.black,
+    marginBottom: 15,
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  starButton: {
+    padding: 5,
+  },
+  categoriesSection: {
+    marginBottom: 30,
+  },
+  categoriesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  categoryButton: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  categoryText: {
+    fontSize: 14,
+    color: colors.black,
+  },
+  commentsSection: {
+    marginBottom: 30,
+  },
+  commentBox: {
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    padding: 16,
+    minHeight: 100,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  placeholderText: {
+    color: '#999',
+    fontSize: 16,
+  },
+  submitButton: {
+    backgroundColor: colors.primary || '#007AFF',
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  submitButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  dottedLine: {
+    height: 1,
+   
+    marginBottom: 16,
+    marginHorizontal: 10,
+    borderBottomWidth: 1,
+    borderColor: '#bdbdbd',
+    borderStyle: 'dashed',
+  },
+  RideInfoContainer:{
+    flexDirection:'row',
+    
+    alignItems:'center',
+    justifyContent:'center',
+    marginTop:10
+  
+   
+  },
+  seprator:{
+    height:1,
+    flex:1,
+    backgroundColor:"#bdbdbd",
+  },
+  RideInfoContainerBox:{
+    padding:10,
+    paddingHorizontal:20,
+  
+    borderRadius:30,
+    borderWidth:1,
+    borderColor:"#bdbdbd",
+
+  },
+  RideFareText:{
+    fontSize:30,
+    fontFamily:Fonts.medium,
+    color:colors.black,
+    textAlign:"center"
+  },
+  RideInfoText:{
+    fontSize:16,
+    fontFamily:Fonts.regular,
+    
+    textAlign:"center"
+  },
+  LATERText:{
+    fontSize:14,
+    fontFamily:Fonts.regular,
+ 
+    textAlign:"center",
+    marginTop:20
+  }
+  
+});
+
+TripFeedbackScreen.propTypes = {
+  onClose: PropTypes.func,
+  zIndex: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
+};
+
+TripFeedbackScreen.defaultProps = {
+  onClose: null,
+  zIndex: false,
+};

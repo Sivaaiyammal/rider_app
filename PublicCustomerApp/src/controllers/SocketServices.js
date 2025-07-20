@@ -37,6 +37,7 @@ class WSService {
   onRideStatus(data){
     console.log("onRideStatus",JSON.stringify(data))
     if(data?.tripStatus){
+      console.log('data?.tripStatus',data?.tripStatus)
       if(data?.tripStatus === 'CANCELLED'){
         try {
           console.log('CANCELLED');
@@ -55,6 +56,9 @@ class WSService {
       if(data?.tripStatus === 'DROPPED'){
         
         this.useCurrentRideInfoStore.getState().setFareDetails(data?.fareData);
+        this.useCurrentRideInfoStore.getState().setFinalDuration(data?.duration);
+        this.useCurrentRideInfoStore.getState().setFinalDistance(data?.distance);
+        
         
       }
 

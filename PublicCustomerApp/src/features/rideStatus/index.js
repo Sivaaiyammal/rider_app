@@ -19,12 +19,13 @@ import { cancelRideMutation } from '../../API/APICalls/RideAPICalls';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
 import PaymentType from '../booking/components/bookRide/PaymentType';
 
+
 const RideStatus = () => {
-  const { tripStatus,tripId } = useCurrentRideInfoStore();
+  const { tripStatus,tripId,paymentMethod,setPaymentMethod } = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const {setStackScreen} = useStackScreenStore();
   const [isPaymentMethodChangeShow,setIspaymentMethodChangeShow] = useState(false);
-  const [paymentType,setPaymentType] = useState('CASH');
+ 
   const renderScreen = () => {
     console.log('tripStatus',tripStatus);
     switch (tripStatus) {
@@ -61,14 +62,28 @@ const RideStatus = () => {
   }
 
 
-  const handlePaymentMethodChange = (paymentType) => {
-    console.log('paymentType',paymentType);
+  const handlePaymentMethodChange = (paymentMethod) => {
+    console.log('paymentMethod',paymentMethod);
     setIspaymentMethodChangeShow(false);
-    setPaymentType(paymentType);
+    setPaymentMethod(paymentMethod);
   }
 
+ const getTitle = () => {
+  switch(tripStatus){
+    case TripStatus.PICKEDUP:
+      return 'On Ride';
+    case TripStatus.ACCEPTED:
+      return 'Driver Arrival';
+    case TripStatus.DROPPED:
+      return 'Ride Completed';
+    default:
+      return 'Finding Driver';
+  }
+ }
+  
+
     return <>
-        <NavBar title="Finding Driver" />
+        <NavBar title={getTitle()} />
         <View style={styles.container}>
             <View style={styles.containerTop}>  
                 <View style={styles.containerTop_inner}>
@@ -96,9 +111,10 @@ const RideStatus = () => {
     {
       isPaymentMethodChangeShow &&
       <AnimatedBottomSheetWrapper onClose={()=>{setIspaymentMethodChangeShow(false)}}>
-        <PaymentType onSelect={handlePaymentMethodChange} initialValue={paymentType} />
+        <PaymentType onSelect={handlePaymentMethodChange} initialValue={paymentMethod} />
       </AnimatedBottomSheetWrapper>
     }
+   
     </>;
 };
 

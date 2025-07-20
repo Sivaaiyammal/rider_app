@@ -8,7 +8,7 @@ import HatchbackIcon from '../../../assets/vehicle/HATCHBACK.webp';
 import ExSedanIcon from '../../../assets/vehicle/ExSEDAN.webp';
 
 export const getVehicleImage = (type,style) => {
-    console.log('type', type)
+    console.log('type',type);
     switch(type){
         case 'AUTO':
             return <Image source={AutoIcon} style={style} />

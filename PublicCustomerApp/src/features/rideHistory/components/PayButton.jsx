@@ -2,9 +2,9 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { colors, Fonts } from '../../../constants/constants';
 
-const PayButton = ({ amount = '₹117.50', onPress }) => (
+const PayButton = ({ amount = '₹117.50', onPress,paymentMethod }) => (
   <TouchableOpacity style={styles.button} onPress={onPress}>
-    <Text style={styles.text}>PAY {amount}</Text>
+    <Text style={styles.text}>PAY  {paymentMethod == 'CASH' ? 'THROUGH  UPI' : 'NOW'}</Text>
   </TouchableOpacity>
 );
 
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: colors.white,
-    fontFamily: Fonts.bold,
+    fontFamily: Fonts.semi_bold,
     fontSize: 18,
   },
 });

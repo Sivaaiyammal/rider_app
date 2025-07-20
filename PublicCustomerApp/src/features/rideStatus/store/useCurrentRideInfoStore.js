@@ -65,32 +65,50 @@ const useCurrentRideInfoStore = create((set) => ({
    
 
   setFareDetails: (fareDetails) => {
-    set({finalFare:fareDetails.fare})
-    const breakdown =[]
-
-    if(fareDetails?.breakdown?.subtotal){
-      breakdown.push({
-        name:"Trip Bill",
-        amount:fareDetails?.breakdown?.subtotal
-      })
+    console.log('fareDetails',fareDetails)
+    const breakdown = [];
+  
+    if (fareDetails?.fare != null) {
+      set({ finalFare: fareDetails.fare });
     }
-
-    if (fareDetails?.breakdown?.fees?.breakdown) {
-      const platformFee = fareDetails?.breakdown?.fees?.breakdown?.platformFee || 0 + fareDetails?.breakdown?.fees?.incentives || 0
+  
+    // Trip subtotal
+    if (fareDetails?.breakdown?.subtotal != null) {
       breakdown.push({
-        name:"Platform Fee",
-        amount:platformFee
-      })
-
-      const breakdown = Object.keys(fareDetails?.breakdown?.fees?.breakdown).filter(key => key !== "platformFee" && key !== "incentives").map(key => ({
-        name: key,
-        amount: fareDetails?.breakdown?.fees?.breakdown[key]
-      }))
+        name: "Trip Bill",
+        amount: fareDetails.breakdown.subtotal,
+      });
     }
-
-    set({breakdownFare:breakdown})
-
+  
+    // Fees and additional breakdown
+    const fees = fareDetails?.breakdown?.fees;
+    const feesBreakdown = fees?.breakdown || {};
+    console.log("feesBreakdown",fees)
+    const incentives = fareDetails?.breakdown?.incentives || 0;
+    
+    console.log("incentives",incentives)
+    // Platform Fee (includes platformFee + incentives)
+    const platformFee = (feesBreakdown.platformFee || 0) + incentives;
+    if (platformFee > 0) {
+      breakdown.push({
+        name: "Platform Fee",
+        amount: platformFee,
+      });
+    }
+  
+    // Other fee components (excluding platformFee and incentives)
+    Object.keys(feesBreakdown).forEach((key) => {
+      if (key !== "platformFee" && key !== "incentives") {
+        breakdown.push({
+          name: key,
+          amount: feesBreakdown[key],
+        });
+      }
+    });
+  
+    set({ breakdownFare: breakdown });
   },
+  
   setCurrentRideInfo: (info) => set({
     tripId: info._id || info.tripId || null,
     tripStatus: info.status || info.tripStatus || null,
@@ -115,6 +133,9 @@ const useCurrentRideInfoStore = create((set) => ({
     passangerId: info.passangerId || null,
     vehicleType: info.vehicleType || null,
     publicRidesTrip: typeof info.publicRidesTrip === 'boolean' ? info.publicRidesTrip : null,
+    finalDistance: info.finalDistance || null,
+    finalDuration: info.finalDuration || null,
+   
   }),
 
   resetCurrentRideInfo: () => set({
