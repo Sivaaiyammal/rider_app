@@ -70,12 +70,13 @@ class WSService {
  
   
   driverLocationUpdate(data){
+    console.log("driverLocationUpdate",JSON.stringify(data))
     if(data){
       try {
         this.useAssignedDriverInfoStore.getState().setDriverLatitude(data?.data?.location?.coordinates[1]);
         this.useAssignedDriverInfoStore.getState().setDriverLongitude(data?.data?.location?.coordinates[0]);
         this.useAssignedDriverInfoStore.getState().setDriverAngle(data?.data?.liveStats?.course);
-        this.useAssignedDriverInfoStore.getState().setDriverMaxSpeed(data?.data?.liveStats?.speed) || 0;
+        // this.useAssignedDriverInfoStore.getState().setDriverMaxSpeed(data?.data?.liveStats?.speed) || 0;
       } catch (error) {
         console.error('Error updating driver location:', error);
       }

@@ -8,11 +8,11 @@ import useAssignedDriverInfoStore from '../store/useAssignedDriverInfoStore';
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 import useTrackHook from '../hooks/useTrackHook';
 import {utils} from '../../../utils/Utils';
-
+import useMapStyleStore from '../../../store/useMapStyleStore'; 
 const OnRideScreen = ({onPaymentMethodChange}) => {
   const {driverName,vehicleNumber,model,brand,driverPhoto} = useAssignedDriverInfoStore();
   const {stops,minFare,maxFare,duration,totalDistance,vehicleType,paymentMethod,estimatedPickuoMins} = useCurrentRideInfoStore();
-
+  const {setMapStyle} = useMapStyleStore();
  
   const { cleanupMarkers } = useTrackHook('on-ride');
 
@@ -37,6 +37,20 @@ const OnRideScreen = ({onPaymentMethodChange}) => {
       return !prev;
     });
   };
+
+  useEffect(() => {
+    setMapStyle({
+      width: "100%",
+      height: "60%",
+    });
+
+    return () => {
+      setMapStyle({
+        width: "100%",
+        height: "100%",
+      });
+    }
+  }, [])
 
  
   const chevronRotation = animation.interpolate({

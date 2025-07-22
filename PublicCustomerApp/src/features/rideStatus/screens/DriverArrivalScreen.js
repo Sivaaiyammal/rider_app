@@ -13,11 +13,13 @@ import useAssignedDriverInfoStore from '../store/useAssignedDriverInfoStore';
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 import { changeStopLocation } from '../services/StopLocationChangeService';
 import {showNotification} from '../../../components/NotificationManger';
+import useMapStyleStore from '../../../store/useMapStyleStore';
   const DriverArrivalScreen = ({onCancel}) => {
   // Dummy data
   const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone} = useAssignedDriverInfoStore();
   const {stops,otp,minFare,maxFare,duration,totalDistance,estimatedPickuoMins,vehicleType} = useCurrentRideInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
+  const {setMapStyle} = useMapStyleStore();
 
   // Initialize tracking hook for driver arrival screen with polyline support
   const { cleanupMarkers } = useTrackHook('arrival');
@@ -48,6 +50,20 @@ import {showNotification} from '../../../components/NotificationManger';
       defaultLocation:item
     })
   }
+
+  useEffect(() => {
+    setMapStyle({
+      width: "100%",
+      height: "60%",
+    });
+
+    return () => {
+      setMapStyle({
+        width: "100%",
+        height: "100%",
+      });
+    }
+  }, [])
 
   const handleCallDriver = () => {
     console.log('driverPhone',phone);

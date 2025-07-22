@@ -28,7 +28,7 @@ export default function TripFeedbackScreen() {
     const {finalFare,finalDistance,finalDuration,vehicleType,tripId} = useCurrentRideInfoStore()
   const bounceValue = useRef(new Animated.Value(height)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
-  const { goBack } = useStackScreenStore();
+  const { goBack,reset } = useStackScreenStore();
 
   useEffect(() => {
     Animated.parallel([
@@ -55,9 +55,11 @@ export default function TripFeedbackScreen() {
     ratingData.tripId = tripId
     
     const feedback = await submitTripFeedback(ratingData)
+    console.log('feedback',feedback)
     if(feedback.success){
       showNotification('Success','Feedback submitted successfully',colors.success)
-      goBack()
+      reset()
+      
     }else{
       showNotification('Error','Something went wrong',colors.error)
     }

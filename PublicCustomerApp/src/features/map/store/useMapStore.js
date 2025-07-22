@@ -58,6 +58,9 @@ const useMapStore = create((set) => ({
     mapReady: false,
     setMapReady: mapReady => set({ mapReady }),
 
+    mapBounds: null,
+    setMapBounds: mapBounds => set({ mapBounds }),
+
     markerClickCallback: null,
     setMarkerClickCallback: callback => set({ markerClickCallback: callback }),
 

@@ -38,6 +38,20 @@ const useAssignedDriverInfoStore = create((set) => ({
 
     }),
 
+    setDriverLatitude: (latitude) =>
+      set({
+        driverLatitude: latitude,
+      }),
+
+    setDriverLongitude: (longitude) =>
+      set({
+        driverLongitude: longitude,
+      }),
+    setDriverAngle: (angle) =>
+      set({
+        driverAngle: angle,
+      }),
+
   clearDriverInfo: () =>
     set({
       driverName: '',

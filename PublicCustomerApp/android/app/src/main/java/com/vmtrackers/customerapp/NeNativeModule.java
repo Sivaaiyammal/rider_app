@@ -461,6 +461,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             case "marker_start": return R.drawable.vehicle_start;
             case "marker_end": return R.drawable.vehicle_end;
             case "marker_waypoint": return R.drawable.marker_stop_grey;
+            case "bike": return R.drawable.bike;
             case "hatchback": return R.drawable.hatchback;
             case "auto": return R.drawable.auto;
             case "sedan": return R.drawable.sedan;
@@ -761,6 +762,29 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         }
     }
 
+    @ReactProp(name="bounds")
+    public void zoomToBounds(MapView mapview, ReadableArray boundData){
+        if(boundData==null){
+            return;
+        }
+        if(mapController==null){
+            return;
+        }
+        ReadableArray bounds = boundData.getArray(0);
+        ReadableArray margin = boundData.getArray(1);
+
+        double minLon = bounds.getDouble(0);
+        double minLat = bounds.getDouble(1);
+
+        double maxLon = bounds.getDouble(2);
+        double maxLat = bounds.getDouble(3);
+
+        mapController.updateCameraPosition(
+            CameraUpdateFactory.newLngLatBounds(new LngLat(minLon, minLat), new LngLat(maxLon, maxLat),
+                    new Rect(margin.getInt(0), margin.getInt(1), margin.getInt(2), margin.getInt(3))),500);
+        Log.d("ZOOM", "HELLWO  22");
+    }
+
     public void renderPolyline(ReadableMap polyline) {
         if(mapController==null){
             return;
@@ -773,7 +797,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         ReadableArray margin = polyline.getArray("padding");
         String pattern = polyline.getString("pattern");
 
-        focus = true;
+       
 
         
 

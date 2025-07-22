@@ -76,5 +76,16 @@ export const cancelRide = async (payload)=> {
   return data
 }
 
+export const updatePaymentInServer = async (payload) => {
+  const { data } = await apiClient.post('publicrides/customer/paymentStatusUpdate', payload)
+  return data
+}
+
+// get nearby drivers
+export const getNearByDrivers = async (payload) => {
+  const { data } = await apiClient.post('/publicrides/customer/getNearByDrivers', payload)
+  return data
+}
+
 
 

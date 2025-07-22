@@ -175,7 +175,9 @@ const PlanRideScreen = () => {
   const debouncedSearchCallback = useDebouncedAPICall((item, type) => {
     HandsetRideLocation(item, type);
     goBack();
-    setStackScreen('BookRideScreen',{})
+    if(type !== LocationTypes.START_LOCATION){
+      setStackScreen('BookRideScreen',{})
+    }
   }, 300);
 
   const onSearchClickResultCallback = (item,type) =>{
@@ -205,8 +207,11 @@ const PlanRideScreen = () => {
   const debouncedPickLocationCallback = useDebouncedAPICall((item, type) => {
     console.log(item,type,"fromPickup")
     HandsetRideLocation(item,type)
+    console.log("type",type)
     goBack()
-    setStackScreen('BookRideScreen',{})
+    if(type !== LocationTypes.START_LOCATION){
+      setStackScreen('BookRideScreen',{})
+    }
   }, 300);
 
   const onPickLocationResultCallback = (item,type) =>{

@@ -10,22 +10,24 @@ import SearchScreen from '../features/search/screens/SearchScreen';
 import WaypointScreen from '../features/booking/screens/WaypointScreen';
 import { StatusBar } from 'react-native';
 import useUserInfoStore from '../store/useUserInfoStore';
-import { getStoredLocation} from '../storage/userLocalStorage';
+import { getStoredLocation, getPreferenceShowRideStatus} from '../storage/userLocalStorage';
 import PickLocationScreen from './PickLocationScreen';
 import { useCustomBackHandler } from '../hooks/useCustomBackHandler';
 import PlanRideScreen from '../features/booking/screens/PlanRideScreen.jsx';
 import BookRideScreen from '../features/booking/screens/BookRideScreen.jsx';
-import { checkOnGoingRide } from '../API/EndPoints/EndPoints';
+import { checkOnGoingRide , getNearByDrivers} from '../API/EndPoints/EndPoints';
 import RideStatus from '../features/rideStatus';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 import PaymentScreen from '../features/payment/screens/PaymentScreen';
 import useAssignedDriverInfoStore  from '../features/rideStatus/store/useAssignedDriverInfoStore';
 import TripFeedbackScreen from '../features/rating/screens/TripFeedbackScreen';
+import useLocationStore from '../store/useLocationStore';
 const Home = () => {
+  const {location} = useLocationStore();
   const { stackScreen } = useStackScreenStore();
   const permissionsRequested = useRef(false);
   const [mapReady, setMapReady] = useState(false);
-  const { setHomelocation, setWorklocation} = useUserInfoStore();
+  const { setHomelocation, setWorklocation, setIsPreferenceShow} = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
@@ -69,17 +71,47 @@ const Home = () => {
     }
   }
 
+  const checkPreferenceShowRideStatus = async () => {
+    const preferenceShowRideStatus = await getPreferenceShowRideStatus();
+    if(preferenceShowRideStatus == "true"){
+      setIsPreferenceShow(true);
+    }
+  }
+
+
+  const fetchAllNearbyDrivers = async () => {
+    const payload = {
+      radius:10000,
+      location:location
+    }
+    const drivers = await getNearByDrivers(payload);
+    console.log("=====> DRIVERS", drivers)
+  }
 
  
 
   useEffect(() => {
-    checkAllPermissions();
-    checkOnGoingRideAndLog();
-    checkFavouriteLocation();
-  }, []);
+    if(mapReady){
+      useCustomBackHandler();
+      checkAllPermissions();
+      checkOnGoingRideAndLog();
+      checkFavouriteLocation();
+      checkPreferenceShowRideStatus();
+    }
+
+    console.log("=====> MAP READY", mapReady)
+    
+  }, [mapReady]);
+
+
+  useEffect(()=>{
+    if(location && mapReady){
+      fetchAllNearbyDrivers();
+    }
+  },[location, mapReady])
 
   
-  useCustomBackHandler();
+
 
   const renderContent = () => {
     const current = stackScreen[stackScreen.length - 1];

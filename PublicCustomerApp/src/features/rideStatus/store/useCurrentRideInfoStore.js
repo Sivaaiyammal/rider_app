@@ -84,7 +84,7 @@ const useCurrentRideInfoStore = create((set) => ({
     const fees = fareDetails?.breakdown?.fees;
     const feesBreakdown = fees?.breakdown || {};
     console.log("feesBreakdown",fees)
-    const incentives = fareDetails?.breakdown?.incentives || 0;
+    const incentives =  0;
     
     console.log("incentives",incentives)
     // Platform Fee (includes platformFee + incentives)

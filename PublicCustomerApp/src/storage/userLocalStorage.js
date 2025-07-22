@@ -9,4 +9,12 @@ async function getStoredLocation(type) {
   return val ? JSON.parse(val) : null;
 }
 
-export { storeLocation, getStoredLocation };
+async function preferenceShowRideStatus(show){
+  await AsyncStorage.setItem('@show_preference', JSON.stringify(show));
+}
+
+async function getPreferenceShowRideStatus(){
+  const val = await AsyncStorage.getItem('@show_preference');
+  return val ? JSON.parse(val) : null;
+}
+export { storeLocation, getStoredLocation, preferenceShowRideStatus, getPreferenceShowRideStatus };

@@ -15,7 +15,7 @@ const RatingBox = ({ onRatingSubmit, title = "How is your Trips?", description =
     if (onRatingSubmit) {
       onRatingSubmit({
         rating,
-        comments: comments.trim()
+        comment: comments.trim()
       });
     }
   };

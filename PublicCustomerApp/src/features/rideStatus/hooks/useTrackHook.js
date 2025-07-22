@@ -39,21 +39,7 @@ const useTrackHook = (screenMode = 'arrival') => {
 
   // Memoize vehicle marker type to prevent recalculation
   const vehicleMarkerType = useMemo(() => {
-    switch (vehicleType?.toLowerCase()) {
-      case 'car':
-      case 'sedan':
-        return 'car';
-      case 'suv':
-        return 'car_red';
-      case 'luxury':
-        return 'car_yellow';
-      case 'premium':
-        return 'car_green';
-      case 'auto':
-        return 'auto';
-      default:
-        return 'car';
-    }
+    return vehicleType?.toLowerCase();
   }, [vehicleType]);
 
   // Memoize driver marker to prevent unnecessary re-creation
@@ -83,12 +69,12 @@ const useTrackHook = (screenMode = 'arrival') => {
     marker.setTitle(vehicleNumber || 'Driver');
     marker.setSnippet(`${brand} ${model} - ${color}`);
     marker.setAnimate(true);
-    marker.setAnimationTime(1000);
-    marker.setFocus(true);
+    // marker.setAnimationTime(1000);
+    // marker.setFocus(true);
     driverMarkerRef.current = marker;
 
     return marker;
-  }, [driverLatitude, driverLongitude, driverAngle, vehicleNumber, brand, model, color, vehicleMarkerType]);
+  }, [driverLatitude, driverLongitude, driverAngle]);
 
   // Memoize start marker (only for arrival screen)
   const startMarker = useMemo(() => {
@@ -122,7 +108,7 @@ const useTrackHook = (screenMode = 'arrival') => {
       'Destination',
       rideEndLocation.longitude || rideEndLocation.lng || rideEndLocation[0],
       rideEndLocation.latitude || rideEndLocation.lat || rideEndLocation[1],
-      'marker_end',
+      'default',
       36,
       false,
       0
@@ -146,16 +132,16 @@ const useTrackHook = (screenMode = 'arrival') => {
     }
   }, [screenMode, setMapMarkers, clearPolyline]);
 
-  // Update map location when driver location changes
-  useEffect(() => {
-    if (driverLatitude && driverLongitude) {
-      setMapLocation({
-        lat: driverLatitude,
-        lng: driverLongitude,
-        zoom: 15,
-      });
-    }
-  }, [driverLatitude, driverLongitude, setMapLocation]);
+  // // Update map location when driver location changes
+  // useEffect(() => {
+  //   if (driverLatitude && driverLongitude) {
+  //     setMapLocation({
+  //       lat: driverLatitude,
+  //       lng: driverLongitude,
+  //       zoom: 15,
+  //     });
+  //   }
+  // }, [driverLatitude, driverLongitude, setMapLocation]);
 
   // Update map markers when any marker changes
   useEffect(() => {

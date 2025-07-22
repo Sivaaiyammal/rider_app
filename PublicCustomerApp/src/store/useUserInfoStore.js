@@ -20,7 +20,8 @@ const useUserInfoStore = create(set => ({
   CurrentSearchFavouriteLocation:null,
   setCurrentSearchFavouriteLocation: CurrentSearchFavouriteLocation => set({ CurrentSearchFavouriteLocation }),
 
-
+  isPreferenceShow:false,
+  setIsPreferenceShow: isPreferenceShow => set({ isPreferenceShow }),
 }));
 
 export default useUserInfoStore;

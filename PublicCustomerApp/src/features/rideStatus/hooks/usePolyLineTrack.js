@@ -27,7 +27,7 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
   const originalCoordinatesRef = useRef(null);
   const lastDriverLocationRef = useRef(null);
   const routeSummaryRef = useRef(null);
-  const deviationThreshold = 100; // meters - distance threshold for considering driver off-route
+  const deviationThreshold = 500; // meters - distance threshold for considering driver off-route
 
   // Function to calculate distance between two points in meters
   const calculateDistance = useCallback((lat1, lon1, lat2, lon2) => {
@@ -87,7 +87,6 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
     const estimatedMinutes = calculateEstimatedTime(remainingDistance, originalTime, originalDistanceMeters);
     
     if (estimatedMinutes !== null) {
-      console.log(`Updating estimated pickup time: ${estimatedMinutes} minutes (remaining distance: ${Math.round(remainingDistance)}m)`);
       setEstimatedPickuoMins(estimatedMinutes);
     }
   }, [calculateRemainingDistance, calculateEstimatedTime, setEstimatedPickuoMins]);
@@ -145,28 +144,18 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
 
   // Function to organize polyline coordinates from route data
   const getOrganizedPolylineCoordinates = useCallback((routeData) => {
-    
-    console.log('getOrganizedPolylineCoordinates input:', routeData);
-
     if (!routeData?.trip?.legs || routeData.trip.legs.length === 0) {
-      console.log('No trip legs found in route data');
       return [];
     }
 
-    console.log('Trip legs found:', routeData.trip.legs);
-
     const coordinates = routeData.trip.legs.map(leg => {
-      console.log('Processing leg:', leg);
       if (!leg.shape) {
-        console.log('No shape found in leg');
         return [];
       }
       const decoded = polyline.decode(leg.shape, 6);
-      console.log('Decoded coordinates:', decoded);
       return decoded.map(([lat, lon]) => [lon, lat]);
     }).flat();
 
-    console.log('Final organized coordinates:', coordinates);
     return coordinates;
   }, []);
 
@@ -179,7 +168,6 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
     // Get the first leg's summary (assuming single leg for simplicity)
     const leg = routeData.trip.legs[0];
     if (leg.summary) {
-      console.log('Route summary extracted:', leg.summary);
       return leg.summary;
     }
 
@@ -225,23 +213,19 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
   // Function to fetch route and create polyline
   const fetchRouteAndCreatePolyline = useCallback(async (points) => {
     if (!points || points.length < 2) {
-      console.log('Invalid route points');
       return null;
     }
 
     try {
-      console.log('Fetching route for points:', points);
       const routeData = await findRoute(points);
       
       if (!routeData) {
-        console.log('No route data received');
         return null;
       }
 
       const coordinates = getOrganizedPolylineCoordinates(routeData);
-      console.log('coordinates', coordinates);
+
       if (coordinates.length === 0) {
-        console.log('No coordinates extracted from route data');
         return null;
       }
 
@@ -251,9 +235,7 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
         routeSummaryRef.current = routeSummary;
         
         // Set initial estimated pickup time
-        const originalDistanceMeters = routeSummary.length * 1000;
         const estimatedMinutes = Math.round(routeSummary.time / 60);
-        console.log(`Initial estimated pickup time: ${estimatedMinutes} minutes (total distance: ${Math.round(originalDistanceMeters)}m)`);
         setEstimatedPickuoMins(estimatedMinutes);
       }
 
@@ -273,12 +255,14 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
         'small'
       );
 
-      polylineObj.setPadding([20,50,20,250]);
+      
+      polylineObj.setFocus(false);
 
       polylineRef.current = polylineObj;
       return polylineObj;
 
     } catch (error) {
+      // Keep error logging for errors
       console.error('Error fetching route and creating polyline:', error);
       return null;
     }
@@ -287,7 +271,6 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
   // Function to update polyline with current coordinates
   const updatePolylineWithCoordinates = useCallback((coordinates) => {
     if (!coordinates || coordinates.length === 0) {
-      console.log('No coordinates to update polyline with');
       setGeometries([]);
       return;
     }
@@ -303,6 +286,8 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
       polylineColor,
       'small'
     );
+   
+    polylineObj.setFocus(false);
 
     polylineRef.current = polylineObj;
     setGeometries([polylineObj]);
@@ -311,14 +296,12 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
   // Effect to handle route updates (initial route fetch)
   useEffect(() => {
     if (!routePoints) {
-      console.log('No route points available');
       return;
     }
 
     // Check if route points have changed
     const currentPoints = JSON.stringify(routePoints);
     if (lastRoutePointsRef.current === currentPoints) {
-      console.log('Route points unchanged, skipping route fetch');
       return;
     }
 
@@ -328,10 +311,8 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
       const polylineObj = await fetchRouteAndCreatePolyline(routePoints);
       
       if (polylineObj) {
-        console.log('Setting geometries with polyline:', polylineObj);
         setGeometries([polylineObj]);
       } else {
-        console.log('Failed to create polyline, clearing geometries');
         setGeometries([]);
       }
     };
@@ -354,7 +335,6 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
 
     // Check if driver has deviated significantly from the route
     if (hasDriverDeviated(driverLatitude, driverLongitude, originalCoordinatesRef.current)) {
-      console.log('Driver has deviated from route, fetching new route');
       // Reset and fetch new route
       originalCoordinatesRef.current = null;
       lastRoutePointsRef.current = null;
@@ -378,7 +358,6 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
       );
       
       if (updatedCoordinates.length !== originalCoordinatesRef.current.length) {
-        console.log('Updating polyline progress, removed passed coordinates');
         originalCoordinatesRef.current = updatedCoordinates;
         updatePolylineWithCoordinates(updatedCoordinates);
       }

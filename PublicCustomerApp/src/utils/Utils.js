@@ -407,5 +407,13 @@ export const utils = {
     } else {
       return `${minutes} Mins`;
     }
+  },
+  getBoundingBox(coordinates){
+    console.log("gETBOUNDINGBOX CALLED")
+    const minLat = Math.min(...coordinates.map(coord => coord[1]))
+    const maxLat = Math.max(...coordinates.map(coord => coord[1]))
+    const minLon = Math.min(...coordinates.map(coord => coord[0]))
+    const maxLon = Math.max(...coordinates.map(coord => coord[0]))
+    return [minLon, minLat, maxLon, maxLat]
   }
 };

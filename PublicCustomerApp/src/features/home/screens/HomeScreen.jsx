@@ -32,11 +32,7 @@ const MapScreen = () => {
   const [error, setError] = useState(null);
   const {setStackScreen,goBack} = useStackScreenStore();
   const {location,currentLocationName} = useLocationStore();
-
-    
   const {  setRideStartLocation,setRideEndLocation } = useRideBookingLocationStore()
- 
-  
   const {homelocation, worklocation,setHomelocation,setWorklocation} = useUserInfoStore();
  
   

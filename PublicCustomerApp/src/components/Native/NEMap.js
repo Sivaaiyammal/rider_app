@@ -255,6 +255,7 @@ class NEMap extends Component {
               : null
           }
           navigation={this.props.navigation}
+          bounds={this.props.bounds}
         />
       </>
     ) : (
@@ -289,6 +290,7 @@ NEMap.propTypes = {
   geometries: PropTypes.array,
   findRoute: PropTypes.array,
   navigation: PropTypes.object,
+  bounds: PropTypes.array,
 };
 
 export default NEMap;

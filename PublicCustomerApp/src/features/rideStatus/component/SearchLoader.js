@@ -97,6 +97,13 @@ const SearchLoader = ({ onCancel }) => {
       width: "100%",
       height: "70%",
     });
+
+    return () => {
+      setMapStyle({
+        width: "100%",
+        height: "100%",
+      });
+    };
   }, []);
   
   return (

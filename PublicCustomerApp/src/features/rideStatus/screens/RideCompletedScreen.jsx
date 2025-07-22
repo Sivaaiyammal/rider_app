@@ -5,10 +5,12 @@ import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 import { utils} from '../../../utils/Utils';
 import RideStatusHeader from '../components/RideStatusHeader';
-
+import { makePayment } from '../services/Paymentservice';
+import { updatePaymentInServer } from '../../../API/EndPoints/EndPoints';
+import { showNotification } from '../../../components/NotificationManger';
 const RideCompletedScreen = () => {
   const { setStackScreen } = useStackScreenStore();
-  const { finalFare, finalDuration, finalDistance ,paymentMethod} = useCurrentRideInfoStore();
+  const { finalFare, finalDuration, finalDistance ,paymentMethod,tripId} = useCurrentRideInfoStore();
   
   // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -42,9 +44,26 @@ const RideCompletedScreen = () => {
      })
     // Dummy handler
   };
-  const handlePayNow = () => {
+  const handlePayNow = async () => {
+    try{
+    const paymentResponse = await makePayment();
 
-    setStackScreen('TripFeedbackScreen',{})
+    if(paymentResponse.success){
+
+      const payload={
+        tripId,
+        transactionId:paymentResponse.transactionId
+      }
+      
+      const updateInServer = await updatePaymentInServer(payload);
+      if(updateInServer.success){
+        showNotification('Payment successful','Payment successful','success',3000,'toast')
+        setStackScreen('TripFeedbackScreen',{})
+      }
+    }
+  }catch(error){
+    showNotification('Payment failed','Payment failed','error',3000,'toast')
+  }
    
   };
 

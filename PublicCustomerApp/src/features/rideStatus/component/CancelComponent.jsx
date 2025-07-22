@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 
 const REASONS = [
   'Driver is taking too long',
@@ -13,6 +13,7 @@ const REASONS = [
 const CancelComponent = ({ onClose, onCancel }) => {
   const [selected, setSelected] = useState('');
   const [otherReason, setOtherReason] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSelect = (reason) => {
     setSelected(reason);
@@ -21,20 +22,25 @@ const CancelComponent = ({ onClose, onCancel }) => {
     }
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (onCancel) {
-      if (selected === 'Other') {
-
-        if(!otherReason.trim()) {
-            Alert.alert('Please enter a reason');
-            return;
+      setIsLoading(true);
+      
+      try {
+        if (selected === 'Other') {
+          if(!otherReason.trim()) {
+              Alert.alert('Please enter a reason');
+              setIsLoading(false);
+              return;
+          }
+          await onCancel(otherReason);
+        } else {
+          await onCancel(selected);
         }
-
-    
-        onCancel(otherReason);
-        
-      } else {
-        onCancel(selected);
+      } catch (error) {
+        console.error('Cancellation error:', error);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -78,11 +84,15 @@ const CancelComponent = ({ onClose, onCancel }) => {
           <Text style={styles.goBackText}>GO BACK</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[  styles.confirmBtn, {opacity: !selected || (selected === 'Other' && !otherReason.trim()) ? 0.5 : 1}]}
+          style={[  styles.confirmBtn, {opacity: !selected || (selected === 'Other' && !otherReason.trim()) || isLoading ? 0.5 : 1}]}
           onPress={handleConfirm}
-         
+          disabled={!selected || (selected === 'Other' && !otherReason.trim()) || isLoading}
         >
-          <Text style={styles.confirmText}>CONFIRM CANCELLATION</Text>
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#ff4d4f" />
+          ) : (
+            <Text style={styles.confirmText}>CONFIRM CANCELLATION</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>

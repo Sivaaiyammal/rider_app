@@ -33,6 +33,7 @@ const MapContainer = ({ mapStyle }) => {
     mapReady,
     mapClickCallback,
     startNavigation,
+    mapBounds,
 
     directionReady,
     searchPOI,
@@ -87,6 +88,7 @@ const MapContainer = ({ mapStyle }) => {
         searchUnit={searchStr}
         autoPOISearch={searchPOI}
         settingsProps={defaultSettings}
+        bounds={mapBounds}
         onSearchResults={setOnSearchResults}
         onSearchPOIResults={setSearchPOIResults}
         mode={mode}

@@ -18,12 +18,13 @@ import AnimatedBottomSheetWrapper from '../shared/component/AnimatedBottomSheetW
 import { cancelRideMutation } from '../../API/APICalls/RideAPICalls';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
 import PaymentType from '../booking/components/bookRide/PaymentType';
-
+import { cancelRide } from '../../API/EndPoints/EndPoints';
+import { showNotification } from '../../components/NotificationManger';
 
 const RideStatus = () => {
   const { tripStatus,tripId,paymentMethod,setPaymentMethod } = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
-  const {setStackScreen} = useStackScreenStore();
+  const {setStackScreen,reset} = useStackScreenStore();
   const [isPaymentMethodChangeShow,setIspaymentMethodChangeShow] = useState(false);
  
   const renderScreen = () => {
@@ -40,24 +41,24 @@ const RideStatus = () => {
     }
   };
 
-  const handleCancelSuccess = (response) => {
-    if(response.status === 200){
-      setStackScreen('Home');
-    }else{
-      Alert.alert('Failed to cancel ride');
-    }
-  }
+ 
 
-  const {mutate:handleCancelMutation} = cancelRideMutation(handleCancelSuccess);
-
+ 
   const handleCancel = async (reason) => {
-    setShowBottomSheet(false);
+  
 
     const payload = {
       tripId:tripId,
       reason:reason
     }
-    handleCancelMutation(payload);
+    
+    const response = await cancelRide(payload);
+    if(response.success){
+      showNotification('Ride cancelled successfully');
+      setShowBottomSheet(false);
+      reset()
+    } 
+   
    
   }
 

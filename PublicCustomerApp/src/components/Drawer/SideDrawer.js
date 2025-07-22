@@ -1,30 +1,24 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useRef, useCallback, useContext, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   Text,
   View,
   Animated,
   TouchableOpacity,
   ScrollView,
-  Linking,
   Easing,
 } from 'react-native';
 import { drawerStyles } from '../../styles/DrawerStyles';
 
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import PropTypes from 'prop-types';
 
 import ProfileImage from '../../assets/image/svgIcons/profileImage.svg';
-import MyAccount from '../../assets/image/drawerIcons/myAccount.svg';
-import YourRides from '../../assets/image/drawerIcons/yourRides.svg';
-import Notification from '../../assets/image/drawerIcons/Notification.svg';
-import Language from '../../assets/image/drawerIcons/Language.svg';
-import ContactUs from '../../assets/image/drawerIcons/ContactUs.svg';
-import About from '../../assets/image/drawerIcons/about.svg';
-import Legal from '../../assets/image/drawerIcons/legal.svg';
 import useUserInfoStore from '../../store/useUserInfoStore';
-const SideDrawerV2 = ({handleMenu}) => {
-  const {userdetails} = useUserInfoStore();
+
+const SideDrawerV2 = ({ handleMenu }) => {
+  const { userdetails } = useUserInfoStore();
 
   const navigation = useNavigation();
   const slideAnim = useRef(new Animated.Value(-300)).current;
@@ -70,74 +64,74 @@ const SideDrawerV2 = ({handleMenu}) => {
     {
       id: 'my-account',
       name: 'My Account',
-      screen: '',
-      icon: <MyAccount />,
+      screen: 'MyAccountScreen',
+      icon: <Ionicons name="person" size={24} color="#1e3a8a" />,
     },
     {
       id: 'your-rides',
-      name: 'Your Rides',
-      screen: '',
-      icon: <YourRides />,
+      name: 'My Rides',
+      screen: 'YourRidesScreen',
+      icon: <Ionicons name="car" size={24} color="#1e3a8a" />,
     },
-    // {
-    //   id: 'notification',
-    //   name: 'Notification',
-    //   screen: '',
-    //   icon: <Notification />,
-    // },
-    // {
-    //   id: 4,
-    //   name: 'Language',
-    //   screen: '',
-    //   icon: <Language />,
-    // },
+    {
+      id: 'saved-places',
+      name: 'Saved Places',
+      screen: 'SavedPlacesScreen',
+      icon: <Ionicons name="star" size={24} color="#1e3a8a" />,
+    },
+    {
+      id: 'preferences',
+      name: 'Preferences',
+      screen: 'PreferencesScreen',
+      icon: <Ionicons name="options" size={24} color="#1e3a8a" />,
+    },
+    {
+      id: 'receipts',
+      name: 'Receipts',
+      screen: 'ReceiptsScreen',
+      icon: <Ionicons name="receipt" size={24} color="#1e3a8a" />,
+    },
+    {
+      id: 'notification',
+      name: 'Notification',
+      screen: 'NotificationScreen',
+      icon: <Ionicons name="notifications" size={24} color="#1e3a8a" />,
+    },
+    {
+      id: 'language',
+      name: 'Language',
+      screen: 'LanguageScreen',
+      icon: <Ionicons name="globe" size={24} color="#1e3a8a" />,
+    },
     {
       id: 'contact-us',
       name: 'Contact Us',
-      screen: '',
-      icon: <ContactUs />,
+      screen: 'ContactScreen',
+      icon: <Ionicons name="headset" size={24} color="#1e3a8a" />,
     },
-    // {
-    //   id: 6,
-    //   name: 'About',
-    //   screen: '',
-    //   icon: <About />,
-    // },
-    // {
-    //   id: 7,
-    //   name: 'Legal',
-    //   screen: '',
-    //   icon: <Legal />,
-    // },
+    {
+      id: 'about',
+      name: 'About',
+      screen: 'AboutScreen',
+      icon: <Ionicons name="information-circle" size={24} color="#1e3a8a" />,
+    },
+    {
+      id: 'legal',
+      name: 'Legal',
+      screen: 'LegalScreen',
+      icon: <Ionicons name="document-text" size={24} color="#1e3a8a" />,
+    },
   ];
 
   const HandleOpenDrawerMenu = (menu) => {
-    if (menu.id == 'my-account') {
+    if (menu.screen) {
       navigation.dispatch(
         CommonActions.navigate({
-          name: 'MyAccountScreen'
-        }),
-      );
-    } else if (menu.id == 'your-rides') {
-      navigation.dispatch(
-        CommonActions.navigate({
-          name: 'YourRidesScreen'
-        }),
-      );
-    } else if (menu.id == 'notification') {
-      navigation.dispatch(
-        CommonActions.navigate({
-          name: 'NotificationScreen'
-        }),
-      );
-    
-    } else if (menu.id == 'contact-us') {
-      navigation.dispatch(
-        CommonActions.navigate({
-          name: 'ContactScreen'
+          name: menu.screen
         }),
       );
     }
+    closeDrawer();
   }
 
   return (
@@ -172,4 +166,9 @@ const SideDrawerV2 = ({handleMenu}) => {
     </Animated.View>
   );
 };
+
+SideDrawerV2.propTypes = {
+  handleMenu: PropTypes.func.isRequired,
+};
+
 export default SideDrawerV2;

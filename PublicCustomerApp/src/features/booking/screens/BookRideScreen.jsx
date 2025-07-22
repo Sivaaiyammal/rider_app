@@ -27,20 +27,39 @@ import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
 import PaymentType from '../components/bookRide/PaymentType';
 import VehicleList from '../components/bookRide/VehicleList';
-import locationTask from '../../../controllers/GetCurrentLocation';
 import useRideVehicleStore from '../store/useRideVehicleStore'; 
 import vehicleType from '../types/vehicleType.json'
 import BookingOptions from '../components/bookRide/BookingOptions';
 import RidePreference from '../components/bookRide/RidePreference';
 import CouponContainer from '../components/bookRide/CouponConatiner';
+import useUserInfoStore from '../../../store/useUserInfoStore';
+import { preferenceShowRideStatus } from '../../../storage/userLocalStorage';
+import { utils } from '../../../utils/Utils';
+import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
+import useFetchNearbyDrivers from '../../../hooks/useVehicleMarker';
+
 const BottomSheetHeader = () => {
     const {setStackScreen,goBack} = useStackScreenStore()
+    const {rideStartLocation,rideEndLocation,rideWayPoints} = useRideBookingLocationStore()
+    const {setMapBounds} = useMapStore()
     const handleAddStop = () => {
         goBack()
         setStackScreen('WaypointScreen',{})
     }
     const handleCurrentLocation = async () => {
-        await locationTask.getCurrentLocation();
+        // Set bounds for Chennai (approximate bounding box)
+        // Southwest: 12.834, 80.182 | Northeast: 13.200, 80.322
+        
+        const coords = [[rideStartLocation.longitude,rideStartLocation.latitude],[rideEndLocation.longitude,rideEndLocation.latitude],...rideWayPoints.map(waypoint => [waypoint.longitude,waypoint.latitude])]
+        
+        console.log("=====> COORDS", coords)
+        const bounds = utils.getBoundingBox(coords)
+       
+        const margin = [20,20,20,500]
+        // Structure bounds properly: [bounds, margin] where bounds is [minLon, minLat, maxLon, maxLat]
+        const finalBounds = [bounds, margin]
+        console.log("=====> FINAL BOUNDS", finalBounds)
+        setMapBounds(finalBounds);
     }
     return (
         <View style={styles.bottomSheetHeader}>
@@ -61,7 +80,7 @@ const BookRideScreen = () => {
     const {goBack} = useStackScreenStore()
         const {paymentType,setPaymentType, setRideDistance ,setEstimatedDuration,rideDistance,estimatedDuration,couponCode} = useRideBookingInfo()
     const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false)
-    
+    const {isPreferenceShow,setIsPreferenceShow} = useUserInfoStore()
     const {setAvailableVehicles,availableVehicles,clearAvailableVehicles} = useRideVehicleStore()
 
     const [showPreference,setShowPreference] = useState(false)
@@ -74,6 +93,8 @@ const BookRideScreen = () => {
         rideWayPoints
     } = useDirectionLoad();
 
+    // Fetch nearby drivers hook
+    const { fetchNearbyDrivers, clearNearbyDrivers, nearbyDrivers, isLoading: isFetchingDrivers } = useFetchNearbyDrivers();
 
     const { setDirectionReady} = useMapStore()     
 
@@ -91,6 +112,21 @@ const BookRideScreen = () => {
 
     const [showCoupon,setShowCoupon] = useState(false)
 
+    // Fetch nearby drivers when screen initializes
+    useEffect(() => {
+        if (rideStartLocation && rideStartLocation.latitude && rideStartLocation.longitude) {
+            console.log('Fetching nearby drivers for location:', rideStartLocation);
+            fetchNearbyDrivers([rideStartLocation.longitude, rideStartLocation.latitude]);
+        }
+    }, [rideStartLocation, fetchNearbyDrivers]);
+
+    // Cleanup nearby drivers when component unmounts
+    useEffect(() => {
+        return () => {
+            clearNearbyDrivers();
+        };
+    }, [clearNearbyDrivers]);
+
     const handleDirectionReady = (data) => {
         console.log("=====> Direction ready", data);
         // Extract distance and duration from direction data
@@ -107,6 +143,20 @@ const BookRideScreen = () => {
     useEffect(() => {
         setDirectionReady(handleDirectionReady)
     }, [])
+
+    // Log nearby drivers data for debugging
+    useEffect(() => {
+        if (nearbyDrivers.length > 0) {
+            console.log('Nearby drivers found:', nearbyDrivers.length);
+        }
+    }, [nearbyDrivers]);
+
+    // Log when fetching drivers
+    useEffect(() => {
+        if (isFetchingDrivers) {
+            console.log('Fetching nearby drivers...');
+        }
+    }, [isFetchingDrivers]);
 
 
     const transformEstimateDatStore=(data)=>{
@@ -201,6 +251,15 @@ const BookRideScreen = () => {
             setDirectionPoints(null);
         };
     }, [setDirectionPoints]);
+
+
+    useEffect(() => {
+        if(!isPreferenceShow){
+            preferenceShowRideStatus("true")
+            setIsPreferenceShow(true)
+            setShowPreference(true)
+        }
+    }, [])
 
     
     const handlePaymentType = () => {

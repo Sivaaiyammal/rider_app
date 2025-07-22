@@ -15,11 +15,7 @@ const useBookTrip = () => {
   const handleBookingSuccess = useCallback((data) => {
       //  console.log('data', data)
       // Navigate to ride status screen with booking data
-      setStackScreen('TripScreenManager', {
-        bookingData: data.data,
-        tripId: data.data?.tripId || data.data?.bookingId
-      });
-
+      
 
   }, [setStackScreen]);
 
