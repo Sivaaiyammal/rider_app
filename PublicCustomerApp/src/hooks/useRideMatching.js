@@ -70,7 +70,7 @@ const useRideMatching = () => {
    * @param {string} tripId - Trip ID for the ride
    * @param {string} passengerId - Passenger ID (optional, uses current user if not provided)
    */
-  const startMatching = useCallback(async (tripId, passengerId = null) => {
+  const startMatching = useCallback(async (tripId, passengerId = null,vehicleType) => {
     if (!tripId) {
       console.error('❌ Trip ID is required to start matching');
       return false;
@@ -97,7 +97,7 @@ const useRideMatching = () => {
       matchingActiveRef.current = true;
 
       // Send find driver request
-      rideMatchingSocketService.findDriver(tripId, targetPassengerId);
+      rideMatchingSocketService.findDriver(tripId, targetPassengerId,vehicleType);
       
       return true;
     } catch (error) {
@@ -129,7 +129,7 @@ const useRideMatching = () => {
    * Retry ride matching
    * @param {string} tripId - Trip ID for the ride
    */
-  const retryMatching = useCallback(async (tripId) => {
+  const retryMatching = useCallback(async (tripId,vehicleType) => {
     console.log('🔄 Retrying ride matching for trip:', tripId);
     
     // Reset to searching state
@@ -139,7 +139,7 @@ const useRideMatching = () => {
       driver: null
     });
 
-    return await startMatching(tripId);
+    return await startMatching(tripId,null,vehicleType);
   }, [startMatching]);
 
   /**

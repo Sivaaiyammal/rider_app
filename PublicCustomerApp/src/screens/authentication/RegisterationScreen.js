@@ -39,7 +39,7 @@ const RegisterationScreen = () => {
   const [InputErrorId, setInputErrorId] = useState('');
   const [InputErrorMssage, setInputErrorMssage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { id: userid } = useUserInfoStore();
+  const { id: userid, setUserdetails } = useUserInfoStore();
   const navigation = useNavigation();
 
 
@@ -109,7 +109,7 @@ const RegisterationScreen = () => {
 
     if (data?.success) {
       showNotification('Registration Completed Successfully', '', 'success');
-      
+      setUserdetails(data?.user);
     
         navigation.dispatch(
           CommonActions.navigate({

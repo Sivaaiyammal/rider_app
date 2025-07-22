@@ -27,17 +27,18 @@ import SwipeBtn from '../../components/SwipeBtn';
 const MyAccountScreen = () => {
   const navigation = useNavigation();
   const { userdetails } = useUserInfoStore();
+  console.log('userdetails', userdetails);
 
   const [Info_Items, setInfo_Items] = useState([
     {
       key: 'Full Name',
-      value: utils.toTitleCase(userdetails.name) || '',
+      value: utils.toTitleCase(userdetails?.name) || '',
       image: <MainProfile width={'25'} height={'25'} />,
       imageType: 'svg',
     },
     {
       key: 'Gender',
-      value: userdetails.gender ? utils.toTitleCase(userdetails.gender) : '',
+      value: userdetails.gender ? utils.toTitleCase(userdetails?.gender) : '',
       image: <Profile width={'25'} height={'25'} />,
       imageType: 'svg',
     },
@@ -92,8 +93,8 @@ const MyAccountScreen = () => {
     <ScrollView>
       <MyAccountHeader title="My Account" onBackClick={HandleBackBtn} />
       <MyAccountProfileImage
-        name={utils.toTitleCase(userdetails.name)}
-        id={userdetails._id}
+        name={utils.toTitleCase(userdetails?.name || '')}
+        id={userdetails?._id || ''}
       />
       <MyAccountInfo infos={Info_Items} />
       <SwipeBtn name="SWIPE TO LOGOUT" onHandleSwipeEnd={Logout} />

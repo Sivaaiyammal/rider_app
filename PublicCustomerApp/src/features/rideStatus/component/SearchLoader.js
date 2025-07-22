@@ -134,7 +134,7 @@ const SearchLoader = ({ onCancel }) => {
       {/* Failed Ride Modal */}
       <FailedRideModal
         visible={showFailedModal}
-        onRetry={() => startMatching(tripId, userId)}
+        onRetry={() => startMatching(tripId, userId,vehicleType)}
         onCancel={handleCancel}
         message={message || 'Unable to find a driver at the moment. Please try again.'}
       />

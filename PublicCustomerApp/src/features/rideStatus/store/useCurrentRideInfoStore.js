@@ -83,6 +83,8 @@ const useCurrentRideInfoStore = create((set) => ({
     // Fees and additional breakdown
     const fees = fareDetails?.breakdown?.fees;
     const feesBreakdown = fees?.breakdown || {};
+    const taxes = fareDetails?.breakdown?.taxes;
+    const taxesBreakdown = taxes?.breakdown || {};
     console.log("feesBreakdown",fees)
     const incentives =  0;
     
@@ -104,6 +106,13 @@ const useCurrentRideInfoStore = create((set) => ({
           amount: feesBreakdown[key],
         });
       }
+    });
+
+    Object.keys(taxesBreakdown).forEach((key) => {
+      breakdown.push({
+        name: key,
+        amount: taxesBreakdown[key],
+      });
     });
   
     set({ breakdownFare: breakdown });

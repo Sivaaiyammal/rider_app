@@ -128,12 +128,12 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       return await bookRide(payload);
     },
     onSuccess: async (data) => {
-      console.log('Booking success:', data);
+      console.log('Booking success:', JSON.stringify(data));
       
       if (data.success) {
         resetRideMatchStatus();        
         await initializeSocket();
-        startMatching(data.tripId, userId);
+        startMatching(data.tripId, userId,data?.trip?.vehicleType);
         setCurrentRideInfo(data)
         showNotification('Booking Successful', 'Your ride has been booked successfully!', 'success');
         

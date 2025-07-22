@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import Config from '../Config/APIConfig';
 // You can change this URL to your ride matching socket server
-const RIDE_MATCHING_SOCKET_URL = Config. RIDE_MATCH_SOCKET_URL// Replace with your actual ride matching socket URL
+const RIDE_MATCHING_SOCKET_URL = Config.RIDE_MATCH_SOCKET_URL// Replace with your actual ride matching socket URL
 ;
 class RideMatchingSocketService {
   constructor() {
@@ -35,25 +35,15 @@ class RideMatchingSocketService {
         console.log("Ride Matching Socket - attempting connection to:", RIDE_MATCHING_SOCKET_URL);
 
         // Simplified connection without complex path parsing
-        this.socket = io(RIDE_MATCHING_SOCKET_URL, {
-          query: {
-            accessToken: userId,
-          },
-          timeout: 10000, // 10 second timeout
-          forceNew: true,
-          transports: ['websocket', 'polling'], // Try websocket first, then polling
-          upgrade: true,
-          rememberUpgrade: false,
-          secure: false, // Set to true if using HTTPS
-          rejectUnauthorized: false,
-          // React Native specific options
-          jsonp: false,
-          autoConnect: true,
-          reconnection: true,
-          reconnectionAttempts: 5,
-          reconnectionDelay: 1000,
-          reconnectionDelayMax: 5000,
-          maxReconnectionAttempts: 5,
+
+        const urlParts = RIDE_MATCHING_SOCKET_URL.split('/');
+        const protocolAndHost = urlParts.slice(0, 3).join('/');
+        const path = '/' + urlParts.slice(3).join('/');
+        this.socket = io(`${protocolAndHost}`, {
+          path: path !== '/' ? path + '/socket.io' : '/socket.io',
+          // query: {
+          //   driver_id: userId,
+          // },
         });
 
         this.socket.on('connect', () => {
@@ -112,12 +102,14 @@ class RideMatchingSocketService {
   }
 
   
-  findDriver(tripId, passengerId) {
+  findDriver(tripId, passengerId,vehicleType) {
     if (this.socket && this.socket.connected) {
-      console.log("�� Finding driver for trip:", tripId);
+      console.log("🚕 Finding driver for trip:", tripId);
+      console.log("vehicleType",vehicleType);
       this.socket.emit('findDriver', {
         trip_id: tripId,
         passenger_id: passengerId,
+        vehicleType: vehicleType,
       });
     } else {
       console.error('❌ Ride matching socket not connected!');
