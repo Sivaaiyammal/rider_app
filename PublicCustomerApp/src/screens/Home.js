@@ -22,6 +22,8 @@ import PaymentScreen from '../features/payment/screens/PaymentScreen';
 import useAssignedDriverInfoStore  from '../features/rideStatus/store/useAssignedDriverInfoStore';
 import TripFeedbackScreen from '../features/rating/screens/TripFeedbackScreen';
 import useLocationStore from '../store/useLocationStore';
+import { DataStore } from '../controllers/DataStore';
+import useMapStore from '../store/useMapStore';
 const Home = () => {
   const {location} = useLocationStore();
   const { stackScreen } = useStackScreenStore();
@@ -31,6 +33,8 @@ const Home = () => {
   const { setStackScreen } = useStackScreenStore();
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
+  const { setUserdetails ,setID,id} = useUserInfoStore();
+  const {  setMapShown , mapShown} = useMapStore();
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
     
@@ -71,6 +75,7 @@ const Home = () => {
     }
   }
 
+
   const checkPreferenceShowRideStatus = async () => {
     const preferenceShowRideStatus = await getPreferenceShowRideStatus();
     if(preferenceShowRideStatus == "true"){
@@ -88,21 +93,43 @@ const Home = () => {
     console.log("=====> DRIVERS", drivers)
   }
 
+
+  const loadUserDetails = async () => {
+    
+    const userdetails = await DataStore.loadData('userdetails');
+    console.log("userdetails",userdetails)
+    if(userdetails.data){
+      console.log("test",userdetails.data)
+      setUserdetails(userdetails.data);
+      setID(userdetails.data._id);
+    }
+  
+  }
+
+
+ 
+  
  
 
   useEffect(() => {
-    if(mapReady){
-      useCustomBackHandler();
-      checkAllPermissions();
-      checkOnGoingRideAndLog();
-      checkFavouriteLocation();
-      checkPreferenceShowRideStatus();
-    }
+    checkAllPermissions();
+    loadUserDetails();
+   
+   
+    checkOnGoingRideAndLog();
+    checkFavouriteLocation();
+    checkPreferenceShowRideStatus();
+    
+      
+      
+      
+    
 
     console.log("=====> MAP READY", mapReady)
     
   }, [mapReady]);
 
+  useCustomBackHandler();
 
   useEffect(()=>{
     if(location && mapReady){
@@ -148,8 +175,8 @@ const Home = () => {
      <StatusBar barStyle="dark-content" backgroundColor={"white"} />
       {renderContent()}
       <MapContainer
-        mapReady={mapReady}
-        setMapReady={setMapReady}
+        mapReady={mapShown}
+        setMapReady={setMapShown}
       />
 
       {/* {overlayStatuses.includes(tripStatus) && (

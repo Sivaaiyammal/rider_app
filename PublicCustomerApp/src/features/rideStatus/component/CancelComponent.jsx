@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
-
+import { Fonts } from '../../../constants/constants';
 const REASONS = [
   'Driver is taking too long',
   'Driver asked to cancel',
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: Fonts.medium,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -144,6 +144,7 @@ const styles = StyleSheet.create({
   reasonText: {
     fontSize: 15,
     color: '#222',
+    fontFamily: Fonts.regular,  
   },
   noteBox: {
     backgroundColor: '#fffbe6',
@@ -155,6 +156,7 @@ const styles = StyleSheet.create({
   noteText: {
     color: '#b59f3b',
     fontSize: 14,
+    fontFamily: Fonts.regular,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -171,7 +173,7 @@ const styles = StyleSheet.create({
   },
   goBackText: {
     color: '#fff',
-    fontWeight: '600',
+    fontFamily: Fonts.medium,
     fontSize: 15,
   },
   confirmBtn: {
@@ -185,7 +187,7 @@ const styles = StyleSheet.create({
   },
   confirmText: {
     color: '#ff4d4f',
-    fontWeight: '600',
+    fontFamily: Fonts.medium,
     fontSize: 15,
   },
   input: {

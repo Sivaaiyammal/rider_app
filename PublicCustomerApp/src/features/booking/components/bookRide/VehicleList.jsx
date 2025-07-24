@@ -21,6 +21,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
   const [slideAnim] = useState(new Animated.Value(0));
 
   useEffect(() => {
+    
     // Animate the component in
     Animated.timing(slideAnim, {
       toValue: 1,
@@ -124,7 +125,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
               <View style={styles.vehicleInfoContainer}>
                 <View style={styles.rowBetween}>
                   <Text style={[styles.vehicleName]}>{VEHICLE_LABELS[vehicle.type] || vehicle.name}</Text>
-                  <Text style={[styles.price]}>{ `₹${vehicle.minFare} - ₹${vehicle.maxFare}`}</Text>
+                  <Text style={[styles.price]}>{ `₹${Math.round(vehicle.minFare)} - ₹${Math.round(vehicle.maxFare)}`}</Text>
                 </View>
                 <View style={styles.rowBetween}>
                   <View style={styles.timeRow}>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useCallback } from 'react';
+import React, { useEffect, useMemo, useCallback,useState } from 'react';
 import {
   View,
   Text,
@@ -13,10 +13,16 @@ import LocationTypes from '../../types/LocationTypes.json';
 import { useStackScreenStore } from '../../../../store/useStackScreenStore';
 import useWayPointReorderStore from '../../store/useWayPointReorderStore';
 import { utils } from '../../../../utils/Utils';
-
+import WaitingTimeIconContainer from './WaitingTimeIconContainer';
+import WaitingTimeModal from './WaitingTimeModal';
+import { Fonts } from '../../../../constants/constants';
+import  FontAwesome  from 'react-native-vector-icons/FontAwesome5';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 const ITEM_HEIGHT = 50;
 
 const WaypointContainer = () => {
+
+  
 
   // const [data, setData] = useState([]);
   // const [isLoading, setIsLoading] = useState(true);
@@ -26,7 +32,12 @@ const WaypointContainer = () => {
     setReOrderWaypoints, 
     setLastAddStopIndex,
     lastAddStopIndex,
-    isLoading
+    isLoading,
+    currentEditWaitWaypoint,
+    setCurrentEditWaitWaypoint,
+    isEditwaitingTime,
+    setIsEditwaitingTime,
+    reachedStops
   } = useWayPointReorderStore();
   // const [lastAddStopIndex, setLastAddStopIndex] = useState(waypoints.length-1);
   useEffect(() => {
@@ -57,7 +68,9 @@ const WaypointContainer = () => {
       return reOrderWaypoints;
   }, [reOrderWaypoints, lastAddStopIndex]);
 
-  const handleReorder = useCallback(({ data: reorderedData }) => {
+  const handleReorder = useCallback(({ data: reorderedData,from,to }) => {
+   
+    
     // Process the reordered data immediately without delay
     const lastAddStopIndex = reorderedData.findIndex(item => item.type === 'add-stop');
     const filteredData = reorderedData.filter(item => item.type !== 'add-stop');
@@ -76,7 +89,7 @@ const WaypointContainer = () => {
     }
   }, []);
 
-  const handleAddWaypoint = (waypointItem) => {
+  const handleAddWaypoint = (waypointItem,waypointIndex) => {
     // Map separately first
     const currentData = [...reOrderWaypoints];
     const currentFinalData = [...currentData];
@@ -98,6 +111,13 @@ const WaypointContainer = () => {
       id: item.id || `waypoint-${index}-${Date.now()}`,
       type: index === 0 ? LocationTypes.START_LOCATION :LocationTypes.WAYPOINT_LOCATION
     }));
+
+    if(waypointIndex != 0 && waypointIndex != finalData.length-1){
+      console.log("waypointIndex",waypointIndex)
+      console.log("transformedData[waypointIndex]",transformedData[waypointIndex])
+      setCurrentEditWaitWaypoint({index:waypointIndex,item:transformedData[waypointIndex]})
+      setIsEditwaitingTime(true)
+    }
     
     // Set into store after mapping
     setLastAddStopIndex(AddStopIndex + 1);
@@ -119,22 +139,50 @@ const WaypointContainer = () => {
   }, [reOrderWaypoints]);
 
 
-  const onSearchClickResultCallback=(item)=>{
-    handleAddWaypoint(item)
+  const onSearchClickResultCallback=(item,searchType,index)=>{
+    
+    handleAddWaypoint(item,index)
     goBack()
+    
+
+    
     
   }
 
 
-  const onClickAddWayPoint=()=>{
+  const onClickAddWayPoint=(index)=>{
+    
     
       setStackScreen("SearchScreen",{
         onSearchClick:onSearchClickResultCallback,
-        searchType:LocationTypes.WAYPOINT_LOCATION
+        index:index,
+        searchType:LocationTypes.WAYPOINT_LOCATION,
+        fromaddWayPoint:index != 0 && index != finalData.length-1 ? true : false,
+        getwaitingTime:index !== 0 && index !== finalData.length-1 ? true : false,
+        title:index == 0 ? "Add a Pickup Location" :index == finalData.length-1 ? "Add a Drop Location" : "Add a Stop"
       })
     }
+    
+
+  const handleaddwaitingTime =(index,item)=>{
+      setCurrentEditWaitWaypoint({index,item})
+      setIsEditwaitingTime(true)
+  }
+
+  const handleSavewaitingTime = (index, updatedItem) => {
+    const updatedWaypoints = [...reOrderWaypoints];
+    updatedWaypoints[index] = updatedItem;
+    setReOrderWaypoints(updatedWaypoints);
+    setIsEditwaitingTime(false);
+    setCurrentEditWaitWaypoint(null);
+  }
+
+  const handleClosewaitingTimeModal = () => {
+    setIsEditwaitingTime(false);
+    setCurrentEditWaitWaypoint(null);
+  }
   
-  const renderItem = useCallback(({ item, drag, isActive }) => {
+  const renderItem = useCallback(({ item, drag, isActive ,isReached}) => {
     const index = finalData.findIndex(i => i === item);
     
     if (item.type === 'add-stop') {
@@ -142,7 +190,7 @@ const WaypointContainer = () => {
         <View style={[styles.row]}>
           <TouchableOpacity 
             style={styles.draggableArea}
-            onPress={onClickAddWayPoint}
+            onPress={()=>onClickAddWayPoint(index)}
             onLongPress={drag}
             delayLongPress={100}
           >
@@ -150,12 +198,14 @@ const WaypointContainer = () => {
             <View style={styles.labelCol}>
               <Text style={styles.addLabel}>{index == 0 ? "Add a Pickup Location" :index == finalData.length-1 ? "Add a Drop Location" : "Add a Stop"}</Text>
             </View>
+
             <View style={styles.actionCol}>
+          
               <MaterialIcons name="drag-handle" size={24} color="black" />
             </View>
             </View>
             <View style={styles.actionBtn}>
-               <Text style={[styles.removeText, {color: 'transparent'}]}>×</Text>
+            {reOrderWaypoints.length > 2 && <Icon name="close" size={24} color="transparent" />}
                
             </View>
           </TouchableOpacity>
@@ -171,6 +221,8 @@ const WaypointContainer = () => {
       dataItem.address === item.address
     );
 
+    const isLastWaypoint = item.type === LocationTypes.WAYPOINT_LOCATION && index === finalData.length - 1;
+    const isStartLocation = index == 0
     return (
       <View style={[styles.row]}>
         <TouchableOpacity
@@ -178,36 +230,40 @@ const WaypointContainer = () => {
           onLongPress={drag}
           delayLongPress={100}
         >
-          <View style={[styles.AddressContainer,isActive && styles.draggingItem]}>
+          <View style={[styles.AddressContainer,isActive && styles.draggingItem,isReached && {backgroundColor:"grey"}]}>
           <View style={styles.labelCol}>
-            <Text style={styles.labelText} numberOfLines={1}>
+            <Text style={[styles.labelText,isReached && {color:"#ededed"}]} numberOfLines={1}>
            {utils.formatAddressName(item)}
             </Text>
            
-          </View>
-
-          <View style={styles.actionCol}>
            
+          </View>
+          
+
+        { !isReached && <View style={styles.actionCol}>
+          {((isWaypoint && !isLastWaypoint) || (!item?.isReached && !isLastWaypoint && !isStartLocation)) && <WaitingTimeIconContainer onPress={() => handleaddwaitingTime(actualIndex, item)} value={item.waitingTime}/>}
+            
             <MaterialIcons name="drag-handle" size={24} color="black" />
           </View>
+  }
           </View>
-          {isWaypoint ?(
+          {((isWaypoint && !isLastWaypoint && !isStartLocation) || (!item?.isReached && !isLastWaypoint && !isStartLocation ))  ?(
               <TouchableOpacity
                 style={styles.actionBtn}
                 onPress={() => handleRemoveWaypoint(actualIndex)}
               >
-                <Text style={styles.removeText}>×</Text>
+                 <Icon name="close" size={24} color="black" />
               </TouchableOpacity>
             ):
             <View style={styles.actionBtn}>
-               <Text style={[styles.removeText, {color: 'transparent'}]}>×</Text>
+              {reOrderWaypoints.length > 2 && <Icon name="close" size={24} color="transparent" />}
                
             </View>
             }
         </TouchableOpacity>
       </View>
     );
-  }, [reOrderWaypoints, handleAddWaypoint, handleRemoveWaypoint]);
+  }, [reOrderWaypoints, handleAddWaypoint, handleRemoveWaypoint, handleaddwaitingTime]);
 
   const renderSkeletonLoader = () => {
     const skeletonItems = Array.from({ length: Math.max(2, 3) }, (_, index) => index);
@@ -257,7 +313,9 @@ const WaypointContainer = () => {
           return (
             <View key={index} style={styles.iconItemContainer}>
               <View style={[styles.line, index == 0 && { borderColor: 'transparent', borderWidth: 1 }]} />
-              {index == 0 ?
+              {item?.isReached? <View style={[styles.iconItem, {backgroundColor: "#4caf50"}]}>
+                  <FontAwesome name="check" size={15} color="white" />
+                </View>:index == 0 ?
                 <View style={[styles.iconItem, {backgroundColor: "#4caf50"+"30"}]}>
                   <View style={styles.iconSubItem} />
                 </View>
@@ -285,9 +343,14 @@ const WaypointContainer = () => {
   return (
     <View style={styles.container}>
       <View>
-        {renderIcon(finalData)}
+        {renderIcon([...reachedStops,...finalData])}
       </View>
       <View style={styles.listContainer}>
+        {reachedStops.length > 0 &&  reachedStops.map((item,index)=>{
+          return(
+            renderItem({item,index,isReached:true})
+          )
+        })}
         <DraggableFlatList
           data={finalData}
           keyExtractor={(item, index) => {
@@ -298,6 +361,7 @@ const WaypointContainer = () => {
             return `${item.name}-${item.address}-${index}`;
           }}
           renderItem={renderItem}
+          
           onDragEnd={handleReorder}
           scrollEnabled={true}
           dragItemOverflow={true}
@@ -315,6 +379,14 @@ const WaypointContainer = () => {
           autoscrollThreshold={30}
         />
       </View>
+
+      {/* Wait Time Modal */}
+      <WaitingTimeModal
+        visible={isEditwaitingTime}
+        onClose={handleClosewaitingTimeModal}
+        onSave={handleSavewaitingTime}
+        waypointData={currentEditWaitWaypoint}
+      />
     </View>
   );
 };
@@ -327,16 +399,11 @@ const styles = StyleSheet.create({
   container: {
     display: 'flex',
     flexDirection: 'row',
-    width: '94%',
+    width: '100%',
     backgroundColor: '#fff',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    borderRadius: 10,
-    paddingHorizontal: 5,
+    paddingHorizontal: 10,
     paddingVertical: 5,
+    borderRadius:20,
 
   },
   row: {
@@ -373,6 +440,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     paddingHorizontal: 10,
     paddingVertical: 0,
+    minHeight:40
   },
   roundLocation: {
     width: 12,
@@ -399,9 +467,9 @@ const styles = StyleSheet.create({
     paddingLeft: 4,
   },
   labelText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#222',
-    fontWeight: '500',
+    fontFamily: Fonts.medium,
   },
   addressText: {
     fontSize: 12,
@@ -447,9 +515,9 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
   addLabel: {
-    fontSize: 15,
+    fontSize: 13,
     color: '#888',
-    fontWeight: '500',
+    fontFamily: Fonts.medium,
     marginLeft: 2,
   },
   lastRow: {
@@ -503,7 +571,11 @@ const styles = StyleSheet.create({
     borderStyle:"dashed",
     borderColor:"grey"
   },
-  
+  waitingTimeText: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
+  },
 });
 
 export default WaypointContainer;

@@ -11,7 +11,6 @@ import { GlobalContext } from '../context/GlobalContext';
 const SplashScreen = () => {
   const navigation = useNavigation();
   const {addListener} = useContext(GlobalContext);
-  const {setUserdetails,setID} = useUserInfoStore();
   useEffect(() => {
     setTimeout(() => {
       nextScreen();
@@ -22,42 +21,15 @@ const SplashScreen = () => {
     const language = await DataStore.loadData('language');
     const onBoarding = await DataStore.loadData('onBoarding');
     const access_token = await DataStore.loadData('access_token');
-    const userdetails = await DataStore.loadData('userdetails');
-
-    console.log('access_token',access_token, userdetails.data);
-
+   
     if (access_token.data) {
-      if(userdetails.data){
-        setUserdetails(userdetails.data);
-        setID(userdetails.data._id);
-      }
       addListener(access_token.data);
-
-      // if (!userdetails.data.personalDetails) {
-      //   navigation.dispatch(
-      //     CommonActions.reset({
-      //       index: 0,
-      //       routes: [{ name: 'RegisterationScreen' }],
-      //     }),
-      //   );
-      //   return;
-      // } else {
-      //   navigation.dispatch(
-      //     CommonActions.reset({
-      //       index: 0,
-      //       routes: [{ name: 'HomeScreen' }],
-      //     }),
-      //   );
-      // }
-
       navigation.dispatch(
             CommonActions.reset({
               index: 0,
               routes: [{ name: 'HomeScreen' }],
             }),
           );
-
-
     } else if (language.data === 'languageDone') {
       if (onBoarding.data === 'onBoardingDone') {
         navigation.dispatch(

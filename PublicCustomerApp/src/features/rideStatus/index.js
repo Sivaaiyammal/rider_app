@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import DriverArrivalScreen from './screens/DriverArrivalScreen';
 import OnRideScreen from './screens/OnRideScreen';
 import DriverSearchScreen from './screens/DriverSearchScreen';
@@ -6,25 +6,25 @@ import CompletedRideScreen from './screens/RideCompletedScreen';
 import { TripStatus } from './types/TripStatus';
 import useCurrentRideInfoStore from './store/useCurrentRideInfoStore';
 import NavBar from '../../components/NavBar';
-import { View, StyleSheet, Text, TouchableOpacity, Linking, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Fonts } from '../../constants/constants';
 import { colors } from '../../constants/constants';
-import { height } from '../../utils/Utils';
 import MapIcon from '../../components/Map/MapIcon';
 import CurrentLocationIcon from '../../assets/icons/CurrentLocationIcon.svg';
 import locationTask from '../../controllers/GetCurrentLocation';
 import CancelComponent from './component/CancelComponent';
+import BookingCancelModel from './component/BookingCancelModel';
 import AnimatedBottomSheetWrapper from '../shared/component/AnimatedBottomSheetWrapper';
-import { cancelRideMutation } from '../../API/APICalls/RideAPICalls';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
 import PaymentType from '../booking/components/bookRide/PaymentType';
 import { cancelRide } from '../../API/EndPoints/EndPoints';
 import { showNotification } from '../../components/NotificationManger';
 
+
 const RideStatus = () => {
-  const { tripStatus,tripId,paymentMethod,setPaymentMethod } = useCurrentRideInfoStore();
+  const { tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo} = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
-  const {setStackScreen,reset} = useStackScreenStore();
+  const {reset,goBack} = useStackScreenStore();
   const [isPaymentMethodChangeShow,setIspaymentMethodChangeShow] = useState(false);
  
   const renderScreen = () => {
@@ -41,6 +41,15 @@ const RideStatus = () => {
     }
   };
 
+
+
+  useEffect(()=>{
+    return () => {
+      setShowBookingCancelModel(false);
+      resetCurrentRideInfo();
+    }
+  },[])
+
  
 
  
@@ -56,7 +65,12 @@ const RideStatus = () => {
     if(response.success){
       showNotification('Ride cancelled successfully');
       setShowBottomSheet(false);
-      reset()
+      setShowBookingCancelModel(false);
+      if(tripStatus === TripStatus.PENDING){
+        goBack();
+      }else{
+        reset()
+      }
     } 
    
    
@@ -113,6 +127,12 @@ const RideStatus = () => {
       isPaymentMethodChangeShow &&
       <AnimatedBottomSheetWrapper onClose={()=>{setIspaymentMethodChangeShow(false)}}>
         <PaymentType onSelect={handlePaymentMethodChange} initialValue={paymentMethod} />
+      </AnimatedBottomSheetWrapper>
+    }
+    {
+      showBookingCancelModel &&
+      <AnimatedBottomSheetWrapper onClose={()=>{setShowBookingCancelModel(false)}}>
+        <BookingCancelModel onClose={()=>{setShowBookingCancelModel(false)}} onCancel={handleCancel} />
       </AnimatedBottomSheetWrapper>
     }
    

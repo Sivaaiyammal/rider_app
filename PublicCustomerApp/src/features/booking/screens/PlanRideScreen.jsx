@@ -198,9 +198,6 @@ const PlanRideScreen = () => {
     
 
     onSearchClick(type)
-
-    
-
   }
 
   // Debounced pick location callback

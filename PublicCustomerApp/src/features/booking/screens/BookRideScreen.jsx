@@ -76,12 +76,13 @@ const BottomSheetHeader = () => {
         </View>
     )
 }
-const BookRideScreen = () => {
+const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsScreen = null}) => {
     const {goBack} = useStackScreenStore()
         const {paymentType,setPaymentType, setRideDistance ,setEstimatedDuration,rideDistance,estimatedDuration,couponCode} = useRideBookingInfo()
     const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false)
     const {isPreferenceShow,setIsPreferenceShow} = useUserInfoStore()
     const {setAvailableVehicles,availableVehicles,clearAvailableVehicles} = useRideVehicleStore()
+    const [isLoading,setIsLoading] = useState(true)
 
     const [showPreference,setShowPreference] = useState(false)
     // Use the direction load hook to transform ride locations to direction points
@@ -96,7 +97,7 @@ const BookRideScreen = () => {
     // Fetch nearby drivers hook
     const { fetchNearbyDrivers, clearNearbyDrivers, nearbyDrivers, isLoading: isFetchingDrivers } = useFetchNearbyDrivers();
 
-    const { setDirectionReady} = useMapStore()     
+    const { setDirectionReady,setMapBounds} = useMapStore()     
 
     
 
@@ -122,13 +123,23 @@ const BookRideScreen = () => {
 
     // Cleanup nearby drivers when component unmounts
     useEffect(() => {
+        
         return () => {
             clearNearbyDrivers();
+            
         };
     }, [clearNearbyDrivers]);
 
+
+    useEffect(()=>{
+        if(availableVehicles?.length > 0){
+            setIsLoading(false)
+        }
+        
+    },[availableVehicles])
+
     const handleDirectionReady = (data) => {
-        console.log("=====> Direction ready", data);
+        handleCurrentLocation()
         // Extract distance and duration from direction data
         if (data?.distance && data?.duration) {
             const distance = data.distance/1000; // Distance in meters
@@ -138,10 +149,34 @@ const BookRideScreen = () => {
             setEstimatedDuration(Math.round(duration))
             
         }
+        
+    }
+
+    const handleCurrentLocation = async () => {
+        // Set bounds for Chennai (approximate bounding box)
+        // Southwest: 12.834, 80.182 | Northeast: 13.200, 80.322
+        
+        const coords = [[rideStartLocation.longitude,rideStartLocation.latitude],[rideEndLocation.longitude,rideEndLocation.latitude],...rideWayPoints.map(waypoint => [waypoint.longitude,waypoint.latitude])]
+        
+        console.log("=====> COORDS", coords)
+        const bounds = utils.getBoundingBox(coords)
+       
+        const margin = [100,100,100,500]
+        // Structure bounds properly: [bounds, margin] where bounds is [minLon, minLat, maxLon, maxLat]
+        const finalBounds = [bounds, margin]
+        console.log("=====> FINAL BOUNDS", finalBounds)
+        setMapBounds(finalBounds);
     }
 
     useEffect(() => {
         setDirectionReady(handleDirectionReady)
+        if(DurationFromAddStopsScreen && DistanceFromAddStopsScreen){
+            setRideDistance(DistanceFromAddStopsScreen)
+            setEstimatedDuration(DurationFromAddStopsScreen)
+        }
+        return ()=>{
+            setAvailableVehicles([])
+        }
     }, [])
 
     // Log nearby drivers data for debugging
@@ -160,6 +195,7 @@ const BookRideScreen = () => {
 
 
     const transformEstimateDatStore=(data)=>{
+        console.log("=====> DATA", JSON.stringify(data))
     
         let vehicleList=[]
 
@@ -214,7 +250,7 @@ const BookRideScreen = () => {
 
     // Add effect to trigger estimation when direction data is available
     useEffect(() => {
-        if (rideDistance && estimatedDuration) {
+        if (rideDistance && estimatedDuration ) {
             getEstimatedFare();
         }
     }, [rideDistance, estimatedDuration]);
@@ -247,8 +283,13 @@ const BookRideScreen = () => {
 
     // Cleanup effect to clear direction points when component unmounts
     useEffect(() => {
+        
+        
         return () => {
+            
             setDirectionPoints(null);
+            setEstimatedDuration(null)
+            setRideDistance(null)
         };
     }, [setDirectionPoints]);
 
@@ -296,11 +337,13 @@ const BookRideScreen = () => {
         };
 
 const handleBackPress = () => {
-    clearAvailableVehicles()
+    
     setRideDistance(null)
     setEstimatedDuration(null)
     goBack()
 }
+
+
 
 const handleCouponPress = () => {
     setShowCoupon(true)
@@ -320,7 +363,7 @@ const handleCouponPress = () => {
         <View style={styles.contentContainer}>
             <RideInfo distance={rideDistance} duration={estimatedDuration} showPreference={setShowPreference}/>
             <BookingOptions label="Female Driver" onPress={handleFemaleDriverToggle} />
-            <VehicleList isLoading={isEstimationLoading} availableVehicles={availableVehicles}/>
+            <VehicleList isLoading={isLoading}  availableVehicles={availableVehicles}/>
            
         </View>
     </View>

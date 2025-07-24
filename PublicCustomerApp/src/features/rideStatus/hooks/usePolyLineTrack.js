@@ -15,6 +15,7 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
   const {
     rideStartLocation,
     rideEndLocation,
+    stops,
     setEstimatedPickuoMins
   } = useCurrentRideInfoStore();
 
@@ -165,7 +166,22 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
       return null;
     }
 
-    // Get the first leg's summary (assuming single leg for simplicity)
+    // For routes with waypoints, calculate total time and distance across all legs
+    if (routeData.trip.legs.length > 1) {
+      let totalTime = 0;
+      let totalLength = 0;
+      
+      routeData.trip.legs.forEach(leg => {
+        if (leg.summary) {
+          totalTime += leg.summary.time || 0;
+          totalLength += leg.summary.length || 0;
+        }
+      });
+      
+      return { time: totalTime, length: totalLength };
+    }
+
+    // Get the first leg's summary (for single leg routes)
     const leg = routeData.trip.legs[0];
     if (leg.summary) {
       return leg.summary;
@@ -188,22 +204,38 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
         ];
       }
     } else if (screenMode === 'on-ride') {
-      // Start to end location
+      // Start to end location with waypoints
       if (rideStartLocation && rideEndLocation) {
-        return [
+        const points = [
           { 
             lat: rideStartLocation.latitude || rideStartLocation.lat || rideStartLocation[1], 
             lon: rideStartLocation.longitude || rideStartLocation.lng || rideStartLocation[0]
-          },
-          { 
-            lat: rideEndLocation.latitude || rideEndLocation.lat || rideEndLocation[1], 
-            lon: rideEndLocation.longitude || rideEndLocation.lng || rideEndLocation[0]
           }
         ];
+
+        // Add waypoints from stops array if available
+        if (stops && stops.length > 0) {
+          stops.forEach(stop => {
+            if (stop.location && Array.isArray(stop.location) && stop.location.length === 2) {
+              points.push({
+                lat: stop.location[1], // lat is at index 1
+                lon: stop.location[0]  // lon is at index 0
+              });
+            }
+          });
+        }
+
+        // Add end location
+        points.push({
+          lat: rideEndLocation.latitude || rideEndLocation.lat || rideEndLocation[1], 
+          lon: rideEndLocation.longitude || rideEndLocation.lng || rideEndLocation[0]
+        });
+
+        return points;
       }
     }
     return null;
-  }, [screenMode, driverLatitude, driverLongitude, rideStartLocation, rideEndLocation]);
+  }, [screenMode, driverLatitude, driverLongitude, rideStartLocation, rideEndLocation, stops]);
 
   // Memoized route points to prevent unnecessary API calls
   const routePoints = useMemo(() => {
@@ -215,6 +247,8 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
     if (!points || points.length < 2) {
       return null;
     }
+
+   
 
     try {
       const routeData = await findRoute(points);
@@ -243,8 +277,11 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
       originalCoordinatesRef.current = [...coordinates];
 
       // Create polyline based on screen mode
-      const polylineId = screenMode === 'arrival' ? 'driver-to-start' : 'start-to-end';
-      const polylineName = screenMode === 'arrival' ? 'Driver to Pickup' : 'Route to Destination';
+      const hasWaypoints = screenMode === 'on-ride' && stops && stops.length > 0;
+      const polylineId = screenMode === 'arrival' ? 'driver-to-start' : 
+                        hasWaypoints ? 'start-to-end-with-waypoints' : 'start-to-end';
+      const polylineName = screenMode === 'arrival' ? 'Driver to Pickup' : 
+                          hasWaypoints ? 'Route with Waypoints' : 'Route to Destination';
       const polylineColor = '#000000';
 
       const polylineObj = new Polyline(
@@ -266,7 +303,7 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
       console.error('Error fetching route and creating polyline:', error);
       return null;
     }
-  }, [screenMode, getOrganizedPolylineCoordinates, extractRouteSummary, setEstimatedPickuoMins]);
+  }, [screenMode, stops, getOrganizedPolylineCoordinates, extractRouteSummary, setEstimatedPickuoMins]);
 
   // Function to update polyline with current coordinates
   const updatePolylineWithCoordinates = useCallback((coordinates) => {
@@ -275,8 +312,11 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
       return;
     }
 
-    const polylineId = screenMode === 'arrival' ? 'driver-to-start' : 'start-to-end';
-    const polylineName = screenMode === 'arrival' ? 'Driver to Pickup' : 'Route to Destination';
+    const hasWaypoints = screenMode === 'on-ride' && stops && stops.length > 0;
+    const polylineId = screenMode === 'arrival' ? 'driver-to-start' : 
+                      hasWaypoints ? 'start-to-end-with-waypoints' : 'start-to-end';
+    const polylineName = screenMode === 'arrival' ? 'Driver to Pickup' : 
+                        hasWaypoints ? 'Route with Waypoints' : 'Route to Destination';
     const polylineColor = '#000000';
 
     const polylineObj = new Polyline(
@@ -291,7 +331,7 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
 
     polylineRef.current = polylineObj;
     setGeometries([polylineObj]);
-  }, [screenMode, setGeometries]);
+  }, [screenMode, stops, setGeometries]);
 
   // Effect to handle route updates (initial route fetch)
   useEffect(() => {

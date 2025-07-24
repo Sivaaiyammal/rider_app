@@ -44,7 +44,7 @@ const PaymentScreen = ({handlePayNow}) => {
           
           </View>
         )}
-        <TripMetaInfo date="Mon, Jan 01 2022 3:00 PM" tripId={tripId} />
+        <TripMetaInfo date="" tripId={tripId} />
         <AddressContainer directions={stops} />
         <TripPersonVehicle driverName={driverName} driverPhoto={driverPhoto} vehicleType={vehicleType} vehicleBrand={brand} vehicleModel={model} vehicleNumber={vehicleNumber} />
         <TripStats totalDistance={finalDistance} totalDuration={finalDuration} totalFare={finalFare} />

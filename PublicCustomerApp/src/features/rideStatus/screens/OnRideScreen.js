@@ -9,9 +9,10 @@ import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 import useTrackHook from '../hooks/useTrackHook';
 import {utils} from '../../../utils/Utils';
 import useMapStyleStore from '../../../store/useMapStyleStore'; 
-const OnRideScreen = ({onPaymentMethodChange}) => {
+import { colors } from '../../../constants/constants';
+const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
   const {driverName,vehicleNumber,model,brand,driverPhoto} = useAssignedDriverInfoStore();
-  const {stops,minFare,maxFare,duration,totalDistance,vehicleType,paymentMethod,estimatedPickuoMins} = useCurrentRideInfoStore();
+  const {stops,minFare,maxFare,duration,totalDistance,vehicleType,paymentMethod,estimatedPickuoMins,tripId} = useCurrentRideInfoStore();
   const {setMapStyle} = useMapStyleStore();
  
   const { cleanupMarkers } = useTrackHook('on-ride');
@@ -130,7 +131,7 @@ const OnRideScreen = ({onPaymentMethodChange}) => {
         {
           expanded  && (
             <View style={{width: "100%", paddingHorizontal: 20}}>
-            <AddressContainer directions={stops} edit={false} />
+            <AddressContainer directions={stops} edit={true} />
           </View>
           )
         }
@@ -138,6 +139,7 @@ const OnRideScreen = ({onPaymentMethodChange}) => {
        
 
         {/* Payment method */}
+        <View style={{width:"90%",alignSelf:"center",flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:10}}>
         <TouchableOpacity style={styles.paymentRow} onPress={onPaymentMethodChange}>
           <Text style={styles.paymentLabel}>Change Payment Method</Text>
           <View style={styles.paymentValueWrap}>
@@ -145,6 +147,13 @@ const OnRideScreen = ({onPaymentMethodChange}) => {
             <Icon name="chevron-right" size={20} color="#888" />
           </View>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.cancelBtn} onPress={()=>{
+            onCancel();
+          }}>
+          <Icon name="close" size={25} color={colors.white} />
+        </TouchableOpacity>
+
+        </View>
       </View>
     
     </>
@@ -350,7 +359,7 @@ const styles = StyleSheet.create({
     maxWidth: 220,
   },
   paymentRow: {
-    width:"90%",
+    flex:1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -384,6 +393,19 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     marginTop: -2,
+  },
+  cancelBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderRadius: 16,
+    backgroundColor: '#FF5A5F',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: 'bold',
   },
 });
 

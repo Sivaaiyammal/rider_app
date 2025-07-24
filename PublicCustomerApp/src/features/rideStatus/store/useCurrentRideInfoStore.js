@@ -1,8 +1,9 @@
 import { create } from 'zustand';
+import { TripStatus } from '../types/TripStatus';
 
 const useCurrentRideInfoStore = create((set) => ({
   tripId: null,
-  tripStatus: 'ACCEPTED',
+  tripStatus: null,
   rideStartLocation: null,
   rideEndLocation: null,
   stops: [],
@@ -14,6 +15,7 @@ const useCurrentRideInfoStore = create((set) => ({
   otp: null,
   estArrivalTime: null,
   paymentMethod: null,
+  estimatedFare:null,
   // Additional fields from trip data
   bookingFor: null,
   bookingForName: null,
@@ -26,6 +28,7 @@ const useCurrentRideInfoStore = create((set) => ({
   publicRidesTrip: null,
   estimatedPickuoMins:null,
   estimatedArrivalMins:null,
+  showBookingCancelModel:false,
 
 
 
@@ -52,6 +55,7 @@ const useCurrentRideInfoStore = create((set) => ({
   setEstimatedPickuoMins: (estimatedPickuoMins) => set({ estimatedPickuoMins }),
   setEstimatedArrivalMins: (estimatedArrivalMins) => set({ estimatedArrivalMins }),
   setBreakdownFare: (breakdownFare) => set({ breakdownFare }),
+  setShowBookingCancelModel: (showBookingCancelModel) => set({ showBookingCancelModel }),
 
   setFinalFare: (finalFare) => {
     set({finalFare})
@@ -117,6 +121,18 @@ const useCurrentRideInfoStore = create((set) => ({
   
     set({ breakdownFare: breakdown });
   },
+
+
+  setpassangerLocationChange: (data) => {
+    console.log("locccc",data)
+    set({stops:data?.stops})
+    set({estimatedFare:data?.estimatedFare})
+    set({totalDistance:data?.estimatedDistance})
+    set({duration:data?.estimatedDuration})
+    
+    
+    
+  },
   
   setCurrentRideInfo: (info) => set({
     tripId: info._id || info.tripId || null,
@@ -127,7 +143,7 @@ const useCurrentRideInfoStore = create((set) => ({
     duration: info.estimatedDuration || info.duration || null,
     minFare: info.minFare || info.basePrice || null,
     maxFare: info.maxFare || info.maxPrice || null,
-    totalDistance: info.distance || info.totalDistance || null,
+    totalDistance: info.distance || info.totalDistance || info.estimatedDistance || null,
     currentDistance: info.distance || info.currentDistance || null,
     otp: info.otp ?? null,
     estArrivalTime: info.estArrivalTime ?? null,
@@ -149,7 +165,7 @@ const useCurrentRideInfoStore = create((set) => ({
 
   resetCurrentRideInfo: () => set({
     tripId: null,
-    tripStatus: 'ACCEPTED',
+    tripStatus: null,
     rideStartLocation: null,
     rideEndLocation: null,
     stops: [],

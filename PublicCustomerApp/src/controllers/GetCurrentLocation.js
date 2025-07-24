@@ -10,7 +10,7 @@ class currentLocation {
   constructor() {}
   async getCurrentLocation() {
     const {setLocation} = useLocationStore.getState();
-    const {setMapLocation,setLoading} = useMapStore.getState();
+    const {setMapLocation,setLoading,mapShown} = useMapStore.getState();
     setLoading(true); // Set loading to true before starting the geolocation process
     return new Promise((resolve, reject) => {
       Geolocation.getCurrentPosition(
@@ -19,14 +19,18 @@ class currentLocation {
             'hari-->>community-->>Position-->>',
             position.coords.longitude,
           );
-          resolve(position);
+          
           setLocation([position.coords.longitude, position.coords.latitude]);
-          setMapLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            zoom: 25,
-          });
-          setLoading(false); // Set loading to false after successfully getting the position
+          setTimeout(()=>{
+            setMapLocation({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+              zoom: 18,
+            });
+          },500)
+          console.log("setting mapLocation---------------------------->")
+          setLoading(false); 
+          resolve(position);// Set loading to false after successfully getting the position
         },
         error => {
           console.log('hari-->>community-->>Error-->>',error);

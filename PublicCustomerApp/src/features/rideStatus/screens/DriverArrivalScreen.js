@@ -135,7 +135,6 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
         </View>
         <View style={styles.driverInfo}>
           <Text style={styles.driverName}>{driverName}</Text>
-        
         </View>
         <View style={styles.otpBox}>
           <Text style={styles.otpLabel}>OTP</Text>
@@ -164,7 +163,7 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
       </View>
     )}   
   
-      {/* Trip Details row with chevron */}
+ 
       <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
         <Text style={styles.tripDetailsLabel}>Trip Details</Text>
         <Animated.View style={{ transform: [{ rotate: chevronRotation }] }}>
@@ -178,7 +177,7 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
     
     {expanded && (
       <>
-      <AddressContainer directions={stops} edit={false} />
+      <AddressContainer directions={stops} edit={true} />
       <View style={{ flexDirection: 'row', flex: 1 }}>
         {/* <View style={styles.rideInfoItem}>
           <Text style={styles.rideInfoLabel}>Arrival</Text>

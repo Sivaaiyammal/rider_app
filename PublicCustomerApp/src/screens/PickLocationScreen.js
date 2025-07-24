@@ -22,7 +22,7 @@ import locationTask from "../controllers/GetCurrentLocation";
 import usePropsStore from '../store/usePropsStore';
 import { useDebouncedAPICall } from '../hooks/useDebounce';
 
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null}) => {
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,title=null}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation} = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -125,73 +125,73 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
   return (
     <>
-    <NavBar
-        title="Locate on Map"
-        onBackPress={()=>goBack()}
-    />
-    <View style={[styles.container]}>
-        <View style={{alignSelf:'center',alignItems:'center',marginBottom:mapMoving?10:0}}>
-        <Image source={PickIcon} style={styles.pickIcon} />
-        <View style={styles.pickIconVerticalLine}></View>
+      <NavBar
+        title={title ? title : "Locate on Map"}
+        onBackPress={() => goBack()}
+      />
+      <View style={[styles.container]}>
+        <View style={{ alignSelf: 'center', alignItems: 'center' }}>
+          <Image source={PickIcon} style={styles.pickIcon} />
+          <View style={styles.pickIconVerticalLine}></View>
         </View>
-        <View style={[styles.shadowContainer]}>
+        <View style={[styles.shadowContainer, mapMoving && { marginTop: 7 }]}>
           <View style={[styles.shadow]}>
           </View>
         </View>
-    </View>
-          <View style={styles.bottomContainer}>
-            <View style={styles.mapIconContainer}>
-               <MapIcon />
-            </View>
-            <TouchableOpacity style={styles.currentLocationIconContainer} onPress={handleCurrentLocation}>
-                <CurrentLocationIcon width={25} height={25} />
-            </TouchableOpacity>
-              <Text style={styles.bottomContainerText}> Pick Location</Text>
-              <View style={styles.AddressContainer}>
-                  {/* <View style={styles.AddressContainerIcon}>
+      </View>
+      <View style={styles.bottomContainer}>
+        <View style={styles.mapIconContainer}>
+          <MapIcon />
+        </View>
+        <TouchableOpacity style={styles.currentLocationIconContainer} onPress={handleCurrentLocation}>
+          <CurrentLocationIcon width={25} height={25} />
+        </TouchableOpacity>
+        <Text style={styles.bottomContainerText}> Pick Location</Text>
+        <View style={styles.AddressContainer}>
+          {/* <View style={styles.AddressContainerIcon}>
                     <Icon name="location-on" size={30} color="#ffd11a"/>
                   </View> */}
-                  <View style={styles.AddressContainerMain}>
-                      <Text style={styles.AddressContainerTextTitle}>📍 Address</Text>
-                      {!isAddressLoading && pickedLocation?.address ? (
-                        <Text style={styles.AddressContainerTextAddress}>{pickedLocation.address}</Text>
-                      ) : (
-                        <View style={styles.AddressContainerSkeleton}>
-                        <SkeletonLoader 
-                          width="100%" 
-                          height={20} 
-                          borderRadius={4}
-                          backgroundColor="#E8E8E8"
-                          shimmerColor="#F5F5F5"
-                        />
-                        <SkeletonLoader 
-                          width="70%" 
-                          height={20} 
-                          borderRadius={4}
-                          backgroundColor="#E8E8E8"
-                          shimmerColor="#F5F5F5"
-                        />
-                        </View>
-                      )}
-                  </View>
-
+          <View style={styles.AddressContainerMain}>
+            <Text style={styles.AddressContainerTextTitle}>📍 Address</Text>
+            {!isAddressLoading && pickedLocation?.address ? (
+              <Text style={styles.AddressContainerTextAddress}>{pickedLocation.address}</Text>
+            ) : (
+              <View style={styles.AddressContainerSkeleton}>
+                <SkeletonLoader
+                  width="100%"
+                  height={20}
+                  borderRadius={4}
+                  backgroundColor="#E8E8E8"
+                  shimmerColor="#F5F5F5"
+                />
+                <SkeletonLoader
+                  width="70%"
+                  height={20}
+                  borderRadius={4}
+                  backgroundColor="#E8E8E8"
+                  shimmerColor="#F5F5F5"
+                />
               </View>
-              <TouchableOpacity 
-                style={[
-                  styles.bottomContainerButton, 
-                  isAddressLoading && styles.bottomContainerButtonDisabled
-                ]} 
-                onPress={()=>onPickLocationResultCallback(pickedLocation,locationType)}
-                disabled={isAddressLoading}
-              >
-                  <Text style={[
-                    styles.bottomContainerButtonText,
-                    isAddressLoading && styles.bottomContainerButtonTextDisabled
-                  ]}>Confirm Location</Text>
-              </TouchableOpacity>
-
-
+            )}
           </View>
+
+        </View>
+        <TouchableOpacity
+          style={[
+            styles.bottomContainerButton,
+            isAddressLoading && styles.bottomContainerButtonDisabled
+          ]}
+          onPress={() => onPickLocationResultCallback(pickedLocation, locationType)}
+          disabled={isAddressLoading}
+        >
+          <Text style={[
+            styles.bottomContainerButtonText,
+            isAddressLoading && styles.bottomContainerButtonTextDisabled
+          ]}>Confirm Location</Text>
+        </TouchableOpacity>
+
+
+      </View>
     </>
   );
 };

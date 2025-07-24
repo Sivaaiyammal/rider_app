@@ -87,5 +87,14 @@ export const getNearByDrivers = async (payload) => {
   return data
 }
 
+export const getPreFinalFare = async (payload) => {
+  const { data } = await apiClient.post('/publicrides/customer/getPreFinalFare', payload)
+  return data
+}
+export const passangerStopChangeRequest = async (payload) => {
+  const { data } = await apiClient.post('/publicrides/customer/passangerStopChangeRequest', payload)
+  return data
+}
+
 
 

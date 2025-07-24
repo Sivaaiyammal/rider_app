@@ -25,7 +25,7 @@ import { DataStore } from '../../../controllers/DataStore';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import { useDebouncedSearch } from '../../../hooks/useDebounce';
 import { LocationTypes } from '../../booking/types/LocationTypes';
-const SearchScreen = ({onSearchClick=null,searchType}) => {
+const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwaitingTime=false,title=null,index=null}) => {
   const [searchTxt,setSearchTxt] = useState("");
   const {goBack,setStackScreen} = useStackScreenStore();
   const [isLoading,setIsLoading] = useState(false);
@@ -146,7 +146,7 @@ const SearchScreen = ({onSearchClick=null,searchType}) => {
     storeRecentSearch(item);
     
     
-    onSearchClick(item,searchType);
+    onSearchClick(item,searchType,index);
     
 
   }, [onSearchClick, searchType]);
@@ -164,15 +164,20 @@ const SearchScreen = ({onSearchClick=null,searchType}) => {
 
   const handleLocateOnMapCallback=(item)=>{
     
-    onSearchClick(item,searchType)
-    goBack()
+    onSearchClick(item,searchType,index)
+  
     
   }
 
   const handleLocateOnMap = () =>{
+    goBack()
     setStackScreen('PickLocationScreen',{
         onPickLocationResultCallback:handleLocateOnMapCallback,
-        locationTypes:searchType
+        locationTypes:searchType,
+        fromaddWayPoint:fromaddWayPoint,
+        getwaitingTime:getwaitingTime,
+        title:title,
+        index:index
       })
   }
 
@@ -183,9 +188,10 @@ const SearchScreen = ({onSearchClick=null,searchType}) => {
       <NavBar onBackPress={onGoBack} title={'Search'} />
       <View style={styles.inputContainer}>
         <View style={{flexDirection:'row',alignItems:'center',gap:5}}>
-        <AntDesign name="search1" color={colors.grey} size={22} />
+        <AntDesign name="search1" color={'black'} size={22} />
         <TextInput
           placeholder="Search Places"
+          placeholderTextColor="grey"
           style={styles.input}
           onChangeText={_onChangeText}
           autoFocus
@@ -196,7 +202,7 @@ const SearchScreen = ({onSearchClick=null,searchType}) => {
           style={styles.closeBtn}
           onPress={() => setSearchUnit('')}>
             <View style={styles.searchAction}>
-          {searchTxt.length > 0 && <Ionicons onPress={()=>fullSearch()} name="checkmark-outline" color={colors.grey} size={24} />}
+          {searchTxt.length > 0 && <Ionicons onPress={()=>fullSearch()} name="checkmark-outline" color={'black'} size={24} />}
            {searchTxt.length > 0 && <AntDesign name="close" color={colors.grey} size={22} />} 
             </View>
         </TouchableOpacity>

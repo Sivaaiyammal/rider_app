@@ -3,7 +3,7 @@ import Config from '../Config/APIConfig';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 import useAssignedDriverInfoStore from '../features/rideStatus/store/useAssignedDriverInfoStore';
-
+import useWayPointReorderStore from '../features/booking/store/useWayPointReorderStore';
 const SOCKET_URL = Config.ROOT_API_URL;
 
 
@@ -18,6 +18,8 @@ class WSService {
     this.driverLocationUpdate = this.driverLocationUpdate.bind(this)
     this.onRideStatus = this.onRideStatus.bind(this)
     this.driverTestSimulation = this.driverTestSimulation.bind(this)
+    this.passangerLocationChange = this.passangerLocationChange.bind(this)
+    this.useWayPointReorderStore = useWayPointReorderStore
     // this.driverFareUpdate = this.driverFareUpdate.bind(this)
     this.useStackScreenStore = useStackScreenStore
     this.useCurrentRideInfoStore = useCurrentRideInfoStore
@@ -66,6 +68,13 @@ class WSService {
       
     }
    
+  }
+
+  passangerLocationChange(data){
+    if(data?.stops){
+      this.useCurrentRideInfoStore.getState().setpassangerLocationChange(data)
+      this.useWayPointReorderStore.getState().setWaitingForDriverApproval("APPROVED")
+    }
   }
  
   
@@ -140,6 +149,8 @@ class WSService {
         this.socket.on('driverTestSimulation', this.driverTestSimulation);
 
         this.socket.on('passangerTripStatus', this.onRideStatus);
+
+        this.socket.on('passangerLocationChange', this.passangerLocationChange);
 
         // this.socket.on('passangerTripFareUpdate', this.driverFareUpdate);
 

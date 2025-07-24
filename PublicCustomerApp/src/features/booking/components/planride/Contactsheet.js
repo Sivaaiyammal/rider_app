@@ -188,6 +188,7 @@ const Contactsheet = ({ onConfirm }) => {
           <TextInput
             style={styles.input}
             placeholder="Enter name"
+            placeholderTextColor="grey"
             value={newContact.name}
             onChangeText={(text) => setNewContact({ ...newContact, name: text })}
           />
@@ -196,6 +197,7 @@ const Contactsheet = ({ onConfirm }) => {
             <TextInput
               style={{flex: 1}}
               placeholder="Enter mobile number"
+              placeholderTextColor="grey"
               keyboardType="phone-pad"
               value={newContact.phone}
               maxLength={10}
@@ -320,13 +322,15 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.grey,
+    borderColor: "#E0E0E0",
     borderRadius: 8,
     alignItems:'center',
     paddingHorizontal:10, 
     marginBottom: 16,
     fontFamily: Fonts.regular,
-    height: 50
+    height: 50,
+    color:"black",
+    placeholderTextColor:'black'
   },
   confirmButton: {
     backgroundColor: colors.green,

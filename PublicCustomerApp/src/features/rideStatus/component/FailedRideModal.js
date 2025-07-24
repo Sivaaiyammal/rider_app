@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   modalMessage: {
     fontSize: 16,
     fontFamily: Fonts.regular,
-    color: colors.gray,
+    color: 'grey',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 30,

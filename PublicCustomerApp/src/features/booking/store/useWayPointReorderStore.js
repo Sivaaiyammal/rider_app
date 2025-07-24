@@ -3,12 +3,31 @@ import { create } from 'zustand';
 const useWayPointReorderStore = create((set, get) => ({
   // State
   reOrderWaypoints: [],
+  reachedStops: [],
   isLoading: false,
   lastAddStopIndex: 0,
+  currentEditWaitWaypoint: null,
+  isEditwaitingTime: false,
+  waitingForDriverApproval:null ,
+  
 
   // Actions
   setReOrderWaypoints: (waypoints) => {
     set({ reOrderWaypoints: waypoints });
+  },
+  setReachedStops: (stops) => {
+    set({ reachedStops: stops });
+  },
+  setWaitingForDriverApproval: (value) =>{
+      set({waitingForDriverApproval:value})
+  },
+
+  setCurrentEditWaitWaypoint: (waypoint) => {
+    set({ currentEditWaitWaypoint: waypoint });
+  },
+
+  setIsEditwaitingTime: (isEditwaitingTime) => {
+    set({ isEditwaitingTime });
   },
 
   setIsLoading: (isLoading) => {

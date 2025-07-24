@@ -18,19 +18,20 @@ const useTrackHook = (screenMode = 'arrival') => {
   } = useAssignedDriverInfoStore();
 
   const {
-    setMapMarkers,
-    setMapLocation
+    setMapMarkers
   } = useMapStore();
 
   const {
     rideStartLocation,
     rideEndLocation,
+    stops,
     vehicleType
   } = useCurrentRideInfoStore();
 
   const driverMarkerRef = useRef(null);
   const startMarkerRef = useRef(null);
   const endMarkerRef = useRef(null);
+  const waypointMarkersRef = useRef([]);
   const lastDriverLocationRef = useRef(null);
   const lastScreenModeRef = useRef(null);
 
@@ -41,6 +42,39 @@ const useTrackHook = (screenMode = 'arrival') => {
   const vehicleMarkerType = useMemo(() => {
     return vehicleType?.toLowerCase();
   }, [vehicleType]);
+
+  // Memoize waypoint markers when stops length > 2 (only for on-ride screen)
+  const waypointMarkers = useMemo(() => {
+    if (screenMode !== 'on-ride' || !stops || stops.length <= 2) {
+      waypointMarkersRef.current = [];
+      return [];
+    }
+
+    // Create waypoint markers for stops (excluding first and last which are start/end)
+    const waypoints = stops.slice(1, -1).map((stop, index) => {
+      const location = stop.location;
+      const longitude = location[0];
+      const latitude = location[1];
+      
+      const marker = new Marker(
+        `waypoint-marker-${index}`,
+        `Waypoint ${index + 1}`,
+        longitude,
+        latitude,
+        'waypoint',
+        36,
+        false,
+        0
+      );
+      marker.setTitle(`Waypoint ${index + 1}`);
+      marker.setSnippet(`Stop ${index + 2}`);
+      
+      return marker;
+    });
+
+    waypointMarkersRef.current = waypoints;
+    return waypoints;
+  }, [stops, screenMode]);
 
   // Memoize driver marker to prevent unnecessary re-creation
   const driverMarker = useMemo(() => {
@@ -74,7 +108,7 @@ const useTrackHook = (screenMode = 'arrival') => {
     driverMarkerRef.current = marker;
 
     return marker;
-  }, [driverLatitude, driverLongitude, driverAngle]);
+  }, [driverLatitude, driverLongitude, driverAngle, vehicleMarkerType, vehicleNumber, brand, model, color]);
 
   // Memoize start marker (only for arrival screen)
   const startMarker = useMemo(() => {
@@ -127,21 +161,11 @@ const useTrackHook = (screenMode = 'arrival') => {
       driverMarkerRef.current = null;
       startMarkerRef.current = null;
       endMarkerRef.current = null;
+      waypointMarkersRef.current = [];
       lastDriverLocationRef.current = null;
       lastScreenModeRef.current = screenMode;
     }
   }, [screenMode, setMapMarkers, clearPolyline]);
-
-  // // Update map location when driver location changes
-  // useEffect(() => {
-  //   if (driverLatitude && driverLongitude) {
-  //     setMapLocation({
-  //       lat: driverLatitude,
-  //       lng: driverLongitude,
-  //       zoom: 15,
-  //     });
-  //   }
-  // }, [driverLatitude, driverLongitude, setMapLocation]);
 
   // Update map markers when any marker changes
   useEffect(() => {
@@ -157,13 +181,18 @@ const useTrackHook = (screenMode = 'arrival') => {
       markers.push(endMarker);
     }
     
+    // Add waypoint markers only for on-ride screen when stops > 2
+    if (screenMode === 'on-ride' && waypointMarkers.length > 0) {
+      markers.push(...waypointMarkers);
+    }
+    
     // Add driver marker for both screens
     if (driverMarker) {
       markers.push(driverMarker);
     }
 
     setMapMarkers(markers);
-  }, [driverMarker, startMarker, endMarker, setMapMarkers, screenMode]);
+  }, [driverMarker, startMarker, endMarker, waypointMarkers, setMapMarkers, screenMode]);
 
   // Update polyline when driver location changes (for arrival screen)
   useEffect(() => {
@@ -178,6 +207,7 @@ const useTrackHook = (screenMode = 'arrival') => {
     driverMarkerRef.current = null;
     startMarkerRef.current = null;
     endMarkerRef.current = null;
+    waypointMarkersRef.current = [];
     lastDriverLocationRef.current = null;
     lastScreenModeRef.current = null;
   }, [setMapMarkers, clearPolyline]);
@@ -195,7 +225,8 @@ const useTrackHook = (screenMode = 'arrival') => {
     cleanupMarkers,
     driverMarker: driverMarkerRef.current,
     startMarker: startMarkerRef.current,
-    endMarker: endMarkerRef.current
+    endMarker: endMarkerRef.current,
+    waypointMarkers: waypointMarkersRef.current
   };
 };
 

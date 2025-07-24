@@ -7,7 +7,7 @@ import useMapStore from '../../../features/map/store/useMapStore';
  * @returns {Object} Object containing the transform function and current waypoint data
  */
 const useWaypointDirectionLoad = () => {
-  const { reOrderWaypoints } = useWayPointReorderStore();
+  const { reOrderWaypoints,reachedStops } = useWayPointReorderStore();
   
   const { setDirectionPoints, setMapMarkers } = useMapStore();
 
@@ -19,9 +19,11 @@ const useWaypointDirectionLoad = () => {
    */
   const transformWaypointsToDirectionPoints = useCallback((options = {}) => {
     const { clearMarkers = true, vehicleType = 'car' } = options;
-    
+    const updatedReOrderWaypoints = [...reachedStops,...reOrderWaypoints]
+
+    console.log("updatedReOrderWaypoints",updatedReOrderWaypoints)
     // Filter out valid waypoints with coordinates
-    const validWaypoints = reOrderWaypoints.filter(waypoint => 
+    const validWaypoints = updatedReOrderWaypoints.filter(waypoint => 
       waypoint.latitude && 
       waypoint.longitude && 
       waypoint.type !== 'add-stop'

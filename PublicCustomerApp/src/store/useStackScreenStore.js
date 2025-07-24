@@ -7,6 +7,12 @@ export const useStackScreenStore = create((set, get) => ({
     const newStack = [...get().stackScreen, { name: screenName, params }];
     set({stackScreen: newStack});
   },
+
+
+  getCurrentScreenName: () => {
+    const stack = get().stackScreen;
+    return stack[stack.length - 1].name;
+  },
   
   goBack: () => {
     const stack = get().stackScreen;

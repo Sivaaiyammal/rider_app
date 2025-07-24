@@ -5,6 +5,8 @@ import { colors, Fonts } from '../../constants/constants';
 import Rocket from '../../assets/image/svgIcons/rocket.svg';
 import EndBlack from '../../assets/image/svgIcons/end_black.svg';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useStackScreenStore } from '../../store/useStackScreenStore';
+import  useCurrentRideInfoStore  from '../../features/rideStatus/store/useCurrentRideInfoStore';
 
 const getLocationIcon = (item,index,length) => {
   switch (index) {
@@ -18,6 +20,16 @@ const getLocationIcon = (item,index,length) => {
 };
 
 const AddressContainer = ({ directions,edit=false }) => {
+
+    const {setStackScreen} = useStackScreenStore()
+    const {tripId} = useCurrentRideInfoStore()
+
+  const handleStopEdit = (item) => {
+    setStackScreen('WaypointScreen',{
+      stopsFromOnGoingRide:directions,
+      tripId:tripId
+    })
+  }
   
   return (
     <View style={styles.locationContainer}>
@@ -35,8 +47,8 @@ const AddressContainer = ({ directions,edit=false }) => {
              
              
             </View>
-            {edit && (
-              <TouchableOpacity style={{paddingTop:10}}>  
+            {edit && !item.isReached && (
+              <TouchableOpacity style={{paddingTop:10}} onPress={handleStopEdit}>  
               <Icon name="edit" size={20} color={colors.black} />
               </TouchableOpacity>
             )}

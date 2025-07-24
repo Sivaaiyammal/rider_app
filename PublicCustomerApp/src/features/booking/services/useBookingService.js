@@ -8,7 +8,7 @@ import useRideMatching from '../../../hooks/useRideMatching';
 import useRideMatchStore from '../../rideStatus/store/useRideMatchStore';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
-
+import { TripStatus } from '../../rideStatus/types/TripStatus';
 /**
  * Hook to handle trip booking with API integration
  * @param {Object} options - Configuration options
@@ -38,7 +38,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
   const { resetRideMatchStatus } = useRideMatchStore();
   const { initializeSocket, startMatching } = useRideMatching();
   const { id: userId } = useUserInfoStore();
-  const { setCurrentRideInfo } = useCurrentRideInfoStore();
+  const { setCurrentRideInfo,setTripStatus } = useCurrentRideInfoStore();
   /**
    * Prepare booking payload with dummy values for testing
    * @returns {Object} Formatted payload for booking API
@@ -58,7 +58,9 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       {
         name: 'Pickup Point',
         location: [rideStartLocation.longitude, rideStartLocation.latitude],
-        address: rideStartLocation.address || rideStartLocation.name
+        address: rideStartLocation.address || rideStartLocation.name,
+        waitingTime: 0,
+        isReached:false
       }
     ];
 
@@ -68,7 +70,9 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         stops.push({
           name: `Stop ${index + 1}`,
           location: [waypoint.longitude, waypoint.latitude],
-          address: waypoint.address || waypoint.name
+          address: waypoint.address || waypoint.name,
+          waitingTime: waypoint.waitingTime || 0,
+          isReached:false
         });
       });
     }
@@ -77,7 +81,9 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     stops.push({
       name: 'Drop Point',
       location: [rideEndLocation.longitude, rideEndLocation.latitude],
-      address: rideEndLocation.address || rideEndLocation.name
+      address: rideEndLocation.address || rideEndLocation.name,
+      waitingTime: 0,
+      isReached:false
     });
 
     // Build payload with dummy values for testing
@@ -94,7 +100,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       
       // Pricing data
       minFare: selectedVehicle.basePrice || 100, 
-      distance: rideDistance || 5, 
+      estimatedDistance: rideDistance || 5, 
       estimatedDuration: estimatedDuration || 15, 
       maxFare: selectedVehicle.maxPrice || 150, 
       
@@ -135,6 +141,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         await initializeSocket();
         startMatching(data.tripId, userId,data?.trip?.vehicleType);
         setCurrentRideInfo(data)
+        setTripStatus(TripStatus.PENDING)
         showNotification('Booking Successful', 'Your ride has been booked successfully!', 'success');
         
         if (onSuccess) {
