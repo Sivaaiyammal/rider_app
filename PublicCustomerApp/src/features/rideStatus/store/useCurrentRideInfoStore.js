@@ -56,6 +56,7 @@ const useCurrentRideInfoStore = create((set) => ({
   setEstimatedArrivalMins: (estimatedArrivalMins) => set({ estimatedArrivalMins }),
   setBreakdownFare: (breakdownFare) => set({ breakdownFare }),
   setShowBookingCancelModel: (showBookingCancelModel) => set({ showBookingCancelModel }),
+  setEstimatedFare: (estimatedFare) => set({ estimatedFare }),
 
   setFinalFare: (finalFare) => {
     set({finalFare})
@@ -160,6 +161,7 @@ const useCurrentRideInfoStore = create((set) => ({
     publicRidesTrip: typeof info.publicRidesTrip === 'boolean' ? info.publicRidesTrip : null,
     finalDistance: info.finalDistance || null,
     finalDuration: info.finalDuration || null,
+    estimatedFare:info.estimatedFare || null,
    
   }),
 

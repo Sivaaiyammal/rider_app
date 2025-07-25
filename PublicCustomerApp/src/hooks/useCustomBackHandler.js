@@ -9,6 +9,7 @@ export const useCustomBackHandler = () => {
 
   useEffect(() => {
     const onBackPress = () => {
+      console.log("TripStatus",tripStatus )
       console.log("=====> BACK HANDLER 1")
       if (stackScreen.length > 1 && tripStatus !== TripStatus.ACCEPTED && tripStatus !== TripStatus.PICKEDUP && tripStatus !== TripStatus.PENDING) {
         

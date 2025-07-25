@@ -42,7 +42,7 @@ const WaypointContainer = () => {
   // const [lastAddStopIndex, setLastAddStopIndex] = useState(waypoints.length-1);
   useEffect(() => {
     if (reOrderWaypoints.length > 0) {
-      if(reOrderWaypoints.length == 1){
+      if(reOrderWaypoints.length == 1 && !reachedStops.length > 0){
         setLastAddStopIndex(reOrderWaypoints.length);
       }else{
         setLastAddStopIndex(reOrderWaypoints.length-1);
@@ -196,7 +196,7 @@ const WaypointContainer = () => {
           >
             <View style={[styles.AddressContainer,isActive && styles.draggingItem]}>
             <View style={styles.labelCol}>
-              <Text style={styles.addLabel}>{index == 0 ? "Add a Pickup Location" :index == finalData.length-1 ? "Add a Drop Location" : "Add a Stop"}</Text>
+              <Text style={styles.addLabel}>{index == 0 && !reachedStops.length > 0 ? "Add a Pickup Location" :index == finalData.length-1 ? "Add a Drop Location" : "Add a Stop"}</Text>
             </View>
 
             <View style={styles.actionCol}>
@@ -241,13 +241,13 @@ const WaypointContainer = () => {
           
 
         { !isReached && <View style={styles.actionCol}>
-          {((isWaypoint && !isLastWaypoint) || (!item?.isReached && !isLastWaypoint && !isStartLocation)) && <WaitingTimeIconContainer onPress={() => handleaddwaitingTime(actualIndex, item)} value={item.waitingTime}/>}
+          {((isWaypoint && !isLastWaypoint) ||  (!item?.isReached && !isLastWaypoint && !isStartLocation && !reachedStops.length > 0) || (reachedStops.length > 0 && !isLastWaypoint)) && <WaitingTimeIconContainer onPress={() => handleaddwaitingTime(actualIndex, item)} value={item.waitingTime}/>}
             
             <MaterialIcons name="drag-handle" size={24} color="black" />
           </View>
   }
           </View>
-          {((isWaypoint && !isLastWaypoint && !isStartLocation) || (!item?.isReached && !isLastWaypoint && !isStartLocation ))  ?(
+          {((isWaypoint && !isLastWaypoint && !isStartLocation) || (!item?.isReached && !isLastWaypoint && !isStartLocation && !reachedStops.length > 0) || (reachedStops.length>0 && !isLastWaypoint && isStartLocation))  ?(
               <TouchableOpacity
                 style={styles.actionBtn}
                 onPress={() => handleRemoveWaypoint(actualIndex)}

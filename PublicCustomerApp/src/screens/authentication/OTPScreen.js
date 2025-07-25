@@ -11,7 +11,8 @@ import useUserInfoStore from '../../store/useUserInfoStore';
 import {verifyOTPMutation} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
+import messaging from '@react-native-firebase/messaging';
+import DeviceInfo from 'react-native-device-info';  
 // Utility function to mask phone number
 const maskPhoneNumber = (phoneNumber) => {
   if (!phoneNumber || phoneNumber.length < 5) return phoneNumber;
@@ -86,14 +87,34 @@ const OTPScreen = ({route}) => {
     handleVerificationSuccess,
   );
 
+  const getFcmToken = async () => {
+    try {
+      const fcmToken = await messaging().getToken();
+      return fcmToken;
+    } catch (error) {
+      console.log('Error getting FCM token: ', error);
+    }
+  };
+
+
   const verifyOtp = async () => {
     if (otpInput.length === 0) {
       showNotification('Please Verify OTP', 'Invalid Otp', 'danger');
     } else {
+      const fcmToken = await getFcmToken();
+      const deviceImei = await DeviceInfo.getUniqueId().catch(error => {
+        console.log('Error getting device IMEI: ', error);
+      });
+      const tokenCred = {
+        token: fcmToken,
+        deviceImei: deviceImei,
+      };
       const payload = {
         otp: otpInput,
         phone: `+${countryCode}${loginPhoneNumber}`,
+        fcmToken: tokenCred,
       };
+      console.log("verifyOtp payload",payload)
       verifyOTPMutate(payload);
     }
   };

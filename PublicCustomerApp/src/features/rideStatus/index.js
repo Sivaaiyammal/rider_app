@@ -26,36 +26,10 @@ const RideStatus = () => {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const {reset,goBack} = useStackScreenStore();
   const [isPaymentMethodChangeShow,setIspaymentMethodChangeShow] = useState(false);
- 
-  const renderScreen = () => {
-    console.log('tripStatus',tripStatus);
-    switch (tripStatus) {
-      case TripStatus.PICKEDUP:
-        return <OnRideScreen onCancel={()=>{setShowBottomSheet(true)}} onPaymentMethodChange={()=>{setIspaymentMethodChangeShow(true)}} />;
-      case TripStatus.ACCEPTED:
-        return <DriverArrivalScreen onCancel={()=>{setShowBottomSheet(true)}} />;
-      case TripStatus.DROPPED:
-        return <CompletedRideScreen />;
-      default:
-        return <DriverSearchScreen  onCancel={()=>{setShowBottomSheet(true)}} />;
-    }
-  };
 
-
-
-  useEffect(()=>{
-    return () => {
-      setShowBookingCancelModel(false);
-      resetCurrentRideInfo();
-    }
-  },[])
-
- 
-
- 
   const handleCancel = async (reason) => {
   
-
+    console.log("hbkdbkb")
     const payload = {
       tripId:tripId,
       reason:reason
@@ -67,14 +41,51 @@ const RideStatus = () => {
       setShowBottomSheet(false);
       setShowBookingCancelModel(false);
       if(tripStatus === TripStatus.PENDING){
+       
+        console.log("=====================?",tripStatus)
+        resetCurrentRideInfo();
         goBack();
+        
+      
       }else{
+        console.log("=====================>",tripStatus)
+        resetCurrentRideInfo();
         reset()
+        
+       
       }
     } 
    
    
   }
+ 
+  const renderScreen = () => {
+    console.log('tripStatus',tripStatus);
+    switch (tripStatus) {
+      case TripStatus.PICKEDUP:
+        return <OnRideScreen onCancel={()=>{setShowBottomSheet(true)}} onPaymentMethodChange={()=>{setIspaymentMethodChangeShow(true)}} />;
+      case TripStatus.ACCEPTED:
+        return <DriverArrivalScreen onCancel={()=>{setShowBottomSheet(true)}} />;
+      case TripStatus.DROPPED:
+        return <CompletedRideScreen />;
+      default:
+        return <DriverSearchScreen  onCancel={handleCancel} />;
+    }
+  };
+
+
+
+  useEffect(()=>{
+    return () => {
+      setShowBookingCancelModel(false);
+      
+    }
+  },[])
+
+ 
+
+ 
+ 
 
 
   const handlePaymentMethodChange = (paymentMethod) => {

@@ -88,9 +88,13 @@ const SearchLoader = ({ onCancel }) => {
   const handleCancel = () => {
     setShowFailedModal(false);
     if (onCancel) {
-      onCancel();
+      onCancel("no driver");
     }
   };
+
+  const handleCancell=()=>{
+    onCancel("xxxxxxx")
+  }
 
   useEffect(() => {
     setMapStyle({
@@ -125,7 +129,7 @@ const SearchLoader = ({ onCancel }) => {
       <View style={styles.buttonContainer}>
         <SwipeBtn
           name="Slide to Cancel"
-          onHandleSwipeEnd={onCancel}
+          onHandleSwipeEnd={handleCancell}
         />
       </View>
       </View>

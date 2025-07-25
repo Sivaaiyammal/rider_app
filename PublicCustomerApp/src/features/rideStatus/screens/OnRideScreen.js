@@ -10,13 +10,20 @@ import useTrackHook from '../hooks/useTrackHook';
 import {utils} from '../../../utils/Utils';
 import useMapStyleStore from '../../../store/useMapStyleStore'; 
 import { colors } from '../../../constants/constants';
+import FontAwesome from 'react-native-vector-icons/FontAwesome5';
+import useWayPointReorderStore from '../../../features/booking/store/useWayPointReorderStore';
 const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
   const {driverName,vehicleNumber,model,brand,driverPhoto} = useAssignedDriverInfoStore();
-  const {stops,minFare,maxFare,duration,totalDistance,vehicleType,paymentMethod,estimatedPickuoMins,tripId} = useCurrentRideInfoStore();
+  const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedPickuoMins,estimatedFare} = useCurrentRideInfoStore();
+  const {waitingForDriverApproval} = useWayPointReorderStore();
+  useEffect(()=>{
+    console.log("waitingForDriverApproval",waitingForDriverApproval)
+  },[waitingForDriverApproval])
   const {setMapStyle} = useMapStyleStore();
  
   const { cleanupMarkers } = useTrackHook('on-ride');
 
+  
   
   const [expanded, setExpanded] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
@@ -52,6 +59,72 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
       });
     }
   }, [])
+
+  const AnimatedDots = () => {
+    const dot1 = useRef(new Animated.Value(0)).current;
+    const dot2 = useRef(new Animated.Value(0)).current;
+    const dot3 = useRef(new Animated.Value(0)).current;
+  
+    useEffect(() => {
+      const animateDots = () => {
+        Animated.sequence([
+          Animated.parallel([
+            Animated.timing(dot1, {
+              toValue: 1,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(dot2, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(dot3, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+          ]),
+          Animated.parallel([
+            Animated.timing(dot1, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(dot2, {
+              toValue: 1,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(dot3, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+          ]),
+          Animated.parallel([
+            Animated.timing(dot1, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(dot2, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(dot3, {
+              toValue: 1,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+          ]),
+        ]).start(() => animateDots());
+      };
+  
+      animateDots();
+    }, [dot1, dot2, dot3]);
+  }
 
  
   const chevronRotation = animation.interpolate({
@@ -93,9 +166,9 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
         <Text style={styles.vehicleDesc}>{brand} {model} · {vehicleNumber}</Text>
         {/* Estimated amount */}
         <View style={styles.amountBox}>
-          <Text style={styles.amountIcon}>🧾</Text>
+          <FontAwesome name="receipt" size={20} color="#00770d" />
           <Text style={styles.amountLabel}>Estimated Amount to be Paid</Text>
-          <Text style={styles.amountValue}>₹{minFare || "--"} - ₹{maxFare || "--"}</Text>
+          <Text style={styles.amountValue}>₹{estimatedFare || "--"}</Text>
         </View>
 
         <>
@@ -123,15 +196,24 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
         {/* Trip Details row with chevron */}
         <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
           <Text style={styles.tripDetailsLabel}>Trip Details</Text>
+          <View style={{flexDirection:"row",alignItems:"center",gap:10}}>
+          {
+            waitingForDriverApproval === "PENDING" &&
+            <View style={styles.driverWaitingApprovalContainer}>
+                <Text style={styles.driverWaitingApprovalText}>Waiting for driver approval</Text>
+                <AnimatedDots />
+            </View>
+          }
           <Animated.View style={{ transform: [{ rotate: chevronRotation }] }}>
             <Icon name="keyboard-arrow-right" size={25} color="#000" />
           </Animated.View>
+          </View>
         </TouchableOpacity>
 
         {
           expanded  && (
             <View style={{width: "100%", paddingHorizontal: 20}}>
-            <AddressContainer directions={stops} edit={true} />
+            <AddressContainer directions={stops} edit={true} live={true} />
           </View>
           )
         }
@@ -267,17 +349,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   amountBox: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: '#e3ffe6',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#A5D6A7',
+    borderColor: '#00770d',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     padding: 10,
     marginVertical: 8,
     marginHorizontal:20,
-    borderStyle:'dashed'
+    borderStyle:'dashed',
+    paddingLeft:20
   },
   amountIcon: {
     fontSize: 18,
@@ -288,12 +371,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     flex: 1,
     fontFamily:Fonts.regular,
+    paddingLeft:10
   },
   amountValue: {
     color: '#04713B',
     fontFamily:Fonts.medium,
     fontSize: 20,
-    marginLeft: 8,
+    paddingRight:10
+    
+   
   },
   rideInfoRow: {
     flexDirection: 'row',
@@ -308,6 +394,7 @@ const styles = StyleSheet.create({
     color: '#888',
     fontSize: 13,
     marginBottom: 2,
+    fontFamily:Fonts.regular
   },
   rideInfoValue: {
     fontFamily:Fonts.regular,
@@ -407,6 +494,37 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
   },
+  driverWaitingApprovalContainer:{
+   
+    alignItems:'center',
+    justifyContent:'center',
+    padding:10,
+    backgroundColor: colors.yellow_xxlight,
+borderRadius: 12,
+flexDirection:"row",
+
+gap:10
+
+
+},
+driverWaitingApprovalText:{
+    fontSize:12,
+    fontFamily:Fonts.medium,
+    color:colors.grey_xxdark
+},
+dotsContainer: {
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+  
+},
+dot: {
+  width: 8,
+  height: 8,
+  borderRadius: 4,
+  backgroundColor: colors.orange,
+  marginHorizontal: 4,
+},
 });
 
 export default OnRideScreen;

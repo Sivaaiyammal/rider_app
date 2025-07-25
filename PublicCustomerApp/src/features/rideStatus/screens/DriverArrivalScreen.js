@@ -17,7 +17,7 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
   const DriverArrivalScreen = ({onCancel}) => {
   // Dummy data
   const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone} = useAssignedDriverInfoStore();
-  const {stops,otp,minFare,maxFare,duration,totalDistance,estimatedPickuoMins,vehicleType} = useCurrentRideInfoStore();
+  const {stops,otp,duration,totalDistance,estimatedPickuoMins,vehicleType,estimatedFare} = useCurrentRideInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setMapStyle} = useMapStyleStore();
 
@@ -193,7 +193,7 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
         </View>
         <View style={styles.rideInfoItem}>
           <Text style={styles.rideInfoLabel}>Est. Price</Text>
-          <Text style={styles.rideInfoValue}>₹{minFare || '--'} - ₹{maxFare || '--'}</Text>
+          <Text style={styles.rideInfoValue}>₹{estimatedFare || '--'}</Text>
         </View>
       </View>
       </>

@@ -8,18 +8,30 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
 import  useCurrentRideInfoStore  from '../../features/rideStatus/store/useCurrentRideInfoStore';
 
-const getLocationIcon = (item,index,length) => {
-  switch (index) {
-    case 0:
-      return <Rocket height={15} width={15} />;
-    case length-1:
-      return <EndBlack height={15} width={15} />;
-    default:
-      return <Rocket />;
-  }
-};
+import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 
-const AddressContainer = ({ directions,edit=false }) => {
+const AddressContainer = ({ directions,edit=false ,live=false}) => {
+
+
+  const getLocationIcon = (item,index,length,isReached) => {
+
+    if(live && isReached){
+      return <View style={{width:20,height:20,backgroundColor:'#00920a',borderRadius:100,alignItems:'center',justifyContent:'center'}}>
+           <FontAwesome name="check" size={12} color={colors.white} />
+      </View>
+    }
+  
+    switch (index) {
+      case 0:
+        return <Rocket height={18} width={18} style={{color:isReached ? '#00920a': 'black'}}/>;
+      case length-1:
+        return <EndBlack height={20} width={20} color={colors.primary}/>;
+      default:
+        return <View style={{width:20,height:20,backgroundColor:'black',borderRadius:100,alignItems:'center',justifyContent:'center'}}>
+          <Text style={{color:'white',fontSize:12,fontFamily:Fonts.regular}}>{index}</Text>
+        </View>;
+    }
+  };
 
     const {setStackScreen} = useStackScreenStore()
     const {tripId} = useCurrentRideInfoStore()
@@ -33,10 +45,11 @@ const AddressContainer = ({ directions,edit=false }) => {
   
   return (
     <View style={styles.locationContainer}>
+      <View style={styles.line}></View>
       {directions.map((item, index) => {
         return (
           <View key={item.id} style={styles.locationNames}>
-            {getLocationIcon(item,index,directions.length)}
+            {getLocationIcon(item,index,directions.length,item.isReached)}
             <View style={styles.locationTxtContainer}>
               <Text style={{fontSize:14, color:'#212121',fontFamily:Fonts.regular}}>
                 {index == 0 ? 'Pickup' : index != directions.length-1 ? 'Stop' : 'Drop'}
@@ -97,6 +110,19 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     fontSize: 14,
     color: colors.black,
+  },
+  line:{
+    position:'absolute',
+    flex:1,
+    width:1,
+    borderLeftWidth:1,
+    borderLeftColor:'grey',
+    borderStyle:'dashed',
+    left:25,
+    right:0,
+    top:0,
+    bottom:0,
+    marginVertical:40
   }
 });
 

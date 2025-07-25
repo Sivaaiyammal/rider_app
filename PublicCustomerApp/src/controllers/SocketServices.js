@@ -33,6 +33,7 @@ class WSService {
       this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
       this.useAssignedDriverInfoStore.getState().setAllocatedDriverInfo(data?.driver);
       this.useCurrentRideInfoStore.getState().setOtp(data?.otp);
+      this.useCurrentRideInfoStore.getState().setEstimatedFare(data?.tripData?.estimatedFare);
       this.useStackScreenStore.getState().setStackScreen('RideStatus',{});
     }
   }
@@ -65,6 +66,10 @@ class WSService {
       }
 
       this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
+      console.log("data?.tripData?.stops",data?.tripData?.stops)
+      this.useCurrentRideInfoStore.getState().setStops(data?.tripData?.stops);
+      console.log("data?.tripData?.Sto",this.useCurrentRideInfoStore.getState().stops)
+      this.useCurrentRideInfoStore.getState().setEstimatedFare(data?.tripData?.estimatedFare);
       
     }
    

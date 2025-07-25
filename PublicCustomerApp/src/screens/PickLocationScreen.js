@@ -130,11 +130,11 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         onBackPress={() => goBack()}
       />
       <View style={[styles.container]}>
-        <View style={{ alignSelf: 'center', alignItems: 'center' }}>
+        <View style={[mapMoving && { marginBottom: 7 },{ alignSelf: 'center', alignItems: 'center' }]}>
           <Image source={PickIcon} style={styles.pickIcon} />
           <View style={styles.pickIconVerticalLine}></View>
         </View>
-        <View style={[styles.shadowContainer, mapMoving && { marginTop: 7 }]}>
+        <View style={[styles.shadowContainer]}>
           <View style={[styles.shadow]}>
           </View>
         </View>

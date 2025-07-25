@@ -75,7 +75,7 @@ const useWaypointDirectionLoad = () => {
       waypoint.longitude && 
       waypoint.type !== 'add-stop'
     );
-    return validWaypoints.length >= 2;
+    return validWaypoints.length >= 2 || (reachedStops.length >= 1 && validWaypoints.length >= 1);
   }, [reOrderWaypoints]);
 
   /**

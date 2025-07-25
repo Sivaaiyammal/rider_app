@@ -20,7 +20,7 @@ const FailedRideModal = ({
       animationType="fade"
       transparent={true}
       visible={visible}
-      onRequestClose={onCancel}
+     
     >
       <View style={styles.modalContainer}>
         <View style={styles.modalView}>
@@ -37,6 +37,15 @@ const FailedRideModal = ({
 
           {/* Buttons */}
           <View style={styles.buttonContainer}>
+            
+
+            <TouchableOpacity
+              style={[styles.button, styles.cancelButton]}
+              onPress={onCancel}
+            >
+              <Text style={styles.cancelButtonText}>Cancel Ride</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={[styles.button, styles.retryButton]}
               onPress={onRetry}
@@ -44,12 +53,7 @@ const FailedRideModal = ({
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.button, styles.cancelButton]}
-              onPress={onCancel}
-            >
-              <Text style={styles.cancelButtonText}>Back</Text>
-            </TouchableOpacity>
+          
           </View>
         </View>
       </View>
@@ -125,17 +129,17 @@ const styles = StyleSheet.create({
     borderColor: colors.black,
   },
   cancelButton: {
-    backgroundColor: colors.grey_light,
+    backgroundColor: '#ff6060',
   },
   retryButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontFamily: Fonts.semiBold,
+    fontFamily: Fonts.regular,
   },
   cancelButtonText: {
-    color: colors.black,
+    color: '#fff',
     fontSize: 16,
-    fontFamily: Fonts.semiBold,
+    fontFamily: Fonts.regular
   },
 });
 

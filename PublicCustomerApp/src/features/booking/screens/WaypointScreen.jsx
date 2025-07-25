@@ -105,9 +105,7 @@ const WaypointScreen = ({stopsFromOnGoingRide=null,tripId}) => {
     }
 
 
-    return () => {
-      setWaitingForDriverApproval(null)
-    }
+    
 
 
   }, []);
@@ -191,14 +189,7 @@ useEffect(() => {
   }
 
 
-  useEffect(()=>{
-    console.log("kjbejd")
-    if(waitingForDriverApproval === "APPROVED"){
-      
-      goBack();
-     
-    }
-  },[waitingForDriverApproval])
+  
 
 
 
@@ -315,6 +306,7 @@ useEffect(() => {
 
    if(res && res.success){
     setWaitingForDriverApproval('PENDING')
+    goBack();
    }
 
     

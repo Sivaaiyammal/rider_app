@@ -12,6 +12,7 @@ import {DataStore} from '../../controllers/DataStore';
 import {requestOTPMutation} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 
+
 const LoginScreen = () => {
   const navigation = useNavigation();
   const country = {
@@ -57,9 +58,12 @@ const LoginScreen = () => {
     </View>
   );
 
+ 
   const requestOTP = async () => {
+    
     const payload = {
       phone: `+${country.callingCode[0]}${phoneNumber}`,
+     
     };
     DataStore.storeData('login_phoneNumber', phoneNumber);
     requestOTPMutate(payload);
