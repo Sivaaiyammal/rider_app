@@ -24,9 +24,10 @@ import NavBar from '../../components/NavBar';
 import TripSummaryWaypoints from '../../components/Trips/TripSummaryWaypoints';
 import MapContainer from '../../features/map/components/MapContainer';
 
-const YourRideDetailsScreen = ({ route }) => {
+const YourRideDetailsScreen = ({ TripData }) => {
 
     // const rideDetails = route.params.ride
+    console.log(TripData,"TripData");
 
     const RideDetails = {
         bookedTime: 1726120926843,

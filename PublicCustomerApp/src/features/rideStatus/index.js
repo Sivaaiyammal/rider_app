@@ -19,45 +19,65 @@ import { useStackScreenStore } from '../../store/useStackScreenStore';
 import PaymentType from '../booking/components/bookRide/PaymentType';
 import { cancelRide } from '../../API/EndPoints/EndPoints';
 import { showNotification } from '../../components/NotificationManger';
-
-
+import { getTotalDistanceAndTime } from './services/getTotalDistanceandTime';
+import useRideMatching  from '../../hooks/useRideMatching';
+import  useUserInfoStore  from '../../store/useUserInfoStore';
 const RideStatus = () => {
-  const { tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo} = useCurrentRideInfoStore();
+  const { tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,stops,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration} = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const {reset,goBack} = useStackScreenStore();
   const [isPaymentMethodChangeShow,setIspaymentMethodChangeShow] = useState(false);
-
+  const {stopMatching} = useRideMatching();
+  const {id:userId} = useUserInfoStore();
   const handleCancel = async (reason) => {
-  
-    console.log("hbkdbkb")
-    const payload = {
-      tripId:tripId,
-      reason:reason
-    }
-    
-    const response = await cancelRide(payload);
-    if(response.success){
-      showNotification('Ride cancelled successfully');
-      setShowBottomSheet(false);
-      setShowBookingCancelModel(false);
-      if(tripStatus === TripStatus.PENDING){
-       
-        console.log("=====================?",tripStatus)
+    try {
+
+      if(tripStatus == TripStatus.PENDING){
+        stopMatching(tripId,userId)
         resetCurrentRideInfo();
         goBack();
-        
-      
-      }else{
-        console.log("=====================>",tripStatus)
-        resetCurrentRideInfo();
-        reset()
-        
-       
+        return
       }
-    } 
-   
-   
-  }
+
+        const payload = {
+          tripId,
+          reason,
+        };
+
+      // If the ride is ongoing, include total distance and time
+      if (tripStatus === TripStatus.PICKEDUP) {
+        const { totalDistance, totalDuration } = await getTotalDistanceAndTime(stops);
+        payload.totalDistance = totalDistance;
+        payload.totalDuration = totalDuration;
+      }
+
+      console.log("Cancel Payload:", payload);
+
+      const response = await cancelRide(payload);
+      console.log("Cancel Response:", JSON.stringify(response));
+
+      if (response.success) {
+        showNotification('Ride cancelled successfully');
+        setShowBottomSheet(false);
+        setShowBookingCancelModel(false);
+
+        if (tripStatus === TripStatus.PICKEDUP && response?.totalFare) {
+          setTripStatus(TripStatus.CANCELLED);
+          setFareDetails(response.totalFare);
+          setFinalDistance(response.totalFare?.distance);
+          setFinalDuration(response.totalFare?.duration);
+
+        } else {
+          console.log("Resetting after cancel, tripStatus:", tripStatus);
+          resetCurrentRideInfo();
+          reset();
+        }
+      }
+    } catch (error) {
+      console.error("Error cancelling ride:", error);
+      showNotification('Failed to cancel ride. Please try again.');
+    }
+  };
  
   const renderScreen = () => {
     console.log('tripStatus',tripStatus);
@@ -68,6 +88,9 @@ const RideStatus = () => {
         return <DriverArrivalScreen onCancel={()=>{setShowBottomSheet(true)}} />;
       case TripStatus.DROPPED:
         return <CompletedRideScreen />;
+      case TripStatus.CANCELLED:
+        return <CompletedRideScreen type={TripStatus.CANCELLED} />;
+     
       default:
         return <DriverSearchScreen  onCancel={handleCancel} />;
     }
@@ -102,6 +125,8 @@ const RideStatus = () => {
       return 'Driver Arrival';
     case TripStatus.DROPPED:
       return 'Ride Completed';
+    case TripStatus.CANCELLED:
+      return 'Ride Cancelled';
     default:
       return 'Finding Driver';
   }
@@ -121,7 +146,7 @@ const RideStatus = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-            <View style={[styles.container_inner,{backgroundColor:tripStatus === TripStatus.DROPPED ? '#13B15A' : '#0f223c'}]}>
+            <View style={[styles.container_inner,{backgroundColor:tripStatus === TripStatus.DROPPED ? '#13B15A' : tripStatus === TripStatus.CANCELLED ? '#ff5050' : '#0f223c'}]}>
                 {renderScreen()}
             </View>
         </View>

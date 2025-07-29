@@ -27,6 +27,8 @@ export const yourRidesStyles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingVertical: 10,
+        paddingHorizontal: 10,
+        paddingLeft: 20,
         borderBottomWidth: 1,
         borderBottomColor: colors.grey_xdark,
     },
@@ -34,6 +36,7 @@ export const yourRidesStyles = StyleSheet.create({
         width: '50%',
         display: 'flex',
         flexDirection: 'column',
+        justifyContent: 'space-between',
         gap: 5,
     },
     ridesContainerItemRight: {
@@ -75,7 +78,7 @@ export const yourRidesStyles = StyleSheet.create({
     },
     ridesContainerItemFare: {
         fontFamily: Fonts.semi_bold,
-        fontSize: 20,
+        fontSize: 24,
         color: colors.black,
         marginTop: 10,
     },

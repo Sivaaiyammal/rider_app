@@ -1,0 +1,213 @@
+import React from 'react';
+import { ScrollView, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
+import NavBar from '../../../components/NavBar';
+import FareHeader from '../components/FareHeader';
+import TripMetaInfo from '../components/TripMetaInfo';
+import TripPersonVehicle from '../components/TripPersonVehicle';
+import TripStats from '../components/TripStats';
+import PaymentDetails from '../components/PaymentDetails';
+import SupportSection from '../components/SupportSection';
+import AddressContainer from '../../../components/Trips/AddressContainer';
+import { Fonts, colors } from '../../../constants/constants';
+import { utils } from '../../../utils/Utils';
+
+const RideDetailScreen = ({ TripData }) => {
+  const { setStackScreen } = useStackScreenStore();
+  
+  console.log(JSON.stringify(TripData), "TripData");
+  
+  // Use the actual trip data
+  const rideData = TripData || {};
+
+  const handleBackPress = () => {
+    setStackScreen('MyRidesScreen');
+  };
+
+  const handleSupportPress = () => {
+    // Handle support button press
+    console.log('Support pressed');
+  };
+
+  const formatDate = (timestamp) => {
+    return utils.formatDateAndTime(timestamp);
+  };
+
+  // Transform stops data to match AddressContainer expected format
+  const transformStops = (stops) => {
+    if (!stops || !Array.isArray(stops)) return [];
+    
+    return stops.map((stop, index) => ({
+      id: index + 1,
+      address: stop.address,
+      locationName: stop.name,
+      location: stop.location,
+      isReached: stop.isReached,
+      waitingTime: stop.waitingTime
+    }));
+  };
+
+  // Extract fare breakdown from fareDetails
+  const getFareBreakdown = () => {
+    if (!rideData.fareDetails?.breakdown) return [];
+    
+    const breakdown = rideData.fareDetails.breakdown;
+    const fareBreakdown = [];
+    
+    // Add subtotal
+    if (breakdown.subtotal) {
+      fareBreakdown.push({
+        name: 'Trip Bill',
+        amount: breakdown.subtotal
+      });
+    }
+    
+    // Add fees
+    if (breakdown.fees?.breakdown) {
+      Object.entries(breakdown.fees.breakdown).forEach(([key, value]) => {
+        fareBreakdown.push({
+          name: key === 'platformFee' ? 'Platform Fee' : 
+                key === 'gst' ? 'GST' : 
+                key === 'convenienceFee' ? 'Convenience Fee' : key,
+          amount: value
+        });
+      });
+    }
+    
+    // Add taxes
+    if (breakdown.taxes?.breakdown) {
+      Object.entries(breakdown.taxes.breakdown).forEach(([key, value]) => {
+        fareBreakdown.push({
+          name: key,
+          amount: value
+        });
+      });
+    }
+    
+    // Add other adjustments
+    if (breakdown.surgeAdjustment) {
+      fareBreakdown.push({
+        name: 'Surge Adjustment',
+        amount: breakdown.surgeAdjustment
+      });
+    }
+    
+    if (breakdown.lowPerformancePenalty) {
+      fareBreakdown.push({
+        name: 'Performance Penalty',
+        amount: breakdown.lowPerformancePenalty
+      });
+    }
+    
+    return fareBreakdown;
+  };
+
+  return (
+    <View style={styles.container}>
+      <NavBar withBg onBackPress={handleBackPress} title="Ride Details" />
+      
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <FareHeader fare={rideData.fareDetails?.fare || rideData.estimatedFare || 0} />
+        
+        <TripMetaInfo 
+          date={formatDate(rideData.bookingTime)} 
+          tripId={rideData._id} 
+        />
+        
+        <AddressContainer directions={transformStops(rideData.stops)} />
+        
+        <TripPersonVehicle 
+          driverName={rideData.driverInfo?.driverName} 
+          driverPhoto={rideData.driverInfo?.driverPhoto} 
+          vehicleType={rideData.driverInfo?.vehicleType} 
+          vehicleBrand={rideData.driverInfo?.vehicleBrand} 
+          vehicleModel={rideData.driverInfo?.vehicleModel} 
+          vehicleNumber={rideData.driverInfo?.vehicleNumber} 
+        />
+        
+        <TripStats 
+          totalDistance={rideData.finalDistance || rideData.estimatedDistance} 
+          totalDuration={rideData.finalDuration || rideData.estimatedDuration} 
+          totalFare={rideData.fareDetails?.fare || rideData.estimatedFare} 
+        />
+        
+        <PaymentDetails 
+          finalFare={rideData.fareDetails?.fare || rideData.estimatedFare} 
+          breakdownFare={getFareBreakdown()}
+        />
+        
+        <View style={styles.paymentMethodContainer}>
+          <Text style={styles.paymentMethodLabel}>Payment Method</Text>
+          <Text style={styles.paymentMethodValue}>{rideData.paymentMethod}</Text>
+        </View>
+        
+        <View style={styles.paymentStatusContainer}>
+          <Text style={styles.paymentStatusLabel}>Payment Status</Text>
+          <Text style={[
+            styles.paymentStatusValue, 
+            { color: rideData.passengerPaymentStatus === 'completed' ? colors.green : colors.orange }
+          ]}>
+            {rideData.passengerPaymentStatus?.toUpperCase() || 'PENDING'}
+          </Text>
+        </View>
+        
+        <SupportSection onPress={handleSupportPress} />
+      </ScrollView>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  paymentMethodContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    padding: 16,
+    marginVertical: 10,
+    shadowColor: colors.black,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  paymentMethodLabel: {
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: colors.black,
+    marginBottom: 8,
+  },
+  paymentMethodValue: {
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+    color: colors.green,
+  },
+  paymentStatusContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    padding: 16,
+    marginVertical: 10,
+    shadowColor: colors.black,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  paymentStatusLabel: {
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: colors.black,
+    marginBottom: 8,
+  },
+  paymentStatusValue: {
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
+
+export default RideDetailScreen;

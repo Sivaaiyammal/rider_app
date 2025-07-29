@@ -116,10 +116,29 @@ class RideMatchingSocketService {
     }
   }
 
+
+  cancelRide(tripId,passengerId){
+    if (this.socket && this.socket.connected) {
+      console.log("🚕 Cancelling ride:", tripId);
+      this.socket.emit('cancel_ride_match', {
+        trip_id: tripId,
+        passenger_id: passengerId,
+      });
+  }
+  }
+
   // Listen for matching updates
   onMatchingUpdate(callback) {
     if (this.socket) {
       this.socket.on('matching_update', callback);
+    } else {
+      console.error('❌ Ride matching socket not connected!');
+    }
+  }
+
+  onCancelRideMatch(callback) {
+    if (this.socket) {
+      this.socket.on('cancel_ride_match', callback);
     } else {
       console.error('❌ Ride matching socket not connected!');
     }

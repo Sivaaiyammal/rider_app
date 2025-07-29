@@ -22,6 +22,7 @@ const SearchLoader = ({ onCancel }) => {
     driverName, 
     driverLocation, 
     startMatching,
+    stopMatching,
     status
   } = useRideMatching();
   const { setMapMarkers, setMapLocation } = useMapStore();

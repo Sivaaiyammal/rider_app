@@ -24,6 +24,8 @@ import TripFeedbackScreen from '../features/rating/screens/TripFeedbackScreen';
 import useLocationStore from '../store/useLocationStore';
 import { DataStore } from '../controllers/DataStore';
 import useMapStore from '../store/useMapStore';
+import MyRidesScreen from '../features/rideHistory/screens/MyRidesScreen';
+import RideDetailScreen from '../features/rideHistory/screens/RideDetailScreen';
 const Home = () => {
   const {location} = useLocationStore();
   const { stackScreen } = useStackScreenStore();
@@ -163,6 +165,10 @@ const Home = () => {
         return <PaymentScreen {...params} />;
       case 'TripFeedbackScreen':
         return <TripFeedbackScreen {...params} />;
+      case 'MyRidesScreen':
+        return <MyRidesScreen {...params} />;
+      case 'RideDetailScreen':
+        return <RideDetailScreen {...params} />;
       default:
         return null;
     }

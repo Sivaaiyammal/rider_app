@@ -8,7 +8,11 @@ import RideStatusHeader from '../components/RideStatusHeader';
 import { makePayment } from '../services/Paymentservice';
 import { updatePaymentInServer } from '../../../API/EndPoints/EndPoints';
 import { showNotification } from '../../../components/NotificationManger';
-const RideCompletedScreen = () => {
+import { TripStatus } from '../types/TripStatus';
+import DroppedTickIcon from '../../../assets/icons/DroppedTickIcon.svg';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
+const RideCompletedScreen = ({type}) => {
   const { setStackScreen } = useStackScreenStore();
   const { finalFare, finalDuration, finalDistance ,paymentMethod,tripId} = useCurrentRideInfoStore();
   
@@ -70,17 +74,18 @@ const RideCompletedScreen = () => {
   return (
    <>
       
-      <View style={[styles.containerTop,{backgroundColor:'#13B15A'}]}>
+      <View style={[styles.containerTop,{backgroundColor:type == TripStatus.CANCELLED  ? '#ff5050' : '#13B15A'}]}>
        
-        <Text style={styles.topBarText}>Your ride is completed</Text>
+        <Text style={styles.topBarText}>{type === TripStatus.CANCELLED ? 'Ride Stopped' : 'Ride Cancelled'}</Text>
             </View>
         
         
     
       <View style={styles.root}>
         <RideStatusHeader 
-          title="Your ride is completed."
-          subtitle="Please proceed with the payment"
+          type={type}
+          title={type !== TripStatus.CANCELLED ? 'Your ride is completed.' : 'Your ride is cancelled inbetween ride'}
+          subtitle={type !== TripStatus.CANCELLED ? 'Please proceed with the payment' : 'Kindly pay the fare for the distance travelled'}
         />
         <Text style={styles.fare}>₹ {fare}</Text>
         <Text style={styles.info}>{utils.formatMinutesToReadable(duration)}  .  {distance} Km</Text>
@@ -100,10 +105,10 @@ const RideCompletedScreen = () => {
           </Animated.View>
         )}
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.outlineBtn} onPress={handleMoreDetails}>
-            <Text style={styles.outlineBtnText}>MORE DETAILS</Text>
+          <TouchableOpacity style={[styles.outlineBtn,{borderColor:type == TripStatus.CANCELLED ? 'black' : '#13B15A'}]} onPress={handleMoreDetails}>
+            <Text style={[styles.outlineBtnText,{color:type == TripStatus.CANCELLED ? 'black' : '#13B15A'}]}>MORE DETAILS</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.filledBtn} onPress={handlePayNow}>
+          <TouchableOpacity style={[styles.filledBtn,{backgroundColor:type == TripStatus.CANCELLED ? 'black' : '#13B15A'}]} onPress={handlePayNow}>
             <Text style={styles.filledBtnText}>{paymentMethod == 'CASH' ? 'PAY  THROUGH  UPI' : 'PAY NOW'}</Text>
           </TouchableOpacity>
         </View>

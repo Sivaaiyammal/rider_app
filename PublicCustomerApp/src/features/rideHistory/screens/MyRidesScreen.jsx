@@ -1,30 +1,34 @@
-import { Dimensions, ScrollView, Text, Image, TextInput, TouchableOpacity, View, ActivityIndicator, FlatList } from 'react-native';
-import React, { useRef, useState, useCallback, useEffect } from 'react';
+import { Dimensions, Text, Image, TextInput, TouchableOpacity, View, ActivityIndicator, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
 const { width: windowWidth } = Dimensions.get('window');
 
 import { RecyclerListView, DataProvider, LayoutProvider } from 'recyclerlistview';
-import { yourRidesStyles } from '../../styles/YourRidesStyles';
+import { yourRidesStyles } from '../../../styles/YourRidesStyles';
 import { CommonActions, useNavigation } from '@react-navigation/native';
-import { showNotification } from '../../components/NotificationManger';
-import { useGetQuery } from '../../hooks/useQuery';
-import useUserInfoStore from '../../store/useUserInfoStore';
-import { utils } from '../../utils/Utils';
+import { showNotification } from '../../../components/NotificationManger';
+// Remove useQuery import
+// import { useGetQuery } from '../../../hooks/useQuery';
+import useUserInfoStore from '../../../store/useUserInfoStore';
+import { utils } from '../../../utils/Utils';
+// Add the API endpoint import
+import { getCustomerTrips } from '../../../API/EndPoints/EndPoints';
 
-import NavBar from '../../components/NavBar';
-import ToggleHeader from '../../components/ToggleHeader';
-import DurationFilter from '../../components/DurationFilter';
+import NavBar from '../../../components/NavBar';
+import ToggleHeader from '../../../components/ToggleHeader';
+import DurationFilter from '../../../components/DurationFilter';
 
-import NoTripsFound from '../../components/NoTripsFound';
+import NoTripsFound from '../../../components/NoTripsFound';
 
-import ProfileImage from '../../assets/image/account/Profile.webp';
-
+import ProfileImage from '../../../assets/image/account/Profile.webp';
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
+import TripPersonVehicle from '../components/TripPersonVehicle';
 const YourRidesScreen = () => {
     const navigation = useNavigation();
+    const { setStackScreen } = useStackScreenStore();
 
-    const { userdetails, setUserdetails } = useUserInfoStore();
+    const { userdetails , setUserdetails} = useUserInfoStore();
 
     const [UserId, setUserId] = useState('');
-
 
     const [Rides, setRides] = useState([
         {
@@ -40,15 +44,11 @@ const YourRidesScreen = () => {
             startLocation: {
                 address: 'Kolkata'
             },
-
             endLocation: {
                 address: 'Kolkata'
             },
-            
         },
     ]);
-
-
 
     const [FilterTripType, setFilterTripType] = useState('');
     const [FilterStart, setFilterStart] = useState('');
@@ -69,63 +69,71 @@ const YourRidesScreen = () => {
             title: 'Upcoming Rides',
         }
     ])
+
     const HandleBackBtn = () => {
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'HomeScreen' }],
-            }),
-        );
+           setStackScreen('Home');
     }
 
-    const onGetRidesSuccess = async (data) => {
-        console.log('data', data);
-        setIsRefreshing(false);
-        if (data.success) {
-
-            let { trips, pagination } = data
-            if (isLoadMore) setRides([...Rides])
-            else setRides(trips)
-
-            setFilterMaxPages(pagination?.totalPages)
-
-        } else {
-            showNotification('Failed to get rides', data.message, 'danger');
-        }
-
-        setIsLoadMore(false);
-    }
-
-    const onGetRidesError = (data) => {
-        setIsRefreshing(false);
-        if (!data.success) showNotification('Failed to get rides', data.message, 'danger');
-
-    }
-
-    const { mutate: GetRidesMutate, isSuccess } = useGetQuery({
-        onSuccess: onGetRidesSuccess,
-        onError: onGetRidesError
-    });
-
+    // Replace useQuery with normal API call
     const LoadRides = async () => {
         console.log('LoadRides');
 
-        let payload = {
-            status: FilterTripType || 'COMPLETED',
+        try {
+            let payload = {
+                tripStatus: FilterTripType || 'COMPLETED',
+                page: FilterPage,
+                limit: FilterLimit
+            }
+            
+            // Only add date filters if they are provided
+            if (FilterStart && FilterEnd) {
+                // Convert ISO strings to milliseconds if they're not already timestamps
+                let startTime, endTime;
+                
+                if (typeof FilterStart === 'string') {
+                    // If it's an ISO string, convert to milliseconds
+                    startTime = new Date(FilterStart).getTime();
+                } else {
+                    // If it's already a timestamp, use as is
+                    startTime = FilterStart;
+                }
+                
+                if (typeof FilterEnd === 'string') {
+                    // If it's an ISO string, convert to milliseconds
+                    endTime = new Date(FilterEnd).getTime();
+                } else {
+                    // If it's already a timestamp, use as is
+                    endTime = FilterEnd;
+                }
+                
+                payload.startTime = startTime;
+                payload.endTime = endTime;
+            }
+
+            console.log('API Payload:', payload);
+            setIsRefreshing(true);
+            
+            const data = await getCustomerTrips(payload);
+            console.log('data', data);
+            
+            if (data.success) {
+                let { trips, pagination } = data
+                if (isLoadMore) {
+                    setRides([...Rides, ...trips])
+                } else {
+                    setRides(trips)
+                }
+                setFilterMaxPages(pagination?.totalPages)
+            } else {
+                showNotification('Failed to get rides', data.message, 'danger');
+            }
+        } catch (error) {
+            console.error('Error loading rides:', error);
+            showNotification('Failed to get rides', 'Network error occurred', 'danger');
+        } finally {
+            setIsRefreshing(false);
+            setIsLoadMore(false);
         }
-        const today = new Date();
-        const startOfDay = today.setHours(0, 0, 0, 0);
-        const endOfDay = today.setHours(23, 59, 59, 999);
-        payload.startTime = startOfDay;
-        payload.endTime = endOfDay;
-
-        setIsRefreshing(true);
-        await GetRidesMutate({
-            queryKey: 'GetRidesQuery',
-            url: '/publicrides/customer/getTrips',
-            query: payload
-        })
-
     }
 
     const ToggleHeaderCallback = (id) => {
@@ -133,21 +141,18 @@ const YourRidesScreen = () => {
     }
 
     const DurationFilterCallback = (id, start, end) => {
+        console.log('DurationFilterCallback:', id, start, end);
         setFilterStart(start);
         setFilterEnd(end);
     }
 
     const HandleRideOpen = (ride) => {
-        navigation.dispatch(
-            CommonActions.navigate({
-                name: 'YourRideDetailsScreen',
-                params: { ride: ride }
-            }),
-        );
+        // Navigate to RideDetailScreen with ride data
+       
+        setStackScreen('RideDetailScreen', { TripData: ride });     
     }
 
     const RenderTrip = ({ ride, index }) => {
-
         return (
             <TouchableOpacity
                 key={`your-ride-${index}`}
@@ -157,29 +162,24 @@ const YourRidesScreen = () => {
                 <View
                     style={yourRidesStyles.ridesContainerItemLeft}
                 >
+                    <View>
                     <Text style={yourRidesStyles.ridesContainerItemTitle}>{utils.formateDateLabel(ride.bookingTime)}</Text>
-                    <Text style={yourRidesStyles.ridesContainerItemDesc}>{ride?.endLocation?.address || '--'}</Text>
-                    <Text style={yourRidesStyles.ridesContainerItemFare}>₹{ride.fare || '00'}</Text>
+                    <Text style={yourRidesStyles.ridesContainerItemDesc}>{ride?.stops[ride?.stops?.length - 1]?.address || '--'}</Text>
+                    </View>
+                    <Text style={yourRidesStyles.ridesContainerItemFare}>₹{ride?.fareDetails?.fare || '00'}</Text>
                 </View>
                 <View
                     style={yourRidesStyles.ridesContainerItemRight}
                 >
-                    <View
-                        style={yourRidesStyles.ridesContainerItemImgs}
-                    >
-                        <Image
-                            source={utils.getVehicleTypeImage(ride.vehicleType)}
-                            style={yourRidesStyles.ridesContainerItemVehicleImg}
-                        />
-                        <Image
-                            source={ride.driver_profile || ProfileImage}
-                            style={yourRidesStyles.ridesContainerItemDriverImg}
-                        />
-                    </View>
-                    <View style={yourRidesStyles.ridesContainerItemRight}>
-                        <Text style={[{ textAlign: 'right' }, yourRidesStyles.ridesContainerItemTitle]}>{ride.driver_name || '-'}</Text>
-                        <Text style={[{ textAlign: 'right' }, yourRidesStyles.ridesContainerItemDesc]}>{utils.getVehicleTypeLabel(ride.vehicleType)}</Text>
-                    </View>
+                    <TripPersonVehicle 
+                        usedScreen={'MyRides'}
+                        driverName={ride?.driverInfo?.driverName} 
+                        driverPhoto={ride?.driverInfo?.driverPhoto} 
+                        vehicleType={ride?.driverInfo?.vehicleType} 
+                        vehicleBrand={ride?.driverInfo?.vehicleBrand} 
+                        vehicleModel={ride?.driverInfo?.vehicleModel} 
+                        vehicleNumber={ride?.driverInfo?.vehicleNumber} 
+                    />
                 </View>
             </TouchableOpacity>
         )
@@ -189,6 +189,7 @@ const YourRidesScreen = () => {
         setFilterPage(1);
         LoadRides();
     }
+
     const HandleLoadMore = () => {
         if (isRefreshing || FilterMaxPages < FilterPage) return;
         setIsLoadMore(true);
@@ -199,6 +200,7 @@ const YourRidesScreen = () => {
     const dataProvider = React.useMemo(() => {
         return new DataProvider((r1, r2) => r1 !== r2).cloneWithRows(Rides);
     }, [Rides]);
+
     const layoutProvider = React.useMemo(() => {
         return new LayoutProvider(
             index => 1,
@@ -223,10 +225,8 @@ const YourRidesScreen = () => {
     }, [])
 
     useEffect(() => {
-        if (FilterTripType || (FilterStart && FilterEnd)) {
-            LoadRides();
-        }
-
+        // Load rides when filters change
+        LoadRides();
     }, [FilterTripType, FilterStart, FilterEnd])
 
     return (
@@ -271,20 +271,8 @@ const YourRidesScreen = () => {
                                     showsVerticalScrollIndicator: false
                                 }}
                             />
-
-                    // <FlatList
-                    //     data={Rides}
-                    //     renderItem={({ item, index }) => { return <RenderTrip ride={item} index={index} /> }}
-                    //     keyExtractor={(item, idx) => `your-ride-${idx}`}
-                    //     refreshing={isRefreshing}
-                    //     onRefresh={HandleRefresh}
-                    //     onEndReached={HandleLoadMore}
-                    //     onEndReachedThreshold={0.5}
-                    //     ListFooterComponent={RenderFlooter}
-                    // />
                 }
             </View>
-
         </View>
     )
 }

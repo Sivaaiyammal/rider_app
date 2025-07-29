@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
 import { getVehicleImage } from '../../rideStatus/types/vehicleImd';
 import { Fonts, colors } from '../../../constants/constants';
+import { VEHICLE_LABELS } from '../../../constants/VehicleLabels';
 
 const TripPersonVehicle = ({
   driverName,
@@ -11,16 +12,18 @@ const TripPersonVehicle = ({
   vehicleModel,
   vehicleNumber,
   layoutStyle,
-  descriptonSize=15
+  descriptonSize=15,
+  usedScreen=null
 }) => (
   <View style={[styles.container,layoutStyle=="row"&&{flexDirection:"row",gap:15}]}>
     <View style={styles.imagesRow}>
       {getVehicleImage(vehicleType, styles.vehicleImg)}
-      <Image source={{uri:driverPhoto}} style={styles.profileImg} />
+      <Image source={{uri:driverPhoto}} style={[styles.profileImg,usedScreen=="MyRides"&&{width:60,height:60}]} />
     </View>
-    <View style={layoutStyle=="row"&&{alignItems:"flex-start"}}>
-    <Text style={styles.driverName}>{ driverName}</Text>
-    <Text style={[styles.vehicleDesc,{fontSize:descriptonSize}]}>{vehicleBrand} {vehicleModel} . {vehicleNumber}</Text>
+    <View style={[layoutStyle=="row"&&{alignItems:"flex-start"},usedScreen=="MyRides"&&{alignItems:"flex-end"}]}>
+    <Text style={[styles.driverName,usedScreen=="MyRides"&&{fontSize:15,fontFamily:Fonts.regular}]}>{ driverName}</Text>
+    {usedScreen !=="MyRides"&&<Text style={[styles.vehicleDesc,{fontSize:descriptonSize}]}>{vehicleBrand} {vehicleModel} . {vehicleNumber}</Text>}
+    {usedScreen ==="MyRides"&&<Text style={[styles.vehicleDesc,{fontSize:descriptonSize}]}>{VEHICLE_LABELS[vehicleType]}</Text>}
     </View>
   </View>
 );

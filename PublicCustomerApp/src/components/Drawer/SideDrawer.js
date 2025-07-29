@@ -9,6 +9,7 @@ import {
   Easing,
 } from 'react-native';
 import { drawerStyles } from '../../styles/DrawerStyles';
+import { useStackScreenStore } from '../../store/useStackScreenStore';  
 
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -19,6 +20,7 @@ import useUserInfoStore from '../../store/useUserInfoStore';
 
 const SideDrawerV2 = ({ handleMenu }) => {
   const { userdetails } = useUserInfoStore();
+  const { setStackScreen } = useStackScreenStore();
 
   const navigation = useNavigation();
   const slideAnim = useRef(new Animated.Value(-300)).current;
@@ -70,7 +72,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
     {
       id: 'your-rides',
       name: 'My Rides',
-      screen: 'YourRidesScreen',
+      screen: 'MyRidesScreen',
       icon: <Ionicons name="car" size={24} color="#1e3a8a" />,
     },
     {
@@ -125,14 +127,19 @@ const SideDrawerV2 = ({ handleMenu }) => {
 
   const HandleOpenDrawerMenu = (menu) => {
     if (menu.screen) {
-      navigation.dispatch(
-        CommonActions.navigate({
-          name: menu.screen
-        }),
-      );
+      if(menu.screen === 'MyRidesScreen'){
+        setStackScreen('MyRidesScreen');
+      }
+        else{
+        navigation.dispatch(
+          CommonActions.navigate({
+            name: menu.screen
+          }),
+        );
     }
     closeDrawer();
   }
+}
 
   return (
     <Animated.View style={[drawerStyles.container, {opacity: fadeAnim}]}>

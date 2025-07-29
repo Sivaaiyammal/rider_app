@@ -53,6 +53,10 @@ const useRideMatching = () => {
           console.log('📡 Received matching update:', matchingData);
           setRideMatchStatus(matchingData);
         });
+        rideMatchingSocketService.onCancelRideMatch((matchingData) => {
+          console.log('📡 Received matching update:', matchingData);
+          setRideMatchStatus(matchingData);
+        });
 
         return true;
       } else {
@@ -114,9 +118,10 @@ const useRideMatching = () => {
   /**
    * Stop ride matching process
    */
-  const stopMatching = useCallback(() => {
+  const stopMatching = useCallback((tripId,passengerId) => {
     console.log('🛑 Stopping ride matching');
     matchingActiveRef.current = false;
+    rideMatchingSocketService.cancelRide(tripId,passengerId);
     
     setRideMatchStatus({
       status: 'cancelled',

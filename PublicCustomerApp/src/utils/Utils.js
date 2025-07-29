@@ -1,6 +1,7 @@
 import { Dimensions } from 'react-native';
 import moment from 'moment';
 import 'moment-timezone';
+import locationTask from '../controllers/GetCurrentLocation';
 
 const currentTimezone = moment.tz.guess();
 
@@ -416,5 +417,22 @@ export const utils = {
     const minLon = Math.min(...coordinates.map(coord => coord[0]))
     const maxLon = Math.max(...coordinates.map(coord => coord[0]))
     return [minLon, minLat, maxLon, maxLat]
-  }
+  },
+
+  /**
+   * Get current user location
+   * @returns {Promise<Array>} - Returns [longitude, latitude] or null if error
+   */
+  getCurrentUserLocation: async () => {
+    try {
+      const position = await locationTask.getCurrentLocation();
+      if (position && position.coords) {
+        return [position.coords.longitude, position.coords.latitude];
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting current location:', error);
+      return null;
+    }
+  },
 };
