@@ -6,6 +6,7 @@ import OverlapImage from '../../assets/image/account/mask_group.jpg';
 
 import { Colors } from 'react-native/Libraries/NewAppScreen'
 import { styles } from '../../styles/Account/account'
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 
 const MyAccountHeader = (props) => {
@@ -21,9 +22,9 @@ const MyAccountHeader = (props) => {
         >
             <View style={[styles.tripHeaderContainer]}>
                 <TouchableOpacity onPress={() => onBackClick()}>
-                    <View style={styles.tripHeaderBackBtn}>
-                        <Text style={{ fontSize: 24, color: Colors.black }} >{"<"}</Text>
-                    </View>
+                   
+                        <Ionicons name="chevron-back" size={24} color="black" />
+                    
                 </TouchableOpacity>
                 <Text style={styles.tripHeaderText} >{title}</Text>
                 <TouchableOpacity>

@@ -1,17 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Linking } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { CommonActions } from '@react-navigation/native';
-import NavBar from '../components/NavBar';
+import NavBar from '../../../components/NavBar';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { colors } from '../constants/constants';
-import ContactPageImage from '../assets/image/common/contactPageImage.svg';
+import { colors } from '../../../constants/constants';
+import ContactPageImage from '../../../assets/image/common/contactPageImage.svg';
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
 
 const ContactScreen = () => {
-  const navigation = useNavigation();
+  const {goBack} = useStackScreenStore();
   
   const contactData = {
-    logo: require('../assets/image/common/contactPageImage.svg'),
+    logo: require('../../../assets/image/common/contactPageImage.svg'),
     phone: '+1 234 567 8900',
     email: 'hr@virtualmaze.com',
     socialLinks: {
@@ -23,12 +22,7 @@ const ContactScreen = () => {
   };
 
   const HandleBackBtn = () => {
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'HomeScreen' }],
-      }),
-    );
+    goBack();
   };
 
   const openLink = (url) => {
@@ -41,7 +35,7 @@ const ContactScreen = () => {
 
   return (
     <>
-      <NavBar withBg onBackPress={HandleBackBtn} title={'Contact Us'} />
+      <NavBar withBg={true} onBackPress={HandleBackBtn} title={'Contact Us'} />
       <View style={styles.container}>
         
         {/* Logo Section */}

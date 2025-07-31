@@ -2,8 +2,11 @@ import io from 'socket.io-client';
 import Config from '../Config/APIConfig';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
+import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore';
 import useAssignedDriverInfoStore from '../features/rideStatus/store/useAssignedDriverInfoStore';
 import useWayPointReorderStore from '../features/booking/store/useWayPointReorderStore';
+import { TripStatus } from '../features/rideStatus/types/TripStatus';
+
 const SOCKET_URL = Config.ROOT_API_URL;
 
 
@@ -24,6 +27,7 @@ class WSService {
     this.useStackScreenStore = useStackScreenStore
     this.useCurrentRideInfoStore = useCurrentRideInfoStore
     this.useAssignedDriverInfoStore = useAssignedDriverInfoStore
+    this.useRideMatchStore = useRideMatchStore  
   }
 
   driverAllocated(data){
@@ -45,10 +49,23 @@ class WSService {
         try {
           console.log('CANCELLED');
           console.log(data?.tripStatus);
-          this.useStackScreenStore.getState().setStackScreen('RideStatus',{});
-          this.useCurrentRideInfoStore.getState().setOtp(null);
-          this.useAssignedDriverInfoStore.getState().setDriverInfo(null);
-          this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
+          if(data?.isOnGoingTrip && data?.fareDetails){
+            this.useStackScreenStore.getState().setStackScreen('RideStatus',{});
+            this.useCurrentRideInfoStore.getState().setFareDetails(data?.tripFare);
+            this.useCurrentRideInfoStore.getState().setFinalDistance(data?.tripFare?.distance);
+            this.useCurrentRideInfoStore.getState().setFinalDuration(data?.tripFare?.duration);
+            this.useCurrentRideInfoStore.getState().setOngoingingTripCancelled(true);
+          }else{
+            this.useStackScreenStore.getState().setStackScreen('RideStatus',{});
+            this.useCurrentRideInfoStore.getState().setOtp(null);
+            this.useAssignedDriverInfoStore.getState().setDriverInfo(null);
+            this.useCurrentRideInfoStore.getState().setTripStatus(null);
+            this.useCurrentRideInfoStore.getState().setOngoingingTripCancelled(false);
+            this.useRideMatchStore.getState().resetRideMatchStatus();
+            this.useStackScreenStore.getState().goBack();
+            
+          }
+          
         } catch (error) {
           console.error('Error handling ride cancellation:', error);
         }
@@ -66,10 +83,12 @@ class WSService {
       }
 
       this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
-      console.log("data?.tripData?.stops",data?.tripData?.stops)
-      this.useCurrentRideInfoStore.getState().setStops(data?.tripData?.stops);
-      console.log("data?.tripData?.Sto",this.useCurrentRideInfoStore.getState().stops)
-      this.useCurrentRideInfoStore.getState().setEstimatedFare(data?.tripData?.estimatedFare);
+      if(data?.tripData?.stops){
+        console.log("data?.tripData?.Sto",this.useCurrentRideInfoStore.getState().stops)
+      }
+      if(data?.tripData?.estimatedFare){
+        this.useCurrentRideInfoStore.getState().setEstimatedFare(data?.tripData?.estimatedFare);
+      }
       
     }
    

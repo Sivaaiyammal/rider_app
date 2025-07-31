@@ -4,8 +4,14 @@ export const useStackScreenStore = create((set, get) => ({
   stackScreen: [{ name: 'Home', params: null }],
   
   setStackScreen: (screenName, params = null) => {
-    const newStack = [...get().stackScreen, { name: screenName, params }];
-    set({stackScreen: newStack});
+    const currentStack = get().stackScreen;
+    const currentScreenName = currentStack[currentStack.length - 1].name;
+    
+    // Only add to stack if the screen name is different from current screen
+    if (currentScreenName !== screenName) {
+      const newStack = [...currentStack, { name: screenName, params }];
+      set({stackScreen: newStack});
+    }
   },
 
 

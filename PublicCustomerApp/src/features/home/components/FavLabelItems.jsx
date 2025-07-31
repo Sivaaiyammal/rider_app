@@ -3,53 +3,53 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Fonts } from '../../../constants/constants';
 import HomeIcon from '../../../assets/icons/HomeIcon.svg';
 import WorkIcon from '../../../assets/icons/WorkIcon.svg';
+import FavIcon from '../../../assets/icons/FavIcon.svg';
 import {  utils, width } from '../../../utils/Utils';
+import useUserInfoStore from '../../../store/useUserInfoStore';
+import {useStackScreenStore} from '../../../store/useStackScreenStore';
+import AddFavIcon from '../../../assets/icons/AddFavIcon.svg';
 
 
-const FavLabelItems = ({ 
-    homeLocation,
-    workLocation,
-    LocationPress,
-  
-}) => {
+const FavLabelItems = ({onLabelPress}) => {
   const responsiveMaxWidth = width * 0.8;
+  const {userFavPlaces} = useUserInfoStore();
+  const {setStackScreen} = useStackScreenStore();
 
+  const handleAddFavPlacePress = () => {
+    setStackScreen('SavedPlacesScreen',{
+      
+    });
+  }
+
+  
 
   
   return (
+    <View style={styles.FavouriteAddressContainer}>  
+      {userFavPlaces?.map((item,index)=>(
+        <TouchableOpacity key={index} style={styles.FavouriteAddressItem} onPress={()=>onLabelPress(item.label,item.locationData)}>
+          <View style={styles.FavouriteAddressItemIcon}>
+            {item.label.toLowerCase() === 'home' ? <HomeIcon width={50} height={50} /> : item.label.toLowerCase() === 'work' ? <WorkIcon width={50} height={50} /> : <View style={{paddingHorizontal:2}}><FavIcon width={45} height={45} /></View>  }
+          </View>
+         <View key={index} style={styles.FavouriteAddressItemTextContainer}>
+         <Text style={styles.FavouriteAddressItemText}>{item.label}</Text>
+         <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth }]}>{utils.formatAddressName(item.locationData)}</Text>
+     </View>
+     </TouchableOpacity>
+      ))}
 
+        <TouchableOpacity  style={styles.FavouriteAddressItem} onPress={()=>handleAddFavPlacePress()}>
+          <View style={[styles.FavouriteAddressItemIcon, {paddingHorizontal:2}]}>
+            { <AddFavIcon width={45} height={45}  />}
+          </View>
+         <View style={styles.FavouriteAddressItemTextContainer}>
+         <Text style={styles.FavouriteAddressItemText}>Add Favorite Places</Text>
+         {/* <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth }]}>{utils.formatAddressName(item.locationData)}</Text> */}
+     </View>
+     </TouchableOpacity>
+    </View>
 
-    <View style={[styles.FavouriteAddressContainer,homeLocation || workLocation ? {} : styles.noLocation]}>
-          <TouchableOpacity style={[styles.FavouriteAddressItem,homeLocation || workLocation ? {} : styles.noLocationItem]} onPress={() => LocationPress('Home',homeLocation)}>
-              <View style={styles.FavouriteAddressItemIcon}>
-                  <HomeIcon width={50} height={50} />
-              </View>
-              {homeLocation ? 
-              <View style={styles.FavouriteAddressItemTextContainer}>
-                  <Text style={styles.FavouriteAddressItemText}>Home</Text>
-                  <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth }]}>{utils.formatAddressName(homeLocation)}</Text>
-              </View> : <View style={styles.addLocation}>
-               
-                <Text style={[styles.addLocationText, {color: "#37f"}]}>Add Home</Text>
-            
-              </View>
-              }
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.FavouriteAddressItem,workLocation || homeLocation ? {} : styles.noLocationItem]} onPress={() => LocationPress('Work',workLocation)}>
-              <View style={styles.FavouriteAddressItemIcon}>
-                  <WorkIcon width={50} height={50} />
-              </View>
-              {workLocation ? 
-              <View style={styles.FavouriteAddressItemTextContainer}>
-                  <Text style={styles.FavouriteAddressItemText}>Work</Text>
-                  <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth }]}>{utils.formatAddressName(workLocation)}</Text>
-              </View> : <View style={styles.addLocation}>
-             
-                <Text style={[styles.addLocationText, {color: "#0cb400"}]}>Add Work </Text>
-            
-              </View>}
-          </TouchableOpacity>
-    </View> 
+    
 
 
   );
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 20,
-        paddingHorizontal: 16,
+       
         paddingVertical: 0,
         borderRadius: 16,
        
@@ -78,6 +78,7 @@ const styles = StyleSheet.create({
       FavouriteAddressContainer:{
         gap: 20,
         marginTop: 20,
+        paddingHorizontal: 16,
       
       },
 
@@ -105,11 +106,12 @@ const styles = StyleSheet.create({
         fontSize: 16,
         textAlign: 'left',
         color: '#212121',
+        textTransform: 'capitalize',
         
       },
       FavouriteAddressItemSubText: {
         fontFamily: Fonts.regular,
-        fontSize: 14,
+        fontSize: 13,
         color: '#757575',
         textAlign: 'left',
       },

@@ -10,11 +10,16 @@ import BIKE from "../../../../assets/vehicle/BIKE.webp"
 import HATCHBACK from "../../../../assets/vehicle/HATCHBACK.webp"
 import SEDAN from "../../../../assets/vehicle/SEDAN.webp"
 import SUV from "../../../../assets/vehicle/SUV.webp"
+import ELECTRIC_AUTO from "../../../../assets/vehicle/AUTO.webp"
+import ELECTRIC_BIKE from "../../../../assets/vehicle/BIKE.webp"
+import ELECTRIC_HATCHBACK from "../../../../assets/vehicle/HATCHBACK.webp"
+import ELECTRIC_SEDAN from "../../../../assets/vehicle/SEDAN.webp"
+import ELECTRIC_SUV from "../../../../assets/vehicle/SUV.webp"
 import ExSEDAN from "../../../../assets/vehicle/ExSEDAN.webp"
 import SkeletonLoader from '../../../../components/Loaders/SkeletonLoader';
 import LinearGradient from 'react-native-linear-gradient';
 
-const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ExSEDAN };
+const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
 
 const VehicleList = ({ isLoading = false ,availableVehicles}) => {
   const {selectedVehicle,setSelectedVehicle} = useRideVehicleStore()

@@ -13,22 +13,38 @@ const ICONS = {
     name: 'work',
     label: 'Work',
   },
+  star: {
+    name: 'star',
+    label: 'Star',
+  },
 };
 
-  const FavPlacesItem = ({ type, onPress,isDataExist }) => {
-  const iconData = ICONS[type] || ICONS.home;
+const getIcon = (label,type) => {
+  if (label.toLowerCase() === 'home') {
+    return 'home';
+  } else if (label.toLowerCase() === 'work') {
+    return 'work';
+  } else if (type === 'add') {
+    return 'add';
+  } else {
+    return 'star';
+  }
+}
+
+    const FavPlacesItem = ({ data, onPress,type,selected }) => {
+  
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={[styles.container,selected && {backgroundColor:'grey',borderWidth:1}]} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.iconLabelRow}>
-        <MaterialIcons name={iconData.name} size={20} color="#757575" style={styles.icon} />
-        <Text style={styles.label}>{!isDataExist && "Add "}{iconData.label}</Text>
+        <MaterialIcons name={getIcon(data?.label,type)} size={20} color={selected ? '#fff' : '#757575'} style={styles.icon} />
+        <Text style={[styles.label,selected && {color:'#fff'}]}>{data?.label}</Text>
       </View>
     </TouchableOpacity>
   );
 };
 
 FavPlacesItem.propTypes = {
-  type: PropTypes.oneOf(['home', 'work']).isRequired,
+  type: PropTypes.oneOf(['home', 'work','add']).isRequired,
   onPress: PropTypes.func.isRequired,
 };
 
@@ -53,7 +69,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#121212',
     fontWeight: '500',
-    fontFamily:Fonts.regular
+    fontFamily:Fonts.regular,
+    textTransform: 'capitalize',
   },
 });
 

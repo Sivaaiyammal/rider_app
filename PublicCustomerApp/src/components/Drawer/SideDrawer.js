@@ -67,79 +67,84 @@ const SideDrawerV2 = ({ handleMenu }) => {
       id: 'my-account',
       name: 'My Account',
       screen: 'MyAccountScreen',
-      icon: <Ionicons name="person" size={24} color="#1e3a8a" />,
+      icon: <Ionicons name="person" size={20} color="black" />,
     },
     {
       id: 'your-rides',
       name: 'My Rides',
       screen: 'MyRidesScreen',
-      icon: <Ionicons name="car" size={24} color="#1e3a8a" />,
+      icon: <Ionicons name="car" size={20} color="black" />,
     },
     {
       id: 'saved-places',
       name: 'Saved Places',
       screen: 'SavedPlacesScreen',
-      icon: <Ionicons name="star" size={24} color="#1e3a8a" />,
+      icon: <Ionicons name="star" size={20} color="black" />,
     },
     {
       id: 'preferences',
       name: 'Preferences',
       screen: 'PreferencesScreen',
-      icon: <Ionicons name="options" size={24} color="#1e3a8a" />,
+      icon: <Ionicons name="options" size={20} color="black" />,
     },
-    {
-      id: 'receipts',
-      name: 'Receipts',
-      screen: 'ReceiptsScreen',
-      icon: <Ionicons name="receipt" size={24} color="#1e3a8a" />,
-    },
+    // {
+    //   id: 'receipts',
+    //   name: 'Receipts',
+    //   screen: 'ReceiptsScreen',
+    //   icon: <Ionicons name="receipt" size={24} color="#1e3a8a" />,
+    // },
     {
       id: 'notification',
       name: 'Notification',
       screen: 'NotificationScreen',
-      icon: <Ionicons name="notifications" size={24} color="#1e3a8a" />,
+      icon: <Ionicons name="notifications" size={20} color="black" />,
     },
     {
       id: 'language',
       name: 'Language',
       screen: 'LanguageScreen',
-      icon: <Ionicons name="globe" size={24} color="#1e3a8a" />,
+      icon: <Ionicons name="globe" size={20} color="black" />,
     },
     {
       id: 'contact-us',
       name: 'Contact Us',
       screen: 'ContactScreen',
-      icon: <Ionicons name="headset" size={24} color="#1e3a8a" />,
+      icon: <Ionicons name="headset" size={20} color="black" />,
     },
-    {
-      id: 'about',
-      name: 'About',
-      screen: 'AboutScreen',
-      icon: <Ionicons name="information-circle" size={24} color="#1e3a8a" />,
-    },
+    // {
+    //   id: 'about',
+    //   name: 'About',
+    //   screen: 'AboutScreen',
+    //   icon: <Ionicons name="information-circle" size={24} color="#1e3a8a" />,
+    // },
     {
       id: 'legal',
       name: 'Legal',
       screen: 'LegalScreen',
-      icon: <Ionicons name="document-text" size={24} color="#1e3a8a" />,
+      icon: <Ionicons name="document-text" size={20} color="black" />,
+    },
+    {
+      id: 'test-screen',
+      name: 'Test Screen',
+      screen: 'TestScreen',
+      icon: <Ionicons name="flask" size={20} color="black" />,
     },
   ];
 
   const HandleOpenDrawerMenu = (menu) => {
     if (menu.screen) {
-      if(menu.screen === 'MyRidesScreen'){
-        setStackScreen('MyRidesScreen');
+      if (menu.screen === 'LanguageScreen'){
+        setStackScreen(menu.screen,{fromDrawer:true});
       }
-        else{
-        navigation.dispatch(
-          CommonActions.navigate({
-            name: menu.screen
-          }),
-        );
+      else{
+        
+        setStackScreen(menu.screen);
+      }
+      
     }
     closeDrawer();
   }
-}
+
 
   return (
     <Animated.View style={[drawerStyles.container, {opacity: fadeAnim}]}>

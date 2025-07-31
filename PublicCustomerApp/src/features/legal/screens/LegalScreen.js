@@ -2,26 +2,27 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
 
-const SavedPlacesScreen = () => {
-  const navigation = useNavigation();
+const LegalScreen = () => {
+  const {goBack} = useStackScreenStore();
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Ionicons name="chevron-back" size={24} color="#000" />
+        <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
+          <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Saved Places</Text>
+        <Text style={styles.headerTitle}>Legal</Text>
         <View style={styles.placeholder} />
       </View>
       
       <View style={styles.content}>
-        <Ionicons name="location" size={80} color="#ccc" />
-        <Text style={styles.title}>Saved Places</Text>
-        <Text style={styles.subtitle}>Your saved locations will appear here</Text>
+        <Ionicons name="document-text" size={80} color="#ccc" />
+        <Text style={styles.title}>Legal</Text>
+        <Text style={styles.subtitle}>Terms, Privacy Policy & Legal Information</Text>
         <Text style={styles.description}>
-          This is a placeholder screen for the Saved Places feature.
+          This is a placeholder screen for the Legal feature.
         </Text>
       </View>
     </View>
@@ -80,4 +81,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SavedPlacesScreen; 
+export default LegalScreen; 

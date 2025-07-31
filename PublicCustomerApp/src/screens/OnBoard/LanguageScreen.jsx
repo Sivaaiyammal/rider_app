@@ -10,9 +10,12 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../../i18n';
 import { GlobalContext } from '../../context/GlobalContext';
 import { Fonts } from '../../constants/constants';
+import { useStackScreenStore } from '../../store/useStackScreenStore';
+import NavBar from '../../components/NavBar';
 
-const LanguageScreen = () => {
+const LanguageScreen = ({fromDrawer}) => {
   const navigation = useNavigation();
+  const {goBack,setStackScreen} = useStackScreenStore();
   const { t } = useTranslation();
   const { 
     theme, 
@@ -26,9 +29,16 @@ const LanguageScreen = () => {
     setSelected(item);
   };
 
+
   const onNextPress = () => {
-    navigation.navigate('OnBoarding');
     DataStore.storeData('language', selected.code);
+    if(fromDrawer){
+      goBack();
+    }
+    else{
+      navigation.navigate('OnBoarding');
+    }
+    
   };
 
 
@@ -39,9 +49,14 @@ const LanguageScreen = () => {
   };
 
   return (
+   
+   
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
-        <View style={styles.header}>    
-      <AdaptiveText style={styles.title} color={theme.text} >{t('choose_language')}</AdaptiveText>
+      
+        <View style={styles.header}> 
+      {fromDrawer && <NavBar withBg={true} onBackPress={() => goBack()} title={'Choose Language'} />}       
+     { !fromDrawer && <AdaptiveText style={styles.title} color={theme.text} >{t('choose_language')}</AdaptiveText>}
+     
       </View>
       <View style={styles.langContainer}>
         {languages.map((item) => (
@@ -64,9 +79,10 @@ const LanguageScreen = () => {
       <TouchableOpacity
         style={[styles.nextBtn, { backgroundColor: theme.primary }]}
         onPress={() => onNextPress()}>
-        <Text style={[styles.nextBtnTxt, { color: isDarkMode ? colors.black : colors.white}]}>{t('next')}</Text>
+        <Text style={[styles.nextBtnTxt, { color: isDarkMode ? colors.black : colors.white}]}>{fromDrawer ? t('done') : t('next')}</Text>
       </TouchableOpacity>
     </View>
+    
   );
 };
 

@@ -159,9 +159,9 @@ const MapScreen = () => {
      
       const locationData ={
         name:"Current Location",
-        latitude:location[1],
-        longitude:location[0],
-        address:currentLocationName,
+        latitude:location[1] || location.latitude,
+        longitude:location[0] || location.longitude,
+        address:location.address || currentLocationName,
         type:LocationTypes.START_LOCATION,
         locationFrom:"MAP"
       }
@@ -227,11 +227,7 @@ const MapScreen = () => {
           </Text>
         </TouchableOpacity>
 
-        <FavLabelItems
-          homeLocation={homelocation}
-          workLocation={worklocation}
-          LocationPress={handleFavouriteLocationPress}
-        />
+        <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
 
         <HistoryCard selectCallback={onHistoryPress} header={false} bottomborder={false} />
       </BottomSheet>

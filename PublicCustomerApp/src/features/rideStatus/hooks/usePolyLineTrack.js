@@ -153,6 +153,7 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
       if (!leg.shape) {
         return [];
       }
+      console.log('leg.shape', leg.shape);
       const decoded = polyline.decode(leg.shape, 6);
       return decoded.map(([lat, lon]) => [lon, lat]);
     }).flat();

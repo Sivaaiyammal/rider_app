@@ -23,9 +23,11 @@ import MyAccountHeader from '../../components/Profile/MyAccountHeader';
 import MyAccountProfileImage from '../../components/Profile/MyAccountProfileImage';
 import MyAccountInfo from '../../components/Profile/MyAccountInfo';
 import SwipeBtn from '../../components/SwipeBtn';
+import { useStackScreenStore } from '../../store/useStackScreenStore';  
 
 const MyAccountScreen = () => {
   const navigation = useNavigation();
+    const { setStackScreen ,goBack} = useStackScreenStore();
   const { userdetails } = useUserInfoStore();
   console.log('userdetails', userdetails);
 
@@ -69,12 +71,7 @@ const MyAccountScreen = () => {
   ]);
 
   const HandleBackBtn = () => {
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'HomeScreen' }],
-      }),
-    );
+    goBack();
   };
 
   const Logout = async () => {
@@ -90,14 +87,16 @@ const MyAccountScreen = () => {
   };
 
   return (
-    <ScrollView>
+    <ScrollView style={{backgroundColor: 'white'}}>
       <MyAccountHeader title="My Account" onBackClick={HandleBackBtn} />
       <MyAccountProfileImage
         name={utils.toTitleCase(userdetails?.name || '')}
         id={userdetails?._id || ''}
       />
       <MyAccountInfo infos={Info_Items} />
+      <View style={{height:100,alignContent:'center',justifyContent:'center'}}>
       <SwipeBtn name="SWIPE TO LOGOUT" onHandleSwipeEnd={Logout} />
+      </View>
     </ScrollView>
   );
 };

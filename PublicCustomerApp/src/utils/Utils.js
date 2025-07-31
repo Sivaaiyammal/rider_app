@@ -390,11 +390,23 @@ export const utils = {
     // Format as 12-hour time with AM/PM
     return futureTime.format('h:mm A');
   },
+  getReadableTimeFromMs(time) {
+    time = parseInt(time);
+    const date = new Date(time);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    const formattedHours = hours % 12 || 12;
+    return `${day}/${month}/${year} ${formattedHours}:${minutes} ${ampm}`;
+  },
 
   formatMinutesToReadable(minutes) {
     if (!minutes || minutes < 0) {
       console.warn('Invalid minutes provided:', minutes);
-      return '';
+      return '--';
     }
     
     if (minutes >= 60) {

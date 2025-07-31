@@ -21,7 +21,7 @@ const NavBar = props => {
       style={[
         navStyles.navContainer,
         {
-          backgroundColor:  'transparent',
+          backgroundColor:  withBg ? 'white' : 'transparent',
           elevation: withShadow ? 5 : 0,
         },
       ]}>

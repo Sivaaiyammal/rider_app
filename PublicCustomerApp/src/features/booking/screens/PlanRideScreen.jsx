@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity, View, StyleSheet} from 'react-native';
+import {Text, TouchableOpacity, View, StyleSheet, ScrollView} from 'react-native';
 import React, {useCallback, useState,useEffect} from 'react';
 import NavBar from '../../../components/NavBar';
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
@@ -31,8 +31,8 @@ import { width } from '../../../utils/Utils';
 import { Fonts } from '../../../constants/constants';
 import { storeLocation } from '../../../storage/userLocalStorage';    
 
-const PlanRideScreen = () => {
-  const {userdetails,homelocation,worklocation,setHomelocation,setWorklocation} = useUserInfoStore();
+const PlanRideScreen = ({selectedDestination}) => {
+  const {userdetails,homelocation,worklocation,setHomelocation,setWorklocation,userFavPlaces} = useUserInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
   const {
@@ -50,7 +50,16 @@ const PlanRideScreen = () => {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showTripFor, setShowTripFor] = useState(false);
   const [showScheduleContainer, setShowScheduleContainer] = useState(false);
+  const [selectedFavPlace, setSelectedFavPlace] = useState(null);
   const isContinueButtonVisible = rideStartLocation && rideEndLocation
+
+  // Handle selectedDestination from SavedPlacesScreen
+  useEffect(() => {
+    if (selectedDestination) {
+      setRideEndLocation(selectedDestination);
+    }
+  }, [selectedDestination]);
+
   const _toggleSubview = useCallback(() => {
     setShowBottomSheet(!showBottomSheet);
   }, [showBottomSheet]);
@@ -78,33 +87,10 @@ const PlanRideScreen = () => {
    
   }, []);
 
-  const handleFavouriteLocationPress = useCallback((locationType) => {
-    if(locationType === "Home"){
-      
-      if(homelocation){
-        setRideEndLocation(homelocation)
-        setStackScreen("BookRideScreen",{})
-      }else{
-
-        setStackScreen('SearchScreen',{
-          onSearchClick: handlePlaceSave,
-          searchType:locationType
-        });
-
-      }
-      
-    }else if(locationType === "Work"){
-      if(worklocation){
-        setRideEndLocation(worklocation)
-        setStackScreen("BookRideScreen",{})
-      }else{
-
-        setStackScreen('SearchScreen',{
-          onSearchClick: handlePlaceSave,
-          searchType:locationType
-        });
-
-      }
+  const handleFavouriteLocationPress = useCallback((location) => {
+    if(location.locationData){
+      setSelectedFavPlace(location)
+      setRideEndLocation(location.locationData)
     }
     
   }, []);
@@ -270,14 +256,21 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
         onLocationClick={handleLocationClick}
         
         />
-        <View style={styles.favPlacesContainer}>  
-          <FavPlacesItem type="home" isDataExist={homelocation?true:false} onPress={() => {
-            handleFavouriteLocationPress("Home")
-          }} />
-          <FavPlacesItem type="work" isDataExist={worklocation?true:false} onPress={() => {
-            handleFavouriteLocationPress("Work")
-          }} />
-        </View>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.favPlacesContainer}
+          style={styles.favPlacesScrollView}
+        >  
+          {userFavPlaces?.map((item,index)=>(
+            <FavPlacesItem key={index} data={item} onPress={() => {
+              handleFavouriteLocationPress(item)
+            }}  selected={selectedFavPlace?.label === item.label} />
+          ))}
+          <FavPlacesItem data={{label:"Add Favorite Places"}} onPress={() => {
+            setStackScreen("SavedPlacesScreen",{})
+          }} type="add" />
+        </ScrollView>
         <View style={styles.dottedLine}/>
         <HistoryContainer selectCallback={handleHistoryLocationClick} bottomborder = {false} fromSearchScreen={true}/>
 
@@ -335,6 +328,9 @@ const styles = StyleSheet.create({
     gap:10,
     paddingHorizontal:5
     
+  },
+  favPlacesScrollView: {
+    flexGrow: 0,
   },
   dottedLine:{
     borderStyle: 'dashed',

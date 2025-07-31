@@ -21,7 +21,7 @@ const BottomSheet = React.memo(({ children, minHeight, maxHeight, panGestureEnab
         withOverlay={true}
         panGestureEnabled={panGestureEnabled}
         withHandle={panGestureEnabled}
-        disableScrollIfPossible={false}
+        disableScrollIfPossible={true}
         HeaderComponent={<View style={styles.headerContainer}>{HeaderComponent}</View>}
       >
         <KeyboardAvoidingView behavior={null}>

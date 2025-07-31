@@ -356,6 +356,7 @@ const handleCouponPress = () => {
    </View>
    <BottomSheet
         minHeight={height*0.55}
+       
         HeaderComponent={<BottomSheetHeader />}
    >
  
@@ -465,6 +466,7 @@ const styles = StyleSheet.create({
     contentContainer: {
         width: '100%',
         flex: 1,
+        
        
     },
     bottomSheetTitle: {

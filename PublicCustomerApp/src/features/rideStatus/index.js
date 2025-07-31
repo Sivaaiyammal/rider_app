@@ -19,41 +19,26 @@ import { useStackScreenStore } from '../../store/useStackScreenStore';
 import PaymentType from '../booking/components/bookRide/PaymentType';
 import { cancelRide } from '../../API/EndPoints/EndPoints';
 import { showNotification } from '../../components/NotificationManger';
-import { getTotalDistanceAndTime } from './services/getTotalDistanceandTime';
+
 import useRideMatching  from '../../hooks/useRideMatching';
 import  useUserInfoStore  from '../../store/useUserInfoStore';
+import useCalculateDistance from './hooks/useCalculateDistance';
 const RideStatus = () => {
-  const { tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,stops,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration} = useCurrentRideInfoStore();
+  const { tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled} = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
-  const {reset,goBack} = useStackScreenStore();
+  const {goBack,stackScreen} = useStackScreenStore();
   const [isPaymentMethodChangeShow,setIspaymentMethodChangeShow] = useState(false);
   const {stopMatching} = useRideMatching();
   const {id:userId} = useUserInfoStore();
-  const handleCancel = async (reason) => {
-    try {
+  const [isCalculateDistance,setIsCalculateDistance] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const {gpsDistance, gpsDuration, loading} = useCalculateDistance({ tripId: '68870e49ddba87f79046396b', startTime: 1717190400000, endTime: new Date().setHours(23, 59, 59, 999),enabled: isCalculateDistance });
 
-      if(tripStatus == TripStatus.PENDING){
-        stopMatching(tripId,userId)
-        resetCurrentRideInfo();
-        goBack();
-        return
-      }
 
-        const payload = {
-          tripId,
-          reason,
-        };
 
-      // If the ride is ongoing, include total distance and time
-      if (tripStatus === TripStatus.PICKEDUP) {
-        const { totalDistance, totalDuration } = await getTotalDistanceAndTime(stops);
-        payload.totalDistance = totalDistance;
-        payload.totalDuration = totalDuration;
-      }
-
-      console.log("Cancel Payload:", payload);
-
-      const response = await cancelRide(payload);
+  const CancelRide = async (payload) => {
+    try{
+    const response = await cancelRide(payload);
       console.log("Cancel Response:", JSON.stringify(response));
 
       if (response.success) {
@@ -62,25 +47,76 @@ const RideStatus = () => {
         setShowBookingCancelModel(false);
 
         if (tripStatus === TripStatus.PICKEDUP && response?.totalFare) {
+          setOngoingingTripCancelled(true);
           setTripStatus(TripStatus.CANCELLED);
           setFareDetails(response.totalFare);
           setFinalDistance(response.totalFare?.distance);
           setFinalDuration(response.totalFare?.duration);
+          
 
         } else {
           console.log("Resetting after cancel, tripStatus:", tripStatus);
+      
           resetCurrentRideInfo();
-          reset();
-        }
+          console.log("stackScreen",stackScreen);
+          goBack();
+          console.log("stackScreen",stackScreen);
+        } 
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error("Error cancelling ride:", error);
       showNotification('Failed to cancel ride. Please try again.');
     }
+  }
+  const handleCancel = async (reason) => {
+    
+      if(tripStatus == TripStatus.PENDING){
+        stopMatching(tripId,userId)
+        resetCurrentRideInfo();
+        goBack();
+        return
+      }
+
+      // If the ride is ongoing, include total distance and time
+      if (tripStatus === TripStatus.PICKEDUP) {
+        setCancelReason(reason);
+        setIsCalculateDistance(true);
+        return
+      }
+
+      const payload = {
+        tripId,
+        reason,
+    };
+      console.log("Cancel Payload:", payload);
+      await CancelRide(payload);
   };
+
+
+  useEffect(()=>{
+    if(isCalculateDistance && gpsDistance && gpsDuration ){
+      console.log('gpsDistance',gpsDistance);
+      console.log('gpsDuration',gpsDuration);
+      
+      // Now that we have the distance and duration, proceed with cancellation
+      const payload = {
+        tripId,
+        reason: cancelReason,
+        totalDistance: gpsDistance,
+        totalDuration: Math.round(gpsDuration)
+      };
+      console.log("Cancel Payload with distance:", payload);
+      CancelRide(payload);
+    }
+    if(isCalculateDistance) {
+      setIsCalculateDistance(false);
+    }
+  },[gpsDistance, gpsDuration, cancelReason, isCalculateDistance])
  
   const renderScreen = () => {
     console.log('tripStatus',tripStatus);
+    console.log('onGoingTripCancelled',onGoingTripCancelled);
     switch (tripStatus) {
       case TripStatus.PICKEDUP:
         return <OnRideScreen onCancel={()=>{setShowBottomSheet(true)}} onPaymentMethodChange={()=>{setIspaymentMethodChangeShow(true)}} />;
@@ -89,7 +125,12 @@ const RideStatus = () => {
       case TripStatus.DROPPED:
         return <CompletedRideScreen />;
       case TripStatus.CANCELLED:
-        return <CompletedRideScreen type={TripStatus.CANCELLED} />;
+        if(onGoingTripCancelled){
+          return <CompletedRideScreen type={TripStatus.CANCELLED} />;
+        }
+        else{
+          return <DriverSearchScreen  onCancel={handleCancel} />;
+        }
      
       default:
         return <DriverSearchScreen  onCancel={handleCancel} />;
@@ -154,10 +195,9 @@ const RideStatus = () => {
         {
       showBottomSheet &&
       <AnimatedBottomSheetWrapper onClose={()=>{setShowBottomSheet(false)}}>
-        <CancelComponent onClose={()=>{setShowBottomSheet(false)}} onCancel={handleCancel}   />
+        <CancelComponent onClose={()=>{setShowBottomSheet(false)}} onCancel={handleCancel}  loading={loading} />
       </AnimatedBottomSheetWrapper>
       
-     
     }
     {
       isPaymentMethodChangeShow &&

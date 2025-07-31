@@ -15,7 +15,7 @@ import PickLocationScreen from './PickLocationScreen';
 import { useCustomBackHandler } from '../hooks/useCustomBackHandler';
 import PlanRideScreen from '../features/booking/screens/PlanRideScreen.jsx';
 import BookRideScreen from '../features/booking/screens/BookRideScreen.jsx';
-import { checkOnGoingRide , getNearByDrivers} from '../API/EndPoints/EndPoints';
+import { getUserStats , getNearByDrivers} from '../API/EndPoints/EndPoints';
 import RideStatus from '../features/rideStatus';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 import PaymentScreen from '../features/payment/screens/PaymentScreen';
@@ -24,8 +24,17 @@ import TripFeedbackScreen from '../features/rating/screens/TripFeedbackScreen';
 import useLocationStore from '../store/useLocationStore';
 import { DataStore } from '../controllers/DataStore';
 import useMapStore from '../store/useMapStore';
+
+import LanguageScreen from './OnBoard/LanguageScreen.jsx';
 import MyRidesScreen from '../features/rideHistory/screens/MyRidesScreen';
+import AboutScreen from '../features/Profile/MyAccountScreen';
 import RideDetailScreen from '../features/rideHistory/screens/RideDetailScreen';
+import ContactScreen from '../features/about/screens/ContactScreen';
+import SavedPlacesScreen from '../features/savedPlaces/screens/SavedPlacesScreen';
+import PreferencesScreen from '../features/preferences/screens/PreferencesScreen';
+import LegalScreen from '../features/legal/screens/LegalScreen';
+import AddPlaceDetailScreen from '../features/savedPlaces/screens/addplaceDetailScreen';
+import TestScreen from '../features/test/screens/TestScreen';
 const Home = () => {
   const {location} = useLocationStore();
   const { stackScreen } = useStackScreenStore();
@@ -35,7 +44,7 @@ const Home = () => {
   const { setStackScreen } = useStackScreenStore();
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
-  const { setUserdetails ,setID,id} = useUserInfoStore();
+  const { setUserdetails ,setID,id,setUserFavPlaces} = useUserInfoStore();
   const {  setMapShown , mapShown} = useMapStore();
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
@@ -59,9 +68,11 @@ const Home = () => {
 
   const checkOnGoingRideAndLog = async () => {
     try {
-      const Response = await checkOnGoingRide();
-      console.log('Response',JSON.stringify(Response));
-      if(Response?.success && Response?.trip){
+      const Response = await getUserStats();
+      console.log('Response==============================>',JSON.stringify(Response));
+      if(Response?.success ){
+        
+      if(Response?.trip){
         setCurrentRideInfo(Response?.trip);
         if(Response?.assignDriver){
          
@@ -72,6 +83,10 @@ const Home = () => {
         }
         setStackScreen('RideStatus', { });
       }
+      if(Response?.userStats?.favPlaces?.length > 0){
+        setUserFavPlaces(Response?.userStats?.favPlaces);
+      }
+    }
     } catch (error) {
       console.error('Error fetching ongoing ride:', error);
     }
@@ -169,6 +184,23 @@ const Home = () => {
         return <MyRidesScreen {...params} />;
       case 'RideDetailScreen':
         return <RideDetailScreen {...params} />;
+      case 'MyAccountScreen':
+        return <AboutScreen {...params} />;
+      case 'SavedPlacesScreen':
+        return <SavedPlacesScreen {...params} />;
+      case 'PreferencesScreen':
+        return <PreferencesScreen {...params} />;
+      case 'ContactScreen':
+        return <ContactScreen {...params} />;
+      case 'LegalScreen':
+        return <LegalScreen {...params} />;
+      case 'LanguageScreen':
+        return <LanguageScreen {...params} />;
+      case 'AddPlaceDetailScreen':
+        return <AddPlaceDetailScreen {...params} />;
+      case 'TestScreen':
+        return <TestScreen {...params} />;
+     
       default:
         return null;
     }

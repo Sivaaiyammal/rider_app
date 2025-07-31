@@ -2,26 +2,27 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
 
-const LegalScreen = () => {
-  const navigation = useNavigation();
+const PreferencesScreen = () => {
+  const {goBack} = useStackScreenStore();
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
+          <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
+        <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Legal</Text>
+        <Text style={styles.headerTitle}>Preferences</Text>
         <View style={styles.placeholder} />
       </View>
       
       <View style={styles.content}>
-        <Ionicons name="document-text" size={80} color="#ccc" />
-        <Text style={styles.title}>Legal</Text>
-        <Text style={styles.subtitle}>Terms, Privacy Policy & Legal Information</Text>
+        <Ionicons name="settings" size={80} color="#ccc" />
+        <Text style={styles.title}>Preferences</Text>
+        <Text style={styles.subtitle}>Customize your app settings</Text>
         <Text style={styles.description}>
-          This is a placeholder screen for the Legal feature.
+          This is a placeholder screen for the Preferences feature.
         </Text>
       </View>
     </View>
@@ -80,4 +81,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LegalScreen; 
+export default PreferencesScreen; 

@@ -164,7 +164,11 @@ const YourRidesScreen = () => {
                 >
                     <View>
                     <Text style={yourRidesStyles.ridesContainerItemTitle}>{utils.formateDateLabel(ride.bookingTime)}</Text>
-                    <Text style={yourRidesStyles.ridesContainerItemDesc}>{ride?.stops[ride?.stops?.length - 1]?.address || '--'}</Text>
+                    <Text style={yourRidesStyles.ridesContainerItemDesc}>
+                        {Array.isArray(ride?.stops) && ride.stops.length > 0
+                            ? ride.stops[ride.stops.length - 1]?.address || '--'
+                            : '--'}
+                    </Text>
                     </View>
                     <Text style={yourRidesStyles.ridesContainerItemFare}>₹{ride?.fareDetails?.fare || '00'}</Text>
                 </View>

@@ -1,4 +1,7 @@
 import { create } from 'zustand';
+import useCurrentRideInfoStore from './useCurrentRideInfoStore';
+import useUserInfoStore from '../../../store/useUserInfoStore';
+import rideMatchingSocketService from '../../../controllers/RideMatchingSocketService';
 
 const useRideMatchStore = create(set => ({
   currentDriverLatitude: null,
@@ -32,8 +35,94 @@ const useRideMatchStore = create(set => ({
       status: null,
       message: null,
       driverName: null,
+      currentDriverLatitude: null,
+      currentDriverLongitude: null,
     });
   },
+
+  retryRideMatching: async () => {
+    const { tripId, vehicleType } = useCurrentRideInfoStore.getState();
+    const { id: userId } = useUserInfoStore.getState();
+    
+    if (!tripId || !userId) {
+      console.error('❌ Trip ID or User ID missing for retry');
+      return false;
+    }
+
+    try {
+      console.log('🔄 Retrying ride matching for trip:', tripId);
+      
+      // Reset to searching state
+      set({
+        status: 'searching',
+        message: 'Searching for drivers...',
+        driverName: null,
+        currentDriverLatitude: null,
+        currentDriverLongitude: null,
+      });
+
+      // Send find driver request
+      rideMatchingSocketService.findDriver(tripId, userId, vehicleType);
+      return true;
+    } catch (error) {
+      console.error('🚨 Error retrying ride matching:', error);
+      set({
+        status: 'failed',
+        message: 'Failed to retry ride matching',
+        driverName: null,
+        currentDriverLatitude: null,
+        currentDriverLongitude: null,
+      });
+      return false;
+    }
+  },
+
+  startRideMatching: async (tripId, userId, vehicleType) => {
+    if (!tripId || !userId) {
+      console.error('❌ Trip ID or User ID missing for ride matching');
+      return false;
+    }
+
+    try {
+      console.log('🚀 Starting ride matching for trip:', tripId);
+      
+      // Reset matching state
+      set({
+        status: 'searching',
+        message: 'Searching for drivers...',
+        driverName: null,
+        currentDriverLatitude: null,
+        currentDriverLongitude: null,
+      });
+
+      // Send find driver request
+      rideMatchingSocketService.findDriver(tripId, userId, vehicleType);
+      return true;
+    } catch (error) {
+      console.error('🚨 Error starting ride matching:', error);
+      set({
+        status: 'failed',
+        message: 'Failed to start ride matching',
+        driverName: null,
+        currentDriverLatitude: null,
+        currentDriverLongitude: null,
+      });
+      return false;
+    }
+  },
+
+  stopRideMatching: (tripId, userId) => {
+    console.log('🛑 Stopping ride matching');
+    rideMatchingSocketService.cancelRide(tripId, userId);
+    
+    set({
+      status: 'cancelled',
+      message: 'Ride matching cancelled',
+      driverName: null,
+      currentDriverLatitude: null,
+      currentDriverLongitude: null,
+    });
+  }
 }));
 
 export default useRideMatchStore;

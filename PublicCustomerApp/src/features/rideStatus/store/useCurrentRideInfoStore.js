@@ -37,6 +37,7 @@ const useCurrentRideInfoStore = create((set) => ({
   breakdownFare:[],
   finalDuration:"",
   finalDistance:"",
+  onGoingTripCancelled:null,
 
 
   setTripId: (tripId) => set({ tripId }),
@@ -67,7 +68,9 @@ const useCurrentRideInfoStore = create((set) => ({
   setFinalDistance: (finalDistance) => {
     set({finalDistance})
   },
-   
+  setOngoingingTripCancelled: (onGoingTripCancelled) => {
+    set({onGoingTripCancelled})
+  },
 
   setFareDetails: (fareDetails) => {
     console.log('fareDetails',fareDetails)
@@ -162,6 +165,7 @@ const useCurrentRideInfoStore = create((set) => ({
     finalDistance: info.finalDistance || null,
     finalDuration: info.finalDuration || null,
     estimatedFare:info.estimatedFare || null,
+    onGoingTripCancelled:info.onGoingTripCancelled || null,
    
   }),
 
@@ -190,7 +194,8 @@ const useCurrentRideInfoStore = create((set) => ({
     vehicleType: null,
     publicRidesTrip: null,
     estimatedPickuoMins:null,
-    estimatedArrivalMins:null
+    estimatedArrivalMins:null,
+    onGoingTripCancelled:null,
 
   }),
 }));

@@ -10,7 +10,7 @@ const REASONS = [
   'Other',
 ];
 
-const CancelComponent = ({ onClose, onCancel }) => {
+const CancelComponent = ({ onClose, onCancel, loading }) => {
   const [selected, setSelected] = useState('');
   const [otherReason, setOtherReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -88,7 +88,7 @@ const CancelComponent = ({ onClose, onCancel }) => {
           onPress={handleConfirm}
           disabled={!selected || (selected === 'Other' && !otherReason.trim()) || isLoading}
         >
-          {isLoading ? (
+          {isLoading || loading ? (
             <ActivityIndicator size="small" color="#ff4d4f" />
           ) : (
             <Text style={styles.confirmText}>CONFIRM CANCELLATION</Text>

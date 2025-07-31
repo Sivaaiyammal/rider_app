@@ -1,4 +1,5 @@
 import apiClient from "../APIClient";
+import APIConfig from "../../Config/APIConfig";
 
 // request OTP
 export const requestOTP = async (payload) => {
@@ -64,15 +65,14 @@ export const bookRide = async (payload)=> {
 // cancel Ride
 
 
-export const checkOnGoingRide = async ()=> {
-  console.log('checkOnGoingRideoo')
-  const {data} = await apiClient.get('/publicrides/customer/getOngoingTrip')
+export const getUserStats = async ()=> {
+  const {data} = await apiClient.get('/publicrides/customer/getUserStats')
   return data
 }
 
 export const cancelRide = async (payload)=> {
   console.log('payload', payload)
-  const {data} = await apiClient.post('publicrides/customer/cancelTrip', payload)
+  const {data} = await apiClient.post('publicrides/customer/rideCancelByPassenger', payload)
   return data
 }
 
@@ -102,6 +102,22 @@ export const getCustomerTrips = async (payload) => {
   const { data } = await apiClient.get('/publicrides/customer/getTrips', { params: payload })
   return data
 }
+
+export const addFavoritePlace = async (payload) => {
+  const { data } = await apiClient.post('/publicrides/customer/addFavPlaces', payload)
+  return data
+}
+
+export const deleteFavoritePlace = async (payload) => {
+  const { data } = await apiClient.post('/publicrides/customer/deleteFavPlaces', payload)
+  return data
+}
+
+
+  export const mapMatch = async (payload) => {
+    const { data } = await apiClient.post(APIConfig.MAP_MATCH_URL, payload)
+    return data
+  }
 
 
 

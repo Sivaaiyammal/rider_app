@@ -22,8 +22,7 @@ const RideCompletedScreen = ({type}) => {
   
   // Dummy data
   const fare = finalFare;
-  const duration = finalDuration;
-  const distance = finalDistance;
+  
 
   useEffect(() => {
     // Start animation when component mounts
@@ -88,7 +87,7 @@ const RideCompletedScreen = ({type}) => {
           subtitle={type !== TripStatus.CANCELLED ? 'Please proceed with the payment' : 'Kindly pay the fare for the distance travelled'}
         />
         <Text style={styles.fare}>₹ {fare}</Text>
-        <Text style={styles.info}>{utils.formatMinutesToReadable(duration)}  .  {distance} Km</Text>
+        <Text style={styles.info}>{utils.formatMinutesToReadable(finalDuration)}  .  {finalDistance} Km</Text>
         {paymentMethod == 'CASH' && (
           <Animated.View 
             style={[

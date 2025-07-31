@@ -22,6 +22,9 @@ const useUserInfoStore = create(set => ({
 
   isPreferenceShow:false,
   setIsPreferenceShow: isPreferenceShow => set({ isPreferenceShow }),
+
+  userFavPlaces:null,
+  setUserFavPlaces: userFavPlaces => set({ userFavPlaces }),
 }));
 
 export default useUserInfoStore;
