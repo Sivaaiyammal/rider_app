@@ -94,7 +94,7 @@ const LoginScreen = () => {
         <View style={loginStyles.header}>
           <Logo />
           <Text style={loginStyles.headerTxt}>
-            Namma Ooru Taxi ® {'\n'} For Public
+            Namma Ooru Taxi ® {'\n'}
           </Text>
         </View>
         <View style={loginStyles.contectContainer}>

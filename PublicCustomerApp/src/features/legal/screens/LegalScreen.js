@@ -1,8 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
+import { WebView } from 'react-native-webview';
 
 const LegalScreen = () => {
   const {goBack} = useStackScreenStore();
@@ -13,17 +13,19 @@ const LegalScreen = () => {
         <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Legal</Text>
+        <Text style={styles.headerTitle}>Legal Terms</Text>
         <View style={styles.placeholder} />
       </View>
       
-      <View style={styles.content}>
-        <Ionicons name="document-text" size={80} color="#ccc" />
-        <Text style={styles.title}>Legal</Text>
-        <Text style={styles.subtitle}>Terms, Privacy Policy & Legal Information</Text>
-        <Text style={styles.description}>
-          This is a placeholder screen for the Legal feature.
-        </Text>
+      <View style={styles.webViewContainer}>
+        <WebView
+          source={{ uri: 'https://vmmaps.com/legal/nammaoorutaxi/legal-terms.html' }}
+          style={styles.webView}
+          startInLoadingState={true}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          scalesPageToFit={true}
+        />
       </View>
     </View>
   );
@@ -54,30 +56,11 @@ const styles = StyleSheet.create({
   placeholder: {
     width: 40,
   },
-  content: {
+  webViewContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 32,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  description: {
-    fontSize: 14,
-    color: '#999',
-    textAlign: 'center',
-    lineHeight: 20,
+  webView: {
+    flex: 1,
   },
 });
 

@@ -22,29 +22,29 @@
         "type":"ExSEDAN",
         "capacity":6
     },
-    {
-        "type":"ELECTRIC_AUTO",
-        "capacity":2
-    },
-    {
-        "type":"ELECTRIC_HATCHBACK",
-        "capacity":3
-    },
-    {
-        "type":"ELECTRIC_SEDAN",
-        "capacity":4
-    },
-    {
-        "type":"ELECTRIC_SUV",
-        "capacity":5
-    },
-    {
-        "type":"ELECTRIC_EXSEDAN",
-        "capacity":6
-    },
-    {
-        "type":"ELECTRIC_BIKE",
-        "capacity":1
-    }
+    // {
+    //     "type":"ELECTRIC_AUTO",
+    //     "capacity":2
+    // },
+    // {
+    //     "type":"ELECTRIC_HATCHBACK",
+    //     "capacity":3
+    // },
+    // {
+    //     "type":"ELECTRIC_SEDAN",
+    //     "capacity":4
+    // },
+    // {
+    //     "type":"ELECTRIC_SUV",
+    //     "capacity":5
+    // },
+    // {
+    //     "type":"ELECTRIC_EXSEDAN",
+    //     "capacity":6
+    // },
+    // {
+    //     "type":"ELECTRIC_BIKE",
+    //     "capacity":1
+    // }
     
 ]

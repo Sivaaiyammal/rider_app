@@ -61,9 +61,9 @@ const SplashScreen = () => {
       <View style={SplashStyles.logoContainer}>
         <Logo />
         <Text style={SplashStyles.splashTitle}>
-          Namma Ooru Taxi ® {'\n'} For Public
+          Namma Ooru Taxi ® {'\n'} 
         </Text>
-        <Text style={SplashStyles.versionTxt}>V2.0.2.5</Text>
+        <Text style={SplashStyles.versionTxt}>V1.0.0.0.0</Text>
       </View>
       <ActivityIndicator color={colors.yellow} size={30} />
       <View style={SplashStyles.splashBg}>

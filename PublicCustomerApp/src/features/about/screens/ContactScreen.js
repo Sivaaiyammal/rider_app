@@ -11,12 +11,12 @@ const ContactScreen = () => {
   
   const contactData = {
     logo: require('../../../assets/image/common/contactPageImage.svg'),
-    phone: '+1 234 567 8900',
-    email: 'hr@virtualmaze.com',
+    phone: '+91 90921 90321',
+    email: 'reachus@virtualmaze.co.in',
     socialLinks: {
-      whatsapp: 'whatsapp://send?phone=1234567890',
-      phone: 'tel:+1234567890',
-      email: 'mailto:hr@virtualmaze.com',
+      whatsapp: 'whatsapp://send?phone=9092190321',
+      phone: 'tel:+919092190321',
+      email: 'mailto:reachus@virtualmaze.co.in',
       facebook: 'https://www.facebook.com/VirtualMaze/'
     }
   };
