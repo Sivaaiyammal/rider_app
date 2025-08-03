@@ -17,10 +17,12 @@ import PropTypes from 'prop-types';
 
 import ProfileImage from '../../assets/image/svgIcons/profileImage.svg';
 import useUserInfoStore from '../../store/useUserInfoStore';
+import useSupportStore from '../../store/useSupportStore';
 
 const SideDrawerV2 = ({ handleMenu }) => {
   const { userdetails } = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
+  const { unreadCount } = useSupportStore();
 
   const navigation = useNavigation();
   const slideAnim = useRef(new Animated.Value(-300)).current;
@@ -106,6 +108,12 @@ const SideDrawerV2 = ({ handleMenu }) => {
       icon: <Ionicons name="globe" size={20} color="black" />,
     },
     {
+      id: 'support',
+      name: 'Support',
+      screen: 'SupportScreen',
+      icon: <Ionicons name="help-circle" size={20} color="black" />,
+    },
+    {
       id: 'contact-us',
       name: 'Contact Us',
       screen: 'ContactScreen',
@@ -162,7 +170,31 @@ const SideDrawerV2 = ({ handleMenu }) => {
                   key={`drawer-${item.id}`}
                   onPress={() => HandleOpenDrawerMenu(item)}
                 >
-                  {item.icon}
+                  <View style={{ position: 'relative' }}>
+                    {item.icon}
+                    {item.id === 'support' && unreadCount > 0 && (
+                      <View style={{
+                        position: 'absolute',
+                        top: -2,
+                        right: -2,
+                        backgroundColor: '#EF4444',
+                        borderRadius: 8,
+                        minWidth: 16,
+                        height: 16,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingHorizontal: 4,
+                      }}>
+                        <Text style={{
+                          color: '#FFFFFF',
+                          fontSize: 10,
+                          fontWeight: '700',
+                        }}>
+                          {unreadCount > 99 ? '99+' : unreadCount}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                   <Text style={drawerStyles.btnText}>{item.name}</Text>
                 </TouchableOpacity>
               );
