@@ -35,6 +35,8 @@ import PreferencesScreen from '../features/preferences/screens/PreferencesScreen
 import LegalScreen from '../features/legal/screens/LegalScreen';
 import AddPlaceDetailScreen from '../features/savedPlaces/screens/addplaceDetailScreen';
 import TestScreen from '../features/test/screens/TestScreen';
+import SupportScreen from '../features/support/screens/SupportScreen';
+import TicketDetailScreen from '../features/support/screens/TicketDetailScreen';
 const Home = () => {
   const {location} = useLocationStore();
   const { stackScreen } = useStackScreenStore();
@@ -200,6 +202,10 @@ const Home = () => {
         return <AddPlaceDetailScreen {...params} />;
       case 'TestScreen':
         return <TestScreen {...params} />;
+      case 'SupportScreen':
+        return <SupportScreen {...params} />;
+      case 'TicketDetailScreen':
+        return <TicketDetailScreen {...params} />;
      
       default:
         return null;
