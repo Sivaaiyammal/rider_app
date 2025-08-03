@@ -16,12 +16,11 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import {colors, Fonts} from '../../../constants/constants';
 import NavBar from '../../../components/NavBar';
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
-import useMapStore from '../../../features/map/store/useMapStore';
 import useLocationStore from '../../../store/useLocationStore';
 import { performSearch } from '../../../components/Native/NESearch';
 import { SearchResultV2 } from '../components/SearchResult';
 import StateVectorConatiner from '../../../components/StateVectorConatiner';
-import { clearSingleStateVector } from "../../../components/Native/NESearch";
+import { clearSingleStateVector, clearAllStateVectors } from "../../../components/Native/NESearch";
 import HistoryCard from '../../shared/component/HistoryCard';
 import { DataStore } from '../../../controllers/DataStore';
 
@@ -37,12 +36,9 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isRegionModalVisible, setIsRegionModalVisible] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
-  
-  const {
-    onSearchResults,
-    setOnSearchResults,
-  } = useMapStore();
+  const [onSearchResults, setOnSearchResults] = useState([]);
   const {location, setSelectedInput} = useLocationStore();
+  const [stateVector, setStateVector] = useState(null);
 
   
   const searchInputRef = useRef(null);
@@ -123,7 +119,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         return;
       }
 
-      if (Object.keys(statevectore).length > 0) {
+      if (statevectore && Object.keys(statevectore).length > 0) {
         fullSearch = true;
       }
 
@@ -148,7 +144,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
       const searchResults = await performSearch(searchParams);
       setIsLoading(false);
       setOnSearchResults(searchResults);
-      console.log("searchResults",JSON.stringify(searchResults));
+      console.log("searchResults", JSON.stringify(searchResults, null, 2));
       searchCache.set(cacheKey, { results: searchResults, timestamp: Date.now() });
  
     } catch (e) {
@@ -177,6 +173,14 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     };
   }, [debouncedSetSearchUnit]);
 
+  // Cleanup effect to clear all state vectors when component unmounts
+  useEffect(() => {
+    return () => {
+      clearAllStateVectors();
+      setStateVector(null);
+    };
+  }, []);
+
   // Memoize the input change handler to avoid unnecessary re-renders
   const _onChangeText = useCallback(
     value => {
@@ -204,15 +208,20 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const selectedCallBack = async (item, type) => {
     console.log("selectedCallBack",item,type);
     if (type === 'FastMatch') {
-      await searchAPI('', item);
-      setSearchTxt('');
+      if(item?.stateVectorForMatches){
+        await searchAPI('', item?.stateVectorForMatches);
+        setSearchTxt('');
+        setStateVector(item?.stateVectorForMatches);
+      }
     } else {
       onLocationNamePress(item);
     }
   };
 
   const removeStateVecotr = async (item) => {
+    console.log("removeStateVecotr",item);
     clearSingleStateVector(item.key, item.index);
+    setStateVector(null);
     await searchAPI(searchTxt, null);
   }
 
@@ -281,6 +290,10 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     setOnSearchResults([]);
   };
 
+  useEffect(() => {
+    console.log("onSearchResults",JSON.stringify(onSearchResults, null, 2));
+  }, [onSearchResults]);
+
   return (
     <View style={styles.screen}>
         <NavBar onBackPress={onGoBack} title={'Search'} />
@@ -328,10 +341,10 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         </View>
 
         {/* State Vector Container */}
-        <StateVectorConatiner stateVectorArr={onSearchResults} removeStateVecotr={removeStateVecotr}/>
+        <StateVectorConatiner stateVectorArr={onSearchResults} removeStateVector={removeStateVecotr}/>
         
         {/* Search Results or Recent Searches */}
-        {searchTxt.trim() === '' && recentSearches.length > 0 ? (
+        {searchTxt.trim() === '' && !onSearchResults && recentSearches.length > 0 ? (
           <View style={styles.recentSearchesContainer}>
             <View style={styles.resultHeader}>
               <Text style={styles.resultHeaderText}>Recent Searches</Text>
@@ -350,7 +363,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
               </TouchableOpacity>
             ))}
           </View>
-        ) : searchTxt.trim() !== '' ? (
+        ) : searchTxt.trim() !== '' || stateVector ? (
           <View>
             <View style={styles.resultHeader}>
               <Text style={styles.resultHeaderText}>
@@ -367,10 +380,11 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
                 <Text style={styles.noResultsText}>No results found</Text>
               </View>
             ) : (
-              <SearchResultV2 
-                searchTxt={searchTxt} 
-                search_data={onSearchResults} 
-                selectedCallBack={selectedCallBack}
+              <SearchResultV2    
+                  searchTxt={searchTxt}
+                  search_data={onSearchResults}
+                  selectedCallBack={selectedCallBack}
+                  setStateVector={setStateVector}
               />
             )}
           </View>

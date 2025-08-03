@@ -1,25 +1,27 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import Entypo from "react-native-vector-icons/Entypo";
-import useMapStore from "../features/map/store/useMapStore";
+import PropTypes from 'prop-types';
+
 import { colors, Fonts } from "../constants/constants";
 
 
-const StateVectorConatiner = (props) => {
-  const { stateVector, setStateVector } = useMapStore();
-  const { stateVectorArr, removeStateVecotr } = props;
+const StateVectorConatiner = ({ 
+  stateVectorArr = {
+    searchData: {
+      matchedStrings: []
+    }
+  }, 
+  removeStateVector 
+}) => {
 
   const onVectorPress = (item) => {
-    removeStateVecotr(item);
+    removeStateVector(item);
   };
 
-  console.log("stateVectorArr",stateVectorArr)
-
-  const stateVectorArray = stateVectorArr?.searchData?.matchedStrings 
-    ? stateVectorArr.searchData.matchedStrings.filter((item) => item?.key !== "")
-    : [];
-
-  return stateVectorArray ? (
+  const stateVectorArray = stateVectorArr?.searchData?.matchedStrings?.filter((item) => item?.key !== "") || [];
+  console.log("stateVectorArray",stateVectorArray)
+  return stateVectorArray.length > 0 ? (
     <View style={styles.vectorContainer}>
       {stateVectorArray.map((item, index) =>
           <View key={index} style={styles.stateBtn}>
@@ -36,6 +38,18 @@ const StateVectorConatiner = (props) => {
  
 };
 
+StateVectorConatiner.propTypes = {
+  stateVectorArr: PropTypes.shape({
+    searchData: PropTypes.shape({
+      matchedStrings: PropTypes.arrayOf(PropTypes.shape({
+        key: PropTypes.string,
+        text: PropTypes.string
+      }))
+    })
+  }),
+  removeStateVector: PropTypes.func.isRequired
+};
+
 export default StateVectorConatiner;
 
 const styles = StyleSheet.create({
@@ -50,17 +64,17 @@ const styles = StyleSheet.create({
   stateBtn: {
     flexDirection: "row",
     margin: 2,
-    paddingVertical: 5,
-    paddingHorizontal: 5,
-    borderRadius: 8,
-    backgroundColor: colors.grey_xlight,
+    paddingVertical: 1,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    backgroundColor: colors.primary,
     gap: 10,
   },
   stateText: {
     fontFamily: Fonts.regular,
     padding:3,
     paddingRight:0,
-    color: colors.black,
+        color: colors.black,
   },
   crossIcon: {
     padding:2,
