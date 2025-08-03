@@ -40,7 +40,10 @@ allprojects {
             }
         }
         google()
-        maven { url 'https://www.jitpack.io' }
+        maven { 
+            url 'https://www.jitpack.io' 
+            url "https://phonepe.mycloudrepo.io/public/repositories/phonepe-intentsdk-android" 
+         }
         flatDir {
             dirs "${rootDir}/libs/NeNative" // The path to your AAR file
         }

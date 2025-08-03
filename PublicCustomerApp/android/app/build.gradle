@@ -271,13 +271,13 @@ dependencies {
     implementation name: "bundle_downloader", ext: 'aar'
     implementation name: "services_core", ext: 'aar'
     implementation name: "geoJson", ext: 'aar'
-    implementation name: "geocoding-debug", ext: 'aar'
+    implementation name: "geocoding", ext: 'aar'
     implementation name: "libandroid-navigation", ext: 'aar'
     implementation name: "libandroid-navigation-ui-gms", ext: 'aar'
     implementation name: "speech", ext: 'aar'
     implementation name: "sqlite-android", ext: 'aar'
-    implementation name: "telemetry-release", ext: 'aar'
-    implementation name: "turf-release", ext: 'aar'
+    implementation name: "telemetry", ext: 'aar'
+    implementation name: "turf", ext: 'aar'
     implementation name: "pocketsphinx-android-5prealpha", ext: 'aar'
     implementation name: "models", ext: 'aar'
     // The version of react-native is set by the React Native Gradle Plugin
@@ -306,6 +306,8 @@ dependencies {
     androidTestImplementation 'androidx.test:rules:1.4.0'
     implementation 'com.google.code.gson:gson:2.8.8'
     implementation "com.google.android.gms:play-services-location:21.0.1"
+    implementation 'com.airbnb.android:lottie:6.4.0'
+    implementation 'androidx.work:work-runtime-ktx:2.9.0'
 
     androidTestImplementation('com.wix:detox:+')
     implementation 'androidx.appcompat:appcompat:1.1.0'

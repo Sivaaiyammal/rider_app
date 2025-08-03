@@ -20,38 +20,64 @@ public class SearchDataConverter {
     public static WritableMap toReadableMap(SearchData searchData) {
         WritableMap map = Arguments.createMap();
         Log.d("TAG", "toReadableMap: hari---" + searchData);
-        List<MatchedString> matchedStrings = searchData.getMatchedStrings();
-        List<FastMatch> fastMatches = searchData.getFastMatch();
-        List<FullSearch> fullSearches = searchData.getFullSearch();
-        List<Area> country = searchData.getCountry();
-        List<Area> state = searchData.getState();
-        List<Area> city = searchData.getCity();
-        List<Area> district = searchData.getDistrict();
-        List<Street> street = searchData.getStreet();
-        List<Area> area = searchData.getArea();
 
+        if (searchData == null) {
+            Log.w("AJIN", "SearchData is null in converter");
+            return map;
+        }
 
-        Log.d("AJIN", "matchedStrings length: " + (matchedStrings != null ? matchedStrings.size() : 0));
-        Log.d("AJIN", "fastMatches length: " + (fastMatches != null ? fastMatches.size() : 0));
-        Log.d("AJIN", "fullSearches length: " + (fullSearches != null ? fullSearches.size() : 0));
-        Log.d("AJIN", "country length: " + (country != null ? country.size() : 0));
-        Log.d("AJIN", "state length: " + (state != null ? state.size() : 0));
-        Log.d("AJIN", "city length: " + (city != null ? city.size() : 0));
-        Log.d("AJIN", "district length: " + (district != null ? district.size() : 0));
-        Log.d("AJIN", "street length: " + (street != null ? street.size() : 0));
-        Log.d("AJIN", "area length: " + (area != null ? area.size() : 0));
+        try {
+            List<MatchedString> matchedStrings = searchData.getMatchedStrings();
+            List<FastMatch> fastMatches = searchData.getFastMatch();
+            List<FullSearch> fullSearches = searchData.getFullSearch();
+            List<Area> country = searchData.getCountry();
+            List<Area> state = searchData.getState();
+            List<Area> city = searchData.getCity();
+            List<Area> district = searchData.getDistrict();
+            List<Street> street = searchData.getStreet();
+            List<Area> area = searchData.getArea();
 
+            Log.d("AJIN", "matchedStrings length: " + (matchedStrings != null ? matchedStrings.size() : 0));
+            Log.d("AJIN", "fastMatches length: " + (fastMatches != null ? fastMatches.size() : 0));
+            Log.d("AJIN", "fullSearches length: " + (fullSearches != null ? fullSearches.size() : 0));
+            Log.d("AJIN", "country length: " + (country != null ? country.size() : 0));
+            Log.d("AJIN", "state length: " + (state != null ? state.size() : 0));
+            Log.d("AJIN", "city length: " + (city != null ? city.size() : 0));
+            Log.d("AJIN", "district length: " + (district != null ? district.size() : 0));
+            Log.d("AJIN", "street length: " + (street != null ? street.size() : 0));
+            Log.d("AJIN", "area length: " + (area != null ? area.size() : 0));
 
-        map.putArray("matchedStrings", convertMatchedStrings(matchedStrings));
-        map.putArray("fast_match", convertFastMatches(fastMatches));
-        map.putArray("full_search", convertFullSearch(fullSearches));
-        map.putArray("country", convertAreas(country));
-        map.putArray("state", convertAreas(state));
-        map.putArray("city", convertAreas(city));
-        map.putArray("district", convertAreas(district));
-        map.putArray("street", convertStreets(street));
-        map.putArray("area", convertAreas(area));
-        // map.putArray("bboxSearch", convertFullSearch(bboxSearch));
+            if (matchedStrings != null) {
+                map.putArray("matchedStrings", convertMatchedStrings(matchedStrings));
+            }
+            if (fastMatches != null) {
+                map.putArray("fastMatch", convertFastMatches(fastMatches));
+            }
+            if (fullSearches != null) {
+                map.putArray("fullSearch", convertFullSearch(fullSearches));
+            }
+            if (country != null) {
+                map.putArray("country", convertAreas(country));
+            }
+            if (state != null) {
+                map.putArray("state", convertAreas(state));
+            }
+            if (city != null) {
+                map.putArray("city", convertAreas(city));
+            }
+            if (district != null) {
+                map.putArray("district", convertAreas(district));
+            }
+            if (street != null) {
+                map.putArray("street", convertStreets(street));
+            }
+            if (area != null) {
+                map.putArray("area", convertAreas(area));
+            }
+        } catch (Exception e) {
+            Log.e("AJIN", "Error converting SearchData: " + e.getMessage());
+            e.printStackTrace();
+        }
 
         return map;
     }
@@ -145,78 +171,6 @@ public class SearchDataConverter {
         }
         return array;
     }
-//private static WritableArray convertFastMatches(List<FastMatch> fastMatches) {
-//    WritableArray array = Arguments.createArray();
-//    Log.d("TAG", "convertFastMatches: " + fastMatches);
-//
-//    if (fastMatches != null) {
-//        for (FastMatch fastMatch : fastMatches) {
-//            WritableMap map = Arguments.createMap();
-//
-//            boolean hasMeaningfulData = false;
-//
-//            // Add stateVectorForMatches if it has valid data
-//            if (fastMatch.getStateVectorForMatches() != null) {
-//                WritableMap stateVectorMap = Arguments.createMap();
-//                for (Map.Entry<String, List<Object>> entry : fastMatch.getStateVectorForMatches().entrySet()) {
-//                    WritableArray valueArray = Arguments.createArray();
-//                    for (Object obj : entry.getValue()) {
-//                        if (obj instanceof String) {
-//                            valueArray.pushString((String) obj);
-//                        } else if (obj instanceof Integer) {
-//                            valueArray.pushInt((Integer) obj);
-//                        } else if (obj instanceof Double) {
-//                            valueArray.pushDouble((Double) obj);
-//                        } else if (obj instanceof Boolean) {
-//                            valueArray.pushBoolean((Boolean) obj);
-//                        }
-//                    }
-//
-//                    if (valueArray.size() > 0) {
-//                        stateVectorMap.putArray(entry.getKey(), valueArray);
-//                        hasMeaningfulData = true; // StateVectorForMatches has valid data
-//                    }
-//                }
-//
-//                if (!stateVectorMap.toHashMap().isEmpty()) {
-//                    map.putMap("stateVectorForMatches", stateVectorMap);
-//                }
-//            }
-//
-//            // Add primaryCategory if non-empty
-//            if (fastMatch.getPrimaryCategory() != null && !fastMatch.getPrimaryCategory().isEmpty()) {
-//                map.putString("primaryCategory", fastMatch.getPrimaryCategory());
-//            }
-//
-//            // Add primaryText if non-empty
-//            if (fastMatch.getPrimaryText() != null && !fastMatch.getPrimaryText().isEmpty()) {
-//                map.putString("primaryText", fastMatch.getPrimaryText());
-//                hasMeaningfulData = true;
-//            }
-//
-//            // Add secondaryCategory if non-empty
-//            if (fastMatch.getSecondaryCategory() != null && !fastMatch.getSecondaryCategory().isEmpty()) {
-//                map.putString("secondaryCategory", fastMatch.getSecondaryCategory());
-//                hasMeaningfulData = true;
-//            }
-//
-//            // Add secondaryText if non-empty
-//            if (fastMatch.getSecondaryText() != null && !fastMatch.getSecondaryText().isEmpty()) {
-//                map.putString("secondaryText", fastMatch.getSecondaryText());
-//                hasMeaningfulData = true;
-//            }
-//
-//            // Add primaryCategory to meaningful data only if other fields are also valid
-//            if (hasMeaningfulData) {
-//                array.pushMap(map);
-//            }
-//        }
-//    }
-//
-//    return array;
-//}
-
-
 
     private static WritableArray convertFullSearch(List<FullSearch> fullSearches) {
         WritableArray array = Arguments.createArray();

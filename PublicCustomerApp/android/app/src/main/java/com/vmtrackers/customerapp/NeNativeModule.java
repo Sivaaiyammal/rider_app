@@ -21,6 +21,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.dot.nenativemap.search.UnifiedSearchData;
 import com.facebook.react.bridge.Promise;
 
 import com.dot.nenativemap.MapChangeListener;
@@ -62,6 +64,7 @@ import com.dot.nenativemap.directions.VHRoutingRequest;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
+import com.nenative.services.android.navigation.ui.v5.navigationEndView.NavigationTripData;
 import com.virtualmaze.bundle_downloader.NENativeMap;
 import com.virtualmaze.bundle_downloader.listener.NENativeDownloadListener;
 import com.virtualmaze.bundle_downloader.utils.ProgressType;
@@ -1513,6 +1516,13 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                         public void onSendRating(float rating) {
 
                         }
+
+                        @Override
+                        public void onNavigationShare(NavigationTripData tripData){
+
+                        }
+
+
                     },
                     new ProgressChangeListener() {
                         @Override
@@ -1643,7 +1653,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             double CURRENT_LONGITUDE,
             String searchString,
             String mapUnitName,
-            com.facebook.react.bridge.ReadableMap stateVectorForMatches,
+            ReadableMap stateVectorForMatches,
             int resultCount,
             String lang_code,
             boolean debug,
@@ -1654,19 +1664,19 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             String category,
             Promise promise
     ) {
-        Log.d("AJIN","SEARCH CALL MADE");
-        Log.d("AJIN", "CURRENT_LATITUDE: " + CURRENT_LATITUDE);
-        Log.d("AJIN", "CURRENT_LONGITUDE: " + CURRENT_LONGITUDE);
-        Log.d("AJIN", "searchString: " + searchString);
-        Log.d("AJIN", "mapUnitName: " + mapUnitName);
-        Log.d("AJIN", "resultCount: " + resultCount);
-        Log.d("AJIN", "lang_code: " + lang_code);
-        Log.d("AJIN", "debug: " + debug);
-        Log.d("AJIN", "onlineOnly: " + onlineOnly);
-        Log.d("AJIN", "makeFullSearch: " + makeFullSearch);
-        Log.d("AJIN", "isPoiSearch: " + isPoiSearch);
-        Log.d("AJIN", "radius: " + radius);
-        Log.d("AJIN", "category: " + category);
+        // Log.d("AJIN","SEARCH CALL MADE");
+        // Log.d("AJIN", "CURRENT_LATITUDE: " + CURRENT_LATITUDE);
+        // Log.d("AJIN", "CURRENT_LONGITUDE: " + CURRENT_LONGITUDE);
+        // Log.d("AJIN", "searchString: " + searchString);
+        // Log.d("AJIN", "mapUnitName: " + mapUnitName);
+        // Log.d("AJIN", "resultCount: " + resultCount);
+        // Log.d("AJIN", "lang_code: " + lang_code);
+        // Log.d("AJIN", "debug: " + debug);
+        // Log.d("AJIN", "onlineOnly: " + onlineOnly);
+        // Log.d("AJIN", "makeFullSearch: " + makeFullSearch);
+        // Log.d("AJIN", "isPoiSearch: " + isPoiSearch);
+        // Log.d("AJIN", "radius: " + radius);
+        // Log.d("AJIN", "category: " + category);
 
         SearchResultCallback searchResultCallback = new SearchResultCallback() {
             @Override
@@ -1675,6 +1685,12 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 WritableMap map = Arguments.createMap();
                 SearchData searchData = result.getSearchData();
                 map.putMap("searchData", SearchDataConverter.toReadableMap(searchData));
+
+                if (result.isUnifiedSearch()) {
+                    ArrayList<UnifiedSearchData> unifiedSearch = result.getUnifiedSearchData();
+                    map.putMap("unifiedSearchData", UnifiedSearchDataConverter.toReadableMap(unifiedSearch));
+                }
+
                 map.putString("mapUnitName", mapUnitName);
                 map.putString("searchString", searchString);
                 Log.d("AJIN", "Search result map: " + map.toString());
@@ -1684,60 +1700,104 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
             @Override
             public void onFailure(SearchResponse error) {
-                Log.d("AJIN", "result failed"+ error);
-//                promise.reject("Search failed", (WritableMap) error);
-
+                Log.d("AJIN", "result failed: " + (error != null ? error.toString() : "null error"));
+                promise.reject("SEARCH_FAILED", "Search operation failed");
             }
 
             @Override
             public void onCancelled(SearchResponse searchResponse) {
-                Log.d("AJIN", "result onCancelled"+ searchResponse);
+                Log.d("AJIN", "result onCancelled: " + (searchResponse != null ? searchResponse.toString() : "null response"));
+                promise.reject("SEARCH_CANCELLED", "Search operation was cancelled");
             }
         };
 
-        // Check if stateVectorForMatches is null
+        // Handle state vector as a map
         Map<String, List<Object>> sv = new HashMap<>();
         if (stateVectorForMatches != null) {
-            ReadableMapKeySetIterator iterator = stateVectorForMatches.keySetIterator();
-
-            while (iterator.hasNextKey()) {
-                String key = iterator.nextKey();
-                ReadableArray array = stateVectorForMatches.getArray(key);
-                List<Object> values = new ArrayList<>();
-                for (int i = 0; i < array.size(); i++) {
-                    switch (array.getType(i)) {
-                        case String:
-                            values.add(array.getString(i));
-                            break;
-                        case Number:
-                            values.add(array.getDouble(i));
-                            break;
-                        case Boolean:
-                            values.add(array.getBoolean(i));
-                            break;
+            try {
+                ReadableMapKeySetIterator iterator = stateVectorForMatches.keySetIterator();
+                while (iterator.hasNextKey()) {
+                    String key = iterator.nextKey();
+                    ReadableType valueType = stateVectorForMatches.getType(key);
+                    if (valueType == ReadableType.Array) {
+                        ReadableArray array = stateVectorForMatches.getArray(key);
+                        if (array != null) {
+                            List<Object> values = new ArrayList<>();
+                            for (int j = 0; j < array.size(); j++) {
+                                ReadableType arrayType = array.getType(j);
+                                switch (arrayType) {
+                                    case String:
+                                        values.add(array.getString(j));
+                                        break;
+                                    case Number:
+                                        values.add(array.getDouble(j));
+                                        break;
+                                    case Boolean:
+                                        values.add(array.getBoolean(j));
+                                        break;
+                                    default:
+                                        Log.d("AJIN", "Unsupported type in array: " + arrayType);
+                                        break;
+                                }
+                            }
+                            sv.put(key, values);
+                        }
                     }
                 }
-                sv.put(key, values);
+            } catch (Exception e) {
+                Log.e("AJIN", "Error processing state vector: " + e.getMessage());
+                e.printStackTrace();
             }
         } else {
             Log.d("AJIN", "stateVectorForMatches is null");
         }
 
+        // Determine if this should be a unified search
+        boolean isUnifiedSearch = true;
+
+        if(searchString.length() < 4 || (sv != null && !sv.isEmpty()) || isPoiSearch) {
+            isUnifiedSearch = false;
+        } else {
+            makeFullSearch = false;
+        }
+
+
+        // Convert category to JSON string if provided
+        String categoryJson ="[]";
+
+        // Log all parameters before making the search call
+        Log.d("SEARCH_PARAMS", "mapUnitName: " + mapUnitName);
+        Log.d("SEARCH_PARAMS", "searchString: " + searchString);
+        Log.d("SEARCH_PARAMS", "stateVector: " + sv.toString());
+        Log.d("SEARCH_PARAMS", "resultCount: " + resultCount);
+        Log.d("SEARCH_PARAMS", "lang_code: " + lang_code);
+        Log.d("SEARCH_PARAMS", "CURRENT_LATITUDE: " + CURRENT_LATITUDE);
+        Log.d("SEARCH_PARAMS", "CURRENT_LONGITUDE: " + CURRENT_LONGITUDE);
+        Log.d("SEARCH_PARAMS", "debug: " + debug);
+        Log.d("SEARCH_PARAMS", "onlineOnly: " + onlineOnly);
+        Log.d("SEARCH_PARAMS", "makeFullSearch: " + makeFullSearch);
+        Log.d("SEARCH_PARAMS", "isPoiSearch: " + isPoiSearch);
+        Log.d("SEARCH_PARAMS", "isUnifiedSearch: " + isUnifiedSearch);
+        Log.d("SEARCH_PARAMS", "radius: " + radius);
+        Log.d("SEARCH_PARAMS", "categoryJson: " + categoryJson);
+
         Search.getInstance().handleSearchRequest(
                 mapUnitName,
-            searchString, 
-            sv,
-            resultCount, 
-            lang_code,
-            CURRENT_LATITUDE, 
-            CURRENT_LONGITUDE, 
-            debug,
-            onlineOnly,
-            makeFullSearch,
-            isPoiSearch,
-            radius,
-            category,
-            searchResultCallback);
+                searchString,
+                sv,
+                resultCount,
+                lang_code,
+                CURRENT_LATITUDE,
+                CURRENT_LONGITUDE,
+                debug,
+                onlineOnly,
+                makeFullSearch,
+                isPoiSearch,
+                isUnifiedSearch,
+                radius,
+                categoryJson,
+                searchResultCallback
+        );
     }
 
     @ReactMethod
