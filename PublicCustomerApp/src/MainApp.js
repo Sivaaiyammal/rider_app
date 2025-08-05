@@ -12,6 +12,7 @@ import messaging from '@react-native-firebase/messaging';
 import PushNotifications from './controllers/PushNotification';
 import { NetworkProvider, useNetwork } from './context/NetworkContext';
 import NoNetworkOverlay from './components/NoNetworkOverlay';
+import i18n from './i18n';
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
@@ -34,7 +35,15 @@ const MainAppContent = () => {
     setAppTheme();
   }, [setAppTheme]);
 
+  const initLanguage = async () => {
+    const language = await DataStore.loadData('language');
+    if(language.data){
+      i18n.changeLanguage(language.data);
+    }
+  }
+
   useEffect(() => {
+    initLanguage();
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       console.log('Message handled in the foreground!', remoteMessage);
       PushNotifications.sendNotification(remoteMessage.notification.body, remoteMessage.notification.title, remoteMessage.data)

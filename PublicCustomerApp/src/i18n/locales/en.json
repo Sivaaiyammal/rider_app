@@ -7,5 +7,8 @@
         "set_your_destination": "Set Your Destination",
         "set_your_destination_description": "Whether it`s a ride home, the office, or an adventure, \"Namma Ooru Taxi ®\" is ready to take you there.",
         "track_your_ride": "Track Your Ride",
-        "track_your_ride_description": "Watch your driver's arrival in real-time and stay updated with their location. No more guessing when your ride will arrive."
+        "track_your_ride_description": "Watch your driver's arrival in real-time and stay updated with their location. No more guessing when your ride will arrive.",
+        "where_do_you_want_to_go": "Where do you want to go?",
+        "dismiss": "Dismiss",
+        "location_not_found": "Location not found"
     }

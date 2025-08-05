@@ -78,12 +78,11 @@ const BottomSheetHeader = () => {
 }
 const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsScreen = null}) => {
     const {goBack} = useStackScreenStore()
-        const {paymentType,setPaymentType, setRideDistance ,setEstimatedDuration,rideDistance,estimatedDuration,couponCode} = useRideBookingInfo()
+        const {paymentType,setPaymentType, setRideDistance ,setEstimatedDuration,rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode} = useRideBookingInfo()
     const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false)
     const {isPreferenceShow,setIsPreferenceShow} = useUserInfoStore()
     const {setAvailableVehicles,availableVehicles,clearAvailableVehicles} = useRideVehicleStore()
     const [isLoading,setIsLoading] = useState(true)
-
     const [showPreference,setShowPreference] = useState(false)
     // Use the direction load hook to transform ride locations to direction points
     const { 
@@ -224,7 +223,12 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
        
         if (data?.result?.success) {
             // Handle successful estimation
-          
+            if(data?.regionCode){
+                setRegionOfficeCode(data?.regionCode)
+            }
+            if(data?.regionOfficeId){
+                setRegionOfficeId(data?.regionOfficeId)
+            }
             transformEstimateDatStore(data?.result?.data?.fareRanges)
                    
         } else {
@@ -240,6 +244,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         const payload = {
             distance: rideDistance, 
             duration: estimatedDuration, 
+            coordinates: [rideStartLocation.longitude, rideStartLocation.latitude]
         };
 
         console.log("Sending estimation payload:", payload);

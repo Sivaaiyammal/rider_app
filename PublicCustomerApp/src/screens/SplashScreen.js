@@ -11,6 +11,7 @@ import { GlobalContext } from '../context/GlobalContext';
 const SplashScreen = () => {
   const navigation = useNavigation();
   const {addListener} = useContext(GlobalContext);
+  const {setLanguage} = useUserInfoStore();
   useEffect(() => {
     setTimeout(() => {
       nextScreen();
@@ -21,8 +22,9 @@ const SplashScreen = () => {
     const language = await DataStore.loadData('language');
     const onBoarding = await DataStore.loadData('onBoarding');
     const access_token = await DataStore.loadData('access_token');
-   
+    
     if (access_token.data) {
+      
       addListener(access_token.data);
       navigation.dispatch(
             CommonActions.reset({
@@ -31,6 +33,10 @@ const SplashScreen = () => {
             }),
           );
     } else if (language.data === 'languageDone') {
+      if(language.data){
+      setLanguage(language.data);
+    }
+      
       if (onBoarding.data === 'onBoardingDone') {
         navigation.dispatch(
           CommonActions.reset({

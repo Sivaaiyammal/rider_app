@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-
+import i18n from '../i18n';
 const useUserInfoStore = create(set => ({
   id: null,
   setID: id => set({ id }),
@@ -25,6 +25,13 @@ const useUserInfoStore = create(set => ({
 
   userFavPlaces:null,
   setUserFavPlaces: userFavPlaces => set({ userFavPlaces }),
+
+  language:null,
+  setLanguage: language => {
+    console.log('language', language);
+    i18n.changeLanguage(language);
+    set({ language });
+  },
 }));
 
 export default useUserInfoStore;

@@ -31,7 +31,9 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     passangerDetails,
     safeNightRides,
     femaleDriverOnly,
-    couponCode
+    couponCode,
+    regionOfficeId,
+    regionOfficeCode
   } = useRideBookingInfo();
   
   const { selectedVehicle } = useRideVehicleStore();
@@ -113,7 +115,8 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       paymentMethod: paymentType || 'CASH',
       nightRide:safeNightRides,
       femaleOnly:femaleDriverOnly,
-     
+      regionalOffice: regionOfficeId || null,
+      regionCode: regionOfficeCode || 'default',
 
     };
     if(couponCode){

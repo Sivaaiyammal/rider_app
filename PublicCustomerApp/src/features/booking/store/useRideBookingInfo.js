@@ -34,6 +34,13 @@ const useRideBookingInfo = create(set => ({
   couponCode: null,
   setCouponCode: (couponCode) => set({ couponCode }),
 
+
+  regionOfficeId: null,
+  setRegionOfficeId: (regionOfficeId) => set({ regionOfficeId }),
+
+  regionOfficeCode: null,
+  setRegionOfficeCode: (regionOfficeCode) => set({ regionOfficeCode }),
+
   // Reset all booking info
   resetBookingInfo: () => set({
     rideDistance: null,

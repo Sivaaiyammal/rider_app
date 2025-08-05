@@ -31,7 +31,7 @@ const LanguageScreen = ({fromDrawer}) => {
 
 
   const onNextPress = () => {
-    DataStore.storeData('language', selected.code);
+   
     if(fromDrawer){
       goBack();
     }
@@ -45,6 +45,7 @@ const LanguageScreen = ({fromDrawer}) => {
   const handleLanguageChange = (language) => {
     changeLanguage(language);
     i18n.changeLanguage(language.code);
+    
     
   };
 

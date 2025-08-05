@@ -4,11 +4,11 @@ import {
   Text, 
   TouchableOpacity, 
   StatusBar, 
-  ActivityIndicator,
   View,
   Alert
 } from 'react-native';
 import React, {useEffect, useRef, useState, useCallback} from 'react';
+import { useTranslation } from 'react-i18next';
 
 
 import SideDrawer from '../../../components/Drawer/SideDrawer';
@@ -27,13 +27,14 @@ import  LocationTypes  from '../../booking/types/LocationTypes.json';
 import useRideBookingLocationStore from '../../booking/store/useRideBookingLocationStore'
 import {storeLocation}   from '../../../storage/userLocalStorage'
 const MapScreen = () => {
+  const { t } = useTranslation();
 
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState(null);
   const {setStackScreen,goBack} = useStackScreenStore();
   const {location,currentLocationName} = useLocationStore();
   const {  setRideStartLocation,setRideEndLocation } = useRideBookingLocationStore()
-  const {homelocation, worklocation,setHomelocation,setWorklocation} = useUserInfoStore();
+  const {setHomelocation,setWorklocation} = useUserInfoStore();
  
   
   const scaleValue = useRef(new Animated.Value(1)).current;
@@ -135,7 +136,7 @@ const MapScreen = () => {
           style={styles.errorButton}
           onPress={() => setError(null)}
         >
-          <Text style={styles.errorButtonText}>Dismiss</Text>
+          <Text style={styles.errorButtonText}>{t('dismiss')}</Text>
         </TouchableOpacity>
       </View>
     )
@@ -185,7 +186,7 @@ const MapScreen = () => {
   const makeRidePlan=()=>{
 
     if(!location || !currentLocationName || !location.length){
-      Alert.alert("Location not found")
+      Alert.alert(t('location_not_found'))
       return;
     }
 
@@ -223,7 +224,7 @@ const MapScreen = () => {
         >
           <SearchIcon />
           <Text style={styles.searchContainerText}>
-            Where do you want to go?
+            {t('where_do_you_want_to_go')}
           </Text>
         </TouchableOpacity>
 
