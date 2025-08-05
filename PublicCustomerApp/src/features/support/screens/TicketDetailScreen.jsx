@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ChatMessage from '../components/ChatMessage';
-import useSupportStore from '../../../store/useSupportStore';
+import useSupportStore from '../store/useSupportStore';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import { Fonts } from '../../../constants/constants';
 

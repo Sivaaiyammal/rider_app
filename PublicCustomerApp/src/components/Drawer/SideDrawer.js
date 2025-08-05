@@ -17,7 +17,7 @@ import PropTypes from 'prop-types';
 
 import ProfileImage from '../../assets/image/svgIcons/profileImage.svg';
 import useUserInfoStore from '../../store/useUserInfoStore';
-import useSupportStore from '../../store/useSupportStore';
+import useSupportStore from '../../features/support/store/useSupportStore';
 
 const SideDrawerV2 = ({ handleMenu }) => {
   const { userdetails } = useUserInfoStore();

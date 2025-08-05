@@ -9,7 +9,7 @@ export { default as SupportScreen } from './screens/SupportScreen';
 export { default as TicketDetailScreen } from './screens/TicketDetailScreen';
 
 // Store
-export { default as useSupportStore } from '../../store/useSupportStore';
+export { default as useSupportStore } from './store/useSupportStore';
 
 // Sample Data
 export { default as supportData } from './sample/supportData.json'; 

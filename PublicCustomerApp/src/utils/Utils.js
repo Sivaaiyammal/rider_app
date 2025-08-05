@@ -28,6 +28,9 @@ export const utils = {
     else if (type == '5' || type == 'car') return 'SUV'
     else if (type == '6') return 'Luxury Sedan'
 
+  },  
+  convertToRelativeTime: (date) => {
+    return moment(date).fromNow();
   },
   getEasyDate(duration) {
 

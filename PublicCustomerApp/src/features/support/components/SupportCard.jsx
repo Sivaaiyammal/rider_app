@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import useSupportStore from '../../../store/useSupportStore';
+import useSupportStore from '../store/useSupportStore';
 import { Fonts } from '../../../constants/constants';
 
 const SupportCard = ({ ticket, onPress, showStatus = true }) => {

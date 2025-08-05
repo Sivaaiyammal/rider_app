@@ -48,8 +48,7 @@ const SelectedVehicle = () => {
 
   const onBookingSuccess = data => {
     if (data.success) {
-      console.log('onBookingSuccess');
-      console.log('data', data)
+     
       setBookingDetails(data?.trip);
       // showNotification('Searching for Vehicle', '', 'success');
       setStackScreen('TripScreenManager');

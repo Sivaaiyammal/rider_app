@@ -12,10 +12,11 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SupportCard from '../components/SupportCard';
 import CreateTicketForm from '../components/CreateTicketForm';
-import SkeletonLoader from '../components/SkeletonLoader';
-import useSupportStore from '../../../store/useSupportStore';
+import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
+import useSupportStore from '../store/useSupportStore';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import { Fonts } from '../../../constants/constants';
+import UserTicketService from '../services/UserTicketService';
 
 const SupportScreen = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -31,13 +32,19 @@ const SupportScreen = () => {
     calculateUnreadCount,
     searchTickets,
     getTicketsByStatus,
-    createTicketAsync,
-    simulateAgentResponse,
+    createTicket,
     showPriority,
     setShowPriority,
+    fetchTickets,
+    refreshTickets,
+    fetchTicketDetails,
   } = useSupportStore();
 
-  const { setStackScreen,reset } = useStackScreenStore();
+  const { setStackScreen, reset } = useStackScreenStore();
+
+  useEffect(() => {
+    loadTickets();
+  }, []);
 
   useEffect(() => {
     calculateUnreadCount();
@@ -57,32 +64,90 @@ const SupportScreen = () => {
     setFilteredTickets(filtered);
   }, [searchQuery, activeTab, tickets]);
 
-  const handleCreateTicket = async (ticketData) => {
+  const loadTickets = async () => {
     try {
-      await createTicketAsync(ticketData);
-      setShowCreateForm(false);
-      Alert.alert('Success', 'Ticket created successfully!');
-      
-      // Simulate agent response
-      setTimeout(() => {
-        simulateAgentResponse(ticketData.ticketId);
-      }, 2000);
-      
-      // Navigate to ticket detail
-      setStackScreen('TicketDetailScreen');
+      const params = {};
+      if (activeTab !== 'all') {
+        params.status = activeTab;
+      }
+      await fetchTickets();
     } catch (error) {
-      Alert.alert('Error', 'Failed to create ticket. Please try again.');
+      console.error('Failed to load tickets:', error);
     }
   };
 
-  const handleTicketPress = (ticket) => {
-    useSupportStore.getState().setSelectedTicket(ticket);
-    setStackScreen('TicketDetailScreen');
+  const handleRefresh = async () => {
+    try {
+      const params = {};
+      if (activeTab !== 'all') {
+        params.status = activeTab;
+      }
+      await refreshTickets(params);
+    } catch (error) {
+      console.error('Failed to refresh tickets:', error);
+    }
+  };
+
+  const handleCreateTicket = async (ticketData) => {
+    try {
+      const payLoad={
+        "title": ticketData.subject,
+        "description": ticketData.description,
+        "categoryId": ticketData.category,
+        "tripId": ticketData.selectedTrip?._id
+      }
+      console.log('payLoad',payLoad);
+      const response = await UserTicketService.createTicket(payLoad);
+      if(response?.success){
+        Alert.alert('Success', 'Ticket created successfully!');
+        setShowCreateForm(false);
+        loadTickets();
+      }
+      // console.log('response',response);
+      // if(response?.data){
+      //   Alert.alert('Success', 'Ticket created successfully!');
+      //   setShowCreateForm(false);
+      // }
+      // await createTicket(ticketData);
+      // setShowCreateForm(false);
+      // Alert.alert('Success', 'Ticket created successfully!');
+      
+      // // Navigate to ticket detail
+      // setStackScreen('TicketDetailScreen');
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to create ticket. Please try again.');
+    }
+  };
+
+  const handleTicketPress = async (ticket) => {
+    console.log('ticket', ticket);
+    const getTicketDetails = await UserTicketService.getTicketDetails(ticket.ticketId);
+    if(getTicketDetails?.data?.comments?.length > 0){
+      const transFormData = getTicketDetails?.data?.comments?.map(item => ({
+        "id": item._id,
+        "content": item.comment,
+        "sender":"user",
+        "timestamp": item.createdAt,
+        "status": "read",
+      }));
+      const updatedTicket = {
+        ...ticket,
+        messages: transFormData,
+      };
+      console.log('updatedTicket',updatedTicket);
+      useSupportStore.getState().setSelectedTicket(updatedTicket);
+      setStackScreen('TicketDetailScreen');
+    }
+    // console.log('getTicketDetails',JSON.stringify(getTicketDetails?.data?.comments));
+    // if (getTicketDetails) {
+    //   useSupportStore.getState().setSelectedTicket(getTicketDetails);
+    //   setStackScreen('TicketDetailScreen');
+    // }
   };
 
   const getStatusCount = (status) => {
-    if (status === 'all') return tickets.length;
-    return getTicketsByStatus(status).length;
+    if (status === 'all') return tickets?.length;
+    return getTicketsByStatus(status)?.length;
   };
 
   const renderTabButton = (tab, label, count) => (
@@ -106,6 +171,25 @@ const SupportScreen = () => {
       ticket={item}
       onPress={handleTicketPress}
     />
+  );
+
+  const renderSkeletonLoader = () => (
+    <View style={styles.skeletonContainer}>
+      {[1, 2, 3, 4].map((item) => (
+        <View key={item} style={styles.skeletonCard}>
+          <View style={styles.skeletonHeader}>
+            <SkeletonLoader width="60%" height={16} />
+            <SkeletonLoader width={60} height={20} />
+          </View>
+          <SkeletonLoader width="90%" height={14} />
+          <SkeletonLoader width="70%" height={12} />
+          <View style={styles.skeletonFooter}>
+            <SkeletonLoader width={80} height={20} />
+            <SkeletonLoader width={60} height={12} />
+          </View>
+        </View>
+      ))}
+    </View>
   );
 
   if (showCreateForm) {
@@ -186,11 +270,17 @@ const SupportScreen = () => {
              {/* Content */}
        <View style={styles.content}>
          {isLoading ? (
-           <SkeletonLoader />
+           renderSkeletonLoader()
          ) : error ? (
           <View style={styles.errorContainer}>
             <Ionicons name="alert-circle" size={24} color="#EF4444" />
             <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={loadTickets}
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
           </View>
         ) : filteredTickets.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -216,6 +306,8 @@ const SupportScreen = () => {
             keyExtractor={(item) => item.ticketId}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContainer}
+            refreshing={isLoading}
+            onRefresh={handleRefresh}
           />
                  )}
        </View>
@@ -370,6 +462,35 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: '#6B7280',
   },
+  skeletonContainer: {
+    padding: 20,
+  },
+  skeletonCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  skeletonHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  skeletonFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+  },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -382,6 +503,18 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: '#EF4444',
     textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: '#000000',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontFamily: Fonts.semi_bold,
   },
   emptyContainer: {
     flex: 1,
