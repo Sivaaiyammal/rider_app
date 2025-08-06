@@ -15,10 +15,14 @@ import ChatMessage from '../components/ChatMessage';
 import useSupportStore from '../store/useSupportStore';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import { Fonts } from '../../../constants/constants';
+import UserTicketService from '../services/UserTicketService';
+import useUserInfoStore from '../../../store/useUserInfoStore';
+
 
 const TicketDetailScreen = () => {
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const { userInfo,id } = useUserInfoStore();
   const flatListRef = useRef(null);
   const {
     selectedTicket,
@@ -31,11 +35,33 @@ const TicketDetailScreen = () => {
 
   const { setStackScreen } = useStackScreenStore();
 
+
+  const SystemMessage = ({ message }) => {
+    return (
+      <View style={styles.systemMessageContainer}>
+        <Text style={styles.systemMessageText}>{message?.content}</Text>
+      </View>
+    );
+  };    
+
   useEffect(() => {
     if (selectedTicket?.ticketId) {
       markMessagesAsRead(selectedTicket.ticketId);
     }
   }, [selectedTicket?.ticketId]);
+
+
+  const addMessage = async (ticketId, messageText) => {
+    // Send as { message: ... } form data
+    console.log('messageText',messageText);
+    const response = await UserTicketService.addMessage(ticketId, messageText );
+    if (response?.success) {
+      setMessage('');
+      setIsTyping(false);
+      await addMessageAsync(selectedTicket.ticketId, messageText,id);
+      
+    }
+  };
 
   useEffect(() => {
     if (flatListRef.current && selectedTicket?.messages?.length > 0) {
@@ -53,13 +79,8 @@ const TicketDetailScreen = () => {
     setIsTyping(true);
 
     try {
-      await addMessageAsync(selectedTicket.ticketId, messageText);
-      
-      // Simulate agent response
-      setTimeout(() => {
-        simulateAgentResponse(selectedTicket.ticketId);
-        setIsTyping(false);
-      }, 2000);
+      await addMessage(selectedTicket.ticketId, messageText);
+
     } catch (error) {
       Alert.alert('Error', 'Failed to send message. Please try again.');
       setIsTyping(false);
@@ -109,15 +130,14 @@ const TicketDetailScreen = () => {
     }
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString(); 
+    
+    
+    return `${day} / ${month} / ${year}`;
   };
 
   if (!selectedTicket) {
@@ -151,7 +171,12 @@ const TicketDetailScreen = () => {
   }
 
   const renderMessage = ({ item }) => (
-    <ChatMessage message={item} isUser={item.sender === 'user'} />
+    console.log('item',item),
+    console.log('id',id),
+    item?.sender == "system" ?
+    <SystemMessage message={item} isUser={false} />
+    :
+    <ChatMessage message={item} isUser={item?.sender == id} />
   );
 
   const renderTypingIndicator = () => {
@@ -167,6 +192,18 @@ const TicketDetailScreen = () => {
           </View>
           <Text style={styles.typingText}>Agent is typing...</Text>
         </View>
+      </View>
+    );
+  };
+
+  const renderNoMessages = () => {
+    return (
+      <View style={styles.noMessagesContainer}>
+        <Ionicons name="chatbubble-outline" size={48} color="#9CA3AF" />
+        <Text style={styles.noMessagesTitle}>No messages yet</Text>
+        <Text style={styles.noMessagesSubtitle}>
+          Start the conversation by sending your first message
+        </Text>
       </View>
     );
   };
@@ -250,7 +287,7 @@ const TicketDetailScreen = () => {
                 </View>
               ))}
             </View>
-          ) : (
+          ) : selectedTicket.messages && selectedTicket.messages.length > 0 ? (
            <FlatList
              ref={flatListRef}
              data={selectedTicket.messages}
@@ -260,6 +297,8 @@ const TicketDetailScreen = () => {
              contentContainerStyle={styles.messagesList}
              ListFooterComponent={renderTypingIndicator}
            />
+         ) : (
+           renderNoMessages()
          )}
        </View>
 
@@ -523,6 +562,30 @@ const styles = StyleSheet.create({
       backgroundColor: '#E5E7EB',
       borderRadius: 4,
     },
+    systemMessageContainer: {
+      backgroundColor: '#F3F4F6',
+      padding: 12,
+      borderRadius: 16,
+      borderBottomLeftRadius: 4,
+      width: '100%',
+      alignSelf: 'flex-start',
+      justifyContent: 'center',
+      alignItems: 'center',
+      textAlign: 'center',  
+      marginTop: 10,
+    },
+    systemMessageText: {
+      fontSize: 12,
+      fontFamily: Fonts.regular,
+      color: 'white',
+      textAlign: 'center',
+      backgroundColor: 'grey',
+      borderRadius: 5,
+      padding: 5,
+      paddingHorizontal: 7,
+      width: '70%',
+      
+    },
     // User message skeleton (right side)
     userMessageSkeleton: {
       alignSelf: 'flex-end',
@@ -551,6 +614,27 @@ const styles = StyleSheet.create({
       backgroundColor: '#E5E7EB',
       borderRadius: 4,
       alignSelf: 'flex-end',
+    },
+    noMessagesContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingVertical: 50,
+      backgroundColor: '#F9FAFB',
+    },
+    noMessagesTitle: {
+      fontSize: 18,
+      fontFamily: Fonts.semi_bold,
+      color: '#374151',
+      marginTop: 16,
+      textAlign: 'center',
+    },
+    noMessagesSubtitle: {
+      fontSize: 14,
+      fontFamily: Fonts.regular,
+      color: '#6B7280',
+      marginTop: 4,
+      textAlign: 'center',
     },
  });
 

@@ -54,6 +54,24 @@ class UserTicketService {
     const response = await apiClient.post(`${APIConfig.PUBLICRIDEDASHBORAD_URL}/api/passenger-tickets`, ticketData);
     return response?.data;
   }
+
+  static async addMessage(ticketId, messageText) {
+    // Send as FormData (multipart/form-data)
+    const formData = new FormData();
+    formData.append('comment', messageText);
+    // Debug: log the value, not the FormData object itself
+    console.log('messageText', formData);
+    const response = await apiClient.post(
+      `${APIConfig.PUBLICRIDEDASHBORAD_URL}/api/passenger-tickets/${ticketId}/comments`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response?.data;
+  }
 }
 
 export default UserTicketService;

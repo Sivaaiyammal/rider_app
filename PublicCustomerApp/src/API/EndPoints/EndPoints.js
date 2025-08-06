@@ -115,8 +115,14 @@ export const deleteFavoritePlace = async (payload) => {
 
 
   export const mapMatch = async (payload) => {
-    const { data } = await apiClient.post(APIConfig.MAP_MATCH_URL, payload)
+    const { data } = await apiClient.post('/publicrides/customer/mapMatch', payload)
     return data
   }
+
+// get ticket categories
+export const getTicketCategories = async () => {
+  const { data } = await apiClient.get('/publicrides/customer/getTicketCategories')
+  return data
+}
 
 

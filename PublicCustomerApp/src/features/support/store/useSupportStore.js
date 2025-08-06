@@ -3,6 +3,7 @@ import supportData from '../sample/supportData.json';
 import UserTicketService from '../services/UserTicketService';  
 import { convertToRelativeTime } from '../../../utils/Utils';
 import { utils } from '../../../utils/Utils';
+import useUserInfoStore from '../../../store/useUserInfoStore';
 const useSupportStore = create((set, get) => ({
   // State
   tickets: [],
@@ -56,7 +57,7 @@ const useSupportStore = create((set, get) => ({
       const response = await UserTicketService.getAllTickets();
       console.log('response', response);
       const TransformData = response?.data?.map(item => ({
-        "ticketId": item.ticketId,
+      "ticketId": item.ticketId,
       "subject": item.title,
       "description": item.description,
       "category": item.categoryId?.name,
@@ -144,11 +145,12 @@ const useSupportStore = create((set, get) => ({
   },
 
   // Add message to ticket
-  addMessage: (ticketId, message) => {
+  addMessage: (ticketId, message,userId) => {
+   
     const newMessage = {
       id: `msg${Date.now()}`,
       content: message,
-      sender: 'user',
+      sender: userId,
       timestamp: new Date().toISOString(),
       status: 'sent'
     };
@@ -324,15 +326,13 @@ const useSupportStore = create((set, get) => ({
   },
 
   // Simulate API call for adding message
-  addMessageAsync: async (ticketId, message) => {
-    set({ isLoading: true, error: null });
+  addMessageAsync: async (ticketId, message,userId) => {
+   
     
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+     
+      get().addMessage(ticketId, message,userId);
       
-      get().addMessage(ticketId, message);
-      set({ isLoading: false });
     } catch (error) {
       set({ isLoading: false, error: error.message });
       throw error;

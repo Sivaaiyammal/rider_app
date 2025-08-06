@@ -32,7 +32,6 @@ const SupportScreen = () => {
     calculateUnreadCount,
     searchTickets,
     getTicketsByStatus,
-    createTicket,
     showPriority,
     setShowPriority,
     fetchTickets,
@@ -89,6 +88,7 @@ const SupportScreen = () => {
   };
 
   const handleCreateTicket = async (ticketData) => {
+    console.log('ticketData',ticketData);
     try {
       const payLoad={
         "title": ticketData.subject,
@@ -122,11 +122,11 @@ const SupportScreen = () => {
   const handleTicketPress = async (ticket) => {
     console.log('ticket', ticket);
     const getTicketDetails = await UserTicketService.getTicketDetails(ticket.ticketId);
-    if(getTicketDetails?.data?.comments?.length > 0){
+    if(getTicketDetails?.data?.comments){
       const transFormData = getTicketDetails?.data?.comments?.map(item => ({
         "id": item._id,
         "content": item.comment,
-        "sender":"user",
+        "sender":item?.addedBy?.userId,
         "timestamp": item.createdAt,
         "status": "read",
       }));
@@ -214,16 +214,16 @@ const SupportScreen = () => {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Support</Text>
                      <View style={styles.headerActions}>
-             <TouchableOpacity
+             <View
                style={styles.priorityToggle}
                onPress={() => setShowPriority(!showPriority)}
              >
-               <Ionicons 
+               {/* <Ionicons 
                  name={showPriority ? "flag" : "flag-outline"} 
                  size={20} 
                  color={showPriority ? "#000000" : "#6B7280"} 
-               />
-             </TouchableOpacity>
+               /> */}
+             </View>
            </View>
         </View>
 
@@ -357,6 +357,7 @@ const styles = StyleSheet.create({
   },
   priorityToggle: {
     padding: 4,
+    width:"10%"
   },
   createButton: {
     padding: 4,

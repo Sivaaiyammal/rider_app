@@ -6,18 +6,17 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
   Animated,
   KeyboardAvoidingView,
   Platform,
   Keyboard,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import useSupportStore from '../store/useSupportStore';
 import { Fonts } from '../../../constants/constants';
+import TripSelectionScreen from '../screens/TripSelectionScreen';
+import { getTicketCategories } from '../../../API/EndPoints/EndPoints';
 
 const CreateTicketForm = ({ onSubmit, onCancel }) => {
-  const { showPriority } = useSupportStore();
   const [formData, setFormData] = useState({
     subject: '',
     description: '',
@@ -26,6 +25,9 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
     ticketType: 'app', // 'trip' or 'app'
     selectedTrip: null,
   });
+  const [showTripSelection, setShowTripSelection] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
   const [errors, setErrors] = useState({});
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -36,47 +38,63 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
   const tripDetailsOpacity = useRef(new Animated.Value(0)).current;
   const tripDetailsHeight = useRef(new Animated.Value(0)).current;
 
-  // Mock trip data - in real app, this would come from API
-  const [availableTrips] = useState([
-    {
-      _id: '6881e98eee9826034491629b',
-      bookingTime: 1726120926843,
-      fare: 100,
-      distance: 10,
-      duration: 20,
-      trip_type: 'pickup',
-      driver_name: 'John Doe',
-      vehicleType: 'bike',
-      startLocation: {
-        address: 'Kolkata, West Bengal'
-      },
-      endLocation: {
-        address: 'Mumbai, Maharashtra'
-      },
-    },
-    {
-      _id: 'trip_2',
-      bookingTime: 1726120926844,
-      fare: 150,
-      distance: 15,
-      duration: 25,
-      trip_type: 'pickup',
-      driver_name: 'Jane Smith',
-      vehicleType: 'auto',
-      startLocation: {
-        address: 'Delhi, India'
-      },
-      endLocation: {
-        address: 'Gurgaon, Haryana'
-      },
-    },
-  ]);
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const response = await getTicketCategories();
+        if (response.success && response.categories) {
+          setCategories(response.categories);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        // Fallback to default categories if API fails
+        setCategories([
+          { 
+            _id: '688f955e6916c287b05d6f32', 
+            name: 'Trip Fare Issues', 
+            description: 'Issues related to trip pricing, billing, and payment',
+            ticketType: 'TRIP' 
+          },
+          { 
+            _id: '688f955e6916c287b05d6f38', 
+            name: 'Driver App Issues', 
+            description: 'Technical problems with the driver mobile application',
+            ticketType: 'APP' 
+          },
+        ]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
 
-  const categories = [
-    { id: '688f955e6916c287b05d6f32', name: 'Trip Fare Issues' },
-    { id: '688f955e6916c287b05d6f38', name: 'Driver App Issues' },
-   
-  ];
+    fetchCategories();
+  }, []);
+
+  // Filter categories based on ticket type
+  const filteredCategories = categories.filter(category => {
+    if (formData.ticketType === 'trip') {
+      return category.ticketType === 'TRIP';
+    } else {
+      return category.ticketType === 'APP';
+    }
+  });
+
+  // Reset form data when ticket type changes
+  useEffect(() => {
+    // Reset all form fields when ticket type changes
+    setFormData(prev => ({
+      ...prev,
+      subject: '',
+      description: '',
+      category: '',
+      selectedTrip: null,
+    }));
+    
+    // Clear any errors
+    setErrors({});
+  }, [formData.ticketType]);
 
   // Keyboard event listeners
   useEffect(() => {
@@ -199,6 +217,30 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
     }
   };
 
+  const handleCategorySelect = (categoryId) => {
+    // Find the selected category
+    const selectedCategory = categories.find(cat => cat._id === categoryId);
+    console.log('Selected category:', selectedCategory);
+    
+    // Update category
+    updateFormData('category', categoryId);
+    
+    // Clear description first, then set new one if available
+    updateFormData('description', '');
+    
+    // Auto-populate description if category has a description
+    if (selectedCategory && selectedCategory.description) {
+      console.log('Setting description:', selectedCategory.description);
+      // Use setTimeout to ensure the clear happens first
+      setTimeout(() => {
+        updateFormData('description', selectedCategory.description);
+        updateFormData('subject', selectedCategory.name);
+      }, 100);
+    } else {
+      console.log('No description found for category');
+    }
+  };
+
   const formatTripDisplay = (trip) => {
     const date = new Date(trip.bookingTime);
     const formattedDate = date.toLocaleDateString('en-US', {
@@ -208,19 +250,33 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
       hour: '2-digit',
       minute: '2-digit'
     });
-    
-    return `${trip.startLocation.address} → ${trip.endLocation.address} (${formattedDate})`;
+
+    const MAX_ADDRESS_LENGTH = 32;
+    const ellipsize = (str, max) => {
+      if (!str) return '';
+      return str.length > max ? str.slice(0, max - 3) + '...' : str;
+    };
+
+    const startAddressRaw = trip.stops?.[0]?.address || 'Unknown location';
+    const endAddressRaw = trip.stops?.[trip.stops.length - 1]?.address || 'Unknown location';
+
+    const startAddress = ellipsize(startAddressRaw, MAX_ADDRESS_LENGTH);
+    const endAddress = ellipsize(endAddressRaw, MAX_ADDRESS_LENGTH);
+
+    return `${startAddress} → ${endAddress} (${formattedDate})`;
   };
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString().slice(-2); // Get last 2 digits
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    
+    return `${month}/${day}/${year} - ${displayHours}:${minutes} ${ampm}`;
   };
 
      return (
@@ -318,39 +374,24 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
             ]}
           >
             <Text style={styles.label}>Select Trip *</Text>
-            {availableTrips.length > 0 ? (
-              <TouchableOpacity
-                style={[styles.dropdownButton, errors.selectedTrip && styles.inputError]}
-                onPress={() => {
-                  // In a real app, you might want to show a modal or navigate to trip selection
-                  Alert.alert(
-                    'Select Trip',
-                    'Choose a trip from your ride history',
-                    availableTrips.map(trip => ({
-                      text: formatTripDisplay(trip),
-                      onPress: () => updateFormData('selectedTrip', trip)
-                    }))
-                  );
-                }}
-              >
-                <Text style={[
-                  styles.dropdownButtonText,
-                  !formData.selectedTrip && styles.placeholderText
-                ]}>
-                  {formData.selectedTrip 
-                    ? formatTripDisplay(formData.selectedTrip)
-                    : 'Select a trip from your ride history'
-                  }
-                </Text>
-                <Ionicons name="chevron-down" size={16} color="#6B7280" />
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.noTripsContainer}>
-                <Ionicons name="car-outline" size={24} color="#9CA3AF" />
-                <Text style={styles.noTripsText}>No trips in history</Text>
-                <Text style={styles.noTripsSubtext}>You don&apos;t have any completed trips yet</Text>
-              </View>
-            )}
+            <TouchableOpacity
+              style={[styles.dropdownButton, errors.selectedTrip && styles.inputError]}
+              onPress={() => {
+                // Show trip selection screen as overlay
+                setShowTripSelection(true);
+              }}
+            >
+              <Text style={[
+                styles.dropdownButtonText,
+                !formData.selectedTrip && styles.placeholderText
+              ]}>
+                {formData.selectedTrip 
+                  ? formatTripDisplay(formData.selectedTrip)
+                  : 'Select a trip from your ride history'
+                }
+              </Text>
+              <Ionicons name="chevron-down" size={16} color="#6B7280" />
+            </TouchableOpacity>
             {errors.selectedTrip && <Text style={styles.errorText}>{errors.selectedTrip}</Text>}
             
             {/* Show selected trip details with animation */}
@@ -370,11 +411,11 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               <Text style={styles.tripDetailsTitle}>Trip Details:</Text>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>From:</Text>
-                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.startLocation.address}</Text>
+                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.stops?.[0]?.address || 'Unknown location'}</Text>
               </View>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>To:</Text>
-                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.endLocation.address}</Text>
+                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.stops?.[formData.selectedTrip?.stops?.length - 1]?.address || 'Unknown location'}</Text>
               </View>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>Date:</Text>
@@ -382,56 +423,62 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               </View>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>Fare:</Text>
-                <Text style={styles.tripDetailValue}>₹{formData.selectedTrip?.fare}</Text>
+                <Text style={styles.tripDetailValue}>₹{formData.selectedTrip?.estimatedFare || formData.selectedTrip?.minFare || 0}</Text>
               </View>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>Distance:</Text>
-                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.distance} km</Text>
+                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.estimatedDistance || 0} km</Text>
               </View>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>Driver:</Text>
-                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.driver_name}</Text>
+                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.driverInfo?.driverName || 'No driver assigned'}</Text>
+              </View>
+              <View style={styles.tripDetailRow}>
+                <Text style={styles.tripDetailLabel}>Status:</Text>
+                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.status || 'Unknown'}</Text>
               </View>
             </Animated.View>
           </Animated.View>
 
-          {/* Subject */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Subject *</Text>
-            <TextInput
-              style={[styles.input, errors.subject && styles.inputError]}
-              placeholder="Brief description of your issue"
-              value={formData.subject}
-              onChangeText={(text) => updateFormData('subject', text)}
-              maxLength={100}
-            />
-            {errors.subject && <Text style={styles.errorText}>{errors.subject}</Text>}
-          </View>
+         
 
           {/* Category */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Category *</Text>
-            <View style={styles.categoryContainer}>
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category.id}
-                  style={[
-                    styles.categoryButton,
-                    formData.category === category.id && styles.categoryButtonActive,
-                  ]}
-                  onPress={() => updateFormData('category', category.id)}
-                >
-                  <Text
-                    style={[
-                      styles.categoryButtonText,
-                      formData.category === category.id && styles.categoryButtonTextActive,
-                    ]}
-                  >
-                    {category.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {loadingCategories ? (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingText}>Loading categories...</Text>
+              </View>
+            ) : filteredCategories.length > 0 ? (
+              <View style={styles.categoryContainer}>
+                {filteredCategories.map((category) => (
+                                     <TouchableOpacity
+                     key={category._id}
+                     style={[
+                       styles.categoryButton,
+                       formData.category === category._id && styles.categoryButtonActive,
+                     ]}
+                     onPress={() => handleCategorySelect(category._id)}
+                   >
+                    <View style={styles.categoryContent}>
+                      <Text
+                        style={[
+                          styles.categoryButtonText,
+                          formData.category === category._id && styles.categoryButtonTextActive,
+                        ]}
+                      >
+                        {category.name}
+                      </Text>
+                     
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.noCategoriesContainer}>
+                <Text style={styles.noCategoriesText}>No categories available for this ticket type</Text>
+              </View>
+            )}
             {errors.category && <Text style={styles.errorText}>{errors.category}</Text>}
           </View>
 
@@ -499,6 +546,19 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Trip Selection Modal */}
+      {showTripSelection && (
+        <View style={styles.modalOverlay}>
+          <TripSelectionScreen
+            onTripSelect={(trip) => {
+              updateFormData('selectedTrip', trip);
+              setShowTripSelection(false);
+            }}
+            onCancel={() => setShowTripSelection(false)}
+          />
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 };
@@ -696,6 +756,18 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: Fonts.medium,
   },
+  categoryContent: {
+    flex: 1,
+  },
+  categoryDescription: {
+    fontSize: 10,
+    fontFamily: Fonts.regular,
+    color: '#9CA3AF',
+    marginTop: 2,
+  },
+  categoryDescriptionActive: {
+    color: '#E5E7EB',
+  },
   priorityContainer: {
     flexDirection: 'row',
     gap: 12,
@@ -791,6 +863,39 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: '#6B7280',
     marginTop: 4,
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#FFFFFF',
+    zIndex: 1000,
+  },
+  loadingContainer: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#6B7280',
+  },
+  noCategoriesContainer: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noCategoriesText: {
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#6B7280',
   },
 });
 

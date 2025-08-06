@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useSupportStore from '../store/useSupportStore';
 import { Fonts } from '../../../constants/constants';
+import { utils } from '../../../utils/Utils';
 
 const SupportCard = ({ ticket, onPress, showStatus = true }) => {
   const { showPriority } = useSupportStore();
@@ -54,11 +55,7 @@ const SupportCard = ({ ticket, onPress, showStatus = true }) => {
       <View style={styles.header}>
         <View style={styles.titleContainer}>
           <Text style={styles.ticketId}>#{ticket.ticketId}</Text>
-          {showPriority && (
-            <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(ticket.priority) }]}>
-              <Text style={styles.priorityText}>{ticket.priority}</Text>
-            </View>
-          )}
+         
         </View>
         {showStatus && (
           <View style={[styles.statusBadge, { backgroundColor: getStatusColor(ticket.status) }]}>
@@ -66,6 +63,11 @@ const SupportCard = ({ ticket, onPress, showStatus = true }) => {
           </View>
         )}
       </View>
+      {/* {showPriority && (
+            <View style={[styles.priorityBadge]}>
+              <Text style={[styles.priorityText,{color:getPriorityColor(ticket.priority)}]}>{ticket.priority}</Text>
+            </View>
+          )} */}
       
       <Text style={styles.subject} numberOfLines={2}>
         {ticket.subject}
@@ -78,15 +80,15 @@ const SupportCard = ({ ticket, onPress, showStatus = true }) => {
       <View style={styles.footer}>
         <View style={styles.metaInfo}>
           <Ionicons name="time-outline" size={14} color="#6B7280" />
-          <Text style={styles.metaText}>{ticket.createdAt}</Text>
+          <Text style={styles.metaText}>{utils.convertToRelativeTime(ticket.createdAt)}</Text>
         </View>
         
-        {ticket.lastMessage && (
+        {/* {ticket.lastMessage && (
           <View style={styles.metaInfo}>
             <Ionicons name="chatbubble-outline" size={14} color="#6B7280" />
             <Text style={styles.metaText}>{ticket.lastMessage}</Text>
           </View>
-        )}
+        )} */}
       </View>
     </TouchableOpacity>
   );
@@ -160,12 +162,13 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
   },
   metaInfo: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
+    gap:5
   },
   metaText: {
     fontSize: 11,
