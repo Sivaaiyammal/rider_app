@@ -1,27 +1,48 @@
 import {Text, TouchableOpacity, View} from 'react-native';
 import React from 'react';
+import PropTypes from 'prop-types';
 import {addLocation} from '../../styles/AddLocationStyles';
 import {colors} from '../../constants/constants';
 import {rideType} from '../../constants/JsonData';
+import { useTranslation } from 'react-i18next';
 
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const RideType = props => {
-  const {_toggleSubview, onTripSelect, selectedRide} = props;
+  const {onTripSelect, selectedRide} = props;
+  const { t } = useTranslation();
+  
+  const handleTripSelect = (item) => {
+    if (item.disabled) {
+      // Show coming soon message or handle disabled state
+      return;
+    }
+    onTripSelect(item);
+  };
   
   return (
     <View style={addLocation.rideOptionBottom}>
      
       {rideType.map(item => {
+        const isDisabled = item.disabled;
         return (
           <TouchableOpacity
-            style={addLocation.tripSelectionBtn}
+            style={isDisabled ? addLocation.tripSelectionBtnDisabled : addLocation.tripSelectionBtn}
             key={item.id}
-            onPress={() => onTripSelect(item)}>
-            <View style={{flexDirection: 'row', gap: 15, alignItems: 'center'}}>
+            onPress={() => handleTripSelect(item)}
+            disabled={isDisabled}>
+            <View style={{flexDirection: 'row', gap: 15, alignItems: 'center', flex: 1}}>
               {item.icon}
-              <Text style={addLocation.tripSelectionBtnTxt}>{item.name}</Text>
+              <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
+                <Text style={isDisabled ? addLocation.tripSelectionBtnTxtDisabled : addLocation.tripSelectionBtnTxt}>
+                  {item.name}
+                </Text>
+                {item.comingSoon && (
+                  <View style={addLocation.comingSoonBadge}>
+                    <Text style={addLocation.comingSoonText}>{t('coming_soon')}</Text>
+                  </View>
+                )}
+              </View>
             </View>
             <MaterialCommunityIcons
               name={
@@ -29,7 +50,7 @@ const RideType = props => {
                   ? 'circle-slice-8'
                   : 'circle-outline'
               }
-              color={colors.black}
+              color={isDisabled ? colors.grey_dark : colors.black}
               size={20}
             />
           </TouchableOpacity>
@@ -37,6 +58,11 @@ const RideType = props => {
       })}
     </View>
   );
+};
+
+RideType.propTypes = {
+  onTripSelect: PropTypes.func.isRequired,
+  selectedRide: PropTypes.object,
 };
 
 export default RideType;

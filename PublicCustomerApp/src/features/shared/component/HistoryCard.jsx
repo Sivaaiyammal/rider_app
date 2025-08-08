@@ -92,6 +92,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: '#757575',
     marginTop: 2,
+    textTransform:"capitalize"
   },
   title: {
     fontSize: 16,

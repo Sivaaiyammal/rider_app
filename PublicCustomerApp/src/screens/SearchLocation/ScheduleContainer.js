@@ -1,5 +1,6 @@
 import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import React, {useState} from 'react';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import {colors} from '../../constants/constants';
 import {utils} from '../../utils/Utils';
@@ -17,10 +18,10 @@ const ScheduleContainer = props => {
     scheduleTime,
     scheduleDate,
   } = props;
-  const fourteenDaysWithDayNames = utils.getNextDayLists(14);
+  const fiveDaysWithDayNames = utils.getNextDayLists(5);
   const {setScheduleDateTime} = useRideSelectionStore();
 
-  const filteredData = fourteenDaysWithDayNames.filter(item => {
+  const filteredData = fiveDaysWithDayNames.filter(item => {
     const itemDate = (
       typeof item.date === 'string' ? new Date(item.date) : item.date
     )
@@ -30,7 +31,7 @@ const ScheduleContainer = props => {
   });
 
   const [selectedDate, setSelectedDate] = useState(
-    isUpdate ? filteredData[0] : fourteenDaysWithDayNames[0],
+    isUpdate ? filteredData[0] : fiveDaysWithDayNames[0],
   );
   const [selectedTime, setSelectedTime] = useState(
     isUpdate ? scheduleTime : new Date(),
@@ -47,7 +48,15 @@ const ScheduleContainer = props => {
   const onConfirm = () => {
     const _selectedTime = new Date(selectedTime);
     const currentTime = new Date();
-    if (_selectedTime < currentTime) {
+    
+    // Create a combined date-time by setting the selected time on the selected date
+    const selectedDateTime = new Date(selectedDate.date);
+    selectedDateTime.setHours(_selectedTime.getHours());
+    selectedDateTime.setMinutes(_selectedTime.getMinutes());
+    selectedDateTime.setSeconds(0);
+    selectedDateTime.setMilliseconds(0);
+    
+    if (selectedDateTime < currentTime) {
       showNotification(
         t('invalid_date_time'),
         t('please_select_time_greater'),
@@ -63,7 +72,7 @@ const ScheduleContainer = props => {
   const minTime = isToday ? new Date() : null;
 
   return (
-    <View style={scheduleContainerStyles.container}>
+    <ScrollView style={scheduleContainerStyles.container}>
       <Text style={scheduleContainerStyles.containerTitle}>
         {t('schedule_a_trip')}
       </Text>
@@ -79,8 +88,13 @@ const ScheduleContainer = props => {
         {utils.currentMonthNameAndYear()}
       </Text>
       <View>
-        <ScrollView horizontal>
-          {fourteenDaysWithDayNames.map(item => (
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 10 }}
+          style={{ flexGrow: 0 }}
+        >
+          {fiveDaysWithDayNames.map(item => (
             <TouchableOpacity
               key={item.index}
               style={[
@@ -90,6 +104,8 @@ const ScheduleContainer = props => {
                     selectedDate.index === item.index
                       ? colors.violet
                       : colors.grey_xdark,
+                  width: 60,
+                  height: 70,
                 },
               ]}
               onPress={() => onSelectDate(item)}>
@@ -151,8 +167,16 @@ const ScheduleContainer = props => {
             </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
+};
+
+ScheduleContainer.propTypes = {
+  oncloseDateTime: PropTypes.func.isRequired,
+  onConfirmDateTime: PropTypes.func.isRequired,
+  isUpdate: PropTypes.bool,
+  scheduleTime: PropTypes.instanceOf(Date),
+  scheduleDate: PropTypes.string,
 };
 
 export default ScheduleContainer;

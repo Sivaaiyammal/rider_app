@@ -1,7 +1,5 @@
 import { StyleSheet } from 'react-native';
 import { colors, Fonts } from '../constants/constants';
-import { height } from '../utils/Utils';
-import { difference } from 'react-query/types/core/utils';
 
 export const addLocation = StyleSheet.create({
   container: {
@@ -101,12 +99,13 @@ export const addLocation = StyleSheet.create({
     fontSize: 16,
   }, 
   rideSelectionContainer: {
-    width: '100%',
+    width: '95%',
     paddingVertical: 10,
     backgroundColor: colors.white,
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignSelf: 'center',
+    gap:10
   },
   rideSelection: {
     backgroundColor: colors.black,
@@ -142,7 +141,7 @@ export const addLocation = StyleSheet.create({
     fontSize: 14,
     display: 'flex',
     paddingLeft:5,
-    textTransform:'capitalize'
+    
 
   },
   rideOptionContainer: {
@@ -178,6 +177,35 @@ export const addLocation = StyleSheet.create({
     fontFamily: Fonts.light,
     color: colors.black,
     fontSize: 16,
+  },
+  tripSelectionBtnDisabled: {
+    flexDirection: 'row',
+    margin: 10,
+    gap: 10,
+    backgroundColor: colors.grey_light,
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    opacity: 0.6,
+  },
+  tripSelectionBtnTxtDisabled: {
+    fontFamily: Fonts.light,
+    color: colors.grey_dark,
+    fontSize: 16,
+  },
+  comingSoonBadge: {
+    backgroundColor: colors.yellow_xxlight,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginLeft: 8,
+  },
+  comingSoonText: {
+    fontFamily: Fonts.regular,
+    color: colors.black,
+    fontSize: 10,
   },
   closeBtn: {
     paddingRight: 20,
@@ -283,9 +311,8 @@ export const vehicleList = StyleSheet.create({
     flexDirection: 'row',
     borderRadius: 20,
     overflow: 'hidden',
-    paddingHorizontal: 5,
+    paddingHorizontal: 10,
     backgroundColor: '#FAFAFA',
-    paddingHorizontal:10,
   },
   imageContainer: {
     width: '27%',

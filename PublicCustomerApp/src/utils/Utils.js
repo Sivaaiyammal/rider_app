@@ -278,7 +278,12 @@ export const utils = {
   },
 
   timestampTo12HourFormat(timestamp) {
-    return moment(timestamp).format('h.mm A');
+    const time = moment(timestamp);
+    const hour = time.format('h');
+    const minute = time.format('mm');
+    const ampm = time.format('a').toUpperCase();
+    
+    return `${hour}.${minute} ${ampm}`;
   },
 
   toTitleCase: str => {

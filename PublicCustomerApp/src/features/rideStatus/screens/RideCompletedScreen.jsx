@@ -71,6 +71,8 @@ const RideCompletedScreen = ({type}) => {
    
   };
 
+  
+
   return (
    <>
       
@@ -108,9 +110,9 @@ const RideCompletedScreen = ({type}) => {
           <TouchableOpacity style={[styles.outlineBtn,{borderColor:type == TripStatus.CANCELLED ? 'black' : '#13B15A'}]} onPress={handleMoreDetails}>
               <Text style={[styles.outlineBtnText,{color:type == TripStatus.CANCELLED ? 'black' : '#13B15A'}]}>{t('more_details')}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.filledBtn,{backgroundColor:type == TripStatus.CANCELLED ? 'black' : '#13B15A'}]} onPress={handlePayNow}>
+          {/* <TouchableOpacity style={[styles.filledBtn,{backgroundColor:type == TripStatus.CANCELLED ? 'black' : '#13B15A'}]} onPress={handlePayNow}>
             <Text style={styles.filledBtnText}>{paymentMethod == 'CASH' ? t('pay_through_upi') : t('pay_now')}</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
       

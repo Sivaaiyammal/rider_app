@@ -8,7 +8,6 @@ import {
   Animated,
   Modal,
   Platform,
-  ActivityIndicator,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -19,6 +18,8 @@ import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import useLocationStore from '../../../store/useLocationStore';
 import { performSearch } from '../../../components/Native/NESearch';
 import { SearchResultV2 } from '../components/SearchResult';
+import SearchResultSkeleton from '../components/SearchResultSkeleton';
+import HorizontalLoadingIndicator from '../components/HorizontalLoadingIndicator';
 import StateVectorConatiner from '../../../components/StateVectorConatiner';
 import { clearSingleStateVector, clearAllStateVectors } from "../../../components/Native/NESearch";
 import HistoryCard from '../../shared/component/HistoryCard';
@@ -163,7 +164,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const debouncedSetSearchUnit = useMemo(() => debounce((query) => {
     if (query.trim()) searchAPI(query);
     else setOnSearchResults([]);
-  }, 800), [searchAPI]);
+  }, 300), [searchAPI]);
 
   useEffect(() => {
     return () => {
@@ -321,7 +322,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
             onPress={handleClearSearch}>
             <View style={styles.searchAction}>
               {searchTxt.length > 0 && <Ionicons onPress={()=>fullSearch()} name="checkmark-outline" color={'black'} size={24} />}
-              {searchTxt.length > 0 && <AntDesign name="close" color={colors.grey} size={22} />} 
+              {searchTxt.length > 0 && <AntDesign name="close" color={'black'} size={22} />} 
             </View>
           </TouchableOpacity>
         </View>
@@ -349,7 +350,17 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           <View style={styles.recentSearchesContainer}>
             <View style={styles.resultHeader}>
               <Text style={styles.resultHeaderText}>{t('recent_searches')}</Text>
+              
             </View>
+            {isLoading && (
+                <HorizontalLoadingIndicator 
+                  width="100%" 
+                  height={3} 
+                  backgroundColor={colors.grey_light}
+                  activeColor={colors.primary}
+                  duration={1500}
+                />
+              )}
             {recentSearches.map((result, index) => (
               <TouchableOpacity
                 key={`${result.name}-${index}`}
@@ -370,11 +381,19 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
               <Text style={styles.resultHeaderText}>
                 {searchTxt.length < 4 ? `Suggestions for "${searchTxt}"` : `Search results for "${searchTxt}"`}
               </Text>
+              
             </View>
+            {isLoading && (
+                <HorizontalLoadingIndicator 
+                  width="100%" 
+                  height={3} 
+                  backgroundColor={colors.grey_light}
+                  activeColor={colors.primary}
+                  duration={1500}
+                />
+              )}
             {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={colors.primary} />
-              </View>
+              <SearchResultSkeleton count={8} />
             ) : onSearchResults && onSearchResults.length === 0 ? (
               <View style={styles.noResultsContainer}>
                 <Ionicons name="search-outline" size={40} color={colors.grey} />
@@ -465,11 +484,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.grey_light,
     marginTop: 5,
     height: 50,
-    elevation: 10,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  
   },
   searchContainer: {
     flex: 1,
@@ -521,7 +536,9 @@ const styles = StyleSheet.create({
   resultHeader: {
     paddingHorizontal: 15,
     paddingVertical: 10,
-    backgroundColor: colors.grey_xxdark,
+    marginTop: 10,
+    backgroundColor: 'black',
+    gap: 8,
   },
   resultHeaderText: {
     fontSize: 16,
@@ -556,11 +573,7 @@ const styles = StyleSheet.create({
     color: colors.grey_dark,
     marginTop: 2,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+
   noResultsContainer: {
     flex: 1,
     justifyContent: 'center',

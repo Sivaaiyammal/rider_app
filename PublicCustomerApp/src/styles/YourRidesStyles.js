@@ -27,6 +27,7 @@ export const yourRidesStyles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingVertical: 10,
+        marginVertical:15,
         paddingHorizontal: 10,
         paddingLeft: 20,
         borderBottomWidth: 1,

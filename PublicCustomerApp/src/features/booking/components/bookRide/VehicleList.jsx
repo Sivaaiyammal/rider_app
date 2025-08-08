@@ -108,7 +108,12 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
     >
       
       
-      {availableVehicles?.map((vehicle) => {
+      {availableVehicles?.sort((a, b) => {
+        // Put selected vehicle first
+        if (selectedVehicle?.id === a.id) return -1;
+        if (selectedVehicle?.id === b.id) return 1;
+        return 0;
+      }).map((vehicle) => {
         const isSelected = selectedVehicle?.id === vehicle.id;
         return (
           <TouchableOpacity

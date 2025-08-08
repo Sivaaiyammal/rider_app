@@ -1,36 +1,24 @@
-import { Dimensions, Text, Image, TextInput, TouchableOpacity, View, ActivityIndicator, FlatList } from 'react-native';
+import { Dimensions, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 const { width: windowWidth } = Dimensions.get('window');
 
 import { RecyclerListView, DataProvider, LayoutProvider } from 'recyclerlistview';
 import { yourRidesStyles } from '../../../styles/YourRidesStyles';
-import { CommonActions, useNavigation } from '@react-navigation/native';
 import { showNotification } from '../../../components/NotificationManger';
-// Remove useQuery import
-// import { useGetQuery } from '../../../hooks/useQuery';
-import useUserInfoStore from '../../../store/useUserInfoStore';
 import { utils } from '../../../utils/Utils';
-// Add the API endpoint import
 import { getCustomerTrips } from '../../../API/EndPoints/EndPoints';
 
 import NavBar from '../../../components/NavBar';
-import ToggleHeader from '../../../components/ToggleHeader';
 import DurationFilter from '../../../components/DurationFilter';
-
 import NoTripsFound from '../../../components/NoTripsFound';
-
-import ProfileImage from '../../../assets/image/account/Profile.webp';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import TripPersonVehicle from '../components/TripPersonVehicle';
+import RideItemSkeleton from '../components/RideItemSkeleton';
+import LoadingToast from '../../../components/LoadingToast';
 const YourRidesScreen = () => {
     const { t } = useTranslation();
-    const navigation = useNavigation();
     const { setStackScreen } = useStackScreenStore();
-
-    const { userdetails , setUserdetails} = useUserInfoStore();
-
-    const [UserId, setUserId] = useState('');
 
     const [Rides, setRides] = useState([
         {
@@ -56,21 +44,11 @@ const YourRidesScreen = () => {
     const [FilterStart, setFilterStart] = useState('');
     const [FilterEnd, setFilterEnd] = useState('');
     const [FilterPage, setFilterPage] = useState(1);
-    const [FilterLimit, setFilterLimit] = useState(10);
+    const [FilterLimit] = useState(10);
     const [FilterMaxPages, setFilterMaxPages] = useState(FilterLimit);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isLoadMore, setIsLoadMore] = useState(false);
-
-    const [Header_Options, setHeader_Options] = useState([
-        {
-            id: 'completed',
-            title: t('trip_history'),
-        },
-        {
-            id: 'upcoming',
-            title: t('upcoming_rides'),
-        }
-    ])
+    const [showLoadingToast, setShowLoadingToast] = useState(false);
 
     const HandleBackBtn = () => {
            setStackScreen('Home');
@@ -114,6 +92,7 @@ const YourRidesScreen = () => {
 
             console.log('API Payload:', payload);
             setIsRefreshing(true);
+            setShowLoadingToast(true);
             
             const data = await getCustomerTrips(payload);
             console.log('data', data);
@@ -135,11 +114,8 @@ const YourRidesScreen = () => {
         } finally {
             setIsRefreshing(false);
             setIsLoadMore(false);
+            setShowLoadingToast(false);
         }
-    }
-
-    const ToggleHeaderCallback = (id) => {
-        setFilterTripType(id);
     }
 
     const DurationFilterCallback = (id, start, end) => {
@@ -239,10 +215,10 @@ const YourRidesScreen = () => {
         <View style={yourRidesStyles.mainContainer}>
             <NavBar withBg onBackPress={HandleBackBtn} title={t('your_rides')} />
 
-            <ToggleHeader
+            {/* <ToggleHeader
                 options={Header_Options}
                 callback={ToggleHeaderCallback}
-            />
+            /> */}
             <DurationFilter
                 callback={DurationFilterCallback}
             />
@@ -252,12 +228,12 @@ const YourRidesScreen = () => {
                 {
                     isRefreshing ? (
                         <View style={{
-                            justifyContent: 'center',
-                            alignItems: 'center',
                             backgroundColor: 'white',
                             flex: 1
                         }}>
-                            <ActivityIndicator size="large" color="#2785ff" />
+                            {Array.from({ length: 5 }, (_, index) => (
+                                <RideItemSkeleton key={index} />
+                            ))}
                         </View>
                     ) :
 
@@ -279,6 +255,10 @@ const YourRidesScreen = () => {
                             />
                 }
             </View>
+            <LoadingToast 
+                visible={showLoadingToast}
+                onHide={() => setShowLoadingToast(false)}
+            />
         </View>
     )
 }

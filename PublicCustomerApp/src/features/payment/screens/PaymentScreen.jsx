@@ -52,7 +52,7 @@ const PaymentScreen = ({handlePayNow}) => {
         <PaymentDetails finalFare={finalFare} breakdownFare={breakdownFare}/>
         <SupportSection onPress={() => {}} />
       </ScrollView>
-      <PayButton amount={finalFare} onPress={handlePayNow} paymentMethod={paymentMethod} />
+      {/* <PayButton amount={finalFare} onPress={handlePayNow} paymentMethod={paymentMethod} /> */}
     </View>
   );
 };

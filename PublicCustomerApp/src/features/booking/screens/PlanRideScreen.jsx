@@ -32,7 +32,7 @@ import { width } from '../../../utils/Utils';
 import { Fonts } from '../../../constants/constants';
 import { storeLocation } from '../../../storage/userLocalStorage';    
 
-const PlanRideScreen = ({selectedDestination}) => {
+const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   const { t } = useTranslation();
   const {userdetails,homelocation,worklocation,setHomelocation,setWorklocation,userFavPlaces} = useUserInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
@@ -68,10 +68,8 @@ const PlanRideScreen = ({selectedDestination}) => {
 
   const onBackPress = async () => {
     resetRideBookingLocation()
+    setScheduleDateTime(null)
     goBack();
-   
-   
-    
   };
 
   const handlePlaceSave = useCallback((location,locationType) => {
@@ -102,13 +100,17 @@ const PlanRideScreen = ({selectedDestination}) => {
       setRideBookMode('MYSELF')
       setPassangerDetails({name:userdetails.name,phone:userdetails.phone})
     }
+    console.log(showScheduleTime,"wdjdkdbkwdbk")
+    if(showScheduleTime){
+      setShowScheduleContainer(true)
+    }
   }, []);
 
 
   
 
   
-
+  
   
 
   
@@ -224,6 +226,8 @@ const PlanRideScreen = ({selectedDestination}) => {
   }
 
 
+console.log(scheduleDateTime,"ebdkjdjk")
+
 const scheduleDate = scheduleDateTime?.date ? utils.formatDate(scheduleDateTime?.date) : ""
 const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(scheduleDateTime?.time) : ""
 
@@ -238,17 +242,17 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
         <View style={addLocation.rideSelectionContainer}>
           <TouchableOpacity
-            style={addLocation.rideSelection}
+            style={[addLocation.rideSelection,scheduleDate&&{flex:2}]}
             onPress={() => onRideTypePress()}>
             <Schdule />
-            <Text style={addLocation.rideSelectionTxt}>{t(selectedRide.translationKey)}{' '}{scheduleDate ? scheduleDate + "-" + scheduleTime : scheduleTime}
+            <Text style={addLocation.rideSelectionTxt}>{t(selectedRide.translationKey)}{' '}{scheduleDate ? scheduleDate + " - " + scheduleTime.toUpperCase() : scheduleTime.toUpperCase()}
             </Text>
             {!scheduleDate && <Ionicons name={"chevron-down"} size={14} color={"white"} />}
           </TouchableOpacity>
 
-          <TouchableOpacity style={addLocation.rideSelection} onPress={() => onTripForPress()}>
+          <TouchableOpacity style={[addLocation.rideSelection,scheduleDate && {flex:1/4}]} onPress={() => onTripForPress()}>
             <Ionicons name="person" size={18} color={colors.white} />
-            <Text style={addLocation.rideSelectionTxt}>{rideBookMode === 'MYSELF' ? t('myself') : passangerDetails?.name || t('others')}</Text>
+           {!scheduleDate && <Text style={addLocation.rideSelectionTxt}>{rideBookMode === 'MYSELF' ? t('myself') : passangerDetails?.name || t('others')}</Text>}
             <Ionicons name="chevron-down" size={18} color={colors.white} />
           </TouchableOpacity>
         </View>

@@ -15,7 +15,7 @@ const NoTripsFound = ({ text }) => {
                 source={NoTripsFoundImg}
                 style={{ width: 300, height: 500 }}
             />
-            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#a9a9a9' }}>{message}</Text>
+            <Text style={{ fontSize: 20, color: '#a9a9a9',fontFamily:"regular"}}>{message}</Text>
         </View>
     )
 

@@ -23,6 +23,7 @@ import { rideEstimation } from '../../../API/APICalls/RideAPICalls';
 import RideInfo from '../components/bookRide/RideInfo';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import Schdule from '../../../assets/image/svgIcons/schdule.svg';
 
 
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
@@ -38,9 +39,10 @@ import { preferenceShowRideStatus } from '../../../storage/userLocalStorage';
 import { utils } from '../../../utils/Utils';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import useFetchNearbyDrivers from '../../../hooks/useVehicleMarker';
-
+import useRideSelectionStore from '../../../store/useRideSelectionStore';
 const BottomSheetHeader = () => {
     const {setStackScreen,goBack} = useStackScreenStore()
+    
     const {rideStartLocation,rideEndLocation,rideWayPoints} = useRideBookingLocationStore()
     const {setMapBounds} = useMapStore()
     const handleAddStop = () => {
@@ -79,13 +81,14 @@ const BottomSheetHeader = () => {
 }
 const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsScreen = null}) => {
     const { t } = useTranslation();
-    const {goBack} = useStackScreenStore()
-        const {paymentType,setPaymentType, setRideDistance ,setEstimatedDuration,rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode} = useRideBookingInfo()
+    const {setStackScreen,goBack,goBackToScreen} = useStackScreenStore()
+        const {paymentType,setPaymentType, setRideDistance ,setEstimatedDuration,rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode,} = useRideBookingInfo()
     const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false)
     const {isPreferenceShow,setIsPreferenceShow} = useUserInfoStore()
     const {setAvailableVehicles,availableVehicles,clearAvailableVehicles} = useRideVehicleStore()
     const [isLoading,setIsLoading] = useState(true)
     const [showPreference,setShowPreference] = useState(false)
+    
     // Use the direction load hook to transform ride locations to direction points
     const { 
         transformRideLocationsToDirectionPoints, 
@@ -100,7 +103,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     const { setDirectionReady,setMapBounds} = useMapStore()     
 
-    
+    const {scheduleDateTime} = useRideSelectionStore();
 
     // Use the booking hook for trip booking
     const {
@@ -110,7 +113,8 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         getBookingValidationErrors,
         getCurrentBookingPayload
     } = useBookTrip();
-
+    
+    
 
     const [showCoupon,setShowCoupon] = useState(false)
 
@@ -219,6 +223,8 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
         setAvailableVehicles(vehicleList)
     }
+
+
 
     // Ride estimation mutation
     const onEstimationSuccess = (data) => {
@@ -355,10 +361,34 @@ const handleBackPress = () => {
 const handleCouponPress = () => {
     setShowCoupon(true)
 }
+const handleChangeScheduleTime=()=>{
+    console.log("handleChangeScheduleTime pressed")
+    goBackToScreen('PlanRideScreen',{showScheduleTime:true})
+
+
+}
+
+const scheduleDate = scheduleDateTime?.date ? utils.formatDate(scheduleDateTime?.date) : ""
+const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(scheduleDateTime?.time) : ""
+
   return (
     <>
    <View>
     <NavBar onBackPress={handleBackPress} />
+    {scheduleDate && <View style={styles.ScheduleOption}>
+    <Schdule />
+            <Text style={styles.rideSelectionTxt}>{scheduleDate && scheduleDate + " - " + scheduleTime}
+            </Text>
+           <TouchableOpacity 
+            onPress={handleChangeScheduleTime}
+            style={styles.editButton}
+            activeOpacity={0.7}
+           >
+            <Icon name="edit" color="white" size={20} />
+            </TouchableOpacity>
+       
+    </View>
+}
 
    </View>
    <BottomSheet
@@ -534,9 +564,6 @@ const styles = StyleSheet.create({
     },
     BookingButtonSection:{
         width:"70%",
-        
-      
-
     },
     BookingButton:{
         width:"100%",
@@ -572,14 +599,10 @@ const styles = StyleSheet.create({
         color:colors.white,
     },
     BookingPaymentMode:{
-        
         flexDirection:"row",
         alignItems:"center",
         justifyContent:"center",
         gap:5,
-        
-       
-       
     },
     advanceOptionsContainer:{
         width:"100%",
@@ -648,6 +671,40 @@ const styles = StyleSheet.create({
         fontSize:16,
         fontFamily:Fonts.regular,
         color:colors.black,
+    },
+    ScheduleOption:{
+        
+        position:"absolute",
+        backgroundColor:"black",
+        top:10,
+        right:15,
+        borderRadius:20,
+        elevation:5,
+        paddingVertical:5,
+        paddingHorizontal:10,
+        flexDirection:"row",
+        gap:5,
+        alignItems:"center",
+        zIndex:9999
+
+
+    },
+    ScheduleOptionText:{
+        backgroundColor:"transperent",
+        color:"white"
+       
+    },
+    rideSelectionTxt:{
+    color: colors.white,
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+    display: 'flex',
+    paddingLeft:5,
+    },
+    editButton:{
+        paddingLeft:10,
+        paddingRight:5,
+        paddingVertical:5,
     }
 
 });

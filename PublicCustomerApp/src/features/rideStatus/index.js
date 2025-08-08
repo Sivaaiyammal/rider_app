@@ -28,7 +28,7 @@ const RideStatus = () => {
   const { t } = useTranslation();
   const { tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled} = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
-  const {goBack,stackScreen} = useStackScreenStore();
+  const {goBack,stackScreen,setStackScreen} = useStackScreenStore();
   const [isPaymentMethodChangeShow,setIspaymentMethodChangeShow] = useState(false);
   const {stopMatching} = useRideMatching();
   const {id:userId} = useUserInfoStore();
@@ -133,6 +133,9 @@ const RideStatus = () => {
         else{
           return <DriverSearchScreen  onCancel={handleCancel} />;
         }
+
+      
+        
      
       default:
         return <DriverSearchScreen  onCancel={handleCancel} />;
@@ -147,6 +150,14 @@ const RideStatus = () => {
       
     }
   },[])
+
+  useEffect(()=>{
+
+    if (TripStatus.COMPLETED || TripStatus.DIVERGED ){
+      setStackScreen('TripFeedbackScreen',{})
+    }
+
+  },[tripStatus])
 
  
 

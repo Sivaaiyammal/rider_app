@@ -20,13 +20,39 @@ export const useStackScreenStore = create((set, get) => ({
     return stack[stack.length - 1].name;
   },
   
-  goBack: () => {
+  goBack: (params) => {
     const stack = get().stackScreen;
     if(stack.length > 1){
       const arr = stack.slice(0, -1);
-      set({stackScreen: arr});
+      set({stackScreen: arr, params});
     }
     else{
+      set({stackScreen: [{ name: 'Home', params: null }]});
+    }
+  },
+  goBackToScreen:(screenName, params = null)=>{
+    const stack = get().stackScreen;
+    console.log(stack,"stack")
+    
+    // Find the index of the target screen in the stack
+    const targetIndex = stack.findIndex(screen => screen.name === screenName);
+    
+    if(targetIndex !== -1){
+      // Screen found in stack
+      // Remove all screens after the target screen and update its params
+      const newStack = stack.slice(0, targetIndex + 1);
+      
+      // Update the params of the target screen if params are provided
+      if(params !== null){
+        newStack[targetIndex] = { ...newStack[targetIndex], params };
+      }
+      
+      console.log(newStack,"newStack")
+      set({stackScreen: newStack});
+    }
+    else{
+      // Screen not found in stack, go back to home
+      console.log(`Screen ${screenName} not found in stack, going back to Home`);
       set({stackScreen: [{ name: 'Home', params: null }]});
     }
   },

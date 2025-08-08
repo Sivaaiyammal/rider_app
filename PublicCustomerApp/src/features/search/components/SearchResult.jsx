@@ -5,6 +5,7 @@ import { utils } from "../../../utils/Utils";
 import { colors, Fonts } from "../../../constants/constants";
 import { clearAllStateVectors } from '../../../components/Native/NESearch';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const transformData = (data) => {
     console.log("transformData called with:", JSON.stringify(data, null, 2));
@@ -225,7 +226,7 @@ export const SearchResultV2 = (props) => {
 
     const highlightText = (text, highlight) => {
         if (!highlight.trim()) {
-          return <Text style={styles.itemText}>{text}</Text>;
+          return <Text style={[styles.itemText,{textTransform:"capitalize"}]}>{text}</Text>;
         }
       
         const safeText = text ? String(text) : "";
@@ -257,6 +258,13 @@ export const SearchResultV2 = (props) => {
             console.log("Skipping item due to missing display fields:", item);
             return null;
         }
+        const capitalizeFirstLetter = (str) => {
+          if (!str) return '';
+          return str.split(' ').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          ).join(' ');
+        };
+
         const formatAddress = (address, nearbyStreets, sectionType) => {
           if (!address) return '';
           let addressParts = [];
@@ -264,7 +272,7 @@ export const SearchResultV2 = (props) => {
           // Add first nearby street if available
           if (nearbyStreets && Array.isArray(nearbyStreets) && nearbyStreets.length > 0) {
             const firstStreet = nearbyStreets[0];
-            addressParts.push(firstStreet.streetName);
+            addressParts.push(capitalizeFirstLetter(firstStreet.streetName));
           }
 
           // Add regular address parts
@@ -273,13 +281,13 @@ export const SearchResultV2 = (props) => {
               // For state, show only country
               const country = address.filter(addr => addr?.trim()).pop();
               if (country) {
-                addressParts.push(country);
+                addressParts.push(capitalizeFirstLetter(country));
               }
             } else {
-              addressParts = [...addressParts, ...address.filter(addr => addr?.trim())];
+              addressParts = [...addressParts, ...address.filter(addr => addr?.trim()).map(addr => capitalizeFirstLetter(addr))];
             }
           } else {
-            addressParts.push(address.toString());
+            addressParts.push(capitalizeFirstLetter(address.toString()));
           }
 
           return addressParts.join(', ');
@@ -309,51 +317,50 @@ export const SearchResultV2 = (props) => {
             onPress={() => onSelectItem(item, title)}
             style={styles.item}
           >
+            <View style={styles.locationIcon}>
+              <View style={{width:40,height:40,backgroundColor:"#ecf6ff",borderRadius:50,alignItems:"center",justifyContent:"center"}}>
+            <Icon name="location-on" size={24} color={colors.grey_dark} />
+            </View>
+            </View>
             {item.houseNumber && !item?.placeName ? (
-               <View style={{ width: "80%" }}>
+               <View>
                  <Text style={[styles.itemText]}>
                     {highlightText(item.houseNumber || '', searchTxt)}{','}{highlightText(formatAddress(item.address, item.nearbyStreets, item.sectionType), searchTxt)}
                   </Text> 
                </View>
             ) : (
-              <View style={{ width: "80%" }}>
+              <View style={{ flex:1 }}>
               {title === "FastMatch" || item.sectionType === "fast_match" ? (
                 item.secondaryText ? (
                   <>
                   <Text style={[styles.itemText]}>
                     {highlightText(item.primaryText || item.placeName?.[0] || '', searchTxt)}
                   </Text> 
-                  <Text style={[styles.itemText]}>{item.primaryCategory || item.category?.[0] || ''}</Text>
+                  <Text style={[styles.itemText]}>{capitalizeFirstLetter(item.primaryCategory || item.category?.[0] || '')}</Text>
                   <View style={styles.secondaryItemView}>
-                    <MaterialIcons
-                      name="subdirectory-arrow-right"
-                      size={22}
-                      color={colors.font_black}
-                    />
+                  
                     <Text style={[styles.itemText]}>
                       {highlightText(item.secondaryText || '', searchTxt)}
                     </Text>
                   </View>
                 </>
                 ) : (
-                  <>
-                   <Text style={[styles.itemText]}>
-                    {highlightText(item.primaryText || item.placeName?.[0] || '', searchTxt)}
+                  
+                  <View style={[styles.suggestion]}>
+                    <View>
+                   <Text style={[styles.itemText,{color:colors.grey_dark,textTransform:"capitalize"}]}>
+                    {item.primaryText}
                   </Text>
-                  <View style={styles.secondaryItemView}>
-                  <MaterialIcons
-                      name="subdirectory-arrow-right"
-                      size={22}
-                      color={colors.font_black}
-                    />
-                  <Text style={[styles.itemText]}>{item.primaryCategory || item.category?.[0] || ''}</Text>
+                  <Text style={[styles.itemText,{color:colors.grey_dark,fontSize:14}]}>Suggestion</Text>
                   </View>
-                  </>
+                
+                  </View>
+                  
                 )
                              ) : (
                  <>
                    <Text style={[styles.itemText]}>
-                     {highlightText((item.name || item.placeName?.[0] || item.place_name?.[0] || '').toString(), searchTxt)}
+                     {highlightText(capitalizeFirstLetter((item.name || item.placeName?.[0] || item.place_name?.[0] || '').toString()), searchTxt)}
                    </Text>
                    {item.address ? (
                      <Text style={styles.itemSubText}>{formatAddress(item.address, item.nearbyStreets, item.sectionType)}</Text>
@@ -371,9 +378,10 @@ export const SearchResultV2 = (props) => {
               }}
             >
               <View style={styles.rightContent}>
-                {item.category ? (
-                  <Text style={styles.categoryText}>{item.category[0]}</Text>
-                ) : item.sectionType && title !== "Full_search" && title !== "Fast_match" && (
+             
+                {item.category && item.category.length > 0 || item.primaryCategory? (
+                  <Text style={styles.categoryText}>{item?.category?.[0] || item.primaryCategory}</Text>
+                ) : item.sectionType && title !== "Full_search" && title !== "Fast_match" && getSectionTypeDisplay(item.sectionType) !== '' && (
                   <Text style={styles.categoryText}>{getSectionTypeDisplay(item.sectionType)}</Text>
                 )}
                 {item.distance ? (
@@ -469,12 +477,13 @@ const styles =
         color: colors.font_black,
       },
       item: {
-        padding: 10,
-        paddingHorizontal:20,
+        paddingVertical: 10,
+        paddingHorizontal:0,
         borderBottomWidth: 1,
         borderBottomColor: "#ccc",
         flexDirection: "row",
-        width: "100%",
+        alignItems:"center",
+        
       },
       itemText: {
         fontSize: 17,
@@ -484,6 +493,7 @@ const styles =
       highlightText: {
         fontFamily: Fonts.medium,
         fontSize: 18,
+            textTransform:"capitalize"
       },
       itemSubText: {
         fontSize: 12,
@@ -526,9 +536,12 @@ const styles =
       categoryText: {
         fontSize: 12,
         fontFamily: Fonts.medium,
-        color: colors.font_black,
+        color: "#0080ff",
         marginBottom: 2,
-        textTransform: 'capitalize',
+        backgroundColor:"#ecf6ff",
+        paddingHorizontal:5,
+        paddingVertical:3,
+        textTransform:"capitalize"
       },
       firstStreetText: {
         fontSize: 13,
@@ -536,4 +549,19 @@ const styles =
         color: colors.font_black,
         marginTop: 2,
       },
+      suggestion:{
+       
+        flexDirection:"row",
+        justifyContent:"space-between",
+
+        
+       
+
+      },
+      locationIcon:{
+        padding:10,
+
+        borderRadius:5,
+        marginRight:5
+      }
     });

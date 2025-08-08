@@ -95,13 +95,16 @@ export const rideType = [
     id: 1,
     translationKey: 'pickup_now',
     name: 'Pickup Now',
-    value:'instant'
+    value:'instant',
+    disabled: false
   },
   {
     id: 2,
     translationKey: 'schedule',
     name: 'Schedule',
-    value:'schedule'
+    value:'schedule',
+    disabled: true,
+    comingSoon: true
   }
 ];
 

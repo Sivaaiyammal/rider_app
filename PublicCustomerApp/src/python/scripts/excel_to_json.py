@@ -23,13 +23,13 @@ def excel_to_json_by_language(excel_file, sheet_name, output_path):
         for index, row in df.iterrows():
             # Check if lang exists in row, otherwise handle the KeyError
             try:
-                lang_dict[row['KEY']] = row[lang]
+                lang_dict[row['Key']] = row[lang]
             except KeyError as e:
                 print(f"KeyError: {e} for language {lang} and key {row['KEY']}")
                 lang_dict[row['KEY']] = f"MISSING_{lang}"  # Example of handling missing data
         
         # Generate JSON filename based on language
-        json_file = os.path.join(output_path, f"{lang}.json")
+        json_file = os.path.join(output_path, f"{lang.lower()}.json")
         
         # Write JSON to a file
         with open(json_file, 'w', encoding='utf-8') as f:
