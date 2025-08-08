@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import PaymentCashIcon from '../../../../assets/icons/payments/PaymentCashIcon.svg';
 import PaymentUPIIcon from '../../../../assets/icons/payments/PaymentUPIIcon.svg';
 import PropTypes from 'prop-types';
@@ -12,6 +13,7 @@ const PAYMENT_OPTIONS = [
 ];
 
 const PaymentType = ({ onSelect, initialValue }) => {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState(initialValue || 'CASH');
 
   const handleSelect = (key) => {
@@ -25,7 +27,7 @@ const PaymentType = ({ onSelect, initialValue }) => {
 
   return (
     <View style={styles.container}>
-        <Text style={styles.PaymentHeader}>Pay By</Text>
+        <Text style={styles.PaymentHeader}>{t('pay_by')}</Text>
       {PAYMENT_OPTIONS.map(({ key, label, Icon,value }) => (
         <TouchableOpacity
           key={key}
@@ -41,7 +43,7 @@ const PaymentType = ({ onSelect, initialValue }) => {
         </TouchableOpacity>
       ))}
       <TouchableOpacity style={styles.PaymentTypeConfirmButton} onPress={handlePaymentMethodConfirm}>
-        <Text style={styles.PaymentTypeConfirmButtonText}>Confirm Payment Method</Text>
+        <Text style={styles.PaymentTypeConfirmButtonText}>{t('confirm_payment_method')}</Text>
       </TouchableOpacity>
     </View>
   );

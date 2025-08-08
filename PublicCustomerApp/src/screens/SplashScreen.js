@@ -32,10 +32,9 @@ const SplashScreen = () => {
               routes: [{ name: 'HomeScreen' }],
             }),
           );
-    } else if (language.data === 'languageDone') {
-      if(language.data){
+    } else if (language.data && language.data !== 'languageDone') {
+      // If language is stored as a language code (en, ta, hi, etc.)
       setLanguage(language.data);
-    }
       
       if (onBoarding.data === 'onBoardingDone') {
         navigation.dispatch(

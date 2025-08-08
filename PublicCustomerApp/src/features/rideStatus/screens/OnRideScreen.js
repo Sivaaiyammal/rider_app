@@ -12,6 +12,7 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
 import { colors } from '../../../constants/constants';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import useWayPointReorderStore from '../../../features/booking/store/useWayPointReorderStore';
+import { useTranslation } from 'react-i18next';
 const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
   const {driverName,vehicleNumber,model,brand,driverPhoto} = useAssignedDriverInfoStore();
   const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedPickuoMins,estimatedFare} = useCurrentRideInfoStore();
@@ -20,7 +21,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
     console.log("waitingForDriverApproval",waitingForDriverApproval)
   },[waitingForDriverApproval])
   const {setMapStyle} = useMapStyleStore();
- 
+  const {t} = useTranslation();
   const { cleanupMarkers } = useTrackHook('on-ride');
 
   
@@ -142,7 +143,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
       {/* Top info bar */}
       <View style={[styles.containerTop,{backgroundColor:'#0f223c'}]}>
        
-        <Text style={styles.topBarText}>Reach your destination in</Text>
+        <Text style={styles.topBarText}>{t('reach_your_destination_in')}</Text>
         <View style={styles.timeBox}>
           <Text style={styles.timeText}>{estimatedPickuoMins} Mins</Text>
             </View>
@@ -159,7 +160,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
           <View style={styles.driverImgWrap}>
             <Image source={{ uri: driverPhotoUri }} style={styles.driverImg} />
           </View>
-          <View style={styles.onRideBadge}><Text style={styles.onRideBadgeText}>On Ride</Text></View>
+          <View style={styles.onRideBadge}><Text style={styles.onRideBadgeText}>{t('on_ride')}</Text></View>
         </View>
         {/* Driver and vehicle info */}
         <Text style={styles.driverName}>{driverName}</Text>
@@ -167,7 +168,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
         {/* Estimated amount */}
         <View style={styles.amountBox}>
           <FontAwesome name="receipt" size={20} color="#00770d" />
-          <Text style={styles.amountLabel}>Estimated Amount to be Paid</Text>
+          <Text style={styles.amountLabel}>{t('estimated_amount_to_be_paid')}</Text>
           <Text style={styles.amountValue}>₹{estimatedFare || "--"}</Text>
         </View>
 
@@ -175,15 +176,15 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
              
               <View style={styles.rideInfoRow}>
                 <View style={styles.rideInfoItem}>
-                  <Text style={styles.rideInfoLabel}>Arrival</Text>
+                  <Text style={styles.rideInfoLabel}>{t('arrival')}</Text>
                   <Text style={styles.rideInfoValue}>{ArrivalTime}</Text>
                 </View>
                 <View style={styles.rideInfoItem}>
-                  <Text style={styles.rideInfoLabel}>Duration</Text>
+                  <Text style={styles.rideInfoLabel}>{t('duration')}</Text>
                   <Text style={styles.rideInfoValue}>{duration} Min</Text>
                 </View>
                 <View style={styles.rideInfoItem}>
-                  <Text style={styles.rideInfoLabel}>Distance</Text>
+                  <Text style={styles.rideInfoLabel}>{t('distance')}</Text>
                   <Text style={styles.rideInfoValue}>{totalDistance} Km</Text>
                 </View>
               </View>
@@ -195,12 +196,12 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
 
         {/* Trip Details row with chevron */}
         <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
-          <Text style={styles.tripDetailsLabel}>Trip Details</Text>
+          <Text style={styles.tripDetailsLabel}>{t('trip_details')}</Text>
           <View style={{flexDirection:"row",alignItems:"center",gap:10}}>
           {
             waitingForDriverApproval === "PENDING" &&
             <View style={styles.driverWaitingApprovalContainer}>
-                <Text style={styles.driverWaitingApprovalText}>Waiting for driver approval</Text>
+                <Text style={styles.driverWaitingApprovalText}>{t('waiting_for_driver_approval')}</Text>
                 <AnimatedDots />
             </View>
           }
@@ -223,7 +224,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
         {/* Payment method */}
         <View style={{width:"90%",alignSelf:"center",flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:10}}>
         <TouchableOpacity style={styles.paymentRow} onPress={onPaymentMethodChange}>
-          <Text style={styles.paymentLabel}>Change Payment Method</Text>
+          <Text style={styles.paymentLabel}>{t('change_payment_method')}</Text>
           <View style={styles.paymentValueWrap}>
             <Text style={styles.paymentValue}>{paymentMethod}</Text>
             <Icon name="chevron-right" size={20} color="#888" />

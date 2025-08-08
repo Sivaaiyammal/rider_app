@@ -1,6 +1,5 @@
 import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
-import React, { useState, useContext } from 'react';
-import { LanguageStyles } from '../../styles/SplashStyles';
+import React, { useState, useContext, useEffect } from 'react';
 import { languages } from '../../constants/JsonData';
 import { colors } from '../../constants/constants';
 import { useNavigation } from '@react-navigation/native';
@@ -15,7 +14,7 @@ import NavBar from '../../components/NavBar';
 
 const LanguageScreen = ({fromDrawer}) => {
   const navigation = useNavigation();
-  const {goBack,setStackScreen} = useStackScreenStore();
+  const {goBack} = useStackScreenStore();
   const { t } = useTranslation();
   const { 
     theme, 
@@ -25,28 +24,35 @@ const LanguageScreen = ({fromDrawer}) => {
 
   const [selected, setSelected] = useState(languages[0]);
 
+  // Initialize selected language based on current i18n language
+  useEffect(() => {
+    const currentLanguage = i18n.language;
+    const currentLangObj = languages.find(lang => lang.code === currentLanguage);
+    if (currentLangObj) {
+      setSelected(currentLangObj);
+    }
+  }, []);
+
   const changeLanguage = item => {
     setSelected(item);
-  };
-
-
-  const onNextPress = () => {
-   
-    if(fromDrawer){
-      goBack();
-    }
-    else{
-      navigation.navigate('OnBoarding');
-    }
-    
   };
 
 
   const handleLanguageChange = (language) => {
     changeLanguage(language);
     i18n.changeLanguage(language.code);
+  };
+
+  const onNextPress = async () => {
+    // Save the selected language to AsyncStorage
+    await DataStore.storeData('language', selected.code);
     
-    
+    if(fromDrawer){
+      goBack();
+    }
+    else{
+      navigation.navigate('OnBoarding');
+    }
   };
 
   return (

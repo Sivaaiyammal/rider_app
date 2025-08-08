@@ -9,6 +9,7 @@ import { useStackScreenStore } from '../../store/useStackScreenStore';
 import  useCurrentRideInfoStore  from '../../features/rideStatus/store/useCurrentRideInfoStore';
 
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
+import { useTranslation } from 'react-i18next';
 
 const AddressContainer = ({ directions,edit=false ,live=false}) => {
 
@@ -35,7 +36,7 @@ const AddressContainer = ({ directions,edit=false ,live=false}) => {
 
     const {setStackScreen} = useStackScreenStore()
     const {tripId} = useCurrentRideInfoStore()
-
+    const {t} = useTranslation();
   const handleStopEdit = (item) => {
     setStackScreen('WaypointScreen',{
       stopsFromOnGoingRide:directions,
@@ -52,7 +53,7 @@ const AddressContainer = ({ directions,edit=false ,live=false}) => {
             {getLocationIcon(item,index,directions.length,item.isReached)}
             <View style={styles.locationTxtContainer}>
               <Text style={{fontSize:14, color:'#212121',fontFamily:Fonts.regular}}>
-                {index == 0 ? 'Pickup' : index != directions.length-1 ? 'Stop' : 'Drop'}
+                {index == 0 ? t('pickup') : index != directions.length-1 ? t('stop') : t('drop')}
               </Text>
               <Text numberOfLines={1} ellipsizeMode="tail" style={styles.locationTxt}>
                 {(item.address || item.locationName)?.charAt(0).toUpperCase() + (item.address || item.locationName)?.slice(1)}

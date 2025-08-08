@@ -11,8 +11,9 @@ import { showNotification } from '../../../components/NotificationManger';
 import { TripStatus } from '../types/TripStatus';
 import DroppedTickIcon from '../../../assets/icons/DroppedTickIcon.svg';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
+import { useTranslation } from 'react-i18next';
 const RideCompletedScreen = ({type}) => {
+  const {t} = useTranslation();
   const { setStackScreen } = useStackScreenStore();
   const { finalFare, finalDuration, finalDistance ,paymentMethod,tripId} = useCurrentRideInfoStore();
   
@@ -75,7 +76,7 @@ const RideCompletedScreen = ({type}) => {
       
       <View style={[styles.containerTop,{backgroundColor:type == TripStatus.CANCELLED  ? '#ff5050' : '#13B15A'}]}>
        
-        <Text style={styles.topBarText}>{type === TripStatus.CANCELLED ? 'Ride Stopped' : 'Ride Cancelled'}</Text>
+        <Text style={styles.topBarText}>{type === TripStatus.CANCELLED ? t('ride_stopped') : t('ride_cancelled')}</Text>
             </View>
         
         
@@ -83,8 +84,8 @@ const RideCompletedScreen = ({type}) => {
       <View style={styles.root}>
         <RideStatusHeader 
           type={type}
-          title={type !== TripStatus.CANCELLED ? 'Your ride is completed.' : 'Your ride is cancelled inbetween ride'}
-          subtitle={type !== TripStatus.CANCELLED ? 'Please proceed with the payment' : 'Kindly pay the fare for the distance travelled'}
+          title={type !== TripStatus.CANCELLED ? t('your_ride_is_completed') : t('your_ride_is_cancelled_inbetween_ride')}
+          subtitle={type !== TripStatus.CANCELLED ? t('please_proceed_with_the_payment') : t('kindly_pay_the_fare_for_the_distance_travelled')}
         />
         <Text style={styles.fare}>₹ {fare}</Text>
         <Text style={styles.info}>{utils.formatMinutesToReadable(finalDuration)}  .  {finalDistance} Km</Text>
@@ -99,16 +100,16 @@ const RideCompletedScreen = ({type}) => {
             ]}
           >
           
-            <Text style={styles.cashPaymentText}>Please PAY Trip Fare ₹ {finalFare} to Driver</Text>
+            <Text style={styles.cashPaymentText}>{t('please_pay_trip_fare')} ₹ {finalFare} {t('to_driver')}</Text>
           
           </Animated.View>
         )}
         <View style={styles.buttonRow}>
           <TouchableOpacity style={[styles.outlineBtn,{borderColor:type == TripStatus.CANCELLED ? 'black' : '#13B15A'}]} onPress={handleMoreDetails}>
-            <Text style={[styles.outlineBtnText,{color:type == TripStatus.CANCELLED ? 'black' : '#13B15A'}]}>MORE DETAILS</Text>
+              <Text style={[styles.outlineBtnText,{color:type == TripStatus.CANCELLED ? 'black' : '#13B15A'}]}>{t('more_details')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.filledBtn,{backgroundColor:type == TripStatus.CANCELLED ? 'black' : '#13B15A'}]} onPress={handlePayNow}>
-            <Text style={styles.filledBtnText}>{paymentMethod == 'CASH' ? 'PAY  THROUGH  UPI' : 'PAY NOW'}</Text>
+            <Text style={styles.filledBtnText}>{paymentMethod == 'CASH' ? t('pay_through_upi') : t('pay_now')}</Text>
           </TouchableOpacity>
         </View>
       </View>

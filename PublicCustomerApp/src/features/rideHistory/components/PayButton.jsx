@@ -1,12 +1,15 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { colors, Fonts } from '../../../constants/constants';
-
-const PayButton = ({ amount = '₹117.50', onPress,paymentMethod }) => (
+import { useTranslation } from 'react-i18next';
+const PayButton = ({ amount = '₹117.50', onPress,paymentMethod }) => {
+  const {t} = useTranslation();
+  return (
   <TouchableOpacity style={styles.button} onPress={onPress}>
-    <Text style={styles.text}>PAY  {paymentMethod == 'CASH' ? 'THROUGH  UPI' : 'NOW'}</Text>
+    <Text style={styles.text}>{paymentMethod == 'CASH' ? t('pay_through_upi') : t('pay')}</Text>
   </TouchableOpacity>
-);
+    );
+};
 
 const styles = StyleSheet.create({
   button: {

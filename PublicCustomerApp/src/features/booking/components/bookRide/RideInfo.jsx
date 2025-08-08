@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet,TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import TripRouteIcon from "../../../../assets/icons/tripRouteIcon.svg"
@@ -11,12 +12,13 @@ const RideInfo = ({
   distance = '30',
   showPreference =null
 }) => {
+  const { t } = useTranslation();
   return (
     
     <View style={[styles.container, ]}>
       <View style={styles.infoItem}>
         <TripRouteIcon width={16} height={16}/>
-        <Text style={[styles.infoText]}>{distance} Km</Text>
+        <Text style={[styles.infoText]}>{distance} {t('km')}</Text>
       </View>
       
       {/* <View style={styles.infoItem}>

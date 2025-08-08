@@ -8,6 +8,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {Fonts} from '../../../../constants/constants';
@@ -19,6 +20,7 @@ const WaitingTimeModal = ({
   onSave,
   waypointData,
 }) => {
+  const { t } = useTranslation();
   const [selectedTime, setSelectedTime] = useState(5);
   const [customTime, setCustomTime] = useState('');
 
@@ -92,14 +94,14 @@ const WaitingTimeModal = ({
           <View style={styles.header}>
             <View style={styles.headerTitleContainer}>  
               <MaterialIcons name="schedule" size={25} color="#000" />
-              <Text style={styles.modalTitle}>Add Stop Wait Time</Text>
+              <Text style={styles.modalTitle}>{t('add_stop_wait_time')}</Text>
             </View>
           </View>
 
           {/* Info Text */}
           <View style={styles.infoSection}>
             <Text style={styles.infoText}>
-              Add wait time if driver needs to wait above {defaultwaitingTime} minutes for accurate fare.
+              {t('wait_time_info', { defaultwaitingTime })}
             </Text>
           </View>
 
@@ -119,13 +121,13 @@ const WaitingTimeModal = ({
                 keyboardType="numeric"
                 maxLength={3}
               />
-              <Text style={styles.timeUnit}>Mins</Text>
+              <Text style={styles.timeUnit}>{t('mins')}</Text>
             </View>
             {isBelowDefault && (
               <View style={styles.warningContainer}>
                 <MaterialIcons name="warning" size={16} color="#ff6b6b" />
                 <Text style={styles.warningText}>
-                  Minimum wait time is {defaultwaitingTime} minutes
+                  {t('minimum_wait_time', { defaultwaitingTime })}
                 </Text>
               </View>
             )}
@@ -165,7 +167,7 @@ const WaitingTimeModal = ({
             <MaterialIcons name="location-on" size={16} color="#666" style={styles.locationIcon} />
             <View style={styles.locationTextContainer}>
               <Text style={styles.locationAddress} numberOfLines={2}>
-                {waypointData?.item?.address || 'Unknown Address'}
+                {waypointData?.item?.address || t('unknown_address')}
               </Text>
               {/* <Text style={styles.coordinates}>
                 {waypointData?.item?.latitude?.toFixed(4) || 'N/A'}, {waypointData?.item?.longitude?.toFixed(4) || 'N/A'}
@@ -177,12 +179,10 @@ const WaitingTimeModal = ({
             <View style={styles.chargesInfoSection}>
               <View style={styles.chargesHeader}>
                 <MaterialIcons name="info" size={16} color="#666" />
-              <Text style={styles.chargesTitle}>Wait Time Charges</Text>
+              <Text style={styles.chargesTitle}>{t('wait_time_charges')}</Text>
             </View>
             <Text style={styles.chargesText}>
-              • First {defaultwaitingTime} minutes: Free{'\n'}
-              • Additional time: ₹{waitingTimeChargesPerMinute} per minute{'\n'}
-              • Maximum wait time: {maxwaitingTime} minutes
+              {t('wait_time_charges_info', { defaultwaitingTime, waitingTimeChargesPerMinute, maxwaitingTime })}
             </Text>
           </View>
           )}
@@ -196,14 +196,14 @@ const WaitingTimeModal = ({
                 style={[styles.button, styles.removeButton]}
                 onPress={handleRemovewaitingTime}
               >
-                <Text style={styles.removeButtonText}>REMOVE</Text>
+                <Text style={styles.removeButtonText}>{t('remove')}</Text>
               </TouchableOpacity>
             ):(
               <TouchableOpacity
               style={[styles.button, styles.cancelButton]}
               onPress={onClose}
             >
-              <Text style={styles.cancelButtonText}>SKIP</Text>
+              <Text style={styles.cancelButtonText}>{t('skip')}</Text>
             </TouchableOpacity>
             )}
             
@@ -216,7 +216,7 @@ const WaitingTimeModal = ({
               onPress={handleSave}
               disabled={!canSave}
             >
-              <Text style={styles.saveButtonText}>SET</Text>
+              <Text style={styles.saveButtonText}>{t('set')}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,4 +1,5 @@
 import { useMutation } from 'react-query';
+import { useTranslation } from 'react-i18next';
 import { bookRide } from '../../../API/EndPoints/EndPoints';
 import { showNotification } from '../../../components/NotificationManger';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
@@ -17,6 +18,7 @@ import { TripStatus } from '../../rideStatus/types/TripStatus';
  * @returns {Object} Booking mutation and state
  */
 const useBookingService = ({ onSuccess, onError } = {}) => {
+  const { t } = useTranslation();
   const { 
     rideStartLocation, 
     rideEndLocation, 
@@ -48,29 +50,29 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
   const prepareBookingPayload = () => {
     // Validate required data
     if (!rideStartLocation || !rideEndLocation) {
-      throw new Error('Start and end locations are required');
+      throw new Error(t('start_end_locations_required'));
     }
 
     if (!selectedVehicle) {
-      throw new Error('Vehicle selection is required');
+      throw new Error(t('vehicle_selection_required'));
     }
 
     // Prepare stops array with start, waypoints, and end locations
-    const stops = [
-      {
-        name: 'Pickup Point',
-        location: [rideStartLocation.longitude, rideStartLocation.latitude],
-        address: rideStartLocation.address || rideStartLocation.name,
-        waitingTime: 0,
-        isReached:false
-      }
-    ];
+          const stops = [
+        {
+          name: t('pickup_point'),
+          location: [rideStartLocation.longitude, rideStartLocation.latitude],
+          address: rideStartLocation.address || rideStartLocation.name,
+          waitingTime: 0,
+          isReached:false
+        }
+      ];
 
     // Add waypoints if any
     if (rideWayPoints && rideWayPoints.length > 0) {
       rideWayPoints.forEach((waypoint, index) => {
         stops.push({
-          name: `Stop ${index + 1}`,
+          name: `${t('stop')} ${index + 1}`,
           location: [waypoint.longitude, waypoint.latitude],
           address: waypoint.address || waypoint.name,
           waitingTime: waypoint.waitingTime || 0,
@@ -81,7 +83,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
 
     // Add end location
     stops.push({
-      name: 'Drop Point',
+      name: t('drop_point'),
       location: [rideEndLocation.longitude, rideEndLocation.latitude],
       address: rideEndLocation.address || rideEndLocation.name,
       waitingTime: 0,
@@ -161,8 +163,8 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     onError: (error) => {
       console.error('Booking error:', error);
       
-      const errorMessage = error?.message?.message || error?.message || 'Failed to book ride';
-      showNotification('Booking Error', errorMessage, 'danger');
+      const errorMessage = error?.message?.message || error?.message || t('failed_to_book_ride');
+      showNotification(t('booking_error'), errorMessage, 'danger');
       
       if (onError) {
         onError(error);
@@ -179,15 +181,15 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     try {
       // Validate required data before booking
       if (!rideStartLocation || !rideEndLocation) {
-        throw new Error('Please select start and end locations');
+        throw new Error(t('please_select_start_end_locations'));
       }
 
       if (!selectedVehicle) {
-        throw new Error('Please select a vehicle');
+        throw new Error(t('please_select_vehicle'));
       }
 
       if (!paymentType) {
-        throw new Error('Please select a payment method');
+        throw new Error(t('please_select_payment_method'));
       }
 
       // Execute booking mutation
@@ -195,7 +197,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       
     } catch (error) {
       console.error('Booking validation error:', error);
-      showNotification('Booking Error', error.message, 'danger');
+      showNotification(t('booking_error'), error.message, 'danger');
       throw error;
     }
   };
@@ -220,10 +222,10 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
   const getBookingValidationErrors = () => {
     const errors = [];
     
-    if (!rideStartLocation) errors.push('Start location is required');
-    if (!rideEndLocation) errors.push('End location is required');
-    if (!selectedVehicle) errors.push('Vehicle selection is required');
-    if (!paymentType) errors.push('Payment method is required');
+    if (!rideStartLocation) errors.push(t('start_location_required'));
+    if (!rideEndLocation) errors.push(t('end_location_required'));
+    if (!selectedVehicle) errors.push(t('vehicle_selection_required'));
+    if (!paymentType) errors.push(t('payment_method_required'));
     
     return errors;
   };

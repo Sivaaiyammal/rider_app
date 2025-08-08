@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import useRideVehicleStore from '../../store/useRideVehicleStore';
 import { getAvaliableCoupons } from '../../../../API/EndPoints/EndPoints';
@@ -8,6 +9,7 @@ import useRideBookingInfo from '../../store/useRideBookingInfo';
 import { utils } from '../../../../utils/Utils';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 const CouponContainer = ({ onApply }) => {
+  const { t } = useTranslation();
   const [allCoupons, setAllCoupons] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { selectedVehicle } = useRideVehicleStore();
@@ -76,7 +78,7 @@ const CouponContainer = ({ onApply }) => {
         {couponCode === item.code ? (
           <View style={styles.appliedRow}>
             <View style={[styles.applyButton, styles.appliedButton, { flexDirection: 'row', alignItems: 'center', paddingRight: 10 }]}>
-              <Text style={styles.applyButtonText}>Applied</Text>
+              <Text style={styles.applyButtonText}>{t('coupon_applied')}</Text>
               <TouchableOpacity
                 onPress={handleRemove}
                 style={styles.closeButton}
@@ -91,10 +93,10 @@ const CouponContainer = ({ onApply }) => {
             style={styles.applyButton}
             onPress={() => handleApply(item)}
           >
-            <Text style={styles.applyButtonText}>Apply</Text>
+            <Text style={styles.applyButtonText}>{t('apply_coupon')}</Text>
           </TouchableOpacity>
         )}
-        <Text style={styles.couponValidityText}>Expiring on</Text>
+        <Text style={styles.couponValidityText}>{t('expiring_on')}</Text>
         <Text style={[styles.couponValidityText, { fontSize: 12 }]}>
           {utils.formatISOToHumanReadable(item.validTo)}
         </Text>
@@ -104,13 +106,13 @@ const CouponContainer = ({ onApply }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Available Offer Coupons</Text>
+      <Text style={styles.header}>{t('available_coupons')}</Text>
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#1A73E8" />
         </View>
       ) : allCoupons.length === 0 ? (
-        <Text style={styles.noCouponsText}>No coupons available for this fare.</Text>
+        <Text style={styles.noCouponsText}>{t('no_coupons_available')}</Text>
       ) : (
         <FlatList
           data={allCoupons}

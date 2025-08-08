@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import { addFavoritePlace, deleteFavoritePlace } from '../../../API/EndPoints/EndPoints';
@@ -7,8 +8,10 @@ import { showNotification } from '../../../components/NotificationManger';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import { utils } from '../../../utils/Utils';
 import { Fonts } from '../../../constants/constants';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 
 const SavedPlacesScreen = () => {
+  const { t } = useTranslation();
   const {goBack,setStackScreen} = useStackScreenStore();
   const {userFavPlaces, setUserFavPlaces} = useUserInfoStore();
 
@@ -25,13 +28,13 @@ const SavedPlacesScreen = () => {
       
       setUserFavPlaces(response?.favPlaces);
       
-      showNotification('Success',response.message);
+      showNotification(t('success'),response.message);
       goBack();
     }else{
-      showNotification('Error',response.error);
+      showNotification(t('error'),response.error);
     }
   }catch(error){
-    showNotification('Error',error.message);
+    showNotification(t('error'),error.message);
   }
   }
 
@@ -71,15 +74,15 @@ const SavedPlacesScreen = () => {
   const handleDeletePlace = async (placeToDelete) => {
     console.log('placeToDelete',placeToDelete);
     Alert.alert(
-      'Delete Place',
-      `Are you sure you want to delete "${placeToDelete.label}"?`,
+      t('delete_place'),
+      `${t('delete_place_confirmation')} "${placeToDelete.label}"?`,
       [
         {
-          text: 'Cancel',
+          text: t('cancel'),
           style: 'cancel',
         },
         {
-          text: 'Delete',
+          text: t('delete_place'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -94,13 +97,13 @@ const SavedPlacesScreen = () => {
               if (response.success && response?.favPlaces) {
                
                 setUserFavPlaces(response?.favPlaces);
-                showNotification('Success', 'Place deleted successfully');
+                showNotification(t('success'), t('place_deleted_successfully'));
               } else {
-                showNotification('Error', response.error || 'Failed to delete place');
+                showNotification(t('error'), response.error || t('failed_to_delete_place'));
               }
             } catch (error) {
               console.error('Error deleting place:', error);
-              showNotification('Error', 'Failed to delete place. Please try again.');
+              showNotification(t('error'), t('failed_to_delete_place_try_again'));
             }
           },
         },
@@ -137,15 +140,15 @@ const SavedPlacesScreen = () => {
           // Update local state using favPlaceId
           
           setUserFavPlaces(addResponse?.favPlaces);
-          showNotification('Success', 'Place updated successfully');
+          showNotification(t('success'), t('place_updated_successfully'));
           goBack();
         } else {
-          showNotification('Error', addResponse.error || 'Failed to update place');
+          showNotification(t('error'), addResponse.error || t('failed_to_update_place'));
         }
       
     } catch (error) {
       console.error('Error updating place:', error);
-      showNotification('Error', 'Failed to update place. Please try again.');
+      showNotification(t('error'), t('failed_to_update_place_try_again'));
     }
   };
 
@@ -181,11 +184,11 @@ const SavedPlacesScreen = () => {
           />
         </View>
         <View style={styles.placeContent}>
-          <Text style={styles.placeLabel}>{place.label.charAt(0).toUpperCase() + place.label.slice(1)}</Text>
+          <AdaptiveText style={styles.placeLabel}>{place.label.charAt(0).toUpperCase() + place.label.slice(1)}</AdaptiveText>
           
-          <Text style={styles.placeFullAddress} numberOfLines={1} ellipsizeMode="tail">
+          <AdaptiveText style={styles.placeFullAddress} numberOfLines={1} ellipsizeMode="tail">
             {utils.formatAddressName(locationData)}
-          </Text>
+          </AdaptiveText>
         </View>
         <View style={styles.actionButtons}>
           <TouchableOpacity 
@@ -208,11 +211,11 @@ const SavedPlacesScreen = () => {
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       <Ionicons name="location-outline" size={80} color="#ccc" />
-      <Text style={styles.emptyTitle}>No Saved Places</Text>
-      <Text style={styles.emptySubtitle}>Your saved locations will appear here</Text>
-      <Text style={styles.emptyDescription}>
-        Tap the + button to add your first saved place
-      </Text>
+      <AdaptiveText style={styles.emptyTitle}>{t('no_saved_places')}</AdaptiveText>
+      <AdaptiveText style={styles.emptySubtitle}>{t('saved_places_empty_subtitle')}</AdaptiveText>
+      <AdaptiveText style={styles.emptyDescription}>
+        {t('saved_places_empty_description')}
+      </AdaptiveText>
     </View>
   );
 
@@ -222,7 +225,7 @@ const SavedPlacesScreen = () => {
         <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Saved Places</Text>
+        <AdaptiveText style={styles.headerTitle}>{t('saved_places')}</AdaptiveText>
         <View style={styles.placeholder} />
       </View>
       

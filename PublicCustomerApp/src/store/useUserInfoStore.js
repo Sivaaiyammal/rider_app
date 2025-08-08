@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-
+import { DataStore } from '../controllers/DataStore';
 import i18n from '../i18n';
+
 const useUserInfoStore = create(set => ({
   id: null,
   setID: id => set({ id }),
@@ -27,9 +28,10 @@ const useUserInfoStore = create(set => ({
   setUserFavPlaces: userFavPlaces => set({ userFavPlaces }),
 
   language:null,
-  setLanguage: language => {
+  setLanguage: async (language) => {
     console.log('language', language);
     i18n.changeLanguage(language);
+    await DataStore.storeData('language', language);
     set({ language });
   },
 }));

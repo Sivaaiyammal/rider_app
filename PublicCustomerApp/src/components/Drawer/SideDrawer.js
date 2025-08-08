@@ -8,6 +8,7 @@ import {
   ScrollView,
   Easing,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { drawerStyles } from '../../styles/DrawerStyles';
 import { useStackScreenStore } from '../../store/useStackScreenStore';  
 
@@ -18,8 +19,9 @@ import PropTypes from 'prop-types';
 import ProfileImage from '../../assets/image/svgIcons/profileImage.svg';
 import useUserInfoStore from '../../store/useUserInfoStore';
 import useSupportStore from '../../features/support/store/useSupportStore';
-
+import AdaptiveText from '../Common/AdaptiveText';
 const SideDrawerV2 = ({ handleMenu }) => {
+  const { t } = useTranslation();
   const { userdetails } = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
   const { unreadCount } = useSupportStore();
@@ -67,55 +69,55 @@ const SideDrawerV2 = ({ handleMenu }) => {
   const drawerData = [
     {
       id: 'my-account',
-      name: 'My Account',
+      name: t('my_account'),
       screen: 'MyAccountScreen',
       icon: <Ionicons name="person" size={20} color="black" />,
     },
     {
       id: 'your-rides',
-      name: 'My Rides',
+      name: t('my_rides'),
       screen: 'MyRidesScreen',
       icon: <Ionicons name="car" size={20} color="black" />,
     },
     {
       id: 'saved-places',
-      name: 'Saved Places',
+      name: t('saved_places'),
       screen: 'SavedPlacesScreen',
       icon: <Ionicons name="star" size={20} color="black" />,
     },
-    {
-      id: 'preferences',
-      name: 'Preferences',
-      screen: 'PreferencesScreen',
-      icon: <Ionicons name="options" size={20} color="black" />,
-    },
+    // {
+    //   id: 'preferences',
+    //   name: t('preferences'),
+    //   screen: 'PreferencesScreen',
+    //   icon: <Ionicons name="options" size={20} color="black" />,
+    // },
     // {
     //   id: 'receipts',
     //   name: 'Receipts',
     //   screen: 'ReceiptsScreen',
     //   icon: <Ionicons name="receipt" size={24} color="#1e3a8a" />,
     // },
-    {
-      id: 'notification',
-      name: 'Notification',
-      screen: 'NotificationScreen',
-      icon: <Ionicons name="notifications" size={20} color="black" />,
-    },
+    // {
+    //   id: 'notification',
+    //   name: t('notification'),
+    //   screen: 'NotificationScreen',
+    //   icon: <Ionicons name="notifications" size={20} color="black" />,
+    // },
     {
       id: 'language',
-      name: 'Language',
+      name: t('language'),
       screen: 'LanguageScreen',
       icon: <Ionicons name="globe" size={20} color="black" />,
     },
     {
       id: 'support',
-      name: 'Support',
+      name: t('support'),
       screen: 'SupportScreen',
       icon: <Ionicons name="help-circle" size={20} color="black" />,
     },
     {
       id: 'contact-us',
-      name: 'Contact Us',
+      name: t('contact_us'),
       screen: 'ContactScreen',
       icon: <Ionicons name="headset" size={20} color="black" />,
     },
@@ -127,16 +129,16 @@ const SideDrawerV2 = ({ handleMenu }) => {
     // },
     {
       id: 'legal',
-      name: 'Legal',
+      name: t('legal'),
       screen: 'LegalScreen',
       icon: <Ionicons name="document-text" size={20} color="black" />,
     },
-    {
-      id: 'test-screen',
-      name: 'Test Screen',
-      screen: 'TestScreen',
-      icon: <Ionicons name="flask" size={20} color="black" />,
-    },
+    // {
+    //   id: 'test-screen',
+    //   name: t('test_screen'),
+    //   screen: 'TestScreen',
+    //   icon: <Ionicons name="flask" size={20} color="black" />,
+    // },
   ];
 
   const HandleOpenDrawerMenu = (menu) => {
@@ -159,7 +161,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
       <Animated.View style={[drawerStyles.drawercontainer, {transform: [{translateX: slideAnim}]}]}>
         <View style={drawerStyles.profileContainer}>
           <ProfileImage width={60} height={60} />
-          <Text style={drawerStyles.userName}>{userdetails?.name}</Text>
+          <AdaptiveText style={drawerStyles.userName}>{userdetails?.name}</AdaptiveText>
         </View>
         <View style={drawerStyles.contentContainer}>
           <ScrollView>
@@ -185,17 +187,17 @@ const SideDrawerV2 = ({ handleMenu }) => {
                         alignItems: 'center',
                         paddingHorizontal: 4,
                       }}>
-                        <Text style={{
+                        <AdaptiveText style={{
                           color: '#FFFFFF',
                           fontSize: 10,
                           fontWeight: '700',
                         }}>
                           {unreadCount > 99 ? '99+' : unreadCount}
-                        </Text>
+                        </AdaptiveText>
                       </View>
                     )}
                   </View>
-                  <Text style={drawerStyles.btnText}>{item.name}</Text>
+                  <AdaptiveText style={drawerStyles.btnText}>{item.name}</AdaptiveText>
                 </TouchableOpacity>
               );
             })}

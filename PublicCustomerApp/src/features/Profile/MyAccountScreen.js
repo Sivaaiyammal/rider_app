@@ -1,22 +1,24 @@
 import {
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { DataStore } from '../../controllers/DataStore';
 import useUserInfoStore from '../../store/useUserInfoStore';
 import { utils } from '../../utils/Utils';
+import { deleteAccountMutation } from '../../API/APICalls/UserAPICalls';
+import { showNotification } from '../../components/NotificationManger';
+import DeleteAccountModal from '../../components/DeleteAccountModal';
+import { colors, Fonts } from '../../constants/constants';
 
 import Mobile from '../../assets/image/account/mobile.svg';
 import Card from '../../assets/image/account/card.svg';
 import MainProfile from '../../assets/image/account/MainProfile.svg';
-import HomeLocation from '../../assets/image/account/home_location.svg';
-import OfficeLocation from '../../assets/image/account/office_location.svg';
 import Profile from '../../assets/image/account/profile.svg';
 
 import MyAccountHeader from '../../components/Profile/MyAccountHeader';
@@ -26,32 +28,35 @@ import SwipeBtn from '../../components/SwipeBtn';
 import { useStackScreenStore } from '../../store/useStackScreenStore';  
 
 const MyAccountScreen = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation();
-    const { setStackScreen ,goBack} = useStackScreenStore();
+  const { goBack } = useStackScreenStore();
   const { userdetails } = useUserInfoStore();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  
   console.log('userdetails', userdetails);
 
-  const [Info_Items, setInfo_Items] = useState([
+  const [Info_Items] = useState([
     {
-      key: 'Full Name',
+      key: t('full_name'),
       value: utils.toTitleCase(userdetails?.name) || '',
       image: <MainProfile width={'25'} height={'25'} />,
       imageType: 'svg',
     },
     {
-      key: 'Gender',
+      key: t('gender'),
       value: userdetails.gender ? utils.toTitleCase(userdetails?.gender) : '',
       image: <Profile width={'25'} height={'25'} />,
       imageType: 'svg',
     },
     {
-      key: 'Phone Number',
+      key: t('phone_number'),
       value: userdetails.phone || '',
       image: <Mobile width={'25'} height={'25'} />,
       imageType: 'svg',
     },
     {
-      key: 'Email Address',
+      key: t('email_address'),
       value: userdetails.email || '',
       image: <Card width={'25'} height={'25'} />,
       imageType: 'svg',
@@ -86,17 +91,73 @@ const MyAccountScreen = () => {
     );
   };
 
+  // Delete account mutation
+  const deleteAccount = deleteAccountMutation(async () => {
+    showNotification(t('account_deletion_requested'), t('account_deletion_message'), 'success');
+    await Logout();
+  });
+
+  const handleDeleteAccount = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async (reason) => {
+    try {
+      await deleteAccount.mutateAsync({ reason });
+      setShowDeleteModal(false);
+    } catch (error) {
+      console.error('Delete account error:', error);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+  };
+
   return (
     <ScrollView style={{backgroundColor: 'white'}}>
-      <MyAccountHeader title="My Account" onBackClick={HandleBackBtn} />
+      <MyAccountHeader title={t('my_account')} onBackClick={HandleBackBtn} />
       <MyAccountProfileImage
         name={utils.toTitleCase(userdetails?.name || '')}
         id={userdetails?._id || ''}
       />
       <MyAccountInfo infos={Info_Items} />
-      <View style={{height:100,alignContent:'center',justifyContent:'center'}}>
-      <SwipeBtn name="SWIPE TO LOGOUT" onHandleSwipeEnd={Logout} />
+      
+      {/* Delete Account Button */}
+      
+      
+      <View style={{alignContent:'center',justifyContent:'center',marginTop:30}}>
+      <SwipeBtn name={t('swipe_to_logout')} onHandleSwipeEnd={Logout} />
       </View>
+      <View style={{paddingHorizontal: 20, marginTop: 20}}>
+        <TouchableOpacity
+          style={{
+            backgroundColor: colors.danger_red,
+            paddingVertical: 16,
+            borderRadius: 12,
+            alignItems: 'center',
+          
+          }}
+          onPress={handleDeleteAccount}
+        >
+          <Text style={{
+            color: colors.white,
+            fontSize: 16,
+            fontWeight: '600',
+            fontFamily: Fonts.semi_bold,
+          }}>
+            {t('delete_account')}
+          </Text>
+        </TouchableOpacity>
+      </View>
+      
+      {/* Delete Account Modal */}
+      <DeleteAccountModal
+        visible={showDeleteModal}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        isLoading={deleteAccount.isLoading}
+      />
     </ScrollView>
   );
 };

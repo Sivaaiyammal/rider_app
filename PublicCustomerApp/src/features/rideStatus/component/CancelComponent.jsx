@@ -1,20 +1,21 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { Fonts } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
 const REASONS = [
-  'Driver is taking too long',
-  'Driver asked to cancel',
-  'Driver not responding',
-  'Booked by mistake',
-  'Fare is too high (surge)',
-  'Other',
+  'driver_is_taking_too_long',
+  'driver_asked_to_cancel',
+  'driver_not_responding',
+  'booked_by_mistake',
+  'fare_is_too_high_surge',
+    'other',
 ];
 
 const CancelComponent = ({ onClose, onCancel, loading }) => {
   const [selected, setSelected] = useState('');
   const [otherReason, setOtherReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
+  const {t} = useTranslation();
   const handleSelect = (reason) => {
     setSelected(reason);
     if (reason !== 'Other') {
@@ -47,7 +48,7 @@ const CancelComponent = ({ onClose, onCancel, loading }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Why are you cancelling the trip?</Text>
+      <Text style={styles.title}>{t('why_are_you_cancelling_the_trip')}</Text>
       <View style={styles.box}>
         <ScrollView>
           {REASONS.map((reason) => (
@@ -60,14 +61,14 @@ const CancelComponent = ({ onClose, onCancel, loading }) => {
               <View style={styles.checkboxOuter}>
                 {selected === reason && <View style={styles.checkboxInner} />}
               </View>
-              <Text style={styles.reasonText}>{reason}</Text>
+              <Text style={styles.reasonText}>{t(reason)}</Text>
             </TouchableOpacity>
           ))}
           {selected === 'Other' && (
             <View style={{ marginTop: 8 }}>
               <TextInput
                 style={styles.input}
-                placeholder="Enter your reason"
+                placeholder={t('enter_your_reason')}
                 value={otherReason}
                 onChangeText={setOtherReason}
                 multiline
@@ -77,11 +78,11 @@ const CancelComponent = ({ onClose, onCancel, loading }) => {
         </ScrollView>
       </View>
       <View style={styles.noteBox}>
-        <Text style={styles.noteText}>No cancellation fees will be charged</Text>
+        <Text style={styles.noteText}>{t('no_cancellation_fees_will_be_charged')}</Text>
       </View>
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.goBackBtn} onPress={onClose}>
-          <Text style={styles.goBackText}>GO BACK</Text>
+          <Text style={styles.goBackText}>{t('go_back')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[  styles.confirmBtn, {opacity: !selected || (selected === 'Other' && !otherReason.trim()) || isLoading ? 0.5 : 1}]}
@@ -91,7 +92,7 @@ const CancelComponent = ({ onClose, onCancel, loading }) => {
           {isLoading || loading ? (
             <ActivityIndicator size="small" color="#ff4d4f" />
           ) : (
-            <Text style={styles.confirmText}>CONFIRM CANCELLATION</Text>
+            <Text style={styles.confirmText}>{t('confirm_cancellation')}</Text>
           )}
         </TouchableOpacity>
       </View>

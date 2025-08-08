@@ -12,6 +12,7 @@ import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 import FailedRideModal from './FailedRideModal';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import useMapStyleStore from '../../../store/useMapStyleStore';
+import { useTranslation } from 'react-i18next';
 const CARD_HEIGHT = 340;
 const PULSE_SIZE = 200; // Large enough for radar effect
 const PULSE_VISIBLE_HEIGHT = 110; // Only show lower part
@@ -31,7 +32,7 @@ const SearchLoader = ({ onCancel }) => {
   const [showFailedModal, setShowFailedModal] = useState(false);
   const lastDriverLocationRef = useRef(null);
   const {setMapStyle} = useMapStyleStore();   
-  
+  const { t } = useTranslation();
   // Memoize the marker to prevent unnecessary re-creation
   const driverMarker = useMemo(() => {
     if (!driverLocation?.latitude || !driverLocation?.longitude || !driverName) {
@@ -129,7 +130,7 @@ const SearchLoader = ({ onCancel }) => {
       </View>
       <View style={styles.buttonContainer}>
         <SwipeBtn
-          name="Slide to Cancel"
+          name={t('slide_to_cancel')}
           onHandleSwipeEnd={handleCancell}
         />
       </View>
@@ -141,7 +142,7 @@ const SearchLoader = ({ onCancel }) => {
         visible={showFailedModal}
         onRetry={() => startMatching(tripId, userId,vehicleType)}
         onCancel={handleCancel}
-        message={message || 'Unable to find a driver at the moment. Please try again.'}
+        message={ t('unable_to_find_driver')}
       />
     </View>
   );

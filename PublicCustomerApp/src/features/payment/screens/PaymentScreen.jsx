@@ -11,7 +11,7 @@ import AddressContainer from '../../../components/Trips/AddressContainer';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
 import useAssignedDriverInfoStore from '../../rideStatus/store/useAssignedDriverInfoStore';
 import {Fonts} from '../../../constants/constants';
-
+import { useTranslation } from 'react-i18next'; 
 const dummyDirections = [
   {
     id: 1,
@@ -28,6 +28,7 @@ const dummyDirections = [
 const PaymentScreen = ({handlePayNow}) => {
   const {tripId,stops,vehicleType,finalDistance,finalDuration,finalFare,breakdownFare,paymentMethod}=useCurrentRideInfoStore()
   const {driverPhoto,driverName,brand,model,vehicleNumber}=useAssignedDriverInfoStore()
+  const {t} = useTranslation();
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -40,7 +41,7 @@ const PaymentScreen = ({handlePayNow}) => {
             ]}
           >
           
-            <Text style={styles.cashPaymentText}>Please PAY Trip Fare ₹ {finalFare} to Driver</Text>
+            <Text style={styles.cashPaymentText}>{t('please_pay_trip_fare')} ₹ {finalFare} {t('to_driver')}</Text>
           
           </View>
         )}

@@ -9,6 +9,7 @@ import {
   FlatList,
   Alert,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SupportCard from '../components/SupportCard';
 import CreateTicketForm from '../components/CreateTicketForm';
@@ -17,8 +18,10 @@ import useSupportStore from '../store/useSupportStore';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import { Fonts } from '../../../constants/constants';
 import UserTicketService from '../services/UserTicketService';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 
 const SupportScreen = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -71,7 +74,7 @@ const SupportScreen = () => {
       }
       await fetchTickets();
     } catch (error) {
-      console.error('Failed to load tickets:', error);
+      console.error(t('failed_to_load_tickets'), error);
     }
   };
 
@@ -83,7 +86,7 @@ const SupportScreen = () => {
       }
       await refreshTickets(params);
     } catch (error) {
-      console.error('Failed to refresh tickets:', error);
+      console.error(t('failed_to_refresh_tickets'), error);
     }
   };
 
@@ -99,7 +102,7 @@ const SupportScreen = () => {
       console.log('payLoad',payLoad);
       const response = await UserTicketService.createTicket(payLoad);
       if(response?.success){
-        Alert.alert('Success', 'Ticket created successfully!');
+        Alert.alert(t('success'), t('ticket_created_successfully'));
         setShowCreateForm(false);
         loadTickets();
       }
@@ -115,7 +118,7 @@ const SupportScreen = () => {
       // // Navigate to ticket detail
       // setStackScreen('TicketDetailScreen');
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to create ticket. Please try again.');
+      Alert.alert(t('error'), error.message || t('failed_to_create_ticket'));
     }
   };
 
@@ -155,11 +158,19 @@ const SupportScreen = () => {
       style={[styles.tabButton, activeTab === tab && styles.activeTabButton]}
       onPress={() => setActiveTab(tab)}
     >
-      <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
+      <Text 
+        style={[styles.tabText, activeTab === tab && styles.activeTabText]}
+        color={activeTab === tab ? "#FFFFFF" : "#6B7280"}
+        
+      >
         {label}
       </Text>
       <View style={[styles.countBadge, activeTab === tab && styles.activeCountBadge]}>
-        <Text style={[styles.countText, activeTab === tab && styles.activeCountText]}>
+        <Text 
+          style={[styles.countText, activeTab === tab && styles.activeCountText]}
+          color={activeTab === tab ? "#000000" : "#6B7280"}
+          font
+        >
           {count}
         </Text>
       </View>
@@ -212,7 +223,7 @@ const SupportScreen = () => {
           >
             <Ionicons name="arrow-back" size={24} color="#1F2937" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Support</Text>
+          <AdaptiveText style={styles.headerTitle} color="#1F2937">{t('support')}</AdaptiveText>
                      <View style={styles.headerActions}>
              <View
                style={styles.priorityToggle}
@@ -232,7 +243,7 @@ const SupportScreen = () => {
           <Ionicons name="search" size={20} color="#6B7280" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search tickets..."
+            placeholder={t('search_tickets')}
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor="#9CA3AF"
@@ -251,7 +262,7 @@ const SupportScreen = () => {
         {unreadCount > 0 && (
           <View style={styles.notificationBadge}>
             <Ionicons name="notifications" size={16} color="#FFFFFF" />
-            <Text style={styles.notificationText}>{unreadCount}</Text>
+            <AdaptiveText style={styles.notificationText} color="#FFFFFF">{unreadCount}</AdaptiveText>
           </View>
         )}
       </View>
@@ -259,11 +270,11 @@ const SupportScreen = () => {
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {renderTabButton('all', 'All', getStatusCount('all'))}
-          {renderTabButton('open', 'Open', getStatusCount('open'))}
-          {renderTabButton('in_progress', 'In Progress', getStatusCount('in_progress'))}
-          {renderTabButton('resolved', 'Resolved', getStatusCount('resolved'))}
-          {renderTabButton('closed', 'Closed', getStatusCount('closed'))}
+          {renderTabButton('all', t('all'), getStatusCount('all'))}
+          {renderTabButton('open', t('open'), getStatusCount('open'))}
+          {renderTabButton('in_progress', t('in_progress'), getStatusCount('in_progress'))}
+          {renderTabButton('resolved', t('resolved'), getStatusCount('resolved'))}
+          {renderTabButton('closed', t('closed'), getStatusCount('closed'))}
         </ScrollView>
       </View>
 
@@ -274,28 +285,28 @@ const SupportScreen = () => {
          ) : error ? (
           <View style={styles.errorContainer}>
             <Ionicons name="alert-circle" size={24} color="#EF4444" />
-            <Text style={styles.errorText}>{error}</Text>
+            <AdaptiveText style={styles.errorText} color="#EF4444">{error}</AdaptiveText>
             <TouchableOpacity
               style={styles.retryButton}
               onPress={loadTickets}
             >
-              <Text style={styles.retryButtonText}>Retry</Text>
+              <AdaptiveText style={styles.retryButtonText} color="#FFFFFF">{t('retry')}</AdaptiveText>
             </TouchableOpacity>
           </View>
         ) : filteredTickets.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="chatbubble-outline" size={48} color="#9CA3AF" />
-            <Text style={styles.emptyTitle}>No tickets found</Text>
-            <Text style={styles.emptySubtitle}>
-              {searchQuery ? 'Try adjusting your search terms' : 'Create your first support ticket'}
-            </Text>
+            <AdaptiveText style={styles.emptyTitle} color="#374151">{t('no_tickets_found')}</AdaptiveText>
+            <AdaptiveText style={styles.emptySubtitle} color="#6B7280">
+              {searchQuery ? t('try_adjusting_search') : t('create_first_support_ticket')}
+            </AdaptiveText>
             {!searchQuery && (
               <TouchableOpacity
                 style={styles.createFirstButton}
                 onPress={() => setShowCreateForm(true)}
               >
                 <Ionicons name="add" size={16} color="#FFFFFF" />
-                <Text style={styles.createFirstButtonText}>Create Ticket</Text>
+                <AdaptiveText style={styles.createFirstButtonText} color="#FFFFFF">{t('create_ticket')}</AdaptiveText>
               </TouchableOpacity>
             )}
           </View>

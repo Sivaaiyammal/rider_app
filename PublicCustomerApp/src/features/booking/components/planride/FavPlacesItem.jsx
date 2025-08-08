@@ -1,5 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import PropTypes from 'prop-types';
 import { Fonts } from '../../../../constants/constants';
@@ -7,15 +8,15 @@ import { Fonts } from '../../../../constants/constants';
 const ICONS = {
   home: {
     name: 'home',
-    label: 'Home',
+    label: 'home',
   },
   work: {
     name: 'work',
-    label: 'Work',
+    label: 'work',
   },
   star: {
     name: 'star',
-    label: 'Star',
+    label: 'star',
   },
 };
 
@@ -32,12 +33,13 @@ const getIcon = (label,type) => {
 }
 
     const FavPlacesItem = ({ data, onPress,type,selected }) => {
+  const { t } = useTranslation();
   
   return (
     <TouchableOpacity style={[styles.container,selected && {backgroundColor:'grey',borderWidth:1}]} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.iconLabelRow}>
         <MaterialIcons name={getIcon(data?.label,type)} size={20} color={selected ? '#fff' : '#757575'} style={styles.icon} />
-        <Text style={[styles.label,selected && {color:'#fff'}]}>{data?.label}</Text>
+        <Text style={[styles.label,selected && {color:'#fff'}]}>{t(data?.label?.toLowerCase() || 'star')}</Text>
       </View>
     </TouchableOpacity>
   );

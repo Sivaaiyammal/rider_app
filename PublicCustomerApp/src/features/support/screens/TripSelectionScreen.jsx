@@ -9,11 +9,14 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { getCustomerTrips } from '../../../API/EndPoints/EndPoints';
 import { Fonts } from '../../../constants/constants';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 
 const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
+  const { t } = useTranslation();
   const tripSelectCallback = onTripSelect;
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,11 +43,11 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
         setCurrentPage(response.pagination.page);
         setHasMoreData(response.pagination.page < response.pagination.totalPages);
       } else {
-        Alert.alert('Error', 'Failed to load trips');
+        Alert.alert(t('error'), t('failed_to_load_trips'));
       }
     } catch (error) {
       console.error('Error fetching trips:', error);
-      Alert.alert('Error', 'Failed to load trips');
+      Alert.alert(t('error'), t('failed_to_load_trips'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -198,7 +201,7 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
       return (
         <View style={styles.footerContainer}>
           <ActivityIndicator size="small" color="#000000" />
-          <Text style={styles.footerText}>Loading your recent trips...</Text>
+          <AdaptiveText style={styles.footerText} color="#6B7280">Loading your recent trips...</AdaptiveText>
         </View>
       );
     }
@@ -209,10 +212,10 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       <Ionicons name="car-outline" size={48} color="#9CA3AF" />
-      <Text style={styles.emptyTitle}>No trips found</Text>
-      <Text style={styles.emptySubtitle}>
+      <AdaptiveText style={styles.emptyTitle} color="#374151">{t('no_trips_found')}</AdaptiveText>
+      <AdaptiveText style={styles.emptySubtitle} color="#6B7280">
         You don't have any trips in your history yet
-      </Text>
+      </AdaptiveText>
     </View>
   );
 
@@ -226,7 +229,7 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
         >
           <Ionicons name="chevron-back" size={24} color="#000000" />
         </TouchableOpacity>
-        <Text style={styles.title}>Select Trip</Text>
+        <AdaptiveText style={styles.title} color="#1F2937">{t('select_trip')}</AdaptiveText>
         <View style={styles.placeholder} />
       </View>
 
@@ -256,7 +259,7 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
       {loading && trips.length === 0 && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#000000" />
-          <Text style={styles.loadingText}>Loading trips...</Text>
+          <AdaptiveText style={styles.loadingText} color="#6B7280">Loading trips...</AdaptiveText>
         </View>
       )}
     </View>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, Switch, TouchableOpacity } from "react-native";
+import { useTranslation } from 'react-i18next';
 
 import  useRideBookingInfo  from "../../store/useRideBookingInfo";
 import { Fonts } from "../../../../constants/constants";
@@ -8,6 +9,7 @@ import NightDriveIcon from "../../../../assets/icons/nightDriveIcon.svg"
 import CustomSwitch from "../../../../components/Common/SwitchInput"
 
 const RidePreference = () => {
+  const { t } = useTranslation();
   const {femaleDriverOnly,setFemaleDriverOnly,safeNightRides,setSafeNightRides} = useRideBookingInfo()
 
   
@@ -18,9 +20,9 @@ const RidePreference = () => {
           <FemaleDriverIcon width={28} height={28} color="#fff" />
         </View>
         <View style={styles.textContainer}>
-          <Text style={styles.title}>Female Drivers Only</Text>
+          <Text style={styles.title}>{t('female_drivers_only')}</Text>
           <Text style={styles.subtitle}>
-            Get verified female drivers for your comfort and peace of mind
+            {t('female_driver_comfort')}
           </Text>
         </View>
         <CustomSwitch
@@ -36,10 +38,10 @@ const RidePreference = () => {
         </View>
         <View style={styles.textContainer}>
           <Text style={styles.title}>
-            Safe Night Rides <Text style={styles.timeLabel}>(12 AM - 4 AM)</Text>
+            {t('safe_night_rides')} <Text style={styles.timeLabel}>{t('night_time_range')}</Text>
           </Text>
           <Text style={styles.subtitle}>
-            Ride safely at night with our top-rated, most trusted drivers
+            {t('night_ride_description')}
           </Text>
         </View>
         <CustomSwitch

@@ -3,7 +3,7 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 import { colors, Fonts } from '../../../constants/constants';
 import PickLocationIcon from "../../../assets/icons/PickLocationIcon.svg"
-
+import { useTranslation } from 'react-i18next';
 const PickLocationButton = ({ 
   icon, 
   text, 
@@ -13,13 +13,14 @@ const PickLocationButton = ({
   backgroundColor = 'transparent',
   style = {}
 }) => {
+  const { t } = useTranslation();
   return (
     <TouchableOpacity 
       style={[styles.container, { backgroundColor }, style]} 
       onPress={onPress}
     >
       <PickLocationIcon height={20} width={20}/>
-      <Text style={[styles.text, { color: textColor }]}>Locate on Map</Text>
+      <Text style={[styles.text, { color: textColor }]}>{t('locate_on_map')}</Text>
     </TouchableOpacity>
   );
 };

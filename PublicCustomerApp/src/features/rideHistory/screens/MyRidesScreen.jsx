@@ -1,5 +1,6 @@
 import { Dimensions, Text, Image, TextInput, TouchableOpacity, View, ActivityIndicator, FlatList } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 const { width: windowWidth } = Dimensions.get('window');
 
 import { RecyclerListView, DataProvider, LayoutProvider } from 'recyclerlistview';
@@ -23,6 +24,7 @@ import ProfileImage from '../../../assets/image/account/Profile.webp';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import TripPersonVehicle from '../components/TripPersonVehicle';
 const YourRidesScreen = () => {
+    const { t } = useTranslation();
     const navigation = useNavigation();
     const { setStackScreen } = useStackScreenStore();
 
@@ -62,11 +64,11 @@ const YourRidesScreen = () => {
     const [Header_Options, setHeader_Options] = useState([
         {
             id: 'completed',
-            title: 'Trip History',
+            title: t('trip_history'),
         },
         {
             id: 'upcoming',
-            title: 'Upcoming Rides',
+            title: t('upcoming_rides'),
         }
     ])
 
@@ -125,11 +127,11 @@ const YourRidesScreen = () => {
                 }
                 setFilterMaxPages(pagination?.totalPages)
             } else {
-                showNotification('Failed to get rides', data.message, 'danger');
+                showNotification(t('failed_to_get_rides'), data.message, 'danger');
             }
         } catch (error) {
             console.error('Error loading rides:', error);
-            showNotification('Failed to get rides', 'Network error occurred', 'danger');
+            showNotification(t('failed_to_get_rides'), t('network_error_occurred'), 'danger');
         } finally {
             setIsRefreshing(false);
             setIsLoadMore(false);
@@ -235,7 +237,7 @@ const YourRidesScreen = () => {
 
     return (
         <View style={yourRidesStyles.mainContainer}>
-            <NavBar withBg onBackPress={HandleBackBtn} title={'Your Rides'} />
+            <NavBar withBg onBackPress={HandleBackBtn} title={t('your_rides')} />
 
             <ToggleHeader
                 options={Header_Options}
@@ -260,7 +262,7 @@ const YourRidesScreen = () => {
                     ) :
 
                         !Rides || Rides.length == 0 ?
-                            <NoTripsFound text="No Trips Found" /> :
+                            <NoTripsFound text={t('no_trips_found')} /> :
 
                             <RecyclerListView
                                 contentContainerStyle={{ paddingBottom: 150 }}

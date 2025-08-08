@@ -21,6 +21,7 @@ import CurrentLocationIcon from '../assets/icons/CurrentLocationIcon.svg';
 import locationTask from "../controllers/GetCurrentLocation";
 import usePropsStore from '../store/usePropsStore';
 import { useDebouncedAPICall } from '../hooks/useDebounce';
+import { useTranslation } from 'react-i18next';
 
 const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,title=null}) => {
   const {goBack} = useStackScreenStore();
@@ -30,7 +31,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   const {setIsMapButtonVisible} = useMapStyleStore();
   const {pickedLocation,setPickedLocation} = usePropsStore();
   const [mapMoving,setMapMoving] = useState(false)
-  
+  const { t } = useTranslation();
   const fetchAddressName = useCallback(async (lat, lng) => {
     const coordinates = [lat, lng];
   
@@ -126,7 +127,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   return (
     <>
       <NavBar
-        title={title ? title : "Locate on Map"}
+        title={title ? title : t('locate_on_map')}
         onBackPress={() => goBack()}
       />
       <View style={[styles.container]}>
@@ -146,13 +147,13 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         <TouchableOpacity style={styles.currentLocationIconContainer} onPress={handleCurrentLocation}>
           <CurrentLocationIcon width={25} height={25} />
         </TouchableOpacity>
-        <Text style={styles.bottomContainerText}> Pick Location</Text>
+        <Text style={styles.bottomContainerText}> {t('pick_location')}</Text>
         <View style={styles.AddressContainer}>
           {/* <View style={styles.AddressContainerIcon}>
                     <Icon name="location-on" size={30} color="#ffd11a"/>
                   </View> */}
           <View style={styles.AddressContainerMain}>
-            <Text style={styles.AddressContainerTextTitle}>📍 Address</Text>
+              <Text style={styles.AddressContainerTextTitle}>📍 {t('address')}</Text>
             {!isAddressLoading && pickedLocation?.address ? (
               <Text style={styles.AddressContainerTextAddress}>{pickedLocation.address}</Text>
             ) : (
@@ -187,7 +188,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           <Text style={[
             styles.bottomContainerButtonText,
             isAddressLoading && styles.bottomContainerButtonTextDisabled
-          ]}>Confirm Location</Text>
+            ]}>{t('confirm_location')}</Text>
         </TouchableOpacity>
 
 

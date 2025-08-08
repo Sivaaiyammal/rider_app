@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScrollView, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import NavBar from '../../../components/NavBar';
 import FareHeader from '../components/FareHeader';
@@ -13,6 +14,7 @@ import { Fonts, colors } from '../../../constants/constants';
 import { utils } from '../../../utils/Utils';
 
 const RideDetailScreen = ({ TripData }) => {
+  const { t } = useTranslation();
   const { setStackScreen } = useStackScreenStore();
   
   console.log(JSON.stringify(TripData), "TripData");
@@ -104,7 +106,7 @@ const RideDetailScreen = ({ TripData }) => {
 
   return (
     <View style={styles.container}>
-      <NavBar withBg onBackPress={handleBackPress} title="Ride Details" />
+      <NavBar withBg onBackPress={handleBackPress} title={t('trip_details')} />
       
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <FareHeader fare={rideData.fareDetails?.fare || rideData.estimatedFare || 0} />
@@ -137,12 +139,12 @@ const RideDetailScreen = ({ TripData }) => {
         />
         
         <View style={styles.paymentMethodContainer}>
-          <Text style={styles.paymentMethodLabel}>Payment Method</Text>
+          <Text style={styles.paymentMethodLabel}>{t('payment_method')}</Text>
           <Text style={styles.paymentMethodValue}>{rideData.paymentMethod}</Text>
         </View>
         
         <View style={styles.paymentStatusContainer}>
-          <Text style={styles.paymentStatusLabel}>Payment Status</Text>
+          <Text style={styles.paymentStatusLabel}>{t('payment_status')}</Text>
           <Text style={[
             styles.paymentStatusValue, 
             { color: rideData.passengerPaymentStatus === 'completed' ? colors.green : colors.orange }

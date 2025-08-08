@@ -2,20 +2,22 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 import { Fonts } from '../../../constants/constants';
+import { useTranslation } from 'react-i18next';
 
 const BookingCancelModel = ({ onClose, onCancel }) => {
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Are you sure to cancel ride?</Text>
+        <Text style={styles.title}>{t('are_you_sure_to_cancel_ride')}</Text>
         
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.backBtn} onPress={onClose}>
-            <Text style={styles.backText}>BACK</Text>
+              <Text style={styles.backText}>{t('back')}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.cancelBtn} onPress={onCancel}>
-            <Text style={styles.cancelText}>CANCEL RIDE</Text>
+            <Text style={styles.cancelText}>{t('cancel_ride')}</Text>
           </TouchableOpacity>
         </View>
       </View>

@@ -25,7 +25,9 @@ import FavLabelItems from '../components/FavLabelItems';
 import useLocationStore from '../../../store/useLocationStore';
 import  LocationTypes  from '../../booking/types/LocationTypes.json';  
 import useRideBookingLocationStore from '../../booking/store/useRideBookingLocationStore'
-import {storeLocation}   from '../../../storage/userLocalStorage'
+import {storeLocation}   from '../../../storage/userLocalStorage' 
+import AdaptiveText from '../../../components/Common/AdaptiveText';
+
 const MapScreen = () => {
   const { t } = useTranslation();
 
@@ -33,7 +35,7 @@ const MapScreen = () => {
   const [error, setError] = useState(null);
   const {setStackScreen,goBack} = useStackScreenStore();
   const {location,currentLocationName} = useLocationStore();
-  const {  setRideStartLocation,setRideEndLocation } = useRideBookingLocationStore()
+  const {setRideStartLocation,setRideEndLocation } = useRideBookingLocationStore()
   const {setHomelocation,setWorklocation} = useUserInfoStore();
  
   
@@ -223,9 +225,9 @@ const MapScreen = () => {
           
         >
           <SearchIcon />
-          <Text style={styles.searchContainerText}>
+          <AdaptiveText style={styles.searchContainerText}>
             {t('where_do_you_want_to_go')}
-          </Text>
+          </AdaptiveText>
         </TouchableOpacity>
 
         <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>

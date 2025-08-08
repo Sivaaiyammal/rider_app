@@ -1,5 +1,6 @@
 import {ScrollView, Text, TouchableOpacity, View} from 'react-native';
 import React, {useState} from 'react';
+import { useTranslation } from 'react-i18next';
 import {colors} from '../../constants/constants';
 import {utils} from '../../utils/Utils';
 import DatePicker from 'react-native-date-picker';
@@ -8,6 +9,7 @@ import {scheduleContainerStyles} from '../../styles/AddLocationStyles';
 import {showNotification} from '../../components/NotificationManger';
 
 const ScheduleContainer = props => {
+  const { t } = useTranslation();
   const {
     oncloseDateTime,
     onConfirmDateTime,
@@ -47,8 +49,8 @@ const ScheduleContainer = props => {
     const currentTime = new Date();
     if (_selectedTime < currentTime) {
       showNotification(
-        'Invalid Date Time',
-        'Please Select Time Greater then Current Time',
+        t('invalid_date_time'),
+        t('please_select_time_greater'),
         'warning',
       );
     } else {
@@ -63,7 +65,7 @@ const ScheduleContainer = props => {
   return (
     <View style={scheduleContainerStyles.container}>
       <Text style={scheduleContainerStyles.containerTitle}>
-        Schedule a Trip
+        {t('schedule_a_trip')}
       </Text>
       <View style={scheduleContainerStyles.selectedDateContainer}>
         <Text style={scheduleContainerStyles.yearTxt}>
@@ -132,7 +134,7 @@ const ScheduleContainer = props => {
         <TouchableOpacity
           style={scheduleContainerStyles.confrmBtn}
           onPress={oncloseDateTime}>
-          <Text style={scheduleContainerStyles.confrmBtnTxt}>Cancel</Text>
+          <Text style={scheduleContainerStyles.confrmBtnTxt}>{t('cancel')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[
@@ -140,13 +142,13 @@ const ScheduleContainer = props => {
             {backgroundColor: colors.black},
           ]}
           onPress={() => onConfirm()}>
-          <Text
-            style={[
-              scheduleContainerStyles.confrmBtnTxt,
-              {color: colors.white},
-            ]}>
-            Confirm
-          </Text>
+                      <Text
+              style={[
+                scheduleContainerStyles.confrmBtnTxt,
+                {color: colors.white},
+              ]}>
+              {t('confirm')}
+            </Text>
         </TouchableOpacity>
       </View>
     </View>

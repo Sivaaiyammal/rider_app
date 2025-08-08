@@ -5,10 +5,11 @@ import PropTypes from 'prop-types';
 import { colors, Fonts } from '../../../constants/constants';
 import { DataStore } from '../../../controllers/DataStore';
 import HistoryIcon from '../../../assets/icons/HistoryIcon.svg';
+import { useTranslation } from 'react-i18next';
 
 const HistoryCard = ({ selectCallback, header = true, bottomborder = true,fromSearchScreen=false }) => {
   const [historyItems, setHistoryItems] = useState([]);
-  
+  const { t } = useTranslation();
   const setRecentSearches = useCallback(async () => {
     const recentSearches = await DataStore.loadData('recentSearches');
     console.log(recentSearches)
@@ -21,7 +22,7 @@ const HistoryCard = ({ selectCallback, header = true, bottomborder = true,fromSe
 
   return (
     <View style={styles.container}>
-      {(historyItems?.length > 0 && header) && <Text style={styles.title}>Recent</Text>}
+      {(historyItems?.length > 0 && header) && <Text style={styles.title}> {t('recent')}</Text>}
       {historyItems?.length > 0 ? (
         historyItems.map((item, index) => (
           <TouchableOpacity key={index} onPress={() => selectCallback(item)}>

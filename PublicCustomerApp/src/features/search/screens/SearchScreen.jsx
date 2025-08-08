@@ -25,6 +25,7 @@ import HistoryCard from '../../shared/component/HistoryCard';
 import { DataStore } from '../../../controllers/DataStore';
 
 import debounce from 'lodash/debounce';
+import { useTranslation } from 'react-i18next';
 
 const CACHE_EXPIRY = 5 * 60 * 1000;
 const searchCache = new Map();
@@ -39,7 +40,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const [onSearchResults, setOnSearchResults] = useState([]);
   const {location, setSelectedInput} = useLocationStore();
   const [stateVector, setStateVector] = useState(null);
-
+  const { t } = useTranslation(); 
   
   const searchInputRef = useRef(null);
   const abortControllerRef = useRef(null);
@@ -296,7 +297,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
 
   return (
     <View style={styles.screen}>
-        <NavBar onBackPress={onGoBack} title={'Search'} />
+        <NavBar onBackPress={onGoBack} title={t('search')} />
         
         {/* Search Input Container */}
         <View style={styles.inputContainer}>
@@ -304,7 +305,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
             <AntDesign name="search1" color={'black'} size={22} />
             <TextInput
               ref={searchInputRef}
-              placeholder="Search Cities, Areas, Streets"
+              placeholder={t('search_cities_areas_streets')}
               placeholderTextColor="grey"
               style={styles.input}
               onChangeText={_onChangeText}
@@ -326,8 +327,8 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         </View>
 
         {/* Region Selector */}
-        <View style={styles.regionRow}>
-          <Text style={styles.regionLabel}>Search Region</Text>
+        {/* <View style={styles.regionRow}>
+          <Text style={styles.regionLabel}>{t('search_region')}</Text>
           <TouchableOpacity style={styles.dropDownContainer} onPress={showRegionModal}>
             <Text style={styles.dropDownText}>
               {selectedRegion?.name || 'Select'}
@@ -338,7 +339,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
               color={colors.black}
             />
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* State Vector Container */}
         <StateVectorConatiner stateVectorArr={onSearchResults} removeStateVector={removeStateVecotr}/>
@@ -347,7 +348,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         {searchTxt.trim() === '' && !onSearchResults && recentSearches.length > 0 ? (
           <View style={styles.recentSearchesContainer}>
             <View style={styles.resultHeader}>
-              <Text style={styles.resultHeaderText}>Recent Searches</Text>
+              <Text style={styles.resultHeaderText}>{t('recent_searches')}</Text>
             </View>
             {recentSearches.map((result, index) => (
               <TouchableOpacity
@@ -394,7 +395,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         
         <TouchableOpacity style={styles.bottomBtn} onPress={()=>handleLocateOnMap()}>
           <Entypo name="location" size={18} color={colors.black} />
-          <Text style={styles.bottomBtnTxt}>Locate on Map</Text>
+          <Text style={styles.bottomBtnTxt}>{t('locate_on_map')}</Text>
         </TouchableOpacity>
 
         {/* Region Selection Modal */}

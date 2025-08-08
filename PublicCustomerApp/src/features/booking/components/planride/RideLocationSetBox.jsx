@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Svg, { Circle, Path } from 'react-native-svg';
 import PropTypes from 'prop-types';
 import DestinationIcon from '../../../../assets/icons/destinationIcon';
@@ -18,17 +19,15 @@ const RideLocationSetBox = ({
   onLocationClick,
   onWaypointClick,
 }) => {
-
-
-
+  const { t } = useTranslation();
   const {rideStartLocation,rideEndLocation,rideWayPoints} = useRideBookingLocationStore()
 
   
 
-  const destination = rideEndLocation ? utils.formatAddressName(rideEndLocation) : "Search Destination"
-  const pickup = rideStartLocation ? utils.formatAddressName(rideStartLocation) : "Search Destination"
+  const destination = rideEndLocation ? utils.formatAddressName(rideEndLocation) : t('search_destination')
+  const pickup = rideStartLocation ? utils.formatAddressName(rideStartLocation) : t('search_destination')
 
-  const startLocationLable = rideStartLocation?.name === "Current Location" ? "Current Location" : "Pickup Location"
+  const startLocationLable = rideStartLocation?.name === "Current Location" ? t('current_location') : t('pickup_location')
 
   
 
@@ -47,7 +46,7 @@ const RideLocationSetBox = ({
         </View>
         <View style={[styles.locationContainer]}>
           <Text style={styles.label}>{startLocationLable}</Text>
-          {rideStartLocation ? <Text style={styles.address} numberOfLines={1}>{pickup}</Text>:<Text style={styles.placeHolder}>Search Pickup Location</Text>}
+          {rideStartLocation ? <Text style={styles.address} numberOfLines={1}>{pickup}</Text>:<Text style={styles.placeHolder}>{t('search_pickup_location')}</Text>}
         </View>
       </TouchableOpacity>
       <TouchableOpacity style={styles.stopContainer} onPress={()=>onLocationClick(LocationTypes.WAYPOINT_LOCATION)}>
@@ -69,7 +68,7 @@ const RideLocationSetBox = ({
            <View style={styles.stopLocationMainContainer}>
           
            <View style={styles.stopCountContainer}>
-             <Text style={styles.stopCountText}> {rideWayPoints.length} Stop</Text>
+             <Text style={styles.stopCountText}> {rideWayPoints.length} {rideWayPoints.length === 1 ? t('stop') : t('stops')}</Text>
            </View>
            <View style={styles.stopLloctiondashedHorozontalLine}/>
           </View>
@@ -96,8 +95,8 @@ const RideLocationSetBox = ({
         
         </View>
         <View style={[styles.locationContainer]}>
-          <Text style={styles.label}>Destination</Text>
-          {rideEndLocation ? <Text style={styles.address} numberOfLines={1}>{destination}</Text>:<Text style={styles.placeHolder}>Search Destination</Text>}
+          <Text style={styles.label}>{t('destination')}</Text>
+          {rideEndLocation ? <Text style={styles.address} numberOfLines={1}>{destination}</Text>:<Text style={styles.placeHolder}>{t('search_destination')}</Text>}
         </View>
       </TouchableOpacity>
    

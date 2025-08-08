@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert } from 'react-native';
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { colors, Fonts } from '../../../../constants/constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useUserInfoStore from '../../../../store/useUserInfoStore';
@@ -8,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import PropTypes from 'prop-types';
 
 const Contactsheet = ({ onConfirm }) => {
+  const { t } = useTranslation();
   const { userdetails } = useUserInfoStore();
   const { rideBookMode, setPassangerDetails, setRideBookMode,passangerDetails } = useRideBookingInfo();
   const [showAddContact, setShowAddContact] = useState(false);
@@ -62,13 +64,13 @@ const Contactsheet = ({ onConfirm }) => {
 
   const handleAddContact = () => {
     if (!isFormValid()) {
-      Alert.alert('Invalid Input', 'Please enter a valid Indian mobile number (10 digits starting with 6-9)');
+      Alert.alert(t('invalid_input'), t('invalid_mobile_number'));
       return;
     }
 
     const alreadyExists = contactDetails.some(c => c.phone === newContact.phone);
     if (alreadyExists) {
-      Alert.alert('Contact Exists', 'This contact already exists in your list');
+      Alert.alert(t('contact_exists'), t('contact_already_exists'));
       return;
     }
 
@@ -87,7 +89,7 @@ const Contactsheet = ({ onConfirm }) => {
 
   const handleSelectMyself = () => {
     if (!userdetails?.name || !userdetails?.phone) {
-      Alert.alert('User Details', 'User details not available');
+      Alert.alert(t('user_details'), t('user_details_not_available'));
       return;
     }
 
@@ -103,12 +105,12 @@ const Contactsheet = ({ onConfirm }) => {
 
   const handleDeleteContact = (contactToDelete) => {
     Alert.alert(
-      'Delete Contact',
-      `Are you sure you want to delete ${contactToDelete.name}?`,
+      t('delete_contact'),
+      `${t('delete_contact_confirm')} ${contactToDelete.name}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('delete'),
           style: 'destructive',
           onPress: () => {
             const updatedContacts = contactDetails.filter(c => c.phone !== contactToDelete.phone);
@@ -133,7 +135,7 @@ const Contactsheet = ({ onConfirm }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Book For</Text>
+        <Text style={styles.title}>{t('book_for')}</Text>
       </View>
 
       <TouchableOpacity 
@@ -141,7 +143,7 @@ const Contactsheet = ({ onConfirm }) => {
         onPress={handleSelectMyself}
       >
         <View style={styles.myselfInfo}>
-          <Text style={styles.myselfText}>Myself</Text>
+          <Text style={styles.myselfText}>{t('myself')}</Text>
           {userdetails && (
             <Text style={styles.myselfDetails}>
               {userdetails.name} - {userdetails.phone}
@@ -181,13 +183,13 @@ const Contactsheet = ({ onConfirm }) => {
           onPress={() => setShowAddContact(true)}
         >
           <Ionicons name="add-circle-outline" size={24} color={colors.green} />
-          <Text style={styles.addButtonText}>Add New Contact</Text>
+          <Text style={styles.addButtonText}>{t('add_new_contact')}</Text>
         </TouchableOpacity>
       ) : (
         <View style={styles.addContactForm}>
           <TextInput
             style={styles.input}
-            placeholder="Enter name"
+            placeholder={t('enter_name')}
             placeholderTextColor="grey"
             value={newContact.name}
             onChangeText={(text) => setNewContact({ ...newContact, name: text })}
@@ -196,7 +198,7 @@ const Contactsheet = ({ onConfirm }) => {
             <Text style={{fontFamily:Fonts.medium,fontSize:16,color:colors.black}}>+91</Text>
             <TextInput
               style={{flex: 1}}
-              placeholder="Enter mobile number"
+              placeholder={t('enter_mobile_number')}
               placeholderTextColor="grey"
               keyboardType="phone-pad"
               value={newContact.phone}
@@ -213,7 +215,7 @@ const Contactsheet = ({ onConfirm }) => {
               disabled={!isFormValid()}
               onPress={handleAddContact}
             >
-              <Text style={styles.confirmText}>Add Contact</Text>
+              <Text style={styles.confirmText}>{t('add_contact')}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.cancelButton}

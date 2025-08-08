@@ -93,11 +93,13 @@ export const onBoardingSlides = [
 export const rideType = [
   {
     id: 1,
+    translationKey: 'pickup_now',
     name: 'Pickup Now',
     value:'instant'
   },
   {
     id: 2,
+    translationKey: 'schedule',
     name: 'Schedule',
     value:'schedule'
   }

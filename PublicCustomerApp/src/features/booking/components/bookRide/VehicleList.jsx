@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { colors, Fonts } from '../../../../constants/constants';
@@ -22,6 +23,7 @@ import LinearGradient from 'react-native-linear-gradient';
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
 
 const VehicleList = ({ isLoading = false ,availableVehicles}) => {
+  const { t } = useTranslation();
   const {selectedVehicle,setSelectedVehicle} = useRideVehicleStore()
   const [slideAnim] = useState(new Animated.Value(0));
 
@@ -135,7 +137,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
                 <View style={styles.rowBetween}>
                   <View style={styles.timeRow}>
                     <MaterialCommunityIcons name="clock" size={16} color={"#757575"} />
-                    <Text style={[styles.timeText]}>{vehicle.estimatedDuration} min</Text>
+                    <Text style={[styles.timeText]}>{vehicle.estimatedDuration} {t('min')}</Text>
                     {/* <Text style={[styles.dot]}>·</Text>
                     <Text style={[styles.dropTime]}>{vehicle.dropat}</Text> */}
                   </View>

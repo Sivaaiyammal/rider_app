@@ -14,13 +14,14 @@ import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 import { changeStopLocation } from '../services/StopLocationChangeService';
 import {showNotification} from '../../../components/NotificationManger';
 import useMapStyleStore from '../../../store/useMapStyleStore';
+import { useTranslation } from 'react-i18next';
   const DriverArrivalScreen = ({onCancel}) => {
   // Dummy data
   const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone} = useAssignedDriverInfoStore();
   const {stops,otp,duration,totalDistance,estimatedPickuoMins,vehicleType,estimatedFare} = useCurrentRideInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setMapStyle} = useMapStyleStore();
-
+  const {t} = useTranslation();
   // Initialize tracking hook for driver arrival screen with polyline support
   const { cleanupMarkers } = useTrackHook('arrival');
 
@@ -106,7 +107,7 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
         <> 
         <View style={[styles.containerTop,{backgroundColor:'#0f223c'}]}>
        
-        <Text style={styles.topBarText}>Your driver will arrive in</Text>
+        <Text style={styles.topBarText}>{t('your_driver_will_arrive_in')}</Text>
         <View style={styles.timeBox}>
           <Text style={styles.timeText}>{estimatedPickuoMins || '--'} Mins</Text>
             </View>
@@ -150,7 +151,7 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
             {!expanded && (
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',paddingHorizontal:5}}>
         <View style={{flex:1,gap:5,paddingVertical:10}}>
-          <Text style={{ color: '#888', fontSize: 13,fontFamily:Fonts.regular }}>Pickup Location</Text>
+          <Text style={{ color: '#888', fontSize: 13,fontFamily:Fonts.regular }}>{t('pickup_location')}</Text>
           <Text style={{ color: '#222', fontSize: 15,maxWidth:"90%",fontFamily:Fonts.regular,textAlign:'left' }} numberOfLines={1} ellipsizeMode="tail">
             {stops[0]?.address}
           </Text>
@@ -158,14 +159,14 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
           <TouchableOpacity style={{borderColor: '#4289e5', borderWidth:1, borderRadius: 8, paddingVertical: 8, paddingHorizontal: 12 }} onPress={()=>{
             handleChangeLocation(stops[0])
           }}>
-          <Text style={{ color:colors.blue, fontSize: 14, fontFamily:Fonts.regular }}>Change</Text>
+          <Text style={{ color:colors.blue, fontSize: 14, fontFamily:Fonts.regular }}>{t('change')}</Text>
         </TouchableOpacity>
       </View>
     )}   
   
  
       <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
-        <Text style={styles.tripDetailsLabel}>Trip Details</Text>
+        <Text style={styles.tripDetailsLabel}>{t('trip_details')}</Text>
         <Animated.View style={{ transform: [{ rotate: chevronRotation }] }}>
           <Icon name="keyboard-arrow-right" size={25} color={colors.black} />
         </Animated.View>
@@ -184,15 +185,15 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
           <Text style={styles.rideInfoValue}>{estDropTime || '--'}</Text>
         </View> */}
         <View style={styles.rideInfoItem}>
-          <Text style={styles.rideInfoLabel}>Duration</Text>
+          <Text style={styles.rideInfoLabel}>{t('duration')}</Text>
           <Text style={styles.rideInfoValue}>{duration || '--'} Min</Text>
         </View>
         <View style={styles.rideInfoItem}>
-          <Text style={styles.rideInfoLabel}>Distance</Text>
+          <Text style={styles.rideInfoLabel}>{t('distance')}</Text>
           <Text style={styles.rideInfoValue}>{totalDistance || '--'} Km</Text>
         </View>
         <View style={styles.rideInfoItem}>
-          <Text style={styles.rideInfoLabel}>Est. Price</Text>
+          <Text style={styles.rideInfoLabel}>{t('est_price')}</Text>
           <Text style={styles.rideInfoValue}>₹{estimatedFare || '--'}</Text>
         </View>
       </View>
@@ -204,7 +205,7 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
       <View style={styles.actionRow}>
         <TouchableOpacity style={styles.callBtn} onPress={handleCallDriver}>
           <Icon name="phone" size={20} color={colors.white} />
-          <Text style={styles.callBtnText}>CALL DRIVER</Text>
+            <Text style={styles.callBtnText}>{t('call_driver')}</Text>
         </TouchableOpacity>
         {/* <TouchableOpacity style={styles.shareBtn}>
           <Icon name="share" size={25} color={colors.white} />

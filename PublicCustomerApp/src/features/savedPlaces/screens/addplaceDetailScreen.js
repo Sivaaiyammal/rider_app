@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import NavBar from '../../../components/NavBar';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
@@ -16,8 +17,10 @@ import useMapStore from '../../map/store/useMapStore';
 import Marker from '../../../controllers/NEMap/Marker';
 import useMapStyleStore from '../../../store/useMapStyleStore';
 import {height } from '../../../utils/Utils'
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 
 const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existingLabel = '' }) => {
+  const { t } = useTranslation();
   const {goBack} = useStackScreenStore();
   const { setMapMarkers ,setMapLocation} = useMapStore();
   const [selectedOption, setSelectedOption] = useState(edit ? (existingLabel === 'home' || existingLabel === 'work' ? existingLabel : 'nickname') : 'nickname');
@@ -28,9 +31,9 @@ const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existi
   const locationData = placeData;
 
   const saveOptions = [
-    { key: 'home', label: 'Home',  },
-    { key: 'work', label: 'Work', },
-    { key: 'nickname', label: 'Other +' },
+    { key: 'home', label: t('home'),  },
+    { key: 'work', label: t('work'), },
+    { key: 'nickname', label: t('other'), },
   ];
 
   useEffect(() => {
@@ -117,13 +120,13 @@ const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existi
 
   return (
     <>
-    <NavBar withBg={false} onBackPress={() => goBack()} title={edit ? 'Edit Place' : 'Add Place'} />
+    <NavBar withBg={false} onBackPress={() => goBack()} title={edit ? t('edit_place') : t('add_place')} />
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         
-        <Text style={styles.sectionTitle}>
-            Address
-        </Text>
+        <AdaptiveText style={styles.sectionTitle}>
+            {t('address')}
+        </AdaptiveText>
         {/* Location Display */}
         <View style={styles.locationContainer}>
           <View style={styles.locationIcon}>
@@ -131,14 +134,14 @@ const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existi
           </View>
           <View style={styles.locationTextContainer}>
             
-                <Text style={styles.locationTitle}>{utils.formatAddressName(locationData)}</Text>
+                <AdaptiveText style={styles.locationTitle}>{utils.formatAddressName(locationData)}</AdaptiveText>
            
           </View>
         </View>
 
         {/* Save As Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Save as</Text>
+          <AdaptiveText style={styles.sectionTitle}>{t('save_as')}</AdaptiveText>
           <View style={styles.saveOptionsContainer}>
             {saveOptions.map(renderSaveOption)}
           </View>
@@ -147,10 +150,10 @@ const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existi
         {/* Nickname Input - Show only when nickname is selected */}
         {selectedOption === 'nickname' && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Custom Nickname</Text>
+            <AdaptiveText style={styles.sectionTitle}>{t('custom_nickname')}</AdaptiveText>
             <TextInput
               style={styles.input}
-              placeholder="Enter nickname for this place"
+              placeholder={t('enter_nickname_placeholder')}
               value={nickname}
               onChangeText={setNickname}
               placeholderTextColor="#999"
@@ -169,10 +172,12 @@ const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existi
           onPress={handlePlaceSave}
           disabled={isSaveDisabled}
         >
-          <Text style={[
+          <AdaptiveText style={[
             styles.saveButtonText,
             isSaveDisabled && styles.saveButtonTextDisabled
-          ]}>{edit ? 'UPDATE PLACE' : 'SAVE PLACE'}</Text>
+          ]}
+          color={isSaveDisabled ? '#999' : '#fff'}
+          >{edit ? t('update_place') : t('save_place')}</AdaptiveText>
         </TouchableOpacity>
       </ScrollView>
     </View>

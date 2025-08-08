@@ -6,6 +6,7 @@ import {
     View,
   } from 'react-native';
   import React, {useEffect} from 'react';
+  import { useTranslation } from 'react-i18next';
   import {Fonts} from '../../../constants/constants';
   import ProfileImage from '../../../assets/image/svgIcons/profileImage.svg';
   import useLocationStore from '../../../store/useLocationStore';
@@ -17,6 +18,7 @@ import { height } from '../../../utils/Utils';
 import locationTask from '../../../controllers/GetCurrentLocation';
   
   const LocationHeader = (props) => {
+    const { t } = useTranslation();
     const {toggleMenu} = props;
     const {location, currentLocationName, setCurrentLocationName} = useLocationStore();
    
@@ -67,7 +69,7 @@ import locationTask from '../../../controllers/GetCurrentLocation';
             </TouchableOpacity>
           </View>
           <View style={{marginLeft: 10}}>
-            <Text style={styles.title}>{'Your Location'}</Text>
+            <Text style={styles.title}>{t('your_location')}</Text>
             <Text style={[styles.address, {maxWidth: responsiveMaxWidth-10}]} numberOfLines={1} ellipsizeMode="tail">
               {currentLocationName ? currentLocationName : <ActivityIndicator />}
             </Text>

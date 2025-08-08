@@ -10,6 +10,7 @@ import {
   Alert,
   FlatList,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ChatMessage from '../components/ChatMessage';
 import useSupportStore from '../store/useSupportStore';
@@ -17,9 +18,11 @@ import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import { Fonts } from '../../../constants/constants';
 import UserTicketService from '../services/UserTicketService';
 import useUserInfoStore from '../../../store/useUserInfoStore';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 
 
 const TicketDetailScreen = () => {
+  const { t } = useTranslation();
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const { userInfo,id } = useUserInfoStore();
@@ -39,7 +42,7 @@ const TicketDetailScreen = () => {
   const SystemMessage = ({ message }) => {
     return (
       <View style={styles.systemMessageContainer}>
-        <Text style={styles.systemMessageText}>{message?.content}</Text>
+        <AdaptiveText style={styles.systemMessageText} color="white">{message?.content}</AdaptiveText>
       </View>
     );
   };    
@@ -82,7 +85,7 @@ const TicketDetailScreen = () => {
       await addMessage(selectedTicket.ticketId, messageText);
 
     } catch (error) {
-      Alert.alert('Error', 'Failed to send message. Please try again.');
+      Alert.alert(t('error'), t('failed_to_send_message'));
       setIsTyping(false);
     }
   };
@@ -105,13 +108,13 @@ const TicketDetailScreen = () => {
   const getStatusText = (status) => {
     switch (status?.toLowerCase()) {
       case 'open':
-        return 'Open';
+        return t('open');
       case 'in_progress':
-        return 'In Progress';
+        return t('in_progress');
       case 'resolved':
-        return 'Resolved';
+        return t('resolved');
       case 'closed':
-        return 'Closed';
+        return t('closed');
       default:
         return status;
     }
@@ -144,12 +147,12 @@ const TicketDetailScreen = () => {
     return (
       <View style={styles.errorContainer}>
         <Ionicons name="alert-circle" size={48} color="#EF4444" />
-        <Text style={styles.errorText}>Ticket not found</Text>
+        <AdaptiveText style={styles.errorText} color="#EF4444">{t('ticket_not_found')}</AdaptiveText>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => setStackScreen('SupportScreen')}
         >
-          <Text style={styles.backButtonText}>Go Back</Text>
+          <AdaptiveText style={styles.backButtonText} color="#FFFFFF">{t('go_back')}</AdaptiveText>
         </TouchableOpacity>
       </View>
     );
@@ -159,12 +162,12 @@ const TicketDetailScreen = () => {
     return (
       <View style={styles.errorContainer}>
         <Ionicons name="alert-circle" size={48} color="#EF4444" />
-        <Text style={styles.errorText}>Ticket not found</Text>
+        <AdaptiveText style={styles.errorText} color="#EF4444">{t('ticket_not_found')}</AdaptiveText>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => setStackScreen('SupportScreen')}
         >
-          <Text style={styles.backButtonText}>Go Back</Text>
+          <AdaptiveText style={styles.backButtonText} color="#FFFFFF">{t('go_back')}</AdaptiveText>
         </TouchableOpacity>
       </View>
     );
@@ -190,7 +193,7 @@ const TicketDetailScreen = () => {
             <View style={[styles.dot, styles.dot2]} />
             <View style={[styles.dot, styles.dot3]} />
           </View>
-          <Text style={styles.typingText}>Agent is typing...</Text>
+          <AdaptiveText style={styles.typingText} color="#6B7280">{t('agent_is_typing')}</AdaptiveText>
         </View>
       </View>
     );
@@ -200,10 +203,10 @@ const TicketDetailScreen = () => {
     return (
       <View style={styles.noMessagesContainer}>
         <Ionicons name="chatbubble-outline" size={48} color="#9CA3AF" />
-        <Text style={styles.noMessagesTitle}>No messages yet</Text>
-        <Text style={styles.noMessagesSubtitle}>
-          Start the conversation by sending your first message
-        </Text>
+        <AdaptiveText style={styles.noMessagesTitle} color="#374151">{t('no_messages_yet')}</AdaptiveText>
+        <AdaptiveText style={styles.noMessagesSubtitle} color="#6B7280">
+          {t('start_conversation_message')}
+        </AdaptiveText>
       </View>
     );
   };
@@ -239,20 +242,20 @@ const TicketDetailScreen = () => {
       {/* Ticket Info */}
       <View style={styles.ticketInfo}>
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Category:</Text>
-          <Text style={styles.infoValue}>{selectedTicket.category}</Text>
+          <AdaptiveText style={styles.infoLabel} color="#6B7280">{t('category')}</AdaptiveText>
+          <AdaptiveText style={styles.infoValue} color="#374151">{selectedTicket.category}</AdaptiveText>
         </View>
                  {showPriority && (
            <View style={styles.infoRow}>
-             <Text style={styles.infoLabel}>Priority:</Text>
+             <AdaptiveText style={styles.infoLabel} color="#6B7280">{t('priority')}</AdaptiveText>
              <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(selectedTicket.priority) }]}>
-               <Text style={styles.priorityText}>{selectedTicket.priority}</Text>
+               <AdaptiveText style={styles.priorityText} color="#FFFFFF">{selectedTicket.priority}</AdaptiveText>
              </View>
            </View>
          )}
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Created:</Text>
-          <Text style={styles.infoValue}>{formatDate(selectedTicket.createdAt)}</Text>
+          <AdaptiveText style={styles.infoLabel} color="#6B7280">{t('created')}</AdaptiveText>
+          <AdaptiveText style={styles.infoValue} color="#374151">{formatDate(selectedTicket.createdAt)}</AdaptiveText>
         </View>
       </View>
 
@@ -307,7 +310,7 @@ const TicketDetailScreen = () => {
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.textInput}
-            placeholder="Type your message..."
+            placeholder={t('type_your_message')}
             value={message}
             onChangeText={setMessage}
             multiline

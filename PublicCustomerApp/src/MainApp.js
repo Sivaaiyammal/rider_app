@@ -37,7 +37,7 @@ const MainAppContent = () => {
 
   const initLanguage = async () => {
     const language = await DataStore.loadData('language');
-    if(language.data){
+    if(language.data && language.data !== 'languageDone'){
       i18n.changeLanguage(language.data);
     }
   }

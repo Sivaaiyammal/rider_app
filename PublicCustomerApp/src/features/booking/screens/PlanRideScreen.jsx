@@ -1,5 +1,6 @@
 import {Text, TouchableOpacity, View, StyleSheet, ScrollView} from 'react-native';
 import React, {useCallback, useState,useEffect} from 'react';
+import { useTranslation } from 'react-i18next';
 import NavBar from '../../../components/NavBar';
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import useMapStore from '../../../features/map/store/useMapStore';
@@ -32,6 +33,7 @@ import { Fonts } from '../../../constants/constants';
 import { storeLocation } from '../../../storage/userLocalStorage';    
 
 const PlanRideScreen = ({selectedDestination}) => {
+  const { t } = useTranslation();
   const {userdetails,homelocation,worklocation,setHomelocation,setWorklocation,userFavPlaces} = useUserInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
@@ -231,7 +233,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
 
       <View style={styles.PlanRideScreen}>
-        <NavBar withBg onBackPress={onBackPress} title={'Plan your trip'} />
+        <NavBar withBg onBackPress={onBackPress} title={t('plan_your_trip')} />
 
 
         <View style={addLocation.rideSelectionContainer}>
@@ -239,14 +241,14 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
             style={addLocation.rideSelection}
             onPress={() => onRideTypePress()}>
             <Schdule />
-            <Text style={addLocation.rideSelectionTxt}>{selectedRide.name}{' '}{scheduleDate ? scheduleDate + "-" + scheduleTime : scheduleTime}
+            <Text style={addLocation.rideSelectionTxt}>{t(selectedRide.translationKey)}{' '}{scheduleDate ? scheduleDate + "-" + scheduleTime : scheduleTime}
             </Text>
             {!scheduleDate && <Ionicons name={"chevron-down"} size={14} color={"white"} />}
           </TouchableOpacity>
 
           <TouchableOpacity style={addLocation.rideSelection} onPress={() => onTripForPress()}>
             <Ionicons name="person" size={18} color={colors.white} />
-            <Text style={addLocation.rideSelectionTxt}>{rideBookMode === 'MYSELF' ? 'Myself' : passangerDetails?.name || 'Others'}</Text>
+            <Text style={addLocation.rideSelectionTxt}>{rideBookMode === 'MYSELF' ? t('myself') : passangerDetails?.name || t('others')}</Text>
             <Ionicons name="chevron-down" size={18} color={colors.white} />
           </TouchableOpacity>
         </View>
@@ -267,7 +269,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
               handleFavouriteLocationPress(item)
             }}  selected={selectedFavPlace?.label === item.label} />
           ))}
-          <FavPlacesItem data={{label:"Add Favorite Places"}} onPress={() => {
+          <FavPlacesItem data={{label:t('add_favorite_places')}} onPress={() => {
             setStackScreen("SavedPlacesScreen",{})
           }} type="add" />
         </ScrollView>
@@ -282,7 +284,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
          {
           isContinueButtonVisible && (
             <TouchableOpacity style={styles.continueButton} onPress={()=>setStackScreen("BookRideScreen",{})}>
-              <Text style={styles.continueButtonText}>Continue</Text>
+              <Text style={styles.continueButtonText}>{t('continue')}</Text>
             </TouchableOpacity>
           )
          }

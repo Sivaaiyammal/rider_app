@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import NavBar from '../../../components/NavBar';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import BottomSheet from '../../../components/BottomSheet';
@@ -77,6 +78,7 @@ const BottomSheetHeader = () => {
     )
 }
 const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsScreen = null}) => {
+    const { t } = useTranslation();
     const {goBack} = useStackScreenStore()
         const {paymentType,setPaymentType, setRideDistance ,setEstimatedDuration,rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode} = useRideBookingInfo()
     const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false)
@@ -368,7 +370,7 @@ const handleCouponPress = () => {
     <View style={styles.bottomSheetContent}>
         <View style={styles.contentContainer}>
             <RideInfo distance={rideDistance} duration={estimatedDuration} showPreference={setShowPreference}/>
-            <BookingOptions label="Female Driver" onPress={handleFemaleDriverToggle} />
+            <BookingOptions label={t('female_driver')} onPress={handleFemaleDriverToggle} />
             <VehicleList isLoading={isLoading}  availableVehicles={availableVehicles}/>
            
         </View>
@@ -380,15 +382,15 @@ const handleCouponPress = () => {
                  {!couponCode ? (
                    <>
                      <FontAwesome6 name="percent" size={20} color={colors.black} />
-                     <Text style={styles.CouponText}>Offer Coupons</Text>
+                     <Text style={styles.CouponText}>{t('offer_coupons')}</Text>
                      <Icon name="chevron-right" size={20} color="#888" />
                    </>
                  ) : (
                    <>
                     <FontAwesome6 name="percent" size={16} color={colors.grey_dark} />
-                     <Text >Coupon</Text>
+                     <Text >{t('coupon')}</Text>
                      <Text style={[styles.CouponText, {fontFamily:Fonts.semi_bold}]}>{couponCode}</Text>
-                     <Text>Applied</Text>
+                     <Text>{t('applied')}</Text>
                    </>
                  )}
 
@@ -396,7 +398,7 @@ const handleCouponPress = () => {
               <View style={styles.BookingButtonContainer}>
                   <TouchableOpacity style={styles.BookingPaymentContainer} onPress={handlePaymentType}>
                       <View style={styles.BookingPaymentHeader}>
-                          <Text style={styles.BookingPaymentHeaderText}>Pay by</Text>
+                          <Text style={styles.BookingPaymentHeaderText}>{t('pay_by')}</Text>
                           <View style={styles.BookingPaymentMode}>
                               <Text style={styles.BookingPaymentModeText}>{paymentType}</Text>
                               <Icon name="arrow-drop-down" color={colors.white} style={{ fontSize: 20 }}></Icon>
@@ -411,7 +413,7 @@ const handleCouponPress = () => {
                           disabled={isBookingLoading}
                       >
                           <Text style={styles.BookingButtonText}>
-                              {isBookingLoading ? 'BOOKING...' : 'CONFIRM RIDE'}
+                              {isBookingLoading ? t('booking') : t('confirm_ride')}
                           </Text>
                       </TouchableOpacity>
                   </View>

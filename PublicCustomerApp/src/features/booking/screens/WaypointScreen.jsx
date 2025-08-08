@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
  
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
 import NavBar from '../../../components/NavBar';
@@ -22,6 +23,7 @@ import { getPreFinalFare,passangerStopChangeRequest } from '../../../API/EndPoin
 import { use } from 'i18next';
 
 const WaypointScreen = ({stopsFromOnGoingRide=null,tripId}) => {
+  const { t } = useTranslation();
   const [isLoading] = React.useState(false);
   const [showFareModal, setShowFareModal] = React.useState(false);
   const [fareData, setFareData] = React.useState(null);
@@ -276,13 +278,13 @@ useEffect(() => {
       let name;
       let waitingTime;
       if (index === 0) {
-        name = "Pickup Point";
+        name = t('pickup_point');
         waitingTime = 0
       } else if (index === updatedRideWayPoints.length - 1) {
-        name = "Drop Point";
+        name = t('drop_point');
         waitingTime = 0
       } else {
-        name = `Stop ${index}`;
+        name = `${t('stop')} ${index}`;
         waitingTime = item.waitingTime
       }
      
@@ -316,7 +318,7 @@ useEffect(() => {
   return (
     <>
       <View style={styles.topContainer}>
-        <NavBar onBackPress={onBackPress} title={'Add Stops'} />
+        <NavBar onBackPress={onBackPress} title={t('add_stops')} />
           <WaypointContainer />
       </View>
       <View style={styles.footer}>
@@ -326,7 +328,7 @@ useEffect(() => {
           onPress={stopsFromOnGoingRide?getFare:onConfirmRoute}
         >
           <Text style={styles.confirmButtonText}>
-            {isLoading ? 'Confirming...' : stopsFromOnGoingRide ? 'Confirm Edited Route': 'Confirm Route'}
+            {isLoading ? t('confirming') : stopsFromOnGoingRide ? t('confirm_edited_route'): t('confirm_route')}
           </Text>
         </TouchableOpacity>
       </View>

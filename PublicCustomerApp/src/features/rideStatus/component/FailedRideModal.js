@@ -8,13 +8,14 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 import { colors, Fonts } from '../../../constants/constants';
-
+import { useTranslation } from 'react-i18next';
 const FailedRideModal = ({
   visible,
   onRetry,
   onCancel,
   message = 'Unable to find a driver at the moment. Please try again.',
 }) => {
+  const { t } = useTranslation();
   return (
     <Modal
       animationType="fade"
@@ -30,7 +31,7 @@ const FailedRideModal = ({
           </View>
 
           {/* Title */}
-          <Text style={styles.modalTitle}>Driver Not Found</Text>
+          <Text style={styles.modalTitle}>{t('driver_not_found')}</Text>
 
           {/* Message */}
           <Text style={styles.modalMessage}>{message}</Text>
@@ -43,14 +44,14 @@ const FailedRideModal = ({
               style={[styles.button, styles.cancelButton]}
               onPress={onCancel}
             >
-              <Text style={styles.cancelButtonText}>Cancel Ride</Text>
+              <Text style={styles.cancelButtonText}>{t('cancel_ride')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.button, styles.retryButton]}
               onPress={onRetry}
             >
-              <Text style={styles.retryButtonText}>Retry</Text>
+              <Text style={styles.retryButtonText}>{t('retry')}</Text>
             </TouchableOpacity>
 
           

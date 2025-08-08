@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Fonts } from '../../../constants/constants';
 import HomeIcon from '../../../assets/icons/HomeIcon.svg';
 import WorkIcon from '../../../assets/icons/WorkIcon.svg';
@@ -11,6 +12,7 @@ import AddFavIcon from '../../../assets/icons/AddFavIcon.svg';
 
 
 const FavLabelItems = ({onLabelPress}) => {
+  const { t } = useTranslation();
   const responsiveMaxWidth = width * 0.8;
   const {userFavPlaces} = useUserInfoStore();
   const {setStackScreen} = useStackScreenStore();
@@ -21,37 +23,37 @@ const FavLabelItems = ({onLabelPress}) => {
     });
   }
 
-  
+  // Check if there are no favorite places
+  const hasNoFavorites = !userFavPlaces || userFavPlaces.length === 0;
 
   
   return (
     <View style={styles.FavouriteAddressContainer}>  
-      {userFavPlaces?.map((item,index)=>(
-        <TouchableOpacity key={index} style={styles.FavouriteAddressItem} onPress={()=>onLabelPress(item.label,item.locationData)}>
-          <View style={styles.FavouriteAddressItemIcon}>
-            {item.label.toLowerCase() === 'home' ? <HomeIcon width={50} height={50} /> : item.label.toLowerCase() === 'work' ? <WorkIcon width={50} height={50} /> : <View style={{paddingHorizontal:2}}><FavIcon width={45} height={45} /></View>  }
-          </View>
-         <View key={index} style={styles.FavouriteAddressItemTextContainer}>
-         <Text style={styles.FavouriteAddressItemText}>{item.label}</Text>
-         <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth }]}>{utils.formatAddressName(item.locationData)}</Text>
-     </View>
-     </TouchableOpacity>
-      ))}
-
-        <TouchableOpacity  style={styles.FavouriteAddressItem} onPress={()=>handleAddFavPlacePress()}>
+      {hasNoFavorites ? (
+        // Show "Add Favorite Places" only when no favorites exist
+        <TouchableOpacity style={styles.FavouriteAddressItem} onPress={handleAddFavPlacePress}>
           <View style={[styles.FavouriteAddressItemIcon, {paddingHorizontal:2}]}>
-            { <AddFavIcon width={45} height={45}  />}
+            <AddFavIcon width={45} height={45} />
           </View>
-         <View style={styles.FavouriteAddressItemTextContainer}>
-         <Text style={styles.FavouriteAddressItemText}>Add Favorite Places</Text>
-         {/* <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth }]}>{utils.formatAddressName(item.locationData)}</Text> */}
-     </View>
-     </TouchableOpacity>
+          <View style={styles.FavouriteAddressItemTextContainer}>
+            <Text style={styles.FavouriteAddressItemText}>{t('add_favorite_places')}</Text>
+          </View>
+        </TouchableOpacity>
+      ) : (
+        // Show existing favorites when they exist
+        userFavPlaces?.map((item,index)=>(
+          <TouchableOpacity key={index} style={styles.FavouriteAddressItem} onPress={()=>onLabelPress(item.label,item.locationData)}>
+            <View style={styles.FavouriteAddressItemIcon}>
+              {item.label.toLowerCase() === 'home' ? <HomeIcon width={50} height={50} /> : item.label.toLowerCase() === 'work' ? <WorkIcon width={50} height={50} /> : <View style={{paddingHorizontal:2}}><FavIcon width={45} height={45} /></View>  }
+            </View>
+           <View key={index} style={styles.FavouriteAddressItemTextContainer}>
+           <Text style={styles.FavouriteAddressItemText}>{item.label}</Text>
+           <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth }]}>{utils.formatAddressName(item.locationData)}</Text>
+       </View>
+       </TouchableOpacity>
+        ))
+      )}
     </View>
-
-    
-
-
   );
 };
 

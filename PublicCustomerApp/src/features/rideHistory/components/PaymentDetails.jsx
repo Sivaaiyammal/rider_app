@@ -1,25 +1,30 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors, Fonts } from '../../../constants/constants';
 
 const PaymentDetails = ({
  finalFare,breakdownFare
-}) => (
-  <View style={styles.container}>
-    <Text style={styles.header}>Payment Details</Text>
-    {breakdownFare?.map((item,index)=>(
-      <View key={index} style={styles.row}>
-        <Text style={styles.label}>{item.name}</Text>
-        <Text style={styles.value}> ₹{item.amount}</Text>
+}) => {
+  const { t } = useTranslation();
+  
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>{t('payment_details')}</Text>
+      {breakdownFare?.map((item,index)=>(
+        <View key={index} style={styles.row}>
+          <Text style={styles.label}>{item.name}</Text>
+          <Text style={styles.value}> ₹{item.amount}</Text>
+        </View>
+      ))}
+      
+      <View style={styles.row}>
+        <Text style={styles.totalLabel}>{t('total_fare')}</Text>
+        <Text style={styles.totalValue}>{finalFare}</Text>
       </View>
-    ))}
-    
-    <View style={styles.row}>
-      <Text style={styles.totalLabel}>Total Fare</Text>
-      <Text style={styles.totalValue}>{finalFare}</Text>
     </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   container: {

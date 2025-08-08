@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Animated,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { Fonts, colors } from '../../../constants/constants';
@@ -126,11 +127,12 @@ const FareDetailsModal = ({
   isLoading = false,
   driverWaitingApproval=null
 }) => {
+  const { t } = useTranslation();
   const { distance, duration, fare, waitingTime = 0 } = fareData || {};
 
   const formatwaitingTime = (waitingTimeInMinutes) => {
-    if (waitingTimeInMinutes === 0) return '0 min';
-    return `${waitingTimeInMinutes} min`;
+    if (waitingTimeInMinutes === 0) return `0 ${t('min')}`;
+    return `${waitingTimeInMinutes} ${t('min')}`;
   };
 
   return (
@@ -146,7 +148,7 @@ const FareDetailsModal = ({
           <View style={styles.header}>
             <View style={styles.headerTitleContainer}>
               <MaterialIcons name="receipt" size={25} color="#000" />
-              <Text style={styles.modalTitle}>Updated Fare Details</Text>
+              <Text style={styles.modalTitle}>{t('updated_fare_details')}</Text>
             </View>
           </View>
 
@@ -158,9 +160,9 @@ const FareDetailsModal = ({
                 <MaterialIcons name="straighten" size={20} color={colors.blue} />
               </View>
               <View style={styles.detailContent}>
-                <Text style={styles.detailLabel}>Distance</Text>
+                <Text style={styles.detailLabel}>{t('distance')}</Text>
                 <Text style={styles.detailValue}>
-                    {distance ? Math.round(distance) + ' Km' : 'Calculating...'}
+                    {distance ? Math.round(distance) + ' ' + t('km') : t('calculating')}
                 </Text>
               </View>
             </View>
@@ -171,9 +173,9 @@ const FareDetailsModal = ({
                 <MaterialIcons name="schedule" size={20} color={colors.orange} />
               </View>
               <View style={styles.detailContent}>
-                <Text style={styles.detailLabel}>Duration</Text>
+                <Text style={styles.detailLabel}>{t('duration')}</Text>
                 <Text style={styles.detailValue}>
-                  {duration ? Math.round(duration) + ' min' : 'Calculating...'}
+                  {duration ? Math.round(duration) + ' ' + t('min') : t('calculating')}
                 </Text>
               </View>
             </View>
@@ -185,7 +187,7 @@ const FareDetailsModal = ({
                   <MaterialIcons name="timer" size={20} color={colors.orange} />
                 </View>
                 <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>Wait Time</Text>
+                  <Text style={styles.detailLabel}>{t('wait_time')}</Text>
                   <Text style={styles.detailValue}>
                     {formatwaitingTime(waitingTime)}
                   </Text>
@@ -198,7 +200,7 @@ const FareDetailsModal = ({
 
             {/* Total Fare */}
             <View style={styles.totalFareContainer}>
-              <Text style={styles.totalFareLabel}>Total Fare</Text>
+              <Text style={styles.totalFareLabel}>{t('total_fare')}</Text>
               <Text style={styles.totalFareValue}>
                 ₹{fare ? fare.toFixed(2) : '0.00'}
               </Text>
@@ -211,7 +213,7 @@ const FareDetailsModal = ({
                 <Text style={styles.disclaimerTitle}>Fare may vary</Text>
               </View> */}
               <Text style={styles.disclaimerText}>
-                Final fare may change based on actual pickup time, route taken, and actual waiting time during the trip.
+                {t('fare_disclaimer')}
               </Text>
             </View>
           </View>
@@ -221,7 +223,7 @@ const FareDetailsModal = ({
 
             {driverWaitingApproval ?
             <View style={styles.driverWaitingApprovalContainer}>
-                <Text style={styles.driverWaitingApprovalText}>Waiting for driver approval</Text>
+                <Text style={styles.driverWaitingApprovalText}>{t('waiting_for_driver_approval')}</Text>
                 <AnimatedDots />
             </View>
              :
@@ -230,7 +232,7 @@ const FareDetailsModal = ({
               style={[styles.button, styles.cancelButton]}
               onPress={onClose}
             >
-              <Text style={styles.cancelButtonText}>CANCEL</Text>
+              <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
@@ -243,7 +245,7 @@ const FareDetailsModal = ({
               disabled={isLoading}
             >
               <Text style={styles.confirmButtonText}>
-                {isLoading ? 'CONFIRMING...' : 'CONFIRM'}
+                {isLoading ? t('confirming') : t('confirm')}
               </Text>
             </TouchableOpacity>
             </>

@@ -6,6 +6,7 @@ import {
   checkOnGoingRide,
   testlogin,
   verifyOTP,
+  deleteAccount,
 } from '../EndPoints/EndPoints';
 import {showNotification} from '../../components/NotificationManger';
 
@@ -127,6 +128,29 @@ export const fetchUserDetails = () => {
   return useQuery(['userProfile'], getUserDetails, {
     onError: error => {
       showNotification(`${error.status}`, error.message, 'danger');
+    },
+  });
+};
+
+// delete account mutation
+export const deleteAccountMutation = onSuccessCallback => {
+  return useMutation(['deleteAccount'], deleteAccount, {
+    onSuccess: data => {
+      if (data.success) {
+        if (onSuccessCallback) {
+          queryClient.invalidateQueries('deleteAccount');
+          onSuccessCallback(data);
+        }
+      } else {
+        showNotification('Delete Account Failed', data.message, 'danger');
+      }
+    },
+    onError: error => {
+      showNotification(
+        `Delete Account Failed - (${error.status})`,
+        error?.message,
+        'danger',
+      );
     },
   });
 };

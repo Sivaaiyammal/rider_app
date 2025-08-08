@@ -3,7 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-nativ
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import PropTypes from 'prop-types';
 import { Fonts } from '../../../constants/constants';
-const RatingBox = ({ onRatingSubmit, title = "How is your Trips?", description = "Your feedback will help us improving driving experience better" }) => {
+import { useTranslation } from 'react-i18next';
+const RatingBox = ({ onRatingSubmit, title , description}) => {
+  const {t} = useTranslation();
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState('');
 
@@ -44,13 +46,13 @@ const RatingBox = ({ onRatingSubmit, title = "How is your Trips?", description =
     <View style={styles.container}>
       <View style={styles.card}>
         {/* Title */}
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title}>{t('how_is_your_trips')}</Text>
         
         {/* Dotted line */}
         <View style={styles.dottedLine} />
         
         {/* Description */}
-        <Text style={styles.description}>{description}</Text>
+        <Text style={styles.description}>{t('your_feedback_will_help_us_improving_driving_experience_better')}</Text>
         
         {/* Star Rating */}
         <View style={styles.starsContainer}>
@@ -60,7 +62,7 @@ const RatingBox = ({ onRatingSubmit, title = "How is your Trips?", description =
         {/* Comments Input */}
         <TextInput
           style={styles.commentsInput}
-          placeholder="Comments (Optional)"
+          placeholder={t('comments_optional')}
           placeholderTextColor="#999"
           value={comments}
           onChangeText={setComments}
@@ -78,7 +80,7 @@ const RatingBox = ({ onRatingSubmit, title = "How is your Trips?", description =
           onPress={handleSubmit}
           disabled={rating === 0}
         >
-          <Text style={styles.submitButtonText}>Submit</Text>
+          <Text style={styles.submitButtonText}>{t('submit')}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -91,8 +93,8 @@ RatingBox.propTypes = {
 };
 
 RatingBox.defaultProps = {
-  title: "How is your Trips?",
-  description: "Your feedback will help us improving driving experience better",
+    title: 'how_is_your_trips',
+  description: 'your_feedback_will_help_us_improving_driving_experience_better',
 };
 
 const styles = StyleSheet.create({

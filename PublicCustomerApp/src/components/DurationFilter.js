@@ -5,8 +5,13 @@ import CalenderIcon from '../assets/image/calender.svg'
 import DatePicker from 'react-native-date-picker';
 import { Fonts, colors } from '../constants/constants';
 import { utils } from '../utils/Utils';
+import { useTranslation } from 'react-i18next';
+import AdaptiveText from './Common/AdaptiveText';
 
 const DurationFilter = ({ options, callback }) => {
+    
+    const { t } = useTranslation();
+    
     const [Options, setOptions] = useState(options || [
         {
             id: 'all',
@@ -126,12 +131,12 @@ const DurationFilter = ({ options, callback }) => {
                                 key={`duration-filter-${index}`}
                                 onPress={() => HandleHeaderClick(item.id)}
                             >
-                                <Text
+                                <AdaptiveText
                                     style={[
                                         durationFilterStyle.containerItemLabel,
                                         ActiveOption == item.id ? durationFilterStyle.containerItemActiveLabel : {}
                                     ]}
-                                >{item.title}</Text>
+                                >{t(item.id)}</AdaptiveText>
                                 <View
                                     style={[
                                         durationFilterStyle.containerItemSpan,
@@ -151,33 +156,33 @@ const DurationFilter = ({ options, callback }) => {
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContainer}>
-                        <Text style={styles.modalTitle}>Select Date Range</Text>
+                        <AdaptiveText style={styles.modalTitle}>{t('select_date_range')}</AdaptiveText>
                         
                         <View style={styles.dateSelectionContainer}>
                             <View style={styles.dateInputContainer}>
-                                <Text style={styles.dateLabel}>From</Text>
+                                <AdaptiveText style={styles.dateLabel}>{t('from')} </AdaptiveText>
                                 <TouchableOpacity 
                                     style={styles.dateButton}
                                     onPress={() => openDatePicker('start')}
                                 >
-                                    <Text style={styles.dateButtonText}>
+                                    <AdaptiveText style={styles.dateButtonText}>
                                         {formatDate(customStartDate)}
-                                    </Text>
+                                    </AdaptiveText>
                                 </TouchableOpacity>
                             </View>
-                            <Text style={{fontSize: 16, fontFamily: Fonts.medium, color: colors.black, textAlign: 'center'}}>
-                                -
-                            </Text>
+                            <AdaptiveText style={{fontSize: 16, fontFamily: Fonts.medium, color: colors.black, textAlign: 'center'}}>
+                                    {t('to')}
+                            </AdaptiveText>
                             
                             <View style={styles.dateInputContainer}>
-                                <Text style={styles.dateLabel}>To</Text>
+                                <AdaptiveText style={styles.dateLabel}>{t('to')}</AdaptiveText>
                                 <TouchableOpacity 
                                     style={styles.dateButton}
                                     onPress={() => openDatePicker('end')}
                                 >
-                                    <Text style={styles.dateButtonText}>
+                                    <AdaptiveText style={styles.dateButtonText}>
                                         {formatDate(customEndDate)}
-                                    </Text>
+                                    </AdaptiveText>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -187,13 +192,13 @@ const DurationFilter = ({ options, callback }) => {
                                 style={styles.cancelButton}
                                 onPress={handleCustomDateCancel}
                             >
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
+                                <AdaptiveText style={styles.cancelButtonText}>{t('cancel')}</AdaptiveText>
                             </TouchableOpacity>
                             <TouchableOpacity 
                                 style={styles.confirmButton}
                                 onPress={handleCustomDateConfirm}
                             >
-                                <Text style={styles.confirmButtonText}>Confirm</Text>
+                                <AdaptiveText style={styles.confirmButtonText}>{t('confirm')}</AdaptiveText>
                             </TouchableOpacity>
                         </View>
                     </View>

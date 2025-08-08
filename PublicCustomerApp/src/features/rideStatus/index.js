@@ -23,7 +23,9 @@ import { showNotification } from '../../components/NotificationManger';
 import useRideMatching  from '../../hooks/useRideMatching';
 import  useUserInfoStore  from '../../store/useUserInfoStore';
 import useCalculateDistance from './hooks/useCalculateDistance';
+import { useTranslation } from 'react-i18next';
 const RideStatus = () => {
+  const { t } = useTranslation();
   const { tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled} = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const {goBack,stackScreen} = useStackScreenStore();
@@ -161,21 +163,21 @@ const RideStatus = () => {
  const getTitle = () => {
   switch(tripStatus){
     case TripStatus.PICKEDUP:
-      return 'On Ride';
+      return t('on_ride');
     case TripStatus.ACCEPTED:
-      return 'Driver Arrival';
+      return t('driver_arrival');
     case TripStatus.DROPPED:
-      return 'Ride Completed';
+      return t('ride_completed');
     case TripStatus.CANCELLED:
-      return 'Ride Cancelled';
+      return t('ride_cancelled');
     default:
-      return 'Finding Driver';
+      return t('finding_driver');
   }
  }
   
 
     return <>
-        <NavBar title={getTitle()} />
+        <NavBar title={t(getTitle())} />
         <View style={styles.container}>
             <View style={styles.containerTop}>  
                 <View style={styles.containerTop_inner}>

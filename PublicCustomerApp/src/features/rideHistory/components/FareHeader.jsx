@@ -1,17 +1,22 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { colors, Fonts } from '../../../constants/constants';
 import { ImageBackground } from 'react-native';
 import rideFareBackground from "../../../assets/image/rideFareBackground.webp"
 
-const FareHeader = ({ fare = '₹117.50' }) => (
-  <View style={styles.headerContainer}>
-  <ImageBackground source={rideFareBackground} style={styles.imageBackground}>
-    <Text style={styles.label}>Ride Fare</Text>
-    <Text style={styles.fare}>₹ {fare}</Text>
-  </ImageBackground>
-  </View>
-);
+const FareHeader = ({ fare = '₹117.50' }) => {
+  const { t } = useTranslation();
+  
+  return (
+    <View style={styles.headerContainer}>
+    <ImageBackground source={rideFareBackground} style={styles.imageBackground}>
+      <Text style={styles.label}>{t('ride_fare')}</Text>
+      <Text style={styles.fare}>₹ {fare}</Text>
+    </ImageBackground>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   headerContainer: {

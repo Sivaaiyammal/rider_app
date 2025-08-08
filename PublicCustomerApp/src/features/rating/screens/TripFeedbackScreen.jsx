@@ -23,7 +23,9 @@ import { Fonts } from '../../../constants/constants';
 import { utils } from '../../../utils/Utils';
 import { submitTripFeedback } from '../../../API/EndPoints/EndPoints';
 import { showNotification } from '../../../components/NotificationManger';
+import { useTranslation } from 'react-i18next';
 export default function TripFeedbackScreen() {
+    const {t} = useTranslation();
     const { driverName,driverPhoto,brand,model,vehicleNumber }=useAssignedDriverInfoStore()
     const {finalFare,finalDistance,finalDuration,vehicleType,tripId} = useCurrentRideInfoStore()
   const bounceValue = useRef(new Animated.Value(height)).current;
@@ -55,13 +57,13 @@ export default function TripFeedbackScreen() {
     ratingData.tripId = tripId
     
     const feedback = await submitTripFeedback(ratingData)
-    console.log('feedback',feedback)
+   
     if(feedback.success){
-      showNotification('Success','Feedback submitted successfully',colors.success)
+      showNotification(t('success'),t('feedback_submitted_successfully'),colors.success)
       reset()
       
     }else{
-      showNotification('Error','Something went wrong',colors.error)
+      showNotification(t('error'),t('something_went_wrong'),colors.error)
     }
   }
 
@@ -110,7 +112,7 @@ export default function TripFeedbackScreen() {
           <View style={styles.contentContainer}>
           <View style={styles.header}>
           <RideStatusHeader 
-          title="Your ride is completed."
+          title={t('your_ride_is_completed')}
         
             />
         </View>
@@ -141,7 +143,7 @@ export default function TripFeedbackScreen() {
            <RatingBox onRatingSubmit={handleSubmit}/>
            <TouchableOpacity onPress={handleClose}>
           <Text style={styles.LATERText}>
-            LATER
+            {t('later')}
           </Text>
         </TouchableOpacity>
           </View>

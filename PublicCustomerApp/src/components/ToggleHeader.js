@@ -1,7 +1,7 @@
 import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { toggleHeaderStyle } from '../styles/ToggleHeaderStyle';
-
+import AdaptiveText from './Common/AdaptiveText';
 const ToggleHeader = ({ options, callback }) => {
 
     const [Options, setOptions] = useState(options);
@@ -24,9 +24,10 @@ const ToggleHeader = ({ options, callback }) => {
                             style={[toggleHeaderStyle.containerItem, ActiveOption === item.id ? toggleHeaderStyle.containerItemActive : {}]}
                             onPress={() => HandleHeaderClick(item.id)}
                         >
-                            <Text
+                            <AdaptiveText
+                                color={ActiveOption === item.id ? 'white' : 'black'}
                                 style={[toggleHeaderStyle.containerItemLabel, ActiveOption === item.id ? toggleHeaderStyle.containerItemActiveLabel : {}]}
-                            >{item.title}</Text>
+                            >{item.title}</AdaptiveText>
                         </TouchableOpacity>
                     ))
                 }
