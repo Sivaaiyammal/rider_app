@@ -1,7 +1,5 @@
 import {
   ScrollView,
-  Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import React, { useState } from 'react';
@@ -14,7 +12,6 @@ import { utils } from '../../utils/Utils';
 import { deleteAccountMutation } from '../../API/APICalls/UserAPICalls';
 import { showNotification } from '../../components/NotificationManger';
 import DeleteAccountModal from '../../components/DeleteAccountModal';
-import { colors, Fonts } from '../../constants/constants';
 
 import Mobile from '../../assets/image/account/mobile.svg';
 import Card from '../../assets/image/account/card.svg';
@@ -116,39 +113,19 @@ const MyAccountScreen = () => {
 
   return (
     <ScrollView style={{backgroundColor: 'white'}}>
-      <MyAccountHeader title={t('my_account')} onBackClick={HandleBackBtn} />
+      <MyAccountHeader 
+        title={t('my_account')} 
+        onBackClick={HandleBackBtn} 
+        onDeleteAccount={handleDeleteAccount}
+      />
       <MyAccountProfileImage
         name={utils.toTitleCase(userdetails?.name || '')}
         id={userdetails?._id || ''}
       />
       <MyAccountInfo infos={Info_Items} />
       
-      {/* Delete Account Button */}
-      
-      
       <View style={{alignContent:'center',justifyContent:'center',marginTop:30}}>
       <SwipeBtn name={t('swipe_to_logout')} onHandleSwipeEnd={Logout} />
-      </View>
-      <View style={{paddingHorizontal: 20, marginTop: 20}}>
-        <TouchableOpacity
-          style={{
-            backgroundColor: colors.danger_red,
-            paddingVertical: 16,
-            borderRadius: 12,
-            alignItems: 'center',
-          
-          }}
-          onPress={handleDeleteAccount}
-        >
-          <Text style={{
-            color: colors.white,
-            fontSize: 16,
-            fontWeight: '600',
-            fontFamily: Fonts.semi_bold,
-          }}>
-            {t('delete_account')}
-          </Text>
-        </TouchableOpacity>
       </View>
       
       {/* Delete Account Modal */}

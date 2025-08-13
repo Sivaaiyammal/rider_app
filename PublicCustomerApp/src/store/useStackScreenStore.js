@@ -24,7 +24,10 @@ export const useStackScreenStore = create((set, get) => ({
     const stack = get().stackScreen;
     if(stack.length > 1){
       const arr = stack.slice(0, -1);
-      set({stackScreen: arr, params});
+      arr[arr.length-1].params={fromBack:true};
+
+      console.log("arr",arr)
+      set({stackScreen: arr});
     }
     else{
       set({stackScreen: [{ name: 'Home', params: null }]});

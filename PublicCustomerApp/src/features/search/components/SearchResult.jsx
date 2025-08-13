@@ -318,8 +318,8 @@ export const SearchResultV2 = (props) => {
             style={styles.item}
           >
             <View style={styles.locationIcon}>
-              <View style={{width:40,height:40,backgroundColor:"#ecf6ff",borderRadius:50,alignItems:"center",justifyContent:"center"}}>
-            <Icon name="location-on" size={24} color={colors.grey_dark} />
+              <View style={{width:40,height:40,backgroundColor:colors.grey_light,borderRadius:50,alignItems:"center",justifyContent:"center"}}>
+            <Icon name="location-on" size={24} color={colors.dark} />
             </View>
             </View>
             {item.houseNumber && !item?.placeName ? (
@@ -386,7 +386,7 @@ export const SearchResultV2 = (props) => {
                 )}
                 {item.distance ? (
                   <Text style={styles.itemSubText}>
-                    {utils.metersToKilometers(item.distance).toFixed(2)} km
+                    {utils.metersToKilometers(item.distance).toFixed(1)} km
                   </Text>
                 ) : null}
               </View>
@@ -532,6 +532,7 @@ const styles =
       rightContent: {
         alignItems: 'flex-end',
         justifyContent: 'center',
+        gap:10
       },
       categoryText: {
         fontSize: 12,
@@ -539,7 +540,8 @@ const styles =
         color: "#0080ff",
         marginBottom: 2,
         backgroundColor:"#ecf6ff",
-        paddingHorizontal:5,
+        borderRadius:5,
+        paddingHorizontal:10,
         paddingVertical:3,
         textTransform:"capitalize"
       },

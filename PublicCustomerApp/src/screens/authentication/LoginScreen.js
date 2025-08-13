@@ -1,5 +1,6 @@
 import {Text, TextInput, TouchableOpacity, View} from 'react-native';
 import React, {useState} from 'react';
+import {useTranslation} from 'react-i18next';
 
 
 import {loginStyles} from '../../styles/UserStyles';
@@ -14,6 +15,7 @@ import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 
 
 const LoginScreen = () => {
+  const {t} = useTranslation();
   const navigation = useNavigation();
   const country = {
     callingCode: ['91'],
@@ -29,7 +31,7 @@ const LoginScreen = () => {
 
   const handleLoginSuccess = (data) => {
     if (data) {
-      showNotification('OTP Sent', 'OTP Sent to your mobile number', 'success');
+      showNotification(t('otp_sent'), t('otp_sent_to_mobile'), 'success');
       console.log('data', data);
       navigation.dispatch(
         CommonActions.navigate({
@@ -77,9 +79,9 @@ const LoginScreen = () => {
     if (numericValue.length === 0) {
       setPhoneNumErr('');
     } else if (numericValue.length < 10) {
-      setPhoneNumErr('Phone number must be 10 digits');
+      setPhoneNumErr(t('phone_number_must_be_10_digits'));
     } else if (numericValue.length > 10) {
-      setPhoneNumErr('Phone number must be 10 digits');
+      setPhoneNumErr(t('phone_number_must_be_10_digits'));
     } else {
       setPhoneNumErr('');
     }
@@ -99,13 +101,13 @@ const LoginScreen = () => {
         </View>
         <View style={loginStyles.contectContainer}>
           <Text style={loginStyles.signInTxt}>
-            Sign In by using Mobile Number
+            {t('sign_in_by_mobile')}
           </Text>
           <View style={loginStyles.inputConatiner}>
             {renderCountryCode()}
             <TextInput
               style={loginStyles.input}
-              placeholder="Mobile Number"
+              placeholder={t('mobile_number')}
               keyboardType="number-pad"
               onChangeText={handleChange}
               value={phoneNumber}
@@ -127,7 +129,7 @@ const LoginScreen = () => {
           ]}
           onPress={() => requestOTP()}
           disabled={phoneNumber.length !== 10}>
-          <Text style={loginStyles.otptxt}>Request OTP</Text>
+          <Text style={loginStyles.otptxt}>{t('request_otp')}</Text>
         </TouchableOpacity>
       </View>
     </>

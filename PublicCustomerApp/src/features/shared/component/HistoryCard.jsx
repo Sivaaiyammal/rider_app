@@ -39,12 +39,12 @@ const HistoryCard = ({ selectCallback, header = true, bottomborder = true,fromSe
         ))
       ) : (
         <View style={styles.noHistoryContainer}>
-        
-          <Text style={styles.noHistoryText}>No recent searches</Text>
-          <Text style={styles.noHistorySubtext}>Your recent searches will appear here</Text>
-          <View style={styles.noHistoryIconContainer}>
+        <View style={styles.noHistoryIconContainer}>
             <Ionicons name="search-outline" size={40} color={"#757575"} />
           </View>
+          <Text style={styles.noHistoryText}>No recent searches</Text>
+          <Text style={styles.noHistorySubtext}>Your recent searches will appear here</Text>
+          
         </View>
       )}
     </View>

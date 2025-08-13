@@ -19,24 +19,22 @@ import LocationHeader from '../components/LocationHeader';
 import HistoryCard from '../../shared/component/HistoryCard';
 import LinearGradient from 'react-native-linear-gradient';
 import SearchIcon from '../../../assets/icons/SearchIcon.svg';
-import useUserInfoStore from '../../../store/useUserInfoStore';
 import MapIcon from '../../../components/Map/MapIcon';
 import FavLabelItems from '../components/FavLabelItems';
 import useLocationStore from '../../../store/useLocationStore';
 import  LocationTypes  from '../../booking/types/LocationTypes.json';  
 import useRideBookingLocationStore from '../../booking/store/useRideBookingLocationStore'
-import {storeLocation}   from '../../../storage/userLocalStorage' 
 import AdaptiveText from '../../../components/Common/AdaptiveText';
+import { height } from '../../../utils/Utils';
 
 const MapScreen = () => {
   const { t } = useTranslation();
 
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState(null);
-  const {setStackScreen,goBack} = useStackScreenStore();
+  const {setStackScreen} = useStackScreenStore();
   const {location,currentLocationName} = useLocationStore();
   const {setRideStartLocation,setRideEndLocation } = useRideBookingLocationStore()
-  const {setHomelocation,setWorklocation} = useUserInfoStore();
  
   
   const scaleValue = useRef(new Animated.Value(1)).current;
@@ -108,7 +106,10 @@ const MapScreen = () => {
       if (!item) {
         throw new Error('Invalid history item');
       }
-      
+      if (!location || !Array.isArray(location) || location.length < 2 || !currentLocationName) {
+        Alert.alert(t('location_not_found'))
+        return;
+      }
       const locationData ={
         name:"Current Location",
         latitude:location[1],
@@ -126,7 +127,7 @@ const MapScreen = () => {
     } catch (error) {
       console.log(error, 'onHistoryPress');
     }
-  }, []);
+  }, [location, currentLocationName, setRideStartLocation, setRideEndLocation, setStackScreen, t]);
 
 
   // Error component
@@ -144,46 +145,32 @@ const MapScreen = () => {
     )
   );
 
-  const handlePlaceSave = useCallback((location,locationType) => {
-   
-    if(locationType === "Home"){
-      setHomelocation(location)
-    }else{
-      setWorklocation(location)
-    }
-    storeLocation(locationType,location)
-    goBack()
-   
-  }, []);
-
-  const handleFavouriteLocationPress = useCallback((locationType,Labelocation) => {
-    console.log('Favourite location press:', locationType,location);
-    if(Labelocation){
-     
+  const handleFavouriteLocationPress = useCallback((locationType,labelLocation) => {
+    try {
+      console.log('Favourite location press:', locationType, labelLocation);
+      if (!labelLocation) {
+        return;
+      }
+      if(!location || !currentLocationName || !location.length){
+        Alert.alert(t('location_not_found'))
+        return;
+      }
       const locationData ={
         name:"Current Location",
-        latitude:location[1] || location.latitude,
-        longitude:location[0] || location.longitude,
-        address:location.address || currentLocationName,
+        latitude:location[1],
+        longitude:location[0],
+        address:currentLocationName,
         type:LocationTypes.START_LOCATION,
         locationFrom:"MAP"
       }
-
       setRideStartLocation(locationData)
-      setRideEndLocation(Labelocation)
+      setRideEndLocation(labelLocation)
       setStackScreen("PlanRideScreen",{})
-
-
-      
-      return;
+    } catch (error) {
+      console.log(error, 'handleFavouriteLocationPress');
     }
-   
-    setStackScreen('SearchScreen',{
-      onSearchClick: handlePlaceSave,
-      searchType:locationType
-    });
     
-  }, []);
+  }, [location, currentLocationName, setRideStartLocation, setRideEndLocation, setStackScreen, t]);
 
   const makeRidePlan=()=>{
 
@@ -218,7 +205,7 @@ const MapScreen = () => {
             <LocationHeader toggleMenu={toggleMenu} showMenu={showMenu} />
       </Animated.View>
 
-      <BottomSheet minHeight={300}  HeaderComponent={<MapIcon />}>
+      <BottomSheet minHeight={height*0.4}  HeaderComponent={<MapIcon />}>
         <TouchableOpacity
           style={styles.searchContainer}
           onPress={makeRidePlan}

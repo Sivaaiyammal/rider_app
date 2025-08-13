@@ -82,7 +82,13 @@ const Home = () => {
           setAllocatedDriverInfo(Response?.assignDriver);
         }
         if(Response?.trip?.fareDetails){
-           setFareDetails(Response?.trip?.fareDetails)
+          const fareData = {
+            fareDetails:Response?.trip?.fareDetails,
+          }
+          if(Response?.trip?.customerInvoice){
+            fareData.customerInvoice = Response?.trip?.customerInvoice;
+          }
+           setFareDetails(fareData)
         }
         setStackScreen('RideStatus', { });
       }

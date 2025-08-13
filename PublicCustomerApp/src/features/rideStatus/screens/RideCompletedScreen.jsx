@@ -78,7 +78,7 @@ const RideCompletedScreen = ({type}) => {
       
       <View style={[styles.containerTop,{backgroundColor:type == TripStatus.CANCELLED  ? '#ff5050' : '#13B15A'}]}>
        
-        <Text style={styles.topBarText}>{type === TripStatus.CANCELLED ? t('ride_stopped') : t('ride_cancelled')}</Text>
+        <Text style={styles.topBarText}>{type === TripStatus.CANCELLED ? t('ride_stopped') : t('ride_completed')}</Text>
             </View>
         
         
@@ -90,8 +90,8 @@ const RideCompletedScreen = ({type}) => {
           subtitle={type !== TripStatus.CANCELLED ? t('please_proceed_with_the_payment') : t('kindly_pay_the_fare_for_the_distance_travelled')}
         />
         <Text style={styles.fare}>₹ {fare}</Text>
-        <Text style={styles.info}>{utils.formatMinutesToReadable(finalDuration)}  .  {finalDistance} Km</Text>
-        {paymentMethod == 'CASH' && (
+        <Text style={styles.info}>{utils.formatMinutesToReadable(finalDuration)}  .  {finalDistance.toFixed(2)} Km</Text>
+        {(
           <Animated.View 
             style={[
               styles.cashPayment,
@@ -102,7 +102,7 @@ const RideCompletedScreen = ({type}) => {
             ]}
           >
           
-            <Text style={styles.cashPaymentText}>{t('please_pay_trip_fare')} ₹ {finalFare} {t('to_driver')}</Text>
+            <Text style={styles.cashPaymentText}>{t('please_pay_trip_fare')}  {t('to_driver')}</Text>
           
           </Animated.View>
         )}

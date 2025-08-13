@@ -186,17 +186,17 @@ const SavedPlacesScreen = () => {
         <View style={styles.placeContent}>
           <AdaptiveText style={styles.placeLabel}>{place.label.charAt(0).toUpperCase() + place.label.slice(1)}</AdaptiveText>
           
-          <AdaptiveText style={styles.placeFullAddress} numberOfLines={1} ellipsizeMode="tail">
+          <Text style={styles.placeFullAddress} numberOfLines={1} ellipsizeMode="tail">
             {utils.formatAddressName(locationData)}
-          </AdaptiveText>
+          </Text>
         </View>
         <View style={styles.actionButtons}>
-          <TouchableOpacity 
+          {/* <TouchableOpacity 
             style={styles.editButton}
             onPress={() => handleEditPlace(place)}
           >
             <Ionicons name="create-outline" size={20} color="#007AFF" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity 
             style={styles.deleteButton}
             onPress={() => handleDeletePlace(place)}

@@ -15,6 +15,8 @@ import { changeStopLocation } from '../services/StopLocationChangeService';
 import {showNotification} from '../../../components/NotificationManger';
 import useMapStyleStore from '../../../store/useMapStyleStore';
 import { useTranslation } from 'react-i18next';
+import useWayPointReorderStore from '../../booking/store/useWayPointReorderStore';
+
   const DriverArrivalScreen = ({onCancel}) => {
   // Dummy data
   const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone} = useAssignedDriverInfoStore();
@@ -22,6 +24,7 @@ import { useTranslation } from 'react-i18next';
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setMapStyle} = useMapStyleStore();
   const {t} = useTranslation();
+  const {waitingForDriverApproval} = useWayPointReorderStore();
   // Initialize tracking hook for driver arrival screen with polyline support
   const { cleanupMarkers } = useTrackHook('arrival');
 
@@ -71,6 +74,74 @@ import { useTranslation } from 'react-i18next';
     if (phone) {
       Linking.openURL(`tel:${phone}`);
     }
+  }
+
+
+
+  const AnimatedDots = () => {
+    const dot1 = useRef(new Animated.Value(0)).current;
+    const dot2 = useRef(new Animated.Value(0)).current;
+    const dot3 = useRef(new Animated.Value(0)).current;
+  
+    useEffect(() => {
+      const animateDots = () => {
+        Animated.sequence([
+          Animated.parallel([
+            Animated.timing(dot1, {
+              toValue: 1,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(dot2, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(dot3, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+          ]),
+          Animated.parallel([
+            Animated.timing(dot1, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(dot2, {
+              toValue: 1,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(dot3, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+          ]),
+          Animated.parallel([
+            Animated.timing(dot1, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(dot2, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(dot3, {
+              toValue: 1,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+          ]),
+        ]).start(() => animateDots());
+      };
+  
+      animateDots();
+    }, [dot1, dot2, dot3]);
   }
 
 
@@ -165,12 +236,21 @@ import { useTranslation } from 'react-i18next';
     )}   
   
  
-      <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
-        <Text style={styles.tripDetailsLabel}>{t('trip_details')}</Text>
-        <Animated.View style={{ transform: [{ rotate: chevronRotation }] }}>
-          <Icon name="keyboard-arrow-right" size={25} color={colors.black} />
-        </Animated.View>
-      </TouchableOpacity>
+    <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
+          <Text style={styles.tripDetailsLabel}>{t('trip_details')}</Text>
+          <View style={{flexDirection:"row",alignItems:"center",gap:10}}>
+          {
+            waitingForDriverApproval === "PENDING" &&
+            <View style={styles.driverWaitingApprovalContainer}>
+                <Text style={styles.driverWaitingApprovalText}>{t('waiting_for_driver_approval')}</Text>
+                <AnimatedDots />
+            </View>
+          }
+          <Animated.View style={{ transform: [{ rotate: chevronRotation }] }}>
+            <Icon name="keyboard-arrow-right" size={25} color="#000" />
+          </Animated.View>
+          </View>
+        </TouchableOpacity>
       {/* Animated Ride Info */}
       
    

@@ -198,7 +198,7 @@ const DurationFilter = ({ options, callback }) => {
                                 style={styles.confirmButton}
                                 onPress={handleCustomDateConfirm}
                             >
-                                <AdaptiveText style={styles.confirmButtonText}>{t('confirm')}</AdaptiveText>
+                                <AdaptiveText style={styles.confirmButtonText} color="white">{t('confirm')}</AdaptiveText>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -306,7 +306,7 @@ const styles = {
     confirmButtonText: {
         fontSize: 16,
         fontFamily: Fonts.medium,
-        color: colors.white,
+        color: "white",
     },
 };
 

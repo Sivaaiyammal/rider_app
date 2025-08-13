@@ -14,7 +14,7 @@ const useRideBookingInfo = create(set => ({
   setPaymentType: (paymentType) => set({ paymentType }),
 
 
-  rideBookMode: 'MYSELF',
+  rideBookMode: null,
   setRideBookMode: (rideBookMode) => set({ rideBookMode }),
 
   passangerDetails: null,

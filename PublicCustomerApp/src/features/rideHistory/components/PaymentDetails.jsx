@@ -4,23 +4,50 @@ import { useTranslation } from 'react-i18next';
 import { colors, Fonts } from '../../../constants/constants';
 
 const PaymentDetails = ({
- finalFare,breakdownFare
+ finalFare,breakdownFare,type="fare"
 }) => {
   const { t } = useTranslation();
   
-  return (
-    <View style={styles.container}>
-      <Text style={styles.header}>{t('payment_details')}</Text>
-      {breakdownFare?.map((item,index)=>(
+  const renderBreakdownItem = (item, index) => {
+    return (
+      <View key={index}>
+        {/* Main item */}
+        <View style={styles.row}>
+          <Text style={styles.label}>{item.key}</Text>
+          <Text style={styles.value}>₹{item.value}</Text>
+        </View>
+        
+        {/* Tax items if they exist */}
+        {item.tax && item.tax.map((taxItem, taxIndex) => (
+          <View key={`${index}-${taxIndex}`} style={styles.taxRow}>
+            <Text style={styles.taxLabel}>{taxItem.key} {taxItem?.tax && `- ${taxItem?.tax}`}</Text>
+            <Text style={styles.taxValue}>₹{taxItem.value}</Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
+
+
+  const renderFareBreakdown = (item,index) => {
+    return (
+        
         <View key={index} style={styles.row}>
           <Text style={styles.label}>{item.name}</Text>
-          <Text style={styles.value}> ₹{item.amount}</Text>
+          <Text style={styles.value}> ₹{(item.amount).toFixed(2)}</Text>
         </View>
-      ))}
+     
+    )
+  }
+  
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>{t('invoice')}</Text>
+      {breakdownFare?.map((item, index) => type !== "fare" ? renderBreakdownItem(item, index) : renderFareBreakdown(item, index))}
       
       <View style={styles.row}>
         <Text style={styles.totalLabel}>{t('total_fare')}</Text>
-        <Text style={styles.totalValue}>{finalFare}</Text>
+        <Text style={styles.totalValue}>₹{(finalFare).toFixed(2)}</Text>
       </View>
     </View>
   );
@@ -38,10 +65,11 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   header: {
-    fontFamily: Fonts.medium,
-    fontSize: 14,
+    fontFamily: Fonts.bold,
+    fontSize: 16,
     color: colors.black,
     marginBottom: 8,
+    textTransform: 'capitalize',
   },
   row: {
     flexDirection: 'row',
@@ -50,13 +78,30 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: Fonts.regular,
-    fontSize: 13,
-    color: colors.grey_xxdark,
+    fontSize: 15,
+    color: colors.black,
+    textTransform: 'capitalize',
   },
   value: {
     fontFamily: Fonts.regular,
     fontSize: 13,
     color: colors.black,
+  },
+  taxRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 1,
+    
+  },
+  taxLabel: {
+    fontFamily: Fonts.regular,
+    fontSize: 12,
+    color: colors.grey_xxdark,
+  },
+  taxValue: {
+    fontFamily: Fonts.regular,
+    fontSize: 13,
+    color: colors.grey_xxdark,
   },
   totalLabel: {
     fontFamily: Fonts.bold,

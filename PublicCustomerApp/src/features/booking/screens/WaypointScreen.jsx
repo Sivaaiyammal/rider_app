@@ -107,6 +107,7 @@ const WaypointScreen = ({stopsFromOnGoingRide=null,tripId}) => {
     }
 
 
+  setWaitingForDriverApproval(null)
     
 
 
@@ -120,7 +121,7 @@ const WaypointScreen = ({stopsFromOnGoingRide=null,tripId}) => {
       setDuration(Math.round(data?.duration/60))
     }
     if(data?.distance){
-      setDistance(Math.round(data?.distance/1000))
+      setDistance((data?.distance/1000)?.toFixed(1))
     }
 }
 

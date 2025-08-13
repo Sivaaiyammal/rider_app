@@ -79,8 +79,9 @@ const BottomSheetHeader = () => {
         </View>
     )
 }
-const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsScreen = null}) => {
+const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsScreen = null,fromBack=false}) => {
     const { t } = useTranslation();
+    
     const {setStackScreen,goBack,goBackToScreen} = useStackScreenStore()
         const {paymentType,setPaymentType, setRideDistance ,setEstimatedDuration,rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode,} = useRideBookingInfo()
     const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false)
@@ -150,7 +151,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             const distance = data.distance/1000; // Distance in meters
             const duration = data.duration/60; 
             // Duration in seconds
-            setRideDistance(Math.round(distance))
+            setRideDistance(distance?.toFixed(1))
             setEstimatedDuration(Math.round(duration))
             
         }

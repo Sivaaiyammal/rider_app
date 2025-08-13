@@ -1,18 +1,25 @@
-import { ScrollView, Text, TextInput, ImageBackground, TouchableOpacity, View } from 'react-native';
-import React, { useRef, useState, useCallback } from 'react';
+import { ImageBackground, TouchableOpacity, View, Text } from 'react-native';
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
-import BackArrow from '../../assets/image/backArrow.svg';
 import OverlapImage from '../../assets/image/account/mask_group.jpg';
 
-import { Colors } from 'react-native/Libraries/NewAppScreen'
 import { styles } from '../../styles/Account/account'
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import SettingsDropdown from './SettingsDropdown';
 
 const MyAccountHeader = (props) => {
 
-    const { title, onBackClick } = props
+    const { title, onBackClick, onDeleteAccount } = props
+    const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
 
+    const toggleSettingsDropdown = () => {
+        setShowSettingsDropdown(!showSettingsDropdown);
+    };
+
+    const closeSettingsDropdown = () => {
+        setShowSettingsDropdown(false);
+    };
 
     return (
         <ImageBackground
@@ -27,14 +34,26 @@ const MyAccountHeader = (props) => {
                     
                 </TouchableOpacity>
                 <Text style={styles.tripHeaderText} >{title}</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={toggleSettingsDropdown}>
                     <View style={styles.tripHeaderAlarmBtn}>
-                        <Text style={{ fontSize: 18 }} >🔔</Text>
+                        <Ionicons name="settings-outline" size={20} color="black" />
                     </View>
                 </TouchableOpacity>
             </View>
+            
+            <SettingsDropdown
+                visible={showSettingsDropdown}
+                onClose={closeSettingsDropdown}
+                onDeleteAccount={onDeleteAccount}
+            />
         </ImageBackground>
     )
 }
+
+MyAccountHeader.propTypes = {
+    title: PropTypes.string.isRequired,
+    onBackClick: PropTypes.func.isRequired,
+    onDeleteAccount: PropTypes.func.isRequired,
+};
 
 export default MyAccountHeader;

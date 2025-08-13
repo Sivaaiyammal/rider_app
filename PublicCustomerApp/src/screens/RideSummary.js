@@ -111,7 +111,7 @@ const RideSummary = () => {
             style={[rideSummary.rideDetailsCards, {backgroundColor: '#e5f6ff'}]}>
             <DistanceBlue />
             <Text style={rideSummary.rideDetailsCardsText}>Distance</Text>
-            <Text style={rideSummary.rideDetailsText}>{Math.round(rideDistance)} km</Text>
+            <Text style={rideSummary.rideDetailsText}>{rideDistance?.toFixed(1)} km</Text>
           </View>
           <View
             style={[rideSummary.rideDetailsCards, {backgroundColor: '#fef4e4'}]}>

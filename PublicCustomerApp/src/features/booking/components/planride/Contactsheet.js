@@ -29,9 +29,7 @@ const Contactsheet = ({ onConfirm }) => {
         name: userdetails.name,
         phone: userdetails.phone
       });
-    } else if (rideBookMode === 'OTHERS') {
-      // Keep the current selected contact
-    }
+    } 
   }, [rideBookMode, userdetails]);
 
   const loadContacts = async () => {
@@ -82,6 +80,7 @@ const Contactsheet = ({ onConfirm }) => {
   };
 
   const handleSelectContact = (contact) => {
+    console.log("contact",contact)
     setPassangerDetails(contact);
     setRideBookMode('OTHERS');
     onConfirm();

@@ -25,6 +25,7 @@ import { submitTripFeedback } from '../../../API/EndPoints/EndPoints';
 import { showNotification } from '../../../components/NotificationManger';
 import { useTranslation } from 'react-i18next';
 export default function TripFeedbackScreen() {
+  
     const {t} = useTranslation();
     const { driverName,driverPhoto,brand,model,vehicleNumber }=useAssignedDriverInfoStore()
     const {finalFare,finalDistance,finalDuration,vehicleType,tripId} = useCurrentRideInfoStore()
@@ -50,7 +51,7 @@ export default function TripFeedbackScreen() {
 
 
   const OnClose = () => {
-    goBack()
+    reset()
   }
 
   const handleSubmit = async (ratingData) => {
@@ -127,7 +128,7 @@ export default function TripFeedbackScreen() {
               
                 <View style={styles.RideInfoContainerBox}>
                     <Text style={styles.RideInfoText}>
-                        {finalDistance} Km  .  {utils.formatMinutesToReadable(finalDuration)}
+                        {finalDistance?.toFixed(1)} Km  .  {utils.formatMinutesToReadable(finalDuration)}
                     </Text>
 
                 </View>

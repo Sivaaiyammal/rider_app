@@ -16,7 +16,7 @@ const TripStats = ({
       <View style={[styles.statBox, { backgroundColor: '#E6F3FF' }]}>
         <DistanceIcon width={24} height={24} style={styles.icon} />
         <Text style={styles.label}>{t('distance')}</Text>
-        <Text style={styles.value}>{typeof totalDistance === 'string' ? totalDistance : String(totalDistance)} Km</Text>
+        <Text style={styles.value}>{typeof totalDistance === 'string' ? totalDistance?.toFixed(1) : String(totalDistance?.toFixed(1))} Km</Text>
       </View>
       <View style={[styles.statBox, { backgroundColor: '#FFF7E6' }]}>
         <WatchIcon width={24} height={24} style={styles.icon} />

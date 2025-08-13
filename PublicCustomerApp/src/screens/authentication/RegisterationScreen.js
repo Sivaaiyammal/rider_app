@@ -1,37 +1,42 @@
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { registerationStyles } from '../../styles/UserStyles';
 import BackArrow from '../../assets/image/backArrow.svg';
 import { showNotification } from '../../components/NotificationManger';
 import { usePostQuery } from '../../hooks/useQuery';
 import { CommonActions,useNavigation} from '@react-navigation/native';
-import { DataStore } from '../../controllers/DataStore';
 import useUserInfoStore from '../../store/useUserInfoStore';
 
 
 const RegisterationScreen = () => {
+  const { t } = useTranslation();
   const [FormStepperState, setFormStepperState] = useState(0);
-  const [FormStepper] = useState([
-    {
-      id: 'name',
-      title: "How do we call you?",
-      placeholder: "Your name",
-      inputMode: 'text',
-      maxlength: 40
-    },
-    {
-      id: 'email',
-      title: "What's your Email Address",
-      placeholder: "user@xyz.com",
-      inputMode: 'email',
-      maxlength: 40
-    },
-    {
-      id: 'gender',
-      title: "What's your Gender",
-      inputMode: 'text'
-    }
-  ]);
+  const [FormStepper, setFormStepper] = useState([]);
+
+  useEffect(() => {
+    setFormStepper([
+      {
+        id: 'name',
+        title: t('how_do_we_call_you'),
+        placeholder: t('your_name'),
+        inputMode: 'text',
+        maxlength: 40
+      },
+      {
+        id: 'email',
+        title: t('whats_your_email_address'),
+        placeholder: t('user_email_placeholder'),
+        inputMode: 'email',
+        maxlength: 40
+      },
+      {
+        id: 'gender',
+        title: t('whats_your_gender'),
+        inputMode: 'text'
+      }
+    ]);
+  }, [t]);
 
   const [Name, setName] = useState('');
   const [Email, setEmail] = useState('');
@@ -39,7 +44,7 @@ const RegisterationScreen = () => {
   const [InputErrorId, setInputErrorId] = useState('');
   const [InputErrorMssage, setInputErrorMssage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { id: userid, setUserdetails } = useUserInfoStore();
+  const { setUserdetails } = useUserInfoStore();
   const navigation = useNavigation();
 
 
@@ -60,31 +65,31 @@ const RegisterationScreen = () => {
       case 'name':
         if (!Name.trim()) {
           setInputErrorId(id);
-          setInputErrorMssage('Please enter your name.');
+          setInputErrorMssage(t('please_enter_your_name'));
           return false;
         }
         if (!verifyName(Name)) {
           setInputErrorId(id);
-          setInputErrorMssage('Name should be at least 2 characters and contain only letters.');
+          setInputErrorMssage(t('name_validation_error'));
           return false;
         }
         break;
       case 'email':
         if (!Email.trim()) {
           setInputErrorId(id);
-          setInputErrorMssage('Please enter your email address.');
+          setInputErrorMssage(t('please_enter_your_email'));
           return false;
         }
         if (!verifyEmail(Email)) {
           setInputErrorId(id);
-          setInputErrorMssage('Please enter a valid email address.');
+          setInputErrorMssage(t('please_enter_valid_email'));
           return false;
         }
         break;
       case 'gender':
         if (!Gender) {
           setInputErrorId(id);
-          setInputErrorMssage('Please select your gender.');
+          setInputErrorMssage(t('please_select_your_gender'));
           return false;
         }
         break;
@@ -108,7 +113,7 @@ const RegisterationScreen = () => {
     console.log('Registration response:', data);
 
     if (data?.success) {
-      showNotification('Registration Completed Successfully', '', 'success');
+      showNotification(t('registration_completed_successfully'), '', 'success');
       setUserdetails(data?.user);
     
         navigation.dispatch(
@@ -118,8 +123,8 @@ const RegisterationScreen = () => {
         );
       
     } else {
-      const errorMessage = data?.message || 'Registration failed. Please try again.';
-      showNotification('Registration Failed', errorMessage, 'danger');
+      const errorMessage = data?.message || t('registration_failed');
+      showNotification(t('registration_failed'), errorMessage, 'danger');
     }
   };
 
@@ -127,7 +132,7 @@ const RegisterationScreen = () => {
     setIsLoading(false);
     console.log('Registration error:', error);
     
-    let errorMessage = 'Network error. Please check your connection and try again.';
+    let errorMessage = t('network_error_check_connection');
     
     if (error?.response?.data?.message) {
       errorMessage = error.response.data.message;
@@ -135,7 +140,7 @@ const RegisterationScreen = () => {
       errorMessage = error.message;
     }
     
-    showNotification('Registration Failed', errorMessage, 'danger');
+    showNotification(t('registration_failed'), errorMessage, 'danger');
   };
 
   const { mutate: RegisterMutate } = usePostQuery({
@@ -173,7 +178,7 @@ const RegisterationScreen = () => {
       } catch (error) {
         setIsLoading(false);
         console.log('Error in registration:', error);
-        showNotification('Registration Error', 'An unexpected error occurred. Please try again.', 'danger');
+        showNotification(t('registration_error'), t('unexpected_error_occurred'), 'danger');
       }
     
     }
@@ -210,12 +215,21 @@ const RegisterationScreen = () => {
   };
 
   const getButtonText = () => {
-    return FormStepperState === FormStepper.length - 1 ? 'Submit' : 'Next';
+    return FormStepperState === FormStepper.length - 1 ? t('submit') : t('next');
   };
 
   const isButtonDisabled = () => {
     return isLoading || InputErrorId === FormStepper[FormStepperState].id;
   };
+
+  // Don't render until FormStepper is populated
+  if (FormStepper.length === 0) {
+    return (
+      <View style={registerationStyles.container}>
+        <Text>{t('loading')}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={registerationStyles.container} key={FormStepper[FormStepperState].id}>
@@ -245,7 +259,7 @@ const RegisterationScreen = () => {
               disabled={isLoading}
             >
               <Text style={{ color: Gender === 'male' ? '#fff' : '#000', textAlign: 'center' }}>
-                Male
+                {t('male')}
               </Text>
             </TouchableOpacity>
 
@@ -262,7 +276,7 @@ const RegisterationScreen = () => {
               disabled={isLoading}
             >
               <Text style={{ color: Gender === 'female' ? '#fff' : '#000', textAlign: 'center' }}>
-                Female
+                {t('female')}
               </Text>
             </TouchableOpacity>
           </View>

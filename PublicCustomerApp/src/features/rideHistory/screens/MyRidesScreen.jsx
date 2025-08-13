@@ -16,29 +16,13 @@ import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import TripPersonVehicle from '../components/TripPersonVehicle';
 import RideItemSkeleton from '../components/RideItemSkeleton';
 import LoadingToast from '../../../components/LoadingToast';
-const YourRidesScreen = () => {
+import { useRideHistoryStore } from '../store/useRideHistoryStore';
+const YourRidesScreen = ({fromBack=false}) => {
     const { t } = useTranslation();
+    const [enableFetch, setEnableFetch] = useState(!fromBack);
     const { setStackScreen } = useStackScreenStore();
-
-    const [Rides, setRides] = useState([
-        {
-            bookingTime: 1726120926843,
-            _id: 123,
-            fare: 100,
-            distance: 10,
-            duration: 20,
-            trip_type: 'pickup',
-            driver_profile: '',
-            driver_name: 'John Doe',
-            vehicleType: 'bike',
-            startLocation: {
-                address: 'Kolkata'
-            },
-            endLocation: {
-                address: 'Kolkata'
-            },
-        },
-    ]);
+    const { Rides, setRides, setIsLoading, setError } = useRideHistoryStore();
+    
 
     const [FilterTripType, setFilterTripType] = useState('');
     const [FilterStart, setFilterStart] = useState('');
@@ -50,13 +34,16 @@ const YourRidesScreen = () => {
     const [isLoadMore, setIsLoadMore] = useState(false);
     const [showLoadingToast, setShowLoadingToast] = useState(false);
 
+
+    console.log("fromBack",fromBack)
+
     const HandleBackBtn = () => {
            setStackScreen('Home');
     }
 
     // Replace useQuery with normal API call
     const LoadRides = async () => {
-        console.log('LoadRides');
+        
 
         try {
             let payload = {
@@ -141,7 +128,7 @@ const YourRidesScreen = () => {
                     style={yourRidesStyles.ridesContainerItemLeft}
                 >
                     <View>
-                    <Text style={yourRidesStyles.ridesContainerItemTitle}>{utils.formateDateLabel(ride.bookingTime)}</Text>
+                    <Text style={yourRidesStyles.ridesContainerItemTitle}>{utils.formateDateLabel(ride.bookingTime, 'local')}</Text>
                     <Text style={yourRidesStyles.ridesContainerItemDesc}>
                         {Array.isArray(ride?.stops) && ride.stops.length > 0
                             ? ride.stops[ride.stops.length - 1]?.address || '--'
@@ -203,12 +190,18 @@ const YourRidesScreen = () => {
     }, [isRefreshing]);
 
     useEffect(() => {
-        LoadRides();
+        if(enableFetch){
+            LoadRides();
+        }
     }, [])
 
     useEffect(() => {
         // Load rides when filters change
-        LoadRides();
+        if(enableFetch){
+            LoadRides();
+        }else{
+            setEnableFetch(true);
+        }
     }, [FilterTripType, FilterStart, FilterEnd])
 
     return (

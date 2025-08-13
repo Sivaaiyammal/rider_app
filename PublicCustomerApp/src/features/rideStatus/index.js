@@ -117,7 +117,7 @@ const RideStatus = () => {
   },[gpsDistance, gpsDuration, cancelReason, isCalculateDistance])
  
   const renderScreen = () => {
-    console.log('tripStatus',tripStatus);
+    console.log('tripStatusnj',tripStatus);
     console.log('onGoingTripCancelled',onGoingTripCancelled);
     switch (tripStatus) {
       case TripStatus.PICKEDUP:
@@ -153,7 +153,8 @@ const RideStatus = () => {
 
   useEffect(()=>{
 
-    if (TripStatus.COMPLETED || TripStatus.DIVERGED ){
+    console.log('tripStatus____________',tripStatus);
+    if (tripStatus === TripStatus.COMPLETED || tripStatus === TripStatus.DIVERGED ){
       setStackScreen('TripFeedbackScreen',{})
     }
 

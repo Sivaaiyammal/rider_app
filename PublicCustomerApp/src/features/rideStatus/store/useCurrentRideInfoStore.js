@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { TripStatus } from '../types/TripStatus';
+import {utils} from '../../../utils/Utils';
 
 const useCurrentRideInfoStore = create((set) => ({
   tripId: null,
@@ -72,58 +73,17 @@ const useCurrentRideInfoStore = create((set) => ({
     set({onGoingTripCancelled})
   },
 
-  setFareDetails: (fareDetails) => {
-    console.log('fareDetails',fareDetails)
-    const breakdown = [];
-  
-    if (fareDetails?.fare != null) {
-      set({ finalFare: fareDetails.fare });
+  setFareDetails: (fareData) => {
+    console.log("fareData",fareData)
+    if (fareData?.fareDetails?.fare != null) {
+      set({ finalFare: fareData.fareDetails.fare });
     }
-  
-    // Trip subtotal
-    if (fareDetails?.breakdown?.subtotal != null) {
-      breakdown.push({
-        name: "Trip Bill",
-        amount: fareDetails.breakdown.subtotal,
-      });
-    }
-  
-    // Fees and additional breakdown
-    const fees = fareDetails?.breakdown?.fees;
-    const feesBreakdown = fees?.breakdown || {};
-    const taxes = fareDetails?.breakdown?.taxes;
-    const taxesBreakdown = taxes?.breakdown || {};
-    console.log("feesBreakdown",fees)
-    const incentives =  0;
-    
-    console.log("incentives",incentives)
-    // Platform Fee (includes platformFee + incentives)
-    const platformFee = (feesBreakdown.platformFee || 0) + incentives;
-    if (platformFee > 0) {
-      breakdown.push({
-        name: "Platform Fee",
-        amount: platformFee,
-      });
-    }
-  
-    // Other fee components (excluding platformFee and incentives)
-    Object.keys(feesBreakdown).forEach((key) => {
-      if (key !== "platformFee" && key !== "incentives") {
-        breakdown.push({
-          name: key,
-          amount: feesBreakdown[key],
-        });
-      }
-    });
 
-    Object.keys(taxesBreakdown).forEach((key) => {
-      breakdown.push({
-        name: key,
-        amount: taxesBreakdown[key],
-      });
-    });
+   
   
-    set({ breakdownFare: breakdown });
+    const BreakdownFare = fareData?.customerInvoice ? utils.getInvoiceFormat(fareData?.customerInvoice) : utils.getFareBreakdown(fareData?.fareDetails)
+    console.log("BreakdownFare",BreakdownFare)
+    set({ breakdownFare: BreakdownFare });
   },
 
 

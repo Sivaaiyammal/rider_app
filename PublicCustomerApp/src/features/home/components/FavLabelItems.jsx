@@ -32,11 +32,9 @@ const FavLabelItems = ({onLabelPress}) => {
       {hasNoFavorites ? (
         // Show "Add Favorite Places" only when no favorites exist
         <TouchableOpacity style={styles.FavouriteAddressItem} onPress={handleAddFavPlacePress}>
-          <View style={[styles.FavouriteAddressItemIcon, {paddingHorizontal:2}]}>
-            <AddFavIcon width={45} height={45} />
-          </View>
-          <View style={styles.FavouriteAddressItemTextContainer}>
-            <Text style={styles.FavouriteAddressItemText}>{t('add_favorite_places')}</Text>
+         
+          <View style={styles.AddFavouriteAddressItemTextContainer}>
+            <Text style={[styles.FavouriteAddressItemText,{color:"#757575"}]}>+ {t('add_favorite_places')}</Text>
           </View>
         </TouchableOpacity>
       ) : (
@@ -132,6 +130,19 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color:"grey",
         textAlign: 'left',
+      },
+      AddFavouriteAddressItemTextContainer: {
+        flex:1,
+        alignItems: 'center',
+        justifyContent:'center',
+        padding:10,
+        paddingVertical:10,
+        marginHorizontal:5,
+        borderRadius: 16,
+        borderWidth:1,
+        borderColor:"#757575",
+        borderStyle:"dashed",
+       
       },
 });
 

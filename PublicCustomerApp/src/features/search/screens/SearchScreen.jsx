@@ -379,7 +379,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           <View>
             <View style={styles.resultHeader}>
               <Text style={styles.resultHeaderText}>
-                {searchTxt.length < 4 ? `Suggestions for "${searchTxt}"` : `Search results for "${searchTxt}"`}
+                {searchTxt.length < 1 ? `Search results` : `Search results for "${searchTxt}"`}
               </Text>
               
             </View>

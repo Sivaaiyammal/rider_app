@@ -162,7 +162,7 @@ const FareDetailsModal = ({
               <View style={styles.detailContent}>
                 <Text style={styles.detailLabel}>{t('distance')}</Text>
                 <Text style={styles.detailValue}>
-                    {distance ? Math.round(distance) + ' ' + t('km') : t('calculating')}
+                    {distance ? (distance).toFixed(1) + ' ' + t('km') : t('calculating')}
                 </Text>
               </View>
             </View>
@@ -175,7 +175,7 @@ const FareDetailsModal = ({
               <View style={styles.detailContent}>
                 <Text style={styles.detailLabel}>{t('duration')}</Text>
                 <Text style={styles.detailValue}>
-                  {duration ? Math.round(duration) + ' ' + t('min') : t('calculating')}
+                  {duration ? (duration).toFixed(1) + ' ' + t('min') : t('calculating')}
                 </Text>
               </View>
             </View>

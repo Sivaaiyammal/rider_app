@@ -15,7 +15,7 @@ import { utils } from '../../../utils/Utils';
 
 const RideDetailScreen = ({ TripData }) => {
   const { t } = useTranslation();
-  const { setStackScreen } = useStackScreenStore();
+  const { setStackScreen,goBack } = useStackScreenStore();
   
   console.log(JSON.stringify(TripData), "TripData");
   
@@ -23,7 +23,7 @@ const RideDetailScreen = ({ TripData }) => {
   const rideData = TripData || {};
 
   const handleBackPress = () => {
-    setStackScreen('MyRidesScreen');
+    goBack();
   };
 
   const handleSupportPress = () => {
@@ -49,60 +49,10 @@ const RideDetailScreen = ({ TripData }) => {
     }));
   };
 
-  // Extract fare breakdown from fareDetails
-  const getFareBreakdown = () => {
-    if (!rideData.fareDetails?.breakdown) return [];
-    
-    const breakdown = rideData.fareDetails.breakdown;
-    const fareBreakdown = [];
-    
-    // Add subtotal
-    if (breakdown.subtotal) {
-      fareBreakdown.push({
-        name: 'Trip Bill',
-        amount: breakdown.subtotal
-      });
-    }
-    
-    // Add fees
-    if (breakdown.fees?.breakdown) {
-      Object.entries(breakdown.fees.breakdown).forEach(([key, value]) => {
-        fareBreakdown.push({
-          name: key === 'platformFee' ? 'Platform Fee' : 
-                key === 'gst' ? 'GST' : 
-                key === 'convenienceFee' ? 'Convenience Fee' : key,
-          amount: value
-        });
-      });
-    }
-    
-    // Add taxes
-    if (breakdown.taxes?.breakdown) {
-      Object.entries(breakdown.taxes.breakdown).forEach(([key, value]) => {
-        fareBreakdown.push({
-          name: key,
-          amount: value
-        });
-      });
-    }
-    
-    // Add other adjustments
-    if (breakdown.surgeAdjustment) {
-      fareBreakdown.push({
-        name: 'Surge Adjustment',
-        amount: breakdown.surgeAdjustment
-      });
-    }
-    
-    if (breakdown.lowPerformancePenalty) {
-      fareBreakdown.push({
-        name: 'Performance Penalty',
-        amount: breakdown.lowPerformancePenalty
-      });
-    }
-    
-    return fareBreakdown;
-  };
+  
+
+
+  const BreakdownFare = rideData?.customerInvoice ? utils.getInvoiceFormat(rideData?.customerInvoice) : utils.getFareBreakdown(rideData)
 
   return (
     <View style={styles.container}>
@@ -135,7 +85,7 @@ const RideDetailScreen = ({ TripData }) => {
         
         <PaymentDetails 
           finalFare={rideData.fareDetails?.fare || rideData.estimatedFare} 
-          breakdownFare={getFareBreakdown()}
+          breakdownFare={BreakdownFare}
         />
         
         <View style={styles.paymentMethodContainer}>

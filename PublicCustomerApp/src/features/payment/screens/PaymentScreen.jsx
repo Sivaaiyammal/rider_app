@@ -49,7 +49,7 @@ const PaymentScreen = ({handlePayNow}) => {
         <AddressContainer directions={stops} />
         <TripPersonVehicle driverName={driverName} driverPhoto={driverPhoto} vehicleType={vehicleType} vehicleBrand={brand} vehicleModel={model} vehicleNumber={vehicleNumber} />
         <TripStats totalDistance={finalDistance} totalDuration={finalDuration} totalFare={finalFare} />
-        <PaymentDetails finalFare={finalFare} breakdownFare={breakdownFare}/>
+        <PaymentDetails finalFare={finalFare} breakdownFare={breakdownFare} type="payment" />
         <SupportSection onPress={() => {}} />
       </ScrollView>
       {/* <PayButton amount={finalFare} onPress={handlePayNow} paymentMethod={paymentMethod} /> */}

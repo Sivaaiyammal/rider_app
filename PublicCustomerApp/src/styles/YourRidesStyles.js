@@ -34,7 +34,7 @@ export const yourRidesStyles = StyleSheet.create({
         borderBottomColor: colors.grey_xdark,
     },
     ridesContainerItemLeft: {
-        width: '50%',
+        width: '60%',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
@@ -74,7 +74,7 @@ export const yourRidesStyles = StyleSheet.create({
     },
     ridesContainerItemDesc: {
         fontFamily: Fonts.regular,
-        fontSize: 14,
+        fontSize: 12,
         color: colors.grey_xxdark,
     },
     ridesContainerItemFare: {

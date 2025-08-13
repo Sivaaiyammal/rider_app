@@ -97,8 +97,10 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
 
   useEffect(() => {
     if (userdetails){
-      setRideBookMode('MYSELF')
-      setPassangerDetails({name:userdetails.name,phone:userdetails.phone})
+      if(!rideBookMode){
+        setRideBookMode('MYSELF')
+        setPassangerDetails({name:userdetails.name,phone:userdetails.phone})
+      }
     }
     console.log(showScheduleTime,"wdjdkdbkwdbk")
     if(showScheduleTime){

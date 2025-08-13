@@ -200,36 +200,150 @@ export const utils = {
 
     return new Date(date);
   },
-  formateDateLabel: (ms) => {
-    const date = new Date(ms);
+  formateDateLabel: (ms, format = 'local') => {
+    // format: 'local' (default) or 'utc'
+    let date;
+    if (format === 'utc') {
+      date = new Date(ms);
+    } else {
+      date = new Date(ms);
+    }
 
     const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    const weekday = weekdays[date.getUTCDay()]
-    const day = String(date.getUTCDate()).padStart(2, '0')
-    const month = months[date.getUTCMonth()]
-    const year = String(date.getUTCFullYear()).slice(-2)
+    let weekday, day, month, year, hours, minutes, ampm;
 
-    let hours = date.getUTCHours()
-    const minutes = String(date.getUTCMinutes()).padStart(2, '0')
-    const ampm = hours >= 12 ? 'PM' : 'AM'
-    hours = hours % 12 || 12
+    if (format === 'utc') {
+      weekday = weekdays[date.getUTCDay()];
+      day = String(date.getUTCDate()).padStart(2, '0');
+      month = months[date.getUTCMonth()];
+      year = String(date.getUTCFullYear()).slice(-2);
+      hours = date.getUTCHours();
+      minutes = String(date.getUTCMinutes()).padStart(2, '0');
+    } else {
+      weekday = weekdays[date.getDay()];
+      day = String(date.getDate()).padStart(2, '0');
+      month = months[date.getMonth()];
+      year = String(date.getFullYear()).slice(-2);
+      hours = date.getHours();
+      minutes = String(date.getMinutes()).padStart(2, '0');
+    }
 
-    return `${weekday}, ${day} ${month} ${year} . ${hours}:${minutes} ${ampm}`
+    ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+
+    // Add ITC (Indian Time) label if format is 'itc'
+    let label = `${weekday}, ${day} ${month} ${year} . ${hours}:${minutes} ${ampm}`;
+    if (format === 'itc') {
+      // Convert to IST (Indian Standard Time, UTC+5:30)
+      const istDate = new Date(date.getTime() + (330 * 60000 - date.getTimezoneOffset() * 60000));
+      const istWeekday = weekdays[istDate.getUTCDay()];
+      const istDay = String(istDate.getUTCDate()).padStart(2, '0');
+      const istMonth = months[istDate.getUTCMonth()];
+      const istYear = String(istDate.getUTCFullYear()).slice(-2);
+      let istHours = istDate.getUTCHours();
+      const istMinutes = String(istDate.getUTCMinutes()).padStart(2, '0');
+      const istAmpm = istHours >= 12 ? 'PM' : 'AM';
+      istHours = istHours % 12 || 12;
+      label = `${istWeekday}, ${istDay} ${istMonth} ${istYear} . ${istHours}:${istMinutes} ${istAmpm} ITC`;
+    }
+
+    return label;
   },
+  getInvoiceFormat(invoiceFormat){
+    const feeUIFormat = []
+    
 
-  // function to conver seconds to X Hrs Y Mins or X Mins or X Hrs or X sec
-  convertSecondsToReadable(seconds) {
-    const hours = Math.floor(seconds / 3600);
-    let minss = seconds % 3600;
-    minss = parseInt(minss / 60);
-    let secs = seconds % 60;
-    secs = parseInt(secs);
-    if (secs < 1) return `${hours} Hrs ${minss} Mins`;
-    else if (hours < 1) return `${minss} Mins`;
-    else return `${hours} Hrs ${minss} Mins`;
+    if(invoiceFormat?.rideCost){
+      let obj = {
+        "key": "rideCost",
+        "value": invoiceFormat?.rideCost
+      }
+      if(invoiceFormat?.tax && invoiceFormat?.tax?.length > 0){
+        obj.tax = invoiceFormat?.tax
+      }
+      feeUIFormat.push(obj)
+    }
+
+    if(invoiceFormat?.fees && invoiceFormat?.fees?.length > 0){
+      invoiceFormat?.fees.forEach(fee => {
+        let obj = {
+          "key": fee?.key,
+          "value": fee?.value
+        }
+        feeUIFormat.push(obj)
+      })
+    }
+    if(invoiceFormat?.feeswithTax && invoiceFormat?.feeswithTax?.length > 0){
+      invoiceFormat?.feeswithTax.forEach(fee => {
+        let obj = {
+          "key": fee?.key,
+          "value": fee?.value
+        }
+        if(fee?.tax && fee?.tax?.length > 0){
+          obj.tax = fee?.tax
+        }
+        feeUIFormat.push(obj)
+      })
+    }
+
+    return feeUIFormat
   },
+  getFareBreakdown(fareDetails){
+    if (!fareDetails?.breakdown) return [];
+    
+    const breakdown = fareDetails.breakdown;
+    const fareBreakdown = [];
+    
+    // Add subtotal
+    if (breakdown.subtotal) {
+      fareBreakdown.push({
+        name: 'Trip Bill',
+        amount: breakdown.subtotal
+      });
+    }
+    
+    // Add fees
+    if (breakdown.fees?.breakdown) {
+      Object.entries(breakdown.fees.breakdown).forEach(([key, value]) => {
+        fareBreakdown.push({
+          name: key === 'platformFee' ? 'Platform Fee' : 
+                key === 'gst' ? 'GST' : 
+                key === 'convenienceFee' ? 'Convenience Fee' : key,
+          amount: value
+        });
+      });
+    }
+    
+    // Add taxes
+    if (breakdown.taxes?.breakdown) {
+      Object.entries(breakdown.taxes.breakdown).forEach(([key, value]) => {
+        fareBreakdown.push({
+          name: key,
+          amount: value
+        });
+      });
+    }
+    
+    // Add other adjustments
+    if (breakdown.surgeAdjustment) {
+      fareBreakdown.push({
+        name: 'Surge Adjustment',
+        amount: breakdown.surgeAdjustment
+      });
+    }
+    
+    if (breakdown.lowPerformancePenalty) {
+      fareBreakdown.push({
+        name: 'Performance Penalty',
+        amount: breakdown.lowPerformancePenalty
+      });
+    }
+    
+    return fareBreakdown;
+  },
+  
 
   formatISOTo12HourClock(dateString) {
     return moment.tz(dateString, currentTimezone).format('LT');
