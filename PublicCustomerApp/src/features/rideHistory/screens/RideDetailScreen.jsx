@@ -50,16 +50,18 @@ const RideDetailScreen = ({ TripData }) => {
   };
 
   
+  const isFareCalculated= rideData?.fareDetails?.fare || rideData?.customerInvoice || null
 
-
-  const BreakdownFare = rideData?.customerInvoice ? utils.getInvoiceFormat(rideData?.customerInvoice) : utils.getFareBreakdown(rideData)
+  const BreakdownFare = isFareCalculated ? rideData?.customerInvoice? utils.getInvoiceFormat(rideData?.customerInvoice) : utils.getFareBreakdown(rideData?.fareDetails) : null
 
   return (
     <View style={styles.container}>
-      <NavBar withBg onBackPress={handleBackPress} title={t('trip_details')} />
+      <NavBar withBg onBackPress={handleBackPress} title={t('ride_details')} />
       
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <FareHeader fare={rideData.fareDetails?.fare || rideData.estimatedFare || 0} />
+        {
+           <FareHeader fare={rideData.fareDetails?.fare || rideData.estimatedFare || 0} RideStatus={utils.getRideStatus(rideData?.status)}/>
+        }
         
         <TripMetaInfo 
           date={formatDate(rideData.bookingTime)} 
@@ -71,7 +73,7 @@ const RideDetailScreen = ({ TripData }) => {
         <TripPersonVehicle 
           driverName={rideData.driverInfo?.driverName} 
           driverPhoto={rideData.driverInfo?.driverPhoto} 
-          vehicleType={rideData.driverInfo?.vehicleType} 
+          vehicleType={rideData?.vehicleType} 
           vehicleBrand={rideData.driverInfo?.vehicleBrand} 
           vehicleModel={rideData.driverInfo?.vehicleModel} 
           vehicleNumber={rideData.driverInfo?.vehicleNumber} 
@@ -80,13 +82,14 @@ const RideDetailScreen = ({ TripData }) => {
         <TripStats 
           totalDistance={rideData.finalDistance || rideData.estimatedDistance} 
           totalDuration={rideData.finalDuration || rideData.estimatedDuration} 
-          totalFare={rideData.fareDetails?.fare || rideData.estimatedFare} 
+          totalFare={rideData.fareDetails?.fare} 
         />
         
-        <PaymentDetails 
+       {isFareCalculated && <PaymentDetails 
           finalFare={rideData.fareDetails?.fare || rideData.estimatedFare} 
           breakdownFare={BreakdownFare}
-        />
+          type={rideData?.customerInvoice}
+        />}
         
         <View style={styles.paymentMethodContainer}>
           <Text style={styles.paymentMethodLabel}>{t('payment_method')}</Text>

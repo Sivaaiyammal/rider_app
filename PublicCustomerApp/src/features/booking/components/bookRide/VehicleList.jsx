@@ -89,6 +89,9 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
   if (isLoading || !availableVehicles) {
     return renderSkeletonLoader();
   }
+  const isEv = (vehicleType) => {
+    return vehicleType.includes("ELECTRIC");
+  };
 
   return (
     <Animated.View 
@@ -136,8 +139,16 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
               </View>
               <View style={styles.vehicleInfoContainer}>
                 <View style={styles.rowBetween}>
+                  <View style={styles.vehicleNameContainer}>
+                
                   <Text style={[styles.vehicleName]}>{VEHICLE_LABELS[vehicle.type] || vehicle.name}</Text>
+                  {isEv(vehicle.type) && <View style={styles.evContainer}>
+                    <Text style={[styles.evText]}>EV</Text>
+                  </View>
+                  }
+                  </View>
                   <Text style={[styles.price]}>{ `₹${vehicle.minFare.toFixed(0)} - ₹${vehicle.maxFare.toFixed(0)}`}</Text>
+                 
                 </View>
                 <View style={styles.rowBetween}>
                   <View style={styles.timeRow}>
@@ -227,6 +238,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop:5
+  },
+  vehicleNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap:5,
+    marginTop:5,
+    flex:1
+  },
+  evContainer: {
+    backgroundColor: "green",
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  evText: {
+    fontSize: 12,
+    fontFamily:Fonts.medium,
+    color: colors.white,
+    fontStyle:"italic",
+  },
+  vehicleNameText: {
+    fontSize: 16,
+    fontFamily:Fonts.regular,
+    color: colors.black,
   },
   vehicleName: {
     fontSize: 16,

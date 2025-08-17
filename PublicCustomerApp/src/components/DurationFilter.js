@@ -13,10 +13,7 @@ const DurationFilter = ({ options, callback }) => {
     const { t } = useTranslation();
     
     const [Options, setOptions] = useState(options || [
-        {
-            id: 'all',
-            title: 'All',
-        },
+       
         {
             id: 'today',
             title: 'Today',
@@ -24,6 +21,10 @@ const DurationFilter = ({ options, callback }) => {
         {
             id: 'week',
             title: 'This Week',
+        },
+        {
+            id: 'all',
+            title: 'All',
         },
         {
             id: 'custom',

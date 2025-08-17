@@ -2,18 +2,20 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, Fonts } from '../../../constants/constants';
 
-const TripMetaInfo = ({ date = 'Mon, Jan 01 2022 3:00 PM', tripId = 'ABC01234' }) => (
+const TripMetaInfo = ({ date, tripId}) => (
   <View style={styles.container}>
     <Text style={styles.date}>{date}</Text>
-    <Text style={styles.tripId}>Trip ID : {tripId}</Text>
+    <Text style={styles.tripId}>Ride ID : {tripId}</Text>
   </View>
 );
 
 const styles = StyleSheet.create({
   container: {
+    marginVertical: 10,
     alignItems: 'center',
-    paddingVertical: 8,
-    backgroundColor: colors.white,
+    paddingVertical: 10,
+    gap: 5,
+    
   },
   date: {
     fontFamily: Fonts.medium,

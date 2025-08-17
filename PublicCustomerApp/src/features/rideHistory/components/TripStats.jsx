@@ -23,11 +23,12 @@ const TripStats = ({
         <Text style={styles.label}>{t('duration')}</Text>
         <Text style={styles.value}>{utils.formatMinutesToReadable(totalDuration)}</Text>
       </View>
-      <View style={[styles.statBox, { backgroundColor: '#E6F7F1' }]}>
+     {totalFare && <View style={[styles.statBox, { backgroundColor: '#E6F7F1' }]}>
         <FareIcon width={24} height={24} style={styles.icon} />
         <Text style={styles.label}>{t('fare')}</Text>
-        <Text style={styles.value}>₹ {typeof totalFare === 'string' ? totalFare : String(totalFare)}</Text>
+       { <Text style={styles.value}>₹ {typeof totalFare === 'string' ? totalFare?.toFixed(2) : String(totalFare?.toFixed(2))}</Text>}
       </View>
+}
     </View>
   );
 };

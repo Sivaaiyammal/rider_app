@@ -19,6 +19,12 @@ export const yourRidesStyles = StyleSheet.create({
         gap: 20,
         paddingHorizontal: 10,
     },
+    ridesContainerItemFareContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 5,
+        alignItems: 'baseline',
+    },
     ridesContainerItem: {
         width: '100%',
         minHeight: 100,
@@ -26,25 +32,30 @@ export const yourRidesStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 10,
-        marginVertical:15,
+        paddingVertical: 15,
         paddingHorizontal: 10,
         paddingLeft: 20,
         borderBottomWidth: 1,
         borderBottomColor: colors.grey_xdark,
+     
+        gap: 10,
     },
     ridesContainerItemLeft: {
-        width: '60%',
+        flex:2,
         display: 'flex',
         flexDirection: 'column',
+        gap: 15,
         justifyContent: 'space-between',
-        gap: 5,
+      
+        height: '100%',
+      
     },
     ridesContainerItemRight: {
-        width: 'max-content',
+        flex:1,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'flex-end',
+       
+      
     },
     ridesContainerItemImgs: {
         position: 'relative',
@@ -70,6 +81,8 @@ export const yourRidesStyles = StyleSheet.create({
     ridesContainerItemTitle: {
         fontFamily: Fonts.medium,
         fontSize: 16,
+        marginBottom: 5,
+
         color: colors.black,
     },
     ridesContainerItemDesc: {
@@ -78,9 +91,14 @@ export const yourRidesStyles = StyleSheet.create({
         color: colors.grey_xxdark,
     },
     ridesContainerItemFare: {
-        fontFamily: Fonts.semi_bold,
-        fontSize: 24,
-        color: colors.black,
-        marginTop: 10,
+        fontFamily: Fonts.medium,
+        fontSize: 16,
+        color: colors.dark,
+       
+    },
+    ridesContainerItemStatus: {
+        fontFamily: Fonts.regular,
+        fontSize: 12,
+        color: colors.grey_xxdark,
     },
 });

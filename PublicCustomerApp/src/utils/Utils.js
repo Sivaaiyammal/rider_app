@@ -17,6 +17,19 @@ export const utils = {
     else if (type == '5' || type == 'car') return require('../assets/image/vehicle/suv_left.png')
     else if (type == '6') return require('../assets/image/vehicle/luxsedan_left.png')
   },
+  getRideStatus: (status) => {
+    if (status == 'COMPLETED') return 'Ride Completed'
+    if (status == 'PAYMENT_COMPLETED') return 'Ride Completed'
+    else if (status == 'DIVERGED') return 'Ride Diverged'
+    else if (status == 'CANCELLED') return 'Ride Cancelled'
+   
+  },
+  getShortRideStatus: (status) => {
+    if (status == 'COMPLETED') return 'COMPLETED'
+    if (status == 'PAYMENT_COMPLETED') return 'COMPLETED'
+    else if (status == 'DIVERGED') return 'DIVERGED'
+    else if (status == 'CANCELLED') return 'CANCELLED'
+  },
   metersToKilometers(meters) {
     return meters / 1000;
    },
@@ -291,6 +304,7 @@ export const utils = {
     return feeUIFormat
   },
   getFareBreakdown(fareDetails){
+    console.log("getFareBreakdown CALLED",fareDetails)
     if (!fareDetails?.breakdown) return [];
     
     const breakdown = fareDetails.breakdown;

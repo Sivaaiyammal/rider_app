@@ -16,14 +16,14 @@ const TripPersonVehicle = ({
   usedScreen=null
 }) => (
   <View style={[styles.container,layoutStyle=="row"&&{flexDirection:"row",gap:15}]}>
-    <View style={styles.imagesRow}>
-      {getVehicleImage(vehicleType, styles.vehicleImg)}
-      <Image source={{uri:driverPhoto}} style={[styles.profileImg,usedScreen=="MyRides"&&{width:60,height:60}]} />
+    <View style={[styles.imagesRow]}>
+      {getVehicleImage(vehicleType, [styles.vehicleImg,driverPhoto&&{marginRight:-20}])}
+      {driverPhoto && <Image source={{uri:driverPhoto}} style={[styles.profileImg,usedScreen=="MyRides"&&{width:60,height:60}]} />}
     </View>
     <View style={[layoutStyle=="row"&&{alignItems:"flex-start"},usedScreen=="MyRides"&&{alignItems:"flex-end"}]}>
-    <Text style={[styles.driverName,usedScreen=="MyRides"&&{fontSize:15,fontFamily:Fonts.regular}]}>{ driverName}</Text>
+    {usedScreen !=="MyRides"&&driverName && <Text style={[styles.driverName,usedScreen=="MyRides"&&{fontSize:15,fontFamily:Fonts.regular}]}>{ driverName}</Text>}
     {usedScreen !=="MyRides"&&<Text style={[styles.vehicleDesc,{fontSize:descriptonSize}]}>{vehicleBrand} {vehicleModel} . {vehicleNumber}</Text>}
-    {usedScreen ==="MyRides"&&<Text style={[styles.vehicleDesc,{fontSize:descriptonSize}]}>{VEHICLE_LABELS[vehicleType]}</Text>}
+  
     </View>
   </View>
 );
@@ -31,20 +31,20 @@ const TripPersonVehicle = ({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginBottom: 8,
-    marginTop: 8,
+   
   },
   imagesRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+ 
+    
   },
   vehicleImg: {
     width: 70,
     height: 70,
     resizeMode: 'contain',
-    marginRight: -20,
+    
     zIndex: 1,
     transform: [{ scaleX: -1 }],
     
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     borderWidth: 3,
     borderColor: colors.white,
-    backgroundColor: colors.white,
+    backgroundColor: colors.grey_xdark,
     zIndex: 2,
   },
   driverName: {
@@ -70,7 +70,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     fontSize: 15,
     textAlign: 'center',
-    marginBottom: 8,
     marginTop: 2,
   },
 });

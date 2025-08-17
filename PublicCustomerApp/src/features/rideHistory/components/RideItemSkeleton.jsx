@@ -45,10 +45,7 @@ const RideItemSkeleton = () => {
           {/* <Animated.View style={[styles.skeletonVehicleImg, { opacity }]} /> */}
           <Animated.View style={[styles.skeletonProfileImg, { opacity }]} />
         </View>
-        <View style={styles.textContainer}>
-          <Animated.View style={[styles.skeletonDriverName, { opacity }]} />
-          <Animated.View style={[styles.skeletonVehicleDesc, { opacity }]} />
-        </View>
+      
       </View>
     </View>
   );
@@ -73,7 +70,7 @@ const styles = StyleSheet.create({
     height: 24,
     backgroundColor: '#E5E7EB',
     borderRadius: 4,
-    marginTop: 10,
+    
   },
   imagesRow: {
     flexDirection: 'row',

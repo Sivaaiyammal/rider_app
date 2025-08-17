@@ -17,11 +17,14 @@ import TripPersonVehicle from '../components/TripPersonVehicle';
 import RideItemSkeleton from '../components/RideItemSkeleton';
 import LoadingToast from '../../../components/LoadingToast';
 import { useRideHistoryStore } from '../store/useRideHistoryStore';
+import { colors } from '../../../constants/constants';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
 const YourRidesScreen = ({fromBack=false}) => {
     const { t } = useTranslation();
     const [enableFetch, setEnableFetch] = useState(!fromBack);
     const { setStackScreen } = useStackScreenStore();
-    const { Rides, setRides, setIsLoading, setError } = useRideHistoryStore();
+    const { Rides, setRides } = useRideHistoryStore();
     
 
     const [FilterTripType, setFilterTripType] = useState('');
@@ -29,13 +32,25 @@ const YourRidesScreen = ({fromBack=false}) => {
     const [FilterEnd, setFilterEnd] = useState('');
     const [FilterPage, setFilterPage] = useState(1);
     const [FilterLimit] = useState(10);
-    const [FilterMaxPages, setFilterMaxPages] = useState(FilterLimit);
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(true);
     const [isLoadMore, setIsLoadMore] = useState(false);
     const [showLoadingToast, setShowLoadingToast] = useState(false);
+    const [durationFilterSet, setDurationFilterSet] = useState(false);
 
+    // Function to get today's date range
+    const getTodayDateRange = () => {
+        const today = new Date();
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+        
+        return {
+            start: startOfDay.getTime(),
+            end: endOfDay.getTime()
+        };
+    };
 
     console.log("fromBack",fromBack)
+    console.log("MyRidesScreen mounted with enableFetch:", enableFetch)
 
     const HandleBackBtn = () => {
            setStackScreen('Home');
@@ -47,12 +62,13 @@ const YourRidesScreen = ({fromBack=false}) => {
 
         try {
             let payload = {
-                tripStatus: FilterTripType || 'COMPLETED',
+               
                 page: FilterPage,
                 limit: FilterLimit
             }
             
             // Only add date filters if they are provided
+            console.log('Filter values in LoadRides:', { FilterStart, FilterEnd });
             if (FilterStart && FilterEnd) {
                 // Convert ISO strings to milliseconds if they're not already timestamps
                 let startTime, endTime;
@@ -73,6 +89,7 @@ const YourRidesScreen = ({fromBack=false}) => {
                     endTime = FilterEnd;
                 }
                 
+                console.log('Converted timestamps:', { startTime, endTime });
                 payload.startTime = startTime;
                 payload.endTime = endTime;
             }
@@ -91,7 +108,6 @@ const YourRidesScreen = ({fromBack=false}) => {
                 } else {
                     setRides(trips)
                 }
-                setFilterMaxPages(pagination?.totalPages)
             } else {
                 showNotification(t('failed_to_get_rides'), data.message, 'danger');
             }
@@ -106,9 +122,13 @@ const YourRidesScreen = ({fromBack=false}) => {
     }
 
     const DurationFilterCallback = (id, start, end) => {
-        console.log('DurationFilterCallback:', id, start, end);
+        console.log('DurationFilterCallback called with:', { id, start, end });
+        console.log('Setting duration filter and enabling fetch');
         setFilterStart(start);
         setFilterEnd(end);
+        setDurationFilterSet(true);
+        // Reset to first page when filter changes
+        setFilterPage(1);
     }
 
     const HandleRideOpen = (ride) => {
@@ -135,7 +155,10 @@ const YourRidesScreen = ({fromBack=false}) => {
                             : '--'}
                     </Text>
                     </View>
-                    <Text style={yourRidesStyles.ridesContainerItemFare}>₹{ride?.fareDetails?.fare || '00'}</Text>
+                    <View style={yourRidesStyles.ridesContainerItemFareContainer}>
+                    <Text style={yourRidesStyles.ridesContainerItemFare}>₹ {ride?.fareDetails?.fare?.toFixed(2)|| '00'} . </Text>
+                    <Text style={[yourRidesStyles.ridesContainerItemStatus,ride?.status=="PAYMENT_COMPLETED"&&{color:'green'},ride?.status=="DIVERGED"&&{color:'yellow'},ride?.status=="CANCELLED"&&{color:'red'}]}>{utils.getShortRideStatus(ride?.status)}</Text>
+                    </View>
                 </View>
                 <View
                     style={yourRidesStyles.ridesContainerItemRight}
@@ -144,27 +167,19 @@ const YourRidesScreen = ({fromBack=false}) => {
                         usedScreen={'MyRides'}
                         driverName={ride?.driverInfo?.driverName} 
                         driverPhoto={ride?.driverInfo?.driverPhoto} 
-                        vehicleType={ride?.driverInfo?.vehicleType} 
+                        vehicleType={ride?.vehicleType} 
                         vehicleBrand={ride?.driverInfo?.vehicleBrand} 
                         vehicleModel={ride?.driverInfo?.vehicleModel} 
                         vehicleNumber={ride?.driverInfo?.vehicleNumber} 
                     />
                 </View>
+              
+                <Icon name="chevron-right" size={20} color={colors.dark} />
             </TouchableOpacity>
         )
     }
 
-    const HandleRefresh = () => {
-        setFilterPage(1);
-        LoadRides();
-    }
-
-    const HandleLoadMore = () => {
-        if (isRefreshing || FilterMaxPages < FilterPage) return;
-        setIsLoadMore(true);
-        setFilterPage(FilterPage + 1);
-        LoadRides();
-    }
+  
 
     const dataProvider = React.useMemo(() => {
         return new DataProvider((r1, r2) => r1 !== r2).cloneWithRows(Rides);
@@ -172,7 +187,7 @@ const YourRidesScreen = ({fromBack=false}) => {
 
     const layoutProvider = React.useMemo(() => {
         return new LayoutProvider(
-            index => 1,
+            () => 1,
             (type, dim) => {
                 dim.width = windowWidth;
                 dim.height = 180;
@@ -189,20 +204,30 @@ const YourRidesScreen = ({fromBack=false}) => {
         return <ActivityIndicator size="large" color="#0000ff" />;
     }, [isRefreshing]);
 
+    // Set default date filters to today when component mounts
     useEffect(() => {
-        if(enableFetch){
+        const todayRange = getTodayDateRange();
+        setFilterStart(todayRange.start);
+        setFilterEnd(todayRange.end);
+        setDurationFilterSet(true);
+    }, []);
+
+    useEffect(() => {
+        if(enableFetch && durationFilterSet){
             LoadRides();
         }
-    }, [])
+    }, [enableFetch, durationFilterSet, FilterStart, FilterEnd])
+
+  
 
     useEffect(() => {
         // Load rides when filters change
-        if(enableFetch){
+        if(enableFetch && durationFilterSet){
             LoadRides();
         }else{
             setEnableFetch(true);
         }
-    }, [FilterTripType, FilterStart, FilterEnd])
+    }, [FilterTripType])
 
     return (
         <View style={yourRidesStyles.mainContainer}>

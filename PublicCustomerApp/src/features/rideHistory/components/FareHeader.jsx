@@ -5,14 +5,16 @@ import { colors, Fonts } from '../../../constants/constants';
 import { ImageBackground } from 'react-native';
 import rideFareBackground from "../../../assets/image/rideFareBackground.webp"
 
-const FareHeader = ({ fare = '₹117.50' }) => {
+const FareHeader = ({ fare = '₹117.50', RideStatus = false }) => {
   const { t } = useTranslation();
   
   return (
     <View style={styles.headerContainer}>
     <ImageBackground source={rideFareBackground} style={styles.imageBackground}>
-      <Text style={styles.label}>{t('ride_fare')}</Text>
-      <Text style={styles.fare}>₹ {fare}</Text>
+    <Text style={styles.TripStatus}>{RideStatus}</Text>
+      {/* <Text style={styles.label}>{t('ride_fare')}</Text> */}
+      <Text style={styles.fare}>₹ {fare.toFixed(2)}</Text>
+      
     </ImageBackground>
     </View>
   );
@@ -32,6 +34,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 10,
   },
   label: {
     color: colors.white,
@@ -43,6 +46,11 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontFamily: Fonts.bold,
     fontSize: 28,
+  },
+  TripStatus: {
+    color: colors.white,
+    fontFamily: Fonts.medium,
+    fontSize: 14,
   },
 });
 

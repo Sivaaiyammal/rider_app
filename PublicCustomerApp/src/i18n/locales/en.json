@@ -38,7 +38,7 @@
     "failed_to_get_rides": "Failed to get rides",
     "network_error_occurred": "Network error occurred",
     "fetching_your_trips": "Fetching your trips...",
-    "trip_details": "Trip Details",
+    "ride_details": "Ride Details",
     "fare_details": "Fare Details",
     "payment_details": "Payment Details",
     "pay_now": "Pay Now",
