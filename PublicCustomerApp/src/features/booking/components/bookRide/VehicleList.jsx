@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Animated, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -19,6 +19,7 @@ import ELECTRIC_SUV from "../../../../assets/vehicle/SUV.webp"
 import ExSEDAN from "../../../../assets/vehicle/ExSEDAN.webp"
 import SkeletonLoader from '../../../../components/Loaders/SkeletonLoader';
 import LinearGradient from 'react-native-linear-gradient';
+
 
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
 
@@ -94,20 +95,10 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
   };
 
   return (
-    <Animated.View 
-      style={[
-        styles.container,
-        {
-          transform: [
-            {
-              translateY: slideAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [300, 0]
-              })
-            }
-          ]
-        }
-      ]}
+    <ScrollView 
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 20 }}
     >
       
       
@@ -169,7 +160,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
       })}
       
    
-    </Animated.View>
+    </ScrollView>
   );
 };
 
@@ -181,8 +172,8 @@ VehicleList.propTypes = {
 
 const styles = StyleSheet.create({
   container: {
-    flex:1,
-    width:"100%",
+    flex: 1,
+    width: "100%",
     paddingVertical: 8,
     backgroundColor: colors.white,
   },

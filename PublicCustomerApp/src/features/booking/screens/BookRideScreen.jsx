@@ -8,7 +8,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import NavBar from '../../../components/NavBar';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
-import BottomSheet from '../../../components/BottomSheet';
+import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
 import MapIcon from '../../../components/Map/MapIcon';
 import CurrentLocationIcon from "../../../assets/icons/CurrentLocationIcon.svg"
 import AddStopIcon from "../../../assets/icons/AddStopIcon.svg"
@@ -29,6 +29,7 @@ import Schdule from '../../../assets/image/svgIcons/schdule.svg';
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
 import PaymentType from '../components/bookRide/PaymentType';
 import VehicleList from '../components/bookRide/VehicleList';
+import MapHeader from '../components/bookRide/MapHeader';
 import useRideVehicleStore from '../store/useRideVehicleStore'; 
 import vehicleType from '../types/vehicleType.json'
 import BookingOptions from '../components/bookRide/BookingOptions';
@@ -348,7 +349,12 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     const handleFemaleDriverToggle = () => {
       console.log("Female Driver option clicked")
-        };
+    };
+
+    const handleAddStop = () => {
+      goBack();
+      setStackScreen('WaypointScreen', {});
+    };
 
 const handleBackPress = () => {
     
@@ -392,21 +398,30 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 }
 
    </View>
-   <BottomSheet
-        minHeight={height*0.55}
-       
-        HeaderComponent={<BottomSheetHeader />}
+   <BottomSheetWrapper
+        snapPoints={['55%', '75%', '90%']}
+        index={0}
+        enablePanDownToClose={false}
+        enableOverDrag={true}
+        enableScroll={true}
+        handleComponent={MapHeader}
+        handleIndicatorStyle={{
+          backgroundColor: '#DEDEDE',
+          width: 50,
+          height: 4,
+        }}
+      
    >
+    {/* <BottomSheetHeader /> */}
  
-    <View style={styles.bottomSheetContent}>
-        <View style={styles.contentContainer}>
-            <RideInfo distance={rideDistance} duration={estimatedDuration} showPreference={setShowPreference}/>
-            <BookingOptions label={t('female_driver')} onPress={handleFemaleDriverToggle} />
-            <VehicleList isLoading={isLoading}  availableVehicles={availableVehicles}/>
+      
+      
+      <RideInfo distance={rideDistance} duration={estimatedDuration} showPreference={setShowPreference}/>
+      <BookingOptions label={t('female_driver')} onPress={handleFemaleDriverToggle} />
+      <VehicleList isLoading={isLoading}  availableVehicles={availableVehicles}/>
            
-        </View>
-    </View>
-   </BottomSheet>
+
+   </BottomSheetWrapper>
  
           <View style={styles.bottomContainer}>
               <TouchableOpacity style={styles.CouponContainer} onPress={handleCouponPress}>
