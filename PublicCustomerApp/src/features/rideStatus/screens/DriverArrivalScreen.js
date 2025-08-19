@@ -1,8 +1,7 @@
         import React, { useRef, useState,useEffect     } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Easing, Linking } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Linking } from 'react-native';
 import { Fonts, colors } from '../../../constants/constants';
 import { getVehicleImage } from '../types/vehicleImd';
-import AddressContainer from '../../../components/Trips/AddressContainer';
 import useTrackHook from '../hooks/useTrackHook';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -16,8 +15,10 @@ import {showNotification} from '../../../components/NotificationManger';
 import useMapStyleStore from '../../../store/useMapStyleStore';
 import { useTranslation } from 'react-i18next';
 import useWayPointReorderStore from '../../booking/store/useWayPointReorderStore';
+import TripDetailsModal from '../../../components/TripDetailsModal';
+import { height } from '../../../utils/Utils';
 
-  const DriverArrivalScreen = ({onCancel}) => {
+  const DriverArrivalScreen = ({onCancel,handleOverlay}) => {
   // Dummy data
   const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone} = useAssignedDriverInfoStore();
   const {stops,otp,duration,totalDistance,estimatedPickuoMins,vehicleType,estimatedFare} = useCurrentRideInfoStore();
@@ -147,29 +148,12 @@ import useWayPointReorderStore from '../../booking/store/useWayPointReorderStore
 
   // Animation state for trip details
   const [expanded, setExpanded] = useState(false);
-  const animation = useRef(new Animated.Value(0)).current;
-  const [showBottomSheet, setShowBottomSheet] = useState(false);
   const toggleExpand = () => {
-    setExpanded(prev => {
-      Animated.timing(animation, {
-        toValue: prev ? 0 : 1,
-        duration: 300,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: false,
-      }).start();
-      return !prev;
-    });
+    expanded ? handleOverlay('close') : handleOverlay('open');
+    setExpanded(prev => !prev);
   };
 
-  // Interpolate height for animation
-  const rideInfoHeight = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 250], // adjust 60 to fit your content
-  });
-  const chevronRotation = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '90deg'],
-  });
+  const chevronRotation = expanded ? '90deg' : '0deg';
 
   // Check if driver photo URL is valid
   const driverPhotoUri = driverPhoto && driverPhoto.trim() !== '' ? driverPhoto : null;
@@ -251,35 +235,29 @@ import useWayPointReorderStore from '../../booking/store/useWayPointReorderStore
           </Animated.View>
           </View>
         </TouchableOpacity>
-      {/* Animated Ride Info */}
-      
-   
-      <Animated.View style={[ { height: rideInfoHeight, overflow: 'hidden' }]}> 
-    
-    {expanded && (
-      <>
-      <AddressContainer directions={stops} edit={true} />
-      <View style={{ flexDirection: 'row', flex: 1 }}>
-        {/* <View style={styles.rideInfoItem}>
-          <Text style={styles.rideInfoLabel}>Arrival</Text>
-          <Text style={styles.rideInfoValue}>{estDropTime || '--'}</Text>
-        </View> */}
-        <View style={styles.rideInfoItem}>
-          <Text style={styles.rideInfoLabel}>{t('duration')}</Text>
-          <Text style={styles.rideInfoValue}>{duration || '--'} Min</Text>
+      {/* Trip Details Modal */}
+      <TripDetailsModal
+        visible={expanded}
+        onClose={toggleExpand}
+        stops={stops}
+        waitingForDriverApproval={waitingForDriverApproval}
+        height={height} // You can adjust this value or import height from utils
+      >
+        <View style={{ flexDirection: 'row', flex: 1, marginBottom: 20 }}>
+          <View style={styles.rideInfoItem}>
+            <Text style={styles.rideInfoLabel}>{t('duration')}</Text>
+            <Text style={styles.rideInfoValue}>{duration || '--'} Min</Text>
+          </View>
+          <View style={styles.rideInfoItem}>
+            <Text style={styles.rideInfoLabel}>{t('distance')}</Text>
+            <Text style={styles.rideInfoValue}>{totalDistance || '--'} Km</Text>
+          </View>
+          <View style={styles.rideInfoItem}>
+            <Text style={styles.rideInfoLabel}>{t('est_price')}</Text>
+            <Text style={styles.rideInfoValue}>₹{estimatedFare || '--'}</Text>
+          </View>
         </View>
-        <View style={styles.rideInfoItem}>
-          <Text style={styles.rideInfoLabel}>{t('distance')}</Text>
-          <Text style={styles.rideInfoValue}>{totalDistance || '--'} Km</Text>
-        </View>
-        <View style={styles.rideInfoItem}>
-          <Text style={styles.rideInfoLabel}>{t('est_price')}</Text>
-          <Text style={styles.rideInfoValue}>₹{estimatedFare || '--'}</Text>
-        </View>
-      </View>
-      </>
-    )}
-  </Animated.View>
+      </TripDetailsModal>
 
       {/* Action buttons */}
       <View style={styles.actionRow}>
@@ -320,7 +298,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
    
-    zIndex: 100,
+    zIndex: 0,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
@@ -10,12 +10,17 @@ import TripStats from '../components/TripStats';
 import PaymentDetails from '../components/PaymentDetails';
 import SupportSection from '../components/SupportSection';
 import AddressContainer from '../../../components/Trips/AddressContainer';
+import ReceiptScreen from './ReceiptScreen';
+import InvoiceScreen from './InvoiceScreen';
 import { Fonts, colors } from '../../../constants/constants';
 import { utils } from '../../../utils/Utils';
+import PropTypes from 'prop-types';
 
 const RideDetailScreen = ({ TripData }) => {
   const { t } = useTranslation();
-  const { setStackScreen,goBack } = useStackScreenStore();
+  const { goBack } = useStackScreenStore();
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
   
   console.log(JSON.stringify(TripData), "TripData");
   
@@ -29,6 +34,22 @@ const RideDetailScreen = ({ TripData }) => {
   const handleSupportPress = () => {
     // Handle support button press
     console.log('Support pressed');
+  };
+
+  const handleReceiptPress = () => {
+    setShowReceipt(true);
+  };
+
+  const handleReceiptClose = () => {
+    setShowReceipt(false);
+  };
+
+  const handleInvoicePress = () => {
+    setShowInvoice(true);
+  };
+
+  const handleInvoiceClose = () => {
+    setShowInvoice(false);
   };
 
   const formatDate = (timestamp) => {
@@ -92,24 +113,60 @@ const RideDetailScreen = ({ TripData }) => {
         />}
         
         <View style={styles.paymentMethodContainer}>
-          <Text style={styles.paymentMethodLabel}>{t('payment_method')}</Text>
-          <Text style={styles.paymentMethodValue}>{rideData.paymentMethod}</Text>
-        </View>
-        
-        <View style={styles.paymentStatusContainer}>
-          <Text style={styles.paymentStatusLabel}>{t('payment_status')}</Text>
+          <Text style={styles.paymentMethodLabel}>{t('payment_details')}</Text>
+          <View style={styles.paymentMethodKeyContainer}>
+            <Text style={styles.paymentMethodKey}>{t('payment_method')}</Text>
+            <Text style={styles.paymentMethodValue}>{rideData.paymentMethod}</Text>
+          </View>
+          <View style={styles.paymentMethodKeyContainer}>
+          <Text style={styles.paymentMethodKey}>{t('payment_status')}</Text>
           <Text style={[
             styles.paymentStatusValue, 
-            { color: rideData.passengerPaymentStatus === 'completed' ? colors.green : colors.orange }
+           
           ]}>
             {rideData.passengerPaymentStatus?.toUpperCase() || 'PENDING'}
           </Text>
+
+          </View>
+         
         </View>
         
-        <SupportSection onPress={handleSupportPress} />
+        
+        
+        {/* <SupportSection onPress={handleSupportPress} /> */}
+        
+        {/* Receipt Button */}
+        <View style={styles.actionButtonsContainer}>
+        <TouchableOpacity style={styles.receiptButton} onPress={handleReceiptPress}>
+          <Text style={styles.receiptButtonText}> {t('view_receipt')}</Text>
+        </TouchableOpacity>
+        
+        {/* Invoice Button */}
+        <TouchableOpacity style={styles.invoiceButton} onPress={handleInvoicePress}>
+          <Text style={styles.invoiceButtonText}>{t('show_invoice')}</Text>
+        </TouchableOpacity>
+        </View>
       </ScrollView>
+      
+      {/* Receipt Modal Overlay */}
+      <ReceiptScreen 
+        TripData={rideData}
+        visible={showReceipt}
+        onClose={handleReceiptClose}
+      />
+      
+      {/* Invoice Modal Overlay */}
+      <InvoiceScreen 
+        TripData={rideData}
+        visible={showInvoice}
+        onClose={handleInvoiceClose}
+      />
     </View>
   );
+};
+
+RideDetailScreen.propTypes = {
+  TripData: PropTypes.object,
 };
 
 const styles = StyleSheet.create({
@@ -138,9 +195,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   paymentMethodValue: {
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.medium,
     fontSize: 16,
-    color: colors.green,
+    color: colors.black,
   },
   paymentStatusContainer: {
     backgroundColor: colors.white,
@@ -159,10 +216,58 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   paymentStatusValue: {
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.medium,
     fontSize: 16,
     fontWeight: 'bold',
+    color: colors.black,
+    
   },
+  receiptButton: {
+    backgroundColor: colors.grey_xxdark,
+    borderRadius: 20,
+    padding: 16,
+    marginVertical: 10,
+    alignItems: 'center',
+   
+   flex:1
+  },
+  receiptButtonText: {
+    fontFamily: Fonts.medium,
+    fontSize: 16,
+    color: colors.white,
+  },
+  invoiceButton: {
+    backgroundColor: colors.black,
+    borderRadius: 20,
+    padding: 16,
+    marginVertical: 10,
+    alignItems: 'center',
+   
+    flex:1
+  },
+  invoiceButtonText: {
+    fontFamily: Fonts.medium,
+    fontSize: 16,
+    color: colors.white,
+  },
+  actionButtonsContainer:{
+    flexDirection:"row",
+    width:"100%",
+    flex:1,
+    gap:10
+  },
+  paymentMethodKeyContainer:{
+    flexDirection:"row",
+    alignItems:"center",
+    justifyContent:"space-between",
+    gap:10
+  },
+  paymentMethodKey:{
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: colors.grey_xxdark,
+  },
+  
 });
 
 export default RideDetailScreen;

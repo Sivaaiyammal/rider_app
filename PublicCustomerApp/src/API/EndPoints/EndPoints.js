@@ -3,7 +3,7 @@ import APIConfig from "../../Config/APIConfig";
 
 // request OTP
 export const requestOTP = async (payload) => {
-   const { data } = await apiClient.post(`/publicrides/customer/login?isdev=${true}`, payload);
+   const { data } = await apiClient.post(`/publicrides/customer/login`, payload);
   // const data = {
   //   success: true,
   //   message: 'OTP Sent',

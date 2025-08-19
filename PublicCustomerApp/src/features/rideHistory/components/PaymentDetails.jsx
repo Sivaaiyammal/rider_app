@@ -42,7 +42,7 @@ const PaymentDetails = ({
   
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{t('invoice')}</Text>
+      <Text style={styles.header}>{t('ride_bill')}</Text>
       {breakdownFare?.map((item, index) => type !== "fare" ? renderBreakdownItem(item, index) : renderFareBreakdown(item, index))}
       
       <View style={styles.row}>

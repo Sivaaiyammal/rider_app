@@ -9,6 +9,10 @@ const useWayPointReorderStore = create((set, get) => ({
   currentEditWaitWaypoint: null,
   isEditwaitingTime: false,
   waitingForDriverApproval:null ,
+  onGoingRideStops:null,
+  setOnGoingRideStops: (stops) => {
+    set({ onGoingRideStops: stops });
+  },
   
 
   // Actions

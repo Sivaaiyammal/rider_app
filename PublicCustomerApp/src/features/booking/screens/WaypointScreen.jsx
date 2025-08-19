@@ -21,15 +21,17 @@ import  LocationTypes  from '../types/LocationTypes';
 import { Fonts,colors } from '../../../constants/constants';
 import { getPreFinalFare,passangerStopChangeRequest } from '../../../API/EndPoints/EndPoints';
 import { use } from 'i18next';
+import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
 
-const WaypointScreen = ({stopsFromOnGoingRide=null,tripId}) => {
+const WaypointScreen = ({}) => {
+  const {tripId}=useCurrentRideInfoStore()
   const { t } = useTranslation();
   const [isLoading] = React.useState(false);
   const [showFareModal, setShowFareModal] = React.useState(false);
   const [fareData, setFareData] = React.useState(null);
   const [isFareLoading, setIsFareLoading] = React.useState(false);
   const {rideStartLocation,rideEndLocation,rideWayPoints,setRideStartLocation,setRideEndLocation,setRideWayPoints} =  useRideBookingLocationStore()
-  const {reOrderWaypoints,setReOrderWaypoints,setReachedStops,reachedStops,waitingForDriverApproval,setWaitingForDriverApproval} = useWayPointReorderStore()
+  const {reOrderWaypoints,setReOrderWaypoints,setReachedStops,reachedStops,waitingForDriverApproval,setWaitingForDriverApproval,onGoingRideStops} = useWayPointReorderStore()
   const [distance,setDistance] = React.useState(0)
   const [duration,setDuration] = React.useState(0)
   const { goBack,setStackScreen } = useStackScreenStore();
@@ -51,11 +53,13 @@ const WaypointScreen = ({stopsFromOnGoingRide=null,tripId}) => {
     
   };
 
+  
+
   useEffect(() => {
 
     if (!reOrderWaypoints.length) {
       let Arr = []
-      if (!stopsFromOnGoingRide) {
+      if (!onGoingRideStops) {
         if (rideStartLocation) {
           Arr.push(rideStartLocation)
         }
@@ -74,13 +78,9 @@ const WaypointScreen = ({stopsFromOnGoingRide=null,tripId}) => {
           id: waypoint.id || `waypoint-${index}-${Date.now()}`,
           type: index === 0 ? LocationTypes.START_LOCATION : LocationTypes.WAYPOINT_LOCATION
         }));
-
-
-        console.log("transformedData", transformedData)
-
         setReOrderWaypoints(transformedData)
       } else {
-        Arr=stopsFromOnGoingRide
+        Arr=onGoingRideStops
         const reachedStops = Arr.filter((waypoint) => waypoint.isReached).map(item=>{
           return{
             ...item,
@@ -220,7 +220,7 @@ useEffect(() => {
     waitingTime:TotalwaitingTime,
    }
 
-   console.log("Payload",Payload)
+   
 
    setIsFareLoading(true)
    try {
@@ -304,6 +304,7 @@ useEffect(() => {
       stops:finalWaypoints,
       fare:fareData.fare
     }
+    
 
     const res = await passangerStopChangeRequest(finalPayload)
 
@@ -326,10 +327,10 @@ useEffect(() => {
         <TouchableOpacity
           style={[styles.confirmButton, isLoading && styles.confirmButtonDisabled]}
           disabled={isLoading}
-          onPress={stopsFromOnGoingRide?getFare:onConfirmRoute}
+          onPress={onGoingRideStops?getFare:onConfirmRoute}
         >
           <Text style={styles.confirmButtonText}>
-            {isLoading ? t('confirming') : stopsFromOnGoingRide ? t('confirm_edited_route'): t('confirm_route')}
+            {isLoading ? t('confirming') : onGoingRideStops ? t('confirm_edited_route'): t('confirm_route')}
           </Text>
         </TouchableOpacity>
       </View>
@@ -394,7 +395,3 @@ const styles = StyleSheet.create({
 });
 
 export default WaypointScreen;
-
-WaypointScreen.propTypes = {
-  stopsFromOnGoingRide: PropTypes.array,
-};

@@ -10,6 +10,7 @@ import  useCurrentRideInfoStore  from '../../features/rideStatus/store/useCurren
 
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import { useTranslation } from 'react-i18next';
+import  useWayPointReorderStore from '../../features/booking/store/useWayPointReorderStore';
 
 const AddressContainer = ({ directions,edit=false ,live=false}) => {
 
@@ -37,9 +38,10 @@ const AddressContainer = ({ directions,edit=false ,live=false}) => {
     const {setStackScreen} = useStackScreenStore()
     const {tripId} = useCurrentRideInfoStore()
     const {t} = useTranslation();
+    const {setOnGoingRideStops} = useWayPointReorderStore()
   const handleStopEdit = (item) => {
+    setOnGoingRideStops(directions)
     setStackScreen('WaypointScreen',{
-      stopsFromOnGoingRide:directions,
       tripId:tripId
     })
   }

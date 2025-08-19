@@ -144,9 +144,6 @@ const WaypointContainer = () => {
     handleAddWaypoint(item,index)
     goBack()
     
-
-    
-    
   }
 
 
@@ -181,7 +178,31 @@ const WaypointContainer = () => {
     setIsEditwaitingTime(false);
     setCurrentEditWaitWaypoint(null);
   }
+
+  const handleReplaceWaypoint = (item,index) => {
   
+    const updatedWaypoints = [...reOrderWaypoints];
+    updatedWaypoints[index-1] = item;
+    setReOrderWaypoints(updatedWaypoints);
+  }
+
+  const onSearchReplaceWaypointCallback = (item,searchType,index) => {
+    console.log("item",item)
+    console.log("index",index)
+    handleReplaceWaypoint(item,index)
+    goBack()
+  }
+
+  const handleWaypointPress = (index) => {
+    setStackScreen("SearchScreen",{
+      onSearchClick:onSearchReplaceWaypointCallback,
+      index:index,
+      searchType:LocationTypes.WAYPOINT_LOCATION,
+     
+      title:index == 0 ? "Add a Pickup Location" :index == finalData.length-1 ? "Add a Drop Location" : "Add a Stop"
+    })
+  }
+
   const renderItem = useCallback(({ item, drag, isActive ,isReached}) => {
     const index = finalData.findIndex(i => i === item);
     
@@ -221,7 +242,7 @@ const WaypointContainer = () => {
       dataItem.address === item.address
     );
 
-    const isLastWaypoint = item.type === LocationTypes.WAYPOINT_LOCATION && index === finalData.length - 1;
+    const isLastWaypoint = index === finalData.length - 1;
     const isStartLocation = index == 0
     return (
       <View style={[styles.row]}>
@@ -229,6 +250,9 @@ const WaypointContainer = () => {
           style={styles.draggableArea}
           onLongPress={drag}
           delayLongPress={100}
+          onPress={
+          ()=>handleWaypointPress(index)
+          }
         >
           <View style={[styles.AddressContainer,isActive && styles.draggingItem,isReached && {backgroundColor:"grey"}]}>
           <View style={styles.labelCol}>

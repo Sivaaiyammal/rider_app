@@ -1,5 +1,5 @@
-import {Text, TextInput, TouchableOpacity, View} from 'react-native';
-import React, {useRef, useState, useCallback, useEffect} from 'react';
+import {Text, TouchableOpacity, View, DeviceEventEmitter, PermissionsAndroid} from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
 
 import {loginStyles} from '../../styles/UserStyles';
 import OTPTextInput from 'react-native-otp-textinput';
@@ -8,7 +8,7 @@ import {CommonActions, useNavigation} from '@react-navigation/native';
 import {showNotification} from '../../components/NotificationManger';
 import {DataStore} from '../../controllers/DataStore';
 import useUserInfoStore from '../../store/useUserInfoStore';
-import {verifyOTPMutation} from '../../API/APICalls/UserAPICalls';
+import {requestOTPMutation, verifyOTPMutation} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import messaging from '@react-native-firebase/messaging';
@@ -26,18 +26,45 @@ const maskPhoneNumber = (phoneNumber) => {
 
 const OTPScreen = ({route}) => {
   const navigation = useNavigation();
-  const [loginPhoneNumber, setloginPhoneNumber] = useState(
+  const [loginPhoneNumber] = useState(
     route.params.phoneNumber,
   );
-  const [countryCode, setCountryCode] = useState(
+  const [countryCode] = useState(
     route.params.countryCode,
   );
   const [otpInput, setOtpInput] = useState('');
 
   const [timer, setTimer] = useState(30);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [hasReadSmsPermission, setHasReadSmsPermission] = useState(false);
 
   const {setID, setUserdetails} = useUserInfoStore();
+  
+  // Add ref for OTP input to enable auto-fill
+  const otpRef = useRef(null);
+
+  // Request SMS permission
+  const requestSmsPermission = async () => {
+    try {
+      const permission = await PermissionsAndroid
+        .request(PermissionsAndroid.PERMISSIONS.RECEIVE_SMS, {
+          title: "SMS Permission",
+          message: "We need access to read OTP messages for verification.",
+          buttonNeutral: "Ask Me Later",
+          buttonNegative: "Deny",
+          buttonPositive: "OK"
+        });
+                
+      setHasReadSmsPermission(permission);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // Check and request SMS permission on component mount
+  useEffect(() => {
+    requestSmsPermission();
+  }, []);
 
   useEffect(() => {
     if (timer > 0) {
@@ -119,6 +146,69 @@ const OTPScreen = ({route}) => {
     }
   };
 
+
+  useEffect(()=>{
+    if(otpInput.length === 6){
+      verifyOtp()
+    }
+  },[otpInput])
+  const handleResendSuccess = (data) => {
+    if(data.success){
+      showNotification('OTP Resend', 'OTP Resend Successfully', 'success');
+      console.log("handleResendSuccess",data)
+    }else{
+      showNotification('OTP Resend', "Failed to resend OTP", 'danger');
+    }
+  };
+  const {mutate: requestOTPMutate} = requestOTPMutation(
+    handleResendSuccess,
+  );
+
+  const resendOTP = async () => {
+    const payload = {
+      phone: `+${countryCode}${loginPhoneNumber}`,
+     
+    };
+    DataStore.storeData('login_phoneNumber', loginPhoneNumber);
+    requestOTPMutate(payload);
+    setTimer(30);
+    setIsButtonDisabled(true);
+  };
+
+  // Add SMS auto-fill functionality
+  useEffect(() => {
+    // Only set up SMS listener if permission is granted
+    if (!hasReadSmsPermission) {
+      return;
+    }
+
+    let subscriber = DeviceEventEmitter.addListener(
+      'onSMSReceived',
+      message => {
+        try {
+          const {messageBody} = JSON.parse(message);
+          const otpMatch = messageBody.match(/\b\d{6}\b/);
+          if (otpMatch) {
+            const otp = otpMatch[0];
+            if (otpRef.current) {
+              otpRef.current.setValue(otp);
+            }
+            setOtpInput(otp);
+           
+          } else {
+            console.log("No OTP found in the message.");
+          }
+        } catch (error) {
+          console.log("Error parsing SMS message:", error);
+        }
+      },
+    );
+
+    return () => {
+      subscriber.remove();
+    };
+  }, [hasReadSmsPermission]);
+
   return (
     <View style={loginStyles.screen}>
       {isLoading && <FullScreenLoader />}
@@ -148,8 +238,11 @@ const OTPScreen = ({route}) => {
         An OTP has been sent to mobile number
       </Text>
       <Text style={loginStyles.phoneTxt}>{maskPhoneNumber(loginPhoneNumber)}</Text>
+      
+
       <View style={loginStyles.otpContainer}>
         <OTPTextInput
+          ref={otpRef}
           inputCount={6}
           textInputStyle={{
             width: 40,
@@ -173,7 +266,7 @@ const OTPScreen = ({route}) => {
           ]}
         />
       </View>
-      <TouchableOpacity onPress={()=>console.log('hari-->>resendPressed-->>')}>
+      <TouchableOpacity onPress={()=>resendOTP()}>
       <Text style={loginStyles.resendOTP}>Resend OTP {isButtonDisabled ? `in ${timer}` : null}</Text>
       </TouchableOpacity>
       <TouchableOpacity style={loginStyles.otpBtn} onPress={() => verifyOtp()}>

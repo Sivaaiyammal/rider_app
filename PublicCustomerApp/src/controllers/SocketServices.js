@@ -84,7 +84,7 @@ class WSService {
 
       this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
       if(data?.tripData?.stops){
-        console.log("data?.tripData?.Sto",this.useCurrentRideInfoStore.getState().stops)
+        this.useCurrentRideInfoStore.getState().setStops(data?.tripData?.stops)
       }
       if(data?.tripData?.estimatedFare){
         this.useCurrentRideInfoStore.getState().setEstimatedFare(data?.tripData?.estimatedFare);

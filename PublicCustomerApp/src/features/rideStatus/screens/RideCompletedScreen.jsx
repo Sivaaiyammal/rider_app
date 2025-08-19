@@ -90,7 +90,7 @@ const RideCompletedScreen = ({type}) => {
           subtitle={type !== TripStatus.CANCELLED ? t('please_proceed_with_the_payment') : t('kindly_pay_the_fare_for_the_distance_travelled')}
         />
         <Text style={styles.fare}>₹ {fare}</Text>
-        <Text style={styles.info}>{utils.formatMinutesToReadable(finalDuration)}  .  {finalDistance.toFixed(2)} Km</Text>
+        <Text style={styles.info}>{utils.formatMinutesToReadable(finalDuration)}  .  {finalDistance.toFixed(1)} Km</Text>
         {(
           <Animated.View 
             style={[

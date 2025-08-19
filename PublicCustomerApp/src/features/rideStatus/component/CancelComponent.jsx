@@ -2,16 +2,37 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { Fonts } from '../../../constants/constants';
 import { useTranslation } from 'react-i18next';
-const REASONS = [
+import { TripStatus } from '../types/TripStatus';
+const REASONS = {'PENDING':[
   'driver_is_taking_too_long',
   'driver_asked_to_cancel',
   'driver_not_responding',
   'booked_by_mistake',
   'fare_is_too_high_surge',
     'other',
-];
+],
+'ONGOING':[
+  'driver_is_taking_too_long',
+  'driver_asked_to_cancel',
+  'driver_not_responding',
+  'booked_by_mistake',
+  'fare_is_too_high_surge',
+  'other',
+],
 
-const CancelComponent = ({ onClose, onCancel, loading }) => {
+}
+
+const getReasons = (rideStatus) => {
+  if(rideStatus === TripStatus.PENDING || rideStatus === TripStatus.ACCEPTED){
+    return REASONS.PENDING;
+  }else if(rideStatus === TripStatus.PICKEDUP){
+    return REASONS.ONGOING;
+  }
+}
+
+
+
+const CancelComponent = ({ onClose, onCancel, loading,rideStatus }) => {
   const [selected, setSelected] = useState('');
   const [otherReason, setOtherReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -51,7 +72,7 @@ const CancelComponent = ({ onClose, onCancel, loading }) => {
       <Text style={styles.title}>{t('why_are_you_cancelling_the_trip')}</Text>
       <View style={styles.box}>
         <ScrollView>
-          {REASONS.map((reason) => (
+          {getReasons(rideStatus).map((reason) => (
             <TouchableOpacity
               key={reason}
               style={styles.row}

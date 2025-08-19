@@ -24,8 +24,13 @@ import useRideMatching  from '../../hooks/useRideMatching';
 import  useUserInfoStore  from '../../store/useUserInfoStore';
 import useCalculateDistance from './hooks/useCalculateDistance';
 import { useTranslation } from 'react-i18next';
+import Overlay from '../../components/Overlay';
+
 const RideStatus = () => {
+  
   const { t } = useTranslation();
+  const [showOverlay, setShowOverlay] = useState(false);
+
   const { tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled} = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const {goBack,stackScreen,setStackScreen} = useStackScreenStore();
@@ -34,9 +39,18 @@ const RideStatus = () => {
   const {id:userId} = useUserInfoStore();
   const [isCalculateDistance,setIsCalculateDistance] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
-  const {gpsDistance, gpsDuration, loading} = useCalculateDistance({ tripId: '68870e49ddba87f79046396b', startTime: 1717190400000, endTime: new Date().setHours(23, 59, 59, 999),enabled: isCalculateDistance });
+  const {gpsDistance, gpsDuration, loading} = useCalculateDistance({ tripId:tripId , startTime: 1717190400000, endTime: new Date().setHours(23, 59, 59, 999),enabled: isCalculateDistance});
 
 
+  const handleOverlay = (action) => {
+    console.log('action',action);
+    
+    if(action === 'close'){
+      setShowOverlay(false);
+    }else if(action === 'open'){
+      setShowOverlay(true);
+    }
+  };
 
   const CancelRide = async (payload) => {
     try{
@@ -121,9 +135,9 @@ const RideStatus = () => {
     console.log('onGoingTripCancelled',onGoingTripCancelled);
     switch (tripStatus) {
       case TripStatus.PICKEDUP:
-        return <OnRideScreen onCancel={()=>{setShowBottomSheet(true)}} onPaymentMethodChange={()=>{setIspaymentMethodChangeShow(true)}} />;
+        return <OnRideScreen onCancel={()=>{setShowBottomSheet(true)}} onPaymentMethodChange={()=>{setIspaymentMethodChangeShow(true)}}  handleOverlay={handleOverlay}/>;
       case TripStatus.ACCEPTED:
-        return <DriverArrivalScreen onCancel={()=>{setShowBottomSheet(true)}} />;
+        return <DriverArrivalScreen onCancel={()=>{setShowBottomSheet(true)}}   handleOverlay={handleOverlay}/>;
       case TripStatus.DROPPED:
         return <CompletedRideScreen />;
       case TripStatus.CANCELLED:
@@ -189,10 +203,19 @@ const RideStatus = () => {
   
 
     return <>
+    <Overlay
+  visible={showOverlay}
+  onPress={handleOverlay}
+  backgroundColor="rgba(0, 0, 0, 0.7)"
+  zIndex={0}
+  
+>
+
+</Overlay>
         <NavBar title={t(getTitle())} />
         <View style={styles.container}>
-            <View style={styles.containerTop}>  
-                <View style={styles.containerTop_inner}>
+            <View style={[styles.containerTop,showOverlay && {display:'none'}]}>  
+                <View style={[styles.containerTop_inner]}>
                     <MapIcon />
                     <TouchableOpacity style={styles.currentLocationIcon} onPress={() => {
                         locationTask.getCurrentLocation()
@@ -209,7 +232,7 @@ const RideStatus = () => {
         {
       showBottomSheet &&
       <AnimatedBottomSheetWrapper onClose={()=>{setShowBottomSheet(false)}}>
-        <CancelComponent onClose={()=>{setShowBottomSheet(false)}} onCancel={handleCancel}  loading={loading} />
+        <CancelComponent onClose={()=>{setShowBottomSheet(false)}} onCancel={handleCancel}  loading={loading} rideStatus={tripStatus} />
       </AnimatedBottomSheetWrapper>
       
     }
@@ -238,10 +261,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   containerTop: {
-    
-   
-   
-    zIndex: 100,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },

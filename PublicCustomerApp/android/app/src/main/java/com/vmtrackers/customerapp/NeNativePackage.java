@@ -10,10 +10,11 @@ import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.uimanager.ViewManager;
 
 public class NeNativePackage implements ReactPackage {
-    private ReactApplicationContext reactContext;
+    // Remove the reactContext field since it's not used
+    // private ReactApplicationContext reactContext;
 
-    public NeNativePackage(ReactApplicationContext reactContext) {
-        this.reactContext = reactContext;
+    public NeNativePackage() {
+        // No context needed in constructor
     }
 
     // Implement the methods required by the ReactPackage interface

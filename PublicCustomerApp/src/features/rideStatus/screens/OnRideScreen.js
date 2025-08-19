@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
+import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { getVehicleImage } from '../types/vehicleImd';
 import {Fonts} from '../../../constants/constants';
-import AddressContainer from '../../../components/Trips/AddressContainer';
+
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import useAssignedDriverInfoStore from '../store/useAssignedDriverInfoStore';
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
@@ -13,21 +14,21 @@ import { colors } from '../../../constants/constants';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import useWayPointReorderStore from '../../../features/booking/store/useWayPointReorderStore';
 import { useTranslation } from 'react-i18next';
-const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
+import {height} from "../../../utils/Utils";
+import TripDetailsModal from '../../../components/TripDetailsModal';
+const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {driverName,vehicleNumber,model,brand,driverPhoto} = useAssignedDriverInfoStore();
   const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedPickuoMins,estimatedFare} = useCurrentRideInfoStore();
   const {waitingForDriverApproval} = useWayPointReorderStore();
-  useEffect(()=>{
-    console.log("waitingForDriverApproval",waitingForDriverApproval)
-  },[waitingForDriverApproval])
+  
   const {setMapStyle} = useMapStyleStore();
   const {t} = useTranslation();
   const { cleanupMarkers } = useTrackHook('on-ride');
 
   
   
-  const [expanded, setExpanded] = useState(false);
   const animation = useRef(new Animated.Value(0)).current;
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -36,15 +37,41 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
   }, [cleanupMarkers]);
 
   const toggleExpand = () => {
-    setExpanded(prev => {
-      Animated.timing(animation, {
-        toValue: prev ? 0 : 1,
-        duration: 300,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: false,
-      }).start();
-      return !prev;
-    });
+    const currentValue = animation._value;
+    const targetValue = currentValue === 0 ? 1 : 0;
+    
+    // Update modal visibility state
+    setIsModalVisible(targetValue === 1);
+    
+    // Call handleOverlay callback
+    if (targetValue === 1) {
+      handleOverlay('open');
+    } else {
+      handleOverlay('close');
+    }
+    
+    Animated.timing(animation, {
+      toValue: targetValue,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const onGestureEvent = (event) => {
+    const { translationY, state } = event.nativeEvent;
+    
+    if (state === State.ACTIVE) {
+      // If swiping down and expanded, minimize
+      if (translationY > 50 && animation._value === 1) {
+        Animated.timing(animation, {
+          toValue: 0,
+          duration: 200,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: false,
+        }).start();
+      }
+    }
   };
 
   useEffect(() => {
@@ -61,71 +88,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
     }
   }, [])
 
-  const AnimatedDots = () => {
-    const dot1 = useRef(new Animated.Value(0)).current;
-    const dot2 = useRef(new Animated.Value(0)).current;
-    const dot3 = useRef(new Animated.Value(0)).current;
-  
-    useEffect(() => {
-      const animateDots = () => {
-        Animated.sequence([
-          Animated.parallel([
-            Animated.timing(dot1, {
-              toValue: 1,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(dot2, {
-              toValue: 0,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(dot3, {
-              toValue: 0,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.parallel([
-            Animated.timing(dot1, {
-              toValue: 0,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(dot2, {
-              toValue: 1,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(dot3, {
-              toValue: 0,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.parallel([
-            Animated.timing(dot1, {
-              toValue: 0,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(dot2, {
-              toValue: 0,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(dot3, {
-              toValue: 1,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-          ]),
-        ]).start(() => animateDots());
-      };
-  
-      animateDots();
-    }, [dot1, dot2, dot3]);
-  }
+
 
  
   const chevronRotation = animation.interpolate({
@@ -150,7 +113,8 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
         
     </View>
 
-    <View style={[styles.root,{backgroundColor:'white'}]}>
+    <PanGestureHandler onGestureEvent={onGestureEvent}>
+      <View style={[styles.root,{backgroundColor:'white'}]}>
 
       {/* Card */}
      
@@ -194,30 +158,23 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
 
        
 
-        {/* Trip Details row with chevron */}
+                {/* Trip Details row with chevron */}
         <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
           <Text style={styles.tripDetailsLabel}>{t('trip_details')}</Text>
           <View style={{flexDirection:"row",alignItems:"center",gap:10}}>
           {
             waitingForDriverApproval === "PENDING" &&
             <View style={styles.driverWaitingApprovalContainer}>
-                <Text style={styles.driverWaitingApprovalText}>{t('waiting_for_driver_approval')}</Text>
-                <AnimatedDots />
-            </View>
-          }
+                <View style={styles.updateIconContainer}>
+                  </View>
+                  <Icon name="update" size={25} color={colors.grey_xxdark} />
+              </View>
+            }
           <Animated.View style={{ transform: [{ rotate: chevronRotation }] }}>
             <Icon name="keyboard-arrow-right" size={25} color="#000" />
           </Animated.View>
           </View>
         </TouchableOpacity>
-
-        {
-          expanded  && (
-            <View style={{width: "100%", paddingHorizontal: 20}}>
-            <AddressContainer directions={stops} edit={true} live={true} />
-          </View>
-          )
-        }
 
        
 
@@ -238,6 +195,16 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel}) => {
 
         </View>
       </View>
+    </PanGestureHandler>
+
+    {/* Bottom Modal for Trip Details */}
+    <TripDetailsModal
+      visible={isModalVisible}
+      onClose={toggleExpand}
+      stops={stops}
+      waitingForDriverApproval={waitingForDriverApproval}
+      height={height}
+    />
     
     </>
   );
@@ -499,12 +466,12 @@ const styles = StyleSheet.create({
    
     alignItems:'center',
     justifyContent:'center',
-    padding:10,
-    backgroundColor: colors.yellow_xxlight,
+   
+    padding:5,
 borderRadius: 12,
 flexDirection:"row",
 
-gap:10
+
 
 
 },
@@ -526,6 +493,19 @@ dot: {
   backgroundColor: colors.orange,
   marginHorizontal: 4,
 },
-});
+updateIconContainer:{
+  position:'absolute',
+  top:0,
+  right:3,
+  backgroundColor:'red',
+  padding:3,
+
+ 
+  borderRadius:10
+  },
+
+
+
+  });
 
 export default OnRideScreen;
