@@ -65,9 +65,13 @@ export const bookRide = async (payload)=> {
 // cancel Ride
 
 
-export const getUserStats = async ()=> {
-  const {data} = await apiClient.get('/publicrides/customer/getUserStats')
-  return data
+export const getUserStats = async (location, currentTripId) => {
+  let url = `/publicrides/customer/getUserStats?latitude=${location[1]}&longitude=${location[0]}`;
+  if (currentTripId !== null && currentTripId !== undefined) {
+    url += `&currentTripId=${currentTripId}`;
+  }
+  const { data } = await apiClient.get(url);
+  return data;
 }
 
 export const cancelRide = async (payload)=> {
@@ -131,4 +135,7 @@ export const deleteAccount = async (payload) => {
   return data
 }
 
-
+  export const getTripDetails = async (tripId) => {
+    const {data} = await apiClient.get(`/publicrides/customer/getTripPaymentDetails?tripId=${tripId}`)
+    return data
+  }

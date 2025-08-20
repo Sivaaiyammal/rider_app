@@ -3,6 +3,8 @@ import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import useBookingService from '../services/useBookingService';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
 import { setDummyDriverInfo } from '../../rideStatus/store/useAssignedDriverInfoStore';
+import { DataStore } from '../../../controllers/DataStore';
+import PREF from '../../../storage/PREF';
 
 /**
  * Simple hook for booking trips with navigation handling
@@ -49,6 +51,7 @@ const useBookTrip = () => {
 
       
       if(result?.success && result?.trip){
+        await DataStore.storeData(PREF.CURRENT_TRIP, result.trip?._id);
         setCurrentRideInfo(result.trip);
         setStackScreen('RideStatus', {
         });

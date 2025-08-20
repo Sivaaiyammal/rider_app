@@ -47,6 +47,9 @@ RideInfo.propTypes = {
 
 const styles = StyleSheet.create({
   container: {
+    position:"sticky",
+    top:0,
+    
     flexDirection: 'row',
     justifyContent: 'space-between',
     zIndex:1000,

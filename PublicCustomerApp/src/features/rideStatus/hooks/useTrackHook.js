@@ -95,7 +95,7 @@ const useTrackHook = (screenMode = 'arrival') => {
       'Driver',
       driverLongitude,
       driverLatitude,
-      vehicleMarkerType,
+      vehicleMarkerType.toLowerCase() ,
       48,
       false,
       driverAngle || 0

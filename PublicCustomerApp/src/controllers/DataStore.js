@@ -11,6 +11,7 @@ const ALLOWED_KEYS = [
   'IS_FIRST',
   'IsDefault',
   'recentSearches',
+  'currentTrip',
 ]
 
 // const KEYS_TO_CLEAR_ON_SESSION_END = [

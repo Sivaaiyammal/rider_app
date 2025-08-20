@@ -1,86 +1,53 @@
-import React, { useCallback, useMemo, useRef, forwardRef } from 'react';
-import { StyleSheet, ScrollView } from 'react-native';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import { height } from '../utils/Utils';
+import React, { useMemo, forwardRef } from 'react';
+import { StyleSheet, View } from 'react-native';
+import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import PropTypes from 'prop-types';
 
 const BottomSheetWrapper = forwardRef(({
   children,
   snapPoints = ['25%', '50%', '90%'],
   index = 1,
-  onChange,
-  onAnimate,
   enablePanDownToClose = false,
   enableOverDrag = true,
-  enableHandlePanningGesture = true,
-  enableContentPanningGesture = true,
-  enableDynamicSizing = false,
   enableScroll = false,
-  animatedIndex,
-  animatedPosition,
-  handleHeight,
+  enableDynamicSizing = false,
   handleIndicatorStyle,
-  handleStyle,
-  backgroundStyle,
-  containerStyle,
-  style,
   handleComponent,
+  style,
+  isLoading = false,
   ...props
 }, ref) => {
-  // refs
-  const bottomSheetRef = useRef(null);
-
   // variables
   const snapPointsArray = useMemo(() => snapPoints, [snapPoints]);
 
-  // callbacks
-  const handleSheetChanges = useCallback((index) => {
-    console.log('handleSheetChanges', index);
-    onChange?.(index);
-  }, [onChange]);
-
-  const handleAnimate = useCallback((fromIndex, toIndex) => {
-    console.log('handleAnimate', fromIndex, toIndex);
-    onAnimate?.(fromIndex, toIndex);
-  }, [onAnimate]);
+  // Don't render scroll view until content is ready
+  const shouldRenderScrollView = enableScroll && !isLoading && children;
 
   return (
     <BottomSheet
-      ref={ref || bottomSheetRef}
+      ref={ref}
       index={index}
       snapPoints={snapPointsArray}
-      onChange={handleSheetChanges}
-      onAnimate={handleAnimate}
       enablePanDownToClose={enablePanDownToClose}
       enableOverDrag={enableOverDrag}
-      enableHandlePanningGesture={enableHandlePanningGesture}
-      enableContentPanningGesture={enableContentPanningGesture}
+      enableScroll={shouldRenderScrollView}
       enableDynamicSizing={enableDynamicSizing}
-      animatedIndex={animatedIndex}
-      animatedPosition={animatedPosition}
-      handleHeight={handleHeight}
       handleIndicatorStyle={handleIndicatorStyle}
-      handleStyle={handleStyle}
-      backgroundStyle={backgroundStyle}
-      containerStyle={containerStyle}
       handleComponent={handleComponent}
       style={[styles.bottomSheet, style]}
       {...props}
     >
-      {enableScroll ? (
-        <ScrollView 
-          style={styles.contentContainer}
+      {shouldRenderScrollView ? (
+        <BottomSheetScrollView 
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
-          nestedScrollEnabled={true}
         >
           {children}
-        </ScrollView>
+        </BottomSheetScrollView>
       ) : (
-        <BottomSheetView 
-          style={styles.contentContainer}
-          enableContentPanningGesture={true}
-        >
+        <View style={styles.contentContainer}>
           {children}
-        </BottomSheetView>
+        </View>
       )}
     </BottomSheet>
   );
@@ -97,13 +64,43 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
     backgroundColor: 'white',
-    padding: 10,
   },
   contentContainer: {
     flex: 1,
+    backgroundColor: 'white',
+    minHeight: 200, // Ensure minimum height for content
   },
-
+  scrollContent: {
+    paddingHorizontal: 10,
+    flexGrow: 1,
+    backgroundColor: 'white',
+    minHeight: 200, // Ensure minimum height for scroll content
+  },
 });
+
+BottomSheetWrapper.propTypes = {
+  children: PropTypes.node,
+  snapPoints: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
+  index: PropTypes.number,
+  enablePanDownToClose: PropTypes.bool,
+  enableOverDrag: PropTypes.bool,
+  enableScroll: PropTypes.bool,
+  enableDynamicSizing: PropTypes.bool,
+  handleIndicatorStyle: PropTypes.object,
+  handleComponent: PropTypes.element,
+  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  isLoading: PropTypes.bool,
+};
+
+BottomSheetWrapper.defaultProps = {
+  snapPoints: ['25%', '50%', '90%'],
+  index: 1,
+  enablePanDownToClose: false,
+  enableOverDrag: true,
+  enableScroll: false,
+  enableDynamicSizing: false,
+  isLoading: false,
+};
 
 BottomSheetWrapper.displayName = 'BottomSheetWrapper';
 

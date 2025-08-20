@@ -15,6 +15,8 @@ import InvoiceScreen from './InvoiceScreen';
 import { Fonts, colors } from '../../../constants/constants';
 import { utils } from '../../../utils/Utils';
 import PropTypes from 'prop-types';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const RideDetailScreen = ({ TripData }) => {
   const { t } = useTranslation();
@@ -99,21 +101,28 @@ const RideDetailScreen = ({ TripData }) => {
           vehicleModel={rideData.driverInfo?.vehicleModel} 
           vehicleNumber={rideData.driverInfo?.vehicleNumber} 
         />
+
+        <View style={{marginVertical:20}}>
         
         <TripStats 
+          isNotCompleted={rideData?.status != "COMPLETED" && rideData?.status != "DIVERGED"}
           totalDistance={rideData.finalDistance || rideData.estimatedDistance} 
           totalDuration={rideData.finalDuration || rideData.estimatedDuration} 
           totalFare={rideData.fareDetails?.fare} 
         />
-        
-       {isFareCalculated && <PaymentDetails 
+        </View>
+       {/* {isFareCalculated && <PaymentDetails 
           finalFare={rideData.fareDetails?.fare || rideData.estimatedFare} 
           breakdownFare={BreakdownFare}
-          type={rideData?.customerInvoice}
-        />}
+          
+        />} */}
         
         <View style={styles.paymentMethodContainer}>
           <Text style={styles.paymentMethodLabel}>{t('payment_details')}</Text>
+          <View style={styles.paymentMethodKeyContainer}>
+            <Text style={styles.paymentMethodKey}>{t('trip_fare')}</Text>
+            <Text style={styles.paymentMethodValue}> ₹ {rideData.fareDetails?.fare || "00.00"}</Text>
+          </View>
           <View style={styles.paymentMethodKeyContainer}>
             <Text style={styles.paymentMethodKey}>{t('payment_method')}</Text>
             <Text style={styles.paymentMethodValue}>{rideData.paymentMethod}</Text>
@@ -121,7 +130,7 @@ const RideDetailScreen = ({ TripData }) => {
           <View style={styles.paymentMethodKeyContainer}>
           <Text style={styles.paymentMethodKey}>{t('payment_status')}</Text>
           <Text style={[
-            styles.paymentStatusValue, 
+            styles.paymentMethodValue, 
            
           ]}>
             {rideData.passengerPaymentStatus?.toUpperCase() || 'PENDING'}
@@ -136,28 +145,51 @@ const RideDetailScreen = ({ TripData }) => {
         {/* <SupportSection onPress={handleSupportPress} /> */}
         
         {/* Receipt Button */}
-        <View style={styles.actionButtonsContainer}>
+       {(rideData?.status == "COMPLETED" || rideData?.status == "DIVERGED" )&& <View style={styles.actionButtonsContainer}>
         <TouchableOpacity style={styles.receiptButton} onPress={handleReceiptPress}>
+          <MaterialIcons name="receipt" size={20} color={colors.black} />
           <Text style={styles.receiptButtonText}> {t('view_receipt')}</Text>
         </TouchableOpacity>
         
         {/* Invoice Button */}
         <TouchableOpacity style={styles.invoiceButton} onPress={handleInvoicePress}>
+          <FontAwesome5 name="file-invoice" size={20} color={colors.white} />
           <Text style={styles.invoiceButtonText}>{t('show_invoice')}</Text>
         </TouchableOpacity>
         </View>
+        }
       </ScrollView>
       
       {/* Receipt Modal Overlay */}
       <ReceiptScreen 
-        TripData={rideData}
+         rideId={rideData?.rideId}
+         tripFare={rideData.fareDetails?.fare}
+         tripDistance={rideData.finalDistance || rideData.estimatedDistance}
+         tripDuration={rideData.finalDuration || rideData.estimatedDuration}
+         driverDetails={rideData.driverInfo}
+         vehicleDetails={rideData.driverInfo}
+         tripStops={rideData.stops}
+         bookingTime={rideData.bookingTime}
+         fareDetails={rideData.fareDetails}
+         paymentMethod={rideData.paymentMethod}
+         paymentStatus={rideData.passengerPaymentStatus}
         visible={showReceipt}
         onClose={handleReceiptClose}
       />
       
       {/* Invoice Modal Overlay */}
       <InvoiceScreen 
-        TripData={rideData}
+       rideId={rideData?.rideId}
+       tripFare={rideData.fareDetails?.fare}
+       tripDistance={rideData.finalDistance || rideData.estimatedDistance}
+       tripDuration={rideData.finalDuration || rideData.estimatedDuration}
+       driverDetails={rideData.driverInfo}
+       vehicleDetails={rideData.driverInfo}
+       tripStops={rideData.stops}
+       bookingTime={rideData.bookingTime}
+       fareDetails={rideData.fareDetails}
+       paymentMethod={rideData.paymentMethod}
+       paymentStatus={rideData.passengerPaymentStatus}
         visible={showInvoice}
         onClose={handleInvoiceClose}
       />
@@ -189,14 +221,14 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   paymentMethodLabel: {
-    fontFamily: Fonts.medium,
-    fontSize: 14,
+    fontFamily: Fonts.semi_bold,
+    fontSize: 16,
     color: colors.black,
-    marginBottom: 8,
+    marginBottom: 15,
   },
   paymentMethodValue: {
     fontFamily: Fonts.medium,
-    fontSize: 16,
+    fontSize: 14,
     color: colors.black,
   },
   paymentStatusContainer: {
@@ -223,25 +255,30 @@ const styles = StyleSheet.create({
     
   },
   receiptButton: {
-    backgroundColor: colors.grey_xxdark,
-    borderRadius: 20,
+    backgroundColor: colors.grey_xdark,
+    borderRadius: 10,
     padding: 16,
     marginVertical: 10,
     alignItems: 'center',
+    flexDirection:"row",
+    justifyContent:"center",
    
    flex:1
   },
   receiptButtonText: {
     fontFamily: Fonts.medium,
     fontSize: 16,
-    color: colors.white,
+    color: colors.black,
   },
   invoiceButton: {
     backgroundColor: colors.black,
-    borderRadius: 20,
+    borderRadius: 10,
     padding: 16,
     marginVertical: 10,
     alignItems: 'center',
+    flexDirection:"row",
+    justifyContent:"center",
+    gap:10,
    
     flex:1
   },
@@ -260,7 +297,8 @@ const styles = StyleSheet.create({
     flexDirection:"row",
     alignItems:"center",
     justifyContent:"space-between",
-    gap:10
+    gap:10,
+    marginBottom:10
   },
   paymentMethodKey:{
     fontFamily: Fonts.medium,

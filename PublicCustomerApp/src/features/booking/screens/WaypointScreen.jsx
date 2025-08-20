@@ -22,6 +22,8 @@ import { Fonts,colors } from '../../../constants/constants';
 import { getPreFinalFare,passangerStopChangeRequest } from '../../../API/EndPoints/EndPoints';
 import { use } from 'i18next';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
+import DataStore from '../../../controllers/DataStore';
+import PREF from '../../../storage/PREF';
 
 const WaypointScreen = ({}) => {
   const {tripId}=useCurrentRideInfoStore()
@@ -215,6 +217,7 @@ useEffect(() => {
    })
 
    const Payload = {
+    tripId:tripId,
     distance,
     duration,
     waitingTime:TotalwaitingTime,

@@ -2,6 +2,10 @@ module.exports = {
 
 
     APP_NAME: 'Namma Ooru Taxi',
+    companyName: 'Namma Ooru Taxi',
+    companyAddress: '123, Main Street, Anytown, USA',
+    companyPhone: '+1234567890',
+    companyEmail: 'info@nammaoorutaxi.com',
     APP_VERSION: '1.0.0',
     APP_BUILD_NUMBER: '1',
     APP_BUILD_VERSION: '1.0.0',

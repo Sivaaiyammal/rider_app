@@ -6,7 +6,7 @@ import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore';
 import useAssignedDriverInfoStore from '../features/rideStatus/store/useAssignedDriverInfoStore';
 import useWayPointReorderStore from '../features/booking/store/useWayPointReorderStore';
 import { TripStatus } from '../features/rideStatus/types/TripStatus';
-
+import { usePaymentStore } from '../features/payment/store/usePaymentStore';
 const SOCKET_URL = Config.ROOT_API_URL;
 
 
@@ -28,6 +28,7 @@ class WSService {
     this.useCurrentRideInfoStore = useCurrentRideInfoStore
     this.useAssignedDriverInfoStore = useAssignedDriverInfoStore
     this.useRideMatchStore = useRideMatchStore  
+    this.usePaymentStore = usePaymentStore
   }
 
   driverAllocated(data){
@@ -82,6 +83,17 @@ class WSService {
         
       }
 
+      if(data?.tripStatus === 'COMPLETED' || data?.tripStatus === 'DIVERGED'){
+       
+        // this.usePaymentStore.getState().setTripStatus(data?.tripStatus);
+        this.useStackScreenStore.getState().setStackScreen('TripFeedbackScreen',{});
+        return;
+      }else if(data?.tripStatus === 'DROPPED'){
+        this.useStackScreenStore.getState().setStackScreen('PaymentScreen',{})
+        return;
+      }
+      else{
+
       this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
       if(data?.tripData?.stops){
         this.useCurrentRideInfoStore.getState().setStops(data?.tripData?.stops)
@@ -89,6 +101,7 @@ class WSService {
       if(data?.tripData?.estimatedFare){
         this.useCurrentRideInfoStore.getState().setEstimatedFare(data?.tripData?.estimatedFare);
       }
+    }
       
     }
    

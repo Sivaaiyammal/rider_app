@@ -38,6 +38,8 @@ import TestScreen from '../features/test/screens/TestScreen';
 import SupportScreen from '../features/support/screens/SupportScreen';
 import TicketDetailScreen from '../features/support/screens/TicketDetailScreen';
 import TripSelectionScreen from '../features/support/screens/TripSelectionScreen';
+import BottomSheetWorkingExample from '../components/BottomSheetWorkingExample';
+import PREF from '../storage/PREF';
 const Home = () => {
   const {location} = useLocationStore();
   const { stackScreen } = useStackScreenStore();
@@ -48,7 +50,7 @@ const Home = () => {
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
   const { setUserdetails ,setID,id,setUserFavPlaces} = useUserInfoStore();
-  const {  setMapShown , mapShown} = useMapStore();
+  const {  setMapShown , mapShown,userLocation} = useMapStore();
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
     
@@ -69,13 +71,31 @@ const Home = () => {
     setWorklocation(workLocation);
   };
 
-  const checkOnGoingRideAndLog = async () => {
+  const checkOnGoingRideAndLog = async (location) => {
+    const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
+   
+    const currentTripId=currentTrip?.data || null
     try {
-      const Response = await getUserStats();
-      console.log('Response==============================>',JSON.stringify(Response));
+      
+      const Response = await getUserStats(location,currentTripId);
+      
       if(Response?.success ){
-        
+
+        if(Response?.userStats?.favPlaces?.length > 0){
+          setUserFavPlaces(Response?.userStats?.favPlaces);
+        }
+
+        if(Response?.trip?.status == "DROPPED"){
+          setStackScreen('PaymentScreen', { });
+          return;
+        }
+        if(Response?.trip?.status == "COMPLETED"){
+          setStackScreen('TripFeedbackScreen', { });
+          return;
+        }
+      
       if(Response?.trip){
+       
         setCurrentRideInfo(Response?.trip);
         if(Response?.assignDriver){
          
@@ -92,9 +112,7 @@ const Home = () => {
         }
         setStackScreen('RideStatus', { });
       }
-      if(Response?.userStats?.favPlaces?.length > 0){
-        setUserFavPlaces(Response?.userStats?.favPlaces);
-      }
+      
     }
     } catch (error) {
       console.error('Error fetching ongoing ride:', error);
@@ -140,28 +158,20 @@ const Home = () => {
   useEffect(() => {
     checkAllPermissions();
     loadUserDetails();
-   
-   
-    checkOnGoingRideAndLog();
     checkFavouriteLocation();
     checkPreferenceShowRideStatus();
-    
-      
-      
-      
-    
-
-    console.log("=====> MAP READY", mapReady)
-    
   }, [mapReady]);
 
   useCustomBackHandler();
 
   useEffect(()=>{
-    if(location && mapReady){
+    
+    if(location?.length>1){
+      checkOnGoingRideAndLog(location)
       fetchAllNearbyDrivers();
+  
     }
-  },[location, mapReady])
+  },[location])
 
   
 
@@ -207,14 +217,15 @@ const Home = () => {
         return <LanguageScreen {...params} />;
       case 'AddPlaceDetailScreen':
         return <AddPlaceDetailScreen {...params} />;
-      case 'TestScreen':
-        return <TestScreen {...params} />;
+
       case 'SupportScreen':
         return <SupportScreen {...params} />;
       case 'TicketDetailScreen':
         return <TicketDetailScreen {...params} />;
       case 'TripSelectionScreen':
         return <TripSelectionScreen {...params} />;
+      case 'BottomSheetWorkingExamples':
+        return <TestScreen {...params} />;
      
       default:
         return null;

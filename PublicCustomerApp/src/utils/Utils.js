@@ -18,10 +18,13 @@ export const utils = {
     else if (type == '6') return require('../assets/image/vehicle/luxsedan_left.png')
   },
   getRideStatus: (status) => {
+    console.log("getRideStatus CALLED",status)
     if (status == 'COMPLETED') return 'Ride Completed'
     if (status == 'PAYMENT_COMPLETED') return 'Ride Completed'
     else if (status == 'DIVERGED') return 'Ride Diverged'
     else if (status == 'CANCELLED') return 'Ride Cancelled'
+    else if (status == 'failed') return 'Ride Failed'
+    else if (status == 'PENDING') return 'Ride Cancelled'
    
   },
   getShortRideStatus: (status) => {
@@ -29,6 +32,8 @@ export const utils = {
     if (status == 'PAYMENT_COMPLETED') return 'COMPLETED'
     else if (status == 'DIVERGED') return 'DIVERGED'
     else if (status == 'CANCELLED') return 'CANCELLED'
+    else if (status == 'failed') return 'FAILED'
+    else if (status == 'PENDING') return 'CANCELLED'
   },
   metersToKilometers(meters) {
     return meters / 1000;

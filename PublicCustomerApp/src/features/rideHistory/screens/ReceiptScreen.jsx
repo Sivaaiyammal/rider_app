@@ -1,38 +1,40 @@
-import React from 'react';
+import React, { useState }   from 'react';
 import { ScrollView, View, StyleSheet, Text, TouchableOpacity, Alert, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import NavBar from '../../../components/NavBar';
 import { Fonts, colors } from '../../../constants/constants';
-import PDFGenerator from '../../../utils/PDFGenerator';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import PDFCreator from '../../../utils/PDFCreator';
+import { utils } from '../../../utils/Utils';
 
-const ReceiptScreen = ({ TripData, visible, onClose }) => {
+const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,visible, onClose }) => {
   const { t } = useTranslation();
   const { goBack } = useStackScreenStore();
-  
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [lastGeneratedPath, setLastGeneratedPath] = useState(null);
+  const [customFolder, setCustomFolder] = useState(null);
   // Use the actual trip data or dummy data if not provided
-  const rideData = TripData || {
-    _id: 'TXN893221',
-    fareDetails: { fare: 120.00 },
-    estimatedFare: 120.00,
-    bookingTime: new Date('2025-01-01T10:00:00').toISOString(),
-    finalDistance: 7.2,
-    finalDuration: 18,
-    vehicleType: 'Urban Sedan',
+  const rideData = {
+    _id: rideId,
+    fareDetails: { fare: tripFare },
+    estimatedFare: tripFare,
+    bookingTime: bookingTime,
+    finalDistance: tripDistance,
+    finalDuration: tripDuration,
+    vehicleType: vehicleDetails?.vehicleType,
     driverInfo: {
-      driverName: 'Ezio Auditore',
-      driverRating: 4.5,
-      vehicleBrand: 'Toyota',
-      vehicleModel: 'Camry',
-      vehicleNumber: 'KA-01-AB-1234'
+      driverName: driverDetails?.driverName,
+      driverRating: driverDetails?.driverRating,
+      vehicleBrand: driverDetails?.vehicleBrand,
+      vehicleModel: driverDetails?.vehicleModel,
+      vehicleNumber: driverDetails?.vehicleNumber
     },
-    stops: [
-      { name: 'Home', address: '123 Main Street, City' },
-      { name: 'Virtualmaze', address: '456 Tech Park, City' }
-    ],
-    paymentMethod: 'Cash',
-    passengerPaymentStatus: 'completed'
+    stops: tripStops,
+    paymentMethod: paymentMethod,
+    passengerPaymentStatus: paymentStatus,
+    vehicleInfo: vehicleDetails
   };
 
   const handleBackPress = () => {
@@ -43,65 +45,53 @@ const ReceiptScreen = ({ TripData, visible, onClose }) => {
     }
   };
 
-  const handleDownloadPDF = async () => {
+  const handleMultiSheetPDF = async () => {
     try {
-      Alert.alert(
-        'Download PDF',
-        'Generating PDF receipt...',
-        [{ text: 'OK' }]
-      );
-      
-      // Generate PDF using the utility
-      const pdfPath = await PDFGenerator.generateReceiptPDF(rideData);
-      
-      // Download the generated PDF
-      const success = await PDFGenerator.downloadPDF(pdfPath);
-      
-      if (success) {
-        Alert.alert(
-          'Success',
-          'PDF receipt downloaded successfully!',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error) {
-      Alert.alert(
-        'Error',
-        'Failed to download PDF receipt. Please try again.',
-        [{ text: 'OK' }]
-      );
-    }
-  };
+      setIsGenerating(true);
 
-  const handleEmailReceipt = async () => {
-    try {
+      const sheets = [
+        {
+          type: 'tripBill',
+          data: {
+            tripId:rideId,
+            date: utils.formatDateAndTime(bookingTime),
+            startTime: utils.formatDateAndTime(bookingTime),
+            endTime: utils.formatDateAndTime(bookingTime),
+            stops: tripStops,
+            distance: tripDistance,
+            duration: tripDuration,
+            totalFare: fareDetails?.fare|| 0,
+            driverName: driverDetails?.driverName || 'N/A',
+            driverRating: driverDetails?.driverRating || 'N/A',
+            vehicleBrand: vehicleDetails?.vehicleBrand || 'N/A',
+            vehicleModel: vehicleDetails?.vehicleModel || 'N/A',
+            vehicleNumber: vehicleDetails?.vehicleNumber || 'N/A',
+            vehicleType: vehicleDetails?.vehicleType || 'N/A',
+            vehicleColor: vehicleDetails?.vehicleColor || 'N/A',
+          }
+        },
+      ];
+
+      const fileName = 'Ride_Documents_' + new Date().getTime();
+      const pdfPath = await PDFCreator.createMultiSheetPDF(sheets, fileName, customFolder || null);
+
+      
+      setLastGeneratedPath(pdfPath);
+
       Alert.alert(
-        'Email Receipt',
-        'Preparing receipt for email...',
+        'Receipt Downloaded!',
+        `stored at:\n${pdfPath}`,
         [{ text: 'OK' }]
       );
-      
-      // Generate PDF using the utility
-      const pdfPath = await PDFGenerator.generateReceiptPDF(rideData);
-      
-      // Share the generated PDF
-      const success = await PDFGenerator.sharePDF(pdfPath);
-      
-      if (success) {
-        Alert.alert(
-          'Success',
-          'Receipt prepared for email sharing!',
-          [{ text: 'OK' }]
-        );
-      }
     } catch (error) {
-      Alert.alert(
-        'Error',
-        'Failed to prepare receipt for email. Please try again.',
-        [{ text: 'OK' }]
-      );
+      console.error('Multi-sheet PDF error:', error);
+      Alert.alert('Error', 'Failed to create multi-sheet PDF: ' + error.message, [{ text: 'OK' }]);
+    } finally {
+      setIsGenerating(false);
     }
-  };
+  };  
+
+  
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp);
@@ -198,17 +188,17 @@ const ReceiptScreen = ({ TripData, visible, onClose }) => {
           
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('ride_type')}</Text>
-            <Text style={styles.detailValue}>{rideData.vehicleType}</Text>
+            <Text style={styles.detailValue}>{vehicleDetails?.vehicleType}</Text>
           </View>
           
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('start_location')}</Text>
-            <Text style={styles.detailValue}>{rideData.stops?.[0]?.name || 'N/A'}</Text>
+            <Text style={styles.detailValue}>{rideData.stops?.[0]?.address || 'N/A'}</Text>
           </View>
           
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t('end_location')}</Text>
-            <Text style={styles.detailValue}>{rideData.stops?.[rideData.stops.length - 1]?.name || 'N/A'}</Text>
+            <Text style={styles.detailValue}>{rideData.stops?.[rideData.stops.length - 1]?.address || 'N/A'}</Text>
           </View>
           <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>{t('driver_name')}</Text>
@@ -221,13 +211,12 @@ const ReceiptScreen = ({ TripData, visible, onClose }) => {
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.downloadButton} onPress={handleDownloadPDF}>
-            <Text style={styles.downloadButtonText}>📄 {t('download_pdf')}</Text>
+          <TouchableOpacity style={styles.downloadButton} onPress={handleMultiSheetPDF}>
+            <MaterialCommunityIcons name="file-download" size={20} color={colors.white} />
+            <Text style={styles.downloadButtonText}>{t('download_pdf')}</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.emailButton} onPress={handleEmailReceipt}>
-            <Text style={styles.emailButtonText}>📋 {t('email_receipt')}</Text>
-          </TouchableOpacity>
+   
         </View>
       </ScrollView>
       </View>
@@ -356,9 +345,13 @@ const styles = StyleSheet.create({
   },
   downloadButton: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.black,
     borderWidth: 2,
-    borderColor: '#FF4444',
+    flexDirection: 'row',
+    gap: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  
     borderRadius: 10,
     padding: 16,
     alignItems: 'center',
@@ -367,7 +360,7 @@ const styles = StyleSheet.create({
   downloadButtonText: {
     fontFamily: Fonts.medium,
     fontSize: 14,
-    color: '#FF4444',
+    color: colors.white,
   },
   emailButton: {
     flex: 1,

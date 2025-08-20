@@ -15,23 +15,46 @@ import { colors } from '../../../constants/constants';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 const { height } = Dimensions.get('window');
 import RatingBox from '../components/RatingBox';    
-import useAssignedDriverInfoStore  from '../../rideStatus/store/useAssignedDriverInfoStore';
 import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
 import RideStatusHeader from '../../rideStatus/components/RideStatusHeader';
-import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
 import { Fonts } from '../../../constants/constants';
 import { utils } from '../../../utils/Utils';
 import { submitTripFeedback } from '../../../API/EndPoints/EndPoints';
 import { showNotification } from '../../../components/NotificationManger';
 import { useTranslation } from 'react-i18next';
+import { DataStore } from '../../../controllers/DataStore';
+import PREF from '../../../storage/PREF';
+import { getTripDetails } from '../../../API/EndPoints/EndPoints';
+import useRatingStore from '../Store/useRatingStore';
+import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
 export default function TripFeedbackScreen() {
   
-    const {t} = useTranslation();
-    const { driverName,driverPhoto,brand,model,vehicleNumber }=useAssignedDriverInfoStore()
-    const {finalFare,finalDistance,finalDuration,vehicleType,tripId} = useCurrentRideInfoStore()
-  const bounceValue = useRef(new Animated.Value(height)).current;
-  const overlayOpacity = useRef(new Animated.Value(0)).current;
-  const { goBack,reset } = useStackScreenStore();
+    
+   const {tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,currentTripId,setTripDetails,tripId,isLoading,setIsLoading } = useRatingStore();
+
+    
+    const bounceValue = useRef(new Animated.Value(height)).current;
+    const overlayOpacity = useRef(new Animated.Value(0)).current;
+    const { goBack,reset } = useStackScreenStore();
+     const {t} = useTranslation();
+
+
+    const fetchTripDetails = async () => {
+     
+      const currentTripId = await DataStore.loadData(PREF.CURRENT_TRIP);
+   
+      const tripDetails = await getTripDetails(currentTripId?.data);
+    
+      if(tripDetails?.success){
+        setTripDetails(tripDetails);
+        setIsLoading(false);
+      }
+    }
+  
+    useEffect(()=>{
+      fetchTripDetails();
+      
+    },[])
 
   useEffect(() => {
     Animated.parallel([
@@ -50,23 +73,30 @@ export default function TripFeedbackScreen() {
   }, []);
 
 
-  const OnClose = () => {
+  const OnClose = async () => {
+    await DataStore.clearData(PREF.CURRENT_TRIP)
     reset()
   }
 
   const handleSubmit = async (ratingData) => {
-    ratingData.tripId = tripId
+    ratingData.tripId = currentTripId
+    console.log("ratingData",JSON.stringify(ratingData))
     
     const feedback = await submitTripFeedback(ratingData)
+
+    console.log("feedback",JSON.stringify(feedback))
    
     if(feedback.success){
       showNotification(t('success'),t('feedback_submitted_successfully'),colors.success)
+      await DataStore.clearData(PREF.CURRENT_TRIP)
       reset()
       
     }else{
       showNotification(t('error'),t('something_went_wrong'),colors.error)
     }
   }
+
+
 
   const handleClose = () => {
     // Animated.parallel([
@@ -85,6 +115,12 @@ export default function TripFeedbackScreen() {
     // });
     if(OnClose) OnClose()
   };
+
+
+
+  if(isLoading){
+    return <SkeletonLoader />
+  }
 
   return (
     <View style={[styles.wrapper, { zIndex: 999999 }]}>
@@ -120,7 +156,7 @@ export default function TripFeedbackScreen() {
         <View style={styles.dottedLine}></View>
         <View style={styles.Rideisnfo}>   
             <Text style={styles.RideFareText}>
-            ₹ {finalFare}
+            ₹ {tripFare}
             </Text>
             <View style={[styles.RideInfoContainer,]}>
                 <View style={[styles.seprator]}/>
@@ -128,7 +164,7 @@ export default function TripFeedbackScreen() {
               
                 <View style={styles.RideInfoContainerBox}>
                     <Text style={styles.RideInfoText}>
-                        {finalDistance?.toFixed(1)} Km  .  {utils.formatMinutesToReadable(finalDuration)}
+                        {tripDistance?.toFixed(1)} Km  .  {utils.formatMinutesToReadable(tripDuration)}
                     </Text>
 
                 </View>
@@ -139,7 +175,7 @@ export default function TripFeedbackScreen() {
         </View>
       
           <View style={{marginVertical:10}}>
-            <TripPersonVehicle driverName={driverName} driverPhoto={driverPhoto} vehicleType={vehicleType} vehicleBrand={brand} vehicleModel={model} vehicleNumber={vehicleNumber} layoutStyle={"row"} descriptonSize={12}/>
+            <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={vehicleDetails?.vehicleType} vehicleBrand={vehicleDetails?.vehicleBrand} vehicleModel={vehicleDetails?.vehicleModel} vehicleNumber={vehicleDetails?.vehicleNumber} layoutStyle={"row"} descriptonSize={12}/>
             </View>
            <RatingBox onRatingSubmit={handleSubmit}/>
            <TouchableOpacity onPress={handleClose}>

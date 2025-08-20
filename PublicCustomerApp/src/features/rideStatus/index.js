@@ -147,10 +147,6 @@ const RideStatus = () => {
         else{
           return <DriverSearchScreen  onCancel={handleCancel} />;
         }
-
-      
-        
-     
       default:
         return <DriverSearchScreen  onCancel={handleCancel} />;
     }
@@ -166,7 +162,6 @@ const RideStatus = () => {
   },[])
 
   useEffect(()=>{
-
     console.log('tripStatus____________',tripStatus);
     if (tripStatus === TripStatus.COMPLETED || tripStatus === TripStatus.DIVERGED ){
       setStackScreen('TripFeedbackScreen',{})
@@ -203,7 +198,7 @@ const RideStatus = () => {
   
 
     return <>
-    <Overlay
+   {showOverlay && <Overlay
   visible={showOverlay}
   onPress={handleOverlay}
   backgroundColor="rgba(0, 0, 0, 0.7)"
@@ -211,7 +206,7 @@ const RideStatus = () => {
   
 >
 
-</Overlay>
+</Overlay>}
         <NavBar title={t(getTitle())} />
         <View style={styles.container}>
             <View style={[styles.containerTop,showOverlay && {display:'none'}]}>  

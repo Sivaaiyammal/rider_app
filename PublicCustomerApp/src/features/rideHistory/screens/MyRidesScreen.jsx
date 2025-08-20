@@ -137,7 +137,8 @@ const YourRidesScreen = ({fromBack=false}) => {
         setStackScreen('RideDetailScreen', { TripData: ride });     
     }
 
-    const RenderTrip = ({ ride, index }) => {
+    const RenderTrip = ({ ride,Fare, index }) => {
+        
         return (
             <TouchableOpacity
                 key={`your-ride-${index}`}
@@ -156,7 +157,7 @@ const YourRidesScreen = ({fromBack=false}) => {
                     </Text>
                     </View>
                     <View style={yourRidesStyles.ridesContainerItemFareContainer}>
-                    <Text style={yourRidesStyles.ridesContainerItemFare}>₹ {ride?.fareDetails?.fare?.toFixed(2)|| '00'} . </Text>
+                    <Text style={yourRidesStyles.ridesContainerItemFare}>₹ {Fare?.toFixed(2)|| '00'} . </Text>
                     <Text style={[yourRidesStyles.ridesContainerItemStatus,ride?.status=="PAYMENT_COMPLETED"&&{color:'green'},ride?.status=="DIVERGED"&&{color:'yellow'},ride?.status=="CANCELLED"&&{color:'red'}]}>{utils.getShortRideStatus(ride?.status)}</Text>
                     </View>
                 </View>
@@ -196,7 +197,8 @@ const YourRidesScreen = ({fromBack=false}) => {
     }, []);
 
     const rowRenderer = React.useCallback((type, data, index) => {
-        return <RenderTrip ride={data} index={index} />
+        console.log("data",data)
+        return <RenderTrip ride={data} Fare={data?.fareDetails?.fare} index={index} />
     }, []);
 
     const renderFooter = React.useMemo(() => {

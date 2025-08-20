@@ -95,19 +95,14 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
   };
 
   return (
-    <ScrollView 
+    <View 
       style={styles.container}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 20 }}
     >
       
       
-      {availableVehicles?.sort((a, b) => {
-        // Put selected vehicle first
-        if (selectedVehicle?.id === a.id) return -1;
-        if (selectedVehicle?.id === b.id) return 1;
-        return 0;
-      }).map((vehicle) => {
+      {availableVehicles?.filter(vehicle=>vehicle.type!=selectedVehicle.type).map((vehicle) => {
         const isSelected = selectedVehicle?.id === vehicle.id;
         return (
           <TouchableOpacity
@@ -160,7 +155,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
       })}
       
    
-    </ScrollView>
+    </View>
   );
 };
 
@@ -174,7 +169,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
-    paddingVertical: 8,
+   
     backgroundColor: colors.white,
   },
   header: {

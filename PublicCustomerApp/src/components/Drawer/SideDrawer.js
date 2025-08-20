@@ -20,6 +20,7 @@ import ProfileImage from '../../assets/image/svgIcons/profileImage.svg';
 import useUserInfoStore from '../../store/useUserInfoStore';
 import useSupportStore from '../../features/support/store/useSupportStore';
 import AdaptiveText from '../Common/AdaptiveText';
+import BottomSheetWorkingExample from '../BottomSheetWorkingExample';   
 const SideDrawerV2 = ({ handleMenu }) => {
   const { t } = useTranslation();
   const { userdetails } = useUserInfoStore();
@@ -133,12 +134,12 @@ const SideDrawerV2 = ({ handleMenu }) => {
       screen: 'LegalScreen',
       icon: <Ionicons name="document-text" size={20} color="black" />,
     },
-    // {
-    //   id: 'test-screen',
-    //   name: t('test_screen'),
-    //   screen: 'TestScreen',
-    //   icon: <Ionicons name="flask" size={20} color="black" />,
-    // },
+    {
+      id: 'test-screen',
+      name: t('test_screen'),
+      screen: 'BottomSheetWorkingExamples',
+      icon: <Ionicons name="flask" size={20} color="black" />,
+    },
   ];
 
   const HandleOpenDrawerMenu = (menu) => {

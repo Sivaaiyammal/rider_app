@@ -90,6 +90,8 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       isReached:false
     });
 
+    console.log("=====> SELECTED VEHICLE", JSON.stringify(selectedVehicle))
+
     // Build payload with dummy values for testing
     const payload = {
       // Location data
@@ -103,10 +105,10 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       pickupTime: Date.now().toString(), 
       
       // Pricing data
-      minFare: selectedVehicle.basePrice || 100, 
-      estimatedDistance: rideDistance || 5, 
-      estimatedDuration: estimatedDuration || 15, 
-      maxFare: selectedVehicle.maxPrice || 150, 
+      minFare: selectedVehicle.minFare, 
+      estimatedDistance: rideDistance,
+      estimatedDuration: estimatedDuration, 
+      maxFare: selectedVehicle.maxFare, 
       
       // Booking details
       bookingFor: rideBookMode, // Dummy value

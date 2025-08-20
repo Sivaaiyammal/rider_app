@@ -7,23 +7,23 @@ import FareIcon from '../../../assets/image/svgIcons/fare.svg';
 import { Fonts, colors } from '../../../constants/constants';
 import { utils } from '../../../utils/Utils';
 const TripStats = ({
-  totalDistance,totalDuration,totalFare
+  totalDistance,totalDuration,totalFare,isNotCompleted
 }) => {
   const { t } = useTranslation();
   
   return (
     <View style={styles.statsRow}>
-      <View style={[styles.statBox, { backgroundColor: '#E6F3FF' }]}>
+      <View style={[styles.statBox, { backgroundColor: '#E6F3FF',borderColor:colors.blue }]}>
         <DistanceIcon width={24} height={24} style={styles.icon} />
-        <Text style={styles.label}>{t('distance')}</Text>
+        <Text style={styles.label}>{!isNotCompleted ? t('distance') : t('estimated_distance')}</Text>
         <Text style={styles.value}>{typeof totalDistance === 'string' ? totalDistance?.toFixed(1) : String(totalDistance?.toFixed(1))} Km</Text>
       </View>
-      <View style={[styles.statBox, { backgroundColor: '#FFF7E6' }]}>
+      <View style={[styles.statBox, { backgroundColor: '#FFF7E6',borderColor:colors.yellow }]}>
         <WatchIcon width={24} height={24} style={styles.icon} />
-        <Text style={styles.label}>{t('duration')}</Text>
+        <Text style={styles.label}>{!isNotCompleted ? t('duration') : t('estimated_duration')}</Text>
         <Text style={styles.value}>{utils.formatMinutesToReadable(totalDuration)}</Text>
       </View>
-     {totalFare && <View style={[styles.statBox, { backgroundColor: '#E6F7F1' }]}>
+     {totalFare && <View style={[styles.statBox, { backgroundColor: '#E6F7F1',borderColor:colors.green }]}>
         <FareIcon width={24} height={24} style={styles.icon} />
         <Text style={styles.label}>{t('fare')}</Text>
        { <Text style={styles.value}>₹ {typeof totalFare === 'string' ? totalFare?.toFixed(2) : String(totalFare?.toFixed(2))}</Text>}
@@ -47,6 +47,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 6,
     paddingVertical: 16,
     paddingHorizontal: 8,
+    borderWidth:1,
+    borderColor:colors.grey_light
   },
   icon: {
     marginBottom: 4,

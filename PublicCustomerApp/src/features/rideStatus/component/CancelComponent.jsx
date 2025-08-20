@@ -11,11 +11,13 @@ const REASONS = {'PENDING':[
   'fare_is_too_high_surge',
     'other',
 ],
-'ONGOING':[
+'ONGOING': [
   'driver_is_taking_too_long',
   'driver_asked_to_cancel',
   'driver_not_responding',
-  'booked_by_mistake',
+  'driver_is_rude_or_unprofessional',
+  'vehicle_is_not_clean_or_safe',
+  'unexpected_route_or_detour',
   'fare_is_too_high_surge',
   'other',
 ],

@@ -19,6 +19,7 @@ import useDirectionLoad from '../hooks/useDirectionLoad';
 import useMapStore from '../../map/store/useMapStore';
 import useBookTrip from '../hooks/useBookTrip';
 // Import the ride estimation mutation
+import { VEHICLE_LABELS } from '../../../constants/VehicleLabels';
 import { rideEstimation } from '../../../API/APICalls/RideAPICalls';
 import RideInfo from '../components/bookRide/RideInfo';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -41,11 +42,41 @@ import { utils } from '../../../utils/Utils';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import useFetchNearbyDrivers from '../../../hooks/useVehicleMarker';
 import useRideSelectionStore from '../../../store/useRideSelectionStore';
-const BottomSheetHeader = () => {
+import LinearGradient from 'react-native-linear-gradient';
+
+import { isEv } from '../../../utils/Utils';
+import { Image } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import AUTO from "../../../assets/vehicle/AUTO.webp"
+import BIKE from "../../../assets/vehicle/BIKE.webp"
+import HATCHBACK from "../../../assets/vehicle/HATCHBACK.webp"
+import SEDAN from "../../../assets/vehicle/SEDAN.webp"
+import SUV from "../../../assets/vehicle/SUV.webp"
+import ELECTRIC_AUTO from "../../../assets/vehicle/AUTO.webp"
+import ELECTRIC_BIKE from "../../../assets/vehicle/BIKE.webp"
+import ELECTRIC_HATCHBACK from "../../../assets/vehicle/HATCHBACK.webp"
+import ELECTRIC_SEDAN from "../../../assets/vehicle/SEDAN.webp"
+import ELECTRIC_SUV from "../../../assets/vehicle/SUV.webp"
+import ExSEDAN from "../../../assets/vehicle/ExSEDAN.webp"
+
+
+
+const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => {
+    const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
+
+        const getVehicleImage = (type) => {
+            return VEHICLE_IMAGES[type] || ExSEDAN;
+          };
     const {setStackScreen,goBack} = useStackScreenStore()
+    const {selectedVehicle} = useRideVehicleStore()
+    const { t } = useTranslation();
     
     const {rideStartLocation,rideEndLocation,rideWayPoints} = useRideBookingLocationStore()
     const {setMapBounds} = useMapStore()
+    const isEv = (vehicleType) => {
+        return vehicleType.includes("ELECTRIC");
+      };
+    
     const handleAddStop = () => {
         goBack()
         setStackScreen('WaypointScreen',{})
@@ -66,6 +97,7 @@ const BottomSheetHeader = () => {
         setMapBounds(finalBounds);
     }
     return (
+        <View style={styles.bottomSheetHeaderContainer}>
         <View style={styles.bottomSheetHeader}>
             <MapIcon />
 
@@ -78,6 +110,50 @@ const BottomSheetHeader = () => {
             </TouchableOpacity>
             </View>
         </View>
+        <View style={styles.handle}></View>
+      
+        <RideInfo distance={rideDistance} duration={estimatedDuration} showPreference={setShowPreference}/>
+       {selectedVehicle && <LinearGradient
+              colors={['#ffffff00','#fff5cc']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.vehicleCard]}
+            >
+              <View style={styles.vehicleImageContainer}>
+                <Image
+                  source={getVehicleImage(selectedVehicle.type)}
+                  style={styles.vehicleImage}
+                  resizeMode="contain"
+                />
+              </View>
+              <View style={styles.vehicleInfoContainer}>
+                <View style={styles.rowBetween}>
+                  <View style={styles.vehicleNameContainer}>
+                
+                  <Text style={[styles.vehicleName]}>{VEHICLE_LABELS[selectedVehicle.type] || selectedVehicle.name}</Text>
+                  {isEv(selectedVehicle.type) && <View style={styles.evContainer}>
+                    <Text style={[styles.evText]}>EV</Text>
+                  </View>
+                  }
+                  </View>
+                  <Text style={[styles.price]}>{ `₹${selectedVehicle.minFare.toFixed(0)} - ₹${selectedVehicle.maxFare.toFixed(0)}`}</Text>
+                 
+                </View>
+                <View style={styles.rowBetween}>
+                  <View style={styles.timeRow}>
+                    <MaterialCommunityIcons name="clock" size={16} color={"#757575"} />
+                    <Text style={[styles.timeText]}>{selectedVehicle.estimatedDuration} {t('min')}</Text>
+                    {/* <Text style={[styles.dot]}>·</Text>
+                    <Text style={[styles.dropTime]}>{vehicle.dropat}</Text> */}
+                  </View>
+                  <View style={styles.passengerRow}>
+                    <MaterialCommunityIcons name="account" size={16} color={ "#757575"} />
+                    <Text style={[styles.passengerText]}>{selectedVehicle.capacity}</Text>
+                  </View>
+                </View>
+              </View>
+            </LinearGradient>}
+        </View>
     )
 }
 const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsScreen = null,fromBack=false}) => {
@@ -87,7 +163,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         const {paymentType,setPaymentType, setRideDistance ,setEstimatedDuration,rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode,} = useRideBookingInfo()
     const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false)
     const {isPreferenceShow,setIsPreferenceShow} = useUserInfoStore()
-    const {setAvailableVehicles,availableVehicles,clearAvailableVehicles} = useRideVehicleStore()
+    const {setAvailableVehicles,availableVehicles,clearAvailableVehicles,setSelectedVehicle} = useRideVehicleStore()
     const [isLoading,setIsLoading] = useState(true)
     const [showPreference,setShowPreference] = useState(false)
     
@@ -138,12 +214,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     }, [clearNearbyDrivers]);
 
 
-    useEffect(()=>{
-        if(availableVehicles?.length > 0){
-            setIsLoading(false)
-        }
-        
-    },[availableVehicles])
+    
 
     const handleDirectionReady = (data) => {
         handleCurrentLocation()
@@ -181,6 +252,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             setRideDistance(DistanceFromAddStopsScreen)
             setEstimatedDuration(DurationFromAddStopsScreen)
         }
+        setSelectedVehicle(null)
         return ()=>{
             setAvailableVehicles([])
         }
@@ -213,17 +285,19 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
                     id:index,
                     type:item.type,
                     capacity:item.capacity,
-                    minFare:data[item.type].minFare || item.minFare,
-                    maxFare:data[item.type].maxFare || item.maxFare,
-                    currency:data[item.type].currency || item.currency,
+                    minFare:data[item.type].minFare,
+                    maxFare:data[item.type].maxFare,
+                    currency:data[item.type].currency,
                     estimatedDuration:data[item.type].estimatedDuration || item.estimatedDuration,
                    
                 }
+                console.log("=====> VEHICLE ITEM", JSON.stringify(VehicleItem))
                 vehicleList.push(VehicleItem)
             }
         })
-
+        setSelectedVehicle(vehicleList[0])
         setAvailableVehicles(vehicleList)
+        setIsLoading(false)
     }
 
 
@@ -375,6 +449,7 @@ const handleChangeScheduleTime=()=>{
 
 }
 
+
 const scheduleDate = scheduleDateTime?.date ? utils.formatDate(scheduleDateTime?.date) : ""
 const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(scheduleDateTime?.time) : ""
 
@@ -399,12 +474,12 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
    </View>
    <BottomSheetWrapper
-        snapPoints={['55%', '75%', '90%']}
+        snapPoints={['50%','70%','90%']}
         index={0}
         enablePanDownToClose={false}
         enableOverDrag={true}
         enableScroll={true}
-        handleComponent={MapHeader}
+        handleComponent={()=>BottomSheetHeader(rideDistance,estimatedDuration,setShowPreference)}
         handleIndicatorStyle={{
           backgroundColor: '#DEDEDE',
           width: 50,
@@ -415,9 +490,8 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
     {/* <BottomSheetHeader /> */}
  
       
-      
-      <RideInfo distance={rideDistance} duration={estimatedDuration} showPreference={setShowPreference}/>
-      <BookingOptions label={t('female_driver')} onPress={handleFemaleDriverToggle} />
+    
+   
       <VehicleList isLoading={isLoading}  availableVehicles={availableVehicles}/>
            
 
@@ -495,22 +569,28 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
 const styles = StyleSheet.create({
     bottomSheetHeader:{
+        position:"absolute",
         width:"100%",
         flexDirection:"row",
         justifyContent:"space-between",
         alignItems:"flex-end",
-        top:-height*0.085,
-        paddingHorizontal:5,
+        top:-110,
+        paddingHorizontal:10
+    
+    },
+    bottomSheetHeaderContainer:{
+       paddingHorizontal:10,
+       paddingVertical:10,
        
-       
+    
     },
     mapActionContainer:{
         flexDirection:"column",
         alignItems:"center",
         justifyContent:"flex-end",
-        top:-height*0.03,
-        right:15,
-        gap:15,
+        gap:10,
+        paddingBottom:10
+       
     },
     bottomSheetContent: {
         paddingHorizontal: 15,
@@ -721,7 +801,138 @@ const styles = StyleSheet.create({
         paddingLeft:10,
         paddingRight:5,
         paddingVertical:5,
-    }
+    },
+    handle:{
+        width:"15%",
+        alignSelf:"center",
+        height:7,
+        backgroundColor:colors.grey_light,
+        borderRadius:10,
+    },
+    vehicleCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop:10,
+        borderColor: 'black',
+        borderWidth:1,
+        borderRadius: 15,
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+        marginBottom: 5,
+        backgroundColor: colors.white,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 2,
+
+      
+      },
+      selectedVehicleCard: {
+        borderWidth:1,
+        borderColor: '#0f223c',
+      
+       
+      },
+      selectedText: {
+        color: colors.white,
+      },
+      vehicleImageContainer: {
+        width: 56,
+        height: 56,
+        marginRight: 14,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      vehicleImage: {
+        width: 65,
+        height: 65,
+      },
+      vehicleInfoContainer: {
+        flex: 1,
+        justifyContent: 'center',
+      },
+      rowBetween: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop:5
+      },
+      vehicleNameContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap:5,
+        marginTop:5,
+        flex:1
+      },
+      evContainer: {
+        backgroundColor: "green",
+        paddingHorizontal: 4,
+        paddingVertical: 2,
+        borderRadius: 4,
+      },
+      evText: {
+        fontSize: 12,
+        fontFamily:Fonts.medium,
+        color: colors.white,
+        fontStyle:"italic",
+      },
+      vehicleNameText: {
+        fontSize: 16,
+        fontFamily:Fonts.regular,
+        color: colors.black,
+      },
+      vehicleName: {
+        fontSize: 16,
+        fontFamily:Fonts.regular,
+        color: colors.black,
+      },
+      price: {
+        fontSize: 16,
+        fontFamily:Fonts.medium,
+        color: colors.black,
+      },
+      timeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      timeText: {
+        fontSize: 13,
+        color: "#757575",
+        marginLeft: 4,
+        fontFamily:Fonts.regular,
+      },
+      dot: {
+        fontSize: 16,
+        color: "#757575",
+        marginHorizontal: 6,
+        fontFamily:Fonts.bold,
+      },
+      dropTime: {
+        fontSize: 13,
+        color: "#757575",
+      },
+      passengerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+      },
+      passengerText: {
+        fontSize: 13,
+        color: "#757575",
+        marginLeft: 4,
+      },
+      confirmButton: {
+        backgroundColor: colors.green,
+        borderRadius: 12,
+        paddingVertical: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 20,
+      },
+      confirmButtonText: {
+        fontSize: 16,
+        fontWeight: Fonts.bold,
+        color: colors.white,
+      },
 
 });
 
