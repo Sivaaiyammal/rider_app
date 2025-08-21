@@ -28,7 +28,7 @@ import usePaymentStore from '../store/usePaymentStore';
 const PaymentScreen = () => {
 
   const {t} = useTranslation();
-  const {rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,paymentMethod,isLoading,setTripDetails,tripStops,fareDetails,bookingTime} = usePaymentStore();
+  const {tripStatus,rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,paymentMethod,isLoading,setTripDetails,tripStops,fareDetails,bookingTime} = usePaymentStore();
   const [showReceipt, setShowReceipt] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
   const handleInvoicePress = () => {
@@ -113,7 +113,7 @@ const PaymentScreen = () => {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <FareHeader fare={tripFare}  RideStatus={"Destination Reached"}  />
+        <FareHeader fare={tripFare}  RideStatus={tripStatus == "CANCELLED" ? "Ride was cancelled midway" : "Destination Reached"}  />
        
         <TripMetaInfo date={formatDate(bookingTime)} tripId={rideId} />
         <AddressContainer directions={tripStops} />

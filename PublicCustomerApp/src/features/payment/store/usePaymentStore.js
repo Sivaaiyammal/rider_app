@@ -34,6 +34,9 @@ const usePaymentStore = create((set, get) => ({
   fareDetails: null,
   setFareDetails: (details) => set({ fareDetails: details }),
 
+  tripStatus: null,
+  setTripStatus: (status) => set({ tripStatus: status }),
+
   paymentStatus: null,
   paymentMethod: null,
   paymentDetails: null,
@@ -61,6 +64,7 @@ const usePaymentStore = create((set, get) => ({
       setIsLoading,
       setRideId,
       setBookingTime,
+      setTripStatus,
     } = get();
 
     if (data?.trip?.rideId !== undefined) {
@@ -101,6 +105,9 @@ const usePaymentStore = create((set, get) => ({
     if (data?.trip?.createdAt !== undefined) {
       setBookingTime(data.trip.createdAt);
     }
+    if(data?.trip?.status !== undefined){
+      setTripStatus(data.trip.status);
+    } 
     setIsLoading(false);    
   },
 }));

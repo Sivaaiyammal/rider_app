@@ -10,32 +10,40 @@ import { utils } from '../../../utils/Utils';
 import { getCustomerTrips } from '../../../API/EndPoints/EndPoints';
 
 import NavBar from '../../../components/NavBar';
-import DurationFilter from '../../../components/DurationFilter';
 import NoTripsFound from '../../../components/NoTripsFound';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import TripPersonVehicle from '../components/TripPersonVehicle';
 import RideItemSkeleton from '../components/RideItemSkeleton';
 import LoadingToast from '../../../components/LoadingToast';
 import { useRideHistoryStore } from '../store/useRideHistoryStore';
-import { colors } from '../../../constants/constants';
+import { colors, Fonts } from '../../../constants/constants';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { DateTimeFormatter } from '../../../utils/DateTimeFormatter';
+import PropTypes from 'prop-types';
+import CalenderIcon from '../../../assets/image/calender.svg';
+import DatePicker from 'react-native-date-picker';
 
-const YourRidesScreen = ({fromBack=false}) => {
+const YourRidesScreen = () => {
     const { t } = useTranslation();
-    const [enableFetch, setEnableFetch] = useState(!fromBack);
     const { setStackScreen } = useStackScreenStore();
     const { Rides, setRides } = useRideHistoryStore();
     
 
-    const [FilterTripType, setFilterTripType] = useState('');
     const [FilterStart, setFilterStart] = useState('');
     const [FilterEnd, setFilterEnd] = useState('');
-    const [FilterPage, setFilterPage] = useState(1);
+    const [FilterPage] = useState(1);
     const [FilterLimit] = useState(10);
     const [isRefreshing, setIsRefreshing] = useState(true);
     const [isLoadMore, setIsLoadMore] = useState(false);
     const [showLoadingToast, setShowLoadingToast] = useState(false);
     const [durationFilterSet, setDurationFilterSet] = useState(false);
+    // Custom date range state
+    const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [datePickerMode, setDatePickerMode] = useState('start');
+    const [customStartDate, setCustomStartDate] = useState(new Date());
+    const [customEndDate, setCustomEndDate] = useState(new Date());
+    const [activeTab, setActiveTab] = useState('today');
 
     // Function to get today's date range
     const getTodayDateRange = () => {
@@ -49,8 +57,6 @@ const YourRidesScreen = ({fromBack=false}) => {
         };
     };
 
-    console.log("fromBack",fromBack)
-    console.log("MyRidesScreen mounted with enableFetch:", enableFetch)
 
     const HandleBackBtn = () => {
            setStackScreen('Home');
@@ -89,7 +95,7 @@ const YourRidesScreen = ({fromBack=false}) => {
                     endTime = FilterEnd;
                 }
                 
-                console.log('Converted timestamps:', { startTime, endTime });
+                
                 payload.startTime = startTime;
                 payload.endTime = endTime;
             }
@@ -102,7 +108,7 @@ const YourRidesScreen = ({fromBack=false}) => {
             console.log('data', data);
             
             if (data.success) {
-                let { trips, pagination } = data
+                let { trips } = data
                 if (isLoadMore) {
                     setRides([...Rides, ...trips])
                 } else {
@@ -121,15 +127,6 @@ const YourRidesScreen = ({fromBack=false}) => {
         }
     }
 
-    const DurationFilterCallback = (id, start, end) => {
-        console.log('DurationFilterCallback called with:', { id, start, end });
-        console.log('Setting duration filter and enabling fetch');
-        setFilterStart(start);
-        setFilterEnd(end);
-        setDurationFilterSet(true);
-        // Reset to first page when filter changes
-        setFilterPage(1);
-    }
 
     const HandleRideOpen = (ride) => {
         // Navigate to RideDetailScreen with ride data
@@ -158,7 +155,7 @@ const YourRidesScreen = ({fromBack=false}) => {
                     </View>
                     <View style={yourRidesStyles.ridesContainerItemFareContainer}>
                     <Text style={yourRidesStyles.ridesContainerItemFare}>₹ {Fare?.toFixed(2)|| '00'} . </Text>
-                    <Text style={[yourRidesStyles.ridesContainerItemStatus,ride?.status=="PAYMENT_COMPLETED"&&{color:'green'},ride?.status=="DIVERGED"&&{color:'yellow'},ride?.status=="CANCELLED"&&{color:'red'}]}>{utils.getShortRideStatus(ride?.status)}</Text>
+                    <Text style={[yourRidesStyles.ridesContainerItemStatus,ride?.status=="PAYMENT_COMPLETED"&&{color:'green'},ride?.status=="DIVERGED"&&{color:'orange'},ride?.status=="CANCELLED"&&{color:'red'}]}>{utils.getShortRideStatus(ride?.status)}</Text>
                     </View>
                 </View>
                 <View
@@ -179,6 +176,18 @@ const YourRidesScreen = ({fromBack=false}) => {
             </TouchableOpacity>
         )
     }
+
+    RenderTrip.propTypes = {
+		ride: PropTypes.shape({
+			bookingTime: PropTypes.any,
+			stops: PropTypes.array,
+			status: PropTypes.string,
+			driverInfo: PropTypes.object,
+			vehicleType: PropTypes.string,
+		}),
+		Fare: PropTypes.number,
+		index: PropTypes.number,
+	};
 
   
 
@@ -215,21 +224,47 @@ const YourRidesScreen = ({fromBack=false}) => {
     }, []);
 
     useEffect(() => {
-        if(enableFetch && durationFilterSet){
+        if(durationFilterSet){
             LoadRides();
         }
-    }, [enableFetch, durationFilterSet, FilterStart, FilterEnd])
+    }, [durationFilterSet, FilterStart, FilterEnd])
 
   
 
-    useEffect(() => {
-        // Load rides when filters change
-        if(enableFetch && durationFilterSet){
-            LoadRides();
-        }else{
-            setEnableFetch(true);
+
+    // Handlers for custom date range
+    const openDatePicker = (mode) => {
+        setDatePickerMode(mode);
+        setShowDatePicker(true);
+    };
+
+    const handleDateChange = (date) => {
+        if (datePickerMode === 'start') {
+            setCustomStartDate(date);
+        } else {
+            setCustomEndDate(date);
         }
-    }, [FilterTripType])
+        setShowDatePicker(false);
+    };
+
+    const handleDatePickerCancel = () => {
+        setShowDatePicker(false);
+    };
+
+    const handleCustomDateConfirm = () => {
+        setShowCustomDatePicker(false);
+        const startTimestamp = customStartDate.getTime();
+        const endOfDay = new Date(customEndDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        const endTimestampWithTime = endOfDay.getTime();
+        setFilterStart(startTimestamp);
+        setFilterEnd(endTimestampWithTime);
+        setDurationFilterSet(true);
+    };
+
+    const handleCustomDateCancel = () => {
+        setShowCustomDatePicker(false);
+    };
 
     return (
         <View style={yourRidesStyles.mainContainer}>
@@ -239,9 +274,59 @@ const YourRidesScreen = ({fromBack=false}) => {
                 options={Header_Options}
                 callback={ToggleHeaderCallback}
             /> */}
-            <DurationFilter
-                callback={DurationFilterCallback}
-            />
+            <View style={{ flexDirection: 'row', paddingHorizontal: 16,  gap: 12 }}>
+                {[
+                    { id: 'today', label: t('today'), getRange: DateTimeFormatter.getTodaysStartEndTime },
+                    { id: 'week', label: t('week'), getRange: DateTimeFormatter.getThisWeekStartEndTime },
+                    // { id: 'last_week', label: 'Last Week', getRange: DateTimeFormatter.getLastWeekStartEndTime },
+                    { id: 'all', label: t('all'), getRange: null },
+                ].map((tab) => (
+                    <TouchableOpacity
+                        key={tab.id}
+                        onPress={() => {
+                            if (tab.getRange) {
+                                const [start, end] = tab.getRange();
+                                setFilterStart(start);
+                                setFilterEnd(end);
+                            } else {
+                                setFilterStart(null);
+                                setFilterEnd(null);
+                            }
+                            setDurationFilterSet(true);
+                            setActiveTab(tab.id);
+                        }}
+                        style={{
+                            flex: 1,
+                            borderWidth: 1,
+                            borderColor: colors.grey_light,
+                            borderRadius: 16,
+                            paddingVertical: 8,
+                            paddingHorizontal: 12,
+                            backgroundColor: activeTab === tab.id ? colors.black : colors.white,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Text style={{ fontFamily: Fonts.medium, color: activeTab === tab.id ? colors.white : colors.black }}>{tab.label}</Text>
+                    </TouchableOpacity>
+                ))}
+                {/* Calendar icon for custom date range */}
+                <TouchableOpacity
+                    onPress={() => setShowCustomDatePicker(true)}
+                    style={{
+                        borderWidth: 1,
+                        borderColor: colors.grey_light,
+                        borderRadius: 16,
+                        paddingVertical: 8,
+                        paddingHorizontal: 12,
+                        backgroundColor: colors.white,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
+                    <CalenderIcon width={20} height={20} />
+                </TouchableOpacity>
+            </View>
             <View
                 style={yourRidesStyles.ridesContainerItems}
             >
@@ -278,6 +363,46 @@ const YourRidesScreen = ({fromBack=false}) => {
             <LoadingToast 
                 visible={showLoadingToast}
                 onHide={() => setShowLoadingToast(false)}
+            />
+            {/* Custom Date Picker Modal */}
+            {showCustomDatePicker && (
+                <View style={{ position: 'absolute', zIndex: 1000, left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
+                    <View style={{ backgroundColor: colors.white, borderRadius: 16, padding: 24, width: '85%', maxWidth: 350 }}>
+                        <Text style={{ fontSize: 18, fontFamily: Fonts.medium, color: colors.black, textAlign: 'center', marginBottom: 16 }}>{t('select_date_range')}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={{ fontSize: 14, fontFamily: Fonts.medium, color: colors.black, marginBottom: 8 }}>{t('from')}</Text>
+                                <TouchableOpacity onPress={() => openDatePicker('start')} style={{ borderWidth: 1, borderColor: colors.grey_light, borderRadius: 8, padding: 12, backgroundColor: colors.white }}>
+                                    <Text style={{ fontSize: 16, fontFamily: Fonts.regular, color: colors.black }}>{new Date(customStartDate).toDateString()}</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <Text style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black }}>{t('to')}</Text>
+                            <View style={{ flex: 1 }}>
+                                <Text style={{ fontSize: 14, fontFamily: Fonts.medium, color: colors.black, marginBottom: 8 }}>{t('to')}</Text>
+                                <TouchableOpacity onPress={() => openDatePicker('end')} style={{ borderWidth: 1, borderColor: colors.grey_light, borderRadius: 8, padding: 12, backgroundColor: colors.white }}>
+                                    <Text style={{ fontSize: 16, fontFamily: Fonts.regular, color: colors.black }}>{new Date(customEndDate).toDateString()}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                        <View style={{ flexDirection: 'row', gap: 12 }}>
+                            <TouchableOpacity onPress={handleCustomDateCancel} style={{ flex: 1, backgroundColor: colors.grey_light, borderRadius: 8, padding: 12, alignItems: 'center' }}>
+                                <Text style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black }}>{t('cancel')}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleCustomDateConfirm} style={{ flex: 1, backgroundColor: colors.black, borderRadius: 8, padding: 12, alignItems: 'center' }}>
+                                <Text style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.white }}>{t('confirm')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            )}
+            <DatePicker
+                modal
+                open={showDatePicker}
+                date={datePickerMode === 'start' ? customStartDate : customEndDate}
+                mode="date"
+                onConfirm={handleDateChange}
+                onCancel={handleDatePickerCancel}
+                maximumDate={new Date()}
             />
         </View>
     )

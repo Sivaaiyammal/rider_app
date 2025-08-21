@@ -102,8 +102,6 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       // Vehicle and trip data
       vehicleType: selectedVehicle.type || 'AUTO',
       passangerCount: 1, 
-      pickupTime: Date.now().toString(), 
-      
       // Pricing data
       minFare: selectedVehicle.minFare, 
       estimatedDistance: rideDistance,

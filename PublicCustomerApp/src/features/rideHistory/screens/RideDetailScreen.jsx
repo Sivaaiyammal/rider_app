@@ -162,17 +162,20 @@ const RideDetailScreen = ({ TripData }) => {
       
       {/* Receipt Modal Overlay */}
       <ReceiptScreen 
-         rideId={rideData?.rideId}
-         tripFare={rideData.fareDetails?.fare}
-         tripDistance={rideData.finalDistance || rideData.estimatedDistance}
-         tripDuration={rideData.finalDuration || rideData.estimatedDuration}
-         driverDetails={rideData.driverInfo}
-         vehicleDetails={rideData.driverInfo}
-         tripStops={rideData.stops}
-         bookingTime={rideData.bookingTime}
-         fareDetails={rideData.fareDetails}
-         paymentMethod={rideData.paymentMethod}
-         paymentStatus={rideData.passengerPaymentStatus}
+        rideId={rideData?.rideId}
+        tripFare={rideData.fareDetails?.fare}
+        tripDistance={rideData.finalDistance || rideData.estimatedDistance}
+        tripDuration={rideData.finalDuration || rideData.estimatedDuration}
+        driverDetails={rideData.driverInfo}
+        vehicleDetails={rideData.driverInfo}
+        tripStops={rideData.stops}
+        bookingTime={rideData.bookingTime}
+        fareDetails={rideData.fareDetails}
+        paymentMethod={rideData.paymentMethod}
+        supplierDetails={rideData.supplier}
+        recipientDetails={rideData.recipient}
+        adminInfo={rideData.adminInfo}
+        paymentStatus={rideData.passengerPaymentStatus}
         visible={showReceipt}
         onClose={handleReceiptClose}
       />
@@ -189,6 +192,9 @@ const RideDetailScreen = ({ TripData }) => {
        bookingTime={rideData.bookingTime}
        fareDetails={rideData.fareDetails}
        paymentMethod={rideData.paymentMethod}
+       supplierDetails={rideData.supplier}
+       recipientDetails={rideData.recipient}
+       adminInfo={rideData.adminInfo}
        paymentStatus={rideData.passengerPaymentStatus}
         visible={showInvoice}
         onClose={handleInvoiceClose}

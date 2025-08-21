@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { ScrollView, View, StyleSheet, Text, TouchableOpacity, Alert, Modal, Platform } from 'react-native';
+import { ScrollView, View, StyleSheet, Text, TouchableOpacity, Alert, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
@@ -11,25 +10,23 @@ import { Fonts, colors } from '../../../constants/constants';
 import PDFCreator from '../../../utils/PDFCreator';
 import { utils } from '../../../utils/Utils';
 
-const InvoiceScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,visible, onClose }) => {
+const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,supplierDetails,recipientDetails,adminInfo,visible, onClose }) => {
   const { t } = useTranslation();
   const { goBack } = useStackScreenStore();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [customFolder, setCustomFolder] = useState('');
-  const [showCustomFolderModal, setShowCustomFolderModal] = useState(false);
-  const [lastGeneratedPath, setLastGeneratedPath] = useState('');
+  const [customFolder] = useState('');
   
   const defaultCompanyInfo = {
-    name: 'Namma Ooru Taxi',
-    address: '789 Company Street, City, State - 654321',
-    phone: '+91 1800 123 4567',
-    email: 'support@nammaoorutaxi.com',
-    gstin: '29ABCDE1234F1Z5'
+    name: supplierDetails?.name || 'N/A',
+    address: supplierDetails?.address || 'N/A',
+    phone: supplierDetails?.phone || 'N/A',
+    email: supplierDetails?.email || 'N/A',
+    gstin: supplierDetails?.gstNumber || 'N/A',
+    pan: supplierDetails?.panNumber || 'N/A',
   };
   
   const defaultCustomerInfo = {
-    name: 'John Doe',
-    phone: '+91 98765 43210',
+    name: recipientDetails?.name || 'N/A',
+    phone: recipientDetails?.phone || 'N/A',
     address: tripStops?.[0]?.address || 'N/A'
   };
   
@@ -40,6 +37,7 @@ const InvoiceScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
     vehicleModel: vehicleDetails?.vehicleModel || 'N/A',
     vehicleNumber: vehicleDetails?.vehicleNumber || 'N/A'
   };
+  const isVendor = true
   
  
   
@@ -56,90 +54,205 @@ const InvoiceScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
 
   const handleMultiSheetPDF = async () => {
     try {
-      setIsGenerating(true);
+      const supportUrl = adminInfo?.supportUrl || "https://nammaoorutaxi.com";
+      const currency = fareDetails?.currency || "₹";
+
+      
 
       const sheets = [
         {
           type: 'tripBill',
           data: {
-            tripId:rideId,
-            date: utils.formatDateAndTime(bookingTime),
-            startTime: utils.formatDateAndTime(bookingTime),
-            endTime: utils.formatDateAndTime(bookingTime),
+            title: "Trip Bill",
+            companyName: adminInfo?.name,
+      
+            customerName: recipientDetails?.name,
+            dateLong: bookingTime,
+            currency: "₹",
+            totalAmount: fareDetails?.fare,
+          
+            bookingId: rideId,
+          
+            yourTripAmount: fareDetails?.breakdown?.subtotal+fareDetails?.breakdown?.feesWithTax?.total,
+            totalPayable: fareDetails?.fare,
+            taxesLine: `Includes ${currency} ${fareDetails?.breakdown?.taxes?.total} Taxes`,
+          
+            driverName: driverDetails?.driverName,
+            driverPhotoUrl: driverDetails?.driverPhotoUrl,
+         
+          
             distance: tripDistance,
-            duration: tripDuration,
-            totalFare: fareDetails?.fare|| 0,
-            driverName: driverDetails?.driverName || 'N/A',
-            driverRating: driverDetails?.driverRating || 'N/A',
-            vehicleBrand: vehicleDetails?.vehicleBrand || 'N/A',
-            vehicleModel: vehicleDetails?.vehicleModel || 'N/A',
-            vehicleNumber: vehicleDetails?.vehicleNumber || 'N/A',
-            vehicleType: vehicleDetails?.vehicleType || 'N/A',
-            vehicleColor: vehicleDetails?.vehicleColor || 'N/A',
+            travelTime: tripDuration,
+            vehicleLabel: `${defaultDriverInfo?.vehicleModel}-${defaultDriverInfo?.vehicleBrand}`,
+            tripType: "Drop Only",
+        
+            pickupAddress: tripStops[0].address,
+            pickupTime: utils.formatDateAndTime(tripStops[0].arrivalTime),
+          
+            
+            dropAddress: tripStops[tripStops.length-1].address,
+            dropTime: utils.formatDateAndTime(tripStops[tripStops.length-1].arrivalTime),
+            supportUrl: supportUrl,
+            supportUrlText: supportUrl,
+            footerNote: "Above fare based on travel distance and waiting. Toll, Parking, Permit charges may apply. T&C apply."
+          }
+        },
+        isVendor ? {
+          type: 'vendorInvoice',
+          data: {
+            // Header
+            invoiceTitle: "Vendor Trip Invoice",
+            invoiceType: "Original Tax Invoice",
+            invoiceDate: fareDetails?.invoicedAt,
+            invoiceNumber: fareDetails?.invoiceId,
+          
+            // Customer Info
+            customerName: recipientDetails?.name,
+            customerMobile: recipientDetails?.phone,
+            pickupAddress: tripStops[0].address,
+            serviceType: "Renting of Motor Cab",
+            paymentMethod: paymentMethod,
+          
+            // Vendor Info
+            vendor: {
+              name: supplierDetails?.name,
+              phone: supplierDetails?.phone,
+              email: supplierDetails?.email,
+              gst: supplierDetails?.gstNumber,
+              pan: supplierDetails?.panNumber
+            },
+          
+            // Trip Summary
+            totalDistance: tripDistance,
+            totalTravelTime: tripDuration,
+            totalWaitingTime: tripStops[0].waitingTime,
+            paymentStatus: paymentStatus,
+          
+            // Fare
+            baseFare: fareDetails?.breakdown?.distancefare+fareDetails?.breakdown?.zoneAdjustment+fareDetails?.breakdown?.rideMatchAdjustment+fareDetails?.breakdown?.surgeAdjustment+fareDetails?.breakdown?.incentives+fareDetails?.breakdown?.lowPerformancePenalty,
+           
+         
+            waitingFare: fareDetails?.breakdown?.waitTimeCost,
+            discount: fareDetails?.breakdown?.couponDiscount,
+            subTotal: fareDetails?.breakdown?.subtotal,
+          
+            // Tax
+            taxes: fareDetails?.breakdown?.taxes,
+          
+            // Net fare after tax and discount
+            netFare: fareDetails?.breakdown?.subtotal + fareDetails?.breakdown?.taxes?.total,
+          
+            // Notes
+            notes: [
+              "Fare includes waiting charges.",
+              "This is a computer-generated invoice.",
+              "Please retain for your records."
+            ],
+          
+            // Signature / Authority
+            authorityName: "Authorized Signatory",
+            authorityCompany: adminInfo?.name,
+            authoritySignUrl: supplierDetails?.digitalSignature
+          }
+        } : {
+          type: 'driverInvoice',
+          data: {
+            invoiceTitle: "Driver Trip Invoice",
+            invoiceType: "Original Tax Invoice",
+            invoiceDate: fareDetails?.invoicedAt,
+            invoiceNumber: fareDetails?.invoiceId,
+            customerName: recipientDetails?.name,
+            customerMobile: recipientDetails?.phone,
+            pickupAddress: tripStops[0].address,
+            serviceType: "Renting of motor cab",
+            paymentMethod: paymentMethod,
+          
+            // Driver & Vehicle
+            driverName: driverDetails?.driverName,
+            operatorName: adminInfo?.name,
+            vehicleNumber: vehicleDetails?.vehicleNumber,
+            stateUT: adminInfo?.state,
+            bookingId: rideId,
+          
+            // KPIs
+            totalDistance: tripDistance,
+            totalTravelTime: tripDuration,
+            totalWaitingTime: tripStops[0].waitingTime,
+            paymentStatus: paymentStatus,
+          
+            // Fare Breakdown
+            baseFare: fareDetails?.breakdown?.distancefare+fareDetails?.breakdown?.zoneAdjustment+fareDetails?.breakdown?.rideMatchAdjustment+fareDetails?.breakdown?.surgeAdjustment+fareDetails?.breakdown?.incentives+fareDetails?.breakdown?.lowPerformancePenalty,
+           
+          
+            waitingFare: fareDetails?.breakdown?.waitTimeCost,
+            discount: fareDetails?.breakdown?.couponDiscount,
+            subTotal: fareDetails?.breakdown?.subtotal,
+            netFare: fareDetails?.breakdown?.subtotal,
+          
+            // Notes
+            notes: [
+              "Fare excludes tax breakdown and includes any waiting charges.",
+              "Please keep this invoice for your records. This is a computer generated document."
+            ],
+          
+            // Authority / Signature
+            authorityName: "Authorized Signatory",
+            authorityCompany: adminInfo?.name,
+            authoritySignUrl: supplierDetails?.digitalSignature  // URL for signature image
           }
         },
         {
-          type: 'tripInvoice',
+          type: 'platformInvoice',
           data: {
-            invoiceNo: rideId         ,
-            invoicedate: utils.formatDateAndTime(bookingTime),
-            state:"Karnataka",
-            customerName: defaultCustomerInfo.name,
-            customerPickupAddress: tripStops?.[0]?.address || 'N/A',
-            customerDropAddress: tripStops?.[tripStops.length - 1]?.address || 'N/A',
-            taxCategory:"local transport",
-            gstNumber:defaultCompanyInfo.gstin,
-            driverName: driverDetails?.driverName || 'N/A',
-            vehicleNumber: vehicleDetails?.vehicleNumber || 'N/A',
-            ridecost:fareDetails?.breakdown?.distancefare+fareDetails?.breakdown?.zoneAdjustment+fareDetails?.breakdown?.rideMatchAdjustment+fareDetails?.breakdown?.surgeAdjustment+fareDetails?.breakdown?.incentives+fareDetails?.breakdown?.lowPerformancePenalty,
-            waitingCost:fareDetails?.waitingCost || 0,
-            discountCost:fareDetails?.discountCost || 0,
-            tax:Object.entries(fareDetails?.breakdown?.taxes?.breakdown || {}).map(([taxKey, taxValue]) => ({
-              name: taxKey,
-              value: taxValue.value,
-              amount: taxValue.tax
-            })),
-            rideId:rideId,
-            totalCost:fareDetails?.breakdown?.subtotal + fareDetails?.breakdown?.taxes?.total || 0
-
+            // Branding / Header
+            companyLogoUrl: adminInfo?.logo,
+            companyName: adminInfo?.name,
+            companyAddressLines: [
+              adminInfo?.address,
+              adminInfo?.city,
+              adminInfo?.state
+            ],
+            companyGSTIN: adminInfo?.gstNumber,
+            companyStateName: adminInfo?.state,
+            companyStateCode: adminInfo?.stateCode,
+            companyEmail: adminInfo?.email,
+          
+            invoiceTitle: "Original Tax Invoice",
+            invoiceType: "Original Tax Invoice",
+            invoiceDate: fareDetails?.invoicedAt,
+            invoiceNumber: fareDetails?.invoiceId,
+            serviceTaxCategory: "Business Auxiliary Service",
+            hsnSacCode: fareDetails?.breakdown?.hsnSacCode || "N/A",
+          
+            // Customer
+            customerName: recipientDetails?.name,
+            customerGSTNumber: recipientDetails?.gstNumber || "N/A",
+            mobileNumber: recipientDetails?.phone || "N/A",
+            supplyAddress:
+              adminInfo?.address,
+          
+            // Trip / Booking
+            bookingId: rideId,
+          
+            // Currency
+            currency: "₹",
+          
+            // Fees with tax breakdown
+            feesWithTax: fareDetails?.breakdown?.feesWithTax,
+          
+            // Footer / Signatory
+            authorityName: "Authorised Signatory",
+            authoritySignUrl: supplierDetails?.digitalSignature,
+            footerNote:
+              "Above fare given based on travel distance and waiting. Toll, Parking, Permit charges may apply. T&C apply."
           }
-        },
-        {
-          type: 'taxInvoice',
-          data: {
-            companyName:"Namma Ooru Taxi",
-            companyAddress:"23, Main Street, Anytown, USA",
-            companyPhone:"+1234567890",
-            companyGstNumber:"29ABCDE1234F1Z5",
-            companyPanNumber:"ABCDE1234F",
-            companyState:"Karnataka",
-            invoiceNo: 'INV-' + Date.now(),
-            invoicedate: new Date().toLocaleDateString(),
-            customerName: defaultCustomerInfo.name,
-            customerPickupAddress: tripStops?.[0]?.address || 'N/A',
-            customerDropAddress: tripStops?.[tripStops.length - 1]?.address || 'N/A',
-            taxCategory:"local transport",
-            rideId:rideId,
-
-            feewithTaxes:Object.entries(fareDetails?.breakdown?.feesWithTax?.breakdown || {}).map(([feeKey, feeValue]) => ({
-              name: feeKey,
-              value: feeValue?.feeAmount,
-              tax:Object.entries(feeValue.taxAmount || {}).map(([taxKey, taxValue]) => ({
-                name: taxKey,
-                value: taxValue.value,
-                amount: taxValue.tax
-              }))
-            })),
-            finalAmount:fareDetails?.breakdown?.feesWithTax?.total || 0
-          }
+          
         }
+        
       ];
 
-      const fileName = 'Ride_Documents_' + new Date().getTime();
+      const fileName = 'Invoice_' + fareDetails?.invoiceId;
       const pdfPath = await PDFCreator.createMultiSheetPDF(sheets, fileName, customFolder || null);
-
-      
-      setLastGeneratedPath(pdfPath);
 
       Alert.alert(
         'Invoice Downloaded!',
@@ -149,57 +262,7 @@ const InvoiceScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
     } catch (error) {
       console.error('Multi-sheet PDF error:', error);
       Alert.alert('Error', 'Failed to create multi-sheet PDF: ' + error.message, [{ text: 'OK' }]);
-    } finally {
-      setIsGenerating(false);
     }
-  };
-
-  const handleEmailInvoice = async () => {
-    try {
-      Alert.alert(
-        'Email Invoice',
-        'Preparing invoice for email...',
-        [{ text: 'OK' }]
-      );
-      
-      // Generate PDF using the utility
-      const pdfPath = await PDFGenerator.generateReceiptPDF(mergedRideData);
-      
-      // Share the generated PDF
-      const success = await PDFGenerator.sharePDF(pdfPath);
-      
-      if (success) {
-        Alert.alert(
-          'Success',
-          'Invoice prepared for email sharing!',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error) {
-      Alert.alert(
-        'Error',
-        'Failed to prepare invoice for email. Please try again.',
-        [{ text: 'OK' }]
-      );
-    }
-  };
-
-  const formatDate = (timestamp) => {
-    const date = new Date(timestamp);
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    const day = days[date.getDay()];
-    const dateNum = date.getDate().toString().padStart(2, '0');
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const displayHours = hours % 12 || 12;
-    const displayMinutes = minutes.toString().padStart(2, '0');
-    
-    return `${day}, ${dateNum} ${month} ${year}, ${displayHours}:${displayMinutes} ${ampm}`;
   };
 
   const formatCurrency = (amount) => {
@@ -251,8 +314,8 @@ const InvoiceScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
           <View style={styles.invoiceHeader}>
             <View style={styles.headerLeft}>
               <Text style={styles.invoiceTitle}>{t('invoice')}</Text>
-              <Text style={styles.invoiceNumber}>#{rideId}</Text>
-              <Text style={styles.invoiceDate}>{utils.formatDateAndTime(bookingTime)}</Text>
+              <Text style={styles.invoiceNumber}>#{fareDetails?.invoiceId || 'N/A'}</Text>
+              <Text style={styles.invoiceDate}>{utils.formatDateAndTime(fareDetails?.invoicedAt)}</Text>
             </View>
             <View style={styles.carImageContainer}>
               <MaterialCommunityIcons name="car" size={32} color={colors.blue} />
@@ -757,7 +820,34 @@ const styles = StyleSheet.create({
 });
 
 InvoiceScreen.propTypes = {
-  TripData: PropTypes.object,
+  rideId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  tripDistance: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  tripDuration: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  driverDetails: PropTypes.shape({
+    driverName: PropTypes.string,
+    driverRating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    driverPhotoUrl: PropTypes.string,
+  }),
+  vehicleDetails: PropTypes.shape({
+    vehicleBrand: PropTypes.string,
+    vehicleModel: PropTypes.string,
+    vehicleNumber: PropTypes.string,
+    vehicleType: PropTypes.string,
+  }),
+  tripStops: PropTypes.arrayOf(
+    PropTypes.shape({
+      address: PropTypes.string,
+      arrivalTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+      waitingTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    })
+  ),
+  bookingTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+  fareDetails: PropTypes.object,
+  paymentMethod: PropTypes.string,
+  paymentStatus: PropTypes.string,
+  supplierDetails: PropTypes.object,
+  recipientDetails: PropTypes.object,
+  adminInfo: PropTypes.object,
   visible: PropTypes.bool,
   onClose: PropTypes.func,
 };

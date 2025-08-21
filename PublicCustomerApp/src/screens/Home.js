@@ -50,9 +50,10 @@ const Home = () => {
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
   const { setUserdetails ,setID,id,setUserFavPlaces} = useUserInfoStore();
-  const {  setMapShown , mapShown,userLocation} = useMapStore();
+  const { setMapShown , mapShown,userLocation} = useMapStore();
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
+    
     
     permissionsRequested.current = true;
     const permissions = await RequestAllPermissions();
@@ -85,11 +86,11 @@ const Home = () => {
           setUserFavPlaces(Response?.userStats?.favPlaces);
         }
 
-        if(Response?.trip?.status == "DROPPED"){
+        if(Response?.trip?.status == "DROPPED" || Response?.trip?.status == "CANCELLED"){
           setStackScreen('PaymentScreen', { });
           return;
         }
-        if(Response?.trip?.status == "COMPLETED"){
+        if(Response?.trip?.status == "COMPLETED" ){
           setStackScreen('TripFeedbackScreen', { });
           return;
         }

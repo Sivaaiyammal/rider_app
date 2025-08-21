@@ -25,13 +25,14 @@ import  useUserInfoStore  from '../../store/useUserInfoStore';
 import useCalculateDistance from './hooks/useCalculateDistance';
 import { useTranslation } from 'react-i18next';
 import Overlay from '../../components/Overlay';
+import AppConfig from '../../Config/AppConfig';
 
 const RideStatus = () => {
   
   const { t } = useTranslation();
   const [showOverlay, setShowOverlay] = useState(false);
-
-  const { tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled} = useCurrentRideInfoStore();
+  
+  const { duration,totalDistance,tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled} = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const {goBack,stackScreen,setStackScreen} = useStackScreenStore();
   const [isPaymentMethodChangeShow,setIspaymentMethodChangeShow] = useState(false);
@@ -61,13 +62,11 @@ const RideStatus = () => {
         showNotification('Ride cancelled successfully');
         setShowBottomSheet(false);
         setShowBookingCancelModel(false);
+        console.log("response",response);
 
-        if (tripStatus === TripStatus.PICKEDUP && response?.totalFare) {
+        if (tripStatus === TripStatus.PICKEDUP && response?.totalFare?.fareDetails?.fare) {
           setOngoingingTripCancelled(true);
-          setTripStatus(TripStatus.CANCELLED);
-          setFareDetails(response.totalFare);
-          setFinalDistance(response.totalFare?.distance);
-          setFinalDuration(response.totalFare?.duration);
+          setStackScreen('PaymentScreen',{})
           
 
         } else {
@@ -94,6 +93,19 @@ const RideStatus = () => {
         return
       }
 
+      if(AppConfig.RIDE_CANCELLED_MIDWAY_FUEL_CHARGE){
+        const payload = {
+          tripId,
+          reason,
+          totalDistance: es,
+          totalDuration: Math.round(gpsDuration)
+      };
+        console.log("Cancel Payload:", payload);
+        await CancelRide(payload);
+        
+        return
+      }
+
       // If the ride is ongoing, include total distance and time
       if (tripStatus === TripStatus.PICKEDUP) {
         setCancelReason(reason);
@@ -111,6 +123,16 @@ const RideStatus = () => {
 
 
   useEffect(()=>{
+    if(gpsDistance == -1 && gpsDuration == -1){
+      const payload = {
+        tripId,
+        reason: cancelReason
+      };
+    
+      CancelRide(payload);
+      
+      return
+    }
     if(isCalculateDistance && gpsDistance && gpsDuration ){
       console.log('gpsDistance',gpsDistance);
       console.log('gpsDuration',gpsDuration);

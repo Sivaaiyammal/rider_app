@@ -9,7 +9,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import PDFCreator from '../../../utils/PDFCreator';
 import { utils } from '../../../utils/Utils';
 
-const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,visible, onClose }) => {
+const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,supplierDetails,recipientDetails,adminInfo,visible, onClose }) => {
   const { t } = useTranslation();
   const { goBack } = useStackScreenStore();
   const [isGenerating, setIsGenerating] = useState(false);
@@ -48,31 +48,50 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
   const handleMultiSheetPDF = async () => {
     try {
       setIsGenerating(true);
+      const supportUrl = adminInfo?.supportUrl || "https://nammaoorutaxi.com";
+      const currency = fareDetails?.currency || "₹";
 
       const sheets = [
         {
           type: 'tripBill',
           data: {
-            tripId:rideId,
-            date: utils.formatDateAndTime(bookingTime),
-            startTime: utils.formatDateAndTime(bookingTime),
-            endTime: utils.formatDateAndTime(bookingTime),
-            stops: tripStops,
+            title: "Trip Bill",
+            companyName: adminInfo?.name,
+      
+            customerName: recipientDetails?.name,
+            dateLong: bookingTime,
+            currency: "₹",
+            totalAmount: fareDetails?.fare,
+          
+            bookingId: rideId,
+          
+            yourTripAmount: fareDetails?.breakdown?.subtotal+fareDetails?.breakdown?.feesWithTax?.total,
+            totalPayable: fareDetails?.fare,
+            taxesLine: `Includes ${currency} ${fareDetails?.breakdown?.taxes?.total} Taxes`,
+          
+            driverName: driverDetails?.driverName,
+            driverPhotoUrl: driverDetails?.driverPhotoUrl,
+         
+          
             distance: tripDistance,
-            duration: tripDuration,
-            totalFare: fareDetails?.fare|| 0,
-            driverName: driverDetails?.driverName || 'N/A',
-            driverRating: driverDetails?.driverRating || 'N/A',
-            vehicleBrand: vehicleDetails?.vehicleBrand || 'N/A',
-            vehicleModel: vehicleDetails?.vehicleModel || 'N/A',
-            vehicleNumber: vehicleDetails?.vehicleNumber || 'N/A',
-            vehicleType: vehicleDetails?.vehicleType || 'N/A',
-            vehicleColor: vehicleDetails?.vehicleColor || 'N/A',
+            travelTime: tripDuration,
+            vehicleLabel: `${driverDetails?.vehicleModel}-${driverDetails?.vehicleBrand}`,
+            tripType: "Drop Only",
+        
+            pickupAddress: tripStops[0]?.address,
+            pickupTime: utils.formatDateAndTime(tripStops[0]?.arrivalTime),
+          
+            
+            dropAddress: tripStops[tripStops.length-1].address,
+            dropTime: utils.formatDateAndTime(tripStops[tripStops.length-1].arrivalTime),
+            supportUrl: supportUrl,
+            supportUrlText: supportUrl,
+            footerNote: "Above fare based on travel distance and waiting. Toll, Parking, Permit charges may apply. T&C apply."
           }
-        },
+        }
       ];
 
-      const fileName = 'Ride_Documents_' + new Date().getTime();
+      const fileName = 'Receipt_' + rideId;
       const pdfPath = await PDFCreator.createMultiSheetPDF(sheets, fileName, customFolder || null);
 
       

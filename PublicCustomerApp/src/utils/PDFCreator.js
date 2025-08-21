@@ -461,6 +461,129 @@ class PDFCreator {
         `;
     };
 
+    generateVendorInvoiceHTML = (receiptData) => {
+        const taxRows = receiptData.taxes && receiptData.taxes.breakdown
+    ? Object.entries(receiptData.taxes.breakdown).map(([k, v]) => {
+        const label = (v.label || k).toUpperCase();
+        const rate =
+          v.type === "percentage" && typeof v.value !== "undefined"
+            ? `(${v.value}%)`
+            : v.type === "flat" && typeof v.value !== "undefined"
+            ? `(₹ ${v.value})`
+            : "";
+        return `
+          <tr>
+            <td>${label} <span class="vendortax-muted">${rate}</span></td>
+            <td class="vendortax-money">₹ ${Number(v.tax).toFixed(2)}</td>
+          </tr>`;
+      }).join("")
+    : "";
+        return `
+           <div class="tripbill-sheet sheet-page" style="page-break-after: always;">
+    <div class="vendortax-invoice">
+      <div class="vendortax-bar">
+        <div class="vendortax-brand">${receiptData.invoiceTitle || "Vendor Trip Invoice"}</div>
+        <span class="vendortax-badge">${receiptData.invoiceType || "Original Tax Invoice"}</span>
+      </div>
+
+      <div class="vendortax-wrap">
+        <div class="vendortax-meta">
+          <!-- Trip & Customer -->
+          <div class="vendortax-card">
+            <h3>Trip & Customer</h3>
+            <div class="vendortax-kv">
+              <small>Invoice Date</small><div>${receiptData.invoiceDate}</div>
+              <small>Invoice #</small><div>${receiptData.invoiceNumber}</div>
+              <small>Customer Name</small><div>${receiptData.customerName}</div>
+              <small>Mobile</small><div>${receiptData.customerMobile}</div>
+              <small>Pickup Address</small><div>${receiptData.pickupAddress}</div>
+            </div>
+           
+          </div>
+
+          <!-- Vendor Info -->
+          <div class="vendortax-card">
+            <h3>Vendor Information</h3>
+            <div class="vendortax-kv">
+              <small>Name</small><div>${receiptData.vendor?.name || ""}</div>
+              <small>Phone</small><div>${receiptData.vendor?.phone || ""}</div>
+              <small>Email</small><div>${receiptData.vendor?.email || ""}</div>
+              <small>GSTIN</small><div>${receiptData.vendor?.gst || ""}</div>
+              <small>PAN</small><div>${receiptData.vendor?.pan || ""}</div>
+            </div>
+            <div class="vendortax-kpis">
+              <div class="vendortax-kpi"><div class="v">${receiptData.totalDistance}</div><div class="l">Total Distance</div></div>
+              <div class="vendortax-kpi"><div class="v">${receiptData.totalTravelTime}</div><div class="l">Travel Time</div></div>
+              <div class="vendortax-kpi"><div class="v">${receiptData.totalWaitingTime}</div><div class="l">Waiting Time</div></div>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="vendortax-section-title">Fare & Tax Break-up</h3>
+        <div class="vendortax-grid2">
+          <!-- Fare Table -->
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60%">Fare Description</th>
+                <th class="vendortax-money" style="width:40%">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="vendortax-money">₹ ${receiptData.baseFare}</td></tr>
+              
+              <tr><td>Total Waiting Fare</td><td class="vendortax-money">₹ ${receiptData.waitingFare}</td></tr>
+              <tr><td class="vendortax-muted">Discount</td><td class="vendortax-money">− ₹ ${receiptData.discount}</td></tr>
+              <tr><td><b>Sub Total</b></td><td class="vendortax-money"><b>₹ ${receiptData.subTotal}</b></td></tr>
+            </tbody>
+          </table>
+
+          <!-- Tax Table -->
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60%">Tax Break-up</th>
+                <th class="vendortax-money" style="width:40%">Tax Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${taxRows}
+              <tr><td><b>Total Tax</b></td><td class="vendortax-money"><b>₹ ${Number(receiptData?.taxes?.total || 0).toFixed(2)}</b></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="vendortax-totals">
+          <div class="vendortax-notes">
+            <p><strong>Notes</strong></p>
+            <ul>${(receiptData.notes || []).map(n => `<li>${n}</li>`).join("")}</ul>
+          </div>
+          <div class="vendortax-sum">
+            <div class="vendortax-row"><div>Sub Total</div><div class="vendortax-money">₹ ${receiptData.subTotal}</div></div>
+            <div class="vendortax-row"><div>Tax Total</div><div class="vendortax-money">₹ ${Number(receiptData?.taxes?.total || 0).toFixed(2)}</div></div>
+            <div class="vendortax-row"><div>Discount</div><div class="vendortax-money">− ₹ ${receiptData.discount}</div></div>
+            <div class="vendortax-row vendortax-total"><div>Net Payable</div><div class="vendortax-money">₹ ${receiptData.netFare}</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vendortax-footer">
+        <div class="vendortax-sign">
+          <div class="vendortax-stamp">
+            <img src="${receiptData.authoritySignUrl || ""}" alt="signature">
+          </div>
+          <div>
+            <div style="font-weight:700">${receiptData.authorityName || "Authorized Signatory"}</div>
+            <div class="vendortax-muted" style="font-size:12px">${receiptData.authorityCompany || ""}</div>
+          </div>
+        </div>
+        <div class="vendortax-muted" style="font-size:12px">Thank you.</div>
+      </div>
+    </div>
+  </div>
+        `;
+    };
+
     /**
      * Format receipt data for PDF generation
      * @param {Object} rideData - The ride data object
@@ -540,6 +663,116 @@ class PDFCreator {
         }
     };
 
+
+    generateDriverInvoiceHTML = (receiptData) => {
+        return `
+             
+                <div class="tripbill-sheet sheet-page" style="page-break-after: always;">
+                    <div class="invoice">
+                    <div class="bar">
+                        <div class="brand">
+                        <span>${receiptData.invoiceTitle}</span>
+                        </div>
+                        <span class="badge">${receiptData.invoiceType}</span>
+                    </div>
+
+                    <div class="wrap">
+                        <div class="meta">
+                        <div class="card">
+                            <h3>Trip & Customer</h3>
+                            <div class="kv">
+                            <small>Invoice Date</small><div>${receiptData.invoiceDate}</div>
+                            <small>Invoice #</small><div>${receiptData.invoiceNumber}</div>
+                            <small>Customer Name</small><div>${receiptData.customerName}</div>
+                            <small>Mobile</small><div>${receiptData.customerMobile}</div>
+                            <small>Pickup Address</small><div>${receiptData.pickupAddress}</div>
+                            </div>
+                            <div class="chips">
+                           
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3>Driver & Vehicle</h3>
+                            <div class="kv">
+                            <small>Driver</small><div>${receiptData.driverName}</div>
+                            <small>Operator</small><div>${receiptData.operatorName}</div>
+                            <small>Vehicle</small><div>${receiptData.vehicleNumber}</div>
+                            <small>State / UT</small><div>${receiptData.stateUT}</div>
+                            <small>Booking ID</small><div>${receiptData.bookingId}</div>
+                            </div>
+                            <div class="kpis">
+                            <div class="kpi"><div class="v">${receiptData.totalDistance}</div><div class="l">Total Distance</div></div>
+                            <div class="kpi"><div class="v">${receiptData.totalTravelTime}</div><div class="l">Travel Time</div></div>
+                            <div class="kpi"><div class="v">${receiptData.totalWaitingTime}</div><div class="l">Waiting Time</div></div>
+                          
+                            </div>
+                        </div>
+                        </div>
+
+                        <h3 class="section-title">Fare Break-up (No Tax)</h3>
+                        <table>
+                        <thead>
+                            <tr>
+                            <th style="width:50%">Description</th>
+                            <th class="money" style="width:25%">Rate</th>
+                            <th class="money" style="width:25%">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                           
+                            <td class="money">–</td>
+                            <td class="money">${receiptData.baseFare}</td>
+                            </tr>
+                           
+                            <tr>
+                            <td>Total Waiting Fare</td>
+                            <td class="money">–</td>
+                            <td class="money">${receiptData.waitingFare}</td>
+                            </tr>
+                            <tr>
+                            <td class="muted">Discount</td>
+                            <td class="money">–</td>
+                            <td class="money">− ${receiptData.discount}</td>
+                            </tr>
+                        </tbody>
+                        </table>
+
+                        <div class="totals">
+                        <div class="notes">
+                            <p><strong>Notes</strong></p>
+                            <ul>
+                            ${receiptData.notes.map(note => `<li>${note}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="sum">
+                            <div class="row"><div>Sub Total</div><div class="money">${receiptData.subTotal}</div></div>
+                            <div class="row"><div>Discount</div><div class="money">− ${receiptData.discount}</div></div>
+                            <div class="row total"><div>Net Fare</div><div class="money">${receiptData.netFare}</div></div>
+                        </div>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        <div class="sign">
+                        <div class="stamp">
+                            <img src="${receiptData.authoritySignUrl}" alt="signature"/>
+                        </div>
+                        <div>
+                            <div style="font-weight:700">${receiptData.authorityName}</div>
+                            <div class="muted" style="font-size:12px">${receiptData.authorityCompany}</div>
+                        </div>
+                        </div>
+                        <div class="muted" style="font-size:12px">Thank you for riding with us.</div>
+                    </div>
+                    </div>
+                </div>
+               
+                `;
+            }
+
+
     /**
      * Generate HTML for a specific sheet type
      * @param {string} sheetType - Type of sheet (tripBill, tripInvoice, taxInvoice, etc.)
@@ -551,12 +784,14 @@ class PDFCreator {
         switch (sheetType) {
             case 'tripBill':
                 return this.generateTripBillHTML(data, pageNumber);
-            case 'tripInvoice':
-                return this.generateTripInvoiceHTML(data, pageNumber);
-            case 'taxInvoice':
-                return this.generateTaxInvoiceHTML(data, pageNumber);
             case 'receipt':
                 return this.generateReceiptHTML(data, pageNumber);
+            case 'platformInvoice':
+                return this.generatePlatformInvoiceHTML(data, pageNumber);
+            case 'driverInvoice':
+                return this.generateDriverInvoiceHTML(data, pageNumber);
+            case 'vendorInvoice':
+                return this.generateVendorInvoiceHTML(data, pageNumber);
             default:
                 return this.generateGenericSheetHTML(sheetType, data, pageNumber);
         }
@@ -580,105 +815,117 @@ class PDFCreator {
     /**
      * Generate Trip Bill HTML
      */
-    generateTripBillHTML = (data, pageNumber) => {
+    generateTripBillHTML = (receiptData, pageNumber) => {
         // Normalize and map incoming data keys
-        const tripId = data.tripId || data.tripID || 'N/A';
-        const date = data.date || new Date().toLocaleDateString();
-        const startTime = data.startTime || '';
-        const endTime = data.endTime || '';
-        const distance = data.distance ?? 0;
-        const duration = data.duration ?? 0;
-        const driverName = data.driverName || 'N/A';
-        const driverRating = data.driverRating ?? 'N/A';
-        const vehicleBrand = data.vehicleBrand || '';
-        const vehicleModel = data.vehicleModel || '';
-        const vehicleNumber = data.vehicleNumber || '';
-        const vehicleType = data.vehicleType || '';
-        const vehicleColor = data.vehicleColor || '';
-       
-        const totalFare = data.totalFare 
+        
 
         return `
-            <div class="sheet-page" style="page-break-after: always;">
-                <div class="sheet-header">
-                    ${this.renderBrandingHTML()}
-                    <h1 class="sheet-title">Trip Bill</h1>
-                    <div class="page-number">Page ${pageNumber}</div>
+            <div class="tripbill-sheet sheet-page" style="page-break-after: always;">
+                <!-- Header -->
+                <div class="tripbill-header">
+               <div class="tripbill-brand">
+                    <div class="tripbill-brand-name">${receiptData.companyName}</div>
+                </div>
+                <div class="tripbill-right">
+                    <div class="tripbill-muted">${receiptData.dateLong}</div>
+                    <div class="amt tripbill-money">${receiptData.currency || "₹"} ${receiptData.totalAmount}</div>
+                </div>
                 </div>
 
-                <div class="trip-details">
-                    <h2>Trip Information</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="label">Trip ID:</span>
-                            <span class="value">${tripId}</span>
+                <!-- Greeting / Booking -->
+                <div class="tripbill-greet">
+                <div>
+                    Dear ${receiptData.customerName},<br>
+                    <span class="tripbill-muted">Thanks for travelling with us</span>
+                </div>
+                <div class="tripbill-muted"><b>Booking ID:</b> ${receiptData.bookingId}</div>
+                </div>
+
+                <!-- Bill details banner -->
+                <div class="tripbill-table">
+                <table style="width:100%; border-collapse:collapse">
+                    <thead>
+                    <tr><th>Bill Details</th></tr>
+                    </thead>
+                </table>
+
+                <!-- Amount rows -->
+                <div class="tripbill-kv">
+                    <div class="l">Your Trip</div>
+                    <div class="r tripbill-money">${receiptData.currency || "₹"} ${receiptData.yourTripAmount}</div>
+                </div>
+                <div class="tripbill-kv" style="background:${'var(--soft)'}">
+                    <div class="l"><b>Total Payable</b><br><span class="tripbill-muted">${receiptData.taxesLine}</span></div>
+                    <div class="r tripbill-money"><b>${receiptData.currency || "₹"} ${receiptData.totalPayable}</b></div>
+                </div>
+                </div>
+
+                <div class="tripbill-wrap">
+                <div class="tripbill-grid">
+                    <!-- Left column: Driver & stats -->
+                    <div class="tripbill-card">
+                    <div class="tripbill-pad">
+                        <div class="tripbill-driver">
+                        <img src="${receiptData.driverPhotoUrl}" alt="${receiptData.driverName}">
+                        <div>
+                            <div class="tripbill-h2">${receiptData.driverName}</div>
+                          
                         </div>
-                        <div class="info-item">
-                            <span class="label">Date:</span>
-                            <span class="value">${date}</span>
                         </div>
-                        <div class="info-item">
-                            <span class="label">Start Time:</span>
-                            <span class="value">${startTime || '-'}</span>
+
+                        <div class="tripbill-stat">
+                        <div class="tripbill-ic">⏱</div>
+                        <div>${receiptData.distance}km ${receiptData.travelTime}</div>
                         </div>
-                        <div class="info-item">
-                            <span class="label">End Time:</span>
-                            <span class="value">${endTime || '-'}</span>
+                        <div class="tripbill-stat">
+                        <div class="tripbill-ic">🚗</div>
+                        <div>${receiptData.vehicleLabel}</div>
                         </div>
-                        <div class="info-item">
-                            <span class="label">Distance:</span>
-                            <span class="value">${Number(distance).toFixed(1)} km</span>
+                        <div class="tripbill-stat">
+                        <div class="tripbill-ic">🎯</div>
+                        <div>${receiptData.tripType}</div>
                         </div>
-                        <div class="info-item">
-                            <span class="label">Duration:</span>
-                            <span class="value">${duration} mins</span>
-                        </div>
+                    </div>
+                    </div>
+
+                    <!-- Right column: Ride details map -->
+                    <div class="tripbill-card tripbill-map">
+                    <!-- <img src="${receiptData.mapImageUrl}" alt="Ride Map"> -->
                     </div>
                 </div>
 
-                <div class="driver-section">
-                    <h2>Driver Information</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="label">Driver Name:</span>
-                            <span class="value">${driverName}</span>
+                <!-- Timeline: pickup & drop -->
+                <div class="tripbill-card" style="margin-top:16px">
+                    <div class="tripbill-timeline">
+                    <div class="tripbill-leg">
+                        <div class="tripbill-muted">
+                        ${receiptData.pickupTime}<br>
                         </div>
-                        <div class="info-item">
-                            <span class="label">Rating:</span>
-                            <span class="value">${driverRating} ⭐</span>
-                        </div>
+                        <div class="tripbill-dot pick"></div>
+                        <div class="tripbill-addr">${receiptData.pickupAddress}</div>
                     </div>
+                    <div class="tripbill-leg">
+                        <div class="tripbill-muted">
+                        ${receiptData.dropTime}<br>
+                        </div>
+                        <div class="tripbill-dot drop"></div>
+                        <div class="tripbill-addr">${receiptData.dropAddress}</div>
+                    </div>
+                    </div>
+                </div>
                 </div>
 
-                <div class="vehicle-section">
-                    <h2>Vehicle Information</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="label">Type:</span>
-                            <span class="value">${vehicleType}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Brand / Model:</span>
-                            <span class="value">${vehicleBrand} ${vehicleModel}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Color:</span>
-                            <span class="value">${vehicleColor || '-'}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="label">Vehicle No:</span>
-                            <span class="value">${vehicleNumber}</span>
-                        </div>
-                    </div>
+                <!-- Footer -->
+                <div class="tripbill-footer">
+                <div>
+                    For any queries? Visit <a href="${receiptData.supportUrl}" target="_blank">${receiptData.supportUrlText || receiptData.supportUrl}</a>
+                </div>
+                <div>
+                    ${receiptData.footerNote || "Above fare based on travel distance and waiting. Toll, Parking, Permit charges may apply. T&C apply."}
+                </div>
                 </div>
 
-                <div class="fare-breakdown">
-                   
-                    <div class="fare-item total">
-                        <span>Total Fare:</span>
-                        <span>₹${Number(totalFare).toFixed(2)}</span>
-                    </div>
-                </div>
+                <div style="text-align:center; padding:8px; font-size:12px; color:#6b7280">${receiptData.footerNote || "Above fare based on travel distance and waiting. Toll, Parking, Permit charges may apply. T&C apply."}</div>
             </div>
         `;
     };
@@ -990,6 +1237,133 @@ class PDFCreator {
         `;
     };
 
+
+    generatePlatformInvoiceHTML = (receiptData) => {
+
+
+        const currency = receiptData.currency || "₹";
+  const feeBlocks = [];
+  let grandTotal = 0;
+
+  if (receiptData.feesWithTax && receiptData.feesWithTax.breakdown) {
+    Object.entries(receiptData.feesWithTax.breakdown).forEach(([feeKey, feeObj]) => {
+      const feeLabel = feeObj.label || (feeKey === "convenienceFee" ? "Convenience Fee (Ride)" : feeKey.replace(/([A-Z])/g, " $1").trim());
+      grandTotal += Number(feeObj.total || 0);
+
+      // Fee row
+      feeBlocks.push(`
+        <tr>
+          <td>${feeLabel}</td>
+          <td class="type-money">${currency} ${Number(feeObj.feeAmount || 0).toFixed(2)}</td>
+        </tr>
+      `);
+
+      // Tax rows under the fee
+      if (feeObj.taxAmount) {
+        Object.entries(feeObj.taxAmount).forEach(([taxKey, t]) => {
+          const taxName = (t.label || taxKey).toUpperCase();
+          const rate =
+            t.type === "percentage" && t.value != null ? `${t.value}%` :
+            t.type === "flat" && t.value != null ? `${currency} ${t.value}` : "";
+          feeBlocks.push(`
+            <tr>
+              <td>${taxName} ${rate ? `<span class="type-muted">(${rate})</span>` : ""}</td>
+              <td class="type-money">${currency} ${Number(t.tax || 0).toFixed(2)}</td>
+            </tr>
+          `);
+        });
+      }
+    });
+  }
+
+  const feesTotal = receiptData.feesWithTax?.total != null
+    ? Number(receiptData.feesWithTax.total)
+    : grandTotal;
+
+
+    
+        return `
+            <div class="type-page">
+    <div class="type-invoice">
+      <div class="type-bar">
+        <div class="type-brand">
+          ${receiptData.companyLogoUrl ? `<img src="${receiptData.companyLogoUrl}" alt="${receiptData.companyName || "Logo"}">` : ""}
+          <span>${receiptData.invoiceTitle || "Original Tax Invoice"}</span>
+        </div>
+        <span class="type-badge">${receiptData.invoiceType || "Original Tax Invoice"}</span>
+      </div>
+
+      <div class="type-wrap">
+        <div class="type-meta">
+          <!-- Company / Supplier -->
+          <div class="type-card">
+            <h3>${receiptData.companyName || "Supplier"}</h3>
+            <div class="type-kv">
+              <div style="grid-column:1 / span 2">${(receiptData.companyAddressLines || []).join("<br>")}</div>
+              <small>GSTIN</small><div>${receiptData.companyGSTIN || "-"}</div>
+              <small>State</small><div>${receiptData.companyStateName || ""}${receiptData.companyStateCode ? `, Code: ${receiptData.companyStateCode}` : ""}</div>
+              <small>E-Mail</small><div>${receiptData.companyEmail || ""}</div>
+            </div>
+          </div>
+
+          <!-- Invoice & Customer Meta -->
+          <div class="type-card">
+            <div class="type-kv">
+              <small>Invoice Date</small><div>${receiptData.invoiceDate}</div>
+              <small>Invoice Number</small><div>${receiptData.invoiceNumber}</div>
+              <small>Service Tax Category</small><div>${receiptData.serviceTaxCategory || ""}</div>
+              <small>HSN/SAC Code</small><div>${receiptData.hsnSacCode || ""}</div>
+              <small>Customer Name</small><div>${receiptData.customerName || ""}</div>
+              <small>Customer GST Number</small><div>${receiptData.customerGSTNumber || "-"}</div>
+              <small>Mobile Number</small><div>${receiptData.mobileNumber || ""}</div>
+              <small>Supply address</small><div>${receiptData.supplyAddress || ""}</div>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="type-section">Charges</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th class="type-money">Amount (INR)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Customer Booking ID - ${receiptData.bookingId || ""}</b></td>
+              <td class="type-money"></td>
+            </tr>
+            ${feeBlocks.join("")}
+            <tr>
+              <td><b>Total Convenience Fare</b></td>
+              <td class="type-money"><b>${currency} ${Number(feesTotal || 0).toFixed(2)}</b></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:16px" class="type-slim">
+          <div class="type-row type-total">
+            <div>Total</div>
+            <div class="type-money">${currency} ${Number(feesTotal || 0).toFixed(2)}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="type-footer">
+        <div class="type-sign">
+          <div class="type-stamp">${receiptData.authoritySignUrl ? `<img src="${receiptData.authoritySignUrl}" alt="signature">` : ""}</div>
+          <div>
+            <div style="font-weight:700">${receiptData.authorityName || "Authorised Signatory"}</div>
+          </div>
+        </div>
+        <div class="type-muted" style="font-size:12px">${receiptData.footerNote || ""}</div>
+      </div>
+    </div>
+  </div>
+    
+          `
+    }
     /**
      * Combine multiple sheets into one HTML document
      */
@@ -1002,6 +1376,19 @@ class PDFCreator {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>${fileName}</title>
                 <style>
+                    :root{
+                    --bg:#0b1020;
+                    --card:#ffffff;
+                    --ink:#0b1220;
+                    --muted:#667085;
+                    --brand:#4f46e5;
+                    --brand-2:#22c55e;
+                    --line:#e6e8ec;
+                    --chip:#eef2ff;
+                    --ring:rgba(79,70,229,.18);
+                    --shadow:0 10px 30px rgba(2,6,23,.15);
+                     --ink:#0b1220; --muted:#6b7280; --brand:#c62828; --line:#e5e7eb; --soft:#f8fafc;
+                }
                     body {
                         font-family: Arial, sans-serif;
                         margin: 0;
@@ -1136,6 +1523,153 @@ class PDFCreator {
                         padding-bottom: 10px;
                         margin: 25px 0 15px 0;
                     }
+
+
+                    .tripbill-sheet{max-width:900px; margin:0 auto; border:1px solid #d1d5db}
+                    .tripbill-wrap{padding:18px 22px}
+                    .tripbill-row{display:flex; gap:16px}
+                    .tripbill-between{justify-content:space-between; align-items:flex-start}
+                    .tripbill-muted{color:var(--muted)}
+                    .tripbill-money{font-variant-numeric:tabular-nums; white-space:nowrap}
+                    .tripbill-h1{font-weight:700; font-size:20px}
+                    .tripbill-h2{font-weight:700; font-size:16px}
+                    .tripbill-chip{display:inline-block; padding:6px 10px; border-radius:999px; background:#fff3f3; color:#7a0f0f; border:1px solid #ffd9d9; font-weight:700}
+                    .tripbill-divider{height:1px; background:var(--line); margin:14px 0}
+                    .tripbill-table{width:100%; border:1px solid var(--line)}
+                    .tripbill-table th{background:#ef4444; color:#fff; text-align:center; padding:12px; font-size:16px; letter-spacing:.4px}
+                    .tripbill-kv{display:grid; grid-template-columns:1fr auto; gap:8px; padding:12px 14px; border-bottom:1px solid var(--line)}
+                    .tripbill-kv .l{color:#111827}
+                    .tripbill-kv .r{font-weight:700; text-align:right}
+                    .tripbill-grid{display:grid; grid-template-columns: 1.2fr .8fr; gap:16px}
+                    .tripbill-card{border:1px solid var(--line)}
+                    .tripbill-pad{padding:14px}
+                    .tripbill-driver{display:grid; grid-template-columns:70px 1fr; gap:12px; align-items:center}
+                    .tripbill-driver img{width:70px; height:70px; object-fit:cover; border-radius:6px; border:1px solid var(--line)}
+                    .tripbill-stat{display:grid; grid-template-columns:28px 1fr; gap:10px; align-items:center; padding:10px 0; border-top:1px solid var(--line)}
+                    .tripbill-stat:first-of-type{border-top:none}
+                    .tripbill-ic{width:28px; height:28px; display:grid; place-items:center; border-radius:50%; background:#f3f4f6; font-size:16px}
+                    .tripbill-map img{width:100%; height:auto; display:block}
+                    /* timeline */
+                    .tripbill-timeline{padding:10px 14px}
+                    .tripbill-leg{display:grid; grid-template-columns: 80px 16px 1fr; gap:12px; align-items:flex-start; padding:12px 0; border-top:1px solid var(--line)}
+                    .tripbill-leg:first-child{border-top:none}
+                    .tripbill-dot{width:12px; height:12px; border-radius:50%; margin-top:4px}
+                    .tripbill-dot.pick{background:#10b981}
+                    .tripbill-dot.drop{background:#ef4444}
+                    .tripbill-addr{white-space:pre-wrap}
+                    /* header */
+                    .tripbill-header{padding:14px 22px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line)}
+                    .tripbill-brand{display:flex; align-items:center; gap:12px}
+                    .tripbill-brand img{height:36px}
+                    .tripbill-right{text-align:right}
+                    .tripbill-right .amt{font-weight:800; font-size:20px}
+                    .tripbill-greet{padding:10px 22px; font-size:13px; display:flex; justify-content:space-between}
+                    .tripbill-footer{padding:12px 22px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); display:flex; justify-content:space-between}
+                    @media print{ body{padding:0} .tripbill-sheet{border:none} .tripbill-table th{background:#c62828} }
+
+
+                    
+                     .vendortax-page{max-width:920px;margin:0 auto}
+                    .vendortax-invoice{background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+                    .vendortax-bar{background:linear-gradient(90deg,var(--brand) 0%,#7c3aed 60%,#06b6d4 100%);padding:22px 28px;color:#fff;display:flex;align-items:center;gap:16px}
+                    .vendortax-brand{font-weight:700;letter-spacing:.3px}
+                    .vendortax-badge{margin-left:auto;background:rgba(255,255,255,.18);padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.35)}
+                    .vendortax-wrap{padding:28px}
+                    .vendortax-meta{display:grid;grid-template-columns:1.2fr .9fr;gap:22px}
+                    .vendortax-card{border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+                    .vendortax-card h3{margin:0 0 8px;font-size:13px;color:#111827;text-transform:uppercase;letter-spacing:.6px}
+                    .vendortax-kv{display:grid;grid-template-columns:160px 1fr;gap:8px 14px;font-size:13px}
+                    .vendortax-kv div{color:#111827}
+                    .vendortax-kv small{color:var(--muted)}
+                    .vendortax-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+                    .vendortax-chip{background:var(--chip);border:1px solid #dbe4ff;color:#273161;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600}
+                    .vendortax-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
+                    .vendortax-kpi{border:1px dashed var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+                    .vendortax-kpi .v{font-size:18px;font-weight:800;color:#111827}
+                    .vendortax-kpi .l{font-size:12px;color:var(--muted)}
+                    .vendortax-section-title{margin:18px 0 10px;font-size:13px;color:#111827;text-transform:uppercase;letter-spacing:.6px}
+                    .vendortax-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+                    table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+                    thead th{background:#f8fafc;text-align:left;padding:12px 14px;font-size:12px;color:#334155;letter-spacing:.4px}
+                    tbody td{padding:12px 14px;border-top:1px solid var(--line)}
+                    tbody tr:hover td{background:#fafafa}
+                    .vendortax-money{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+                    .vendortax-muted{color:var(--muted)}
+                    .vendortax-totals{display:grid;grid-template-columns:1fr 320px;gap:18px;margin-top:16px;align-items:start}
+                    .vendortax-notes{font-size:12px;color:var(--muted)}
+                    .vendortax-sum{border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+                    .vendortax-row{display:flex;justify-content:space-between;padding:8px 0;border-top:1px dashed var(--line)}
+                    .vendortax-row:first-child{border-top:none}
+                    .vendortax-total{font-weight:800;font-size:16px;color:#111827}
+                    .vendortax-footer{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 28px;border-top:1px solid var(--line);background:#fcfcfd}
+                    .vendortax-sign{display:flex;align-items:center;gap:12px;color:#111827}
+                    .vendortax-stamp img{height:40px}
+                    @media print{body{background:#fff;padding:0}.vendortax-page{max-width:100%}.vendortax-invoice{border-radius:0;box-shadow:none}.vendortax-footer{background:#fff}}
+                                
+                    .type-page{max-width:920px;margin:0 auto}
+                    .type-invoice{background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+                    .type-bar{background:linear-gradient(90deg,var(--brand) 0%,#7c3aed 60%,#06b6d4 100%);padding:22px 28px;color:#fff;display:flex;align-items:center;gap:16px}
+                    .type-brand{display:flex;align-items:center;gap:14px;font-weight:700}
+                    .type-brand img{height:34px}
+                    .type-badge{margin-left:auto;background:rgba(255,255,255,.18);padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid rgba(255,255,255,.35)}
+                    .type-wrap{padding:28px}
+                    .type-meta{display:grid;grid-template-columns:1.2fr .9fr;gap:22px}
+                    .type-card{border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+                    .type-card h3{margin:0 0 8px;font-size:13px;color:#111827;text-transform:uppercase;letter-spacing:.6px}
+                    .type-kv{display:grid;grid-template-columns:160px 1fr;gap:8px 14px;font-size:13px}
+                    .type-kv div{color:#111827}
+                    .type-kv small{color:var(--muted)}
+                    .type-section{margin:18px 0 10px;font-size:13px;color:#111827;text-transform:uppercase;letter-spacing:.6px}
+                    table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+                        thead th{background:#f8fafc;text-align:left;padding:12px 14px;font-size:12px;color:#334155;letter-spacing:.4px}
+                        tbody td{padding:12px 14px;border-top:1px solid var(--line)}
+                        tbody tr:hover td{background:#fafafa}
+                        .type-money{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+                        .type-muted{color:var(--muted)}
+                        .type-slim{border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+                        .type-row{display:flex;justify-content:space-between;padding:8px 0;border-top:1px dashed var(--line)}
+                        .type-row:first-child{border-top:none}
+                        .type-total{font-weight:800;font-size:16px;color:#111827}
+                        .type-footer{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 28px;border-top:1px solid var(--line);background:#fcfcfd}
+                        .type-sign{display:flex;align-items:center;gap:12px;color:#111827}
+                        .type-stamp img{height:40px}
+                        @media print{body{background:#fff;padding:0}.type-page{max-width:100%}.type-invoice{border-radius:0;box-shadow:none}.type-footer{background:#fff}}
+
+                    .page{max-width:920px;margin:0 auto}
+                    .invoice{background:var(--card);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+                    .bar{background:linear-gradient(90deg, var(--brand) 0%, #7c3aed 60%, #06b6d4 100%);padding:22px 28px;color:#fff;display:flex;align-items:center;gap:16px}
+                    .brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.3px}
+                    .bar .badge{margin-left:auto;background:rgba(255,255,255,.18);padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600;backdrop-filter:saturate(140%) blur(6px);border:1px solid rgba(255,255,255,.35)}
+                    .wrap{padding:28px}
+                    .meta{display:grid;grid-template-columns:1.2fr .9fr;gap:22px}
+                    .card{border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+                    .meta h3{margin:0 0 8px;font-size:13px;color:#111827;text-transform:uppercase;letter-spacing:.6px}
+                    .kv{display:grid;grid-template-columns:160px 1fr;gap:8px 14px;font-size:13px}
+                    .kv div{color:#111827}
+                    .kv small{color:var(--muted)}
+                    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+                    .chip{background:var(--chip);border:1px solid #dbe4ff;color:#273161;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600}
+                    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
+                    .kpi{border:1px dashed var(--line);border-radius:12px;padding:12px 14px;text-align:center}
+                    .kpi .v{font-size:18px;font-weight:800;color:#111827}
+                    .kpi .l{font-size:12px;color:var(--muted)}
+                    .section-title{margin:18px 0 10px;font-size:13px;color:#111827;text-transform:uppercase;letter-spacing:.6px}
+                    table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+                    thead th{background:#f8fafc;text-align:left;padding:12px 14px;font-size:12px;color:#334155;letter-spacing:.4px}
+                    tbody td{padding:12px 14px;border-top:1px solid var(--line)}
+                    tbody tr:hover td{background:#fafafa}
+                    .money{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+                    .muted{color:var(--muted)}
+                    .totals{display:grid;grid-template-columns:1fr 280px;gap:18px;margin-top:16px;align-items:start}
+                    .notes{font-size:12px;color:var(--muted)}
+                    .sum{border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+                    .sum .row{display:flex;justify-content:space-between;padding:8px 0;border-top:1px dashed var(--line)}
+                    .sum .row:first-child{border-top:none}
+                    .sum .row.total{font-weight:800;font-size:16px;color:#111827}
+                    .paid{color:var(--brand-2);font-weight:700;font-size:12px;letter-spacing:.4px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);padding:3px 8px;border-radius:999px}
+                    .footer{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 28px;border-top:1px solid var(--line);background:#fcfcfd}
+                    .sign{display:flex;align-items:center;gap:12px;color:#111827}
+                    .stamp img{height:40px}
                     
                     @media print {
                         .sheet-page {

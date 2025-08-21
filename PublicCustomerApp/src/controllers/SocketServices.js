@@ -51,7 +51,7 @@ class WSService {
           console.log('CANCELLED');
           console.log(data?.tripStatus);
           if(data?.isOnGoingTrip && data?.fareDetails){
-            this.useStackScreenStore.getState().setStackScreen('RideStatus',{});
+            this.useStackScreenStore.getState().setStackScreen('PaymentScreen',{});
             this.useCurrentRideInfoStore.getState().setFareDetails(data?.tripFare);
             this.useCurrentRideInfoStore.getState().setFinalDistance(data?.tripFare?.distance);
             this.useCurrentRideInfoStore.getState().setFinalDuration(data?.tripFare?.duration);
