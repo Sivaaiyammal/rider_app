@@ -20,7 +20,7 @@ const useSupportStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await UserTicketService.getAllTickets();
-      console.log('response', response);
+      
       const TransformData = response?.data?.map(item => ({
         "ticketId": item.ticketId,
       "subject": item.title,

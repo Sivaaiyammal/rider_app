@@ -174,8 +174,7 @@ const TicketDetailScreen = () => {
   }
 
   const renderMessage = ({ item }) => (
-    console.log('item',item),
-    console.log('id',id),
+    
     item?.sender == "system" ?
     <SystemMessage message={item} isUser={false} />
     :

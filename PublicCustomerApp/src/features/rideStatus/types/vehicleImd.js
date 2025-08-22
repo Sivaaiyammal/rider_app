@@ -13,7 +13,7 @@ import ElectricSedanIcon from '../../../assets/vehicle/SEDAN.webp';
 import ElectricSuvIcon from '../../../assets/vehicle/SUV.webp';
 
 export const getVehicleImage = (type,style) => {
-    console.log('type',type);
+  
     switch(type){
         case 'AUTO':
             return <Image source={AutoIcon} style={style} />

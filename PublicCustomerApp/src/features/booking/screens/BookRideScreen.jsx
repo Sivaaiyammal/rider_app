@@ -87,13 +87,11 @@ const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => 
         
         const coords = [[rideStartLocation.longitude,rideStartLocation.latitude],[rideEndLocation.longitude,rideEndLocation.latitude],...rideWayPoints.map(waypoint => [waypoint.longitude,waypoint.latitude])]
         
-        console.log("=====> COORDS", coords)
         const bounds = utils.getBoundingBox(coords)
        
         const margin = [20,20,20,500]
         // Structure bounds properly: [bounds, margin] where bounds is [minLon, minLat, maxLon, maxLat]
         const finalBounds = [bounds, margin]
-        console.log("=====> FINAL BOUNDS", finalBounds)
         setMapBounds(finalBounds);
     }
     return (
@@ -199,7 +197,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     // Fetch nearby drivers when screen initializes
     useEffect(() => {
         if (rideStartLocation && rideStartLocation.latitude && rideStartLocation.longitude) {
-            console.log('Fetching nearby drivers for location:', rideStartLocation);
+           
             fetchNearbyDrivers([rideStartLocation.longitude, rideStartLocation.latitude]);
         }
     }, [rideStartLocation, fetchNearbyDrivers]);
@@ -236,13 +234,13 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         
         const coords = [[rideStartLocation.longitude,rideStartLocation.latitude],[rideEndLocation.longitude,rideEndLocation.latitude],...rideWayPoints.map(waypoint => [waypoint.longitude,waypoint.latitude])]
         
-        console.log("=====> COORDS", coords)
+        
         const bounds = utils.getBoundingBox(coords)
        
         const margin = [100,100,100,500]
         // Structure bounds properly: [bounds, margin] where bounds is [minLon, minLat, maxLon, maxLat]
         const finalBounds = [bounds, margin]
-        console.log("=====> FINAL BOUNDS", finalBounds)
+        
         setMapBounds(finalBounds);
     }
 
@@ -265,16 +263,11 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         }
     }, [nearbyDrivers]);
 
-    // Log when fetching drivers
-    useEffect(() => {
-        if (isFetchingDrivers) {
-            console.log('Fetching nearby drivers...');
-        }
-    }, [isFetchingDrivers]);
+    
 
 
     const transformEstimateDatStore=(data)=>{
-        console.log("=====> DATA", JSON.stringify(data))
+      
     
         let vehicleList=[]
 
@@ -291,7 +284,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
                     estimatedDuration:data[item.type].estimatedDuration || item.estimatedDuration,
                    
                 }
-                console.log("=====> VEHICLE ITEM", JSON.stringify(VehicleItem))
+                
                 vehicleList.push(VehicleItem)
             }
         })
@@ -331,7 +324,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             coordinates: [rideStartLocation.longitude, rideStartLocation.latitude]
         };
 
-        console.log("Sending estimation payload:", payload);
+        
         estimationMutate(payload);
     };
 
@@ -353,11 +346,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     
     useEffect(() => {
         if (isRideLocationsReady()) {
-            console.log('Setting direction points with:', {
-                rideStartLocation,
-                rideEndLocation,
-                rideWayPoints,
-            });
+            
             const result = transformRideLocationsToDirectionPoints({
                 clearMarkers: true,
                 vehicleType: 'car'

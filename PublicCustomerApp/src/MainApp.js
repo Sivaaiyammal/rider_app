@@ -62,10 +62,7 @@ const MainAppContent = () => {
 
     messaging()
       .getToken()
-      .then(token => {
-        console.log('FCM Token:', token);
-        // send to your backend if needed
-      });
+      
 
     return unsubscribe;
   }, []);

@@ -130,21 +130,21 @@ const Home = () => {
 
 
   const fetchAllNearbyDrivers = async () => {
-    const payload = {
-      radius:10000,
-      location:location
-    }
-    const drivers = await getNearByDrivers(payload);
-    console.log("=====> DRIVERS", drivers)
+    // const payload = {
+    //   radius:10000,
+    //   location:location
+    // }
+    // const drivers = await getNearByDrivers(payload);
+    
   }
 
 
   const loadUserDetails = async () => {
     
     const userdetails = await DataStore.loadData('userdetails');
-    console.log("userdetails",userdetails)
+    
     if(userdetails.data){
-      console.log("test",userdetails.data)
+      
       setUserdetails(userdetails.data);
       setID(userdetails.data._id);
     }

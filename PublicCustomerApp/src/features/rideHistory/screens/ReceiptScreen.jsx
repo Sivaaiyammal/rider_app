@@ -1,4 +1,4 @@
-import React, { useState }   from 'react';
+import React, { useState, useRef, useEffect }   from 'react';
 import { ScrollView, View, StyleSheet, Text, TouchableOpacity, Alert, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -15,6 +15,17 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
   const [isGenerating, setIsGenerating] = useState(false);
   const [lastGeneratedPath, setLastGeneratedPath] = useState(null);
   const [customFolder, setCustomFolder] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const toastTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
   // Use the actual trip data or dummy data if not provided
   const rideData = {
     _id: rideId,
@@ -96,12 +107,13 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
 
       
       setLastGeneratedPath(pdfPath);
-
-      Alert.alert(
-        'Receipt Downloaded!',
-        `stored at:\n${pdfPath}`,
-        [{ text: 'OK' }]
-      );
+      // Show floating toast (2s) with saved path
+      setToastMessage(`Saved to:\n${pdfPath}`);
+      setShowToast(true);
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+      }
+      toastTimerRef.current = setTimeout(() => setShowToast(false), 2000);
     } catch (error) {
       console.error('Multi-sheet PDF error:', error);
       Alert.alert('Error', 'Failed to create multi-sheet PDF: ' + error.message, [{ text: 'OK' }]);
@@ -238,6 +250,13 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
    
         </View>
       </ScrollView>
+
+      {/* Floating Toast */}
+      {showToast && (
+        <View style={styles.toast}>
+          <Text style={styles.toastText}>{toastMessage}</Text>
+        </View>
+      )}
       </View>
     </Modal>
   );
@@ -396,10 +415,58 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#2196F3',
   },
+  toast: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: '15%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    zIndex: 10,
+    elevation:5,
+  },
+  toastText: {
+    fontFamily: Fonts.medium,
+    fontSize: 13,
+    color: colors.white,
+    textAlign: 'center',
+  },
 });
 
 ReceiptScreen.propTypes = {
-  TripData: PropTypes.object,
+  rideId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  tripFare: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  tripDistance: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  tripDuration: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  driverDetails: PropTypes.shape({
+    driverName: PropTypes.string,
+    driverRating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    driverPhotoUrl: PropTypes.string,
+  }),
+  vehicleDetails: PropTypes.shape({
+    vehicleBrand: PropTypes.string,
+    vehicleModel: PropTypes.string,
+    vehicleNumber: PropTypes.string,
+    vehicleType: PropTypes.string,
+  }),
+  tripStops: PropTypes.arrayOf(
+    PropTypes.shape({
+      address: PropTypes.string,
+      arrivalTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+      waitingTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    })
+  ),
+  bookingTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+  fareDetails: PropTypes.object,
+  paymentMethod: PropTypes.string,
+  paymentStatus: PropTypes.string,
+  supplierDetails: PropTypes.object,
+  recipientDetails: PropTypes.object,
+  adminInfo: PropTypes.object,
   visible: PropTypes.bool,
   onClose: PropTypes.func,
 };

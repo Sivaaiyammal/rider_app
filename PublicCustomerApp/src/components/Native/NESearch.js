@@ -20,8 +20,7 @@ const performSearch = async ({
    
   try {
     const categoryFilter = JSON.stringify(category);
-    console.log('hari-->>categoryFilter-->>', categoryFilter);
-    console.log('hari-->>stateVector--->>', stateVector)
+    
     const searchResponse = await NeNativeModule.search(
         latitude, //24.4539,    // latitude
         longitude, // 54.3773,  // longitude

@@ -90,7 +90,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         locationFrom:"MAP"
       });
 
-      console.log("defaultLocation",defaultLocation)
+      
       
         setMapLocation({
           lat: defaultLocation.location[1],

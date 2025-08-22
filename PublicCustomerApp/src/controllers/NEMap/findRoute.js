@@ -37,7 +37,7 @@ export async function findRoute(points) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        console.log('response',response);
+        
         
         const routeData = await response.json();
         return routeData;

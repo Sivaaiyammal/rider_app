@@ -371,13 +371,13 @@ const styles = StyleSheet.create({
   RideInfoText:{
     fontSize:16,
     fontFamily:Fonts.regular,
-    
+    color:colors.black, 
     textAlign:"center"
   },
   LATERText:{
     fontSize:14,
     fontFamily:Fonts.regular,
- 
+    color:colors.black,
     textAlign:"center",
     marginTop:20
   }

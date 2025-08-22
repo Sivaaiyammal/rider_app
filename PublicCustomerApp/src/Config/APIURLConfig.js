@@ -10,7 +10,7 @@ module.exports = {
     // ROOT_API_URL:'https://d637-2406-7400-ff03-ad2b-7069-a339-5b33-1023.ngrok-free.app',
     // ROOT_API_URL: 'http://192.168.0.122:3001',
     // RIDE_MATCH_SOCKET_URL: 'http://192.168.0.122:5001',
-    ROOT_API_URL: 'https://tracker.vmmaps.com/trackerbackend-test',
+    ROOT_API_URL: 'https://tracker.vmmaps.com/trackerbackend',
     RIDE_MATCH_SOCKET_URL: 'https://tracker.vmmaps.com/ridematch',
     // ROOT_API_URL: 'http://localhost:3000',
     // RIDE_MATCH_SOCKET_URL: 'http://localhost:5001',

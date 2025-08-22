@@ -46,10 +46,14 @@ export const ContextProvider = ({children}) => {
 
   const saveThemeSettings = useCallback(async (mode, isDefault) => {
     try {
-      await DataStore.storeData('ThemeMode', mode);
-      await DataStore.storeData('IsDefault', isDefault);
+      if(mode){
+        await DataStore.storeData('ThemeMode', mode);
+      }
+      if(isDefault){
+        await DataStore.storeData('IsDefault', isDefault);
+      }
     } catch (error) {
-      console.error('Error saving theme settings:', error);
+      console.log('Error saving theme settings:', error);
     }
   }, []);
 

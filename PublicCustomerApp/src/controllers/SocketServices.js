@@ -165,7 +165,7 @@ class WSService {
         const protocolAndHost = urlParts.slice(0, 3).join('/');
         const path = '/' + urlParts.slice(3).join('/');
 
-        console.log("protocolAndHost-->>fdff", protocolAndHost)
+       
 
         this.socket = io(`${protocolAndHost}/public-rides-customer`, {
           path: path !== '/' ? path + '/socket.io' : '/socket.io',

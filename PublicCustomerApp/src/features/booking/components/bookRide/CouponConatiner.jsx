@@ -30,18 +30,18 @@ const CouponContainer = ({ onApply }) => {
   };
 
   const fetchCoupons = async () => {
-    console.log("fetching coupons")
+    
     setIsLoading(true);
     const payload = {
       fare: selectedVehicle?.minFare || 0,
     };
-    console.log("payload",payload)
+    
     try {
       const response = await getAvaliableCoupons(payload);
       if (response.success) {
         if (response?.coupons?.data?.dynamicCoupons) {
           setAllCoupons(response.coupons.data.dynamicCoupons);
-          console.log("allCouponsssssssssssssss",response.coupons.data.dynamicCoupons)
+          
         } else {
           setAllCoupons([]);
         }

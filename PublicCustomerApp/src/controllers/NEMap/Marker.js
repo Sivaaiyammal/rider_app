@@ -20,7 +20,7 @@ class Marker {
         // if (!markerTypes.includes(type)) {
         //     throw new Error("Invalid marker type");
         // }
-        console.log("size", size)
+       
 
         if (!markerSizes.includes(size)) {
             throw new Error("Invalid marker size");

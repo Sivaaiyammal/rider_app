@@ -12,6 +12,8 @@ const ALLOWED_KEYS = [
   'IsDefault',
   'recentSearches',
   'currentTrip',
+  'ThemeMode',  
+  'IsDefault',
 ]
 
 // const KEYS_TO_CLEAR_ON_SESSION_END = [

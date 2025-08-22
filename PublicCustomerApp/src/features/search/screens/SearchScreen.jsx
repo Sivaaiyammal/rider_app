@@ -292,9 +292,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     setOnSearchResults([]);
   };
 
-  useEffect(() => {
-    console.log("onSearchResults",JSON.stringify(onSearchResults, null, 2));
-  }, [onSearchResults]);
+  
 
   return (
     <View style={styles.screen}>

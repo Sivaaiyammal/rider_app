@@ -31,7 +31,7 @@ const MyAccountScreen = () => {
   const { userdetails } = useUserInfoStore();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   
-  console.log('userdetails', userdetails);
+  
 
   const [Info_Items] = useState([
     {

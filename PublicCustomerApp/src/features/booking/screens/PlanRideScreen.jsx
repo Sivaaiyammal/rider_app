@@ -102,7 +102,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
         setPassangerDetails({name:userdetails.name,phone:userdetails.phone})
       }
     }
-    console.log(showScheduleTime,"wdjdkdbkwdbk")
+    
     if(showScheduleTime){
       setShowScheduleContainer(true)
     }

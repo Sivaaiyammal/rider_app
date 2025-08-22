@@ -191,9 +191,7 @@ export const SearchResultV2 = (props) => {
     }
     
   
-    if (sections.length > 0) {
-        console.log("First section data length:", sections[0].data?.length);
-    }
+    
 
     const [expandedSections, setExpandedSections] = useState({});
 

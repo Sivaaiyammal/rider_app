@@ -184,7 +184,7 @@ const VehicleListScreen = () => {
       >
         <View>
           {vehicles.map((item, idx) => {
-            console.log('item-->>', item)
+            
             const vehicleDetails = getVehicleDetailsById(item.vehicleType);
             return (
               <TouchableOpacity key={idx} style={[vehicleList.cards, selectedVehicle?.vehicleType === item?.vehicleType && { backgroundColor: colors.grey_xlight}]} onPress={() => handleVehicleSelect(item)}>
