@@ -1,5 +1,5 @@
 import axios from 'axios';
-import Config from '../Config/APIConfig';
+import Config from '../Config/APIURLConfig';
 import {DataStore} from '../controllers/DataStore';
 
 const apiClient = axios.create({

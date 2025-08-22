@@ -1,5 +1,5 @@
 import io from 'socket.io-client';
-import Config from '../Config/APIConfig';
+import Config from '../Config/APIURLConfig';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore';

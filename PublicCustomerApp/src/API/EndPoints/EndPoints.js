@@ -1,5 +1,5 @@
 import apiClient from "../APIClient";
-import APIConfig from "../../Config/APIConfig";
+import APIConfig from "../../Config/APIURLConfig";
 
 // request OTP
 export const requestOTP = async (payload) => {

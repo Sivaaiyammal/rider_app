@@ -5,7 +5,7 @@ import { I18nextProvider } from 'react-i18next';
 import i18n from './src/i18n';
 
 import { ApolloProvider, HttpLink, ApolloClient, InMemoryCache } from '@apollo/client';
-import { ROOT_API_URL } from './src/Config/APIConfig';
+import { ROOT_API_URL } from './src/Config/APIURLConfig';
 const App = () => {
 
 const grapqlEndPoint = '/publicrides/customer/graphql/location';

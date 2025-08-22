@@ -1,5 +1,5 @@
 import  apiClient  from '../../../API/APIClient';
-import APIConfig from '../../../Config/APIConfig';
+import APIConfig from '../../../Config/APIURLConfig';
 class UserTicketService {
   /**
    * Get all passenger tickets
