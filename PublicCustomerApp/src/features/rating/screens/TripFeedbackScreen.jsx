@@ -80,11 +80,11 @@ export default function TripFeedbackScreen() {
 
   const handleSubmit = async (ratingData) => {
     ratingData.tripId = currentTripId
-    console.log("ratingData",JSON.stringify(ratingData))
+    
     
     const feedback = await submitTripFeedback(ratingData)
 
-    console.log("feedback",JSON.stringify(feedback))
+    
    
     if(feedback.success){
       showNotification(t('success'),t('feedback_submitted_successfully'),colors.success)

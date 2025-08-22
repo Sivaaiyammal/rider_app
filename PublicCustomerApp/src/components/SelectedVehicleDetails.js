@@ -36,7 +36,7 @@ const SelectedVehicleDetails = props => {
 
 
   const getLocationIcon = item => {
-    console.log(item.name)
+  
     switch (item.name) {
       case 'Start':
         return <Rocket />;
@@ -82,7 +82,7 @@ const SelectedVehicleDetails = props => {
   }, []);
 
   const getRandomColor = (vehicleType ) => {
-    console.log('vehicleType-->>', vehicleType)
+   
     const colors = {
       'SEDAN': '#9b3e3e',
       'SUV': '#4b48ab',

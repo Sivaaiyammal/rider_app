@@ -45,7 +45,7 @@ const MainAppContent = () => {
   useEffect(() => {
     initLanguage();
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      console.log('Message handled in the foreground!', remoteMessage);
+   
       PushNotifications.sendNotification(remoteMessage.notification.body, remoteMessage.notification.title, remoteMessage.data)
     });
 

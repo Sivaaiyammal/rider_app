@@ -29,9 +29,8 @@ const useCalculateDistance = ({ tripId, startTime, endTime,enabled = true }) => 
 
   useEffect(() => {
     const processData = async () => {
-      console.log("data",data)
+    
       if(data?.getRecentLocations?.raw?.length == 0){
-        console.log("data?.getRecentLocations?.raw?.length",data?.getRecentLocations?.raw?.length)
         setGpsDistance(10);
         setGpsDuration(30);
       }

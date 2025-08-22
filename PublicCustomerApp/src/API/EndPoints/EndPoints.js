@@ -75,7 +75,7 @@ export const getUserStats = async (location, currentTripId) => {
 }
 
 export const cancelRide = async (payload)=> {
-  console.log('payload', payload)
+  
   const {data} = await apiClient.post('publicrides/customer/rideCancelByPassenger', payload)
   return data
 }

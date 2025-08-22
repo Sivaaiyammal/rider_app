@@ -66,13 +66,13 @@ export const ContextProvider = ({children}) => {
         themeOperations('default');
       } else {
         // First time app launch - use current device theme
-        console.log('First time launch - using device theme:', systemColorScheme);
+     
         themeOperations('default');
       }
     } catch (error) {
       console.error('Error loading theme settings:', error);
       // Fallback to current device theme
-      console.log('Fallback to device theme:', systemColorScheme);
+     
       themeOperations('default');
     } finally {
       setIsInitialized(true);
@@ -109,7 +109,7 @@ export const ContextProvider = ({children}) => {
     if (themeMode === 'default' && isInitialized) {
       const newTheme = systemColorScheme === 'dark' ? darkTheme : lightTheme;
       setTheme(newTheme);
-      console.log('System theme changed to:', systemColorScheme);
+      
     }
   }, [systemColorScheme, themeMode, isInitialized]);
 

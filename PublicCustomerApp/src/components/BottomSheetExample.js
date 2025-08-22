@@ -11,7 +11,7 @@ const BottomSheetExample = () => {
 
   // callbacks
   const handleSheetChanges = useCallback((index) => {
-    console.log('handleSheetChanges', index);
+  
   }, []);
 
   const handlePresentPress = useCallback(() => {

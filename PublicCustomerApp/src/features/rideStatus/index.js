@@ -26,6 +26,8 @@ import useCalculateDistance from './hooks/useCalculateDistance';
 import { useTranslation } from 'react-i18next';
 import Overlay from '../../components/Overlay';
 import AppConfig from '../../Config/AppConfig';
+import {DataStore}from '../../controllers/DataStore';
+import PREF from '../../storage/PREF';
 
 const RideStatus = () => {
   
@@ -44,7 +46,7 @@ const RideStatus = () => {
 
 
   const handleOverlay = (action) => {
-    console.log('action',action);
+   
     
     if(action === 'close'){
       setShowOverlay(false);
@@ -56,13 +58,14 @@ const RideStatus = () => {
   const CancelRide = async (payload) => {
     try{
     const response = await cancelRide(payload);
-      console.log("Cancel Response:", JSON.stringify(response));
+      
 
       if (response.success) {
         showNotification('Ride cancelled successfully');
         setShowBottomSheet(false);
         setShowBookingCancelModel(false);
-        console.log("response",response);
+        await DataStore.clearData(PREF.CURRENT_TRIP)
+        
 
         if (tripStatus === TripStatus.PICKEDUP && response?.totalFare?.fareDetails?.fare) {
           setOngoingingTripCancelled(true);
@@ -70,12 +73,12 @@ const RideStatus = () => {
           
 
         } else {
-          console.log("Resetting after cancel, tripStatus:", tripStatus);
+         
       
           resetCurrentRideInfo();
-          console.log("stackScreen",stackScreen);
+          
           goBack();
-          console.log("stackScreen",stackScreen);
+          
         } 
       }
     }
@@ -87,24 +90,25 @@ const RideStatus = () => {
   const handleCancel = async (reason) => {
     
       if(tripStatus == TripStatus.PENDING){
+        await DataStore.clearData(PREF.CURRENT_TRIP)
         stopMatching(tripId,userId)
         resetCurrentRideInfo();
         goBack();
         return
       }
 
-      if(AppConfig.RIDE_CANCELLED_MIDWAY_FUEL_CHARGE){
-        const payload = {
-          tripId,
-          reason,
-          totalDistance: es,
-          totalDuration: Math.round(gpsDuration)
-      };
-        console.log("Cancel Payload:", payload);
-        await CancelRide(payload);
+      // if(AppConfig.RIDE_CANCELLED_MIDWAY_FUEL_CHARGE){
+      //   const payload = {
+      //     tripId,
+      //     reason,
+      //     totalDistance: totalDistance,
+      //     totalDuration: Math.round(gpsDuration)
+      // };
+      
+      //   await CancelRide(payload);
         
-        return
-      }
+      //   return
+      // }
 
       // If the ride is ongoing, include total distance and time
       if (tripStatus === TripStatus.PICKEDUP) {
@@ -117,7 +121,7 @@ const RideStatus = () => {
         tripId,
         reason,
     };
-      console.log("Cancel Payload:", payload);
+    
       await CancelRide(payload);
   };
 
@@ -134,8 +138,7 @@ const RideStatus = () => {
       return
     }
     if(isCalculateDistance && gpsDistance && gpsDuration ){
-      console.log('gpsDistance',gpsDistance);
-      console.log('gpsDuration',gpsDuration);
+      
       
       // Now that we have the distance and duration, proceed with cancellation
       const payload = {
@@ -144,7 +147,7 @@ const RideStatus = () => {
         totalDistance: gpsDistance,
         totalDuration: Math.round(gpsDuration)
       };
-      console.log("Cancel Payload with distance:", payload);
+      
       CancelRide(payload);
     }
     if(isCalculateDistance) {
@@ -153,8 +156,7 @@ const RideStatus = () => {
   },[gpsDistance, gpsDuration, cancelReason, isCalculateDistance])
  
   const renderScreen = () => {
-    console.log('tripStatusnj',tripStatus);
-    console.log('onGoingTripCancelled',onGoingTripCancelled);
+   
     switch (tripStatus) {
       case TripStatus.PICKEDUP:
         return <OnRideScreen onCancel={()=>{setShowBottomSheet(true)}} onPaymentMethodChange={()=>{setIspaymentMethodChangeShow(true)}}  handleOverlay={handleOverlay}/>;
@@ -184,7 +186,7 @@ const RideStatus = () => {
   },[])
 
   useEffect(()=>{
-    console.log('tripStatus____________',tripStatus);
+  
     if (tripStatus === TripStatus.COMPLETED || tripStatus === TripStatus.DIVERGED ){
       setStackScreen('TripFeedbackScreen',{})
     }
@@ -198,7 +200,7 @@ const RideStatus = () => {
 
 
   const handlePaymentMethodChange = (paymentMethod) => {
-    console.log('paymentMethod',paymentMethod);
+    
     setIspaymentMethodChangeShow(false);
     setPaymentMethod(paymentMethod);
   }

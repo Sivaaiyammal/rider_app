@@ -27,7 +27,7 @@ class NENavigation extends Component {
         ...prevState,
         resizeDone: true,
       }));
-      console.log(this.state);
+      
     }, 100);
   }
 
@@ -50,7 +50,7 @@ class NENavigation extends Component {
         }));
       }, 500);
 
-      console.log('NENavigation, Map LOADED TRUE');
+      
       this.triggerResize();
     });
 
@@ -78,7 +78,7 @@ class NENavigation extends Component {
     this.mapReadyListener.remove();
     this.mapClickListener.remove();
     this.navigatorListener.remove();
-    console.log('Unmount');
+   
   }
 
   render() {

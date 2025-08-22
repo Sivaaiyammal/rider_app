@@ -74,7 +74,7 @@ const YourRidesScreen = () => {
             }
             
             // Only add date filters if they are provided
-            console.log('Filter values in LoadRides:', { FilterStart, FilterEnd });
+           
             if (FilterStart && FilterEnd) {
                 // Convert ISO strings to milliseconds if they're not already timestamps
                 let startTime, endTime;
@@ -100,12 +100,12 @@ const YourRidesScreen = () => {
                 payload.endTime = endTime;
             }
 
-            console.log('API Payload:', payload);
+            
             setIsRefreshing(true);
             setShowLoadingToast(true);
             
             const data = await getCustomerTrips(payload);
-            console.log('data', data);
+            
             
             if (data.success) {
                 let { trips } = data
@@ -206,7 +206,7 @@ const YourRidesScreen = () => {
     }, []);
 
     const rowRenderer = React.useCallback((type, data, index) => {
-        console.log("data",data)
+    
         return <RenderTrip ride={data} Fare={data?.fareDetails?.fare} index={index} />
     }, []);
 

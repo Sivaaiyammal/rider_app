@@ -98,9 +98,9 @@ const SearchLocation = () => {
     const fetchRoute = async () => {
       if (directions) {
         const response = await findRoute(directions);
-        console.log("response---->",JSON.stringify(response))
+        
         if(response && response?.trip?.summary){
-          console.log('response-->>', response?.trip?.summary?.length)
+          
   
            setRideDistance(response?.trip?.summary?.length)
            setRideDuration(response?.trip?.summary?.time)

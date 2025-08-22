@@ -9,7 +9,7 @@ import { ROOT_API_URL } from './src/Config/APIConfig';
 const App = () => {
 
 const grapqlEndPoint = '/publicrides/customer/graphql/location';
-console.log("=====================================>grapqlEndPoint",ROOT_API_URL + grapqlEndPoint,);
+
 const httpLink = new HttpLink({
   uri: ROOT_API_URL + grapqlEndPoint,
 });

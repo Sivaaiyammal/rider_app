@@ -23,7 +23,7 @@ const SavedPlacesScreen = () => {
     }
     try{
     const response = await addFavoritePlace(payload)
-    console.log('response',response);
+
     if(response.success && response?.favPlaces?.length > 0){
       
       setUserFavPlaces(response?.favPlaces);
@@ -72,7 +72,7 @@ const SavedPlacesScreen = () => {
   };
 
   const handleDeletePlace = async (placeToDelete) => {
-    console.log('placeToDelete',placeToDelete);
+    
     Alert.alert(
       t('delete_place'),
       `${t('delete_place_confirmation')} "${placeToDelete.label}"?`,
@@ -90,10 +90,10 @@ const SavedPlacesScreen = () => {
                 favPlaceId: placeToDelete.favPlaceId, // Use favPlaceId for deletion
                
               };
-              console.log('payload',payload);
+             
               
               const response = await deleteFavoritePlace(payload);
-              console.log('response',response);
+           
               if (response.success && response?.favPlaces) {
                
                 setUserFavPlaces(response?.favPlaces);
@@ -125,7 +125,7 @@ const SavedPlacesScreen = () => {
   };
 
   const handleUpdatePlace = async (placeData, newLabel,favPlaceId) => {
-    console.log('placeData',placeData);
+    
     try {
       
         const addPayload = {

@@ -2,7 +2,7 @@ import ApiConfig from '../../Config/APIConfig';
 
 export async function findRoute(points) {
     if (!points) return null;
-    console.log('points',points);
+ 
     const latlngs = points.map(item => {
         return {
             lat: item.location ? item.location[1] : item.lat,
@@ -11,7 +11,7 @@ export async function findRoute(points) {
     });
     
     
-    console.log(latlngs,'latlngs')
+    
 
     const jsonObject = {
         costing: 'auto',
@@ -26,7 +26,7 @@ export async function findRoute(points) {
         // const encodedData = encodeURIComponent(jsonString);
         const url = `${ApiConfig.ROUTE_API_URL}?data=${jsonString}&access_token=${ApiConfig.NE_ACCESS_TOKEN}`;
 
-        // console.log(url,'url')
+    
         
         const response = await fetch(url, {
             method: 'GET',

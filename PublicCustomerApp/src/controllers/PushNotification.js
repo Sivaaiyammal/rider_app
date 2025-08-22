@@ -33,7 +33,7 @@ class PushNotifications {
   async notificationEvents (notification) {
     const { setStackScreen } = useStackScreenStore.getState();
     if (notification.title === 'Trip Cancelled By Driver') {
-      console.log('Trip Cancelled By Driver.....................................................')
+  
       setStackScreen('TripDetailsScreen')
     }
     
@@ -58,7 +58,7 @@ class PushNotifications {
   }
 
   onRemoteNotificationHandler(notification) {
-    console.log(notification,'notification')
+ 
      if(notification) {
       this.notificationEvents(notification)
      }

@@ -15,10 +15,7 @@ class currentLocation {
     return new Promise((resolve, reject) => {
       Geolocation.getCurrentPosition(
         position => {
-          console.log(
-            'hari-->>community-->>Position-->>',
-            position.coords.longitude,
-          );
+          
           
           setLocation([position.coords.longitude, position.coords.latitude]);
           setTimeout(()=>{
@@ -28,7 +25,7 @@ class currentLocation {
               zoom: 18,
             });
           },500)
-          console.log("setting mapLocation---------------------------->")
+         
           setLoading(false); 
           resolve(position);// Set loading to false after successfully getting the position
         },

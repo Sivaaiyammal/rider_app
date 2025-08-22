@@ -41,7 +41,7 @@ const AddLocationCard = () => {
     setStackScreen('SearchScreen');
     
     setSelectedInput(obj);
-    console.log("obj", obj)
+  
   }, []);
 
   const getLocationIcon = useCallback((id, totalLocations) => {

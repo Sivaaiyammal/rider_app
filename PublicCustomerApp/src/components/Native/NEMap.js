@@ -64,7 +64,7 @@ class NEMap extends Component {
 
     // Set up event listeners for map events from native code
     this.mapReadyListener = DeviceEventEmitter.addListener('onMapReady', () => {
-      console.log("MAP READYY")
+
       this.setState(prevState => ({
         ...prevState,
         mapLoaded: true,
@@ -157,7 +157,7 @@ class NEMap extends Component {
     this.searchPOIResultListener = DeviceEventEmitter.addListener(
       'onSearchPOIResults',
       (data) => {
-        console.log("SEARCH POI RESULTS", data)
+        
         this.props.onSearchPOIResults?.(data);
       }
     )
@@ -165,7 +165,7 @@ class NEMap extends Component {
     this.searchPOIErrorListener = DeviceEventEmitter.addListener(
       'onSearchPOIError',
       (data) => {
-        console.log("SEARCH POI Error", data)
+        
         this.props.onSearchPOIError?.(data);
       }
     )

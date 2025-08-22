@@ -146,7 +146,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
       const searchResults = await performSearch(searchParams);
       setIsLoading(false);
       setOnSearchResults(searchResults);
-      console.log("searchResults", JSON.stringify(searchResults, null, 2));
+      
       searchCache.set(cacheKey, { results: searchResults, timestamp: Date.now() });
  
     } catch (e) {

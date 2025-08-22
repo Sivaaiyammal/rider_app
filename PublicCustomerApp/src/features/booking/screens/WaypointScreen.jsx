@@ -72,7 +72,7 @@ const WaypointScreen = ({}) => {
           Arr.push(rideEndLocation)
         }
 
-        console.log("Arr", Arr)
+     
 
         // Transform the waypoints with proper type properties
         const transformedData = Arr.map((waypoint, index) => ({
@@ -91,7 +91,7 @@ const WaypointScreen = ({}) => {
           }
         })
         const balanceStops = Arr.filter((waypoint) => !waypoint.isReached)
-        console.log("reachedStops",reachedStops)
+      
         setReachedStops(reachedStops)
         const transformedData = balanceStops.map((waypoint, index) => ({
           ...waypoint,
@@ -102,7 +102,6 @@ const WaypointScreen = ({}) => {
         }));
 
 
-        console.log("transformedData", transformedData)
 
         setReOrderWaypoints(transformedData)
       }
@@ -117,7 +116,7 @@ const WaypointScreen = ({}) => {
 
 
   const handleDirectionReady = (data) => {
-    console.log("=====> Direction ready", data);
+   
     // Extract distance and duration from direction data
     if(data?.duration){
       setDuration(Math.round(data?.duration/60))
@@ -158,7 +157,7 @@ useEffect(() => {
   // which uses the store directly
 
   const onConfirmRoute = () => {
-    console.log(reOrderWaypoints,"reOrderWaypoints")
+    
     
     if (reOrderWaypoints && reOrderWaypoints.length > 0) {
       // First index becomes start location
@@ -228,7 +227,7 @@ useEffect(() => {
    setIsFareLoading(true)
    try {
      const res = await getPreFinalFare(Payload)
-     console.log("res",res)
+   
      
      if (res && res.fare) {
        setFareData({

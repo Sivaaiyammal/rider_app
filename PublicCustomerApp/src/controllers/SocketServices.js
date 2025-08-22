@@ -33,7 +33,7 @@ class WSService {
 
   driverAllocated(data){
 
-    console.log("driverAllocated",JSON.stringify(data))
+ 
     if(data?.driver && data?.otp){
       this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
       this.useAssignedDriverInfoStore.getState().setAllocatedDriverInfo(data?.driver);
@@ -45,11 +45,10 @@ class WSService {
   onRideStatus(data){
     console.log("onRideStatus",JSON.stringify(data))
     if(data?.tripStatus){
-      console.log('data?.tripStatus',data?.tripStatus)
+     
       if(data?.tripStatus === 'CANCELLED'){
         try {
-          console.log('CANCELLED');
-          console.log(data?.tripStatus);
+          
           if(data?.isOnGoingTrip && data?.fareDetails){
             this.useStackScreenStore.getState().setStackScreen('PaymentScreen',{});
             this.useCurrentRideInfoStore.getState().setFareDetails(data?.tripFare);

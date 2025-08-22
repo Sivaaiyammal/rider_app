@@ -80,12 +80,9 @@ const OTPScreen = ({route}) => {
   const handleVerificationSuccess = async data => {
     if (data.success) {
       showNotification('OTP Verified', 'OTP Verified Successfully', 'success');
-      console.log(data, 'data');
+   
       let {  user,isNewUser} = data;
-      console.log(user?.token)
-      console.log(user?.token)
-      console.log(user)
-      console.log(isNewUser)
+     
       setID(user._id);
       setUserdetails(user);
 
@@ -141,7 +138,7 @@ const OTPScreen = ({route}) => {
         phone: `+${countryCode}${loginPhoneNumber}`,
         fcmToken: tokenCred,
       };
-      console.log("verifyOtp payload",payload)
+      
       verifyOTPMutate(payload);
     }
   };
@@ -155,7 +152,7 @@ const OTPScreen = ({route}) => {
   const handleResendSuccess = (data) => {
     if(data.success){
       showNotification('OTP Resend', 'OTP Resend Successfully', 'success');
-      console.log("handleResendSuccess",data)
+      
     }else{
       showNotification('OTP Resend', "Failed to resend OTP", 'danger');
     }

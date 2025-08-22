@@ -18,7 +18,7 @@ export const utils = {
     else if (type == '6') return require('../assets/image/vehicle/luxsedan_left.png')
   },
   getRideStatus: (status) => {
-    console.log("getRideStatus CALLED",status)
+ 
     if (status == 'COMPLETED') return 'Ride Completed'
     if (status == 'PAYMENT_COMPLETED') return 'Ride Completed'
     else if (status == 'DIVERGED') return 'Ride Diverged'
@@ -211,7 +211,7 @@ export const utils = {
   },
   getDateObj: (date) => {
 
-    console.log(date, 'date');
+   
 
 
     date = date || new Date();
@@ -309,7 +309,7 @@ export const utils = {
     return feeUIFormat
   },
   getFareBreakdown(fareDetails){
-    console.log("getFareBreakdown CALLED",fareDetails)
+    
     if (!fareDetails?.breakdown) return [];
     
     const breakdown = fareDetails.breakdown;
@@ -420,19 +420,19 @@ export const utils = {
   },
 
   toTitleCase: str => {
-    console.log("toTitleCase CALLED",str)
-    return str.replace(/\w\S*/g, function (txt) {
+ 
+    return str?.replace(/\w\S*/g, function (txt) {
       return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
   },
   toTitleCaseName: str => {
-    return str.replace(/\w\S*/g, function (txt) {
+    return str?.replace(/\w\S*/g, function (txt) {
       return txt.charAt(0).toUpperCase() + txt.substr(1);
     });
   },
 
   timestampTOISO(timestamp) {
-    console.log('timestamp', timestamp);
+    
     return moment(timestamp).format();
   },
 
@@ -564,7 +564,7 @@ export const utils = {
     }
   },
   getBoundingBox(coordinates){
-    console.log("gETBOUNDINGBOX CALLED")
+   
     const minLat = Math.min(...coordinates.map(coord => coord[1]))
     const maxLat = Math.max(...coordinates.map(coord => coord[1]))
     const minLon = Math.min(...coordinates.map(coord => coord[0]))

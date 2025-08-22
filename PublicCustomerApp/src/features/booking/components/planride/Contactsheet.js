@@ -80,7 +80,7 @@ const Contactsheet = ({ onConfirm }) => {
   };
 
   const handleSelectContact = (contact) => {
-    console.log("contact",contact)
+   
     setPassangerDetails(contact);
     setRideBookMode('OTHERS');
     onConfirm();

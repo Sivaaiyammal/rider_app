@@ -109,7 +109,7 @@ export const getOngoingRide = onSuccessCallback => {
  
   return useQuery(['getOngoingRide'], checkOnGoingRide, {
     onSuccess: data => {
-      console.log('data', data)
+    
       if (data.success) {
         if (onSuccessCallback) {
           

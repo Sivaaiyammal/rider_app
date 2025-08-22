@@ -24,7 +24,7 @@ const RideDetailScreen = ({ TripData }) => {
   const [showReceipt, setShowReceipt] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
   
-  console.log(JSON.stringify(TripData), "TripData");
+ 
   
   // Use the actual trip data
   const rideData = TripData || {};
@@ -35,7 +35,7 @@ const RideDetailScreen = ({ TripData }) => {
 
   const handleSupportPress = () => {
     // Handle support button press
-    console.log('Support pressed');
+    
   };
 
   const handleReceiptPress = () => {

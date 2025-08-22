@@ -118,7 +118,7 @@ const MapScreen = () => {
         type:LocationTypes.START_LOCATION,
         locationFrom:"MAP"
       }
-      console.log("locationData",locationData);
+     
       setRideStartLocation(locationData)
       setRideEndLocation(item)
       setStackScreen("PlanRideScreen",{})
@@ -147,7 +147,7 @@ const MapScreen = () => {
 
   const handleFavouriteLocationPress = useCallback((locationType,labelLocation) => {
     try {
-      console.log('Favourite location press:', locationType, labelLocation);
+
       if (!labelLocation) {
         return;
       }

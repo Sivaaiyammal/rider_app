@@ -17,19 +17,7 @@ const performSearch = async ({
   radius = 50000,
   category = '',
 }) => {
-    console.log('SEARCH QUERY ===>>',  latitude,
-        longitude,
-        searchString,
-        mapUnitName,
-        stateVector,
-        resultCount,
-        langCode,
-        debug,
-        onlineOnly,
-        makeFullSearch,
-        isPoiSearch,
-        radius,
-        category)
+   
   try {
     const categoryFilter = JSON.stringify(category);
     console.log('hari-->>categoryFilter-->>', categoryFilter);

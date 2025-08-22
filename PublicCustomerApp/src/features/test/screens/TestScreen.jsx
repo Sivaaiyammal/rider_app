@@ -48,13 +48,12 @@ const TestScreen = () => {
             text: 'Generate', 
             onPress: async () => {
               try {
-                console.log('Starting PDF generation...');
-                console.log('Custom folder:', customFolder);
+                
                 
                 // Generate PDF receipt using PDFCreator
                 const pdfPath = await PDFCreator.createRideReceiptPDF(sampleRideData, customFolder || null);
                 
-                console.log('PDF generated successfully at:', pdfPath);
+                
                 setLastGeneratedPath(pdfPath);
                 
                 Alert.alert(
@@ -104,12 +103,12 @@ const TestScreen = () => {
     try {
       setIsGenerating(true);
       
-      console.log('Starting PDF generation for sharing...');
+      
       
       // Generate PDF receipt first
       const pdfPath = await PDFCreator.createRideReceiptPDF(sampleRideData, customFolder || null);
       
-      console.log('PDF generated for sharing at:', pdfPath);
+  
       setLastGeneratedPath(pdfPath);
       
       Alert.alert(
@@ -299,7 +298,7 @@ const TestScreen = () => {
       const fileName = 'Ride_Documents_' + new Date().getTime();
       const pdfPath = await PDFCreator.createMultiSheetPDF(sheets, fileName, customFolder || null);
 
-      console.log('Multi-sheet PDF generated at:', pdfPath);
+    
       setLastGeneratedPath(pdfPath);
 
       Alert.alert(

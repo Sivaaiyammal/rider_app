@@ -27,7 +27,7 @@ import { useStackScreenStore } from '../../store/useStackScreenStore';
 const MyAccountScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const { goBack } = useStackScreenStore();
+  const { goBack,reset } = useStackScreenStore();
   const { userdetails } = useUserInfoStore();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   
@@ -80,7 +80,7 @@ const MyAccountScreen = () => {
     await DataStore.storeData('access_token', null);
     await DataStore.storeData('refresh_token', null);
     await DataStore.storeData('userdetails', null);
-
+    reset()
     navigation.dispatch(
       CommonActions.navigate({
         name: 'LoginScreen',

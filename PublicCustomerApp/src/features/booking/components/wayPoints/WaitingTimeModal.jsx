@@ -31,7 +31,7 @@ const WaitingTimeModal = ({
   const showWaitPriceInfo = AppConfig.SHOW_WAIT_PRICE_INFO;
   
 
-  console.log("waypointData",visible)
+
   useEffect(() => {
     if (waypointData?.item?.waitingTime) {
       setSelectedTime(waypointData.item.waitingTime);

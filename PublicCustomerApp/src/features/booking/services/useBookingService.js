@@ -139,7 +139,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       return await bookRide(payload);
     },
     onSuccess: async (data) => {
-      console.log('Booking success:', JSON.stringify(data));
+      
       
       if (data.success) {
         resetRideMatchStatus();        

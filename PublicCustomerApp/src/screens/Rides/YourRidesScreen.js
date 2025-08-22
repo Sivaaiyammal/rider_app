@@ -79,7 +79,7 @@ const YourRidesScreen = () => {
     }
 
     const onGetRidesSuccess = async (data) => {
-        console.log('data', data);
+        
         setIsRefreshing(false);
         if (data.success) {
 

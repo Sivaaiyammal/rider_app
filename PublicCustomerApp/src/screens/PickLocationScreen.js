@@ -78,7 +78,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
   useEffect(()=>{
 
-    console.log("defaultLocation",defaultLocation)
+   
     setOnMapCenterChanged(onmapCenterChanged);
     setOnMapRotationChanged(onMapRotationChangedCallback);
     if (defaultLocation){

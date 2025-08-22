@@ -76,14 +76,14 @@ const SettingsDropdown = ({ visible, onClose, onDeleteAccount }) => {
           },
         ]}
       >
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.menuItem}
         //   onPress={handleNotifications}
         >
           <Ionicons name="notifications-outline" size={20} color={colors.black} />
           <Text style={styles.menuText}>{t('notifications')}</Text>
           <Ionicons name="chevron-forward" size={16} color={colors.grey} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <View style={styles.divider} />
 

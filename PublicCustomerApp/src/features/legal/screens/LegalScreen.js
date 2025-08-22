@@ -19,7 +19,7 @@ const LegalScreen = () => {
       
       <View style={styles.webViewContainer}>
         <WebView
-          source={{ uri: 'https://vmmaps.com/legal/nammaoorutaxi/legal-terms.html' }}
+          source={{ uri: 'https://nammaoorutaxi.com/legal' }}
           style={styles.webView}
           startInLoadingState={true}
           javaScriptEnabled={true}

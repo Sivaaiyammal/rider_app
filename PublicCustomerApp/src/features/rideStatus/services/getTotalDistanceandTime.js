@@ -12,7 +12,7 @@ export const getTotalDistanceAndTime = async (stops) => {
         totalStops.push(currentUserLocation);
     }
 
-    console.log(totalStops, "totalStops");
+    
     
     // If we have at least 2 points, calculate route
     if (totalStops.length >= 2) {
@@ -23,7 +23,7 @@ export const getTotalDistanceAndTime = async (stops) => {
                 lon: location[0]  // longitude
             }));
 
-            console.log('Route points for calculation:', routePoints);
+           
             
             // Call findRoute API
             const routeData = await findRoute(routePoints);
@@ -34,11 +34,7 @@ export const getTotalDistanceAndTime = async (stops) => {
                 // Convert time from seconds to minutes
                 const durationInMinutes = Math.round(time / 60);
                 
-                console.log('Route calculation result:', {
-                    distance: length,
-                    duration: durationInMinutes,
-                    
-                });
+               
                 
                 return {
                    
@@ -47,7 +43,7 @@ export const getTotalDistanceAndTime = async (stops) => {
                     
                 };
             } else {
-                console.log('No valid route data received');
+                
                 return {
                   
                     totalDistance: 0,

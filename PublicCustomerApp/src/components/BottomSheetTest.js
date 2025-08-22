@@ -11,7 +11,7 @@ const BottomSheetTest = () => {
 
   // callbacks
   const handleSheetChange = useCallback((index) => {
-    console.log("handleSheetChange", index);
+    
   }, []);
   
   const handleSnapPress = useCallback((index) => {

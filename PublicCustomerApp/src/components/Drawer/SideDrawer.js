@@ -31,7 +31,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
   const slideAnim = useRef(new Animated.Value(-300)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  console.log('userdetails', userdetails)
+
 
   useEffect(() => {
     Animated.parallel([
@@ -134,12 +134,12 @@ const SideDrawerV2 = ({ handleMenu }) => {
       screen: 'LegalScreen',
       icon: <Ionicons name="document-text" size={20} color="black" />,
     },
-    {
-      id: 'test-screen',
-      name: t('test_screen'),
-      screen: 'BottomSheetWorkingExamples',
-      icon: <Ionicons name="flask" size={20} color="black" />,
-    },
+    // {
+    //   id: 'test-screen',
+    //   name: t('test_screen'),
+    //   screen: 'BottomSheetWorkingExamples',
+    //   icon: <Ionicons name="flask" size={20} color="black" />,
+    // },
   ];
 
   const HandleOpenDrawerMenu = (menu) => {

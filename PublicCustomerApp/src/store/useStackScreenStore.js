@@ -35,7 +35,7 @@ export const useStackScreenStore = create((set, get) => ({
   },
   goBackToScreen:(screenName, params = null)=>{
     const stack = get().stackScreen;
-    console.log(stack,"stack")
+  
     
     // Find the index of the target screen in the stack
     const targetIndex = stack.findIndex(screen => screen.name === screenName);
@@ -50,12 +50,12 @@ export const useStackScreenStore = create((set, get) => ({
         newStack[targetIndex] = { ...newStack[targetIndex], params };
       }
       
-      console.log(newStack,"newStack")
+
       set({stackScreen: newStack});
     }
     else{
       // Screen not found in stack, go back to home
-      console.log(`Screen ${screenName} not found in stack, going back to Home`);
+     
       set({stackScreen: [{ name: 'Home', params: null }]});
     }
   },

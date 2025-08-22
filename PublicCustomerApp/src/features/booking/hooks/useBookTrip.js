@@ -42,7 +42,7 @@ const useBookTrip = () => {
       // Check if booking is ready
       if (!bookingService.isBookingReady()) {
         const errors = bookingService.getBookingValidationErrors();
-        console.log('Booking validation errors:', errors);
+       
         return;
       }
 

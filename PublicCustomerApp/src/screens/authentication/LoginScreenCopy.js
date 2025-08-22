@@ -36,9 +36,9 @@ const LoginScreen = () => {
   const handleLoginSuccess = (data) => {
     if (data) {
       showNotification('Logged In', 'Logged in Successfully', 'success');
-      console.log(data, 'data');
+      
       let {token} = data.user || {};
-      console.log("token", token)
+     
       DataStore.storeData('access_token', token);
       DataStore.storeData('userdetails', data?.user);
       setUserdetails(data?.user);

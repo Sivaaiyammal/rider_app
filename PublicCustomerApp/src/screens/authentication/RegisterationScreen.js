@@ -7,7 +7,7 @@ import { showNotification } from '../../components/NotificationManger';
 import { usePostQuery } from '../../hooks/useQuery';
 import { CommonActions,useNavigation} from '@react-navigation/native';
 import useUserInfoStore from '../../store/useUserInfoStore';
-
+import { DataStore } from '../../controllers/DataStore';
 
 const RegisterationScreen = () => {
   const { t } = useTranslation();
@@ -108,13 +108,18 @@ const RegisterationScreen = () => {
     }
   };
 
-  const onRegisterSuccess = (data) => {
+  const onRegisterSuccess =async (data) => {
     setIsLoading(false);
-    console.log('Registration response:', data);
+  
 
     if (data?.success) {
       showNotification(t('registration_completed_successfully'), '', 'success');
+      console.log(JSON.stringify(data))
       setUserdetails(data?.user);
+      let {  user} = data;
+      setUserdetails(user);
+   
+      await DataStore.storeData('userdetails', user);
     
         navigation.dispatch(
           CommonActions.navigate({
@@ -130,7 +135,7 @@ const RegisterationScreen = () => {
 
   const onRegisterError = (error) => {
     setIsLoading(false);
-    console.log('Registration error:', error);
+   
     
     let errorMessage = t('network_error_check_connection');
     
@@ -168,7 +173,7 @@ const RegisterationScreen = () => {
           gender: Gender,
         };
 
-        console.log('Registration payload:', payload);
+     
 
         RegisterMutate({
           queryKey: 'profileUpdateQuery',

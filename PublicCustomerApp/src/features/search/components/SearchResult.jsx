@@ -8,7 +8,7 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const transformData = (data) => {
-    console.log("transformData called with:", JSON.stringify(data, null, 2));
+  
     if (!data || (Array.isArray(data) && data.length === 0)) {
       console.log("transformData: data is empty or null");
       return [];
@@ -116,11 +116,11 @@ const transformData = (data) => {
 
     // For regular search data, group by section type
     const groupedData = {};
-    console.log("Processing grouped data, keys:", Object.keys(data));
+  
     Object.entries(data)
       .filter(([key, value]) => key !== "matchedStrings" && value && Array.isArray(value) && value.length > 0)
       .forEach(([key, value]) => {
-        console.log(`Processing key: ${key}, value length: ${value.length}`);
+      
         groupedData[key] = value.map((item) => {
                      if (key === "fullSearch") {
              return {
@@ -144,7 +144,7 @@ const transformData = (data) => {
         });
       });
     
-    console.log("Grouped data keys:", Object.keys(groupedData));
+   
 
     // Convert the grouped data into sections
     const sections = Object.entries(groupedData)
@@ -154,14 +154,14 @@ const transformData = (data) => {
         data: value,
       }));
 
-    console.log("Created sections:", sections.map(s => ({ title: s.title, dataLength: s.data.length })));
+   
 
     // Sort the sections based on the desired order
     const sortedSections = sections.sort(
       (a, b) => sectionOrder.indexOf(a.title.toLowerCase()) - sectionOrder.indexOf(b.title.toLowerCase())
     );
     
-    console.log("Final sorted sections:", sortedSections.map(s => ({ title: s.title, dataLength: s.data.length })));
+   
     return sortedSections;
 };
 
@@ -169,19 +169,19 @@ export const SearchResultV2 = (props) => {
     const MAX_ITEMS_TO_SHOW = 5;
     const { searchTxt, search_data, selectedCallBack, setStateVector } = props;
     
-    console.log("SearchResultV2 received search_data:", JSON.stringify(search_data, null, 2));
+
     
     let sections = [];
     if (search_data?.unifiedSearchData?.unifiedSearchData) {
-        console.log("Processing unifiedSearchData");
+      
         sections = transformData(search_data.unifiedSearchData.unifiedSearchData);
     } else if (search_data?.searchData && typeof search_data.searchData === 'object' && Object.keys(search_data.searchData).length > 0) {
-        console.log("Processing searchData:", search_data.searchData);
+        
         if (typeof search_data.searchData === 'object' && !Array.isArray(search_data.searchData)) {
-          console.log("Processing object searchData");
+       
             sections = transformData(search_data.searchData);
         } else if (Array.isArray(search_data.searchData)) {
-          console.log("Processing array searchData");
+          
             sections = transformData(search_data.searchData);
         }
     } else if (search_data && typeof search_data === 'object' && Object.keys(search_data).length > 0) {
@@ -190,8 +190,7 @@ export const SearchResultV2 = (props) => {
         sections = transformData(search_data);
     }
     
-    console.log("Final sections:", sections);
-    console.log("Sections length:", sections.length);
+  
     if (sections.length > 0) {
         console.log("First section data length:", sections[0].data?.length);
     }
@@ -250,12 +249,12 @@ export const SearchResultV2 = (props) => {
     };
 
     const renderItem = ({ item, section: { title } }) => {
-        console.log("Rendering item:", { name: item?.name, placeName: item?.placeName, place_name: item?.place_name, title });
+     
         // If item is empty or missing main display fields, do not render
         if (!item || (
             !item.name && !item.placeName && !item.primaryText && !item.houseNumber && (!item.place_name || !Array.isArray(item.place_name) || item.place_name.length === 0)
         )) {
-            console.log("Skipping item due to missing display fields:", item);
+            
             return null;
         }
         const capitalizeFirstLetter = (str) => {
@@ -409,7 +408,7 @@ export const SearchResultV2 = (props) => {
         );
     };
 
-    console.log("Rendering SectionList with sections:", sections.length);
+    
     return (
         <SectionList
         stickySectionHeadersEnabled
@@ -419,7 +418,7 @@ export const SearchResultV2 = (props) => {
           const sectionData = isExpanded
             ? section?.data
             : section?.data?.slice(0, MAX_ITEMS_TO_SHOW);
-          console.log(`Section "${section.title}" has ${sectionData?.length || 0} items`);
+        
           return {
             ...section,
             data: sectionData,

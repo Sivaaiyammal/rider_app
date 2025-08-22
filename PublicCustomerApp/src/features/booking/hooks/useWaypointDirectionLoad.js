@@ -21,7 +21,7 @@ const useWaypointDirectionLoad = () => {
     const { clearMarkers = true, vehicleType = 'car' } = options;
     const updatedReOrderWaypoints = [...reachedStops,...reOrderWaypoints]
 
-    console.log("updatedReOrderWaypoints",updatedReOrderWaypoints)
+   
     // Filter out valid waypoints with coordinates
     const validWaypoints = updatedReOrderWaypoints.filter(waypoint => 
       waypoint.latitude && 

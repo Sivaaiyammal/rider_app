@@ -20,7 +20,7 @@ const StateVectorConatiner = ({
   };
 
   const stateVectorArray = stateVectorArr?.searchData?.matchedStrings?.filter((item) => item?.key !== "") || [];
-  console.log("stateVectorArray",stateVectorArray)
+
   return stateVectorArray.length > 0 ? (
     <View style={styles.vectorContainer}>
       {stateVectorArray.map((item, index) =>

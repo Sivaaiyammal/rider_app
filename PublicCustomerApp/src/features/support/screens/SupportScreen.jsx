@@ -99,7 +99,7 @@ const SupportScreen = () => {
         "categoryId": ticketData.category,
         "tripId": ticketData.selectedTrip?._id
       }
-      console.log('payLoad',payLoad);
+      
       const response = await UserTicketService.createTicket(payLoad);
       if(response?.success){
         Alert.alert(t('success'), t('ticket_created_successfully'));
@@ -123,7 +123,7 @@ const SupportScreen = () => {
   };
 
   const handleTicketPress = async (ticket) => {
-    console.log('ticket', ticket);
+   
     const getTicketDetails = await UserTicketService.getTicketDetails(ticket.ticketId);
     if(getTicketDetails?.data?.comments){
       const transFormData = getTicketDetails?.data?.comments?.map(item => ({

@@ -28,7 +28,7 @@ import usePaymentStore from '../store/usePaymentStore';
 const PaymentScreen = () => {
 
   const {t} = useTranslation();
-  const {tripStatus,rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,paymentMethod,isLoading,setTripDetails,tripStops,fareDetails,bookingTime} = usePaymentStore();
+  const {tripStatus,rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,paymentMethod,isLoading,setTripDetails,tripStops,fareDetails,bookingTime,supplierDetails,recipientDetails,adminDetails,paymentStatus,invoiceId } = usePaymentStore();
   const [showReceipt, setShowReceipt] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
   const handleInvoicePress = () => {
@@ -42,7 +42,7 @@ const PaymentScreen = () => {
   const fetchTripDetails = async () => {
     const currentTripId = await DataStore.loadData(PREF.CURRENT_TRIP);
     const tripDetails = await getTripDetails(currentTripId?.data);
-    console.log("tripDetails",JSON.stringify(tripDetails))
+    
     if(tripDetails?.success){
       setTripDetails(tripDetails);
     }
@@ -158,16 +158,21 @@ const PaymentScreen = () => {
        
       {/* Invoice Modal Overlay */}
       <InvoiceScreen 
-        rideId={rideId}
-        tripFare={tripFare}
-        tripDistance={tripDistance}
-        tripDuration={tripDuration}
-        driverDetails={driverDetails}
-        vehicleDetails={vehicleDetails}
-        tripStops={tripStops}
-        bookingTime={bookingTime}
-        fareDetails={fareDetails}
-        paymentMethod={paymentMethod}
+       invoiceId={invoiceId}
+       rideId={rideId}
+       tripFare={tripFare}
+       tripDistance={tripDistance}
+       tripDuration={tripDuration}
+       driverDetails={driverDetails}
+       vehicleDetails={vehicleDetails}
+       tripStops={tripStops}
+       bookingTime={bookingTime}
+       fareDetails={fareDetails}
+       paymentMethod={paymentMethod}
+       supplierDetails={supplierDetails}
+       recipientDetails={recipientDetails}
+       adminInfo={adminDetails}
+       paymentStatus={paymentStatus}
         visible={showInvoice}
         onClose={handleInvoiceClose}
       />

@@ -220,7 +220,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
   const handleCategorySelect = (categoryId) => {
     // Find the selected category
     const selectedCategory = categories.find(cat => cat._id === categoryId);
-    console.log('Selected category:', selectedCategory);
+  
     
     // Update category
     updateFormData('category', categoryId);
@@ -230,7 +230,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
     
     // Auto-populate description if category has a description
     if (selectedCategory && selectedCategory.description) {
-      console.log('Setting description:', selectedCategory.description);
+      
       // Use setTimeout to ensure the clear happens first
       setTimeout(() => {
         updateFormData('description', selectedCategory.description);

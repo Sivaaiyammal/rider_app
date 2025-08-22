@@ -52,7 +52,7 @@ class PDFCreator {
                 await PermissionsAndroid.request(
                     PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
                 );
-                console.log('Notification: download completed for', fileName);
+               
             } catch (error) {
                 console.log('Notification-->>Error-->>', error);
             }
@@ -68,7 +68,7 @@ class PDFCreator {
             const isPermittedExternalStorage = await PermissionsAndroid.check(
                 PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
             );
-            console.log(isPermittedExternalStorage, 'isPermittedExternalStorage');
+           
 
             if (!isPermittedExternalStorage) {
                 const granted = await PermissionsAndroid.request(
@@ -80,7 +80,7 @@ class PDFCreator {
                         buttonPositive: 'OK',
                     },
                 );
-                console.log(granted, 'granted for check');
+              
 
                 if (granted === PermissionsAndroid.RESULTS.GRANTED) {
                     return true;
@@ -89,7 +89,7 @@ class PDFCreator {
                     return false;
                 }
             } else {
-                console.log("granted already");
+          
                 return true;
             }
         } catch (error) {
@@ -136,7 +136,7 @@ class PDFCreator {
         }
 
         try {
-            console.log('Creating PDF with options:', { directory, fileName: name });
+           
 
             let options = {
                 html: htmlElement ?? this.htmlBody,
@@ -149,7 +149,7 @@ class PDFCreator {
 
             // Create the PDF
             let file = await RNHTMLtoPDF.convert(options);
-            console.log('PDF created, result:', file);
+       
 
             if (!file || !file.filePath) {
                 throw new Error('PDF creation failed - no file path returned');
@@ -167,7 +167,7 @@ class PDFCreator {
                     );
 
                     if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-                        console.log('Storage permission not granted');
+                     
                         throw new Error('Storage permission denied');
                     }
                 }
@@ -177,7 +177,7 @@ class PDFCreator {
                 const fileName = `${name} ${moment(new Date()).format('DD-MM-YYYY-hh-mm-ss-A')}.pdf`;
                 const downloadPath = `${targetDirectory}/${fileName}`;
 
-                console.log('Moving PDF to:', downloadPath);
+         
 
                 try {
                     // Read the file from the initial location
@@ -189,7 +189,7 @@ class PDFCreator {
                     // Write the file to the target directory
                     await RNFS.writeFile(downloadPath, fileData, 'base64');
 
-                    console.log('PDF successfully moved to:', downloadPath);
+                 
                     
                     showNotification('PDF Created', `PDF file created at: ${downloadPath}`, "success");
                     this.setNotification(fileName);
@@ -202,7 +202,7 @@ class PDFCreator {
                 }
             } else {
                 // iOS: Return the file path directly
-                console.log('PDF created on iOS at:', file.filePath);
+               
                 showNotification('PDF Created', `PDF file created successfully`, "success");
                 this.setNotification(`${name}.pdf`);
                 return file.filePath;
@@ -249,7 +249,7 @@ class PDFCreator {
             const exists = await RNFS.exists(dirPath);
             if (!exists) {
                 await RNFS.mkdir(dirPath);
-                console.log('Directory created:', dirPath);
+             
             }
         } catch (error) {
             console.error('Error ensuring directory exists:', error);
@@ -640,7 +640,7 @@ class PDFCreator {
      */
     createMultiSheetPDF = async (sheetData, fileName, customDirectory = null) => {
         try {
-            console.log('Creating multi-sheet PDF with', sheetData.length, 'sheets');
+          
             
             // Generate HTML for each sheet type
             const sheetHTMLs = sheetData.map((sheet, index) => {
@@ -654,7 +654,7 @@ class PDFCreator {
             // Create PDF with combined HTML
             const pdfPath = await this.createPDF(combinedHTML, fileName, customDirectory);
             
-            console.log('Multi-sheet PDF created successfully at:', pdfPath);
+          
             return pdfPath;
             
         } catch (error) {
@@ -1038,7 +1038,7 @@ class PDFCreator {
      * Generate Tax Invoice HTML
      */
     generateTaxInvoiceHTML = (data, pageNumber) => {
-        console.log("TAXINVOICE",JSON.stringify(data,null,2))
+       
         // Map incoming fields
         const invoiceNo = data.invoiceNo || data.invoiceNumber || 'N/A';
         const invoiceDate = data.invoicedate || data.invoiceDate || new Date().toLocaleDateString();

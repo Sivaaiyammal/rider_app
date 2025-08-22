@@ -4,6 +4,9 @@ const usePaymentStore = create((set, get) => ({
   currentTripId: null,
   setCurrentTripId: (tripId) => set({ currentTripId: tripId }),
 
+  invoiceId: null,
+  setInvoiceId: (invoiceId) => set({ invoiceId: invoiceId }),
+
   rideId: null,
   setRideId: (rideId) => set({ rideId: rideId }),
 
@@ -37,12 +40,19 @@ const usePaymentStore = create((set, get) => ({
   tripStatus: null,
   setTripStatus: (status) => set({ tripStatus: status }),
 
+  supplierDetails: null,
+  setSupplierDetails: (details) => set({ supplierDetails: details }),
+
+  adminDetails: null,
+  setAdminDetails: (details) => set({ adminDetails: details }),
+
+  recipientDetails: null,
+  setRecipientDetails: (details) => set({ recipientDetails: details }),
+
   paymentStatus: null,
   paymentMethod: null,
-  paymentDetails: null,
   setPaymentStatus: (status) => set({ paymentStatus: status }),
   setPaymentMethod: (method) => set({ paymentMethod: method }),
-  setPaymentDetails: (details) => set({ paymentDetails: details }),
   resetPayment: () => set({
     paymentStatus: null,
     paymentMethod: null,
@@ -65,39 +75,47 @@ const usePaymentStore = create((set, get) => ({
       setRideId,
       setBookingTime,
       setTripStatus,
+      setSupplierDetails,
+      setRecipientDetails,
+      setAdminDetails,
+      setInvoiceId,
     } = get();
 
     if (data?.trip?.rideId !== undefined) {
       setRideId(data.trip.rideId);
     }
-  console.log("data",JSON.stringify(data))
+
+    if(data?.trip?.fareDetails?.invoiceId !== undefined){
+      setInvoiceId(data.trip?.fareDetails?.invoiceId);
+    }
+
     if (data?.trip?.finalDistance !== undefined) {
-        console.log("data.trip.finalDistance",data.trip.finalDistance)
+        
       setTripDistance(data.trip.finalDistance);
     }
     if (data?.trip?.finalDuration !== undefined) {
       setTripDuration(data.trip.finalDuration);
     }
-    if (data?.paymentDetails?.fareDetails?.fare !== undefined) {
-      setTripFare(data?.paymentDetails?.fareDetails?.fare);
+    if (data?.trip?.fareDetails?.fare !== undefined) {
+      setTripFare(data?.trip?.fareDetails?.fare);
     }
-    if (data?.driverInfo !== undefined) {
-      setDriverDetails(data?.driverInfo);
+    if (data?.trip?.driverInfo !== undefined) { 
+      setDriverDetails(data?.trip?.driverInfo);
     }
     if (data?.trip?.stops !== undefined) {
       setTripStops(data.trip.stops);
     }
-    if (data?.vehicleInfo !== undefined) {
-      setVehicleDetails(data?.vehicleInfo);
+    if (data?.trip?.vehicleInfo !== undefined) {
+      setVehicleDetails(data?.trip?.vehicleInfo);
     }
-    if (data?.paymentDetails?.fareDetails !== undefined) {
-      setFareDetails(data?.paymentDetails?.fareDetails);
+    if (data?.trip?.fareDetails !== undefined) {
+      setFareDetails(data?.trip?.fareDetails);
     }
     if (data?.trip?.paymentMethod !== undefined) {
       setPaymentMethod(data?.trip?.paymentMethod);
     }
-    if (data?.paymentDetails?.fareDetails?.passengerPaymentStatus !== undefined) {
-      setPaymentStatus(data?.paymentDetails?.fareDetails?.passengerPaymentStatus);
+    if (data?.fareDetails?.passengerPaymentStatus !== undefined) {
+      setPaymentStatus(data?.trip?.fareDetails?.passengerPaymentStatus);
     }
     if (data?.trip?._id !== undefined) {
       setCurrentTripId(data.trip._id);
@@ -108,6 +126,18 @@ const usePaymentStore = create((set, get) => ({
     if(data?.trip?.status !== undefined){
       setTripStatus(data.trip.status);
     } 
+
+    if(data?.trip?.supplier !== undefined){
+      setSupplierDetails(data.trip.supplier);
+    }
+
+    if(data?.trip?.recipient !== undefined){
+      setRecipientDetails(data.trip.recipient);
+    }
+  
+    if(data?.trip?.adminInfo !== undefined){
+      setAdminDetails(data.trip.adminInfo);
+    }
     setIsLoading(false);    
   },
 }));

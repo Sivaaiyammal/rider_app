@@ -70,7 +70,7 @@ export const DataStore = {
 
       //   });
       await AsyncStorage.removeItem(key);
-      console.log("Cleared all keys")
+      
     } catch (error) {
       console.log(error)
     }

@@ -56,7 +56,7 @@ const TicketDetailScreen = () => {
 
   const addMessage = async (ticketId, messageText) => {
     // Send as { message: ... } form data
-    console.log('messageText',messageText);
+   
     const response = await UserTicketService.addMessage(ticketId, messageText );
     if (response?.success) {
       setMessage('');

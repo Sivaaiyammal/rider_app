@@ -54,9 +54,9 @@ const WaypointContainer = () => {
 
   const finalData = useMemo(() => {
     if (reOrderWaypoints.length === 0) return [];
-    console.log(reOrderWaypoints,"reOrderWaypoints");
+    
     const addStopItem = { type: 'add-stop', key: 'add-stop', id: 'add-stop' };
-    console.log(lastAddStopIndex,"lastAddStopIndex");
+  
     if (reOrderWaypoints.length < 6) {
       const newData = [...reOrderWaypoints];
       if (!newData.find(d => d.id === 'add-stop')) {
@@ -113,8 +113,7 @@ const WaypointContainer = () => {
     }));
 
     if(waypointIndex != 0 && waypointIndex != finalData.length-1){
-      console.log("waypointIndex",waypointIndex)
-      console.log("transformedData[waypointIndex]",transformedData[waypointIndex])
+   
       setCurrentEditWaitWaypoint({index:waypointIndex,item:transformedData[waypointIndex]})
       setIsEditwaitingTime(true)
     }

@@ -33,7 +33,7 @@ const useSupportStore = create((set, get) => ({
       "lastMessage": utils.convertToRelativeTime(item.updatedAt),
       "messages": [],
       }));
-      console.log('TransformData', TransformData);
+     
       set({ tickets: TransformData, isLoading: false });
       
       // if (response && response.data) {
@@ -55,7 +55,7 @@ const useSupportStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await UserTicketService.getAllTickets();
-      console.log('response', response);
+     
       const TransformData = response?.data?.map(item => ({
       "ticketId": item.ticketId,
       "subject": item.title,
@@ -89,7 +89,7 @@ const useSupportStore = create((set, get) => ({
   fetchTicketDetails: async (ticketId) => {
     try {
       const response = await UserTicketService.getTicketDetails(ticketId);
-      console.log('ticket details response', response);
+  
       
       if (response && response.data) {
         return response.data;

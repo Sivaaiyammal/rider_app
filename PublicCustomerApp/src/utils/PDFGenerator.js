@@ -16,7 +16,7 @@ export class PDFGenerator {
    */
   static async generateReceiptPDF(rideData, customFolder = null) {
     try {
-      console.log('Generating PDF receipt for ride:', rideData._id);
+      
       
       // Format the receipt data
       const receiptData = this.formatReceiptData(rideData);
@@ -59,15 +59,15 @@ export class PDFGenerator {
         }),
       };
 
-      console.log('PDF generation options:', options);
+      
 
       // Generate PDF
       const file = await RNHTMLtoPDF.convert(options);
       
-      console.log('PDF generation result:', file);
+      
       
       if (file && file.filePath) {
-        console.log('PDF generated successfully at:', file.filePath);
+       
         
         // Verify the file actually exists and is accessible
         const fileExists = await this.verifyFileExists(file.filePath);
@@ -78,7 +78,7 @@ export class PDFGenerator {
         }
       } else if (file && file.base64) {
         // If base64 is returned, save it to a file
-        console.log('PDF generated as base64, converting to file...');
+      
         const savedPath = await this.saveBase64ToFile(file.base64, fileName);
         return savedPath;
       } else {
@@ -128,7 +128,7 @@ export class PDFGenerator {
     try {
       // This is a placeholder implementation
       // In a real app, you would use react-native-fs to save the base64 data
-      console.log('Saving base64 PDF data to file:', fileName);
+     
       
       // For now, return a mock path
       // TODO: Implement actual file saving with react-native-fs
@@ -151,7 +151,7 @@ export class PDFGenerator {
    */
   static async downloadPDF(pdfPath, customFolder = null) {
     try {
-      console.log('Downloading PDF from:', pdfPath);
+     
       
       // Verify the PDF file exists before proceeding
       if (!pdfPath) {
@@ -254,7 +254,7 @@ export class PDFGenerator {
    */
   static async sharePDF(pdfPath, email = null) {
     try {
-      console.log('Sharing PDF from:', pdfPath, 'to email:', email);
+     
       
       // Verify the PDF file exists before sharing
       if (!pdfPath) {
@@ -392,7 +392,7 @@ export class PDFGenerator {
     try {
       // This is a placeholder implementation
       // In a real app, you would use react-native-fs or similar to move files
-      console.log(`Moving file from ${currentPath} to ${customFolder}`);
+    
       
       // For now, return the current path
       // TODO: Implement actual file moving functionality
@@ -443,7 +443,7 @@ export class PDFGenerator {
   static openPDFFile(pdfPath) {
     // TODO: Implement PDF viewer
     // Could use react-native-pdf or open with default PDF app
-    console.log('Opening PDF file:', pdfPath);
+   
     Alert.alert(
       'Open PDF',
       'PDF viewer functionality will be implemented in future updates.',

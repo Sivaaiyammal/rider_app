@@ -74,7 +74,7 @@ const useCurrentRideInfoStore = create((set) => ({
   },
 
   setFareDetails: (fareData) => {
-    console.log("fareData",fareData)
+ 
     if (fareData?.fareDetails?.fare != null) {
       set({ finalFare: fareData.fareDetails.fare });
     }
@@ -82,7 +82,7 @@ const useCurrentRideInfoStore = create((set) => ({
    
   
     const BreakdownFare = fareData?.customerInvoice ? utils.getInvoiceFormat(fareData?.customerInvoice) : utils.getFareBreakdown(fareData?.fareDetails)
-    console.log("BreakdownFare",BreakdownFare)
+
     set({ breakdownFare: BreakdownFare });
   },
 
