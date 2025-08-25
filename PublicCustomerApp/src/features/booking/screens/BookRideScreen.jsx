@@ -215,7 +215,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     
 
     const handleDirectionReady = (data) => {
-        handleCurrentLocation()
+       // handleCurrentLocation()
         // Extract distance and duration from direction data
         if (data?.distance && data?.duration) {
             const distance = data.distance/1000; // Distance in meters
@@ -349,7 +349,8 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             
             const result = transformRideLocationsToDirectionPoints({
                 clearMarkers: true,
-                vehicleType: 'car'
+                vehicleType: 'car',
+                padding: [50, 50, 50, 400]
             });
             if (result.success) {
                 console.log('Direction points set successfully:', result.locationCount, 'locations');

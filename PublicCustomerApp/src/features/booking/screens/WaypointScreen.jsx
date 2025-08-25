@@ -136,7 +136,8 @@ useEffect(() => {
     if (isWaypointsReady()) {
       const result = transformWaypointsToDirectionPoints({
         clearMarkers: true,
-        vehicleType: 'car'
+        vehicleType: 'car',
+        padding: [50, 400, 50, 100]
       });
       
       if (result.success) {

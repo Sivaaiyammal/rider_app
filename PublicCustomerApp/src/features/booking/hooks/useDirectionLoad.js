@@ -14,7 +14,7 @@ const useDirectionLoad = () => {
   } = useRideBookingLocationStore();
 
   
-  const { setDirectionPoints, setMapMarkers,setDirectionReadyCallback } = useMapStore();
+  const { setDirectionPoints, setMapMarkers } = useMapStore();
 
 
   
@@ -26,7 +26,7 @@ const useDirectionLoad = () => {
    * @param {string} options.vehicleType - Type of vehicle for direction calculation
    */
   const transformRideLocationsToDirectionPoints = useCallback((options = {}) => {
-    const { clearMarkers = true, vehicleType = 'car' } = options;
+    const { clearMarkers = true, vehicleType = 'car', padding } = options;
     
     // Collect all valid locations in order: start -> waypoints -> end
     const allLocations = [];
@@ -81,6 +81,10 @@ const useDirectionLoad = () => {
         })),
         type: vehicleType
       };
+
+      if (Array.isArray(padding) && padding.length === 4) {
+        directionPoints.padding = padding.map(v => parseInt(v, 10));
+      }
 
       setDirectionPoints(directionPoints);
       

@@ -137,6 +137,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     private Set<Marker> addedMarkers = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private HashMap<String, String> markerTextures = new HashMap<>();
 
+    private int[] routeMargins = new int[]{50, 50, 50, 700};
+
     private TouchInput.TapResponder tapResponder = new TouchInput.TapResponder() {
         @Override
         public boolean onSingleTapUp(float x, float y) {
@@ -931,6 +933,23 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             ReadableArray locationArray = routeData.getArray("locations");
             String type = routeData.getString("type");
 
+            // Optional: read dynamic padding from React and store for later zoom
+            try {
+                if (routeData.hasKey("padding")) {
+                    ReadableArray padding = routeData.getArray("padding");
+                    if (padding != null && padding.size() == 4) {
+                        routeMargins = new int[]{
+                                padding.getInt(0),
+                                padding.getInt(1),
+                                padding.getInt(2),
+                                padding.getInt(3)
+                        };
+                    }
+                }
+            } catch (Exception e) {
+                Log.e("routeLOG", "Invalid padding, using default: " + e.getMessage());
+            }
+
             if (routeInstructionsDisplay != null && mapView != null) {
                 try {
                     mapView.getMapController().removeAll();
@@ -1134,6 +1153,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 index = 0;
 
             Directions.getInstance().selectRoute(index);
+            Log.e("DIRECTION","zoom called");
+            Directions.getInstance().zoomRoute(routeMargins, 0.8f, -1);
             routeInstructionsDisplay = Directions.getInstance().getRouteInstructions(index);
             if (routeInstructionsDisplay == null) {
                 Log.e("RouteError", "Failed to get route instructions");
@@ -1193,9 +1214,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 RouteCount routeCount = directions.getInstance().getPrimaryRoute();
                 // Log.e("NENative", "RC: " + routeCount.getRouteCount() + " sel route " +
                 // routeCount.getSelectedRoute());
-                int[] margin = {50, 50, 50, 700};
                 Log.e("DIRECTION","zoom called");
-                directions.getInstance().zoomRoute(margin, 0.8f, -1);
+                directions.getInstance().zoomRoute(routeMargins, 0.8f, -1);
                 Log.e("DIRECTION","zoom called 2");
                 mapController.setCurrentLocationEnabled(true);
                 SharedDirections.updateSharedArray(routeInstructionsDisplay);

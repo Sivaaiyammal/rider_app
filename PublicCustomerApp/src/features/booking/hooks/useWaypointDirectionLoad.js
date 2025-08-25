@@ -18,7 +18,7 @@ const useWaypointDirectionLoad = () => {
    * @param {string} options.vehicleType - Type of vehicle for direction calculation
    */
   const transformWaypointsToDirectionPoints = useCallback((options = {}) => {
-    const { clearMarkers = true, vehicleType = 'car' } = options;
+    const { clearMarkers = true, vehicleType = 'car',padding } = options;
     const updatedReOrderWaypoints = [...reachedStops,...reOrderWaypoints]
 
    
@@ -35,6 +35,8 @@ const useWaypointDirectionLoad = () => {
       if (clearMarkers) {
         setMapMarkers([]);
       }
+
+      
       
       // Transform to the format expected by setDirectionPoints
       const directionPoints = {
@@ -43,7 +45,11 @@ const useWaypointDirectionLoad = () => {
           lon: waypoint.longitude
         })),
         type: vehicleType
+
       };
+      if (Array.isArray(padding) && padding.length === 4) {
+        directionPoints.padding = padding.map(v => parseInt(v, 10));
+      }
       
       console.log('Waypoint direction points:', directionPoints);
       setDirectionPoints(directionPoints);
