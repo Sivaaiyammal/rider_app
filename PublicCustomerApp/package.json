@@ -24,7 +24,7 @@
   "dependencies": {
     "@apollo/client": "^3.13.8",
     "@eslint/js": "^9.10.0",
-    "@gorhom/bottom-sheet": "^5.1.2",
+    "@gorhom/bottom-sheet": "5.1.2",
     "@mapbox/polyline": "^1.2.1",
     "@msgpack/msgpack": "^3.1.2",
     "@react-native-async-storage/async-storage": "^2.0.0",

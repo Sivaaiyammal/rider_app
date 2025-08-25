@@ -8,6 +8,7 @@ import { CommonActions, useNavigation } from '@react-navigation/native';
 import { DataStore } from '../controllers/DataStore';
 import useUserInfoStore from '../store/useUserInfoStore';
 import { GlobalContext } from '../context/GlobalContext';
+import DeviceInfo from 'react-native-device-info';
 const SplashScreen = () => {
   const navigation = useNavigation();
   const {addListener} = useContext(GlobalContext);
@@ -17,6 +18,9 @@ const SplashScreen = () => {
       nextScreen();
     }, 2000);
   });
+
+  const version = DeviceInfo.getVersion();
+  const versionCode = DeviceInfo.getBuildNumber();
 
   const nextScreen = useCallback(async () => {
     const language = await DataStore.loadData('language');
@@ -66,9 +70,11 @@ const SplashScreen = () => {
       <View style={SplashStyles.logoContainer}>
         <Logo />
         <Text style={SplashStyles.splashTitle}>
-          Namma Ooru Taxi ® {'\n'} 
+          Namma Ooru Taxi ® {'\n'}
         </Text>
-        <Text style={SplashStyles.versionTxt}>V1.0.0.0</Text>
+        <Text style={SplashStyles.versionTxt}>
+          {`V${version} ( ${versionCode} )`}
+        </Text>
       </View>
       <ActivityIndicator color={colors.yellow} size={30} />
       <View style={SplashStyles.splashBg}>

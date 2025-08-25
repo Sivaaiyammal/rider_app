@@ -119,8 +119,8 @@ android {
         applicationId "com.virtualmaze.prcustomer"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.0.0.2"
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -278,12 +278,8 @@ dependencies {
     implementation name: "services_core", ext: 'aar'
     implementation name: "geoJson", ext: 'aar'
     implementation name: "geocoding", ext: 'aar'
-    implementation name: "libandroid-navigation", ext: 'aar'
-    implementation name: "libandroid-navigation-ui-gms", ext: 'aar'
     implementation name: "speech", ext: 'aar'
     implementation name: "sqlite-android", ext: 'aar'
-    implementation name: "telemetry", ext: 'aar'
-    implementation name: "turf", ext: 'aar'
     implementation name: "pocketsphinx-android-5prealpha", ext: 'aar'
     implementation name: "models", ext: 'aar'
     // The version of react-native is set by the React Native Gradle Plugin
