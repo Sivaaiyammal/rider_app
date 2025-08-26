@@ -16,25 +16,23 @@ import useWayPointReorderStore from '../../../features/booking/store/useWayPoint
 import { useTranslation } from 'react-i18next';
 import {height} from "../../../utils/Utils";
 import TripDetailsModal from '../../../components/TripDetailsModal';
+import StatusConatainerWrapper from '../component/StatusConatainerWrapper';
+import useRouteDraw from '../hooks/useRouteDraw';
 const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
-  const {driverName,vehicleNumber,model,brand,driverPhoto} = useAssignedDriverInfoStore();
+  const {driverName,vehicleNumber,model,brand,driverPhoto,driverLatitude,driverLongitude} = useAssignedDriverInfoStore();
   const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedPickuoMins,estimatedFare} = useCurrentRideInfoStore();
   const {waitingForDriverApproval} = useWayPointReorderStore();
   
   const {setMapStyle} = useMapStyleStore();
   const {t} = useTranslation();
-  const { cleanupMarkers } = useTrackHook('on-ride');
-
+  const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destinationlat:stops[stops.length-1].location[1],destinationlon:stops[stops.length-1].location[0],driverLat:driverLatitude,driverLon:driverLongitude})  
+  
   
   
   const animation = useRef(new Animated.Value(0)).current;
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  useEffect(() => {
-    return () => {
-      cleanupMarkers();
-    };
-  }, [cleanupMarkers]);
+  
 
   const toggleExpand = () => {
     const currentValue = animation._value;
@@ -96,7 +94,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
     outputRange: ['0deg', '90deg'],
   });
 
-  const ArrivalTime =utils.getTimeAfterMinutes(estimatedPickuoMins)
+  const ArrivalTime =utils.getTimeAfterMinutes(estimatedDuration)
 
   // Check if driver photo URL is valid
   const driverPhotoUri = driverPhoto && driverPhoto.trim() !== '' ? driverPhoto : null;
@@ -104,11 +102,14 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   return (
     <>
       {/* Top info bar */}
-      <View style={[styles.containerTop,{backgroundColor:'#0f223c'}]}>
+      <StatusConatainerWrapper backgroundColor='black' onMapIconPress={()=>{SetViewBoundingBox()}}>
+
+      
+      <View style={[styles.containerTop,{backgroundColor:'black'}]}>
        
         <Text style={styles.topBarText}>{t('reach_your_destination_in')}</Text>
         <View style={styles.timeBox}>
-          <Text style={styles.timeText}>{estimatedPickuoMins} Mins</Text>
+          <Text style={styles.timeText}>{estimatedDuration} Mins</Text>
             </View>
         
     </View>
@@ -179,21 +180,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
        
 
         {/* Payment method */}
-        <View style={{width:"90%",alignSelf:"center",flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:10}}>
-        <TouchableOpacity style={styles.paymentRow} onPress={onPaymentMethodChange}>
-          <Text style={styles.paymentLabel}>{t('change_payment_method')}</Text>
-          <View style={styles.paymentValueWrap}>
-            <Text style={styles.paymentValue}>{paymentMethod}</Text>
-            <Icon name="chevron-right" size={20} color="#888" />
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelBtn} onPress={()=>{
-            onCancel();
-          }}>
-          <Icon name="close" size={25} color={colors.white} />
-        </TouchableOpacity>
-
-        </View>
+     
       </View>
     </PanGestureHandler>
 
@@ -204,7 +191,12 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
       stops={stops}
       waitingForDriverApproval={waitingForDriverApproval}
       height={height}
+      onCancel={onCancel}
+      onPaymentMethodChange={onPaymentMethodChange}
+      paymentMethod={paymentMethod}
+      t={t}
     />
+    </StatusConatainerWrapper>
     
     </>
   );
@@ -218,6 +210,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+
   },
   containerTop: {
     flexDirection: 'row',
@@ -243,7 +236,7 @@ const styles = StyleSheet.create({
     fontFamily:Fonts.regular,
   },
   timeBox: {
-    backgroundColor: '#04713B',
+    backgroundColor: colors.grey+50,
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -373,16 +366,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    paddingHorizontal: 5,
+    paddingHorizontal: 10,
     paddingVertical: 14,
-  
-    borderTopWidth: 1,
-    borderColor: '#e0e0e0',
-    marginTop: 10,
+    backgroundColor:colors.grey,
+    borderRadius:10,
+   
+    margin: 10,
+    marginBottom:20,
   },
   tripDetailsLabel: {
-    color: '#757575',
+    color: colors.black,
     fontSize: 16,
     fontFamily: Fonts.regular,
   },

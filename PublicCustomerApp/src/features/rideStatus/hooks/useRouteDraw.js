@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { findRoute } from '../../../../controllers/NEMap/findRoute';
-import Polyline from '../../../../controllers/NEMap/Polyline';
+import { findRoute } from '../../../controllers/NEMap/findRoute';
+import Polyline from '../../../controllers/NEMap/Polyline';
 import polyline from '@mapbox/polyline';
-import useMapStore from '../../../map/store/useMapStore';
-import Marker from '../../../../controllers/NEMap/Marker';
-import {utils} from '../../../../utils/Utils';
+import useMapStore from '../../map/store/useMapStore';
+import Marker from '../../../controllers/NEMap/Marker';
+import {utils} from '../../../utils/Utils';
 
-export default function useRouteDraw({ destimationlat,destimationlon, driverLat, driverLon,screenMode = 'arrival' }) {
+export default function useRouteDraw({ destinationlat,destinationlon, driverLat, driverLon,screenMode = 'arrival' }) {
 	const [estimatedDuration, setEstimatedDuration] = useState(1);
 	const currentPolylineRef = useRef([]);
 	const [isDiverted, setIsDiverted] = useState(true);
@@ -192,11 +192,14 @@ export default function useRouteDraw({ destimationlat,destimationlon, driverLat,
     const SetViewBoundingBox = ()=>{
         const coords = currentPolylineRef.current
         const bounds = utils.getBoundingBox(coords)
-       
-        const margin = [20,20,20,500]
+        if(!bounds){
+            return
+        }
+        const margin = [20,100,20,500]
         // Structure bounds properly: [bounds, margin] where bounds is [minLon, minLat, maxLon, maxLat]
         const finalBounds = [bounds, margin]
         setMapBounds(finalBounds);
+		
     }
 
 
@@ -251,8 +254,7 @@ export default function useRouteDraw({ destimationlat,destimationlon, driverLat,
 		if (isDiverted) {
             let points = [
                 {lat:driverLat,lon:driverLon},
-                {lat:destimationlat,lon:destimationlon},
-                
+                {lat:destinationlat,lon:destinationlon}  
             ]
            
 			const coordinates = await FetchRoute(points)

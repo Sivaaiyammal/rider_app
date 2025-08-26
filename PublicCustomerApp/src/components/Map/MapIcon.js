@@ -7,7 +7,7 @@ const MapIcon = () => {
   return (
     <View style={styles.container}>
         <TouchableOpacity onPress={() => Linking.openURL(webPortalURL)}>
-     <Logo width={60} height={40} />
+     <Logo width={60} height={20} />
      </TouchableOpacity>
      <Text style={[styles.text,{color:'blue'}]} onPress={() => Linking.openURL(mapcopyrightURL)}>{' '}© OpenStreetMap</Text>
      <Text style={styles.text}>{' '}contributions</Text>

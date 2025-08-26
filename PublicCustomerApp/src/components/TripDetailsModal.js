@@ -11,7 +11,11 @@ const TripDetailsModal = ({
   stops, 
   waitingForDriverApproval,
   children,
-  height 
+  height,
+  onCancel,
+  onPaymentMethodChange,
+  paymentMethod,
+  t
 }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -41,7 +45,7 @@ const TripDetailsModal = ({
     <Animated.View style={[
       styles.bottomModal, 
       { 
-        height: height * 0.7,
+        height: height * 0.8,
         opacity: fadeAnim,
         transform: [{
           translateY: fadeAnim.interpolate({
@@ -77,7 +81,25 @@ const TripDetailsModal = ({
         
         {/* Address Container */}
         <AddressContainer directions={stops} edit={true} live={true} />
+        <TouchableOpacity style={styles.paymentRow} onPress={onPaymentMethodChange}>
+          <Text style={styles.paymentLabel}>{t('change_payment_method')}</Text>
+          <View style={styles.paymentValueWrap}>
+            <Text style={styles.paymentValue}>{paymentMethod}</Text>
+            <Icon name="chevron-right" size={20} color="#888" />
+          </View>
+        </TouchableOpacity>
+     
+       
       </ScrollView>
+      <View style={styles.cancelBtnContainer}>  
+          <TouchableOpacity style={styles.cancelBtn} onPress={()=>{
+            onCancel();
+          }}>
+          {/* <Icon name="close" size={25} color={colors.white} /> */}
+          <Text style={styles.cancelBtnText}>Cancel Trip</Text>
+        </TouchableOpacity>
+        </View>
+        
     </Animated.View>
   );
 };
@@ -88,7 +110,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 1000,
+    zIndex: 10000000,
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -155,6 +177,71 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: colors.grey_xxdark,
   },
+  cancelBtnContainer: {
+    width:'100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems:'flex-end',
+    paddingHorizontal:20,
+  
+ 
+    
+  },
+  cancelBtn: {
+    flexDirection:'row',
+    alignItems:'center',
+    justifyContent:'center',
+    gap:10,
+    width:'100%',
+    borderWidth:1,
+    borderColor: colors.red,
+    borderRadius: 10,
+    padding: 15,
+    backgroundColor: colors.red,
+  },
+  cancelBtnText: {
+    fontSize: 16,
+    textAlign: 'center',
+    fontFamily: Fonts.regular,
+    color: colors.white,
+  },
+  paymentRow: {
+    
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderColor: '#eee',
+    marginTop: 8,
+    backgroundColor:"#eee",
+    paddingHorizontal:10,
+    marginBottom:10,
+   
+    borderRadius:10
+
+  },
+  paymentLabel: {
+    color: '#222',
+    fontSize: 16,
+    fontFamily:Fonts.regular,
+  },
+  paymentValueWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  paymentValue: {
+    color: '#04713B',
+    fontFamily:Fonts.regular,
+    fontSize: 16,
+    marginRight: 4,
+  },
+  paymentArrow: {
+    color: '#888',
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginTop: -2,
+  },
 });
 
 TripDetailsModal.propTypes = {
@@ -164,6 +251,10 @@ TripDetailsModal.propTypes = {
   waitingForDriverApproval: PropTypes.string,
   children: PropTypes.node,
   height: PropTypes.number.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  onPaymentMethodChange: PropTypes.func.isRequired,
+  paymentMethod: PropTypes.string.isRequired,
+  t: PropTypes.func.isRequired,
 };
 
 export default TripDetailsModal; 

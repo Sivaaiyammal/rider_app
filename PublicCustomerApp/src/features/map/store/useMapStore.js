@@ -58,8 +58,12 @@ const useMapStore = create((set) => ({
     mapReady: false,
     setMapReady: mapReady => set({ mapReady }),
 
-    mapBounds: null,
-    setMapBounds: mapBounds => set({ mapBounds }),
+    mapBounds: [],
+    boundKey: 0,
+    setMapBounds: (bounds) => set(state => {
+        const newBoundKey = state.boundKey + 1;
+        return { mapBounds: [...bounds, newBoundKey], boundKey: newBoundKey };
+      }),
 
     markerClickCallback: null,
     setMarkerClickCallback: callback => set({ markerClickCallback: callback }),

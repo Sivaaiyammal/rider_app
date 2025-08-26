@@ -17,26 +17,25 @@ import { useTranslation } from 'react-i18next';
 import useWayPointReorderStore from '../../booking/store/useWayPointReorderStore';
 import TripDetailsModal from '../../../components/TripDetailsModal';
 import { height } from '../../../utils/Utils';
+import useRouteDraw from '../hooks/useRouteDraw';
+import MapIcon from '../../../components/Map/MapIcon';
+import StatusConatainerWrapper from '../component/StatusConatainerWrapper';
 
   const DriverArrivalScreen = ({onCancel,handleOverlay}) => {
   // Dummy data
-  const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone} = useAssignedDriverInfoStore();
-  const {stops,otp,duration,totalDistance,estimatedPickuoMins,vehicleType,estimatedFare} = useCurrentRideInfoStore();
+  const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone,driverLatitude,driverLongitude} = useAssignedDriverInfoStore();
+  const {stops,otp,duration,totalDistance,vehicleType,estimatedFare} = useCurrentRideInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setMapStyle} = useMapStyleStore();
   const {t} = useTranslation();
   const {waitingForDriverApproval} = useWayPointReorderStore();
   // Initialize tracking hook for driver arrival screen with polyline support
-  const { cleanupMarkers } = useTrackHook('arrival');
+  const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destinationlat:stops[0].location[1],destinationlon:stops[0].location[0],driverLat:driverLatitude,driverLon:driverLongitude})  
+  
 
-  // Cleanup markers and polylines when component unmounts
-  useEffect(() => {
-    return () => {
-      cleanupMarkers();
-    };
-  }, [cleanupMarkers]);
+  
 
-    const handlePickLocation = async (item) => {
+  const handlePickLocation = async (item) => {
       try {
         const res =  await changeStopLocation(item)
         if (res.success) {
@@ -56,19 +55,7 @@ import { height } from '../../../utils/Utils';
     })
   }
 
-  useEffect(() => {
-    setMapStyle({
-      width: "100%",
-      height: "60%",
-    });
-
-    return () => {
-      setMapStyle({
-        width: "100%",
-        height: "100%",
-      });
-    }
-  }, [])
+  
 
   const handleCallDriver = () => {
     console.log('driverPhone',phone);
@@ -79,71 +66,7 @@ import { height } from '../../../utils/Utils';
 
 
 
-  const AnimatedDots = () => {
-    const dot1 = useRef(new Animated.Value(0)).current;
-    const dot2 = useRef(new Animated.Value(0)).current;
-    const dot3 = useRef(new Animated.Value(0)).current;
   
-    useEffect(() => {
-      const animateDots = () => {
-        Animated.sequence([
-          Animated.parallel([
-            Animated.timing(dot1, {
-              toValue: 1,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(dot2, {
-              toValue: 0,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(dot3, {
-              toValue: 0,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.parallel([
-            Animated.timing(dot1, {
-              toValue: 0,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(dot2, {
-              toValue: 1,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(dot3, {
-              toValue: 0,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.parallel([
-            Animated.timing(dot1, {
-              toValue: 0,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(dot2, {
-              toValue: 0,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-            Animated.timing(dot3, {
-              toValue: 1,
-              duration: 400,
-              useNativeDriver: true,
-            }),
-          ]),
-        ]).start(() => animateDots());
-      };
-  
-      animateDots();
-    }, [dot1, dot2, dot3]);
-  }
 
 
   // Animation state for trip details
@@ -159,12 +82,17 @@ import { height } from '../../../utils/Utils';
   const driverPhotoUri = driverPhoto && driverPhoto.trim() !== '' ? driverPhoto : null;
 
     return (
-        <> 
-        <View style={[styles.containerTop,{backgroundColor:'#0f223c'}]}>
+        <StatusConatainerWrapper backgroundColor='black' onMapIconPress={()=>{
+            SetViewBoundingBox()
+        }}> 
+       
+           
+                
+      <View style={[styles.containerTop]}>
        
         <Text style={styles.topBarText}>{t('your_driver_will_arrive_in')}</Text>
         <View style={styles.timeBox}>
-          <Text style={styles.timeText}>{estimatedPickuoMins || '--'} Mins</Text>
+          <Text style={styles.timeText}>{estimatedDuration || '--'} Mins</Text>
             </View>
         
     </View>
@@ -203,7 +131,7 @@ import { height } from '../../../utils/Utils';
             </View>
 
 
-            {!expanded && (
+            
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',paddingHorizontal:5}}>
         <View style={{flex:1,gap:5,paddingVertical:10}}>
           <Text style={{ color: '#888', fontSize: 13,fontFamily:Fonts.regular }}>{t('pickup_location')}</Text>
@@ -217,17 +145,15 @@ import { height } from '../../../utils/Utils';
           <Text style={{ color:colors.blue, fontSize: 14, fontFamily:Fonts.regular }}>{t('change')}</Text>
         </TouchableOpacity>
       </View>
-    )}   
   
- 
-    <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
+      <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
           <Text style={styles.tripDetailsLabel}>{t('trip_details')}</Text>
           <View style={{flexDirection:"row",alignItems:"center",gap:10}}>
           {
             waitingForDriverApproval === "PENDING" &&
             <View style={styles.driverWaitingApprovalContainer}>
                 <Text style={styles.driverWaitingApprovalText}>{t('waiting_for_driver_approval')}</Text>
-                <AnimatedDots />
+                
             </View>
           }
           <Animated.View style={{ transform: [{ rotate: chevronRotation }] }}>
@@ -235,6 +161,9 @@ import { height } from '../../../utils/Utils';
           </Animated.View>
           </View>
         </TouchableOpacity>
+  
+ 
+   
       {/* Trip Details Modal */}
       <TripDetailsModal
         visible={expanded}
@@ -242,6 +171,7 @@ import { height } from '../../../utils/Utils';
         stops={stops}
         waitingForDriverApproval={waitingForDriverApproval}
         height={height} // You can adjust this value or import height from utils
+        onCancel={onCancel}
       >
         <View style={{ flexDirection: 'row', flex: 1, marginBottom: 20 }}>
           <View style={styles.rideInfoItem}>
@@ -257,27 +187,26 @@ import { height } from '../../../utils/Utils';
             <Text style={styles.rideInfoValue}>₹{estimatedFare || '--'}</Text>
           </View>
         </View>
+       
       </TripDetailsModal>
 
       {/* Action buttons */}
       <View style={styles.actionRow}>
+     
         <TouchableOpacity style={styles.callBtn} onPress={handleCallDriver}>
           <Icon name="phone" size={20} color={colors.white} />
-            <Text style={styles.callBtnText}>{t('call_driver')}</Text>
+             <Text style={styles.callBtnText}>{t('call_driver')}</Text> 
         </TouchableOpacity>
         {/* <TouchableOpacity style={styles.shareBtn}>
           <Icon name="share" size={25} color={colors.white} />
         </TouchableOpacity> */}
-          <TouchableOpacity style={styles.cancelBtn} onPress={()=>{
-            onCancel();
-          }}>
-          <Icon name="close" size={25} color={colors.white} />
-        </TouchableOpacity>
+         
       </View>
     </View>
+      
 
    
-    </>
+    </StatusConatainerWrapper>
   );
 };
 
@@ -289,6 +218,40 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+  },
+  
+  containerTop_inner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+  },
+  containerTop_inner_text: {
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+    color: colors.black,
+    textAlign: 'center',
+    zIndex: 1,
+  },
+  container_inner: {
+    backgroundColor:'#0f223c',
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 10,
+   
+    
+  },
+  currentLocationIcon: {
+    padding: 10,
+    backgroundColor: 'white',
+    borderRadius: 50,
+    borderWidth: 1,
+    borderColor: 'white',
+    elevation: 10,
+    top:-10
   },
   containerTop: {
     flexDirection: 'row',
@@ -440,7 +403,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   otpDigit: {
-    backgroundColor: '#ffeda7',
+    backgroundColor: colors.grey,
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -480,24 +443,31 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop:10,
+    gap:15,
    
   },
   callBtn: {
     flexDirection: 'row',
     gap: 10,
-    flex: 1,
-    backgroundColor: '#329782',
+    padding:15,
+
+    backgroundColor: '#00770d',
+   
+    borderWidth: 1,
+    borderColor: '#00770d',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 16,
-    paddingVertical: 16,
-    marginRight: 8,
+    borderRadius: 10,
+ 
+    flex:1,
+    
   },
   callBtnText: {
 
-    color: '#fff',
+    color: colors.white,
     fontFamily: Fonts.medium,
     fontSize: 14,
+
   },
   shareBtn: {
     paddingHorizontal: 14,
@@ -530,14 +500,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fff',
     paddingHorizontal: 5,
-    paddingVertical: 14,
-    marginHorizontal:5,
+    paddingTop: 14,
+    paddingBottom: 5,
+   
+   
+    flex:1,
     borderTopWidth: 1,
     borderColor: '#e0e0e0',
-   
-    marginTop: 10,
+  
+    marginVertical:5,
+    
   },
   tripDetailsLabel: {
     color: '#757575',
@@ -549,6 +522,11 @@ const styles = StyleSheet.create({
     color: '#888',
     fontFamily: Fonts.medium,
     marginLeft: 8,
+  },
+  cancelBtnContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 10,
   },
 });
   

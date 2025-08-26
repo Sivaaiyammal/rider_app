@@ -223,29 +223,15 @@ const RideStatus = () => {
 
     return <>
    {showOverlay && <Overlay
-  visible={showOverlay}
-  onPress={handleOverlay}
-  backgroundColor="rgba(0, 0, 0, 0.7)"
-  zIndex={0}
-  
->
-
-</Overlay>}
+      visible={showOverlay}
+      onPress={handleOverlay}
+      backgroundColor="rgba(0, 0, 0, 0.7)"
+      zIndex={0}
+  >
+    </Overlay>}
         <NavBar title={t(getTitle())} />
         <View style={styles.container}>
-            <View style={[styles.containerTop,showOverlay && {display:'none'}]}>  
-                <View style={[styles.containerTop_inner]}>
-                    <MapIcon />
-                    <TouchableOpacity style={styles.currentLocationIcon} onPress={() => {
-                        locationTask.getCurrentLocation()
-                    }}>
-                        <CurrentLocationIcon />
-                    </TouchableOpacity>
-                </View>
-            </View>
-            <View style={[styles.container_inner,{backgroundColor:tripStatus === TripStatus.DROPPED ? '#13B15A' : tripStatus === TripStatus.CANCELLED ? '#ff5050' : '#0f223c'}]}>
-                {renderScreen()}
-            </View>
+            {renderScreen()}
         </View>
 
         {

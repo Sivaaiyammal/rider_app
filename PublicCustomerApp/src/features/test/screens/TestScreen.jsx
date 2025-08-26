@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity  } from 'react-native'
 import React, { useEffect } from 'react'
 import useAssignedDriverInfoStore from '../../rideStatus/store/useAssignedDriverInfoStore';
-import useRouteDraw from './hook/useRouteDraw';
+// import useRouteDraw from './hook/useRouteDraw';
 
 const TestScreen = () => {
   const {
@@ -36,7 +36,7 @@ const TestScreen = () => {
     }
   ]
 
-    const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destimationlat:stops[1].location[1],destimationlon:stops[1].location[0],driverLat:driverLatitude,driverLon:driverLongitude,screenMode:'onRide'})  
+  // const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destimationlat:stops[1].location[1],destimationlon:stops[1].location[0],driverLat:driverLatitude,driverLon:driverLongitude})  
 
   
   return (

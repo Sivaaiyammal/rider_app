@@ -58,7 +58,7 @@ const SearchLoader = ({ onCancel }) => {
       driverName,
       driverLocation.longitude,
       driverLocation.latitude,
-      vehicleType?.toLowerCase() || 'auto',
+      'auto',
       36,
       true,
     );
