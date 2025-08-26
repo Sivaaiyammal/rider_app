@@ -37,7 +37,7 @@ class Marker {
         this.angle = angle
         this.focus = false
         this.animate = true
-        this.animationTime = 8000
+        this.animationTime = 1000
         this.showToolTip = false
         this.doRotation = true
         this.padding = [0,0,0,0]

@@ -134,12 +134,12 @@ const SideDrawerV2 = ({ handleMenu }) => {
       screen: 'LegalScreen',
       icon: <Ionicons name="document-text" size={20} color="black" />,
     },
-    // {
-    //   id: 'test-screen',
-    //   name: t('test_screen'),
-    //   screen: 'BottomSheetWorkingExamples',
-    //   icon: <Ionicons name="flask" size={20} color="black" />,
-    // },
+    {
+      id: 'test-screen',
+      name: t('test_screen'),
+      screen: 'BottomSheetWorkingExamples',
+      icon: <Ionicons name="flask" size={20} color="black" />,
+    },
   ];
 
   const HandleOpenDrawerMenu = (menu) => {
@@ -162,44 +162,27 @@ const SideDrawerV2 = ({ handleMenu }) => {
       <Animated.View style={[drawerStyles.drawercontainer, {transform: [{translateX: slideAnim}]}]}>
         <View style={drawerStyles.profileContainer}>
           <ProfileImage width={60} height={60} />
-          <AdaptiveText style={drawerStyles.userName}>{userdetails?.name}</AdaptiveText>
+          <Text style={drawerStyles.userName}  numberOfLines={1} >{userdetails?.name}</Text>
         </View>
         <View style={drawerStyles.contentContainer}>
           <ScrollView>
             {drawerData.map(item => {
               return (
+                <>
                 <TouchableOpacity
                   style={drawerStyles.drawerBtns}
                   key={`drawer-${item.id}`}
                   onPress={() => HandleOpenDrawerMenu(item)}
                 >
-                  <View style={{ position: 'relative' }}>
+                  <View style={{ position: 'relative',flexDirection:'row',alignItems:'center',gap:15 }}>
                     {item.icon}
-                    {item.id === 'support' && unreadCount > 0 && (
-                      <View style={{
-                        position: 'absolute',
-                        top: -2,
-                        right: -2,
-                        backgroundColor: '#EF4444',
-                        borderRadius: 8,
-                        minWidth: 16,
-                        height: 16,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        paddingHorizontal: 4,
-                      }}>
-                        <AdaptiveText style={{
-                          color: '#FFFFFF',
-                          fontSize: 10,
-                          fontWeight: '700',
-                        }}>
-                          {unreadCount > 99 ? '99+' : unreadCount}
-                        </AdaptiveText>
-                      </View>
-                    )}
+                 
+                  <Text style={drawerStyles.btnText}>{item.name}</Text>
                   </View>
-                  <AdaptiveText style={drawerStyles.btnText}>{item.name}</AdaptiveText>
+                  <Ionicons name={'chevron-forward'} size={20} color={'#757575'} />
                 </TouchableOpacity>
+                {drawerData.indexOf(item) !== drawerData.length - 1 && <View style={drawerStyles.divider} />} 
+                </>
               );
             })}
           </ScrollView>
@@ -207,7 +190,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
       </Animated.View>
       <View style={drawerStyles.closeBtnMainContainer} onPress={closeDrawer} >
         <TouchableOpacity onPress={closeDrawer} style={drawerStyles.closeBtnContainer}>
-            <Ionicons name={'close'} size={30} color={'#757575'} />
+            <Ionicons name={'close'} size={30} color={'black'} />
         </TouchableOpacity>
       </View>
     </Animated.View>

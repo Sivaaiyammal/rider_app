@@ -24,6 +24,8 @@ i18n
     },
     interpolation: {
       escapeValue: false, // React already does escaping
+      prefix: '{',
+      suffix: '}',
     },
   });
 

@@ -62,7 +62,7 @@ import locationTask from '../../../controllers/GetCurrentLocation';
               gap: 5,
             }}>
             <TouchableOpacity style={styles.homeMenuIcon} onPress={() => toggleMenu()}>
-              <HomeMenuIcon  />
+              <HomeMenuIcon width={20} height={20} />
             </TouchableOpacity>
             <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
               <ProfileImage />
@@ -110,7 +110,12 @@ import locationTask from '../../../controllers/GetCurrentLocation';
       backgroundColor: '#fff',
     },
     homeMenuIcon: {
-      paddingHorizontal: 10,
+      paddingLeft: 10,
+      paddingRight: 7,
+     
+      alignItems:"center",
+      justifyContent:"center",
+      height: "100%",
     },
     addressProfileImage: {
       width: 40,

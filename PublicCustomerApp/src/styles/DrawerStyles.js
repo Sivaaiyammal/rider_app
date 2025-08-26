@@ -12,6 +12,12 @@ export const drawerStyles = StyleSheet.create({
     height:"100%",
    
   },
+  divider:{
+    width:"90%",
+    height:1,
+    backgroundColor:colors.grey_xlight,
+    alignSelf:"center"
+  },
   closeBtnMainContainer:{
     width:"auto",
     height:"100%",
@@ -34,13 +40,17 @@ export const drawerStyles = StyleSheet.create({
     alignItems:'center',
     paddingVertical:10,
     alignSelf:'center',
-    gap:10,
-    borderBottomWidth:0.3,
+    gap:15,
+    padding:10,
+    backgroundColor:colors.grey_xlight,
+    borderRadius:10,
+   
   },
   userName:{
     fontFamily:Fonts.semi_bold,
-    fontSize:24,
-    color:colors.black
+    fontSize:16,
+    color:colors.black,
+    width:"65%"
   },
   contentContainer:{
     marginTop:10,
@@ -48,15 +58,20 @@ export const drawerStyles = StyleSheet.create({
     alignSelf:'center'
   },
   drawerBtns:{
+    width:"100%",
     flexDirection:'row',
     alignItems:'center',
+    justifyContent:'space-between',
     gap:10,
-    paddingVertical:15,
-    paddingHorizontal:5
+    paddingVertical:20,
+    paddingHorizontal:5,
+   
+    
   },
   btnText:{
     fontFamily:Fonts.regular,
-    fontSize:18,
-    color:colors.black
+    fontSize:17,
+    color:colors.black,
+    
   }
 });

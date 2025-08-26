@@ -11,7 +11,7 @@ class Polyline {
         this.width = width
         this.type = "polyline"
         this.focus = true
-        this.padding = [0, 0, 0, 0]
+        this.padding = [0, 0, 0, 900]
         this.pattern = "default"
     }
 

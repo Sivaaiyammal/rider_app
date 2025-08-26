@@ -7,6 +7,7 @@ import ProfileImage from '../../assets/image/account/Profile.webp';
 import { Colors } from 'react-native/Libraries/NewAppScreen'
 import { styles } from '../../styles/Account/account'
 import { lightThemeStyles, darkThemeStyles } from '../../styles/ColorSet'
+import { Fonts } from '../../constants/constants';
 
 const MyAccountProfileImage = (props) => {
 
@@ -24,7 +25,7 @@ const MyAccountProfileImage = (props) => {
             </View>
             <View style={[styles.container, { borderTopLeftRadius: 10, borderTopRightRadius: 10 ,paddingBottom:20}]}>
 
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: ColorSet.black, marginTop: 60 }}>{name}</Text>
+                <Text style={{ fontSize: 24, fontFamily:Fonts.semi_bold, color: ColorSet.black, marginTop: 60 }}>{name}</Text>
                 {/* <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#6c63ff' }}>{id}</Text> */}
             </View>
         </>

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert, ScrollView } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colors, Fonts } from '../../../../constants/constants';
@@ -7,6 +7,7 @@ import useUserInfoStore from '../../../../store/useUserInfoStore';
 import useRideBookingInfo from '../../store/useRideBookingInfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PropTypes from 'prop-types';
+import { height } from '../../../../utils/Utils';
 
 const Contactsheet = ({ onConfirm }) => {
   const { t } = useTranslation();
@@ -136,11 +137,14 @@ const Contactsheet = ({ onConfirm }) => {
       <View style={styles.header}>
         <Text style={styles.title}>{t('book_for')}</Text>
       </View>
-
+      <ScrollView style={{maxHeight:height*0.6}} showsVerticalScrollIndicator={false}>
       <TouchableOpacity 
         style={styles.myselfButton}
         onPress={handleSelectMyself}
       >
+        <View style={styles.contactImageContainer}> 
+            <Ionicons name="person" size={24} color={colors.black} />
+          </View>
         <View style={styles.myselfInfo}>
           <Text style={styles.myselfText}>{t('myself')}</Text>
           {userdetails && (
@@ -149,22 +153,28 @@ const Contactsheet = ({ onConfirm }) => {
             </Text>
           )}
         </View>
-        {isMyselfSelected && <Ionicons name="checkmark-circle" size={24} color={colors.green} />}
+        {isMyselfSelected && <Ionicons name="checkmark-circle" size={24} color={colors.black} />}
       </TouchableOpacity>
+      {contactDetails.length > 0 && <View style={styles.divider} />}
 
       {contactDetails.map((contact, index) => (
+        <>
+        {index !== 0 && <View style={styles.divider} />}
         <TouchableOpacity 
           key={index}
           style={styles.contactItem}
           onPress={() => handleSelectContact(contact)}
         >
+          <View style={styles.contactImageContainer}> 
+            <Ionicons name="person" size={24} color={colors.black} />
+          </View>
           <View style={styles.contactInfo}>
-            <Text style={styles.contactName}>{contact.name}</Text>
+            <Text numberOfLines={1} style={styles.contactName} ellipsizeMode="tail">{contact.name}</Text>
             <Text style={styles.contactPhone}>{contact.phone}</Text>
           </View>
           <View style={styles.contactActions}>
             {passangerDetails?.phone === contact.phone && rideBookMode === 'OTHERS' && (
-              <Ionicons name="checkmark-circle" size={24} color={colors.green} />
+              <Ionicons name="checkmark-circle-sharp" size={30} color={colors.black} />
             )}
             <TouchableOpacity 
               style={styles.deleteButton}
@@ -174,14 +184,15 @@ const Contactsheet = ({ onConfirm }) => {
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
+        </>
       ))}
-
+      </ScrollView>
       {!showAddContact ? (
         <TouchableOpacity 
           style={styles.addButton}
           onPress={() => setShowAddContact(true)}
         >
-          <Ionicons name="add-circle-outline" size={24} color={colors.green} />
+          <Ionicons name="add-circle-outline" size={24} color={colors.black} />
           <Text style={styles.addButtonText}>{t('add_new_contact')}</Text>
         </TouchableOpacity>
       ) : (
@@ -228,6 +239,7 @@ const Contactsheet = ({ onConfirm }) => {
           </View>
         </View>
       )}
+      
     </View>
   );
 };
@@ -248,17 +260,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20
+    marginBottom: 15
   },
   title: {
-    fontFamily: Fonts.medium,
+    fontFamily: Fonts.semi_bold,
     fontSize: 18,
     color: colors.black
   },
   myselfButton: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.grey_light,
+    paddingVertical:15,
+    gap:15,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center'
@@ -281,9 +292,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.grey_light
+    paddingVertical:15,
+    gap:15
+  },
+  contactImageContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.grey_light,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   contactInfo: {
     flex: 1
@@ -311,12 +329,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 15,
-    gap: 10
+    gap: 10,
+    backgroundColor:colors.grey_light,
+    marginTop:15,
+    borderRadius:10
   },
   addButtonText: {
     fontFamily: Fonts.medium,
     fontSize: 16,
-    color: colors.green
+    color: colors.black
   },
   addContactForm: {
     marginTop: 10
@@ -334,7 +355,7 @@ const styles = StyleSheet.create({
     placeholderTextColor:'black'
   },
   confirmButton: {
-    backgroundColor: colors.green,
+    backgroundColor: colors.black,
     paddingVertical: 10,
     paddingHorizontal: 10,
     borderRadius: 8,
@@ -362,6 +383,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 8,
     alignItems: 'center'
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.grey_light,
+   
   }
 });
 
