@@ -1,15 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
+import React, { useMemo, useRef, useState } from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { getVehicleImage } from '../types/vehicleImd';
 import {Fonts} from '../../../constants/constants';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import useAssignedDriverInfoStore from '../store/useAssignedDriverInfoStore';
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
-import useTrackHook from '../hooks/useTrackHook';
 import {utils} from '../../../utils/Utils';
-import useMapStyleStore from '../../../store/useMapStyleStore'; 
 import { colors } from '../../../constants/constants';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import useWayPointReorderStore from '../../../features/booking/store/useWayPointReorderStore';
@@ -18,74 +15,33 @@ import {height} from "../../../utils/Utils";
 import TripDetailsModal from '../../../components/TripDetailsModal';
 import StatusConatainerWrapper from '../component/StatusConatainerWrapper';
 import useRouteDraw from '../hooks/useRouteDraw';
+import useDrawStopsPolyline from '../hooks/useDrawStopsPolyline';
+import PropTypes from 'prop-types';
+import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {driverName,vehicleNumber,model,brand,driverPhoto,driverLatitude,driverLongitude} = useAssignedDriverInfoStore();
-  const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedPickuoMins,estimatedFare} = useCurrentRideInfoStore();
+  const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare} = useCurrentRideInfoStore();
   const {waitingForDriverApproval} = useWayPointReorderStore();
-  
-  const {setMapStyle} = useMapStyleStore();
+  const currentStop = useMemo(() => stops?.find(item => item.isReached === false) || null, [stops]);
   const {t} = useTranslation();
-  const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destinationlat:stops[stops.length-1].location[1],destinationlon:stops[stops.length-1].location[0],driverLat:driverLatitude,driverLon:driverLongitude})  
   
-  
-  
+  const {stopspolyline} = useDrawStopsPolyline();
+  useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType);
+  const {estimatedDuration,SetViewBoundingBox} = useRouteDraw({destinationlat:currentStop?.location[1],destinationlon:currentStop?.location[0],driverLat:driverLatitude,driverLon:driverLongitude,remainingStops: stopspolyline})  
   const animation = useRef(new Animated.Value(0)).current;
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  
+
+  
+  const [expanded, setExpanded] = useState(false);
+  const toggleExpand = () => {
+    console.log("toggleExpand",expanded);
+    expanded ? handleOverlay('close') : handleOverlay('open');
+    setExpanded(prev => !prev);
+  };
 
   
 
-  const toggleExpand = () => {
-    const currentValue = animation._value;
-    const targetValue = currentValue === 0 ? 1 : 0;
-    
-    // Update modal visibility state
-    setIsModalVisible(targetValue === 1);
-    
-    // Call handleOverlay callback
-    if (targetValue === 1) {
-      handleOverlay('open');
-    } else {
-      handleOverlay('close');
-    }
-    
-    Animated.timing(animation, {
-      toValue: targetValue,
-      duration: 300,
-      easing: Easing.out(Easing.ease),
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const onGestureEvent = (event) => {
-    const { translationY, state } = event.nativeEvent;
-    
-    if (state === State.ACTIVE) {
-      // If swiping down and expanded, minimize
-      if (translationY > 50 && animation._value === 1) {
-        Animated.timing(animation, {
-          toValue: 0,
-          duration: 200,
-          easing: Easing.out(Easing.ease),
-          useNativeDriver: false,
-        }).start();
-      }
-    }
-  };
-
-  useEffect(() => {
-    setMapStyle({
-      width: "100%",
-      height: "60%",
-    });
-
-    return () => {
-      setMapStyle({
-        width: "100%",
-        height: "100%",
-      });
-    }
-  }, [])
-
+  
 
 
  
@@ -114,7 +70,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
         
     </View>
 
-    <PanGestureHandler onGestureEvent={onGestureEvent}>
+   
       <View style={[styles.root,{backgroundColor:'white'}]}>
 
       {/* Card */}
@@ -125,7 +81,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
           <View style={styles.driverImgWrap}>
             <Image source={{ uri: driverPhotoUri }} style={styles.driverImg} />
           </View>
-          <View style={styles.onRideBadge}><Text style={styles.onRideBadgeText}>{t('on_ride')}</Text></View>
+          {/* <View style={styles.onRideBadge}><Text style={styles.onRideBadgeText}>{t('on_ride')}</Text></View> */}
         </View>
         {/* Driver and vehicle info */}
         <Text style={styles.driverName}>{driverName}</Text>
@@ -144,10 +100,12 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
                   <Text style={styles.rideInfoLabel}>{t('arrival')}</Text>
                   <Text style={styles.rideInfoValue}>{ArrivalTime}</Text>
                 </View>
+                <View style={styles.divider}></View>
                 <View style={styles.rideInfoItem}>
                   <Text style={styles.rideInfoLabel}>{t('duration')}</Text>
                   <Text style={styles.rideInfoValue}>{duration} Min</Text>
                 </View>
+                <View style={styles.divider}></View>
                 <View style={styles.rideInfoItem}>
                   <Text style={styles.rideInfoLabel}>{t('distance')}</Text>
                   <Text style={styles.rideInfoValue}>{totalDistance} Km</Text>
@@ -159,7 +117,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
 
        
 
-                {/* Trip Details row with chevron */}
+               {/* Trip Details row with chevron */}
         <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
           <Text style={styles.tripDetailsLabel}>{t('trip_details')}</Text>
           <View style={{flexDirection:"row",alignItems:"center",gap:10}}>
@@ -182,11 +140,11 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
         {/* Payment method */}
      
       </View>
-    </PanGestureHandler>
+   
 
     {/* Bottom Modal for Trip Details */}
-    <TripDetailsModal
-      visible={isModalVisible}
+    {expanded && <TripDetailsModal
+      visible={expanded}
       onClose={toggleExpand}
       stops={stops}
       waitingForDriverApproval={waitingForDriverApproval}
@@ -196,10 +154,17 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
       paymentMethod={paymentMethod}
       t={t}
     />
+    }
     </StatusConatainerWrapper>
     
     </>
   );
+};
+
+OnRideScreen.propTypes = {
+  onPaymentMethodChange: PropTypes.func,
+  onCancel: PropTypes.func,
+  handleOverlay: PropTypes.func,
 };
 
 const styles = StyleSheet.create({
@@ -210,6 +175,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    gap:5
 
   },
   containerTop: {
@@ -245,6 +211,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontFamily:Fonts.regular,
     fontSize: 15,
+  },
+  divider:{
+    width:2,
+    backgroundColor:"#eee",
+    marginHorizontal:10
   },
   card: {
     backgroundColor: '#fff',

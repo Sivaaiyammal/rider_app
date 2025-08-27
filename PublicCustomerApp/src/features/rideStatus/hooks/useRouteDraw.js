@@ -3,22 +3,25 @@ import { findRoute } from '../../../controllers/NEMap/findRoute';
 import Polyline from '../../../controllers/NEMap/Polyline';
 import polyline from '@mapbox/polyline';
 import useMapStore from '../../map/store/useMapStore';
-import Marker from '../../../controllers/NEMap/Marker';
 import {utils} from '../../../utils/Utils';
 
-export default function useRouteDraw({ destinationlat,destinationlon, driverLat, driverLon,screenMode = 'arrival' }) {
+export default function useRouteDraw({ destinationlat,destinationlon, driverLat, driverLon,remainingStops }) {
 	const [estimatedDuration, setEstimatedDuration] = useState(1);
 	const currentPolylineRef = useRef([]);
 	const [isDiverted, setIsDiverted] = useState(true);
 	const [remainingDistance, setRemainingDistance] = useState(0);
     const [originalDistance, setOriginalDistance] = useState(0);
     const [originalDuration, setOriginalDuration] = useState(0);
-	const {
-		setGeometries,
-		mapMarkers,
-		setMapMarkers,
-        setMapBounds
-	  } = useMapStore();
+	const { setGeometries, setMapBounds } = useMapStore();
+
+	// Reset diversion state when destination changes so next DrawRoute fetches fresh route
+	useEffect(() => {
+		if (destinationlat == null || destinationlon == null) return;
+		setIsDiverted(true);
+		currentPolylineRef.current = [];
+		setRemainingDistance(0);
+		
+	}, [destinationlat, destinationlon]);
 
 	// Helpers: distance computations and simplification
 	const EARTH_RADIUS_M = 6371000;
@@ -55,6 +58,7 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 		const dist = Math.hypot(dx, dy);
 		return dist;
 	}
+	
 	function nearestDistanceToPolylineMeters(point, coords) {
         coords=coords.slice(1)
 		if (!coords || coords.length < 2) return Infinity;
@@ -70,6 +74,7 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 		}
 		return minDist;
 	}
+
 
 
     const extractRouteSummary = useCallback((routeData) => {
@@ -185,6 +190,10 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 	  }
 
 	const renderPolyline = (polylines) => {
+		if(remainingStops){
+			polylines.push(remainingStops)
+		}
+		
 		setGeometries(polylines);
 	}
 
@@ -218,20 +227,13 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 		
 	};
 
-    const calculateEstimatedTime = useCallback((remainingDistance, originalTime, originalDistance) => {
-        originalDistance=originalDistance*1000
-        if (!originalTime || !originalDistance || originalDistance === 0) return null;
-        
-        // Calculate time per meter from original route
-        const timePerMeter = originalTime / originalDistance;
-        
-        // Calculate estimated time for remaining distance
-        const estimatedTimeSeconds = remainingDistance * timePerMeter;
-        
-        // Convert to minutes and round to nearest minute
+    const calculateEstimatedTime = useCallback((remainingDistanceMeters, originalTime, originalDistanceKm) => {
+        const originalDistanceMeters = (originalDistanceKm || 0) * 1000;
+        if (!originalTime || !originalDistanceMeters) return null;
+        const timePerMeter = originalTime / originalDistanceMeters;
+        const estimatedTimeSeconds = remainingDistanceMeters * timePerMeter;
         const estimatedTimeMinutes = Math.round(estimatedTimeSeconds / 60);
-        
-        return Math.max(1, estimatedTimeMinutes); // Minimum 1 minute
+        return Math.max(1, estimatedTimeMinutes);
       }, []);
 
 	const checkRouteDiverted = (driverLat,driverLon) => {
@@ -270,8 +272,9 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 				let trimmed = trimPolylineFromNearest(currentPolylineRef.current, nearest,driverLat,driverLon);
 				
 				currentPolylineRef.current = trimmed;
-				setRemainingDistance(computePolylineLengthMeters(trimmed));
-                const estimatedTime = calculateEstimatedTime(remainingDistance, originalDuration, originalDistance);
+				const newRemaining = computePolylineLengthMeters(trimmed);
+				setRemainingDistance(newRemaining);
+                const estimatedTime = calculateEstimatedTime(newRemaining, originalDuration, originalDistance);
                 setEstimatedDuration(estimatedTime);
 				const polylineObj = makePolyline(trimmed)
 				polylineArray.push(polylineObj)
@@ -283,30 +286,14 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 		
 	}
 
-	const addMarker = (lat,lon) => {
-				const marker = new Marker(
-				'driver-to-start',
-				'Driver to Pickup',
-				lon,
-				lat,
-				'sedan',
-			 48,
-			 true,
-		 )
-		 setMapMarkers([...mapMarkers,marker])
-	}
+	
 
+	// Redraw route when destination or remainingStops change (e.g., stops updated)
 	useEffect(() => {
-			if(driverLat && driverLon){ 
-				addMarker(driverLat,driverLon)
-				setTimeout(() => {
-					DrawRoute(driverLat,driverLon)
-				}, 500)
-			}
-			
-
-			
-	}, [driverLat, driverLon]);
+		if (!driverLat || !driverLon) return;
+		if (destinationlat == null || destinationlon == null) return;
+		DrawRoute(driverLat, driverLon);
+	}, [destinationlat, destinationlon, remainingStops, driverLat, driverLon]);
 
 
 	return {estimatedDuration,remainingDistance,SetViewBoundingBox}

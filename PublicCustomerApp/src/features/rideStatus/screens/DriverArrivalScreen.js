@@ -20,6 +20,7 @@ import { height } from '../../../utils/Utils';
 import useRouteDraw from '../hooks/useRouteDraw';
 import MapIcon from '../../../components/Map/MapIcon';
 import StatusConatainerWrapper from '../component/StatusConatainerWrapper';
+import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 
   const DriverArrivalScreen = ({onCancel,handleOverlay}) => {
   // Dummy data
@@ -30,6 +31,8 @@ import StatusConatainerWrapper from '../component/StatusConatainerWrapper';
   const {t} = useTranslation();
   const {waitingForDriverApproval} = useWayPointReorderStore();
   // Initialize tracking hook for driver arrival screen with polyline support
+
+  const {markersList} = useStopsMarkerHook(null,driverLatitude,driverLongitude,vehicleType);
   const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destinationlat:stops[0].location[1],destinationlon:stops[0].location[0],driverLat:driverLatitude,driverLon:driverLongitude})  
   
 

@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     padding: 10,
     position: 'absolute',
     right: 10,
-    top: -50,
+    top: -60,
     zIndex: 1000,
     backgroundColor: 'white',
     borderRadius: 30,
