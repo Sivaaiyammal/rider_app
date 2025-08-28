@@ -24,6 +24,7 @@ import { use } from 'i18next';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
 import DataStore from '../../../controllers/DataStore';
 import PREF from '../../../storage/PREF';
+import { height } from '../../../utils/Utils';
 
 const WaypointScreen = ({}) => {
   const {tripId}=useCurrentRideInfoStore()
@@ -137,7 +138,7 @@ useEffect(() => {
       const result = transformWaypointsToDirectionPoints({
         clearMarkers: true,
         vehicleType: 'car',
-        padding: [50, 400, 50, 100]
+        padding: [50, height*0.4, 50, 100]
       });
       
       if (result.success) {

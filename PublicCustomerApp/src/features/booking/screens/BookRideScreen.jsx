@@ -350,7 +350,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             const result = transformRideLocationsToDirectionPoints({
                 clearMarkers: true,
                 vehicleType: 'car',
-                padding: [50, 50, 50, 400]
+                padding: [50, 100, 50, height*0.6]
             });
             if (result.success) {
                 console.log('Direction points set successfully:', result.locationCount, 'locations');

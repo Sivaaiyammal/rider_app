@@ -264,6 +264,8 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
         return null;
       }
 
+      console.log('coordinates', coordinates)
+
       // Extract and store route summary for time calculations
       const routeSummary = extractRouteSummary(routeData);
       if (routeSummary) {
@@ -285,6 +287,9 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
                           hasWaypoints ? 'Route with Waypoints' : 'Route to Destination';
       const polylineColor = '#000000';
 
+
+
+      console.log('polylineId', coordinates)
       const polylineObj = new Polyline(
         polylineId,
         polylineName,
@@ -312,6 +317,7 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
       setGeometries([]);
       return;
     }
+    console.log('coordinates', coordinates);
 
     const hasWaypoints = screenMode === 'on-ride' && stops && stops.length > 0;
     const polylineId = screenMode === 'arrival' ? 'driver-to-start' : 

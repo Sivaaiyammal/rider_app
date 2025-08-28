@@ -36,35 +36,14 @@ const OTPScreen = ({route}) => {
 
   const [timer, setTimer] = useState(30);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-  const [hasReadSmsPermission, setHasReadSmsPermission] = useState(false);
+  
 
   const {setID, setUserdetails} = useUserInfoStore();
   
   // Add ref for OTP input to enable auto-fill
   const otpRef = useRef(null);
 
-  // Request SMS permission
-  const requestSmsPermission = async () => {
-    try {
-      const permission = await PermissionsAndroid
-        .request(PermissionsAndroid.PERMISSIONS.RECEIVE_SMS, {
-          title: "SMS Permission",
-          message: "We need access to read OTP messages for verification.",
-          buttonNeutral: "Ask Me Later",
-          buttonNegative: "Deny",
-          buttonPositive: "OK"
-        });
-                
-      setHasReadSmsPermission(permission);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // Check and request SMS permission on component mount
-  useEffect(() => {
-    requestSmsPermission();
-  }, []);
+  
 
   useEffect(() => {
     if (timer > 0) {
@@ -149,6 +128,8 @@ const OTPScreen = ({route}) => {
       verifyOtp()
     }
   },[otpInput])
+
+  
   const handleResendSuccess = (data) => {
     if(data.success){
       showNotification('OTP Resend', 'OTP Resend Successfully', 'success');
@@ -172,39 +153,7 @@ const OTPScreen = ({route}) => {
     setIsButtonDisabled(true);
   };
 
-  // Add SMS auto-fill functionality
-  useEffect(() => {
-    // Only set up SMS listener if permission is granted
-    if (!hasReadSmsPermission) {
-      return;
-    }
-
-    let subscriber = DeviceEventEmitter.addListener(
-      'onSMSReceived',
-      message => {
-        try {
-          const {messageBody} = JSON.parse(message);
-          const otpMatch = messageBody.match(/\b\d{6}\b/);
-          if (otpMatch) {
-            const otp = otpMatch[0];
-            if (otpRef.current) {
-              otpRef.current.setValue(otp);
-            }
-            setOtpInput(otp);
-           
-          } else {
-            console.log("No OTP found in the message.");
-          }
-        } catch (error) {
-          console.log("Error parsing SMS message:", error);
-        }
-      },
-    );
-
-    return () => {
-      subscriber.remove();
-    };
-  }, [hasReadSmsPermission]);
+  
 
   return (
     <View style={loginStyles.screen}>

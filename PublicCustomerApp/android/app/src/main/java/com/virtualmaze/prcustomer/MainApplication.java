@@ -13,8 +13,7 @@ import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.soloader.SoLoader;
 import com.virtualmaze.prcustomer.newarchitecture.MainApplicationReactNativeHost;
 
-// Add missing imports
-import com.virtualmaze.prcustomer.smslistener.SmsListenerModule;
+
 import com.virtualmaze.prcustomer.NeNativePackage;
 
 import java.lang.reflect.InvocationTargetException;
@@ -42,8 +41,6 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       @SuppressWarnings("UnnecessaryLocalVariable")
       List<ReactPackage> packages = new PackageList(this).getPackages();
-      // Add custom packages
-      packages.add(new com.virtualmaze.prcustomer.smslistener.SmsListenerPackage());
       packages.add(new com.virtualmaze.prcustomer.NeNativePackage());
       return packages;
     }
