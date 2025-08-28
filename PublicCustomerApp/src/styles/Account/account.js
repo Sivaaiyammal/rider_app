@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
+import { Fonts } from '../../constants/constants';
 
 const styles = StyleSheet.create({
 
@@ -25,8 +26,9 @@ const styles = StyleSheet.create({
     },
     tripHeaderText: {
         color: Colors.black,
-        fontWeight: 'bold',
-        letterSpacing: 1
+        fontFamily:Fonts.semi_bold,
+        letterSpacing: 1,
+        fontSize:18
     },
     tripHeaderAlarmBtn: {
         borderColor: "#e0e0e0",
@@ -105,12 +107,13 @@ const styles = StyleSheet.create({
     },
     profileItemHead: {
         color: '#757575',
-        fontSize: 12
+        fontSize: 12,
+        fontFamily:Fonts.regular
     },
     profileItemText: {
         color: "#212121",
         fontSize: 16,
-        fontWeight: 'bold'
+        fontFamily:Fonts.semi_bold
     },
     logOutBtnContainer: {
         borderColor: '',

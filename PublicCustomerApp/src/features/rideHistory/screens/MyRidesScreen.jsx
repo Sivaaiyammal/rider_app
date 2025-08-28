@@ -22,6 +22,7 @@ import { DateTimeFormatter } from '../../../utils/DateTimeFormatter';
 import PropTypes from 'prop-types';
 import CalenderIcon from '../../../assets/image/calender.svg';
 import DatePicker from 'react-native-date-picker';
+import DateRangeBottomSheet from '../../shared/component/DateRangeBottomSheet';
 
 const YourRidesScreen = () => {
     const { t } = useTranslation();
@@ -365,36 +366,21 @@ const YourRidesScreen = () => {
                 onHide={() => setShowLoadingToast(false)}
             />
             {/* Custom Date Picker Modal */}
-            {showCustomDatePicker && (
-                <View style={{ position: 'absolute', zIndex: 1000, left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' }}>
-                    <View style={{ backgroundColor: colors.white, borderRadius: 16, padding: 24, width: '85%', maxWidth: 350 }}>
-                        <Text style={{ fontSize: 18, fontFamily: Fonts.medium, color: colors.black, textAlign: 'center', marginBottom: 16 }}>{t('select_date_range')}</Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
-                            <View style={{ flex: 1 }}>
-                                <Text style={{ fontSize: 14, fontFamily: Fonts.medium, color: colors.black, marginBottom: 8 }}>{t('from')}</Text>
-                                <TouchableOpacity onPress={() => openDatePicker('start')} style={{ borderWidth: 1, borderColor: colors.grey_light, borderRadius: 8, padding: 12, backgroundColor: colors.white }}>
-                                    <Text style={{ fontSize: 16, fontFamily: Fonts.regular, color: colors.black }}>{new Date(customStartDate).toDateString()}</Text>
-                                </TouchableOpacity>
-                            </View>
-                            <Text style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black }}>{t('to')}</Text>
-                            <View style={{ flex: 1 }}>
-                                <Text style={{ fontSize: 14, fontFamily: Fonts.medium, color: colors.black, marginBottom: 8 }}>{t('to')}</Text>
-                                <TouchableOpacity onPress={() => openDatePicker('end')} style={{ borderWidth: 1, borderColor: colors.grey_light, borderRadius: 8, padding: 12, backgroundColor: colors.white }}>
-                                    <Text style={{ fontSize: 16, fontFamily: Fonts.regular, color: colors.black }}>{new Date(customEndDate).toDateString()}</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                        <View style={{ flexDirection: 'row', gap: 12 }}>
-                            <TouchableOpacity onPress={handleCustomDateCancel} style={{ flex: 1, backgroundColor: colors.grey_light, borderRadius: 8, padding: 12, alignItems: 'center' }}>
-                                <Text style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black }}>{t('cancel')}</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleCustomDateConfirm} style={{ flex: 1, backgroundColor: colors.black, borderRadius: 8, padding: 12, alignItems: 'center' }}>
-                                <Text style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.white }}>{t('confirm')}</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            )}
+            <DateRangeBottomSheet
+                visible={showCustomDatePicker}
+                onClose={() => setShowCustomDatePicker(false)}
+                title={t('select_date_range')}
+                fromLabel={t('from')}
+                toLabel={t('to')}
+                startDate={customStartDate}
+                endDate={customEndDate}
+                onPressFrom={() => openDatePicker('start')}
+                onPressTo={() => openDatePicker('end')}
+                onCancel={handleCustomDateCancel}
+                onConfirm={handleCustomDateConfirm}
+                cancelLabel={t('cancel')}
+                confirmLabel={t('confirm')}
+            />
             <DatePicker
                 modal
                 open={showDatePicker}

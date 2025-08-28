@@ -122,25 +122,24 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
   const updatePolylineProgress = useCallback((driverLat, driverLon, coordinates) => {
     if (!coordinates || coordinates.length === 0) return coordinates;
 
-    const { index: closestIndex, distance } = findClosestPointOnPolyline(driverLat, driverLon, coordinates);
+    const { index: closestIndex } = findClosestPointOnPolyline(driverLat, driverLon, coordinates);
     
     if (closestIndex === -1) return coordinates;
 
-    // If driver is close to a point, remove all coordinates up to that point
-    // Add some buffer to avoid removing too many points at once
-    const bufferDistance = 50; // meters
-    if (distance <= bufferDistance) {
-      // Remove coordinates up to the closest point, keeping some ahead for smooth display
-      const keepAhead = Math.min(5, coordinates.length - closestIndex - 1);
-      const updatedCoordinates = coordinates.slice(closestIndex + 1, coordinates.length - keepAhead);
-      
-      // Update estimated pickup time based on remaining coordinates
-      updateEstimatedPickupTime(updatedCoordinates);
-      
-      return updatedCoordinates;
-    }
+    // Keep some points behind for continuity and smoothness
+    const keepBehind = 1;
+    const startIndex = Math.max(0, closestIndex - keepBehind);
 
-    return coordinates;
+    // Keep a small lookahead to avoid abrupt end truncation
+    const keepAhead = Math.min(5, coordinates.length - closestIndex - 1);
+    const endIndexExclusive = coordinates.length - keepAhead;
+
+    const updatedCoordinates = coordinates.slice(startIndex, endIndexExclusive);
+    
+    // Update estimated pickup time based on remaining coordinates
+    updateEstimatedPickupTime(updatedCoordinates);
+    
+    return updatedCoordinates;
   }, [findClosestPointOnPolyline, updateEstimatedPickupTime]);
 
   // Function to organize polyline coordinates from route data
@@ -264,7 +263,6 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
         return null;
       }
 
-      console.log('coordinates', coordinates)
 
       // Extract and store route summary for time calculations
       const routeSummary = extractRouteSummary(routeData);
@@ -280,7 +278,7 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
       originalCoordinatesRef.current = [...coordinates];
 
       // Create polyline based on screen mode
-      const hasWaypoints = screenMode === 'on-ride' && stops && stops.length > 0;
+      const hasWaypoints = screenMode === 'on-ride' && stops && stops.length > 2;
       const polylineId = screenMode === 'arrival' ? 'driver-to-start' : 
                         hasWaypoints ? 'start-to-end-with-waypoints' : 'start-to-end';
       const polylineName = screenMode === 'arrival' ? 'Driver to Pickup' : 
@@ -319,7 +317,7 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
     }
     console.log('coordinates', coordinates);
 
-    const hasWaypoints = screenMode === 'on-ride' && stops && stops.length > 0;
+    const hasWaypoints = screenMode === 'on-ride' && stops && stops.length > 2;
     const polylineId = screenMode === 'arrival' ? 'driver-to-start' : 
                       hasWaypoints ? 'start-to-end-with-waypoints' : 'start-to-end';
     const polylineName = screenMode === 'arrival' ? 'Driver to Pickup' : 

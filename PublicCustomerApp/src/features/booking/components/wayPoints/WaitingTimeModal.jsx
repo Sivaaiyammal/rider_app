@@ -101,7 +101,7 @@ const WaitingTimeModal = ({
           {/* Info Text */}
           <View style={styles.infoSection}>
             <Text style={styles.infoText}>
-              {t('wait_time_info', { defaultwaitingTime })}
+              {t('wait_time_info',{defaultwaitingTime})}
             </Text>
           </View>
 
