@@ -18,4 +18,10 @@ module.exports = {
     PUBLICRIDEDASHBORAD_URL: 'https://tracker.vmmaps.com/publicride',
     ROUTE_API_URL: 'https://ne.vmmaps.com/routing/v1/route',
 
+    RAZORPAY_KEY_ID: 'rzp_test_R75d0mHv19fFjk',
+    RAZORPAY_KEY_SECRET: '0drRCP1ycpp4GBMGUOuGVjYL',
+
+
+
+
 }

@@ -22,6 +22,7 @@ import locationTask from "../controllers/GetCurrentLocation";
 import usePropsStore from '../store/usePropsStore';
 import { useDebouncedAPICall } from '../hooks/useDebounce';
 import { useTranslation } from 'react-i18next';
+import LinearGradient from 'react-native-linear-gradient';
 
 const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,title=null}) => {
   const {goBack} = useStackScreenStore();
@@ -147,7 +148,14 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         <TouchableOpacity style={styles.currentLocationIconContainer} onPress={handleCurrentLocation}>
           <CurrentLocationIcon width={25} height={25} />
         </TouchableOpacity>
-        <Text style={styles.bottomContainerText}> {t('pick_location')}</Text>
+        <LinearGradient
+          colors={['transparent','#303030']}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}
+          style={styles.bottomContainerWarrapper}
+        >
+          <Text style={styles.bottomContainerText}> {t('pick_location')}</Text>
+        </LinearGradient>
         <View style={styles.AddressContainer}>
           {/* <View style={styles.AddressContainerIcon}>
                     <Icon name="location-on" size={30} color="#ffd11a"/>
@@ -217,30 +225,33 @@ const styles = StyleSheet.create({
   },
   bottomContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 10,
     left: 0,
     right: 0,
-    width: '100%',
-    paddingHorizontal: 15,
+    borderRadius:20,
+    marginHorizontal:10,
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     boxShadow: '0px 0px 10px 0px rgba(0, 0, 0, 0.1)',
     elevation: 10,
     zIndex: 1000,
+    alignSelf:'center',
+    justifyContent:'center',
+    
   },
   bottomContainerText: {
-    fontSize: 18,
-    color: '#212121',
-    
-    padding: 10,
+    fontSize: 16,
+    color: 'white',
+    padding: 7,
+    paddingHorizontal:10,
     fontFamily: Fonts.medium,
   },
   AddressContainer: {
-    borderRadius: 16,
+    borderRadius: 10,
     borderWidth: 0.5,
     borderColor: colors.grey,
-  
+    marginHorizontal:5,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
@@ -279,6 +290,7 @@ const styles = StyleSheet.create({
     
     paddingVertical: 15,
     paddingHorizontal: 20,
+    marginHorizontal:10,
     marginTop: 10,
     marginBottom: 10,
     alignItems: 'center',
@@ -303,7 +315,7 @@ const styles = StyleSheet.create({
   },
   mapIconContainer: {
    position: 'absolute',
-   top: -height * 0.04,
+   top: -height * 0.03,
    left: 10,
    zIndex: 1000,
   },
@@ -322,6 +334,12 @@ const styles = StyleSheet.create({
     elevation: 10,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  bottomContainerWarrapper: {
+   padding:0,
+   margin:5,
+   borderTopLeftRadius:13,
+   width:"50%"
   },
   shadowContainer: {
    

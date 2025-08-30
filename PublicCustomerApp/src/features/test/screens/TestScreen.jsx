@@ -1,53 +1,73 @@
-import { View, Text, TouchableOpacity  } from 'react-native'
-import React, { useEffect } from 'react'
-import useAssignedDriverInfoStore from '../../rideStatus/store/useAssignedDriverInfoStore';
-// import useRouteDraw from './hook/useRouteDraw';
+import { View, TouchableHighlight, Text } from 'react-native';
+import React from 'react';
+import RazorpayCheckout from 'react-native-razorpay';
+import { createOrder } from '../../../API/EndPoints/EndPoints';
 
 const TestScreen = () => {
-  const {
-    driverLatitude,
-    driverLongitude
-  } = useAssignedDriverInfoStore();
+  const createOrderAndPay = async () => {
+    try {
+      const receiptId = '762752582582';
+      const response = await createOrder({
+        amount: 6,
+        currency: 'INR',
+        receipt: receiptId,
+      });
 
-  const stops=[
-    {
-      "name": "Pickup Point",
-      "location": [
-        77.12742405872746,
-        11.210778809804475
-      ],
-      "address": "Sokkampalayam",
-      "waitingTime": 0,
-      "isReached": true,
-      "arrivalTime": 1756202907154,
-      "driverWaitTime": 0,
-      "stopUpdated": true,
-      "updatedAt": 1756202907154
-    },
-    {
-      "name": "Drop Point",
-      "location": [
-        77.04266933607721,
-        11.04734822521169
-      ],
-      "address": "97, Kovai Thirunagar 4th St, Near Rajaganapathi Temple, Civil Aerodrome Post, Nehru Nagar West, Coimbatore, Tamil Nadu 641014",
-      "waitingTime": 0,
-      "isReached": false
+      const orderId = response?.order?.id;
+
+      if (!orderId) {
+        alert('Order creation failed. Please try again.');
+        return;
+      }
+
+      const options = {
+        description: 'Credits towards consultation',
+        image: 'https://i.imgur.com/3g7nmJC.jpg',
+        currency: 'INR',
+        key: 'rzp_live_RjhKqVFU3nP5ZM',
+        amount: '600',
+        name: 'Acme Corp',
+        order_id: orderId, // Replace this with an order_id created using Orders API.
+        prefill: {
+          email: 'gaurav.kumar@example.com',
+          contact: '+919876543210',
+          name: 'Gaurav Kumar',
+        },
+        theme: { color: '#53a20e' },
+      };
+
+      RazorpayCheckout.open(options)
+        .then((data) => {
+          // handle success
+          alert(`Success: ${data.razorpay_payment_id}`);
+        })
+        .catch((error) => {
+          // handle failure
+          alert(`Error: ${error.code} | ${error.description}`);
+        });
+    } catch (error) {
+      alert('Something went wrong. Please try again.');
     }
-  ]
+  };
 
-  // const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destimationlat:stops[1].location[1],destimationlon:stops[1].location[0],driverLat:driverLatitude,driverLon:driverLongitude})  
-
-  
   return (
-    <View>
-      <Text>Estimated Duration: {estimatedDuration}</Text>
-      <Text>Remaining Distance: {remainingDistance}</Text>
-      <TouchableOpacity onPress={SetViewBoundingBox}>
-        <Text>Set View Bounding Box</Text>
-      </TouchableOpacity>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <TouchableHighlight
+        onPress={createOrderAndPay}
+        style={{
+          backgroundColor: '#53a20e',
+          paddingVertical: 12,
+          paddingHorizontal: 24,
+          borderRadius: 8,
+        }}
+        underlayColor="#41750c"
+      >
+        <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>
+          Pay Now
+        </Text>
+      </TouchableHighlight>
     </View>
-  )
-}
+  );
+};
 
-export default TestScreen
+export default TestScreen;

@@ -4,18 +4,11 @@ import FareHeader from '../../rideHistory/components/FareHeader';
 import TripMetaInfo from '../../rideHistory/components/TripMetaInfo';
 import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
 import TripStats from '../../rideHistory/components/TripStats';
-import PaymentDetails from '../../rideHistory/components/PaymentDetails';
-import SupportSection from '../../rideHistory/components/SupportSection';
-import PayButton from '../../rideHistory/components/PayButton';
 import AddressContainer from '../../../components/Trips/AddressContainer';
-import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
-import useAssignedDriverInfoStore from '../../rideStatus/store/useAssignedDriverInfoStore';
 import {Fonts} from '../../../constants/constants';
 import { useTranslation } from 'react-i18next'; 
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { colors } from '../../../constants/constants';
-import ReceiptScreen from '../../rideHistory/screens/ReceiptScreen';
 import InvoiceScreen from '../../rideHistory/screens/InvoiceScreen';
 import {utils} from '../../../utils/Utils';
 import { DataStore } from '../../../controllers/DataStore';
@@ -24,13 +17,22 @@ import { getTripDetails } from '../../../API/EndPoints/EndPoints';
 import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
 
 import usePaymentStore from '../store/usePaymentStore';
+import AppConfig from '../../../Config/AppConfig';
+import ScrollHintChevron from '../../../components/Common/ScrollHintChevron';
+import { createOrder } from '../../../API/EndPoints/EndPoints';
+import RazorpayCheckout from 'react-native-razorpay';
+import APIURLConfig from '../../../Config/APIURLConfig';
+import { showToast } from '../../../utils/Toast';
+import { showNotification } from '../../../components/NotificationManger';
 
 const PaymentScreen = () => {
 
   const {t} = useTranslation();
   const {tripStatus,rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,paymentMethod,isLoading,setTripDetails,tripStops,fareDetails,bookingTime,supplierDetails,recipientDetails,adminDetails,paymentStatus,invoiceId } = usePaymentStore();
-  const [showReceipt, setShowReceipt] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
+  const [svHeight, setSvHeight] = useState(0);
+  const [contentHeight, setContentHeight] = useState(0);
+  const isPaymentGateway = AppConfig.PAYMENT_METHODS === "PG";
   const handleInvoicePress = () => {
     setShowInvoice(true);
   };
@@ -52,9 +54,11 @@ const PaymentScreen = () => {
     fetchTripDetails();
     
   },[])
-
-  
-
+  useEffect(()=>{
+    if(driverDetails){
+      console.log(driverDetails,"driverDetails")
+    }
+  },[driverDetails])
 
   if(isLoading){
     return (
@@ -103,21 +107,94 @@ const PaymentScreen = () => {
     )
   }
 
-
   const formatDate = (timestamp) => {
     return utils.formatDateAndTime(timestamp);
   };
- 
+
+  const shouldShowScrollHint = contentHeight > svHeight + 20 ;
+
+  const handlePayNow = async () => {
+   
+      
+        const receiptId = `Rept-${rideId}`;
+
+        const transfer=[
+          {
+            "account": "acc_RBAIEQk10FZmhU",
+            "amount": 1000,
+            "currency": "INR",
+          },
+        ]
+        const response = await createOrder({
+          amount: tripFare,
+          currency: 'INR',
+          receipt: receiptId,
+          transferList:transfer
+
+        });
+
+        if(response?.success){
+         
+          const orderId = response?.order?.id;
+          const amount = response?.order?.amount;
+          if (!orderId) {
+            showNotification('Order creation failed. Please try again.');
+            return;
+          }
+          
+          try{
+          const options = {
+            description: 'Trip Fare',
+            image: 'https://virtualmaze.com/images/Logo-header.svg',
+            currency: 'INR',
+            key: APIURLConfig.RAZORPAY_KEY_ID,
+            amount: amount,
+            name: AppConfig.companyName,
+            order_id: orderId, // Replace this with an order_id created using Orders API.
+           
+            theme: { color: 'black' },
+          };
+    
+          RazorpayCheckout.open(options)
+            .then((data) => {
+
+              console.log(JSON.stringify(data,null,2),"data")
+              // handle success
+              showNotification("Payment Successful",data?.razorpay_payment_id || 'Payment successful','success');
+            })
+            .catch((error) => {
+              // handle failure
+              showNotification("Payment Failed",error?.message || 'Something went wrong. Please try again.','error');
+            });
+        } 
+        catch (error) {
+          showNotification("Payment Failed","Something went wrong. Please try again.",'error');
+        } 
+       
+      }
+  
 
   
+        
+  
+       
+      
+    
+  }
+
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        onLayout={(e) => setSvHeight(e.nativeEvent.layout.height)}
+        onContentSizeChange={(w, h) => setContentHeight(h)}
+      >
         <FareHeader fare={tripFare}  RideStatus={tripStatus == "CANCELLED" ? "Ride was cancelled midway" : "Destination Reached"}  />
        
         <TripMetaInfo date={formatDate(bookingTime)} tripId={rideId} />
         <AddressContainer directions={tripStops} />
-        <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={vehicleDetails?.vehicleType} vehicleBrand={vehicleDetails?.vehicleBrand} vehicleModel={vehicleDetails?.vehicleModel} vehicleNumber={vehicleDetails?.vehicleNumber} />
+        <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={driverDetails?.vehicleType} vehicleBrand={driverDetails?.vehicleBrand} vehicleModel={driverDetails?.vehicleModel} vehicleNumber={driverDetails?.vehicleNumber} />
         <View style={{marginVertical:15}}> 
         <TripStats totalDistance={tripDistance} totalDuration={tripDuration} totalFare={tripFare} />
         </View>
@@ -145,17 +222,23 @@ const PaymentScreen = () => {
          
         {/* Invoice Button */}
         <TouchableOpacity style={styles.invoiceButton} onPress={handleInvoicePress}>
-          <FontAwesome5 name="file-invoice" size={20} color={colors.white} />
+          <FontAwesome5 name="file-invoice" size={20} color={colors.black} />
           <Text style={styles.invoiceButtonText}>{t('show_invoice')}</Text>
         </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {isPaymentGateway && (
+        <View style={styles.bottomBar}>
+          {shouldShowScrollHint && (
+            <ScrollHintChevron direction='down' style={{ top: -30, alignSelf: 'center' }} />
+          )}
+          <TouchableOpacity style={styles.bottomButton} onPress={handlePayNow}>
+            <Text style={styles.bottomButtonText}>PAY NOW</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       
-     
-        {/* <SupportSection onPress={() => {}} /> */}
-     {/* Receipt Modal Overlay */}
-   
-       
       {/* Invoice Modal Overlay */}
       <InvoiceScreen 
        invoiceId={invoiceId}
@@ -188,7 +271,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 120,
     
   },
   cashPayment: {
@@ -271,7 +354,7 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   invoiceButton: {
-    backgroundColor: colors.black,
+    backgroundColor: colors.grey_xdark,
     borderRadius: 10,
     padding: 16,
     marginVertical: 10,
@@ -285,7 +368,7 @@ const styles = StyleSheet.create({
   invoiceButtonText: {
     fontFamily: Fonts.medium,
     fontSize: 16,
-    color: colors.white,
+    color: colors.black,
   },
   actionButtonsContainer:{
     flexDirection:"row",
@@ -304,6 +387,31 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 14,
     color: colors.grey_xxdark,
+  },
+  bottomBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors.white,
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E6E6E6',
+    zIndex: 100,
+    elevation: 20,
+    overflow: 'visible',
+  },
+  bottomButton: {
+    backgroundColor: colors.green,
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bottomButtonText: {
+    fontFamily: Fonts.medium,
+    fontSize: 16,
+    color: colors.white,
   },
 });
 

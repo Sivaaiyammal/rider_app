@@ -4,6 +4,7 @@ import { Fonts, colors } from '../constants/constants';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AddressContainer from './Trips/AddressContainer';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 
 const TripDetailsModal = ({ 
   visible, 
@@ -15,9 +16,10 @@ const TripDetailsModal = ({
   onCancel,
   onPaymentMethodChange,
   paymentMethod,
-  t
+ 
 }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const {t}=useTranslation();
 
   useEffect(() => {
     if (visible) {
@@ -57,7 +59,7 @@ const TripDetailsModal = ({
     ]}>
       <View style={styles.modalHeader}>
         <View style={styles.modalHandle} />
-        <Text style={styles.modalTitle}>Trip Details</Text>
+        <Text style={styles.modalTitle}>{t('trip_details')}</Text>
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
           <Icon name="close" size={24} color="#666" />
         </TouchableOpacity>
@@ -254,7 +256,7 @@ TripDetailsModal.propTypes = {
   onCancel: PropTypes.func.isRequired,
   onPaymentMethodChange: PropTypes.func.isRequired,
   paymentMethod: PropTypes.string.isRequired,
-  t: PropTypes.func.isRequired,
+  
 };
 
 export default TripDetailsModal; 

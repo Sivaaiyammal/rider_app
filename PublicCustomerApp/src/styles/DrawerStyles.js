@@ -49,7 +49,7 @@ export const drawerStyles = StyleSheet.create({
   userName:{
     fontFamily:Fonts.semi_bold,
     fontSize:16,
-    color:colors.black,
+    color:'white',
     width:"65%"
   },
   contentContainer:{

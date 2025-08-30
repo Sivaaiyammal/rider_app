@@ -21,6 +21,8 @@ import useUserInfoStore from '../../store/useUserInfoStore';
 import useSupportStore from '../../features/support/store/useSupportStore';
 import AdaptiveText from '../Common/AdaptiveText';
 import BottomSheetWorkingExample from '../BottomSheetWorkingExample';   
+import LinearGradient from 'react-native-linear-gradient';
+import {colors} from '../../constants/constants';
 const SideDrawerV2 = ({ handleMenu }) => {
   const { t } = useTranslation();
   const { userdetails } = useUserInfoStore();
@@ -160,10 +162,11 @@ const SideDrawerV2 = ({ handleMenu }) => {
   return (
     <Animated.View style={[drawerStyles.container, {opacity: fadeAnim}]}>
       <Animated.View style={[drawerStyles.drawercontainer, {transform: [{translateX: slideAnim}]}]}>
-        <View style={drawerStyles.profileContainer}>
+        <LinearGradient colors={[colors.grey_dark,'#303030']}  start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 0 }}style={drawerStyles.profileContainer}>
           <ProfileImage width={60} height={60} />
           <Text style={drawerStyles.userName}  numberOfLines={1} >{userdetails?.name}</Text>
-        </View>
+        </LinearGradient>
         <View style={drawerStyles.contentContainer}>
           <ScrollView>
             {drawerData.map(item => {

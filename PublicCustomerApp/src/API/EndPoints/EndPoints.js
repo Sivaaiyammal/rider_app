@@ -139,3 +139,9 @@ export const deleteAccount = async (payload) => {
     const {data} = await apiClient.get(`/publicrides/customer/getTripPaymentDetails?tripId=${tripId}`)
     return data
   }
+
+  export const createOrder = async (payload) => {
+    console.log(payload)
+    const {data} = await apiClient.post('/publicrides/payments/customer/create-order', payload)
+    return data
+  }
