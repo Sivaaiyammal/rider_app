@@ -32,7 +32,7 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
   const {waitingForDriverApproval} = useWayPointReorderStore();
   // Initialize tracking hook for driver arrival screen with polyline support
 
-  const {markersList} = useStopsMarkerHook(null,driverLatitude,driverLongitude,vehicleType);
+  const {markersList} = useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"pickup");
   const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destinationlat:stops[0].location[1],destinationlon:stops[0].location[0],driverLat:driverLatitude,driverLon:driverLongitude})  
   
 

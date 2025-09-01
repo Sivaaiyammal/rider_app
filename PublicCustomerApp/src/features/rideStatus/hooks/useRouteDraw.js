@@ -293,9 +293,10 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 		if (!driverLat || !driverLon) return;
 		if (destinationlat == null || destinationlon == null) return;
 		DrawRoute(driverLat, driverLon);
+		return () => {
+			setGeometries([]);
+		}
 	}, [destinationlat, destinationlon, remainingStops, driverLat, driverLon]);
-
-
 	return {estimatedDuration,remainingDistance,SetViewBoundingBox}
   
 }

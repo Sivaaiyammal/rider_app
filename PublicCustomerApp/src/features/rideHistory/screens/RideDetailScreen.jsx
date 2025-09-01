@@ -127,7 +127,7 @@ const RideDetailScreen = ({ TripData }) => {
             <Text style={styles.paymentMethodKey}>{t('payment_method')}</Text>
             <Text style={styles.paymentMethodValue}>{rideData.paymentMethod}</Text>
           </View>
-          <View style={styles.paymentMethodKeyContainer}>
+          {rideData.passengerPaymentStatus && <View style={styles.paymentMethodKeyContainer}>
           <Text style={styles.paymentMethodKey}>{t('payment_status')}</Text>
           <Text style={[
             styles.paymentMethodValue, 
@@ -136,7 +136,7 @@ const RideDetailScreen = ({ TripData }) => {
             {rideData.passengerPaymentStatus?.toUpperCase() || 'PENDING'}
           </Text>
 
-          </View>
+          </View>}
          
         </View>
         

@@ -22,7 +22,7 @@ import { DateTimeFormatter } from '../../../utils/DateTimeFormatter';
 import PropTypes from 'prop-types';
 import CalenderIcon from '../../../assets/image/calender.svg';
 import DatePicker from 'react-native-date-picker';
-import DateRangeBottomSheet from '../../shared/component/DateRangeBottomSheet';
+import EnhancedDateRangeBottomSheet from '../../shared/component/EnhancedDateRangeBottomSheet';
 
 const YourRidesScreen = () => {
     const { t } = useTranslation();
@@ -32,12 +32,25 @@ const YourRidesScreen = () => {
 
     const [FilterStart, setFilterStart] = useState('');
     const [FilterEnd, setFilterEnd] = useState('');
-    const [FilterPage] = useState(1);
+    const [FilterPage, setFilterPage] = useState(1);
     const [FilterLimit] = useState(10);
     const [isRefreshing, setIsRefreshing] = useState(true);
     const [isLoadMore, setIsLoadMore] = useState(false);
     const [showLoadingToast, setShowLoadingToast] = useState(false);
     const [durationFilterSet, setDurationFilterSet] = useState(false);
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [hasMoreData, setHasMoreData] = useState(true);
+    // Filter state
+    const [selectedStatus, setSelectedStatus] = useState('');
+    const [isFilterActive, setIsFilterActive] = useState(false);
+    // Temporary filter state (for bottom sheet)
+    const [tempSelectedStatus, setTempSelectedStatus] = useState('');
+    const [tempCustomStartDate, setTempCustomStartDate] = useState(null);
+    const [tempCustomEndDate, setTempCustomEndDate] = useState(null);
+    const [isCustomDateRangeSelected, setIsCustomDateRangeSelected] = useState(false);
+    const [tempIsDateRangeEnabled, setTempIsDateRangeEnabled] = useState(false);
     // Custom date range state
     const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
@@ -64,19 +77,15 @@ const YourRidesScreen = () => {
     }
 
     // Replace useQuery with normal API call
-    const LoadRides = async () => {
-        
-
+    const LoadRides = async (page = 1, isLoadMoreRequest = false) => {
         try {
             let payload = {
-               
-                page: FilterPage,
+                page: page,
                 limit: FilterLimit
             }
             
-            // Only add date filters if they are provided
-           
-            if (FilterStart && FilterEnd) {
+            // Only add date filters if they are provided and custom date range is selected
+            if (FilterStart && FilterEnd && isCustomDateRangeSelected) {
                 // Convert ISO strings to milliseconds if they're not already timestamps
                 let startTime, endTime;
                 
@@ -96,24 +105,38 @@ const YourRidesScreen = () => {
                     endTime = FilterEnd;
                 }
                 
-                
                 payload.startTime = startTime;
                 payload.endTime = endTime;
             }
 
-            
-            setIsRefreshing(true);
-            setShowLoadingToast(true);
+            // Add status filter if selected
+            if (selectedStatus) {
+                payload.status = selectedStatus;
+            }
+
+            if (!isLoadMoreRequest) {
+                setIsRefreshing(true);
+                setShowLoadingToast(true);
+            } else {
+                setIsLoadMore(true);
+            }
             
             const data = await getCustomerTrips(payload);
             
-            
             if (data.success) {
-                let { trips } = data
-                if (isLoadMore) {
-                    setRides([...Rides, ...trips])
+                let { trips, pagination } = data;
+                
+                if (isLoadMoreRequest) {
+                    setRides([...Rides, ...trips]);
                 } else {
-                    setRides(trips)
+                    setRides(trips);
+                }
+                
+                // Update pagination state
+                if (pagination) {
+                    setCurrentPage(pagination.page);
+                    setTotalPages(pagination.totalPages);
+                    setHasMoreData(pagination.page < pagination.totalPages);
                 }
             } else {
                 showNotification(t('failed_to_get_rides'), data.message, 'danger');
@@ -131,8 +154,19 @@ const YourRidesScreen = () => {
 
     const HandleRideOpen = (ride) => {
         // Navigate to RideDetailScreen with ride data
-       
         setStackScreen('RideDetailScreen', { TripData: ride });     
+    }
+
+    const HandleRefresh = () => {
+        setCurrentPage(1);
+        setHasMoreData(true);
+        LoadRides(1, false);
+    }
+
+    const HandleLoadMore = () => {
+        if (isRefreshing || isLoadMore || !hasMoreData) return;
+        const nextPage = currentPage + 1;
+        LoadRides(nextPage, true);
     }
 
     const RenderTrip = ({ ride,Fare, index }) => {
@@ -193,6 +227,7 @@ const YourRidesScreen = () => {
   
 
     const dataProvider = React.useMemo(() => {
+      
         return new DataProvider((r1, r2) => r1 !== r2).cloneWithRows(Rides);
     }, [Rides]);
 
@@ -211,10 +246,16 @@ const YourRidesScreen = () => {
         return <RenderTrip ride={data} Fare={data?.fareDetails?.fare} index={index} />
     }, []);
 
-    const renderFooter = React.useMemo(() => {
-        if (!isRefreshing) return null;
-        return <ActivityIndicator size="large" color="#0000ff" />;
-    }, [isRefreshing]);
+    const renderFooter = React.useCallback(() => {
+        if (isLoadMore) {
+            return (
+                <View style={{ padding: 20, alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#0000ff" />
+                </View>
+            );
+        }
+        return null;
+    }, [isLoadMore]);
 
     // Set default date filters to today when component mounts
     useEffect(() => {
@@ -224,11 +265,20 @@ const YourRidesScreen = () => {
         setDurationFilterSet(true);
     }, []);
 
+    // Update filter active state based on current filters
+    useEffect(() => {
+        const hasCustomDateRange = isCustomDateRangeSelected && activeTab === 'custom';
+        const hasStatusFilter = selectedStatus !== '';
+        setIsFilterActive(hasCustomDateRange || hasStatusFilter);
+    }, [isCustomDateRangeSelected, selectedStatus, activeTab]);
+
     useEffect(() => {
         if(durationFilterSet){
-            LoadRides();
+            setCurrentPage(1);
+            setHasMoreData(true);
+            LoadRides(1, false);
         }
-    }, [durationFilterSet, FilterStart, FilterEnd])
+    }, [durationFilterSet, FilterStart, FilterEnd, selectedStatus])
 
   
 
@@ -241,9 +291,17 @@ const YourRidesScreen = () => {
 
     const handleDateChange = (date) => {
         if (datePickerMode === 'start') {
-            setCustomStartDate(date);
+            setTempCustomStartDate(date);
+            // If the new start date is after the end date, clear the end date
+            if (tempCustomEndDate && date > tempCustomEndDate) {
+                setTempCustomEndDate(null);
+            }
         } else {
-            setCustomEndDate(date);
+            setTempCustomEndDate(date);
+            // If the new end date is before the start date, clear the start date
+            if (tempCustomStartDate && date < tempCustomStartDate) {
+                setTempCustomStartDate(null);
+            }
         }
         setShowDatePicker(false);
     };
@@ -254,13 +312,68 @@ const YourRidesScreen = () => {
 
     const handleCustomDateConfirm = () => {
         setShowCustomDatePicker(false);
-        const startTimestamp = customStartDate.getTime();
-        const endOfDay = new Date(customEndDate);
-        endOfDay.setHours(23, 59, 59, 999);
-        const endTimestampWithTime = endOfDay.getTime();
-        setFilterStart(startTimestamp);
-        setFilterEnd(endTimestampWithTime);
+        
+        // Apply temporary filters to actual filters
+        setSelectedStatus(tempSelectedStatus);
+        
+        // Only apply custom date range if switch is enabled and dates are selected
+        if (tempIsDateRangeEnabled && tempCustomStartDate && tempCustomEndDate) {
+            const startTimestamp = tempCustomStartDate.getTime();
+            const endOfDay = new Date(tempCustomEndDate);
+            endOfDay.setHours(23, 59, 59, 999);
+            const endTimestampWithTime = endOfDay.getTime();
+            setFilterStart(startTimestamp);
+            setFilterEnd(endTimestampWithTime);
+            setCustomStartDate(tempCustomStartDate);
+            setCustomEndDate(tempCustomEndDate);
+            setIsCustomDateRangeSelected(true);
+        } else {
+            setIsCustomDateRangeSelected(false);
+        }
+        
+        setCurrentPage(1);
+        setHasMoreData(true);
         setDurationFilterSet(true);
+        setIsFilterActive(true);
+        setActiveTab('custom'); // Set custom tab as active
+    };
+
+    const handleStatusChange = (status) => {
+        setTempSelectedStatus(status);
+    };
+
+    const handleClearFilters = () => {
+        setShowCustomDatePicker(false);
+        const todayRange = getTodayDateRange();
+        setFilterStart(todayRange.start);
+        setFilterEnd(todayRange.end);
+        setSelectedStatus('');
+        setTempSelectedStatus('');
+        setIsCustomDateRangeSelected(false);
+        setTempIsDateRangeEnabled(false);
+        setCurrentPage(1);
+        setHasMoreData(true);
+        setDurationFilterSet(true);
+        setIsFilterActive(false);
+        setActiveTab('today'); // Reset to today tab
+    };
+
+    const handleClearDateRange = () => {
+        setTempCustomStartDate(null);
+        setTempCustomEndDate(null);
+    };
+
+    const handleDateRangeToggle = (enabled) => {
+        setTempIsDateRangeEnabled(enabled);
+    };
+
+    const handleOpenFilterSheet = () => {
+        // Initialize temporary state with current values
+        setTempSelectedStatus(selectedStatus);
+        setTempCustomStartDate(isCustomDateRangeSelected ? customStartDate : null);
+        setTempCustomEndDate(isCustomDateRangeSelected ? customEndDate : null);
+        setTempIsDateRangeEnabled(isCustomDateRangeSelected);
+        setShowCustomDatePicker(true);
     };
 
     const handleCustomDateCancel = () => {
@@ -285,6 +398,12 @@ const YourRidesScreen = () => {
                     <TouchableOpacity
                         key={tab.id}
                         onPress={() => {
+                            // Reset all custom filters when selecting a tab
+                            setSelectedStatus('');
+                            setIsFilterActive(false);
+                            setIsCustomDateRangeSelected(false);
+                            setTempIsDateRangeEnabled(false);
+                            
                             if (tab.getRange) {
                                 const [start, end] = tab.getRange();
                                 setFilterStart(start);
@@ -293,6 +412,8 @@ const YourRidesScreen = () => {
                                 setFilterStart(null);
                                 setFilterEnd(null);
                             }
+                            setCurrentPage(1);
+                            setHasMoreData(true);
                             setDurationFilterSet(true);
                             setActiveTab(tab.id);
                         }}
@@ -313,19 +434,19 @@ const YourRidesScreen = () => {
                 ))}
                 {/* Calendar icon for custom date range */}
                 <TouchableOpacity
-                    onPress={() => setShowCustomDatePicker(true)}
+                    onPress={handleOpenFilterSheet}
                     style={{
                         borderWidth: 1,
                         borderColor: colors.grey_light,
                         borderRadius: 16,
                         paddingVertical: 8,
                         paddingHorizontal: 12,
-                        backgroundColor: colors.white,
+                        backgroundColor: isFilterActive ? colors.black : colors.white,
                         alignItems: 'center',
                         justifyContent: 'center',
                     }}
                 >
-                    <CalenderIcon width={20} height={20} />
+                    <Icon name="filter" size={20} color={isFilterActive ? colors.white : colors.black} />
                 </TouchableOpacity>
             </View>
             <View
@@ -354,6 +475,8 @@ const YourRidesScreen = () => {
                                 renderFooter={renderFooter}
                                 canChangeSize={true}
                                 forceNonDeterministicRendering={true}
+                                onEndReached={HandleLoadMore}
+                                onEndReachedThreshold={0.5}
                                 scrollViewProps={{
                                     showsHorizontalScrollIndicator: false,
                                     showsVerticalScrollIndicator: false
@@ -365,26 +488,34 @@ const YourRidesScreen = () => {
                 visible={showLoadingToast}
                 onHide={() => setShowLoadingToast(false)}
             />
-            {/* Custom Date Picker Modal */}
-            <DateRangeBottomSheet
+            {/* Enhanced Date Range and Status Filter Modal */}
+            <EnhancedDateRangeBottomSheet
                 visible={showCustomDatePicker}
                 onClose={() => setShowCustomDatePicker(false)}
                 title={t('select_date_range')}
+                clearLabel={t('clear')}
                 fromLabel={t('from')}
                 toLabel={t('to')}
-                startDate={customStartDate}
-                endDate={customEndDate}
+                startDate={tempCustomStartDate}
+                endDate={tempCustomEndDate}
                 onPressFrom={() => openDatePicker('start')}
                 onPressTo={() => openDatePicker('end')}
                 onCancel={handleCustomDateCancel}
                 onConfirm={handleCustomDateConfirm}
+                onClear={handleClearFilters}
+                onClearDateRange={handleClearDateRange}
                 cancelLabel={t('cancel')}
                 confirmLabel={t('confirm')}
+                    
+                selectedStatus={tempSelectedStatus}
+                onStatusChange={handleStatusChange}
+                isDateRangeEnabled={tempIsDateRangeEnabled}
+                onDateRangeToggle={handleDateRangeToggle}
             />
             <DatePicker
                 modal
                 open={showDatePicker}
-                date={datePickerMode === 'start' ? customStartDate : customEndDate}
+                date={datePickerMode === 'start' ? (tempCustomStartDate || new Date()) : (tempCustomEndDate || new Date())}
                 mode="date"
                 onConfirm={handleDateChange}
                 onCancel={handleDatePickerCancel}

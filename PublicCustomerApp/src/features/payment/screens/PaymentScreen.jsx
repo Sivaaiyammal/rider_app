@@ -121,7 +121,7 @@ const PaymentScreen = () => {
         const transfer=[
           {
             "account": "acc_RBAIEQk10FZmhU",
-            "amount": 1000,
+            "amount": tripFare-10,
             "currency": "INR",
           },
         ]

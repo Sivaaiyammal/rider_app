@@ -127,7 +127,9 @@ const RideStatus = () => {
 
 
   useEffect(()=>{
-    if(gpsDistance == -1 && gpsDuration == -1){
+    console.log("gpsDistance",gpsDistance)
+    console.log("calculate distance",isCalculateDistance)
+    if(gpsDistance == -1 && gpsDuration == -1 ){
       const payload = {
         tripId,
         reason: cancelReason

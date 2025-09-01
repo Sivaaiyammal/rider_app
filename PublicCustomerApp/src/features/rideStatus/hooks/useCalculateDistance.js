@@ -28,11 +28,13 @@ const useCalculateDistance = ({ tripId, startTime, endTime,enabled = true }) => 
   });
 
   useEffect(() => {
+
+    console.log('data',data);
     const processData = async () => {
     
       if(data?.getRecentLocations?.raw?.length == 0){
-        setGpsDistance(10);
-        setGpsDuration(30);
+        setGpsDistance(-1);
+        setGpsDuration(-1);
       }
       if (data) {
         // console.log('GraphQL Data received:', data);

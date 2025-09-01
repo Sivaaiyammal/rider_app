@@ -43,7 +43,7 @@ import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import useFetchNearbyDrivers from '../../../hooks/useVehicleMarker';
 import useRideSelectionStore from '../../../store/useRideSelectionStore';
 import LinearGradient from 'react-native-linear-gradient';
-
+import { width } from '../../../utils/Utils';
 import { isEv } from '../../../utils/Utils';
 import { Image } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -560,12 +560,14 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 const styles = StyleSheet.create({
     bottomSheetHeader:{
         position:"absolute",
-        width:"100%",
+        
+        width:width,
         flexDirection:"row",
         justifyContent:"space-between",
         alignItems:"flex-end",
         top:-110,
-        paddingHorizontal:10
+        paddingHorizontal:10,
+       
     
     },
     bottomSheetHeaderContainer:{
@@ -576,10 +578,11 @@ const styles = StyleSheet.create({
     },
     mapActionContainer:{
         flexDirection:"column",
-        alignItems:"center",
+        alignItems:"flex-end",
         justifyContent:"flex-end",
         gap:10,
-        paddingBottom:10
+        paddingBottom:10,
+      
        
     },
     bottomSheetContent: {
