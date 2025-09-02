@@ -26,16 +26,18 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
         if(markerType === "pickup"){  
             setMarkersList(prevMarkers => {
                 // Remove all stop markers (keep only driver marker)
-                const stopMarker0 = new Marker(`${0}-stop`, stops[0].name, stops[0].location[0], stops[0].location[1], 'default', 48)
+                const stopMarker0 = new Marker(`${0}-stop`, stops[0].name, stops[0].location[0], stops[0].location[1], 'drop_point', 64)
                 return [...prevMarkers, stopMarker0];
             });
           }else{
         setMarkersList(prevMarkers => {
             // Remove all stop markers (keep only driver marker)
             const driverMarkers = prevMarkers.filter(marker => marker.id === 'driver');
-            const stopMarkers = stops.filter((stop)=>stop.isReached === false).map((stop,index) =>
-                new Marker(`${index}-stop`, stop.name, stop.location[0], stop.location[1], 'default', 48)
-            );
+            const stopMarkers = stops.filter((stop)=>stop.isReached === false).map((stop,index) => {
+                let markerName = stop?.name?.toLowerCase().replace(' ','_');
+                let markerSize = markerName.includes('stop') ? 24 : 64;
+                return new Marker(`${index}-stop`, stop.name, stop.location[0], stop.location[1], markerName, markerSize);
+            });
             return [...driverMarkers, ...stopMarkers];
         });
     }

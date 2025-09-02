@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, Animated, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -29,29 +29,31 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
   const [slideAnim] = useState(new Animated.Value(0));
 
   useEffect(() => {
-    
-    // Animate the component in
-    Animated.timing(slideAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
+    // Animate the component in only when vehicles are loaded
+    if (availableVehicles && availableVehicles.length > 0) {
+      Animated.timing(slideAnim, {
+        toValue: 1,
+        duration: 200, // Reduced duration for faster rendering
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [availableVehicles]);
+
+  // Removed redundant vehicle selection - handled by parent component
+
+  const handleVehicleSelect = useCallback((vehicle) => {
+    setSelectedVehicle(vehicle);
+  }, [setSelectedVehicle]);
+
+  const getVehicleImage = useCallback((type) => {
+    return VEHICLE_IMAGES[type] || ExSEDAN;
   }, []);
 
-  // Add new useEffect to set default selected vehicle
-  useEffect(() => {
-    if (availableVehicles && availableVehicles.length > 0 && !selectedVehicle) {
-      setSelectedVehicle(availableVehicles[0]);
-    }
-  }, [availableVehicles, selectedVehicle, setSelectedVehicle]);
-
-  const handleVehicleSelect = (vehicle) => {
-    setSelectedVehicle(vehicle);
-  };
-
-  const getVehicleImage = (type) => {
-    return VEHICLE_IMAGES[type] || ExSEDAN;
-  };
+  // Memoize filtered vehicles to prevent unnecessary re-renders
+  const filteredVehicles = useMemo(() => {
+    if (!availableVehicles || !selectedVehicle) return [];
+    return availableVehicles.filter(vehicle => vehicle.type !== selectedVehicle.type);
+  }, [availableVehicles, selectedVehicle]);
 
   const renderSkeletonLoader = () => {
     const skeletonItems = Array.from({ length: 4 }, (_, index) => index);
@@ -102,7 +104,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
     >
       
       
-      {availableVehicles?.filter(vehicle=>vehicle.type!=selectedVehicle.type).map((vehicle) => {
+      {filteredVehicles.map((vehicle) => {
         const isSelected = selectedVehicle?.id === vehicle.id;
         return (
           <TouchableOpacity

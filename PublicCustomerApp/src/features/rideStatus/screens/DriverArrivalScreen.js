@@ -67,7 +67,7 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
     }
   }
 
-
+  const isElectricVehicle = vehicleType == "ELECTRIC_AUTO" || vehicleType == "ELECTRIC_BIKE" || vehicleType == "ELECTRIC_HATCHBACK" || vehicleType == "ELECTRIC_SEDAN" || vehicleType == "ELECTRIC_SUV" || vehicleType == "ELECTRIC_EXSEDAN";
 
   
 
@@ -103,6 +103,7 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
     
       {/* Vehicle details */}
       <View style={styles.vehicleCard}>
+    
         {getVehicleImage(vehicleType,styles.vehicleImg)}
         <View style={styles.vehicleInfo}>
           <Text style={styles.vehicleNum}>{vehicleNumber}</Text>

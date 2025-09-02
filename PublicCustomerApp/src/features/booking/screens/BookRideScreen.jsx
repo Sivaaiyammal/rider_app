@@ -267,8 +267,6 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
 
     const transformEstimateDatStore=(data)=>{
-      
-    
         let vehicleList=[]
 
         vehicleType.forEach((item,index)=>{
@@ -282,12 +280,19 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
                     maxFare:data[item.type].maxFare,
                     currency:data[item.type].currency,
                     estimatedDuration:data[item.type].estimatedDuration || item.estimatedDuration,
-                   
                 }
-                
                 vehicleList.push(VehicleItem)
             }
         })
+        
+        // Preload vehicle images for faster rendering
+        const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
+        vehicleList.forEach(vehicle => {
+            const imageSource = VEHICLE_IMAGES[vehicle.type] || ExSEDAN;
+            Image.prefetch(Image.resolveAssetSource(imageSource).uri);
+        });
+        
+        // Batch all state updates together to prevent multiple re-renders
         setSelectedVehicle(vehicleList[0])
         setAvailableVehicles(vehicleList)
         setIsLoading(false)
@@ -483,6 +488,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
     
    
       <VehicleList isLoading={isLoading}  availableVehicles={availableVehicles}/>
+      <View style={{height:100}}/>
            
 
    </BottomSheetWrapper>

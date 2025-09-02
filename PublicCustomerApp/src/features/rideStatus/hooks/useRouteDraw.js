@@ -141,7 +141,12 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 	function trimPolylineFromNearest(coords, nearest,driverLat,driverLon) {
 		if (!coords || coords.length < 2) return coords || [];
 		if (!nearest || nearest.index < 0 || nearest.index >= coords.length - 1 || !nearest.nearestPoint) return coords;
-		const nextSlice = coords.slice(nearest.index + 1);
+		const nextSlice = coords.slice(nearest.index +1);
+		const firstslicedistance = haversineMeters([driverLon,driverLat], coords[0])
+		if(firstslicedistance > 150){
+			const nextSlice = coords.slice(nearest.index + 2);
+			return [ [driverLon,driverLat], ...nextSlice];
+		}
 		return [[driverLon,driverLat], ...nextSlice];
 	}
 	function haversineMeters(a, b) {

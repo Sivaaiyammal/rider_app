@@ -1,5 +1,6 @@
 import React from 'react';
-import { Image } from 'react-native';
+import { Image, View } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import AutoIcon from '../../../assets/vehicle/AUTO.webp';
 import BikeIcon from '../../../assets/vehicle/BIKE.webp';
 import SuvIcon from '../../../assets/vehicle/SUV.webp';
@@ -12,7 +13,7 @@ import ElectricHatchbackIcon from '../../../assets/vehicle/HATCHBACK.webp';
 import ElectricSedanIcon from '../../../assets/vehicle/SEDAN.webp';
 import ElectricSuvIcon from '../../../assets/vehicle/SUV.webp';
 
-export const getVehicleImage = (type,style) => {
+export const getVehicleImage = (type,style,usedScreen=null) => {
   
     switch(type){
         case 'AUTO':
@@ -28,15 +29,15 @@ export const getVehicleImage = (type,style) => {
         case 'EX_SEDAN':
             return <Image source={ExSedanIcon} style={style} />
         case 'ELECTRIC_AUTO':
-            return <Image source={ElectricAutoIcon} style={style} />
+            return <View ><Image source={ElectricAutoIcon} style={style} /><Icon name="bolt" size={30} color="#00770d" style={{position:'absolute',top:usedScreen=="ratingScreen"?-10:10,left:usedScreen!=="ratingScreen"?-20:-10}}/></View>
         case 'ELECTRIC_BIKE':
-            return <Image source={ElectricBikeIcon} style={style} />
+            return <View ><Image source={ElectricBikeIcon} style={style} /><Icon name="bolt" size={30} color="#00770d" style={{position:'absolute',top:usedScreen=="ratingScreen"?-10:10,left:usedScreen!=="ratingScreen"?-20:-10}}/></View>
         case 'ELECTRIC_HATCHBACK':
-            return <Image source={ElectricHatchbackIcon} style={style} />
+                return <View ><Image source={ElectricHatchbackIcon} style={style} /><Icon name="bolt" size={30} color="#00770d" style={{position:'absolute',top:usedScreen=="ratingScreen"?-10:10,left:usedScreen!=="ratingScreen"?-20:-10}}/></View>
         case 'ELECTRIC_SEDAN':
-            return <Image source={ElectricSedanIcon} style={style} />
+            return <View ><Image source={ElectricSedanIcon} style={style} /><Icon name="bolt" size={30} color="#00770d" style={{position:'absolute',top:usedScreen=="ratingScreen"?-10:10,left:usedScreen!=="ratingScreen"?-20:-10}}/></View>
         case 'ELECTRIC_SUV':
-            return <Image source={ElectricSuvIcon} style={style} />
+            return <View ><Image source={ElectricSuvIcon} style={style} /><Icon name="bolt" size={30} color="#00770d" style={{position:'absolute',top:usedScreen=="ratingScreen"?-10:10,left:usedScreen!=="ratingScreen"?-20:-10}}/></View>
         default:
             return <Image source={AutoIcon} style={style} />
     }

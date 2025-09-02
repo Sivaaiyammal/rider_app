@@ -30,7 +30,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {estimatedDuration,SetViewBoundingBox} = useRouteDraw({destinationlat:currentStop?.location[1],destinationlon:currentStop?.location[0],driverLat:driverLatitude,driverLon:driverLongitude,remainingStops: stopspolyline})  
   const animation = useRef(new Animated.Value(0)).current;
   
-
+  const isElectricVehicle = vehicleType == "ELECTRIC_AUTO" || vehicleType == "ELECTRIC_BIKE" || vehicleType == "ELECTRIC_HATCHBACK" || vehicleType == "ELECTRIC_SEDAN" || vehicleType == "ELECTRIC_SUV" || vehicleType == "ELECTRIC_EXSEDAN";
   
   const [expanded, setExpanded] = useState(false);
   const toggleExpand = () => {
@@ -51,6 +51,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   });
 
   const ArrivalTime =utils.getTimeAfterMinutes(estimatedDuration)
+  const iswaypoint = stops.length > 2;
 
   // Check if driver photo URL is valid
   const driverPhotoUri = driverPhoto && driverPhoto.trim() !== '' ? driverPhoto : null;
@@ -63,7 +64,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
       
       <View style={[styles.containerTop,{backgroundColor:'black'}]}>
        
-        <Text style={styles.topBarText}>{t('reach_your_destination_in')}</Text>
+        <Text style={styles.topBarText}>{t(!iswaypoint ? 'reach_your_destination_in' : 'reach_your_waypoints_in',{stop:currentStop?.name})}</Text>
         <View style={styles.timeBox}>
           <Text style={styles.timeText}>{estimatedDuration} Mins</Text>
             </View>
@@ -79,6 +80,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
         <View style={styles.imagesRow}>
         {getVehicleImage(vehicleType,styles.vehicleImg)}
           <View style={styles.driverImgWrap}>
+             {isElectricVehicle && <Icon name="bolt" size={25} color="#00770d" style={{position:"absolute",top:0,left:0}} />}
             <Image source={{ uri: driverPhotoUri }} style={styles.driverImg} />
           </View>
           {/* <View style={styles.onRideBadge}><Text style={styles.onRideBadgeText}>{t('on_ride')}</Text></View> */}

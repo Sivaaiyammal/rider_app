@@ -17,7 +17,7 @@ const TripPersonVehicle = ({
 }) => (
   <View style={[styles.container,layoutStyle=="row"&&{flexDirection:"row",gap:15}]}>
     <View style={[styles.imagesRow]}>
-      {getVehicleImage(vehicleType, [styles.vehicleImg,driverPhoto&&{marginRight:-20}])}
+      {getVehicleImage(vehicleType, [styles.vehicleImg,driverPhoto&&{marginRight:-20}],'ratingScreen')}
       {driverPhoto && <Image source={{uri:driverPhoto}} style={[styles.profileImg,usedScreen=="MyRides"&&{width:60,height:60}]} />}
     </View>
     <View style={[layoutStyle=="row"&&{alignItems:"flex-start"},usedScreen=="MyRides"&&{alignItems:"flex-end"}]}>

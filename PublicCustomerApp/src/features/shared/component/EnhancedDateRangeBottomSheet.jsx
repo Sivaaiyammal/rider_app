@@ -100,7 +100,7 @@ export default function EnhancedDateRangeBottomSheet({
                  <View style={{ flex: 1,paddingRight: 8 }}>
                    <Text style={{ fontSize: 14, fontFamily: Fonts.medium, color: colors.grey_xxdark, marginBottom: 8,marginLeft: 8 }}>{fromLabel}</Text>
                    <TouchableOpacity onPress={onPressFrom} style={{ borderWidth: 1, borderColor: colors.grey_light, borderRadius: 8, padding: 12, backgroundColor: colors.white }}>
-                     <Text style={{ fontSize: 16, fontFamily: Fonts.regular, color: colors.black }}>
+                     <Text style={{ fontSize: 16, fontFamily: Fonts.regular, color: startDate ? colors.black : colors.grey_xxdark }}>
                       {startDate ? new Date(startDate).toDateString() : 'Select Date'}
                      </Text>
                    </TouchableOpacity>
@@ -108,7 +108,7 @@ export default function EnhancedDateRangeBottomSheet({
                  <View style={{ flex: 1,paddingLeft: 8 }}>
                    <Text style={{ fontSize: 14, fontFamily: Fonts.medium, color: colors.grey_xxdark, marginBottom: 8,marginLeft: 8 }}>{toLabel}</Text>
                    <TouchableOpacity onPress={onPressTo} style={{ borderWidth: 1, borderColor: colors.grey_light, borderRadius: 8, padding: 12, backgroundColor: colors.white }}>
-                     <Text style={{ fontSize: 16, fontFamily: Fonts.regular, color: colors.black }}>
+                     <Text style={{ fontSize: 16, fontFamily: Fonts.regular, color: endDate ? colors.black : colors.grey_xxdark }}>
                        {endDate ? new Date(endDate).toDateString() : 'Select Date'}
                      </Text>
                    </TouchableOpacity>
@@ -130,9 +130,9 @@ export default function EnhancedDateRangeBottomSheet({
 
         {/* Action Buttons */}
         <View style={{ flexDirection: 'row', gap: 12 }}>
-          <TouchableOpacity onPress={onCancel} style={{ flex: 1, backgroundColor: colors.grey_light, borderRadius: 8, padding: 12, alignItems: 'center' }}>
+         {!hasActiveFilters && <TouchableOpacity onPress={onCancel} style={{ flex: 1, backgroundColor: colors.grey_light, borderRadius: 8, padding: 12, alignItems: 'center' }}>
             <Text style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black }}>{cancelLabel}</Text>
-          </TouchableOpacity>
+          </TouchableOpacity>}
           
           {hasActiveFilters && (
             <TouchableOpacity onPress={onClear} style={{ flex: 1, backgroundColor: colors.grey_light, borderRadius: 8, padding: 12, alignItems: 'center' }}>

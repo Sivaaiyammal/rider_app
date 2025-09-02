@@ -175,7 +175,7 @@ export default function TripFeedbackScreen() {
         </View>
       
           <View style={{marginVertical:10}}>
-            <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={vehicleDetails?.vehicleType} vehicleBrand={vehicleDetails?.vehicleBrand} vehicleModel={vehicleDetails?.vehicleModel} vehicleNumber={vehicleDetails?.vehicleNumber} layoutStyle={"row"} descriptonSize={12}/>
+            <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={driverDetails?.vehicleType} vehicleBrand={driverDetails?.vehicleBrand} vehicleModel={driverDetails?.vehicleModel} vehicleNumber={driverDetails?.vehicleNumber} layoutStyle={"row"} descriptonSize={12}/>
             </View>
            <RatingBox onRatingSubmit={handleSubmit}/>
            <TouchableOpacity onPress={handleClose}>
