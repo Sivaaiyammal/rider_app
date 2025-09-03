@@ -23,7 +23,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
 
-const VehicleList = ({ isLoading = false ,availableVehicles}) => {
+const VehicleList = ({ isLoading = false ,availableVehicles,setScrolledUntillBottom}) => {
   const { t } = useTranslation();
   const {selectedVehicle,setSelectedVehicle} = useRideVehicleStore()
   const [slideAnim] = useState(new Animated.Value(0));
@@ -45,15 +45,14 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
     setSelectedVehicle(vehicle);
   }, [setSelectedVehicle]);
 
+  
+
   const getVehicleImage = useCallback((type) => {
     return VEHICLE_IMAGES[type] || ExSEDAN;
   }, []);
 
   // Memoize filtered vehicles to prevent unnecessary re-renders
-  const filteredVehicles = useMemo(() => {
-    if (!availableVehicles || !selectedVehicle) return [];
-    return availableVehicles.filter(vehicle => vehicle.type !== selectedVehicle.type);
-  }, [availableVehicles, selectedVehicle]);
+  
 
   const renderSkeletonLoader = () => {
     const skeletonItems = Array.from({ length: 4 }, (_, index) => index);
@@ -99,12 +98,11 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
   return (
     <View 
       style={styles.container}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 20 }}
+      
     >
       
       
-      {filteredVehicles.map((vehicle) => {
+      {availableVehicles.map((vehicle) => {
         const isSelected = selectedVehicle?.id === vehicle.id;
         return (
           <TouchableOpacity
@@ -113,10 +111,10 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={isSelected ? ['#ffffff00','#fff5cc'] : ['#FFFFFF', '#FFFFFF']}
+              colors={isSelected ? ['#ffffff00','#fff5cc'] : ['transparent', 'transparent']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={[styles.vehicleCard, isSelected && styles.selectedVehicleCard]}
+              style={[styles.vehicleCard, isSelected ? styles.selectedVehicleCard : {backgroundColor:colors.grey_xxlight}]}
             >
               <View style={styles.vehicleImageContainer}>
                 <Image
@@ -165,13 +163,14 @@ VehicleList.propTypes = {
   initialValue: PropTypes.object,
   availableVehicles: PropTypes.array,
   isLoading: PropTypes.bool,
+  setScrolledUntillBottom: PropTypes.func,
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
-   
+    marginBottom: 40,
     backgroundColor: colors.white,
   },
   header: {

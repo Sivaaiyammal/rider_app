@@ -182,7 +182,7 @@ const YourRidesScreen = () => {
                 >
                     <View>
                     <Text style={yourRidesStyles.ridesContainerItemTitle}>{utils.formateDateLabel(ride.bookingTime, 'local')}</Text>
-                    <Text style={yourRidesStyles.ridesContainerItemDesc}>
+                    <Text style={yourRidesStyles.ridesContainerItemDesc} numberOfLines={2} ellipsizeMode='tail'>
                         {Array.isArray(ride?.stops) && ride.stops.length > 0
                             ? ride.stops[ride.stops.length - 1]?.address || '--'
                             : '--'}

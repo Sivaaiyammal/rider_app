@@ -151,6 +151,7 @@
     "priority": "Priority:",
     "created": "Created:",
     "agent_is_typing": "Agent is typing...",
+    "payment_method_label": "Payment Method",
     "no_messages_yet": "No messages yet",
     "start_conversation_message": "Start the conversation by sending your first message",
     "type_your_message": "Type your message...",

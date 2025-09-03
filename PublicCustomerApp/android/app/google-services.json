@@ -1,26 +1,105 @@
 {
   "project_info": {
-    "project_number": "587269145565",
-    "project_id": "vmtaxicustomer",
-    "storage_bucket": "vmtaxicustomer.firebasestorage.app"
+    "project_number": "1061496527627",
+    "project_id": "vmtrackers",
+    "storage_bucket": "vmtrackers.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:587269145565:android:ab350b40191a11153cec34",
+        "mobilesdk_app_id": "1:1061496527627:android:fe40420783f61cb810e00e",
         "android_client_info": {
           "package_name": "com.virtualmaze.prcustomer"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1061496527627-4n6c8djg4p849c4sf393l2huepd4a4nk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBPkG69CcLYidOZI6okn_c-osDw0J0QjzQ"
+          "current_key": "AIzaSyBUgp-np9bBxXFlT-w0E-Bl2HuUvZYIPNo"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1061496527627-4n6c8djg4p849c4sf393l2huepd4a4nk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1061496527627-sedov8lbb9cgtr1fplobp5bpimuotdqc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.virtualmaze.vmtracker",
+                "app_store_id": "6503015757"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1061496527627:android:46bd0a771084e0e410e00e",
+        "android_client_info": {
+          "package_name": "com.vmtrackers"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1061496527627-7nlghle36n14eq0g3hv9bo8robtinpeh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vmtrackers",
+            "certificate_hash": "4ea98fdfeab4134a5f0a073d69e87367cd5ee1ba"
+          }
+        },
+        {
+          "client_id": "1061496527627-fpeiaod3lfmfgkr7aqgnrbghjbjgsl7u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vmtrackers",
+            "certificate_hash": "2376ef82b60b0432c871efffb032be5f3b1c0136"
+          }
+        },
+        {
+          "client_id": "1061496527627-lcnen9bfaqil47d119uu7mghei1hdvja.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vmtrackers",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "1061496527627-4n6c8djg4p849c4sf393l2huepd4a4nk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUgp-np9bBxXFlT-w0E-Bl2HuUvZYIPNo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1061496527627-4n6c8djg4p849c4sf393l2huepd4a4nk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1061496527627-sedov8lbb9cgtr1fplobp5bpimuotdqc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.virtualmaze.vmtracker",
+                "app_store_id": "6503015757"
+              }
+            }
+          ]
         }
       }
     }

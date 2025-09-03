@@ -57,32 +57,42 @@ const OTPScreen = ({route}) => {
   }, [timer]);
 
   const handleVerificationSuccess = async data => {
-    if (data.success) {
-      showNotification('OTP Verified', 'OTP Verified Successfully', 'success');
-   
-      let {  user,isNewUser} = data;
-     
-      setID(user._id);
-      setUserdetails(user);
-
-      await DataStore.storeData('access_token', user?.token);
-      await DataStore.storeData('userdetails', user);
-      if (isNewUser) {
+    try {
+      if (data.success) {
+       
         
-        navigation.dispatch(
-          CommonActions.navigate({
-            name: 'RegisterationScreen',
-          }),
-        );
+        let { user, isNewUser } = data;
+        
+        setID(user._id);
+        setUserdetails(user);
+
+        await DataStore.storeData('access_token', user?.token);
+        await DataStore.storeData('userdetails', user);
+        
+        if (isNewUser) {
+          navigation.dispatch(
+            CommonActions.navigate({
+              name: 'RegisterationScreen',
+            }),
+          );
+        } else {
+          navigation.dispatch(
+            CommonActions.navigate({
+              name: 'HomeScreen',
+            }),
+          );
+        }
+        showNotification('OTP Verified', 'OTP Verified Successfully', 'success');
       } else {
-        navigation.dispatch(
-          CommonActions.navigate({
-            name: 'HomeScreen',
-          }),
-        );
+        if(data?.message.typeof === 'string'){  
+          showNotification('Failed', data.message, 'danger');
+        }else{
+          showNotification('Failed', "Something went wrong", 'danger');
+        }
       }
-    } else {
-      showNotification('Invalid OTP', data.message, 'danger');
+    } catch (error) {
+      console.error('Error in handleVerificationSuccess:', error);
+      showNotification('Failed', 'Something went wrong', 'danger');
     }
   };
 

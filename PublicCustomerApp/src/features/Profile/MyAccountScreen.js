@@ -5,7 +5,7 @@ import {
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { CommonActions, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { DataStore } from '../../controllers/DataStore';
 import useUserInfoStore from '../../store/useUserInfoStore';
 import { utils } from '../../utils/Utils';
@@ -81,11 +81,8 @@ const MyAccountScreen = () => {
     await DataStore.storeData('refresh_token', null);
     await DataStore.storeData('userdetails', null);
     reset()
-    navigation.dispatch(
-      CommonActions.navigate({
-        name: 'LoginScreen',
-      }),
-    );
+    navigation.navigate('LoginScreen');
+    
   };
 
   // Delete account mutation

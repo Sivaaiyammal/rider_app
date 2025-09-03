@@ -25,7 +25,7 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
   const DriverArrivalScreen = ({onCancel,handleOverlay}) => {
   // Dummy data
   const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone,driverLatitude,driverLongitude} = useAssignedDriverInfoStore();
-  const {stops,otp,duration,totalDistance,vehicleType,estimatedFare} = useCurrentRideInfoStore();
+  const {stops,otp,duration,totalDistance,vehicleType,estimatedFare,paymentMethod} = useCurrentRideInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setMapStyle} = useMapStyleStore();
   const {t} = useTranslation();
@@ -176,6 +176,7 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
         waitingForDriverApproval={waitingForDriverApproval}
         height={height} // You can adjust this value or import height from utils
         onCancel={onCancel}
+        paymentMethod={paymentMethod}
       >
         <View style={{ flexDirection: 'row', flex: 1, marginBottom: 20 }}>
           <View style={styles.rideInfoItem}>

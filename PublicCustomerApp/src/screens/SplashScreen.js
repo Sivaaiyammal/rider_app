@@ -10,60 +10,12 @@ import useUserInfoStore from '../store/useUserInfoStore';
 import { GlobalContext } from '../context/GlobalContext';
 import DeviceInfo from 'react-native-device-info';
 const SplashScreen = () => {
-  const navigation = useNavigation();
-  const {addListener} = useContext(GlobalContext);
-  const {setLanguage} = useUserInfoStore();
-  useEffect(() => {
-    setTimeout(() => {
-      nextScreen();
-    }, 2000);
-  });
+
 
   const version = DeviceInfo.getVersion();
   const versionCode = DeviceInfo.getBuildNumber();
 
-  const nextScreen = useCallback(async () => {
-    const language = await DataStore.loadData('language');
-    const onBoarding = await DataStore.loadData('onBoarding');
-    const access_token = await DataStore.loadData('access_token');
-    
-    if (access_token.data) {
-      
-      addListener(access_token.data);
-      navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{ name: 'HomeScreen' }],
-            }),
-          );
-    } else if (language.data && language.data !== 'languageDone') {
-      // If language is stored as a language code (en, ta, hi, etc.)
-      setLanguage(language.data);
-      
-      if (onBoarding.data === 'onBoardingDone') {
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'LoginScreen' }],
-          }),
-        );
-      } else {
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{ name: 'OnBoarding' }],
-          }),
-        );
-      }
-    } else {
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'LanguageScreen' }],
-        }),
-      );
-    }
-  }, []);
+  
 
   return (
     <View style={SplashStyles.screen}>

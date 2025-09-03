@@ -89,6 +89,7 @@ export const yourRidesStyles = StyleSheet.create({
         fontFamily: Fonts.regular,
         fontSize: 12,
         color: colors.grey_xxdark,
+        width: '90%',
     },
     ridesContainerItemFare: {
         fontFamily: Fonts.medium,

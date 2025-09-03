@@ -14,6 +14,8 @@ const BottomSheetWrapper = forwardRef(({
   handleIndicatorStyle,
   handleComponent,
   style,
+  setBottomSheetScrollToBottom,
+  
   isLoading = false,
   ...props
 }, ref) => {
@@ -27,6 +29,8 @@ const BottomSheetWrapper = forwardRef(({
     <BottomSheet
       ref={ref}
       index={index}
+    
+     
       snapPoints={snapPointsArray}
       enablePanDownToClose={enablePanDownToClose}
       enableOverDrag={enableOverDrag}
@@ -89,6 +93,7 @@ BottomSheetWrapper.propTypes = {
   handleIndicatorStyle: PropTypes.object,
   handleComponent: PropTypes.element,
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  setBottomSheetScrollToBottom: PropTypes.func,
   isLoading: PropTypes.bool,
 };
 

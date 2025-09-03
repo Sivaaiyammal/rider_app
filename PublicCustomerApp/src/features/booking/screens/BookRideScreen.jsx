@@ -58,12 +58,13 @@ import ELECTRIC_HATCHBACK from "../../../assets/vehicle/HATCHBACK.webp"
 import ELECTRIC_SEDAN from "../../../assets/vehicle/SEDAN.webp"
 import ELECTRIC_SUV from "../../../assets/vehicle/SUV.webp"
 import ExSEDAN from "../../../assets/vehicle/ExSEDAN.webp"
+import ScrollHintChevron from '../../../components/Common/ScrollHintChevron';
 
 
 
 const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => {
     const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
-
+    const [hasAnyPreference,setHasAnyPreference] = useState(false)
         const getVehicleImage = (type) => {
             return VEHICLE_IMAGES[type] || ExSEDAN;
           };
@@ -89,7 +90,7 @@ const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => 
         
         const bounds = utils.getBoundingBox(coords)
        
-        const margin = [20,20,20,500]
+        const margin = [50, 100, 50, height*0.65]
         // Structure bounds properly: [bounds, margin] where bounds is [minLon, minLat, maxLon, maxLat]
         const finalBounds = [bounds, margin]
         setMapBounds(finalBounds);
@@ -111,46 +112,7 @@ const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => 
         <View style={styles.handle}></View>
       
         <RideInfo distance={rideDistance} duration={estimatedDuration} showPreference={setShowPreference}/>
-       {selectedVehicle && <LinearGradient
-              colors={['#ffffff00','#fff5cc']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={[styles.vehicleCard]}
-            >
-              <View style={styles.vehicleImageContainer}>
-                <Image
-                  source={getVehicleImage(selectedVehicle.type)}
-                  style={styles.vehicleImage}
-                  resizeMode="contain"
-                />
-              </View>
-              <View style={styles.vehicleInfoContainer}>
-                <View style={styles.rowBetween}>
-                  <View style={styles.vehicleNameContainer}>
-                
-                  <Text style={[styles.vehicleName]}>{VEHICLE_LABELS[selectedVehicle.type] || selectedVehicle.name}</Text>
-                  {isEv(selectedVehicle.type) && <View style={styles.evContainer}>
-                    <Text style={[styles.evText]}>EV</Text>
-                  </View>
-                  }
-                  </View>
-                  <Text style={[styles.price]}>{ `₹${selectedVehicle.minFare.toFixed(0)} - ₹${selectedVehicle.maxFare.toFixed(0)}`}</Text>
-                 
-                </View>
-                <View style={styles.rowBetween}>
-                  <View style={styles.timeRow}>
-                    <MaterialCommunityIcons name="clock" size={16} color={"#757575"} />
-                    <Text style={[styles.timeText]}>{selectedVehicle.estimatedDuration} {t('min')}</Text>
-                    {/* <Text style={[styles.dot]}>·</Text>
-                    <Text style={[styles.dropTime]}>{vehicle.dropat}</Text> */}
-                  </View>
-                  <View style={styles.passengerRow}>
-                    <MaterialCommunityIcons name="account" size={16} color={ "#757575"} />
-                    <Text style={[styles.passengerText]}>{selectedVehicle.capacity}</Text>
-                  </View>
-                </View>
-              </View>
-            </LinearGradient>}
+      
         </View>
     )
 }
@@ -164,6 +126,8 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const {setAvailableVehicles,availableVehicles,clearAvailableVehicles,setSelectedVehicle} = useRideVehicleStore()
     const [isLoading,setIsLoading] = useState(true)
     const [showPreference,setShowPreference] = useState(false)
+    const [hasAnyPreference,setHasAnyPreference] = useState(false)
+    const [scrolledUntillBottom,setScrolledUntillBottom] = useState(false)
     
     // Use the direction load hook to transform ride locations to direction points
     const { 
@@ -228,21 +192,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         
     }
 
-    const handleCurrentLocation = async () => {
-        // Set bounds for Chennai (approximate bounding box)
-        // Southwest: 12.834, 80.182 | Northeast: 13.200, 80.322
-        
-        const coords = [[rideStartLocation.longitude,rideStartLocation.latitude],[rideEndLocation.longitude,rideEndLocation.latitude],...rideWayPoints.map(waypoint => [waypoint.longitude,waypoint.latitude])]
-        
-        
-        const bounds = utils.getBoundingBox(coords)
-       
-        const margin = [100,100,100,500]
-        // Structure bounds properly: [bounds, margin] where bounds is [minLon, minLat, maxLon, maxLat]
-        const finalBounds = [bounds, margin]
-        
-        setMapBounds(finalBounds);
-    }
+   
 
     useEffect(() => {
         setDirectionReady(handleDirectionReady)
@@ -355,7 +305,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             const result = transformRideLocationsToDirectionPoints({
                 clearMarkers: true,
                 vehicleType: 'car',
-                padding: [50, 100, 50, height*0.6]
+                padding:  [50, 50, 50, height*0.65]
             });
             if (result.success) {
                 console.log('Direction points set successfully:', result.locationCount, 'locations');
@@ -469,7 +419,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
    </View>
    <BottomSheetWrapper
-        snapPoints={['50%','70%','90%']}
+        snapPoints={['60%']}
         index={0}
         enablePanDownToClose={false}
         enableOverDrag={true}
@@ -487,13 +437,14 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
       
     
    
-      <VehicleList isLoading={isLoading}  availableVehicles={availableVehicles}/>
+      <VehicleList isLoading={isLoading}  availableVehicles={availableVehicles} setScrolledUntillBottom={setScrolledUntillBottom}/>
       <View style={{height:100}}/>
            
 
    </BottomSheetWrapper>
  
           <View style={styles.bottomContainer}>
+          <ScrollHintChevron direction='down' style={{ top: -30, alignSelf: 'center' }} />
               <TouchableOpacity style={styles.CouponContainer} onPress={handleCouponPress}>
                  {!couponCode ? (
                    <>
@@ -512,6 +463,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
               </TouchableOpacity>
               <View style={styles.BookingButtonContainer}>
+             
                   <TouchableOpacity style={styles.BookingPaymentContainer} onPress={handlePaymentType}>
                       <View style={styles.BookingPaymentHeader}>
                           <Text style={styles.BookingPaymentHeaderText}>{t('pay_by')}</Text>
@@ -637,7 +589,7 @@ const styles = StyleSheet.create({
     },
     BookingButtonContainer:{
       
-        backgroundColor: "#0f223c",
+        backgroundColor: colors.black,
         width:"100%",
         borderTopLeftRadius:20,
         borderTopRightRadius:20,
@@ -663,7 +615,7 @@ const styles = StyleSheet.create({
     BookingButton:{
         width:"100%",
         padding:15,
-        backgroundColor:'#008d34',
+        backgroundColor:colors.green,
         borderRadius:20,
         borderWidth:1,
         borderColor:"white",

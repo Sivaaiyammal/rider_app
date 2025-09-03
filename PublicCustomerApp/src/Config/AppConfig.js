@@ -1,6 +1,4 @@
 module.exports = {
-
-
     APP_NAME: 'Namma Ooru Taxi',
     companyName: 'Namma Ooru Taxi',
     companyAddress: '123, Main Street, Anytown, USA',

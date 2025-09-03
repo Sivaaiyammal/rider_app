@@ -83,13 +83,17 @@ const TripDetailsModal = ({
         
         {/* Address Container */}
         <AddressContainer directions={stops} edit={true} live={true} />
-        <TouchableOpacity style={styles.paymentRow} onPress={onPaymentMethodChange}>
-          <Text style={styles.paymentLabel}>{t('change_payment_method')}</Text>
+        {/* <TouchableOpacity style={styles.paymentRow} onPress={onPaymentMethodChange}>
+          <Text style={styles.paymentLabel}>{t('change_payment_method_label')}</Text>
           <View style={styles.paymentValueWrap}>
             <Text style={styles.paymentValue}>{paymentMethod}</Text>
             <Icon name="chevron-right" size={20} color="#888" />
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
+        <View style={styles.paymentRow}>
+          <Text style={styles.paymentLabel}>{t('payment_method_label')}</Text>
+          <Text style={styles.paymentValue}>{paymentMethod}</Text>
+        </View>
      
        
       </ScrollView>

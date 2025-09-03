@@ -1,18 +1,26 @@
-import React from 'react';
-import { View, Text, StyleSheet,TouchableOpacity } from 'react-native';
+import React, { useState ,useEffect} from 'react';
+import { View, Text, StyleSheet,TouchableOpacity} from 'react-native';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import TripRouteIcon from "../../../../assets/icons/tripRouteIcon.svg"
-import RupeeIcon from "../../../../assets/icons/rupeeIcon.svg"
-import DurationIcon from "../../../../assets/icons/durationIcon.svg"
+
 import { Fonts } from "../../../../constants/constants"
 import PreferenceIcon from "../../../../assets/icons/PrefrenceIcon.svg"
+import useRideBookingInfo from "../../store/useRideBookingInfo"
 const RideInfo = ({
   distance = '30',
-  showPreference =null
+  showPreference =null,
+  
 }) => {
   const { t } = useTranslation();
+  const [hasAnyPreference,setHasAnyPreference] = useState(false)
+  const {femaleDriverOnly,safeNightRides} = useRideBookingInfo()
+  useEffect(()=>{
+    if(femaleDriverOnly || safeNightRides){
+      setHasAnyPreference(true)
+    }
+  },[femaleDriverOnly,safeNightRides])
   return (
     
     <View style={[styles.container, ]}>
@@ -30,6 +38,7 @@ const RideInfo = ({
             <Text style={[styles.infoText, textStyle]}>₹{minFare} - ₹{maxFare}</Text>
       </View> */}
       <TouchableOpacity style={styles.preferenceContainer} onPress={()=>{showPreference(true)}}> 
+        {hasAnyPreference && <View style={styles.preferenceIconContainer}/>}
             <PreferenceIcon width={35} height={35}/>
       </TouchableOpacity>
     </View>
@@ -56,6 +65,18 @@ const styles = StyleSheet.create({
     paddingHorizontal:10,
     alignItems:"center",
     
+  },
+  preferenceIconContainer: {
+    position:"absolute",
+    height:10,
+    width:10,
+    borderRadius:5,
+    right:0,
+    top:0,
+    zIndex:1,
+    backgroundColor:"red",
+    borderWidth:1,
+    borderColor:"white",
   },
   infoItem: {
     flexDirection: 'row',
