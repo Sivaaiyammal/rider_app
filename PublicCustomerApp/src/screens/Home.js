@@ -90,7 +90,7 @@ const Home = () => {
           setStackScreen('PaymentScreen', { });
           return;
         }
-        if(Response?.trip?.status == "COMPLETED" ){
+        if(Response?.trip?.status == "COMPLETED" && currentTrip ){
           setStackScreen('TripFeedbackScreen', { });
           return;
         }

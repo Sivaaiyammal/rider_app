@@ -7,6 +7,8 @@ import useAssignedDriverInfoStore from '../features/rideStatus/store/useAssigned
 import useWayPointReorderStore from '../features/booking/store/useWayPointReorderStore';
 import { TripStatus } from '../features/rideStatus/types/TripStatus';
 import { usePaymentStore } from '../features/payment/store/usePaymentStore';
+import { DataStore } from './DataStore';
+import PREF from '../storage/PREF';
 const SOCKET_URL = Config.ROOT_API_URL;
 
 
@@ -42,7 +44,7 @@ class WSService {
       this.useStackScreenStore.getState().setStackScreen('RideStatus',{});
     }
   }
-  onRideStatus(data){
+  async onRideStatus(data){
     console.log("onRideStatus",JSON.stringify(data))
     if(data?.tripStatus){
      
@@ -83,10 +85,16 @@ class WSService {
       }
 
       if(data?.tripStatus === 'COMPLETED' || data?.tripStatus === 'DIVERGED'){
+        const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
+        
+        console.log(currentTrip,"currentTrip")
        
-        // this.usePaymentStore.getState().setTripStatus(data?.tripStatus);
+      
+        if(currentTrip?.data){
         this.useStackScreenStore.getState().setStackScreen('TripFeedbackScreen',{});
         return;
+        }
+     
       }else if(data?.tripStatus === 'DROPPED'){
         this.useStackScreenStore.getState().setStackScreen('PaymentScreen',{})
         return;

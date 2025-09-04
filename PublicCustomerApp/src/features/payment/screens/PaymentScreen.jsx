@@ -24,15 +24,17 @@ import RazorpayCheckout from 'react-native-razorpay';
 import APIURLConfig from '../../../Config/APIURLConfig';
 import { showToast } from '../../../utils/Toast';
 import { showNotification } from '../../../components/NotificationManger';
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
 
 const PaymentScreen = () => {
 
   const {t} = useTranslation();
-  const {tripStatus,rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,paymentMethod,isLoading,setTripDetails,tripStops,fareDetails,bookingTime,supplierDetails,recipientDetails,adminDetails,paymentStatus,invoiceId } = usePaymentStore();
+  const {currentTripId,tripStatus,rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,paymentMethod,isLoading,setTripDetails,tripStops,fareDetails,bookingTime,supplierDetails,recipientDetails,adminDetails,paymentStatus,invoiceId } = usePaymentStore();
   const [showInvoice, setShowInvoice] = useState(false);
   const [svHeight, setSvHeight] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
   const isPaymentGateway = AppConfig.PAYMENT_METHODS === "PG";
+  const {setStackScreen} = useStackScreenStore();
   const handleInvoicePress = () => {
     setShowInvoice(true);
   };
@@ -114,6 +116,16 @@ const PaymentScreen = () => {
   const shouldShowScrollHint = contentHeight > svHeight + 20 ;
 
   const handlePayNow = async () => {
+
+
+       const driveracountNumber = driverDetails?.razorPayId;
+       if(!driveracountNumber){
+        showNotification("Driver account number not found","Please contact support","error");
+        return;
+       }
+
+       const splitAmount = (fareDetails?.breakdown?.subtotal+fareDetails?.breakdown?.taxes?.total).toFixed(2);
+    
    
       
         const receiptId = `Rept-${rideId}`;
@@ -121,17 +133,19 @@ const PaymentScreen = () => {
         const transfer=[
           {
             "account": "acc_RBAIEQk10FZmhU",
-            "amount": tripFare-10,
+            "amount": splitAmount*100,
             "currency": "INR",
           },
         ]
         const response = await createOrder({
           amount: tripFare,
           currency: 'INR',
-          receipt: receiptId,
-          transferList:transfer
+          receiptId: receiptId,
+          transferList:transfer,
+          tripId:currentTripId,
 
         });
+        console.log(response,"response")
 
         if(response?.success){
          
@@ -159,8 +173,11 @@ const PaymentScreen = () => {
             .then((data) => {
 
               console.log(JSON.stringify(data,null,2),"data")
+             
+              setStackScreen('TripFeedbackScreen',{});
               // handle success
               showNotification("Payment Successful",data?.razorpay_payment_id || 'Payment successful','success');
+              
             })
             .catch((error) => {
               // handle failure

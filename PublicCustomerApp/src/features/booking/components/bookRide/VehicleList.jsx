@@ -19,6 +19,7 @@ import ELECTRIC_SUV from "../../../../assets/vehicle/SUV.webp"
 import ExSEDAN from "../../../../assets/vehicle/ExSEDAN.webp"
 import SkeletonLoader from '../../../../components/Loaders/SkeletonLoader';
 import LinearGradient from 'react-native-linear-gradient';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
@@ -130,6 +131,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles,setScrolledUntillBot
                   <Text style={[styles.vehicleName]}>{VEHICLE_LABELS[vehicle.type] || vehicle.name}</Text>
                   {isEv(vehicle.type) && <View style={styles.evContainer}>
                     <Text style={[styles.evText]}>EV</Text>
+                    <Icon name="bolt" size={12} color="white"/>
                   </View>
                   }
                   </View>
@@ -238,12 +240,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     paddingVertical: 2,
     borderRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap:2,
   },
   evText: {
-    fontSize: 12,
-    fontFamily:Fonts.medium,
+    fontSize: 10,
+    fontFamily:Fonts.semi_bold,
     color: colors.white,
-    fontStyle:"italic",
+    letterSpacing:1,
+   
   },
   vehicleNameText: {
     fontSize: 16,
