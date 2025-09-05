@@ -688,6 +688,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     backgroundColor: colors.white,
+    borderTopWidth: 1,
+    borderTopColor: colors.grey_light,
   },
   bottomBtnTxt: {
     fontFamily: Fonts.regular,

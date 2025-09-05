@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 
 import SideDrawer from '../../../components/Drawer/SideDrawer';
 import {colors, Fonts} from '../../../constants/constants';
-import BottomSheet from '../../../components/BottomSheet';
+
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import LocationHeader from '../components/LocationHeader';
 import HistoryCard from '../../shared/component/HistoryCard';
@@ -25,7 +25,32 @@ import useLocationStore from '../../../store/useLocationStore';
 import  LocationTypes  from '../../booking/types/LocationTypes.json';  
 import useRideBookingLocationStore from '../../booking/store/useRideBookingLocationStore'
 import AdaptiveText from '../../../components/Common/AdaptiveText';
-import { height } from '../../../utils/Utils';
+import { height, width } from '../../../utils/Utils';
+import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
+
+const BottomSheetHeader = ({makeRidePlan}) => {
+  const { t } = useTranslation();
+  
+  return (
+    <View style={styles.bottomSheetHeader}>
+      <View style={styles.bottomSheetHeaderIconContainer}>
+    <MapIcon />
+    </View>
+    <View style={styles.bottomSheetHeaderContainer}>
+    <TouchableOpacity
+          style={styles.searchContainer}
+          onPress={makeRidePlan}
+          
+        >
+          <SearchIcon />
+          <AdaptiveText style={styles.searchContainerText}>
+            {t('where_do_you_want_to_go')}
+          </AdaptiveText>
+        </TouchableOpacity>
+    </View>
+    </View>
+  )
+}
 
 const MapScreen = () => {
   const { t } = useTranslation();
@@ -205,22 +230,26 @@ const MapScreen = () => {
             <LocationHeader toggleMenu={toggleMenu} showMenu={showMenu} />
       </Animated.View>
 
-      <BottomSheet minHeight={height*0.4}  HeaderComponent={<MapIcon />}>
-        <TouchableOpacity
-          style={styles.searchContainer}
-          onPress={makeRidePlan}
-          
-        >
-          <SearchIcon />
-          <AdaptiveText style={styles.searchContainerText}>
-            {t('where_do_you_want_to_go')}
-          </AdaptiveText>
-        </TouchableOpacity>
+      <BottomSheetWrapper 
+       snapPoints={['40%','80%']}
+       index={0}
+       enablePanDownToClose={false}
+       enableOverDrag={true}
+       enableScroll={true}
+       handleComponent={()=>BottomSheetHeader({makeRidePlan})}
+       handleIndicatorStyle={{
+         backgroundColor: '#DEDEDE',
+         width: 50,
+         height: 4,
+       }}>
+        <View style={styles.bottomSheetContent}>
+       
 
         <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
 
         <HistoryCard selectCallback={onHistoryPress} header={false} bottomborder={false} />
-      </BottomSheet>
+        </View>
+      </BottomSheetWrapper>
 
       {showMenu && <SideDrawer handleMenu={handleMenu} />}
       <ErrorMessage />
@@ -232,7 +261,7 @@ export default MapScreen;
 
 const styles = StyleSheet.create({
   headerContainer: {
-    zIndex: 2,
+    zIndex: 1,
   },
   gradientOverlay: {
     height: 50,
@@ -244,10 +273,10 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flexDirection: 'row',
-    width: '90%',
     alignSelf: 'center',
     gap: 10,
-    marginTop: 20,
+    width:"100%",
+  
     alignItems: 'center',
     padding: 16,
     borderRadius: 16,
@@ -328,5 +357,40 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontFamily: Fonts.medium,
     fontSize: 12,
+  },
+  bottomSheetHeader: {
+   
+    display:"flex",
+    flexDirection:"column",
+    justifyContent:"space-between",
+    alignSelf:"center",
+    alignItems:"left",
+    position:"absolute",    
+    width:width,
+    
+    flex:1,
+   
+    gap:5,
+    top:-height*0.05,
+    
+  },
+  bottomSheetHeaderIconContainer: {
+  paddingHorizontal:10,
+  },
+  bottomSheetHeaderContainer: {
+    width: '100%',
+    paddingTop:15,
+    backgroundColor:colors.white,
+    paddingBottom:10,
+    paddingHorizontal:10,
+    borderTopLeftRadius:20,
+    borderTopRightRadius:20,
+    borderTopWidth:1,
+    borderTopColor:colors.grey,
+  },
+  bottomSheetContent: {
+    marginTop:height*0.06,
+    flex:1,
+  
   },
 });

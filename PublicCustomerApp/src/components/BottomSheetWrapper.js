@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
     minHeight: 200, // Ensure minimum height for content
   },
   scrollContent: {
+   
     paddingHorizontal: 10,
     flexGrow: 1,
     backgroundColor: 'white',
