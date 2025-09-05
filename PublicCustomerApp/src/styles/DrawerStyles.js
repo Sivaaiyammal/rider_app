@@ -50,7 +50,18 @@ export const drawerStyles = StyleSheet.create({
     fontFamily:Fonts.semi_bold,
     fontSize:16,
     color:'white',
-    width:"65%"
+    width:"75%",
+    textTransform:"capitalize"
+  },
+  ratingText:{
+    fontFamily:Fonts.regular,
+    fontSize:12,
+    color:'white',
+   
+    textTransform:"capitalize",
+    letterSpacing:1.5,
+    width:"105%"
+    
   },
   contentContainer:{
     marginTop:10,

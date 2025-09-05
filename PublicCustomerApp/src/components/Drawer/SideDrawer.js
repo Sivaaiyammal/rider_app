@@ -25,13 +25,14 @@ import LinearGradient from 'react-native-linear-gradient';
 import {colors} from '../../constants/constants';
 const SideDrawerV2 = ({ handleMenu }) => {
   const { t } = useTranslation();
-  const { userdetails } = useUserInfoStore();
+  const { userdetails,ratingData } = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
   const { unreadCount } = useSupportStore();
 
   const navigation = useNavigation();
   const slideAnim = useRef(new Animated.Value(-300)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+ 
 
 
 
@@ -165,7 +166,10 @@ const SideDrawerV2 = ({ handleMenu }) => {
         <LinearGradient colors={[colors.grey_dark,'#303030']}  start={{ x: 1, y: 0 }}
           end={{ x: 0, y: 0 }}style={drawerStyles.profileContainer}>
           <ProfileImage width={60} height={60} />
+          <View style={{flexDirection:'column',alignItems:'flex-start',gap:0,flex:1}}>
           <Text style={drawerStyles.userName}  numberOfLines={1} >{userdetails?.name}</Text>
+          <Text style={drawerStyles.ratingText} >★ {ratingData?.currentrating.toFixed(1)} ({ratingData?.count})</Text>
+          </View>
         </LinearGradient>
         <View style={drawerStyles.contentContainer}>
           <ScrollView>

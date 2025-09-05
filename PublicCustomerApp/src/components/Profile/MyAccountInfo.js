@@ -10,7 +10,7 @@ import { lightThemeStyles, darkThemeStyles } from '../../styles/ColorSet'
 
 const MyAccountInfo = ({ infos }) => {
 
-    
+
 
 
     return (

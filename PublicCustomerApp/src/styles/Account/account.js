@@ -159,6 +159,36 @@ const styles = StyleSheet.create({
         position: 'absolute'
 
     },
+    ratingContainer: {
+        alignItems: 'center',
+        marginTop: 10,
+        marginBottom: 5,
+    },
+    starContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 5,
+    },
+    star: {
+        fontSize: 20,
+        marginHorizontal: 2,
+    },
+    partialStarContainer: {
+        position: 'relative',
+        marginHorizontal: 2,
+    },
+    partialStarFill: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        overflow: 'hidden',
+    },
+    ratingText: {
+        fontSize: 14,
+        fontFamily: Fonts.medium,
+        color: '#757575',
+        textAlign: 'center',
+    },
 
 });
 

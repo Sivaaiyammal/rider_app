@@ -46,7 +46,7 @@ const FavLabelItems = ({onLabelPress}) => {
             </View>
            <View key={index} style={styles.FavouriteAddressItemTextContainer}>
            <Text style={styles.FavouriteAddressItemText}>{item.label}</Text>
-           <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth }]}>{utils.formatAddressName(item.locationData)}</Text>
+           <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth-5 }]}>{utils.formatAddressName(item.locationData)}</Text>
        </View>
        </TouchableOpacity>
         ))
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     FavouriteAddressItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 20,
+        gap: 15,
        
         paddingVertical: 0,
         borderRadius: 16,

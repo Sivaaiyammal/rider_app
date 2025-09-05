@@ -28,8 +28,11 @@ const MyAccountScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const { goBack,reset } = useStackScreenStore();
-  const { userdetails } = useUserInfoStore();
+  const { userdetails ,ratingData   } = useUserInfoStore();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+
+  
   
   
 
@@ -118,6 +121,7 @@ const MyAccountScreen = () => {
       <MyAccountProfileImage
         name={utils.toTitleCase(userdetails?.name || '')}
         id={userdetails?._id || ''}
+        ratingData={ratingData}
       />
       <MyAccountInfo infos={Info_Items} />
       

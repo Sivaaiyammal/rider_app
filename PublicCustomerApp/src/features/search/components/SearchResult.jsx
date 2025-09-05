@@ -190,6 +190,8 @@ export const SearchResultV2 = (props) => {
         sections = transformData(search_data);
     }
     
+
+    console.log("sections",props.search_data);
   
     
 
@@ -369,8 +371,9 @@ export const SearchResultV2 = (props) => {
            
             <View
               style={{
-                width: "20%",
+                marginRight:10,
                 alignItems: "center",
+                marginLeft:10,
                 justifyContent: "center",
               }}
             >
@@ -483,13 +486,14 @@ const styles =
         
       },
       itemText: {
-        fontSize: 17,
+        
+        fontSize: 16,
         fontFamily: Fonts.light,
         color: colors.font_black,
       },
       highlightText: {
         fontFamily: Fonts.medium,
-        fontSize: 18,
+        fontSize: 16,
             textTransform:"capitalize"
       },
       itemSubText: {
@@ -532,6 +536,7 @@ const styles =
         gap:10
       },
       categoryText: {
+       
         fontSize: 12,
         fontFamily: Fonts.medium,
         color: "#0080ff",

@@ -49,7 +49,7 @@ const Home = () => {
   const { setStackScreen } = useStackScreenStore();
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
-  const { setUserdetails ,setID,id,setUserFavPlaces} = useUserInfoStore();
+  const { setUserdetails ,setID,id,setUserFavPlaces,setRatingData} = useUserInfoStore();
   const { setMapShown , mapShown,userLocation} = useMapStore();
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
@@ -79,12 +79,18 @@ const Home = () => {
     try {
       
       const Response = await getUserStats(location,currentTripId);
+      console.log("Response",JSON.stringify(Response));
       
       if(Response?.success ){
 
         if(Response?.userStats?.favPlaces?.length > 0){
           setUserFavPlaces(Response?.userStats?.favPlaces);
         }
+        if(Response?.userStats?.rating){
+          setRatingData(Response?.userStats?.rating);
+        }
+
+
 
         if(Response?.trip?.status == "DROPPED" || Response?.trip?.status == "CANCELLED"){
           setStackScreen('PaymentScreen', { });

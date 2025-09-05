@@ -31,7 +31,7 @@ const HistoryCard = ({ selectCallback, header = true, bottomborder = true,fromSe
                 <HistoryIcon width={50} height={50} />
               </View>
               <View style={styles.textContainer}>
-                <Text style={[styles.name,fromSearchScreen&&{fontSize:15}]}>{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</Text>
+                <Text style={[styles.name,fromSearchScreen&&{fontSize:15}]} numberOfLines={1} ellipsizeMode="tail">{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</Text>
                 {item.address && <Text style={[styles.address,fromSearchScreen&&{fontSize:14}]} numberOfLines={1} ellipsizeMode="tail">{item.address}</Text>}
               </View>
             </View>
@@ -68,7 +68,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
 
     borderBottomColor: colors.grey,
-    gap: 20,
+    gap: 15,
+    marginBottom:5,
   },
   iconContainer: {
     width: 40,

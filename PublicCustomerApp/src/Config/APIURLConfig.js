@@ -8,18 +8,18 @@ module.exports = {
     // ROOT_API_URL: 'http://10.0.2.2:3000',
     // ROOT_API_URL: 'https://063b-49-47-217-185.ngrok-free.app',
     // ROOT_API_URL:'https://d637-2406-7400-ff03-ad2b-7069-a339-5b33-1023.ngrok-free.app',
-    // ROOT_API_URL: 'http://192.168.0.122:3001',
-    // RIDE_MATCH_SOCKET_URL: 'http://192.168.0.122:5001',
+    ROOT_API_URL: 'http://192.168.29.23:3000',
+    RIDE_MATCH_SOCKET_URL: 'http://192.168.29.23:5001',
     // ROOT_API_URL: 'https://tracker.vmmaps.com/trackerbackend',
     // RIDE_MATCH_SOCKET_URL: 'https://tracker.vmmaps.com/ridematch',
-    ROOT_API_URL: 'http://localhost:3000',
-    RIDE_MATCH_SOCKET_URL: 'http://localhost:5001',
+    // ROOT_API_URL: 'http://localhost:3000',
+    // RIDE_MATCH_SOCKET_URL: 'http://localhost:5001',
     MAP_MATCH_URL: 'https://neapi.vmmaps.com/ne/api?op=trace_route',
     PUBLICRIDEDASHBORAD_URL: 'https://tracker.vmmaps.com/publicride',
     ROUTE_API_URL: 'https://ne.vmmaps.com/routing/v1/route',
 
-    RAZORPAY_KEY_ID: 'rzp_test_R75d0mHv19fFjk',
-    RAZORPAY_KEY_SECRET: '0drRCP1ycpp4GBMGUOuGVjYL',
+    RAZORPAY_KEY_ID: 'rzp_test_RD6VUkxDSED5E7',
+    RAZORPAY_KEY_SECRET: 'B384XNZHql5slT9yaXAgKBfT',
 
 
 

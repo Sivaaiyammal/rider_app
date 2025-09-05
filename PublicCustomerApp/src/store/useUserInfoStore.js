@@ -34,6 +34,9 @@ const useUserInfoStore = create(set => ({
     await DataStore.storeData('language', language);
     set({ language });
   },
+
+  ratingData:null,
+  setRatingData: ratingData => set({ ratingData }),
 }));
 
 export default useUserInfoStore;

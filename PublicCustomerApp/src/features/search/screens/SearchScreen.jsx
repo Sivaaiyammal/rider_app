@@ -24,6 +24,7 @@ import StateVectorConatiner from '../../../components/StateVectorConatiner';
 import { clearSingleStateVector, clearAllStateVectors } from "../../../components/Native/NESearch";
 import HistoryCard from '../../shared/component/HistoryCard';
 import { DataStore } from '../../../controllers/DataStore';
+import {height} from '../../../utils/Utils';
 
 import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';
@@ -41,6 +42,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const [onSearchResults, setOnSearchResults] = useState([]);
   const {location, setSelectedInput} = useLocationStore();
   const [stateVector, setStateVector] = useState(null);
+  const [hasSearchResults, setHasSearchResults] = useState(true);
   const { t } = useTranslation(); 
   
   const searchInputRef = useRef(null);
@@ -112,9 +114,13 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
       // Create new AbortController for this request
       abortControllerRef.current = new AbortController();
 
-      const stateVectorStr = JSON.stringify(statevectore);
+      // Normalize state vector to ensure consistent cache keys
+      const normalizedStateVector = statevectore || {};
+      const stateVectorStr = JSON.stringify(normalizedStateVector);
       const cacheKey = `${value.toLowerCase().trim()}_${stateVectorStr}`;
       const cachedResult = searchCache.get(cacheKey);
+
+      console.log("Cache lookup - Key:", cacheKey, "Found:", !!cachedResult);
 
       if (cachedResult && (Date.now() - cachedResult.timestamp < CACHE_EXPIRY)) {
         setOnSearchResults(cachedResult.results);
@@ -131,7 +137,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         searchString: value,
         mapUnitName: selectedRegion?.value || "india",
         stateVector: statevectore,
-        resultCount: 10,
+        resultCount: 50,
         langCode: 'en',
         debug: false,
         onlineOnly: false,
@@ -139,22 +145,38 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         isPoiSearch: false,
         radius: 50000,
         category: [],
-        signal: abortControllerRef.current.signal
+       
       };
 
       setIsLoading(true);
       const searchResults = await performSearch(searchParams);
+      console.log("searchResults",value,JSON.stringify(searchResults));
       setIsLoading(false);
       setOnSearchResults(searchResults);
+      // Check if searchResults has the expected structure and contains data
+      const hasResults = searchResults && 
+        ((searchResults.unifiedSearchData && 
+          searchResults.unifiedSearchData.unifiedSearchData && 
+          searchResults.unifiedSearchData.unifiedSearchData.length > 0) ||
+        (searchResults.searchData && 
+          ((searchResults.searchData.fastMatch && searchResults.searchData.fastMatch.length > 0) ||
+           (searchResults.searchData.fullSearch && searchResults.searchData.fullSearch.length > 0))));
+
       
-      searchCache.set(cacheKey, { results: searchResults, timestamp: Date.now() });
+      setHasSearchResults(hasResults);
+      
+      
+      if(hasResults){
+        searchCache.set(cacheKey, { results: searchResults, timestamp: Date.now() });
+        console.log("Cache set - Key:", cacheKey, "Size:", searchCache.size);
+      }
  
     } catch (e) {
-      if (e.name === 'AbortError') {
-        console.log('Search request was cancelled');
+      if (e.name === 'AbortError' || e.message?.includes('cancelled') || e.message?.includes('Search operation was cancelled')) {
+        // Silently handle cancellation - this is expected behavior when typing fast
         return;
       }
-      console.error('Error performing search:', e);
+      console.error('Error performing search:',value, e);
       setOnSearchResults([]);
     } finally {
       setIsLoading(false);
@@ -162,8 +184,12 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   }, [location, setOnSearchResults, selectedRegion]);
 
   const debouncedSetSearchUnit = useMemo(() => debounce((query) => {
-    if (query.trim()) searchAPI(query);
-    else setOnSearchResults([]);
+    const trimmedQuery = query.trim();
+    if (trimmedQuery) {
+      searchAPI(trimmedQuery);
+    } else {
+      setOnSearchResults([]);
+    }
   }, 300), [searchAPI]);
 
   useEffect(() => {
@@ -186,8 +212,15 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   // Memoize the input change handler to avoid unnecessary re-renders
   const _onChangeText = useCallback(
     value => {
-      debouncedSetSearchUnit(value);
       setSearchTxt(value);
+      // Only trigger search if the value has meaningful content (not just spaces)
+      if (value.trim().length > 0) {
+        debouncedSetSearchUnit(value);
+      } else {
+        // Clear results immediately when input is empty
+        setOnSearchResults([]);
+        debouncedSetSearchUnit.cancel();
+      }
     },
     [debouncedSetSearchUnit],
   );
@@ -261,7 +294,11 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
 
   const handleSearchFocus = () => {
     setIsSearchFocused(true);
-    if (searchTxt.trim()) debouncedSetSearchUnit(searchTxt);
+    // Only trigger search on focus if there's text AND no current results
+    // This prevents unnecessary API calls when just focusing the input
+    if (searchTxt.trim() && (!onSearchResults || onSearchResults.length === 0)) {
+      debouncedSetSearchUnit(searchTxt);
+    }
   };
 
   const handleSearchBlur = () => {
@@ -391,10 +428,11 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
                 />
               )}
             {isLoading ? (
-              <SearchResultSkeleton count={8} />
-            ) : onSearchResults && onSearchResults.length === 0 ? (
+              <SearchResultSkeleton count={8} 
+              />
+            ) : (!hasSearchResults || (onSearchResults && onSearchResults.length === 0 ) )? (
               <View style={styles.noResultsContainer}>
-                <Ionicons name="search-outline" size={40} color={colors.grey} />
+                <Ionicons name="search-outline" size={40} color={colors.black} />
                 <Text style={styles.noResultsText}>No results found</Text>
               </View>
             ) : (
@@ -479,16 +517,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 15,
     paddingHorizontal: 12,
-    backgroundColor: colors.grey_light,
+    backgroundColor: colors.grey_xxlight,
+    borderWidth: 1,
+    borderColor: colors.grey_light,
     marginTop: 5,
+    
     height: 50,
   
   },
   searchContainer: {
     flex: 1,
     flexDirection: 'row',
+    gap: 10,
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
   },
   closeBtn: {
     width: '12%',
@@ -573,15 +615,17 @@ const styles = StyleSheet.create({
   },
 
   noResultsContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    height:height*0.8,
+    
+    justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingVertical: 20,
+    paddingTop: height*0.1,
+    
   },
   noResultsText: {
     fontSize: 16,
     fontFamily: Fonts.medium,
-    color: colors.grey_dark,
+    color: colors.black,
     marginTop: 10,
   },
   regionModalOverlay: {
@@ -635,9 +679,10 @@ const styles = StyleSheet.create({
   },
   bottomBtn: {
     position: 'absolute',
+    
     bottom: 0,
     alignSelf: 'center',
-    paddingVertical: 10,
+    paddingVertical: 15,
     width: '100%',
     alignItems: 'center',
     flexDirection: 'row',
