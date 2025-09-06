@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   },
   mapIconContainer: {
    position: 'absolute',
-   top: -height * 0.03,
+   top: -25,
    left: 10,
    zIndex: 1000,
   },

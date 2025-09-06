@@ -12,7 +12,7 @@ module.exports = {
     WAIT_TIME_CHARGES_PER_MINUTE: 2,
     MAX_WAIT_TIME: 60,
     RIDE_CANCELLED_MIDWAY_FUEL_CHARGE: true,
-    PAYMENT_METHODS:"PG",
+    PAYMENT_METHODS:"NOPG",
     // PG - Payment Gateway
     // NOPG - Non Payment Gateway
 }

@@ -367,11 +367,9 @@ const styles = StyleSheet.create({
     alignItems:"left",
     position:"absolute",    
     width:width,
-    
     flex:1,
-   
     gap:5,
-    top:-height*0.05,
+    top:-40,
     
   },
   bottomSheetHeaderIconContainer: {

@@ -168,7 +168,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
           <ProfileImage width={60} height={60} />
           <View style={{flexDirection:'column',alignItems:'flex-start',gap:0,flex:1}}>
           <Text style={drawerStyles.userName}  numberOfLines={1} >{userdetails?.name}</Text>
-          <Text style={drawerStyles.ratingText} >★ {ratingData?.currentrating.toFixed(1)} ({ratingData?.count})</Text>
+        {ratingData?.currentrating && <Text style={drawerStyles.ratingText} >★ {ratingData?.currentrating?.toFixed(1)} ({ratingData?.count})</Text>}
           </View>
         </LinearGradient>
         <View style={drawerStyles.contentContainer}>
