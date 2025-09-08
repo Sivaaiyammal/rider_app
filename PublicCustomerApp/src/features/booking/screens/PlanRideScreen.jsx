@@ -159,7 +159,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   const onSearchClick = (type) =>{
     setStackScreen("SearchScreen",{
       onSearchClick:onSearchClickResultCallback,
-      searchType:type
+      searchType:type,
+      label:type === LocationTypes.DESTINATION_LOCATION ? t('locate_drop_location') : type === LocationTypes.WAYPOINT_LOCATION ? t('locate_stop') : t('locate_pickup_location')
     })
   }
 
@@ -189,7 +190,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
     console.log("pick location")
     setStackScreen('PickLocationScreen',{
       onPickLocationResultCallback:onPickLocationResultCallback,
-      locationType:LocationTypes.DESTINATION_LOCATION
+      locationType:LocationTypes.DESTINATION_LOCATION,
+      label:t('locate_drop_location')
     })
   }
 

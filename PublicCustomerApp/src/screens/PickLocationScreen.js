@@ -24,7 +24,7 @@ import { useDebouncedAPICall } from '../hooks/useDebounce';
 import { useTranslation } from 'react-i18next';
 import LinearGradient from 'react-native-linear-gradient';
 
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,title=null}) => {
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,title=null,label=null}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation} = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -128,7 +128,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   return (
     <>
       <NavBar
-        title={title ? title : t('locate_on_map')}
+        title={ t('locate_on_map')}
         onBackPress={() => goBack()}
       />
       <View style={[styles.container]}>
@@ -149,12 +149,12 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           <CurrentLocationIcon width={25} height={25} />
         </TouchableOpacity>
         <LinearGradient
-          colors={['transparent','#303030']}
+          colors={['transparent','#303030',]}
           start={{ x: 1, y: 0 }}
           end={{ x: 0, y: 0 }}
           style={styles.bottomContainerWarrapper}
         >
-          <Text style={styles.bottomContainerText}> {t('pick_location')}</Text>
+          <Text style={styles.bottomContainerText}> {label ? label : t('pick_location')}</Text>
         </LinearGradient>
         <View style={styles.AddressContainer}>
           {/* <View style={styles.AddressContainerIcon}>
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
    padding:0,
    margin:5,
    borderTopLeftRadius:13,
-   width:"50%"
+   width:"70%"
   },
   shadowContainer: {
    

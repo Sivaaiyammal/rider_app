@@ -7,7 +7,7 @@ import {
   } from 'react-native';
   import React, {useEffect} from 'react';
   import { useTranslation } from 'react-i18next';
-  import {Fonts} from '../../../constants/constants';
+  import {Fonts,colors} from '../../../constants/constants';
   import ProfileImage from '../../../assets/image/svgIcons/profileImage.svg';
   import useLocationStore from '../../../store/useLocationStore';
   import SearchAPI from '../../../controllers/NEMap/Search';
@@ -16,6 +16,8 @@ import {
 import CurrentLocationIcon from '../../../assets/icons/CurrentLocationIcon.svg';
 import { height } from '../../../utils/Utils';
 import locationTask from '../../../controllers/GetCurrentLocation';
+import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
+
   
   const LocationHeader = (props) => {
     const { t } = useTranslation();
@@ -71,7 +73,7 @@ import locationTask from '../../../controllers/GetCurrentLocation';
           <View style={{marginLeft: 10}}>
             <Text style={styles.title}>{t('your_location')}</Text>
             <Text style={[styles.address, {maxWidth: responsiveMaxWidth-10}]} numberOfLines={1} ellipsizeMode="tail">
-              {currentLocationName ? currentLocationName : <ActivityIndicator />}
+              {currentLocationName ? currentLocationName : <SkeletonLoader  height={20} width={responsiveMaxWidth-50} backgroundColor={colors.grey_xlight} />}
             </Text>
           </View>
         </View>

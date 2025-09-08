@@ -32,7 +32,7 @@ import { useTranslation } from 'react-i18next';
 const CACHE_EXPIRY = 5 * 60 * 1000;
 const searchCache = new Map();
 
-const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwaitingTime=false,title=null,index=null}) => {
+const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwaitingTime=false,title=null,index=null,label=null}) => {
   const [searchTxt,setSearchTxt] = useState("");
   const {goBack,setStackScreen} = useStackScreenStore();
   const [isLoading,setIsLoading] = useState(false);
@@ -288,7 +288,8 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
       fromaddWayPoint: fromaddWayPoint,
       getwaitingTime: getwaitingTime,
       title: title,
-      index: index
+      index: index,
+      label: label
     });
   }
 

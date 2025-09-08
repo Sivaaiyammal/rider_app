@@ -18,10 +18,11 @@ import WaitingTimeModal from './WaitingTimeModal';
 import { Fonts } from '../../../../constants/constants';
 import  FontAwesome  from 'react-native-vector-icons/FontAwesome5';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useTranslation } from 'react-i18next';
 const ITEM_HEIGHT = 50;
 
 const WaypointContainer = () => {
-
+  const { t } = useTranslation();
   
 
   // const [data, setData] = useState([]);
@@ -155,7 +156,7 @@ const WaypointContainer = () => {
         searchType:LocationTypes.WAYPOINT_LOCATION,
         fromaddWayPoint:index != 0 && index != finalData.length-1 ? true : false,
         getwaitingTime:index !== 0 && index !== finalData.length-1 ? true : false,
-        title:index == 0 ? "Add a Pickup Location" :index == finalData.length-1 ? "Add a Drop Location" : "Add a Stop"
+        label:index == 0 ? t('locate_pickup_location') :index == finalData.length-1 ? t('locate_drop_location') : t('locate_stop',{stop:index})
       })
     }
     

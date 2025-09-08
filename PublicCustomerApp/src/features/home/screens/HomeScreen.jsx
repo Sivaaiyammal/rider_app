@@ -28,6 +28,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { height, width } from '../../../utils/Utils';
 import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
 
+
 const BottomSheetHeader = ({makeRidePlan}) => {
   const { t } = useTranslation();
   

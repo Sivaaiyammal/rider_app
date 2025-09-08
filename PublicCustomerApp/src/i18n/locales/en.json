@@ -376,5 +376,9 @@
     "driver_is_rude_or_unprofessional": "Driver is rude or unprofessional",
     "vehicle_is_not_clean_or_safe": "Vehicle is not clean or safe",
     "unexpected_route_or_detour": "Unexpected route or detour",
-    "reach_your_waypoints_in": "Reach {stop}  in"
+    "reach_your_waypoints_in": "Reach {stop}  in",
+    "locate_drop_location": "Mark Drop Location",
+    "locate_pickup_location": "Mark Pickup Location",
+    "locate_stop": "Mark Stop {stop}",
+    "locate_places_to_save": "Mark Place to save"
 }

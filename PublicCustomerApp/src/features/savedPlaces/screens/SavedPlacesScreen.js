@@ -50,7 +50,8 @@ const SavedPlacesScreen = () => {
   const handleAddPlace = () => {
     setStackScreen('SearchScreen',{
       onSearchClick: handleSearchCallback,
-      searchType:'savedPlaces'
+      searchType:'savedPlaces',
+      label:t('locate_places_to_save')
     });
   };
 
