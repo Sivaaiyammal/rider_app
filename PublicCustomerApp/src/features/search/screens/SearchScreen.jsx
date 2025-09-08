@@ -137,7 +137,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         searchString: value,
         mapUnitName: selectedRegion?.value || "india",
         stateVector: statevectore,
-        resultCount: 50,
+        resultCount: 20,
         langCode: 'en',
         debug: false,
         onlineOnly: false,

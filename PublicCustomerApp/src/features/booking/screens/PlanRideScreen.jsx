@@ -3,12 +3,13 @@ import React, {useCallback, useState,useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
 import NavBar from '../../../components/NavBar';
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
-import useMapStore from '../../../features/map/store/useMapStore';
 import {addLocation} from '../../../styles/AddLocationStyles';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import PropTypes from 'prop-types';
 
 
 import Schdule from '../../../assets/image/svgIcons/schdule.svg';
+import DashedLine from '../../../components/Common/DashedLine';
 
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
 import useRideSelectionStore from '../../../store/useRideSelectionStore';
@@ -28,24 +29,15 @@ import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import LocationTypes from '../types/LocationTypes.json';
 import { useDebouncedAPICall } from '../../../hooks/useDebounce';
 import useRideBookingInfo from '../store/useRideBookingInfo';
-import { width } from '../../../utils/Utils';
 import { Fonts } from '../../../constants/constants';
-import { storeLocation } from '../../../storage/userLocalStorage';    
 
 const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   const { t } = useTranslation();
-  const {userdetails,homelocation,worklocation,setHomelocation,setWorklocation,userFavPlaces} = useUserInfoStore();
+  const {userdetails,userFavPlaces} = useUserInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
-  const {
-    setOnSearchResults,
-    setMapMarkers,
-    setDirectionPoints,
-    setSearchUnit,
-   
-  } = useMapStore();
 
-  const {selectedRide, setSelectedRide, scheduleDateTime, setScheduleDateTime, tripFor} =
+  const {selectedRide, setSelectedRide, scheduleDateTime, setScheduleDateTime} =
     useRideSelectionStore();
   const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails} = useRideBookingInfo()
 
@@ -71,21 +63,6 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
     setScheduleDateTime(null)
     goBack();
   };
-
-  const handlePlaceSave = useCallback((location,locationType) => {
-   
-    if(locationType === "Home"){
-      location.type = LocationTypes.HOME_LOCATION
-      setHomelocation(location)
-    }else{
-      location.type = LocationTypes.WORK_LOCATION
-      setWorklocation(location)
-    }
-    storeLocation(locationType,location)
-    goBack()
-    
-   
-  }, []);
 
   const handleFavouriteLocationPress = useCallback((location) => {
     if(location.locationData){
@@ -279,7 +256,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
             setStackScreen("SavedPlacesScreen",{})
           }} type="add" />
         </ScrollView>
-        <View style={styles.dottedLine}/>
+        <DashedLine style={styles.dottedLine} />
         <HistoryContainer selectCallback={handleHistoryLocationClick} bottomborder = {false} fromSearchScreen={true}/>
 
         <View style={styles.pickLocationContainer}> 
@@ -323,6 +300,11 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
   );
 };
 
+PlanRideScreen.propTypes = {
+  selectedDestination: PropTypes.object,
+  showScheduleTime: PropTypes.bool,
+};
+
 const styles = StyleSheet.create({
   PlanRideScreen: {
     flex: 1,
@@ -341,9 +323,6 @@ const styles = StyleSheet.create({
     flexGrow: 0,
   },
   dottedLine:{
-    borderStyle: 'dashed',
-    borderBottomWidth: 1,
-    borderColor: '#bdbdbd',
     marginVertical: 5,
     marginHorizontal: 10,
   },

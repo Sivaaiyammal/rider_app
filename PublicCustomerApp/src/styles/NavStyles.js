@@ -10,18 +10,28 @@ export const navStyles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'row',
     alignSelf: 'center',
+   
   },
   leftIcon: {
-    position:'absolute',
-    left:0,
-    padding: 15,
-   
-    alignItems: 'center',
+    
+    
+    minHeight:50,
+    position:"absolute",
+    justifyContent:"center",
+    alignItems:"center",
+    zIndex:5
+
+    
+    
   },
   leftBtn: {
-    
-    paddingRight:30,
+
+    paddingRight:40,
     paddingLeft:10,
+  
+    alignItems:'center'
+    
+    
     
   
    

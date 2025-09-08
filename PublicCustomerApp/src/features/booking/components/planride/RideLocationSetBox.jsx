@@ -10,6 +10,7 @@ import LocationTypes from '../../types/LocationTypes.json';
 import useRideBookingLocationStore from '../../store/useRideBookingLocationStore';
 import {utils} from '../../../../utils/Utils';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import DashedLine from '../../../../components/Common/DashedLine';
 
 
 
@@ -42,7 +43,7 @@ const RideLocationSetBox = ({
         <View style={[styles.iconItem, { backgroundColor: '#4caf5030' }]}> 
           <View style={styles.iconSubItem} />
         </View>
-        <View style={styles.dottedVerticalLine} />
+        <DashedLine color="grey" strokeWidth={1} dashLength={3} dashGap={5} vertical={true} />
         </View>
         <View style={[styles.locationContainer]}>
           <Text style={styles.label}>{startLocationLable}</Text>
@@ -51,13 +52,13 @@ const RideLocationSetBox = ({
       </TouchableOpacity>
       <TouchableOpacity style={styles.stopContainer} onPress={()=>onLocationClick(LocationTypes.WAYPOINT_LOCATION)}>
         <View style={styles.iconContainer}>
-        <View style={styles.dottedVerticalLine} />
+       {rideWayPoints.length> 0 && <DashedLine color="grey" strokeWidth={1} dashLength={3} dashGap={5} vertical={true} />}
         { rideWayPoints.length > 0 && 
         <>
         <View style={styles.iconItem}>
           <View style={[styles.iconSubItem,{backgroundColor:'black'}]} />
         </View>
-         <View style={styles.dottedVerticalLine} />
+        <DashedLine color="grey" strokeWidth={1} dashLength={3} dashGap={5} vertical={true} />
          </>
         }
         </View>
@@ -87,7 +88,7 @@ const RideLocationSetBox = ({
       {/* Destination Row */}
       <TouchableOpacity style={[styles.row]} onPress={()=>onLocationClick(LocationTypes.DESTINATION_LOCATION)} activeOpacity={0.7}>
         <View style={styles.iconContainer}>
-        <View style={styles.dottedVerticalLine} />
+        <DashedLine color="grey" strokeWidth={1} dashLength={3} dashGap={5} vertical={true} />
         
          <DestinationIcon  height={23} width={23} />
         <View style={[styles.dottedVerticalLine, { borderColor: 'transparent' }]} />
