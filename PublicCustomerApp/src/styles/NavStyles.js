@@ -19,6 +19,11 @@ export const navStyles = StyleSheet.create({
     alignItems: 'center',
   },
   leftBtn: {
+    
+    paddingRight:30,
+    paddingLeft:10,
+    
+  
    
   },
   rightIcon: {
