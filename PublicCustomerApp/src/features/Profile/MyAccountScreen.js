@@ -21,6 +21,7 @@ import Profile from '../../assets/image/account/profile.svg';
 import MyAccountHeader from '../../components/Profile/MyAccountHeader';
 import MyAccountProfileImage from '../../components/Profile/MyAccountProfileImage';
 import MyAccountInfo from '../../components/Profile/MyAccountInfo';
+import MyAccountStats from '../../components/Profile/MyAccountStats';
 import SwipeBtn from '../../components/SwipeBtn';
 import { useStackScreenStore } from '../../store/useStackScreenStore';  
 
@@ -28,7 +29,7 @@ const MyAccountScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const { goBack,reset } = useStackScreenStore();
-  const { userdetails ,ratingData   } = useUserInfoStore();
+  const { userdetails ,ratingData  ,totalSpend,cancelledTrips,completedTrips,totalTrips} = useUserInfoStore();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
 
@@ -124,8 +125,8 @@ const MyAccountScreen = () => {
         ratingData={ratingData}
       />
       <MyAccountInfo infos={Info_Items} />
-      
-      <View style={{alignContent:'center',justifyContent:'center',marginTop:30}}>
+      <MyAccountStats stats={{totalSpend,cancelledTrips,completedTrips,totalTrips}} />
+      <View style={{alignContent:'center',justifyContent:'center',marginTop:30,marginBottom:30}}>
       <SwipeBtn name={t('swipe_to_logout')} onHandleSwipeEnd={Logout} />
       </View>
       

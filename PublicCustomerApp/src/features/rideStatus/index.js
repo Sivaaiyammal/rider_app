@@ -33,6 +33,7 @@ const RideStatus = () => {
   
   const { t } = useTranslation();
   const [showOverlay, setShowOverlay] = useState(false);
+  const {incrementCancelledTrips} = useUserInfoStore();
   
   const { duration,totalDistance,tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled} = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
@@ -64,8 +65,11 @@ const RideStatus = () => {
         showNotification('Ride cancelled successfully');
         setShowBottomSheet(false);
         setShowBookingCancelModel(false);
+
         await DataStore.clearData(PREF.CURRENT_TRIP)
         
+
+        incrementCancelledTrips()
 
         if (tripStatus === TripStatus.PICKEDUP && response?.totalFare?.fareDetails?.fare) {
           setOngoingingTripCancelled(true);

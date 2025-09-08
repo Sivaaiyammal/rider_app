@@ -27,6 +27,18 @@ const useUserInfoStore = create(set => ({
   userFavPlaces:null,
   setUserFavPlaces: userFavPlaces => set({ userFavPlaces }),
 
+  
+  setTotalSpend: totalSpend => set({ totalSpend }),
+  setTotalTrips: totalTrips => set({ totalTrips }),
+  setCancelledTrips: cancelledTrips => set({ cancelledTrips }),
+  setCompletedTrips: completedTrips => set({ completedTrips }),
+
+  incrementTotalTrips: () => set(state => ({ totalTrips: state.totalTrips + 1 })),
+  incrementCompletedTrips: () => set(state => ({ completedTrips: state.completedTrips + 1 })),
+  incrementCancelledTrips: () => set(state => ({ cancelledTrips: state.cancelledTrips + 1 })),
+  incrementTotalSpend: (amount) => set(state => ({ totalSpend: state.totalSpend + amount })),
+
+
   language:null,
   setLanguage: async (language) => {
     console.log('language', language);

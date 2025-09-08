@@ -9,6 +9,7 @@ import { TripStatus } from '../features/rideStatus/types/TripStatus';
 import { usePaymentStore } from '../features/payment/store/usePaymentStore';
 import { DataStore } from './DataStore';
 import PREF from '../storage/PREF';
+import useUserInfoStore  from '../store/useUserInfoStore';
 const SOCKET_URL = Config.ROOT_API_URL;
 
 
@@ -31,6 +32,7 @@ class WSService {
     this.useAssignedDriverInfoStore = useAssignedDriverInfoStore
     this.useRideMatchStore = useRideMatchStore  
     this.usePaymentStore = usePaymentStore
+    this.useUserInfoStore = useUserInfoStore
   }
 
   driverAllocated(data){
@@ -87,10 +89,19 @@ class WSService {
       if(data?.tripStatus === 'COMPLETED' || data?.tripStatus === 'DIVERGED'){
         const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
         
-        console.log(currentTrip,"currentTrip")
+        
        
       
         if(currentTrip?.data){
+         
+        this.useUserInfoStore.getState().incrementCompletedTrips()
+        try {
+          if(data?.tripData?.tripFare){
+          this.useUserInfoStore.getState().incrementTotalSpend(data?.tripData?.tripFare)
+          }
+        } catch (error) {
+          console.log(error,"error")
+        }
         this.useStackScreenStore.getState().setStackScreen('TripFeedbackScreen',{});
         return;
         }

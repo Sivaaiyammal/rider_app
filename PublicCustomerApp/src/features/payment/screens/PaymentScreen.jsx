@@ -25,6 +25,7 @@ import APIURLConfig from '../../../Config/APIURLConfig';
 import { showToast } from '../../../utils/Toast';
 import { showNotification } from '../../../components/NotificationManger';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
+import  useUserInfoStore  from '../../../store/useUserInfoStore';
 
 const PaymentScreen = () => {
 
@@ -35,6 +36,7 @@ const PaymentScreen = () => {
   const [contentHeight, setContentHeight] = useState(0);
   const isPaymentGateway = AppConfig.PAYMENT_METHODS === "PG";
   const {setStackScreen} = useStackScreenStore();
+  const { incrementTotalSpend,incrementCompletedTrips } = useUserInfoStore();
   const handleInvoicePress = () => {
     setShowInvoice(true);
   };
@@ -173,7 +175,8 @@ const PaymentScreen = () => {
             .then((data) => {
 
               console.log(JSON.stringify(data,null,2),"data")
-             
+              incrementTotalSpend(tripFare)
+              incrementCompletedTrips()
               setStackScreen('TripFeedbackScreen',{});
               // handle success
               showNotification("Payment Successful",data?.razorpay_payment_id || 'Payment successful','success');

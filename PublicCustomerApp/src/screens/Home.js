@@ -49,7 +49,7 @@ const Home = () => {
   const { setStackScreen } = useStackScreenStore();
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
-  const { setUserdetails ,setID,id,setUserFavPlaces,setRatingData} = useUserInfoStore();
+  const { setUserdetails ,setID,id,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips} = useUserInfoStore();
   const { setMapShown , mapShown,userLocation} = useMapStore();
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
@@ -85,6 +85,24 @@ const Home = () => {
 
         if(Response?.userStats?.favPlaces?.length > 0){
           setUserFavPlaces(Response?.userStats?.favPlaces);
+        }
+        if(Response?.userStats?.stats){
+           
+           const stats = Response?.userStats?.stats;
+           console.log("stats",JSON.stringify(stats));
+           
+              
+            setTotalSpend(stats?.totalSpends || 0);
+          
+         
+            setCancelledTrips(stats?.cancelledTrips || 0);
+          
+  
+            setCompletedTrips(stats?.completedTrips || 0);
+          
+          
+            setTotalTrips(stats?.totalTrips || 0);
+          
         }
         if(Response?.userStats?.rating){
           setRatingData(Response?.userStats?.rating);

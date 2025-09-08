@@ -43,6 +43,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
   const { initializeSocket, startMatching } = useRideMatching();
   const { id: userId } = useUserInfoStore();
   const { setCurrentRideInfo,setTripStatus } = useCurrentRideInfoStore();
+  const { incrementTotalTrips } = useUserInfoStore();
   /**
    * Prepare booking payload with dummy values for testing
    * @returns {Object} Formatted payload for booking API
@@ -145,6 +146,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         resetRideMatchStatus();        
         await initializeSocket();
         startMatching(data.tripId, userId,data?.trip?.vehicleType);
+        incrementTotalTrips()
         setCurrentRideInfo(data)
         setTripStatus(TripStatus.PENDING)
         showNotification('Booking Successful', 'Your ride has been booked successfully!', 'success');
