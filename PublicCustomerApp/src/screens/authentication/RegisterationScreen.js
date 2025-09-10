@@ -121,11 +121,11 @@ const RegisterationScreen = () => {
    
       await DataStore.storeData('userdetails', user);
     
-        navigation.dispatch(
-          CommonActions.navigate({
-            name: 'HomeScreen',
-          }),
-        );
+        
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'HomeScreen' }],
+        });
       
     } else {
       const errorMessage = data?.message || t('registration_failed');

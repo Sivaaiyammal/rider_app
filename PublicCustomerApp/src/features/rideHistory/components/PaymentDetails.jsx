@@ -34,7 +34,9 @@ const PaymentDetails = ({
         
         <View key={index} style={styles.row}>
           <Text style={styles.label}>{item.name}</Text>
-          <Text style={styles.value}> ₹{(item.amount).toFixed(2)}</Text>
+          <Text style={styles.value}>
+            ₹{item.amount != null ? Number(item.amount).toFixed(2) : '0.00'}
+          </Text>
         </View>
      
     )
@@ -47,7 +49,9 @@ const PaymentDetails = ({
       
       <View style={styles.row}>
         <Text style={styles.totalLabel}>{t('total_fare')}</Text>
-        <Text style={styles.totalValue}>₹{(finalFare).toFixed(2)}</Text>
+        <Text style={styles.totalValue}>
+          ₹{finalFare != null ? Number(finalFare).toFixed(2) : '0.00'}
+        </Text>
       </View>
     </View>
   );

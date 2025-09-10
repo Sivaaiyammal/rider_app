@@ -13,7 +13,8 @@ const CouponContainer = ({ onApply }) => {
   const [allCoupons, setAllCoupons] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { selectedVehicle } = useRideVehicleStore();
-  const { couponCode, setCouponCode } = useRideBookingInfo();
+  const { couponCode, setCouponCode,regionOfficeCode } = useRideBookingInfo();
+
 
   const handleApply = (coupon) => {
     setCouponCode(coupon.code);
@@ -34,6 +35,7 @@ const CouponContainer = ({ onApply }) => {
     setIsLoading(true);
     const payload = {
       fare: selectedVehicle?.minFare || 0,
+      regionCode:regionOfficeCode,
     };
     
     try {

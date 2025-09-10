@@ -15,6 +15,7 @@ const SOCKET_URL = Config.ROOT_API_URL;
 
 
 
+
 class WSService {
   constructor() {
     this.socket = null;
@@ -89,7 +90,10 @@ class WSService {
       if(data?.tripStatus === 'COMPLETED' || data?.tripStatus === 'DIVERGED'){
         const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
         
+
         
+        
+        console.log("currentTrip",currentTrip)
        
       
         if(currentTrip?.data){
@@ -102,6 +106,8 @@ class WSService {
         } catch (error) {
           console.log(error,"error")
         }
+
+        console.log("data?.tripData?.tripFare",data?.tripData?.tripFare)
         this.useStackScreenStore.getState().setStackScreen('TripFeedbackScreen',{});
         return;
         }
@@ -208,6 +214,11 @@ class WSService {
         this.socket.on('passangerLocationChange', this.passangerLocationChange);
 
         // this.socket.on('passangerTripFareUpdate', this.driverFareUpdate);
+
+        this.socket.on('disconnect', () => {
+          console.log("socket disconnected")
+        
+        })
 
         this.socket.on('connect_error', error => {
           console.error(

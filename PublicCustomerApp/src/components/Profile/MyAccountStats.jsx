@@ -63,7 +63,9 @@ const MyAccountStats = ({ stats }) => {
     {
       key: 'totalSpend',
       label: 'Total Spend',
-      value: typeof totalSpend === 'number' ? `₹${totalSpend.toFixed(0)}` : totalSpend,
+      value: totalSpend == null
+        ? '-'
+        : (typeof totalSpend === 'number' ? `₹${totalSpend.toFixed(0)}` : totalSpend),
       iconName: 'wallet-outline',
       iconLib: 'Ionicons',
       bgColor: colors.yellow_light,

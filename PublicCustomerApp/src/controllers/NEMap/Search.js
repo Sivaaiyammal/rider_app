@@ -41,7 +41,7 @@ class SearchAPI {
             SearchAPI.CACHE[longitude + latitude] = place
             return place
         }
-        return features[0]
+        return features?.[0] || "unnamed"
 
     }
 

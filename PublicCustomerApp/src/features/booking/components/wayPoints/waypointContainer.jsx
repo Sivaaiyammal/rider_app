@@ -50,6 +50,9 @@ const WaypointContainer = () => {
       }
     }
   }, [reOrderWaypoints.length]);
+
+
+  console.log("reOrderWaypoints-----------------",reOrderWaypoints)
   
 
 
@@ -88,9 +91,11 @@ const WaypointContainer = () => {
       setReOrderWaypoints([...processedData]);
       setLastAddStopIndex(lastAddStopIndex);
     }
-  }, []);
+  }, [reOrderWaypoints]);
 
   const handleAddWaypoint = (waypointItem,waypointIndex) => {
+
+   
     // Map separately first
     const currentData = [...reOrderWaypoints];
     const currentFinalData = [...currentData];
@@ -101,10 +106,16 @@ const WaypointContainer = () => {
         currentFinalData.splice(lastAddStopIndex, 0, addStopItem);
       }
     }
+
+
+  
+ 
     
     const AddStopIndex = currentFinalData.findIndex(item => item.type === 'add-stop');
     const updatedData = [...currentData];
     updatedData.splice(AddStopIndex, 0, waypointItem);
+
+
     
     // Transform the updated data with proper types
     const transformedData = updatedData.map((item, index) => ({
@@ -140,6 +151,7 @@ const WaypointContainer = () => {
 
 
   const onSearchClickResultCallback=(item,searchType,index)=>{
+
     
     handleAddWaypoint(item,index)
     goBack()
@@ -182,13 +194,16 @@ const WaypointContainer = () => {
   const handleReplaceWaypoint = (item,index) => {
   
     const updatedWaypoints = [...reOrderWaypoints];
-    updatedWaypoints[index-1] = item;
+    console.log("addIndex",lastAddStopIndex)
+    const indexToReplace = index>lastAddStopIndex?index-1:index;
+    updatedWaypoints[indexToReplace] = item;
     setReOrderWaypoints(updatedWaypoints);
   }
 
   const onSearchReplaceWaypointCallback = (item,searchType,index) => {
     console.log("item",item)
     console.log("index",index)
+  
     handleReplaceWaypoint(item,index)
     goBack()
   }
@@ -198,8 +213,7 @@ const WaypointContainer = () => {
       onSearchClick:onSearchReplaceWaypointCallback,
       index:index,
       searchType:LocationTypes.WAYPOINT_LOCATION,
-     
-      title:index == 0 ? "Add a Pickup Location" :index == finalData.length-1 ? "Add a Drop Location" : "Add a Stop"
+      label:index == 0 ? t('locate_pickup_location') :index == finalData.length-1 ? t('locate_drop_location') : t('locate_stop',{stop:index})
     })
   }
 

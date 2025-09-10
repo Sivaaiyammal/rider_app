@@ -380,5 +380,9 @@
     "locate_drop_location": "Mark Drop Location",
     "locate_pickup_location": "Mark Pickup Location",
     "locate_stop": "Mark Stop {stop}",
-    "locate_places_to_save": "Mark Place to save"
+    "locate_places_to_save": "Mark Place to save",
+    "driver_wait_time": "Driver Wait Time",
+    "stop_index": "Stop {stop}",
+    "edit_pickup_location": "Edit Pickup Location"
+    
 }

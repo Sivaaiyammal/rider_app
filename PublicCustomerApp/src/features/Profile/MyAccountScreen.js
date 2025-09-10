@@ -85,7 +85,10 @@ const MyAccountScreen = () => {
     await DataStore.storeData('refresh_token', null);
     await DataStore.storeData('userdetails', null);
     reset()
-    navigation.navigate('LoginScreen');
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'LoginScreen' }],
+    });
     
   };
 

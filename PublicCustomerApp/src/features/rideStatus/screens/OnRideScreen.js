@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { getVehicleImage } from '../types/vehicleImd';
 import {Fonts} from '../../../constants/constants';
@@ -39,7 +39,11 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
     setExpanded(prev => !prev);
   };
 
-  
+  useEffect(() => {
+    setTimeout(() => {
+      SetViewBoundingBox()
+    }, 1000)
+  }, [stops])
 
   
 

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Animated, ScrollView } from 'react-native';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -24,10 +24,11 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
 
-const VehicleList = ({ isLoading = false ,availableVehicles,setScrolledUntillBottom}) => {
+const VehicleList = ({ isLoading = false ,availableVehicles}) => {
   const { t } = useTranslation();
   const {selectedVehicle,setSelectedVehicle} = useRideVehicleStore()
   const [slideAnim] = useState(new Animated.Value(0));
+  const firstRenderEndedRef = useRef(false);
 
   useEffect(() => {
     // Animate the component in only when vehicles are loaded
@@ -40,11 +41,20 @@ const VehicleList = ({ isLoading = false ,availableVehicles,setScrolledUntillBot
     }
   }, [availableVehicles]);
 
+  useEffect(() => {
+    if (!firstRenderEndedRef.current && availableVehicles && availableVehicles.length > 0) {
+      console.timeEnd('availableVehicles->firstRender');
+      firstRenderEndedRef.current = true;
+    }
+  }, [availableVehicles]);
+
   // Removed redundant vehicle selection - handled by parent component
 
   const handleVehicleSelect = useCallback((vehicle) => {
     setSelectedVehicle(vehicle);
   }, [setSelectedVehicle]);
+
+
 
   
 
@@ -61,7 +71,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles,setScrolledUntillBot
     return (
       <View style={styles.container}>
         {skeletonItems.map((_, index) => (
-          <View key={index} style={styles.vehicleCard}>
+          <View key={index} style={[styles.vehicleCard,{backgroundColor:colors.grey_xxlight}]}>
             <View style={styles.vehicleImageContainer}>
               <SkeletonLoader width={56} height={56} borderRadius={8} />
             </View>
@@ -71,9 +81,9 @@ const VehicleList = ({ isLoading = false ,availableVehicles,setScrolledUntillBot
                 <SkeletonLoader width="30%" height={16} borderRadius={4} />
               </View>
               <View style={styles.rowBetween}>
-                <View style={styles.timeRow}>
+                <View style={[styles.timeRow,{gap:2}]}>
                   <SkeletonLoader width={16} height={16} borderRadius={8} />
-                  <SkeletonLoader width="40%" height={13} borderRadius={4} />
+                
                   <SkeletonLoader width={8} height={8} borderRadius={4} />
                   <SkeletonLoader width="30%" height={13} borderRadius={4} />
                 </View>
@@ -89,12 +99,14 @@ const VehicleList = ({ isLoading = false ,availableVehicles,setScrolledUntillBot
     );
   };
 
-  if (isLoading || !availableVehicles) {
+  if (availableVehicles?.length === 0) {
     return renderSkeletonLoader();
   }
   const isEv = (vehicleType) => {
     return vehicleType.includes("ELECTRIC");
   };
+
+
 
   return (
     <View 
@@ -103,7 +115,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles,setScrolledUntillBot
     >
       
       
-      {availableVehicles.map((vehicle) => {
+      {availableVehicles?.map((vehicle) => {
         const isSelected = selectedVehicle?.id === vehicle.id;
         return (
           <TouchableOpacity
@@ -135,7 +147,13 @@ const VehicleList = ({ isLoading = false ,availableVehicles,setScrolledUntillBot
                   </View>
                   }
                   </View>
-                  <Text style={[styles.price]}>{ `₹${vehicle.minFare.toFixed(0)} - ₹${vehicle.maxFare.toFixed(0)}`}</Text>
+                  <Text style={[styles.price]}>
+                    {vehicle.minFare != null && vehicle.maxFare != null
+                      ? `₹${vehicle.minFare.toFixed(0)} - ₹${vehicle.maxFare.toFixed(0)}`
+                      : t && typeof t === 'function'
+                        ? "--"// fallback if translation function exists
+                        : '--'}
+                  </Text>
                  
                 </View>
                 <View style={styles.rowBetween}>
@@ -165,7 +183,6 @@ VehicleList.propTypes = {
   initialValue: PropTypes.object,
   availableVehicles: PropTypes.array,
   isLoading: PropTypes.bool,
-  setScrolledUntillBottom: PropTypes.func,
 };
 
 const styles = StyleSheet.create({

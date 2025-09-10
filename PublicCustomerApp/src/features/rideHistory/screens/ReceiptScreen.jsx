@@ -143,7 +143,8 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
   };
 
   const formatCurrency = (amount) => {
-    return `₹${parseFloat(amount).toFixed(2)}`;
+    if (isNaN(amount) || amount === null || amount === undefined) return '₹0.00';
+    return `₹${Number(amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const formatDuration = (minutes) => {

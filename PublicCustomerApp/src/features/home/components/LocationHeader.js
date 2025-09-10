@@ -39,8 +39,8 @@ import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
           const response = await search.reverseGeocode(coordinates);
           if (response) {
               setCurrentLocationName(
-              response.properties.street ||
-                response.properties.name ||
+              response?.properties?.street ||
+                response?.properties?.name ||
                 'Unnamed Location',
             );
           }

@@ -26,7 +26,7 @@ import DataStore from '../../../controllers/DataStore';
 import PREF from '../../../storage/PREF';
 import { height } from '../../../utils/Utils';
 
-const WaypointScreen = ({}) => {
+const WaypointScreen = ({fromPlanScreen=false}) => {
   const {tripId}=useCurrentRideInfoStore()
   const { t } = useTranslation();
   const [isLoading] = React.useState(false);
@@ -34,10 +34,14 @@ const WaypointScreen = ({}) => {
   const [fareData, setFareData] = React.useState(null);
   const [isFareLoading, setIsFareLoading] = React.useState(false);
   const {rideStartLocation,rideEndLocation,rideWayPoints,setRideStartLocation,setRideEndLocation,setRideWayPoints} =  useRideBookingLocationStore()
-  const {reOrderWaypoints,setReOrderWaypoints,setReachedStops,reachedStops,waitingForDriverApproval,setWaitingForDriverApproval,onGoingRideStops} = useWayPointReorderStore()
+  const {reOrderWaypoints,setReOrderWaypoints,setReachedStops,reachedStops,waitingForDriverApproval,setWaitingForDriverApproval,onGoingRideStops,setOnGoingRideStops} = useWayPointReorderStore()
   const [distance,setDistance] = React.useState(0)
   const [duration,setDuration] = React.useState(0)
   const { goBack,setStackScreen } = useStackScreenStore();
+
+ 
+
+
 
 
   // Use the waypoint direction load hook
@@ -56,12 +60,17 @@ const WaypointScreen = ({}) => {
     
   };
 
+  console.log("onGoingRideStops",onGoingRideStops)
+  console.log("reOrderWaypoints",reOrderWaypoints)
   
+
 
   useEffect(() => {
 
     if (!reOrderWaypoints.length) {
+    
       let Arr = []
+      console.log("fromPlanScreen",fromPlanScreen)
       if (!onGoingRideStops) {
         if (rideStartLocation) {
           Arr.push(rideStartLocation)
@@ -72,6 +81,9 @@ const WaypointScreen = ({}) => {
         if (rideEndLocation) {
           Arr.push(rideEndLocation)
         }
+        console.log("Arr",Arr)
+
+     
 
      
 
@@ -81,6 +93,7 @@ const WaypointScreen = ({}) => {
           id: waypoint.id || `waypoint-${index}-${Date.now()}`,
           type: index === 0 ? LocationTypes.START_LOCATION : LocationTypes.WAYPOINT_LOCATION
         }));
+        console.log("transformedData",transformedData)
         setReOrderWaypoints(transformedData)
       } else {
         Arr=onGoingRideStops
@@ -103,6 +116,8 @@ const WaypointScreen = ({}) => {
         }));
 
 
+       
+
 
         setReOrderWaypoints(transformedData)
       }
@@ -123,7 +138,7 @@ const WaypointScreen = ({}) => {
       setDuration(Math.round(data?.duration/60))
     }
     if(data?.distance){
-      setDistance((data?.distance/1000)?.toFixed(1))
+      setDistance(data?.distance != null ? (data.distance / 1000).toFixed(1) : null)
     }
 }
 
@@ -265,19 +280,29 @@ useEffect(() => {
 
 
   const ConformEditedRoute = async() => {
+    const filterKeys = (obj) => {
+      const { latitude, longitude, type, locationFrom, id, ...rest } = obj;
+      return rest;
+    };
+
     const updatedBalanceStops = reOrderWaypoints.map(item => ({
       address: item.address,
-      location: item.location?item.location:[item.longitude,item.latitude],
-      isReached: item.isReached,
-      waitingTime: item.waitingTime,
+      location: item.location ? item.location : [item.longitude, item.latitude],
+      isReached: item?.isReached || false,
+      waitingTime: item?.waitingTime || 0,
+      ...filterKeys(item)
     }));
 
-    const updatedRideWayPoints = [...reachedStops.map(item=>({
-      address: item.address,
-      location: item.location?item.location:[item.longitude,item.latitude],
-      isReached: item.isReached,
-      waitingTime: item.waitingTime,
-    })),...updatedBalanceStops]
+    const updatedRideWayPoints = [
+      ...reachedStops.map(item => ({
+        address: item.address,
+        location: item.location ? item.location : [item.longitude, item.latitude],
+        isReached: item?.isReached || false,
+        waitingTime: item?.waitingTime || 0,
+        ...filterKeys(item)
+      })),
+      ...updatedBalanceStops
+    ];
 
     const finalWaypoints = updatedRideWayPoints.map((item, index) => {
       let name;

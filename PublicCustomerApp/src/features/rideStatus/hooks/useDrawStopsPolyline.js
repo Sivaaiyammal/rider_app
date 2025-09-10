@@ -18,10 +18,12 @@ const useDrawStopsPolyline = () => {
     }, [points]);
   
     const fetchStops = useCallback(async () => {
-        if (!points || points.length == 2) {
+        console.log("points",points);
+        if (!points || points.length === 1) {
             setPolyline(null);
             return;
         }
+        console.log("pointsiii",points);
         const routeData = await findRoute(points)
         
         if (!routeData?.trip?.legs || routeData.trip.legs.length === 0) {

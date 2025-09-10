@@ -54,9 +54,16 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
     setStackScreen('PickLocationScreen',{
       onPickLocationResultCallback:handlePickLocation,
       locationType:LocationTypes.START_LOCATION,
-      defaultLocation:item
+      defaultLocation:item,
+      label:t('edit_pickup_location')
     })
   }
+
+  useEffect(() => {
+    setTimeout(() => {
+      SetViewBoundingBox()
+    }, 1000)
+  }, [stops])
 
   
 
@@ -178,7 +185,7 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
         onCancel={onCancel}
         paymentMethod={paymentMethod}
       >
-        <View style={{ flexDirection: 'row', flex: 1, marginBottom: 20 }}>
+        <View style={{ flexDirection: 'row', flex: 1, marginBottom: 0 }}>
           <View style={styles.rideInfoItem}>
             <Text style={styles.rideInfoLabel}>{t('duration')}</Text>
             <Text style={styles.rideInfoValue}>{duration || '--'} Min</Text>
@@ -320,6 +327,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     resizeMode: 'contain',
+    transform: [{ scaleX: -1 }],
    
   },
   vehicleNum: {

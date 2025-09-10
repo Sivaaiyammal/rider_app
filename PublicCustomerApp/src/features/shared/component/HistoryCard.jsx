@@ -60,7 +60,8 @@ HistoryCard.propTypes = {
 const styles = StyleSheet.create({
   container: {
     marginTop: 15,
-    marginHorizontal: 20,
+    marginHorizontal: 15,
+ 
   },
   historyItem: {
     flexDirection: 'row',

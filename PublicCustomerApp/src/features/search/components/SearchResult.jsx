@@ -191,10 +191,6 @@ export const SearchResultV2 = (props) => {
     }
     
 
-    console.log("sections",props.search_data);
-  
-    
-
     const [expandedSections, setExpandedSections] = useState({});
 
     const toggleSectionExpand = (sectionTitle) => {

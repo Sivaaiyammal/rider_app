@@ -68,7 +68,8 @@ const RideDetailScreen = ({ TripData }) => {
       locationName: stop.name,
       location: stop.location,
       isReached: stop.isReached,
-      waitingTime: stop.waitingTime
+      waitingTime: stop.waitingTime,
+      arrivalTime: stop.arrivalTime,
     }));
   };
 
@@ -88,10 +89,11 @@ const RideDetailScreen = ({ TripData }) => {
         
         <TripMetaInfo 
           date={formatDate(rideData.bookingTime)} 
-          tripId={rideData._id} 
+          tripId={rideData.rideId} 
         />
-        
+     
         <AddressContainer directions={transformStops(rideData.stops)} />
+        
         
         <TripPersonVehicle 
           driverName={rideData.driverInfo?.driverName} 
@@ -106,8 +108,8 @@ const RideDetailScreen = ({ TripData }) => {
         
         <TripStats 
           isNotCompleted={rideData?.status != "COMPLETED" && rideData?.status != "DIVERGED"}
-          totalDistance={rideData.finalDistance || rideData.estimatedDistance} 
-          totalDuration={rideData.finalDuration || rideData.estimatedDuration} 
+          totalDistance={rideData.finalDistance } 
+          totalDuration={rideData.finalDuration } 
           totalFare={rideData.fareDetails?.fare} 
         />
         </View>
@@ -164,8 +166,8 @@ const RideDetailScreen = ({ TripData }) => {
       <ReceiptScreen 
         rideId={rideData?.rideId}
         tripFare={rideData.fareDetails?.fare}
-        tripDistance={rideData.finalDistance || rideData.estimatedDistance}
-        tripDuration={rideData.finalDuration || rideData.estimatedDuration}
+        tripDistance={rideData.finalDistance }
+        tripDuration={rideData.finalDuration }
         driverDetails={rideData.driverInfo}
         vehicleDetails={rideData.driverInfo}
         tripStops={rideData.stops}
@@ -184,8 +186,8 @@ const RideDetailScreen = ({ TripData }) => {
       <InvoiceScreen 
        rideId={rideData?.rideId}
        tripFare={rideData.fareDetails?.fare}
-       tripDistance={rideData.finalDistance || rideData.estimatedDistance}
-       tripDuration={rideData.finalDuration || rideData.estimatedDuration}
+       tripDistance={rideData.finalDistance }
+       tripDuration={rideData.finalDuration}
        driverDetails={rideData.driverInfo}
        vehicleDetails={rideData.driverInfo}
        tripStops={rideData.stops}

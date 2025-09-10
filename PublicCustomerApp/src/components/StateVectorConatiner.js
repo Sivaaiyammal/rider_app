@@ -58,16 +58,17 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     width: "90%",
     alignSelf: "center",
-    paddingVertical:5,
+    marginBottom: 10,
+
     
   },
   stateBtn: {
     flexDirection: "row",
-    margin: 2,
+
     paddingVertical: 1,
-    paddingHorizontal: 10,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
+    paddingHorizontal: 5,
+    borderRadius: 10,
+    backgroundColor: colors.grey_xlight,
     gap: 10,
   },
   stateText: {

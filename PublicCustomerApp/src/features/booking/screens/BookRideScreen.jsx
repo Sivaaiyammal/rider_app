@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
@@ -12,15 +12,15 @@ import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
 import MapIcon from '../../../components/Map/MapIcon';
 import CurrentLocationIcon from "../../../assets/icons/CurrentLocationIcon.svg"
 import AddStopIcon from "../../../assets/icons/AddStopIcon.svg"
-import { height } from '../../../utils/Utils';
+import { height, width } from '../../../utils/Utils';
 import { colors, Fonts } from '../../../constants/constants';
 import useRideBookingInfo from '../store/useRideBookingInfo';
 import useDirectionLoad from '../hooks/useDirectionLoad';
 import useMapStore from '../../map/store/useMapStore';
 import useBookTrip from '../hooks/useBookTrip';
 // Import the ride estimation mutation
-import { VEHICLE_LABELS } from '../../../constants/VehicleLabels';
-import { rideEstimation } from '../../../API/APICalls/RideAPICalls';
+// import { VEHICLE_LABELS } from '../../../constants/VehicleLabels';
+import { getRideEstimation } from '../../../API/EndPoints/EndPoints';
 import RideInfo from '../components/bookRide/RideInfo';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
@@ -30,10 +30,8 @@ import Schdule from '../../../assets/image/svgIcons/schdule.svg';
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
 import PaymentType from '../components/bookRide/PaymentType';
 import VehicleList from '../components/bookRide/VehicleList';
-import MapHeader from '../components/bookRide/MapHeader';
 import useRideVehicleStore from '../store/useRideVehicleStore'; 
 import vehicleType from '../types/vehicleType.json'
-import BookingOptions from '../components/bookRide/BookingOptions';
 import RidePreference from '../components/bookRide/RidePreference';
 import CouponContainer from '../components/bookRide/CouponConatiner';
 import useUserInfoStore from '../../../store/useUserInfoStore';
@@ -41,42 +39,16 @@ import { preferenceShowRideStatus } from '../../../storage/userLocalStorage';
 import { utils } from '../../../utils/Utils';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import useFetchNearbyDrivers from '../../../hooks/useVehicleMarker';
-import useRideSelectionStore from '../../../store/useRideSelectionStore';
-import LinearGradient from 'react-native-linear-gradient';
-import { width } from '../../../utils/Utils';
-import { isEv } from '../../../utils/Utils';
-import { Image } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import AUTO from "../../../assets/vehicle/AUTO.webp"
-import BIKE from "../../../assets/vehicle/BIKE.webp"
-import HATCHBACK from "../../../assets/vehicle/HATCHBACK.webp"
-import SEDAN from "../../../assets/vehicle/SEDAN.webp"
-import SUV from "../../../assets/vehicle/SUV.webp"
-import ELECTRIC_AUTO from "../../../assets/vehicle/AUTO.webp"
-import ELECTRIC_BIKE from "../../../assets/vehicle/BIKE.webp"
-import ELECTRIC_HATCHBACK from "../../../assets/vehicle/HATCHBACK.webp"
-import ELECTRIC_SEDAN from "../../../assets/vehicle/SEDAN.webp"
-import ELECTRIC_SUV from "../../../assets/vehicle/SUV.webp"
-import ExSEDAN from "../../../assets/vehicle/ExSEDAN.webp"
 import ScrollHintChevron from '../../../components/Common/ScrollHintChevron';
-
+import { useDebouncedAPICall } from '../../../hooks/useDebounce';
+import useRideSelectionStore from '../../../store/useRideSelectionStore';
+import PropTypes from 'prop-types';
 
 
 const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => {
-    const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
-    const [hasAnyPreference,setHasAnyPreference] = useState(false)
-        const getVehicleImage = (type) => {
-            return VEHICLE_IMAGES[type] || ExSEDAN;
-          };
     const {setStackScreen,goBack} = useStackScreenStore()
-    const {selectedVehicle} = useRideVehicleStore()
-    const { t } = useTranslation();
-    
     const {rideStartLocation,rideEndLocation,rideWayPoints} = useRideBookingLocationStore()
     const {setMapBounds} = useMapStore()
-    const isEv = (vehicleType) => {
-        return vehicleType.includes("ELECTRIC");
-      };
     
     const handleAddStop = () => {
         goBack()
@@ -116,18 +88,16 @@ const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => 
         </View>
     )
 }
-const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsScreen = null,fromBack=false}) => {
+const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsScreen = null}) => {
     const { t } = useTranslation();
     
-    const {setStackScreen,goBack,goBackToScreen} = useStackScreenStore()
-        const {paymentType,setPaymentType, setRideDistance ,setEstimatedDuration,rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode,} = useRideBookingInfo()
+    const {goBack,goBackToScreen} = useStackScreenStore()
+        const {paymentType,setPaymentType, rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode, updateBookingInfo} = useRideBookingInfo()
     const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false)
     const {isPreferenceShow,setIsPreferenceShow} = useUserInfoStore()
-    const {setAvailableVehicles,availableVehicles,clearAvailableVehicles,setSelectedVehicle} = useRideVehicleStore()
-    const [isLoading,setIsLoading] = useState(true)
+    const {setAvailableVehicles,availableVehicles,setSelectedVehicle} = useRideVehicleStore()
     const [showPreference,setShowPreference] = useState(false)
-    const [hasAnyPreference,setHasAnyPreference] = useState(false)
-    const [scrolledUntillBottom,setScrolledUntillBottom] = useState(false)
+    const [,setScrolledUntillBottom] = useState(false)
     
     // Use the direction load hook to transform ride locations to direction points
     const { 
@@ -139,9 +109,9 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     } = useDirectionLoad();
 
     // Fetch nearby drivers hook
-    const { fetchNearbyDrivers, clearNearbyDrivers, nearbyDrivers, isLoading: isFetchingDrivers } = useFetchNearbyDrivers();
+    const { fetchNearbyDrivers } = useFetchNearbyDrivers();
 
-    const { setDirectionReady,setMapBounds} = useMapStore()     
+    const { setDirectionReady} = useMapStore()     
 
     const {scheduleDateTime} = useRideSelectionStore();
 
@@ -166,17 +136,6 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         }
     }, [rideStartLocation, fetchNearbyDrivers]);
 
-    // Cleanup nearby drivers when component unmounts
-    useEffect(() => {
-        
-        return () => {
-            clearNearbyDrivers();
-            
-        };
-    }, [clearNearbyDrivers]);
-
-
-    
 
     const handleDirectionReady = (data) => {
        // handleCurrentLocation()
@@ -185,20 +144,23 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             const distance = data.distance/1000; // Distance in meters
             const duration = data.duration/60; 
             // Duration in seconds
-            setRideDistance(distance?.toFixed(1))
-            setEstimatedDuration(Math.round(duration))
+            updateBookingInfo({
+                rideDistance: distance != null ? distance.toFixed(1) : null,
+                estimatedDuration: Math.round(duration)
+            });
+            console.log("distance Got from direction data",distance)
             
         }
         
     }
 
-   
-
     useEffect(() => {
         setDirectionReady(handleDirectionReady)
         if(DurationFromAddStopsScreen && DistanceFromAddStopsScreen){
-            setRideDistance(DistanceFromAddStopsScreen)
-            setEstimatedDuration(DurationFromAddStopsScreen)
+            updateBookingInfo({
+                rideDistance: DistanceFromAddStopsScreen,
+                estimatedDuration: DurationFromAddStopsScreen
+            });
         }
         setSelectedVehicle(null)
         return ()=>{
@@ -206,46 +168,30 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         }
     }, [])
 
-    // Log nearby drivers data for debugging
-    useEffect(() => {
-        if (nearbyDrivers.length > 0) {
-            console.log('Nearby drivers found:', nearbyDrivers.length);
-        }
-    }, [nearbyDrivers]);
-
-    
-
-
     const transformEstimateDatStore=(data)=>{
-        let vehicleList=[]
+        const vehicleList = vehicleType.reduce((acc, spec, index) => {
+            const rideTypeData = data?.[spec.type];
+            if (!rideTypeData) return acc;
+            acc.push({
+                id: index,
+                type: spec.type,
+                capacity: spec.capacity,
+                minFare: rideTypeData.minFare,
+                maxFare: rideTypeData.maxFare,
+                currency: rideTypeData.currency,
+                estimatedDuration: rideTypeData.estimatedDuration ?? spec.estimatedDuration,
+            });
+            return acc;
+        }, [])
+ 
+        // Debug earlier to verify transform time
+        console.log("vehicleList")
 
-        vehicleType.forEach((item,index)=>{
-            // Check if the data contains the vehicle type
-            if(data && data[item.type]){
-                const VehicleItem={
-                    id:index,
-                    type:item.type,
-                    capacity:item.capacity,
-                    minFare:data[item.type].minFare,
-                    maxFare:data[item.type].maxFare,
-                    currency:data[item.type].currency,
-                    estimatedDuration:data[item.type].estimatedDuration || item.estimatedDuration,
-                }
-                vehicleList.push(VehicleItem)
-            }
+        // Set store state in one pass to minimize renders
+        useRideVehicleStore.setState({
+            availableVehicles: vehicleList,
+            selectedVehicle: vehicleList[0] || null,
         })
-        
-        // Preload vehicle images for faster rendering
-        const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
-        vehicleList.forEach(vehicle => {
-            const imageSource = VEHICLE_IMAGES[vehicle.type] || ExSEDAN;
-            Image.prefetch(Image.resolveAssetSource(imageSource).uri);
-        });
-        
-        // Batch all state updates together to prevent multiple re-renders
-        setSelectedVehicle(vehicleList[0])
-        setAvailableVehicles(vehicleList)
-        setIsLoading(false)
     }
 
 
@@ -261,6 +207,10 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             if(data?.regionOfficeId){
                 setRegionOfficeId(data?.regionOfficeId)
             }
+
+
+            console.log("data?.result?.data?.fareRanges",data?.result?.data?.fareRanges)
+      
             transformEstimateDatStore(data?.result?.data?.fareRanges)
                    
         } else {
@@ -268,19 +218,38 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         }
     };
 
-    const { mutate: estimationMutate , isLoading: isEstimationLoading } = 
-        rideEstimation(onEstimationSuccess);
+    const estimationInFlightRef = useRef(false);
+
+    const estimationCaller = useCallback(async (payload) => {
+        if (estimationInFlightRef.current) return;
+        estimationInFlightRef.current = true;
+        try {
+            const data = await getRideEstimation(payload);
+            onEstimationSuccess(data);
+        } catch (error) {
+            console.log('Estimation failed:', error);
+        } finally {
+            estimationInFlightRef.current = false;
+        }
+    }, []);
+
+    const debouncedGetRideEstimation = useDebouncedAPICall(estimationCaller, 500);
+
+    useEffect(() => {
+        return () => {
+            if (debouncedGetRideEstimation && debouncedGetRideEstimation.cancel) {
+                debouncedGetRideEstimation.cancel();
+            }
+        }
+    }, []);
 
     const getEstimatedFare = async () => {
-        // Use direction data if available, otherwise use default values
         const payload = {
             distance: rideDistance, 
             duration: estimatedDuration, 
             coordinates: [rideStartLocation.longitude, rideStartLocation.latitude]
         };
-
-        
-        estimationMutate(payload);
+        debouncedGetRideEstimation(payload);
     };
 
    
@@ -301,12 +270,13 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     
     useEffect(() => {
         if (isRideLocationsReady()) {
-            
+            console.log("isRideLocationsReadyStarted",isRideLocationsReady())
             const result = transformRideLocationsToDirectionPoints({
                 clearMarkers: true,
                 vehicleType: 'car',
                 padding:  [50, 50, 50, height*0.65]
             });
+            console.log("directionEnded")
             if (result.success) {
                 console.log('Direction points set successfully:', result.locationCount, 'locations');
             } else {
@@ -322,8 +292,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         return () => {
             
             setDirectionPoints(null);
-            setEstimatedDuration(null)
-            setRideDistance(null)
+            updateBookingInfo({ rideDistance: null, estimatedDuration: null })
         };
     }, [setDirectionPoints]);
 
@@ -366,19 +335,11 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         }
     }
 
-    const handleFemaleDriverToggle = () => {
-      console.log("Female Driver option clicked")
-    };
-
-    const handleAddStop = () => {
-      goBack();
-      setStackScreen('WaypointScreen', {});
-    };
+   
 
 const handleBackPress = () => {
     
-    setRideDistance(null)
-    setEstimatedDuration(null)
+    updateBookingInfo({ rideDistance: null, estimatedDuration: null })
     goBack()
 }
 
@@ -388,7 +349,7 @@ const handleCouponPress = () => {
     setShowCoupon(true)
 }
 const handleChangeScheduleTime=()=>{
-    console.log("handleChangeScheduleTime pressed")
+
     goBackToScreen('PlanRideScreen',{showScheduleTime:true})
 
 
@@ -437,7 +398,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
       
     
    
-      <VehicleList isLoading={isLoading}  availableVehicles={availableVehicles} setScrolledUntillBottom={setScrolledUntillBottom}/>
+      <VehicleList  availableVehicles={availableVehicles} setScrolledUntillBottom={setScrolledUntillBottom}/>
       <View style={{height:100}}/>
            
 
@@ -513,6 +474,11 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
         }
    </>
   );
+};
+
+BookRideScreen.propTypes = {
+  DurationFromAddStopsScreen: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  DistanceFromAddStopsScreen: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 };
 
 const styles = StyleSheet.create({

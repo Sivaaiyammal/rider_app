@@ -160,7 +160,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           searchResults.unifiedSearchData.unifiedSearchData.length > 0) ||
         (searchResults.searchData && 
           ((searchResults.searchData.fastMatch && searchResults.searchData.fastMatch.length > 0) ||
-           (searchResults.searchData.fullSearch && searchResults.searchData.fullSearch.length > 0))));
+           (searchResults.searchData['fullSearch'] && searchResults.searchData['fullSearch'].length > 0))));
 
       
       setHasSearchResults(hasResults);
@@ -256,6 +256,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const removeStateVecotr = async (item) => {
     console.log("removeStateVecotr",item);
     clearSingleStateVector(item.key, item.index);
+    setOnSearchResults([])
     setStateVector(null);
     await searchAPI(searchTxt, null);
   }
@@ -357,7 +358,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
             style={styles.closeBtn}
             onPress={handleClearSearch}>
             <View style={styles.searchAction}>
-              {searchTxt.length > 0 && <Ionicons onPress={()=>fullSearch()} name="checkmark-outline" color={'black'} size={24} />}
+              {/* {searchTxt.length > 0 && <Ionicons onPress={()=>fullSearch()} name="checkmark-outline" color={'black'} size={24} />} */}
               {searchTxt.length > 0 && <AntDesign name="close" color={'black'} size={22} />} 
             </View>
           </TouchableOpacity>
@@ -446,7 +447,9 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
             )}
           </View>
         ) : (
+          <View style={{paddingHorizontal:5}}>
           <HistoryCard selectCallback={onLocationNamePress}/>
+          </View>
         )}
         
         <TouchableOpacity style={styles.bottomBtn} onPress={()=>handleLocateOnMap()}>
@@ -508,7 +511,9 @@ export default SearchScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor:colors.white,
+ 
+    
   },
   inputContainer: {
     width: '90%',
@@ -522,6 +527,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.grey_light,
     marginTop: 5,
+    marginBottom: 10,
     
     height: 50,
   
@@ -577,7 +583,7 @@ const styles = StyleSheet.create({
   resultHeader: {
     paddingHorizontal: 15,
     paddingVertical: 10,
-    marginTop: 10,
+   
     backgroundColor: 'black',
     gap: 8,
   },

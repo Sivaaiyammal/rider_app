@@ -41,8 +41,8 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       const response = await search.reverseGeocode(coordinates);
       if (response) {
         return (
-          response.properties.street ||
-          response.properties.name ||
+          response?.properties?.street ||
+          response?.properties?.name ||
           "Unnamed Location"
         );
       }

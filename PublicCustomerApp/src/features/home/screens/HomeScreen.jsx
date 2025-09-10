@@ -390,6 +390,7 @@ const styles = StyleSheet.create({
   bottomSheetContent: {
     marginTop:height*0.06,
     flex:1,
+    
   
   },
 });

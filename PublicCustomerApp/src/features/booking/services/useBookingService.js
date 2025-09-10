@@ -54,6 +54,8 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       throw new Error(t('start_end_locations_required'));
     }
 
+    console.log("selectedVehicle",selectedVehicle)
+
     if (!selectedVehicle) {
       throw new Error(t('vehicle_selection_required'));
     }
@@ -223,7 +225,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
    */
   const getBookingValidationErrors = () => {
     const errors = [];
-    
+    console.log("selectedVehicle",selectedVehicle)
     if (!rideStartLocation) errors.push(t('start_location_required'));
     if (!rideEndLocation) errors.push(t('end_location_required'));
     if (!selectedVehicle) errors.push(t('vehicle_selection_required'));

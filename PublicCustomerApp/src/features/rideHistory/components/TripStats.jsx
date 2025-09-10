@@ -10,13 +10,24 @@ const TripStats = ({
   totalDistance,totalDuration,totalFare,isNotCompleted
 }) => {
   const { t } = useTranslation();
+
+
+  console.log("totalDistance",totalDistance)
   
   return (
     <View style={styles.statsRow}>
       <View style={[styles.statBox, { backgroundColor: '#E6F3FF',borderColor:colors.blue }]}>
         <DistanceIcon width={24} height={24} style={styles.icon} />
         <Text style={styles.label}>{!isNotCompleted ? t('distance') : t('estimated_distance')}</Text>
-        <Text style={styles.value}>{typeof totalDistance === 'string' ? totalDistance?.toFixed(1) : String(totalDistance?.toFixed(1))} Km</Text>
+        <Text style={styles.value}>
+          {totalDistance != null
+            ? (typeof totalDistance === 'number'
+                ? totalDistance.toFixed(1)
+                : !isNaN(Number(totalDistance))
+                  ? Number(totalDistance).toFixed(1)
+                  : '0')
+            : '0'} Km
+        </Text>
       </View>
       <View style={[styles.statBox, { backgroundColor: '#FFF7E6',borderColor:colors.yellow }]}>
         <WatchIcon width={24} height={24} style={styles.icon} />
@@ -26,7 +37,15 @@ const TripStats = ({
      {totalFare && <View style={[styles.statBox, { backgroundColor: '#E6F7F1',borderColor:colors.green }]}>
         <FareIcon width={24} height={24} style={styles.icon} />
         <Text style={styles.label}>{t('fare')}</Text>
-       { <Text style={styles.value}>₹ {typeof totalFare === 'string' ? totalFare?.toFixed(2) : String(totalFare?.toFixed(2))}</Text>}
+       {totalFare != null && (
+         <Text style={styles.value}>
+           ₹ {typeof totalFare === 'number'
+                ? totalFare.toFixed(2)
+                : !isNaN(Number(totalFare))
+                  ? Number(totalFare).toFixed(2)
+                  : '0.00'}
+         </Text>
+       )}
       </View>
 }
     </View>

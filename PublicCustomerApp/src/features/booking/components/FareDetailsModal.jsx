@@ -202,7 +202,7 @@ const FareDetailsModal = ({
             <View style={styles.totalFareContainer}>
               <Text style={styles.totalFareLabel}>{t('total_fare')}</Text>
               <Text style={styles.totalFareValue}>
-                ₹{fare ? fare.toFixed(2) : '0.00'}
+                ₹{fare != null ? fare.toFixed(2) : '0.00'}
               </Text>
             </View>
 

@@ -11,6 +11,7 @@ import  useCurrentRideInfoStore  from '../../features/rideStatus/store/useCurren
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import { useTranslation } from 'react-i18next';
 import  useWayPointReorderStore from '../../features/booking/store/useWayPointReorderStore';
+import {utils} from '../../utils/Utils';
 
 const AddressContainer = ({ directions,edit=false ,live=false}) => {
 
@@ -47,31 +48,75 @@ const AddressContainer = ({ directions,edit=false ,live=false}) => {
   }
   
   return (
-    <View style={styles.locationContainer}>
+    <>
+    <View style={[styles.parenrent]}>
+    {edit && (<View style={{alignItems:"center",paddingVertical:10,flexDirection:"row",justifyContent:"space-between",paddingHorizontal:15}}>
+       
+  
+       <Text style={{fontSize:16, color:colors.grey_dark,fontFamily:Fonts.regular}}>
+         Stops 
+       </Text>
+           <TouchableOpacity style={{flexDirection:'row',gap:5,alignItems:'center',paddingVertical:3,borderRadius:5}} onPress={handleStopEdit}>  
+          
+           <Text style={{fontSize:14, color:colors.blue,fontFamily:Fonts.regular}}>Edit</Text>
+           <Icon name="edit" size={20} color={colors.blue} />
+        
+           </TouchableOpacity>
+           
+        
+         </View> )}
+     
+    
+    <View style={[styles.locationContainer,!edit && {backgroundColor:colors.white_dirt}]}>
+      
+        
+   
+        
       <View style={styles.line}></View>
       {directions.map((item, index) => {
         return (
           <View key={item.id} style={styles.locationNames}>
             {getLocationIcon(item,index,directions.length,item.isReached)}
             <View style={styles.locationTxtContainer}>
-              <Text style={{fontSize:14, color:'#212121',fontFamily:Fonts.regular}}>
-                {index == 0 ? t('pickup') : index != directions.length-1 ? t('stop') : t('drop')}
+              <Text style={{fontSize:14, color:'#212121',fontFamily:Fonts.semi_bold}}>
+                {index == 0 ? t('pickup') : index != directions.length-1 ? t('stop_index',{stop:index}) : t('drop')}
               </Text>
               <Text numberOfLines={1} ellipsizeMode="tail" style={styles.locationTxt}>
                 {(item.address || item.locationName)?.charAt(0).toUpperCase() + (item.address || item.locationName)?.slice(1)}
               </Text>
+              {(item.driverWaitTime || item.waitingTime) ? (
+                <View style={{flexDirection:'row',gap:5,marginTop:5}}>
+                  <Text style={{fontSize:12, color:colors.grey_dark,fontFamily:Fonts.regular}}>Driver Wait Time : </Text>
+                  <Text style={{fontSize:12, color:colors.grey_xxdark,fontFamily:Fonts.semi_bold}}>
+                    {(item.driverWaitTime ? item.driverWaitTime : item.waitingTime) + ' Mins'}
+                  </Text>
+                </View>
+              ) : null}
+              {item.arrivalTime && <View style={{flexDirection:'row',gap:5,alignItems:'center',marginTop:5}}>
+                <Icon name="access-time" size={12} color={colors.grey_dark} />
+                <Text style={{fontSize:12, color:colors.grey_dark,fontFamily:Fonts.regular}}>
+                  {item.arrivalTime ? utils.formatDateAndTime(item.arrivalTime) : '--:--'}
+                </Text>
+              </View>}
+           
              
              
             </View>
-            {edit && !item.isReached && (
+            {/* {edit && !item.isReached && (
               <TouchableOpacity style={{paddingTop:10}} onPress={handleStopEdit}>  
               <Icon name="edit" size={20} color={colors.black} />
               </TouchableOpacity>
-            )}
+            )} */}
           </View>
         );
       })}
     </View>
+    
+  
+    </View>
+   
+    </>
+    
   );
 };
 
@@ -86,17 +131,24 @@ AddressContainer.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  locationContainer: {
-    backgroundColor: colors.white_dirt,
+  parenrent:{
+    marginVertical:15,
+    marginBottom:30,
     width: '100%',
     alignSelf: 'center',
     borderRadius: 10,
-    paddingVertical: 10,
+ 
+  },
+  locationContainer: {
+    backgroundColor: colors.white,
+    width: '100%',
+    alignSelf: 'center',
+    borderRadius: 10,
     paddingHorizontal: 15,
     display: 'flex',
     flexDirection: 'column',
     gap: 10,
-    marginBottom:10
+  
   },
   locationNames: {
     flexDirection: 'row',

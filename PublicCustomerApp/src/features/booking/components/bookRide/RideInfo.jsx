@@ -19,7 +19,10 @@ const RideInfo = ({
   useEffect(()=>{
     if(femaleDriverOnly || safeNightRides){
       setHasAnyPreference(true)
+    }else{
+      setHasAnyPreference(false)
     }
+   
   },[femaleDriverOnly,safeNightRides])
   return (
     

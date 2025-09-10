@@ -189,8 +189,10 @@ const YourRidesScreen = () => {
                     </Text>
                     </View>
                     <View style={yourRidesStyles.ridesContainerItemFareContainer}>
-                    <Text style={yourRidesStyles.ridesContainerItemFare}>₹ {Fare?.toFixed(2)|| '00'} . </Text>
-                    <Text style={[yourRidesStyles.ridesContainerItemStatus,ride?.status=="PAYMENT_COMPLETED"&&{color:'green'},ride?.status=="DIVERGED"&&{color:'orange'},ride?.status=="CANCELLED"&&{color:'red'}]}>{utils.getShortRideStatus(ride?.status)}</Text>
+                    <Text style={yourRidesStyles.ridesContainerItemFare}>
+                        ₹ {Fare != null && !isNaN(Fare) ? Fare.toFixed(2) : '00'} .
+                    </Text>
+                    <Text style={[yourRidesStyles.ridesContainerItemStatus,ride?.status=="COMPLETED"&&{color:'green'},ride?.status=="DIVERGED"&&{color:'orange'},ride?.status=="CANCELLED"&&{color:'red'}]}>{utils.getShortRideStatus(ride?.status)}</Text>
                     </View>
                 </View>
                 <View

@@ -126,7 +126,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   }
 
   const onAddWaypoint = () => {
-    setStackScreen('WaypointScreen');
+    setStackScreen('WaypointScreen',{fromPlanScreen:true});
   }
 
 

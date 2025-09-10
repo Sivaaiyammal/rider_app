@@ -278,7 +278,10 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
   };
 
   const formatCurrency = (amount) => {
-    return `₹${parseFloat(amount || 0).toFixed(2)}`;
+    if (amount == null || isNaN(Number(amount))) {
+      return '₹0.00';
+    }
+    return `₹${parseFloat(amount).toFixed(2)}`;
   };
 
   const formatDuration = (minutes) => {
@@ -286,7 +289,10 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
   };
 
   const formatDistance = (km) => {
-    return `${km} Km`;
+    if(km){
+      return `${km.toFixed(1)} Km`;
+    }
+    return `0 Km`;
   };
 
   const humanizeKey = (key) => {

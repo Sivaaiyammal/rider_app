@@ -126,7 +126,10 @@ const PaymentScreen = () => {
         return;
        }
 
-       const splitAmount = (fareDetails?.breakdown?.subtotal+fareDetails?.breakdown?.taxes?.total).toFixed(2);
+       const splitAmount = (
+         (fareDetails?.breakdown?.subtotal ?? 0) +
+         (fareDetails?.breakdown?.taxes?.total ?? 0)
+       ).toFixed(2);
     
    
       
@@ -267,7 +270,7 @@ const PaymentScreen = () => {
        tripDistance={tripDistance}
        tripDuration={tripDuration}
        driverDetails={driverDetails}
-       vehicleDetails={vehicleDetails}
+       vehicleDetails={driverDetails}
        tripStops={tripStops}
        bookingTime={bookingTime}
        fareDetails={fareDetails}

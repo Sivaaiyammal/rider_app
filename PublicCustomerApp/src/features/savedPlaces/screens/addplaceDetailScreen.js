@@ -54,12 +54,12 @@ const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existi
   useEffect(() => {
     if (placeData && placeData.latitude && placeData.longitude) {
       const marker = new Marker(
-        'saved-place-marker',
+        'drop_point',
         utils.formatAddressName(placeData),
         placeData.longitude,
         placeData.latitude,
-        'saved-place',
-        48,
+        'drop_point',
+        64,
         false,
         0
         

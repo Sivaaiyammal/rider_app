@@ -31,6 +31,7 @@ const TripPersonVehicle = ({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
+    marginTop:20
    
   },
   imagesRow: {

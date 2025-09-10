@@ -76,7 +76,7 @@ const MyAccountProfileImage = (props) => {
                             })}
                         </View>
                         <Text style={styles.ratingText}>
-                            {ratingData.currentrating.toFixed(1)} ({ratingData.count} reviews)
+                            {(ratingData?.currentrating != null ? ratingData.currentrating.toFixed(1) : '0.0')} ({ratingData?.count != null ? ratingData.count : 0} reviews)
                         </Text>
                     </View>
                 )}

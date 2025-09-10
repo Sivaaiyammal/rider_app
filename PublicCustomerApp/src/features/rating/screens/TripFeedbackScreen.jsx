@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   Animated,
   View,
@@ -7,13 +7,11 @@ import {
   TouchableOpacity,
   Pressable,
   Text,
-  ScrollView,
 } from 'react-native';
 import PropTypes from 'prop-types';
-import Icons from 'react-native-vector-icons/MaterialIcons';
 import { colors } from '../../../constants/constants';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
-const { height } = Dimensions.get('window');
+
 import RatingBox from '../components/RatingBox';    
 import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
 import RideStatusHeader from '../../rideStatus/components/RideStatusHeader';
@@ -26,23 +24,30 @@ import { DataStore } from '../../../controllers/DataStore';
 import PREF from '../../../storage/PREF';
 import { getTripDetails } from '../../../API/EndPoints/EndPoints';
 import useRatingStore from '../Store/useRatingStore';
-import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
+import LottieView from 'lottie-react-native';
+import { height ,width } from '../../../utils/Utils';
 export default function TripFeedbackScreen() {
   
     
-   const {tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,currentTripId,setTripDetails,tripId,isLoading,setIsLoading } = useRatingStore();
+   const {tripFare,tripDistance,tripDuration,driverDetails,currentTripId,setTripDetails,isLoading,setIsLoading } = useRatingStore();
 
     
     const bounceValue = useRef(new Animated.Value(height)).current;
     const overlayOpacity = useRef(new Animated.Value(0)).current;
-    const { goBack,reset } = useStackScreenStore();
+    const { reset } = useStackScreenStore();
      const {t} = useTranslation();
 
+    const [minDelayDone, setMinDelayDone] = useState(false);
+
+    useEffect(() => {
+      const timer = setTimeout(() => setMinDelayDone(true), 3000);
+      return () => clearTimeout(timer);
+    }, []);
 
     const fetchTripDetails = async () => {
      
       const currentTripId = await DataStore.loadData(PREF.CURRENT_TRIP);
-   
+  
       const tripDetails = await getTripDetails(currentTripId?.data);
     
       if(tripDetails?.success){
@@ -118,8 +123,17 @@ export default function TripFeedbackScreen() {
 
 
 
-  if(isLoading){
-    return <SkeletonLoader />
+  if(isLoading || !minDelayDone){
+    return (
+      <View style={styles.loaderContainer}>
+        <LottieView
+          source={require('../../../assets/lottie/completed.json')}
+          autoPlay
+          loop
+          style={{ width: width, height: height/2 }}
+        />
+      </View>
+    )
   }
 
   return (
@@ -380,6 +394,12 @@ const styles = StyleSheet.create({
     color:colors.black,
     textAlign:"center",
     marginTop:20
+  },
+  loaderContainer:{
+    flex:1,
+    alignItems:'center',
+    justifyContent:'center',
+    backgroundColor:'#fff'
   }
   
 });
