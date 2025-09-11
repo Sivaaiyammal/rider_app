@@ -60,7 +60,7 @@ const BottomSheetHeader = ({makeRidePlan}) => {
 
 const MapScreen = () => {
   const { t } = useTranslation();
-  const { start } = useNearbyPollingControl();
+  const { start,stop } = useNearbyPollingControl();
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState(null);
   const {setStackScreen} = useStackScreenStore();
@@ -70,8 +70,8 @@ const MapScreen = () => {
   const {setMapMarkers} = useMapStore();
   useEffect(()=>{
 
-    console.log("drivers",JSON.stringify(drivers));
-    if(drivers?.length > 0){
+  
+    if(drivers?.length > 0 && AppConfig.SHOW_NEARBY_DRIVER){
       const markers = drivers.map((driver)=>{
 
         const marker = new Marker(
@@ -87,7 +87,7 @@ const MapScreen = () => {
         return marker
       })
       setMapMarkers(markers)
-      console.log("markers",JSON.stringify(markers));
+      
     }
 
     return ()=>{
@@ -155,6 +155,9 @@ const MapScreen = () => {
   useEffect(()=>{
     if(AppConfig.SHOW_NEARBY_DRIVER){
       start();
+    }
+    return ()=>{
+      stop();
     }
   },[])
   

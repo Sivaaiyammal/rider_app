@@ -99,7 +99,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
     );
   };
 
-  if (availableVehicles?.length === 0) {
+  if (availableVehicles?.length === 0 || availableVehicles == null) {
     return renderSkeletonLoader();
   }
   const isEv = (vehicleType) => {

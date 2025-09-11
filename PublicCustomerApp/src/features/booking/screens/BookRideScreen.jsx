@@ -125,56 +125,50 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         getBookingValidationErrors,
         getCurrentBookingPayload
     } = useBookTrip();
-    const { start } = useNearbyPollingControl();
-    const { drivers } = useNearbyDriversStore();
-    const { setMapMarkers,mapMarkers } = useMapStore();
-    const { selectedVehicle } = useRideVehicleStore();
+    // const { start } = useNearbyPollingControl();
+    // const { drivers } = useNearbyDriversStore();
+    // const { setMapMarkers,mapMarkers } = useMapStore();
+    // const { selectedVehicle } = useRideVehicleStore();
 
     const [showCoupon,setShowCoupon] = useState(false)
 
 
 
-    useEffect(()=>{
-        if(AppConfig.SHOW_NEARBY_DRIVER){
-            start();
-        }
-    },[])
+    // useEffect(()=>{
+    //     if(AppConfig.SHOW_NEARBY_DRIVER){
+    //         start();
+    //     }
+    // },[])
 
 
-    useEffect(()=>{
+    // useEffect(()=>{
+    //     if(drivers?.length > 0 && AppConfig.SHOW_NEARBY_DRIVER){
 
-        
-       
-        if(drivers?.length > 0){
-
-            const exisitingMarkers = mapMarkers.filter((marker)=>marker.name != 'driver-marker')
+    //         const exisitingMarkers = mapMarkers.filter((marker)=>marker.name != 'driver-marker')
             
-          const markers = drivers.filter((driver)=>driver.vehicleType == selectedVehicle?.type).map((driver)=>{
+    //       const markers = drivers.filter((driver)=>driver.vehicleType == selectedVehicle?.type).map((driver)=>{
     
-            const marker = new Marker(
-              driver.id || 'driver-marker',
-              'driver-marker',
-              driver.lon,
-              driver.lat,
-              driver.vehicleType.toLowerCase(),
-              48,
-              false,
-              driver.bearing || 0
-            );
-            return marker
-          })
-          if(markers.length > 0){
-            setMapMarkers([...exisitingMarkers, ...markers])
-          }else{
-            setMapMarkers([...exisitingMarkers])
-          }
-        }
-        
+    //         const marker = new Marker(
+    //           driver.id || 'driver-marker',
+    //           'driver-marker',
+    //           driver.lon,
+    //           driver.lat,
+    //           driver.vehicleType.toLowerCase(),
+    //           48,
+    //           false,
+    //           driver.bearing || 0
+    //         );
+    //         return marker
+    //       })
+    //       if(markers.length > 0){
+    //         setMapMarkers([...exisitingMarkers, ...markers])
+    //       }
+    //     }
     
-        return ()=>{
-          setMapMarkers([])
-        }
-      },[drivers,selectedVehicle])
+    //     return ()=>{
+    //       setMapMarkers([])
+    //     }
+    //   },[drivers])
 
   
 
