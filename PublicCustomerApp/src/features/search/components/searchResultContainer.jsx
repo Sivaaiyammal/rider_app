@@ -1,11 +1,9 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, SectionList } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SectionList } from 'react-native';
 import PropTypes from 'prop-types';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import { colors, Fonts } from '../../../constants/constants';
 import { height, utils } from '../../../utils/Utils';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import CategoryIcon from '../../../components/Common/CategoryIcon';
 
 
 const getPrimaryName = (item) => {
@@ -13,6 +11,7 @@ const getPrimaryName = (item) => {
   if (item.primaryText) return item.primaryText;
   if (typeof item.placeName === 'string') return item.placeName;
   if (Array.isArray(item.placeName) && item.placeName.length > 0) return item.placeName[0];
+  if (Array.isArray(item.name) && item.name.length > 0) return item.name[0];
   if (item.name) return item.name;
   if (Array.isArray(item.place_name) && item.place_name.length > 0) return item.place_name[0];
   return '';
@@ -43,7 +42,7 @@ const getFormattedAddress = (address) => {
   return finalAddress;
 };
 
-// Normalize incoming sections to the shape SectionList expects
+
 const buildSections = (input) => {
   if (!Array.isArray(input) || input.length === 0) return [];
   const looksLikeSections = input.every(s => s && typeof s === 'object' && Object.prototype.hasOwnProperty.call(s, 'data'));
@@ -53,74 +52,7 @@ const buildSections = (input) => {
       data: Array.isArray(s.data) ? s.data : [],
     }));
   }
-  // If it's a flat array of items, wrap into a single section
   return [{ title: 'results', data: input }];
-};
-
-const getIcon = (category, isFastMatch) => {
-  switch(category){
-    case 'hotel':
-      return <Icon name="hotel" size={22} color={colors.dark} />;
-    case 'airport':
-      return <Icon name="local-airport" size={22} color={colors.dark} />;
-    case 'railway_station':
-      return <Icon name="railway_station" size={22} color={colors.dark} />;
-    case 'bus station':
-      return <FontAwesome name="bus" size={22} color={colors.dark} />;
-    case 'hospital':
-      return <FontAwesome name="hospital" size={22} color={colors.dark} />;
-    case 'school':
-      return <FontAwesome name="school" size={18} color={colors.dark} />;
-    case 'university':
-      return <Icon name="school" size={22} color={colors.dark} />;
-    case 'college':
-      return <Icon name="school" size={22} color={colors.dark} />;
-    case 'government_office':
-      return <FontAwesome name="building" size={22} color={colors.dark} />;
-    case 'station':
-        return <FontAwesome name="building" size={22} color={colors.dark} />;
-    case 'police station':
-        return <MaterialCommunityIcons name="police-badge" size={22} color={colors.dark} />;
-    case 'fire station':
-        return <MaterialCommunityIcons name="fire-station" size={22} color={colors.dark} />;
-   
-    case 'police':
-        return <MaterialCommunityIcons name="police-badge" size={22} color={colors.dark} />;
-    case 'restaurant':
-      return <FontAwesome name="utensils" size={20} color={colors.dark} />;
-    case 'fast food':
-      return <FontAwesome name="utensils" size={20} color={colors.dark} />;
-    case 'cafe':
-      return <FontAwesome name="coffee" size={18} color={colors.dark} />;
-    case 'hostel':
-      return <FontAwesome name="building" size={22} color={colors.dark} />;
-    case 'library':
-      return <MaterialCommunityIcons name="library" size={22} color={colors.dark} />;
-    case 'bar':
-      return <FontAwesome name="beer" size={22} color={colors.dark} />;
-    case 'night club':
-      return <FontAwesome name="music" size={22} color={colors.dark} />;
-    case 'parking':
-      return <MaterialCommunityIcons name="parking" size={22} color={colors.dark} />;
-    case 'bank':
-        return <MaterialCommunityIcons name="bank" size={22} color={colors.dark} />;
-    case 'shopping_mall':
-      return <FontAwesome name="shopping-bag" size={22} color={colors.dark} />;
-    case 'supermarket':
-      return <FontAwesome name="shopping-bag" size={22} color={colors.dark} />;
-    case 'grocery_store':
-      return <FontAwesome name="shopping-bag" size={22} color={colors.dark} />;
-    case 'department_store':
-      return <FontAwesome name="shopping-bag" size={22} color={colors.dark} />;
-    case 'mall':
-      return <FontAwesome name="shopping-bag" size={18} color={colors.dark} />;
-    case 'shopping_center':
-      return <FontAwesome name="shopping-bag" size={22} color={colors.dark} />;
-    case 'taxi':
-      return <FontAwesome name="taxi" size={22} color={colors.dark} />;
-    default:
-      return <Icon name="location-on" size={22} color={isFastMatch ? colors.grey_dark : colors.dark} />;
-  }
 };
 
 const formatDistanceKm = (meters) => {
@@ -130,7 +62,33 @@ const formatDistanceKm = (meters) => {
   return `${km.toFixed(1)} km`;
 };
 
-const SearchResultContainer = ({ data, onItemPress, searchDataType }) => {
+const SearchResultContainer = ({ data, onItemPress }) => {
+
+
+
+  const onLocationNamePress = (item) => {
+
+    const name = getPrimaryName(item);
+    const distance = formatDistanceKm(item.distance);
+    const longitude = item.pos?.[0];
+    const latitude = item.pos?.[1];
+    const address = getFormattedAddress(item.address) || "";
+    const sectionType = item?.stateVectorForMatches ? "fast_match" : "full_search";
+    const stateVectorForMatches = item?.stateVectorForMatches;
+  
+    const searchdata= {
+      name,
+      distance,
+      longitude,
+      latitude,
+      address,
+      label: getCategory(item),
+      sectionType,
+      stateVectorForMatches,
+    };
+
+    onItemPress(searchdata);
+  }
   const renderItem = ({ item}) => {
     const name = getPrimaryName(item);
     if (!name) return null;
@@ -146,10 +104,10 @@ const SearchResultContainer = ({ data, onItemPress, searchDataType }) => {
     const hasAddress = Array.isArray(item?.address) && item.address.some(addr => typeof addr === 'string' && addr.trim() !== "");
   
     return (
-      <TouchableOpacity onPress={() => onItemPress?.(item)} style={styles.item}>
+      <TouchableOpacity onPress={() => onLocationNamePress(item)} style={styles.item}>
         <View style={styles.leftIconWrap}>
           <View style={styles.leftIconCircle}>
-             {getIcon(category, isFastMatch)}
+             <CategoryIcon category={category} isFastMatch={isFastMatch} />
           </View>
         </View>
 
@@ -170,7 +128,7 @@ const SearchResultContainer = ({ data, onItemPress, searchDataType }) => {
   };
 
   const renderSectionHeader = ({ section: { title } }) => {
-    if(title === 'full_search'){
+    if(title === 'full_search' || title === 'unifiedSearchData' || title === 'fast_match'){
       return null
     }
     return (
@@ -180,17 +138,12 @@ const SearchResultContainer = ({ data, onItemPress, searchDataType }) => {
     );
   };
 
-  console.log("searchDataType",searchDataType);
-  console.log("data",JSON.stringify(data));
+
 
   const sections = buildSections(data);
 
-  if (searchDataType === 'fullSearchData' && sections.length === 0) {
-    return null
-  }
-  return (
-    <>
-      {searchDataType === 'fullSearchData' ? (
+
+  return  (
         <SectionList
           sections={sections}
           keyExtractor={(item, index) => `${getPrimaryName(item)}-${index}`}
@@ -200,19 +153,8 @@ const SearchResultContainer = ({ data, onItemPress, searchDataType }) => {
           contentContainerStyle={styles.listContent}
           keyboardShouldPersistTaps="handled"
         />
-      ) : (
-        <FlatList
-          data={Array.isArray(data) ? data : []}
-          keyExtractor={(item, index) => `${getPrimaryName(item)}-${index}`}
-          renderItem={renderItem}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-          contentContainerStyle={styles.listContent}
-          keyboardShouldPersistTaps="handled"
-        />
-      )}
-      <View style={styles.sectionBottom} />
-    </>
-  )
+      )
+  
 };
 
 SearchResultContainer.propTypes = {

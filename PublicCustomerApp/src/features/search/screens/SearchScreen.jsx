@@ -8,6 +8,7 @@ import {
   Animated,
   Modal,
   Platform,
+  ScrollView,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -29,6 +30,7 @@ import FavLabelItems from '../../home/components/FavLabelItems';
 
 import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';
+import PropTypes from 'prop-types';
 
 const CACHE_EXPIRY = 5 * 60 * 1000;
 const searchCache = new Map();
@@ -44,7 +46,6 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const {location, setSelectedInput} = useLocationStore();
   const [stateVector, setStateVector] = useState(null);
   const [hasSearchResults, setHasSearchResults] = useState(true);
-  const [searchDataType, setSearchDataType] = useState(null);
   const [matchedStrings, setMatchedStrings] = useState([]);
   const { t } = useTranslation(); 
   
@@ -87,7 +88,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         
         if (!exists) {
           // Add new item to start of array, limit to 5 items
-          updatedSearches = [item, ...recentSearches.data].slice(0, 4);
+          updatedSearches = [item, ...recentSearches.data].slice(0, 5);
         } else {
           // Move existing item to start
           updatedSearches = [
@@ -107,68 +108,59 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   }
 
   const getSearchData = (searchData) => {
-    let searchDataArray = [];
-    if(searchData?.fastMatch){
-      setSearchDataType('unifiedSearchData');
-      searchDataArray=searchData?.fastMatch;
-    }
-    if (searchData?.fullSearch){
-      setSearchDataType('fullSearchData');
-      searchDataArray.push({
-        title:"full_search",
-        data:searchData?.fullSearch
-      });
-    }
-    if(searchData?.area){
-      setSearchDataType('fullSearchData');
-      searchDataArray.push({
-        title:"area",
-        data:searchData?.area
-      });
-    }
-    if(searchData?.city){
-      setSearchDataType('fullSearchData');
-      searchDataArray.push({
-        title:"city",
-        data:searchData?.city
-      });
-    }
+    const order = [
+      { key: 'fastMatch', title: 'fast_match' },
+      { key: 'fullSearch', title: 'full_search' },
+      { key: 'area', title: 'area' },
+      { key: 'city', title: 'city' },
+      { key: 'street', title: 'street' },
+      { key: 'district', title: 'district' },
+      { key: 'state', title: 'state' },
+      { key: 'country', title: 'country' },
+      { key: 'postcode', title: 'postcode' },
+    ];
 
-
-    return searchDataArray;
+    return order.reduce((arr, { key, title }) => {
+      if (searchData?.[key]) {
+        arr.push({
+          title,
+          data: searchData[key],
+        });
+      }
+      return arr;
+    }, []);
   }
 
   const searchAPI = useCallback(
     async (value, statevectore = {}, fullSearch = false) => {
       try {
-        // Cancel any existing request
+       
         if (abortControllerRef.current) {
           abortControllerRef.current.abort();
         }
 
-        // Create new AbortController for this request
+      
         abortControllerRef.current = new AbortController();
 
-        // Normalize state vector for consistent cache keys
         const normalizedStateVector = statevectore || {};
         const stateVectorStr = JSON.stringify(normalizedStateVector);
         const cacheKey = `${value.toLowerCase().trim()}_${stateVectorStr}`;
         const cachedResult = searchCache.get(cacheKey);
 
        
-
-        // Use cached result if valid
         if (cachedResult && Date.now() - cachedResult.timestamp < CACHE_EXPIRY) {
           setOnSearchResults(cachedResult.results);
+          setMatchedStrings(cachedResult.matchedStrings || []);
+          setHasSearchResults(Boolean(cachedResult.hasSearchResults));
           return;
         }
 
-        // If state vector is present, force full search
+ 
         if (statevectore && Object.keys(statevectore).length > 0) {
           fullSearch = true;
         }
 
-        // Prepare search parameters
+
         const searchParams = {
           latitude: location[1] || 11.0168,
           longitude: location[0] || 76.9558,
@@ -187,28 +179,47 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
 
         setIsLoading(true);
 
-        // Perform the search
-        const searchResults = await performSearch(searchParams);
-        console.log("searchResults",JSON.stringify(searchResults));
 
-        // Handle search results
+        const searchResults = await performSearch(searchParams);
+        
+
         if (searchResults?.unifiedSearchData) {
-          setSearchDataType('unifiedSearchData');
-          setOnSearchResults(searchResults.unifiedSearchData);
+          const searchDataArray = {
+            title:"unifiedSearchData",
+            data:searchResults.unifiedSearchData
+          };
+          setOnSearchResults([searchDataArray]);
           setHasSearchResults(true);
+          searchCache.set(cacheKey, {
+            results: [searchDataArray],
+            matchedStrings: [],
+            hasSearchResults: true,
+            timestamp: Date.now(),
+          });
         } else if (searchResults?.searchData) {
           const searchDataArray = getSearchData(searchResults.searchData);
           console.log("searchDataArray",searchDataArray);
           setOnSearchResults(searchDataArray);
         
-          if(searchResults?.searchData?.matchedStrings){
-            setMatchedStrings(searchResults?.searchData?.matchedStrings);
-          }else{
-            setMatchedStrings([]);
-          }
+          const ms = searchResults?.searchData?.matchedStrings || [];
+          setMatchedStrings(ms);
           setHasSearchResults(true);
+          searchCache.set(cacheKey, {
+            results: searchDataArray,
+            matchedStrings: ms,
+            hasSearchResults: true,
+            timestamp: Date.now(),
+          });
         } else {
           setHasSearchResults(false);
+          setOnSearchResults([]);
+          setMatchedStrings([]);
+          searchCache.set(cacheKey, {
+            results: [],
+            matchedStrings: [],
+            hasSearchResults: false,
+            timestamp: Date.now(),
+          });
         }
       } catch (e) {
         // Silently handle cancellation
@@ -295,17 +306,11 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
             setStateVector(item?.stateVectorForMatches);
           }
     }else{
-      // onLocationNamePress(item);
+
+      console.log("item",item);
+      onLocationNamePress(item);
     }
-    // if (type === 'FastMatch') {
-    //   if(item?.stateVectorForMatches){
-    //     await searchAPI('', item?.stateVectorForMatches);
-    //     setSearchTxt('');
-    //     setStateVector(item?.stateVectorForMatches);
-    //   }
-    // } else {
-    //   onLocationNamePress(item);
-    // }
+  
   };
 
   const removeStateVecotr = async (item) => {
@@ -363,11 +368,6 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     setIsSearchFocused(false);
   };
 
-
-
-  const showRegionModal = () => {
-    setIsRegionModalVisible(true);
-  };
 
   const hideRegionModal = () => {
     setIsRegionModalVisible(false);
@@ -501,16 +501,16 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
                 <SearchResultContainer    
                     data={onSearchResults}
                     onItemPress={selectedCallBack}
-                    searchDataType={searchDataType}
+                 
                 />
             )}
           </View>
         ) : (
-          <View style={{paddingHorizontal:5}}>
-            <FavLabelItems onLabelPress={handleFavouriteLocationPress} enableAdd={false}/>
-          <HistoryCard selectCallback={onLocationNamePress}/>
+          <ScrollView style={{paddingHorizontal:5, flex: 1}} contentContainerStyle={{paddingBottom: height*0.2}}>
+            <FavLabelItems style={{marginBottom:10}} onLabelPress={handleFavouriteLocationPress} enableAdd={false}/>
+            <HistoryCard style={{marginBottom:10}} selectCallback={onLocationNamePress}/>
 
-          </View>
+          </ScrollView>
         )}
         
         <TouchableOpacity style={styles.bottomBtn} onPress={()=>handleLocateOnMap()}>
@@ -565,6 +565,16 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         </Modal>
       </View>
   );
+};
+
+SearchScreen.propTypes = {
+  onSearchClick: PropTypes.func,
+  searchType: PropTypes.any,
+  fromaddWayPoint: PropTypes.bool,
+  getwaitingTime: PropTypes.bool,
+  title: PropTypes.any,
+  index: PropTypes.any,
+  label: PropTypes.any,
 };
 
 export default SearchScreen;

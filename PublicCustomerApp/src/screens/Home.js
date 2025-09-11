@@ -24,6 +24,7 @@ import TripFeedbackScreen from '../features/rating/screens/TripFeedbackScreen';
 import useLocationStore from '../store/useLocationStore';
 import { DataStore } from '../controllers/DataStore';
 import useMapStore from '../store/useMapStore';
+import { useNearbyPollingControl } from '../store/useNearByDriverPollingControl';
 
 import LanguageScreen from './OnBoard/LanguageScreen.jsx';
 import MyRidesScreen from '../features/rideHistory/screens/MyRidesScreen';
@@ -40,7 +41,6 @@ import TicketDetailScreen from '../features/support/screens/TicketDetailScreen';
 import TripSelectionScreen from '../features/support/screens/TripSelectionScreen';
 import BottomSheetWorkingExample from '../components/BottomSheetWorkingExample';
 import PREF from '../storage/PREF';
-import { useNearbyDriversStore } from '../store/useNearByDrivers';
 const Home = () => {
   const {location} = useLocationStore();
   const { stackScreen } = useStackScreenStore();
@@ -52,6 +52,7 @@ const Home = () => {
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
   const { setUserdetails ,setID,id,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips} = useUserInfoStore();
   const { setMapShown , mapShown,userLocation} = useMapStore();
+  const { setTarget } = useNearbyPollingControl();
   
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
@@ -194,9 +195,8 @@ const Home = () => {
   useEffect(()=>{
     
     if(location?.length>1){
-      
+      setTarget(location[1],location[0]);
       coordsbasedDatafetch();
-  
     }
   },[location])
 

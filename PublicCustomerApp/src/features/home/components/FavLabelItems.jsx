@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Fonts } from '../../../constants/constants';
+import { colors, Fonts } from '../../../constants/constants';
 import HomeIcon from '../../../assets/icons/HomeIcon.svg';
 import WorkIcon from '../../../assets/icons/WorkIcon.svg';
 import FavIcon from '../../../assets/icons/FavIcon.svg';
@@ -28,7 +28,8 @@ const FavLabelItems = ({onLabelPress,enableAdd=true}) => {
 
   
   return (
-    <View style={styles.FavouriteAddressContainer}>  
+    <View style={styles.FavouriteAddressContainer}> 
+      {userFavPlaces?.length > 0 && <Text style={styles.FavouriteAddressContainerTitle}>{t('favorite_places')}</Text>}
       {hasNoFavorites && enableAdd ? (
         // Show "Add Favorite Places" only when no favorites exist
         <TouchableOpacity style={styles.FavouriteAddressItem} onPress={handleAddFavPlacePress}>
@@ -143,6 +144,14 @@ const styles = StyleSheet.create({
         borderColor:"#757575",
         borderStyle:"dashed",
        
+      },
+      FavouriteAddressContainerTitle: {
+        
+          fontSize: 16,
+          fontFamily: Fonts.medium,
+          color: colors.black,
+          paddingLeft:10
+        
       },
 });
 

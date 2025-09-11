@@ -38,11 +38,14 @@ import useUserInfoStore from '../../../store/useUserInfoStore';
 import { preferenceShowRideStatus } from '../../../storage/userLocalStorage';
 import { utils } from '../../../utils/Utils';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
-import useFetchNearbyDrivers from '../../../hooks/useVehicleMarker';
 import ScrollHintChevron from '../../../components/Common/ScrollHintChevron';
 import { useDebouncedAPICall } from '../../../hooks/useDebounce';
 import useRideSelectionStore from '../../../store/useRideSelectionStore';
 import PropTypes from 'prop-types';
+import  AppConfig  from '../../../Config/AppConfig';
+import { useNearbyPollingControl } from '../../../store/useNearByDriverPollingControl';
+import { useNearbyDriversStore } from '../../../store/useNearByDrivers';
+import Marker from '../../../controllers/NEMap/Marker';
 
 
 const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => {
@@ -108,8 +111,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         rideWayPoints
     } = useDirectionLoad();
 
-    // Fetch nearby drivers hook
-    const { fetchNearbyDrivers } = useFetchNearbyDrivers();
+    
 
     const { setDirectionReady} = useMapStore()     
 
@@ -123,18 +125,58 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         getBookingValidationErrors,
         getCurrentBookingPayload
     } = useBookTrip();
-    
-    
+    const { start } = useNearbyPollingControl();
+    const { drivers } = useNearbyDriversStore();
+    const { setMapMarkers,mapMarkers } = useMapStore();
+    const { selectedVehicle } = useRideVehicleStore();
 
     const [showCoupon,setShowCoupon] = useState(false)
 
-    // Fetch nearby drivers when screen initializes
-    useEffect(() => {
-        if (rideStartLocation && rideStartLocation.latitude && rideStartLocation.longitude) {
-           
-            fetchNearbyDrivers([rideStartLocation.longitude, rideStartLocation.latitude]);
+
+
+    useEffect(()=>{
+        if(AppConfig.SHOW_NEARBY_DRIVER){
+            start();
         }
-    }, [rideStartLocation, fetchNearbyDrivers]);
+    },[])
+
+
+    useEffect(()=>{
+
+        
+       
+        if(drivers?.length > 0){
+
+            const exisitingMarkers = mapMarkers.filter((marker)=>marker.name != 'driver-marker')
+            
+          const markers = drivers.filter((driver)=>driver.vehicleType == selectedVehicle?.type).map((driver)=>{
+    
+            const marker = new Marker(
+              driver.id || 'driver-marker',
+              'driver-marker',
+              driver.lon,
+              driver.lat,
+              driver.vehicleType.toLowerCase(),
+              48,
+              false,
+              driver.bearing || 0
+            );
+            return marker
+          })
+          if(markers.length > 0){
+            setMapMarkers([...exisitingMarkers, ...markers])
+          }else{
+            setMapMarkers([...exisitingMarkers])
+          }
+        }
+        
+    
+        return ()=>{
+          setMapMarkers([])
+        }
+      },[drivers,selectedVehicle])
+
+  
 
 
     const handleDirectionReady = (data) => {

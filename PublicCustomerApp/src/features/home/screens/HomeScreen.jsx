@@ -30,6 +30,8 @@ import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
 import { useNearbyDriversStore } from '../../../store/useNearByDrivers';
 import Marker from '../../../controllers/NEMap/Marker';
 import useMapStore from '../../../features/map/store/useMapStore';
+import  AppConfig  from '../../../Config/AppConfig';
+import  {useNearbyPollingControl}  from '../../../store/useNearByDriverPollingControl';
 
 
 const BottomSheetHeader = ({makeRidePlan}) => {
@@ -58,7 +60,7 @@ const BottomSheetHeader = ({makeRidePlan}) => {
 
 const MapScreen = () => {
   const { t } = useTranslation();
-
+  const { start } = useNearbyPollingControl();
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState(null);
   const {setStackScreen} = useStackScreenStore();
@@ -150,6 +152,12 @@ const MapScreen = () => {
   
   }, [showMenu]);
 
+  useEffect(()=>{
+    if(AppConfig.SHOW_NEARBY_DRIVER){
+      start();
+    }
+  },[])
+  
   
   
   
@@ -285,7 +293,7 @@ const MapScreen = () => {
 
         <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
 
-        <HistoryCard selectCallback={onHistoryPress} header={false} bottomborder={false} />
+        <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false} />
         </View>
       </BottomSheetWrapper>
 

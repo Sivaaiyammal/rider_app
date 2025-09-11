@@ -17,7 +17,7 @@ import useRideSelectionStore from '../../../store/useRideSelectionStore';
 import TripType from '../components/planride/TripType';
 import ScheduleContainer from '../../../screens/SearchLocation/ScheduleContainer';
 import { rideType } from '../../../constants/JsonData';
-import { utils } from '../../../utils/Utils';
+import { height, utils } from '../../../utils/Utils';
 import { colors } from '../../../constants/constants';
 import Contactsheet from '../components/planride/Contactsheet';
 import useUserInfoStore from '../../../store/useUserInfoStore';
@@ -259,7 +259,9 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
           }} type="add" />
         </ScrollView>
         <DashedLine style={styles.dottedLine} />
+        <ScrollView style={{ flex: 1}} contentContainerStyle={{paddingBottom: height*0.2}}>
         <HistoryContainer selectCallback={handleHistoryLocationClick} bottomborder = {false} fromSearchScreen={true}/>
+        </ScrollView>
 
         <View style={styles.pickLocationContainer}> 
           <PickLocationButton
@@ -334,6 +336,7 @@ const styles = StyleSheet.create({
     width:"100%",
     alignSelf:'center',
     paddingHorizontal: 5,
+    backgroundColor:'white'
    
   },
   continueButton:{

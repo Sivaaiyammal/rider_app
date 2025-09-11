@@ -1,6 +1,7 @@
 import { getNearByDrivers } from '../API/EndPoints/EndPoints';
 import useLocationStore from '../store/useLocationStore';
 import { useState, useCallback } from 'react';
+import AppConfig from '../Config/AppConfig';
 
 /**
  * Hook for fetching nearby drivers
@@ -13,7 +14,27 @@ const useFetchNearbyDrivers = () => {
   const { location } = useLocationStore();
 
   const fetchNearbyDrivers = useCallback(async (customLocation = null) => {
-    if (!location && !customLocation) {
+    // Respect config flag
+    if (!AppConfig.SHOW_NEARBY_DRIVER) {
+      setNearbyDrivers([]);
+      return [];
+    }
+
+    const effectiveLocation = customLocation ?? location;
+    let lat = null;
+    let lon = null;
+
+    if (Array.isArray(effectiveLocation) && effectiveLocation.length >= 2) {
+      // [lon, lat]
+      lon = effectiveLocation[0];
+      lat = effectiveLocation[1];
+    } else if (effectiveLocation && typeof effectiveLocation === 'object') {
+      // { latitude, longitude } or { lat, lon|lng }
+      lat = effectiveLocation.latitude ?? effectiveLocation.lat ?? null;
+      lon = effectiveLocation.longitude ?? effectiveLocation.lon ?? effectiveLocation.lng ?? null;
+    }
+
+    if (lat == null || lon == null) {
       setError('Location not available');
       return null;
     }
@@ -22,22 +43,13 @@ const useFetchNearbyDrivers = () => {
     setError(null);
 
     try {
-      const payload = {
-        radius: 10000, // 10km radius
-        location: customLocation || location
-      };
-      
-      const response = await getNearByDrivers(payload);
-      
-      if (response.success) {
-        setNearbyDrivers(response.data || []);
-        return response.data;
-      } else {
-        throw new Error(response.message || 'Failed to fetch nearby drivers');
-      }
+      const data = await getNearByDrivers(lat, lon);
+      const drivers = Array.isArray(data?.drivers) ? data.drivers : [];
+      setNearbyDrivers(drivers);
+      return drivers;
     } catch (error) {
       console.error('Error fetching nearby drivers:', error);
-      setError(error.message || 'Failed to fetch nearby drivers');
+      setError(error?.message || 'Failed to fetch nearby drivers');
       return null;
     } finally {
       setIsLoading(false);

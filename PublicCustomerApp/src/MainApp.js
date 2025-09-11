@@ -23,7 +23,7 @@ if (!firebase.apps.length) {
 const MainAppContent = () => {
   const appearance = useColorScheme();
   const { isConnected, checkConnection } = useNetwork();
-  const { setTarget,start } = useNearbyPollingControl();
+  
   const setAppTheme = useCallback(async () => {
     const IS_FIRST = await DataStore.loadData('IS_FIRST');
     if (IS_FIRST.data === null) {
@@ -46,8 +46,7 @@ const MainAppContent = () => {
 
   useEffect(() => {
     initLanguage();
-    setTarget(11.030027,77.039737);
-    start();
+    
     const unsubscribe = messaging().onMessage(async remoteMessage => {
    
       PushNotifications.sendNotification(remoteMessage.notification.body, remoteMessage.notification.title, remoteMessage.data)

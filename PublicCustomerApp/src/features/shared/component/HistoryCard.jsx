@@ -4,8 +4,9 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
 import { colors, Fonts } from '../../../constants/constants';
 import { DataStore } from '../../../controllers/DataStore';
-import HistoryIcon from '../../../assets/icons/HistoryIcon.svg';
+
 import { useTranslation } from 'react-i18next';
+import CategoryIcon from '../../../components/Common/CategoryIcon';
 
 const HistoryCard = ({ selectCallback, header = true, bottomborder = true,fromSearchScreen=false }) => {
   const [historyItems, setHistoryItems] = useState([]);
@@ -28,7 +29,7 @@ const HistoryCard = ({ selectCallback, header = true, bottomborder = true,fromSe
           <TouchableOpacity key={index} onPress={() => selectCallback(item)}>
             <View style={[styles.historyItem, bottomborder && {borderBottomWidth: index === historyItems.length - 1 ? 0 : 0.5} ]}>
               <View style={styles.iconContainer}>
-                <HistoryIcon width={50} height={50} />
+                <CategoryIcon category={item.label}  isFromHistory={true} />
               </View>
               <View style={styles.textContainer}>
                 <Text style={[styles.name,fromSearchScreen&&{fontSize:15}]} numberOfLines={1} ellipsizeMode="tail">{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</Text>
@@ -73,9 +74,9 @@ const styles = StyleSheet.create({
     marginBottom:5,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 45,
+    height: 45,
+    borderRadius: 50,
     backgroundColor: '#f5f5f5',
     justifyContent: 'center',
     alignItems: 'center',
