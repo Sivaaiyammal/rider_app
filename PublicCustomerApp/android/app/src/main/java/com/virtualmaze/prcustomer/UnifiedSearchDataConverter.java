@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class UnifiedSearchDataConverter {
-    public static WritableMap toReadableMap(ArrayList<UnifiedSearchData> dataList) {
-        WritableMap map = Arguments.createMap();
+    public static WritableArray toReadableMap(ArrayList<UnifiedSearchData> dataList) {
         WritableArray unifiedSearchArray = Arguments.createArray();
 
         for (UnifiedSearchData data : dataList) {
@@ -149,7 +148,6 @@ public class UnifiedSearchDataConverter {
             unifiedSearchArray.pushMap(itemMap);
         }
 
-        map.putArray("unifiedSearchData", unifiedSearchArray);
-        return map;
+        return unifiedSearchArray;
     }
 }

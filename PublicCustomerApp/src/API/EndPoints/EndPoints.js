@@ -65,13 +65,18 @@ export const bookRide = async (payload)=> {
 // cancel Ride
 
 
-export const getUserStats = async (location, currentTripId) => {
-  let url = `/publicrides/customer/getUserStats?latitude=${location[1]}&longitude=${location[0]}`;
+export const getUserStats = async (currentTripId) => {
+  let url = `/publicrides/customer/getUserStats`;
   if (currentTripId !== null && currentTripId !== undefined) {
     url += `&currentTripId=${currentTripId}`;
   }
   const { data } = await apiClient.get(url);
   return data;
+}
+
+export const getAvalibaleVehiclesType = async (lat,lon) => {
+  const { data } = await apiClient.get(`/publicrides/customer/getAvaliableVehicleInfo?latitude=${lat}&longitude=${lon}`)
+  return data
 }
 
 export const cancelRide = async (payload)=> {
@@ -86,8 +91,8 @@ export const updatePaymentInServer = async (payload) => {
 }
 
 // get nearby drivers
-export const getNearByDrivers = async (payload) => {
-  const { data } = await apiClient.post('/publicrides/customer/getNearByDrivers', payload)
+export const getNearByDrivers = async (lat,lon) => {
+  const { data } = await apiClient.get(`/publicrides/customer/getNearByDrivers?latitude=${lat}&longitude=${lon}&radius=5000`)
   return data
 }
 

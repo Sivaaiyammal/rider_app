@@ -17,7 +17,7 @@ import NavBar from '../../../components/NavBar';
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import useLocationStore from '../../../store/useLocationStore';
 import { performSearch } from '../../../components/Native/NESearch';
-import { SearchResultV2 } from '../components/SearchResult';
+import SearchResultContainer from '../components/searchResultContainer';
 import SearchResultSkeleton from '../components/SearchResultSkeleton';
 import HorizontalLoadingIndicator from '../components/HorizontalLoadingIndicator';
 import StateVectorConatiner from '../../../components/StateVectorConatiner';
@@ -25,6 +25,7 @@ import { clearSingleStateVector, clearAllStateVectors } from "../../../component
 import HistoryCard from '../../shared/component/HistoryCard';
 import { DataStore } from '../../../controllers/DataStore';
 import {height} from '../../../utils/Utils';
+import FavLabelItems from '../../home/components/FavLabelItems';
 
 import debounce from 'lodash/debounce';
 import { useTranslation } from 'react-i18next';
@@ -43,6 +44,8 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const {location, setSelectedInput} = useLocationStore();
   const [stateVector, setStateVector] = useState(null);
   const [hasSearchResults, setHasSearchResults] = useState(true);
+  const [searchDataType, setSearchDataType] = useState(null);
+  const [matchedStrings, setMatchedStrings] = useState([]);
   const { t } = useTranslation(); 
   
   const searchInputRef = useRef(null);
@@ -103,85 +106,127 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     }
   }
 
-  // Debounce the search input to limit API calls 
-  const searchAPI = useCallback(async (value, statevectore={}, fullSearch=false) => {
-    try {
-      // Cancel any existing request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      
-      // Create new AbortController for this request
-      abortControllerRef.current = new AbortController();
-
-      // Normalize state vector to ensure consistent cache keys
-      const normalizedStateVector = statevectore || {};
-      const stateVectorStr = JSON.stringify(normalizedStateVector);
-      const cacheKey = `${value.toLowerCase().trim()}_${stateVectorStr}`;
-      const cachedResult = searchCache.get(cacheKey);
-
-      console.log("Cache lookup - Key:", cacheKey, "Found:", !!cachedResult);
-
-      if (cachedResult && (Date.now() - cachedResult.timestamp < CACHE_EXPIRY)) {
-        setOnSearchResults(cachedResult.results);
-        return;
-      }
-
-      if (statevectore && Object.keys(statevectore).length > 0) {
-        fullSearch = true;
-      }
-
-      const searchParams = {
-        latitude: location[1] || 11.0168, 
-        longitude: location[0] || 76.9558, 
-        searchString: value,
-        mapUnitName: selectedRegion?.value || "india",
-        stateVector: statevectore,
-        resultCount: 20,
-        langCode: 'en',
-        debug: false,
-        onlineOnly: false,
-        makeFullSearch: fullSearch,
-        isPoiSearch: false,
-        radius: 50000,
-        category: [],
-       
-      };
-
-      setIsLoading(true);
-      const searchResults = await performSearch(searchParams);
-      console.log("searchResults",value,JSON.stringify(searchResults));
-      setIsLoading(false);
-      setOnSearchResults(searchResults);
-      // Check if searchResults has the expected structure and contains data
-      const hasResults = searchResults && 
-        ((searchResults.unifiedSearchData && 
-          searchResults.unifiedSearchData.unifiedSearchData && 
-          searchResults.unifiedSearchData.unifiedSearchData.length > 0) ||
-        (searchResults.searchData && 
-          ((searchResults.searchData.fastMatch && searchResults.searchData.fastMatch.length > 0) ||
-           (searchResults.searchData['fullSearch'] && searchResults.searchData['fullSearch'].length > 0))));
-
-      
-      setHasSearchResults(hasResults);
-      
-      
-      if(hasResults){
-        searchCache.set(cacheKey, { results: searchResults, timestamp: Date.now() });
-        console.log("Cache set - Key:", cacheKey, "Size:", searchCache.size);
-      }
- 
-    } catch (e) {
-      if (e.name === 'AbortError' || e.message?.includes('cancelled') || e.message?.includes('Search operation was cancelled')) {
-        // Silently handle cancellation - this is expected behavior when typing fast
-        return;
-      }
-      console.error('Error performing search:',value, e);
-      setOnSearchResults([]);
-    } finally {
-      setIsLoading(false);
+  const getSearchData = (searchData) => {
+    let searchDataArray = [];
+    if(searchData?.fastMatch){
+      setSearchDataType('unifiedSearchData');
+      searchDataArray=searchData?.fastMatch;
     }
-  }, [location, setOnSearchResults, selectedRegion]);
+    if (searchData?.fullSearch){
+      setSearchDataType('fullSearchData');
+      searchDataArray.push({
+        title:"full_search",
+        data:searchData?.fullSearch
+      });
+    }
+    if(searchData?.area){
+      setSearchDataType('fullSearchData');
+      searchDataArray.push({
+        title:"area",
+        data:searchData?.area
+      });
+    }
+    if(searchData?.city){
+      setSearchDataType('fullSearchData');
+      searchDataArray.push({
+        title:"city",
+        data:searchData?.city
+      });
+    }
+
+
+    return searchDataArray;
+  }
+
+  const searchAPI = useCallback(
+    async (value, statevectore = {}, fullSearch = false) => {
+      try {
+        // Cancel any existing request
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+
+        // Create new AbortController for this request
+        abortControllerRef.current = new AbortController();
+
+        // Normalize state vector for consistent cache keys
+        const normalizedStateVector = statevectore || {};
+        const stateVectorStr = JSON.stringify(normalizedStateVector);
+        const cacheKey = `${value.toLowerCase().trim()}_${stateVectorStr}`;
+        const cachedResult = searchCache.get(cacheKey);
+
+       
+
+        // Use cached result if valid
+        if (cachedResult && Date.now() - cachedResult.timestamp < CACHE_EXPIRY) {
+          setOnSearchResults(cachedResult.results);
+          return;
+        }
+
+        // If state vector is present, force full search
+        if (statevectore && Object.keys(statevectore).length > 0) {
+          fullSearch = true;
+        }
+
+        // Prepare search parameters
+        const searchParams = {
+          latitude: location[1] || 11.0168,
+          longitude: location[0] || 76.9558,
+          searchString: value,
+          mapUnitName: selectedRegion?.value || "india",
+          stateVector: statevectore,
+          resultCount: 20,
+          langCode: 'en',
+          debug: false,
+          onlineOnly: false,
+          makeFullSearch: fullSearch,
+          isPoiSearch: false,
+          radius: 50000,
+          category: [],
+        };
+
+        setIsLoading(true);
+
+        // Perform the search
+        const searchResults = await performSearch(searchParams);
+        console.log("searchResults",JSON.stringify(searchResults));
+
+        // Handle search results
+        if (searchResults?.unifiedSearchData) {
+          setSearchDataType('unifiedSearchData');
+          setOnSearchResults(searchResults.unifiedSearchData);
+          setHasSearchResults(true);
+        } else if (searchResults?.searchData) {
+          const searchDataArray = getSearchData(searchResults.searchData);
+          console.log("searchDataArray",searchDataArray);
+          setOnSearchResults(searchDataArray);
+        
+          if(searchResults?.searchData?.matchedStrings){
+            setMatchedStrings(searchResults?.searchData?.matchedStrings);
+          }else{
+            setMatchedStrings([]);
+          }
+          setHasSearchResults(true);
+        } else {
+          setHasSearchResults(false);
+        }
+      } catch (e) {
+        // Silently handle cancellation
+        if (
+          e.name === 'AbortError' ||
+          e.message?.includes('cancelled') ||
+          e.message?.includes('Search operation was cancelled')
+        ) {
+          return;
+        }
+        console.error('Error performing search:', value, e);
+        setOnSearchResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [location, setOnSearchResults, selectedRegion]
+  );
 
   const debouncedSetSearchUnit = useMemo(() => debounce((query) => {
     const trimmedQuery = query.trim();
@@ -240,17 +285,27 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     ]).start();
   }, [isSearchFocused]);
  
-  const selectedCallBack = async (item, type) => {
-    console.log("selectedCallBack",item,type);
-    if (type === 'FastMatch') {
+  const selectedCallBack = async (item) => {
+    console.log("selectedCallBack",item);
+    if (item?.sectionType === 'fast_match' || item?.stateVectorForMatches){
+     
       if(item?.stateVectorForMatches){
-        await searchAPI('', item?.stateVectorForMatches);
-        setSearchTxt('');
-        setStateVector(item?.stateVectorForMatches);
-      }
-    } else {
-      onLocationNamePress(item);
+            await searchAPI('', item?.stateVectorForMatches);
+            setSearchTxt('');
+            setStateVector(item?.stateVectorForMatches);
+          }
+    }else{
+      // onLocationNamePress(item);
     }
+    // if (type === 'FastMatch') {
+    //   if(item?.stateVectorForMatches){
+    //     await searchAPI('', item?.stateVectorForMatches);
+    //     setSearchTxt('');
+    //     setStateVector(item?.stateVectorForMatches);
+    //   }
+    // } else {
+    //   onLocationNamePress(item);
+    // }
   };
 
   const removeStateVecotr = async (item) => {
@@ -258,6 +313,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     clearSingleStateVector(item.key, item.index);
     setOnSearchResults([])
     setStateVector(null);
+    setMatchedStrings([]);
     await searchAPI(searchTxt, null);
   }
 
@@ -331,7 +387,11 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     setOnSearchResults([]);
   };
 
-  
+  const handleFavouriteLocationPress = (locationType,labelLocation) => {
+    labelLocation["locationFrom"] = "FAVOURITE";
+    labelLocation["labelName"] = locationType;
+    onSearchClick(labelLocation, searchType, index);
+  }
 
   return (
     <View style={styles.screen}>
@@ -380,7 +440,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         </View> */}
 
         {/* State Vector Container */}
-        <StateVectorConatiner stateVectorArr={onSearchResults} removeStateVector={removeStateVecotr}/>
+        <StateVectorConatiner matchedStrings={matchedStrings} removeStateVector={removeStateVecotr}/>
         
         {/* Search Results or Recent Searches */}
         {searchTxt.trim() === '' && !onSearchResults && recentSearches.length > 0 ? (
@@ -438,17 +498,18 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
                 <Text style={styles.noResultsText}>No results found</Text>
               </View>
             ) : (
-              <SearchResultV2    
-                  searchTxt={searchTxt}
-                  search_data={onSearchResults}
-                  selectedCallBack={selectedCallBack}
-                  setStateVector={setStateVector}
-              />
+                <SearchResultContainer    
+                    data={onSearchResults}
+                    onItemPress={selectedCallBack}
+                    searchDataType={searchDataType}
+                />
             )}
           </View>
         ) : (
           <View style={{paddingHorizontal:5}}>
+            <FavLabelItems onLabelPress={handleFavouriteLocationPress} enableAdd={false}/>
           <HistoryCard selectCallback={onLocationNamePress}/>
+
           </View>
         )}
         

@@ -59,7 +59,7 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
 
     // Sync markersList to map store
     useEffect(() => {
-        console.log("markersList",markersList)
+       
         setMapMarkers([...markersList]);
 
         return () => {

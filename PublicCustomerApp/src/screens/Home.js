@@ -40,6 +40,7 @@ import TicketDetailScreen from '../features/support/screens/TicketDetailScreen';
 import TripSelectionScreen from '../features/support/screens/TripSelectionScreen';
 import BottomSheetWorkingExample from '../components/BottomSheetWorkingExample';
 import PREF from '../storage/PREF';
+import { useNearbyDriversStore } from '../store/useNearByDrivers';
 const Home = () => {
   const {location} = useLocationStore();
   const { stackScreen } = useStackScreenStore();
@@ -51,6 +52,7 @@ const Home = () => {
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
   const { setUserdetails ,setID,id,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips} = useUserInfoStore();
   const { setMapShown , mapShown,userLocation} = useMapStore();
+  
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
     
@@ -64,6 +66,7 @@ const Home = () => {
    
   };
 
+
   const checkFavouriteLocation = async () => {
     const homeLocation = await getStoredLocation('Home');
     const workLocation = await getStoredLocation('Work');
@@ -72,14 +75,14 @@ const Home = () => {
     setWorklocation(workLocation);
   };
 
-  const checkOnGoingRideAndLog = async (location) => {
+  const checkOnGoingRideAndLog = async () => {
     const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
    
     const currentTripId=currentTrip?.data || null
     try {
       
-      const Response = await getUserStats(location,currentTripId);
-      console.log("Response",JSON.stringify(Response));
+      const Response = await getUserStats(currentTripId);
+    
       
       if(Response?.success ){
 
@@ -89,7 +92,7 @@ const Home = () => {
         if(Response?.userStats?.stats){
            
            const stats = Response?.userStats?.stats;
-           console.log("stats",JSON.stringify(stats));
+     
            
               
             setTotalSpend(stats?.totalSpends || 0);
@@ -123,7 +126,6 @@ const Home = () => {
        
         setCurrentRideInfo(Response?.trip);
         if(Response?.assignDriver){
-         
           setAllocatedDriverInfo(Response?.assignDriver);
         }
         if(Response?.trip?.fareDetails){
@@ -153,14 +155,9 @@ const Home = () => {
   }
 
 
-  const fetchAllNearbyDrivers = async () => {
-    // const payload = {
-    //   radius:10000,
-    //   location:location
-    // }
-    // const drivers = await getNearByDrivers(payload);
-    
-  }
+
+
+  
 
 
   const loadUserDetails = async () => {
@@ -175,6 +172,10 @@ const Home = () => {
   
   }
 
+  const coordsbasedDatafetch = async () => {
+    
+  } 
+
 
  
   
@@ -185,6 +186,7 @@ const Home = () => {
     loadUserDetails();
     checkFavouriteLocation();
     checkPreferenceShowRideStatus();
+    checkOnGoingRideAndLog()
   }, [mapReady]);
 
   useCustomBackHandler();
@@ -192,8 +194,8 @@ const Home = () => {
   useEffect(()=>{
     
     if(location?.length>1){
-      checkOnGoingRideAndLog(location)
-      fetchAllNearbyDrivers();
+      
+      coordsbasedDatafetch();
   
     }
   },[location])

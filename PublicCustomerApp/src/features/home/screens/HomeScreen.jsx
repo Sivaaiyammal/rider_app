@@ -27,6 +27,9 @@ import useRideBookingLocationStore from '../../booking/store/useRideBookingLocat
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { height, width } from '../../../utils/Utils';
 import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
+import { useNearbyDriversStore } from '../../../store/useNearByDrivers';
+import Marker from '../../../controllers/NEMap/Marker';
+import useMapStore from '../../../features/map/store/useMapStore';
 
 
 const BottomSheetHeader = ({makeRidePlan}) => {
@@ -61,7 +64,38 @@ const MapScreen = () => {
   const {setStackScreen} = useStackScreenStore();
   const {location,currentLocationName} = useLocationStore();
   const {setRideStartLocation,setRideEndLocation } = useRideBookingLocationStore()
- 
+  const { drivers } = useNearbyDriversStore();
+  const {setMapMarkers} = useMapStore();
+  useEffect(()=>{
+
+    console.log("drivers",JSON.stringify(drivers));
+    if(drivers?.length > 0){
+      const markers = drivers.map((driver)=>{
+
+        const marker = new Marker(
+          driver.id || 'driver-marker',
+          driver.vehicleType || 'Driver',
+          driver.lon,
+          driver.lat,
+          driver.vehicleType.toLowerCase(),
+          48,
+          false,
+          driver.bearing || 0
+        );
+        return marker
+      })
+      setMapMarkers(markers)
+      console.log("markers",JSON.stringify(markers));
+    }
+
+    return ()=>{
+      setMapMarkers([])
+    }
+  },[drivers])
+
+
+
+  
   
   const scaleValue = useRef(new Animated.Value(1)).current;
   const offsetValue = useRef(new Animated.Value(0)).current;
@@ -72,6 +106,9 @@ const MapScreen = () => {
     duration: 300,
     useNativeDriver: true,
   };
+
+
+
 
 
   const animateMenu = useCallback((toValue) => {

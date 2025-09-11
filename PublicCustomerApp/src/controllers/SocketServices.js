@@ -12,10 +12,6 @@ import PREF from '../storage/PREF';
 import useUserInfoStore  from '../store/useUserInfoStore';
 const SOCKET_URL = Config.ROOT_API_URL;
 
-
-
-
-
 class WSService {
   constructor() {
     this.socket = null;

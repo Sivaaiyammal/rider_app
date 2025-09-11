@@ -1715,12 +1715,25 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 Log.d("AJIN", "result come");
                 WritableMap map = Arguments.createMap();
                 SearchData searchData = result.getSearchData();
-                map.putMap("searchData", SearchDataConverter.toReadableMap(searchData));
+                try {
+                    ReadableMap searchDataMap = SearchDataConverter.toReadableMap(searchData);
+                    if (searchDataMap != null) {
+                        ReadableMapKeySetIterator keys = searchDataMap.keySetIterator();
+                        if (keys.hasNextKey()) {
+                            map.putMap("searchData", searchDataMap);
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e("SEARCH", "Error converting searchData: " + e.getMessage());
+                }
 
                 if (result.isUnifiedSearch()) {
                     ArrayList<UnifiedSearchData> unifiedSearch = result.getUnifiedSearchData();
-                    map.putMap("unifiedSearchData", UnifiedSearchDataConverter.toReadableMap(unifiedSearch));
+                    map.putArray("unifiedSearchData", UnifiedSearchDataConverter.toReadableMap(unifiedSearch));
                 }
+
+                
+
 
                 map.putString("mapUnitName", mapUnitName);
                 map.putString("searchString", searchString);

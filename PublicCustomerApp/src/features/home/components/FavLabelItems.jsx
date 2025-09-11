@@ -11,7 +11,7 @@ import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import AddFavIcon from '../../../assets/icons/AddFavIcon.svg';
 
 
-const FavLabelItems = ({onLabelPress}) => {
+const FavLabelItems = ({onLabelPress,enableAdd=true}) => {
   const { t } = useTranslation();
   const responsiveMaxWidth = width * 0.8;
   const {userFavPlaces} = useUserInfoStore();
@@ -29,7 +29,7 @@ const FavLabelItems = ({onLabelPress}) => {
   
   return (
     <View style={styles.FavouriteAddressContainer}>  
-      {hasNoFavorites ? (
+      {hasNoFavorites && enableAdd ? (
         // Show "Add Favorite Places" only when no favorites exist
         <TouchableOpacity style={styles.FavouriteAddressItem} onPress={handleAddFavPlacePress}>
          

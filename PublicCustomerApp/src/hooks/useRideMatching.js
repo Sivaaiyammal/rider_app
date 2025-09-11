@@ -42,8 +42,7 @@ const useRideMatching = () => {
         console.log('✅ Ride matching socket initialized successfully');
         socketInitializedRef.current = true;
         
-        // Join passenger room
-        rideMatchingSocketService.joinPassengerRoom(userId);
+        
         
         // Remove any existing listeners first to prevent duplicates
         rideMatchingSocketService.off('matching_update');

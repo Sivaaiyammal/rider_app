@@ -39,11 +39,12 @@ class RideMatchingSocketService {
         const urlParts = RIDE_MATCHING_SOCKET_URL.split('/');
         const protocolAndHost = urlParts.slice(0, 3).join('/');
         const path = '/' + urlParts.slice(3).join('/');
+        console.log("userId",userId);
         this.socket = io(`${protocolAndHost}`, {
           path: path !== '/' ? path + '/socket.io' : '/socket.io',
-          // query: {
-          //   driver_id: userId,
-          // },
+          query: {
+            passenger_id: userId,
+          },
         });
 
         this.socket.on('connect', () => {

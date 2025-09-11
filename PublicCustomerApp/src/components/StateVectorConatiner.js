@@ -6,20 +6,13 @@ import PropTypes from 'prop-types';
 import { colors, Fonts } from "../constants/constants";
 
 
-const StateVectorConatiner = ({ 
-  stateVectorArr = {
-    searchData: {
-      matchedStrings: []
-    }
-  }, 
-  removeStateVector 
-}) => {
+const StateVectorConatiner = ({matchedStrings=[], removeStateVector}) => {
 
   const onVectorPress = (item) => {
     removeStateVector(item);
   };
 
-  const stateVectorArray = stateVectorArr?.searchData?.matchedStrings?.filter((item) => item?.key !== "") || [];
+  const stateVectorArray = matchedStrings?.filter((item) => item?.key !== "") || [];
 
   return stateVectorArray.length > 0 ? (
     <View style={styles.vectorContainer}>
@@ -39,14 +32,10 @@ const StateVectorConatiner = ({
 };
 
 StateVectorConatiner.propTypes = {
-  stateVectorArr: PropTypes.shape({
-    searchData: PropTypes.shape({
-      matchedStrings: PropTypes.arrayOf(PropTypes.shape({
-        key: PropTypes.string,
-        text: PropTypes.string
-      }))
-    })
-  }),
+  matchedStrings: PropTypes.arrayOf(PropTypes.shape({
+    key: PropTypes.string,
+    text: PropTypes.string
+  })),
   removeStateVector: PropTypes.func.isRequired
 };
 
