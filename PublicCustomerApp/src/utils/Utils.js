@@ -17,6 +17,41 @@ export const utils = {
     else if (type == '5' || type == 'car') return require('../assets/image/vehicle/suv_left.png')
     else if (type == '6') return require('../assets/image/vehicle/luxsedan_left.png')
   },
+
+  capitalizeFirstLetter: (string) => {
+    if(!string) return ""
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  },
+
+
+  formatArrayAddress: (array) => {
+
+
+
+    let addr =""
+    array.forEach((item,index) => {
+      if(item !== ""){
+        addr += utils.capitalizeFirstLetter(item) + (index < array.length - 1 ? ", " : " ")
+      }
+    })
+    return addr
+  },
+
+  getFormatedHeader: (currentLocationName) => {
+    // Support both placeName and name fields for the location name
+    const name =
+      currentLocationName?.placeName ||
+      currentLocationName?.name ||
+      '';
+
+    if (name && currentLocationName.address) {
+      return `${utils.capitalizeFirstLetter(name)}, ${utils.formatArrayAddress(currentLocationName.address)}`;
+    } else if (name) {
+      return utils.capitalizeFirstLetter(name);
+    }
+
+    return currentLocationName;
+  },
   getRideStatus: (status) => {
  
     if (status == 'COMPLETED') return 'Ride Completed'
@@ -485,21 +520,13 @@ export const utils = {
 
   formatAddressName: (address) => {
     if(address.locationFrom === "MAP"){
-      return address.address.charAt(0).toUpperCase() + address.address.slice(1)
+      console.log(address,"address")
+      return utils.getFormatedHeader(address)
     }else if(address.locationFrom === "SEARCH"){
       return `${address.name},${address.address}`.charAt(0).toUpperCase() + `${address.name},${address.address}`.slice(1)
     }else{
-
-      if (address.address){
-        return address.address.charAt(0).toUpperCase() + address.address.slice(1)
-
-      }
-      else if(address.name){
-        return address.name.charAt(0).toUpperCase() + address.name.slice(1)
-      }
-      else{
-        return ""
-      }
+     
+      return utils.getFormatedHeader(address)
       
     }
   },

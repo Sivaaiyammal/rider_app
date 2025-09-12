@@ -199,8 +199,8 @@ public class SearchDataConverter {
                     map.putArray("place_name", toReadableArray(fullSearch.getPlaceName()));
                 }
                 if (fullSearch.getPos() != null && fullSearch.getPos().size() >= 2) {
-                    map.putDouble("latitude", fullSearch.getPos().get(0));
-                    map.putDouble("longitude", fullSearch.getPos().get(1));
+                    map.putDouble("latitude", fullSearch.getPos().get(1));
+                    map.putDouble("longitude", fullSearch.getPos().get(0));
                 }
                 if (fullSearch.getScore() != null) {
                     map.putDouble("score", fullSearch.getScore());

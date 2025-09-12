@@ -181,6 +181,8 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
 
 
         const searchResults = await performSearch(searchParams);
+
+        console.log("searchResults",JSON.stringify(searchResults));
         
 
         if (searchResults?.unifiedSearchData) {
@@ -198,7 +200,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           });
         } else if (searchResults?.searchData) {
           const searchDataArray = getSearchData(searchResults.searchData);
-          console.log("searchDataArray",searchDataArray);
+          console.log("searchDataArray",JSON.stringify(searchDataArray));
           setOnSearchResults(searchDataArray);
         
           const ms = searchResults?.searchData?.matchedStrings || [];
@@ -324,6 +326,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
 
   // onpress on search results
   const onLocationNamePress = useCallback((item) => {
+    console.log("onLocationNamePress",item);
     item["locationFrom"] = "SEARCH";
     storeRecentSearch(item);
     onSearchClick(item, searchType, index);

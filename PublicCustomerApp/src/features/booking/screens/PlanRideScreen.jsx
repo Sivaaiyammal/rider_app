@@ -150,6 +150,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   }, 300);
 
   const onSearchClickResultCallback = (item,type) =>{
+    console.log("onSearchClickResultCallback",item,type);
     debouncedSearchCallback(item,type)
    
 

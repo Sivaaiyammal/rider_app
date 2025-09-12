@@ -25,7 +25,7 @@ import useLocationStore from '../../../store/useLocationStore';
 import  LocationTypes  from '../../booking/types/LocationTypes.json';  
 import useRideBookingLocationStore from '../../booking/store/useRideBookingLocationStore'
 import AdaptiveText from '../../../components/Common/AdaptiveText';
-import { height, width } from '../../../utils/Utils';
+import { height, utils, width } from '../../../utils/Utils';
 import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
 import { useNearbyDriversStore } from '../../../store/useNearByDrivers';
 import Marker from '../../../controllers/NEMap/Marker';
@@ -67,7 +67,7 @@ const MapScreen = () => {
   const {location,currentLocationName} = useLocationStore();
   const {setRideStartLocation,setRideEndLocation } = useRideBookingLocationStore()
   const { drivers } = useNearbyDriversStore();
-  const {setMapMarkers} = useMapStore();
+  const {setMapMarkers,setMapLocation} = useMapStore();
   useEffect(()=>{
 
   
@@ -160,12 +160,18 @@ const MapScreen = () => {
       stop();
     }
   },[])
-  
-  
-  
-  
 
-  // Menu handler
+
+  useEffect(()=>{
+    if(location && location.length > 0){
+      setMapLocation({
+            lat: location[1],
+            lng: location[0],
+            zoom: 18,
+          });
+    }
+  },[location])
+
   const handleMenu = useCallback(() => {
     try {
       setShowMenu(!showMenu);
@@ -174,7 +180,7 @@ const MapScreen = () => {
     }
   }, [showMenu]);
 
-  // History press handler
+  
   const onHistoryPress = useCallback((item) => {
     try {
       if (!item) {
@@ -188,7 +194,8 @@ const MapScreen = () => {
         name:"Current Location",
         latitude:location[1],
         longitude:location[0],
-        address:currentLocationName,
+        address:currentLocationName.address,
+        placeName:currentLocationName.placeName,
         type:LocationTypes.START_LOCATION,
         locationFrom:"MAP"
       }
@@ -204,7 +211,7 @@ const MapScreen = () => {
   }, [location, currentLocationName, setRideStartLocation, setRideEndLocation, setStackScreen, t]);
 
 
-  // Error component
+
   const ErrorMessage = () => (
     error && (
       <View style={styles.errorContainer}>
@@ -233,7 +240,8 @@ const MapScreen = () => {
         name:"Current Location",
         latitude:location[1],
         longitude:location[0],
-        address:currentLocationName,
+        address:currentLocationName.address,
+        placeName:currentLocationName.placeName,
         type:LocationTypes.START_LOCATION,
         locationFrom:"MAP"
       }
@@ -257,7 +265,8 @@ const MapScreen = () => {
       name:"Current Location",
       latitude:location[1],
       longitude:location[0],
-      address:currentLocationName,
+      address:currentLocationName.address,
+      placeName:currentLocationName.placeName,
       type:LocationTypes.START_LOCATION,
       locationFrom:"MAP"
     }

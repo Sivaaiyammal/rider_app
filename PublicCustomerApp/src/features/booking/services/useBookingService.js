@@ -10,6 +10,7 @@ import useRideMatchStore from '../../rideStatus/store/useRideMatchStore';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
 import { TripStatus } from '../../rideStatus/types/TripStatus';
+import { utils } from '../../../utils/Utils';
 /**
  * Hook to handle trip booking with API integration
  * @param {Object} options - Configuration options
@@ -65,7 +66,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         {
           name: t('pickup_point'),
           location: [rideStartLocation.longitude, rideStartLocation.latitude],
-          address: rideStartLocation.address || rideStartLocation.name,
+          address: utils.getFormatedHeader(rideStartLocation),
           waitingTime: 0,
           isReached:false
         }
@@ -77,7 +78,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         stops.push({
           name: `${t('stop')} ${index + 1}`,
           location: [waypoint.longitude, waypoint.latitude],
-          address: waypoint.address || waypoint.name,
+          address: utils.getFormatedHeader(waypoint),
           waitingTime: waypoint.waitingTime || 0,
           isReached:false
         });
@@ -88,7 +89,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     stops.push({
       name: t('drop_point'),
       location: [rideEndLocation.longitude, rideEndLocation.latitude],
-      address: rideEndLocation.address || rideEndLocation.name,
+      address: utils.getFormatedHeader(rideEndLocation),
       waitingTime: 0,
       isReached:false
     });

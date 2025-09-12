@@ -65,13 +65,14 @@ const formatDistanceKm = (meters) => {
 const SearchResultContainer = ({ data, onItemPress }) => {
 
 
-
   const onLocationNamePress = (item) => {
+
+  
 
     const name = getPrimaryName(item);
     const distance = formatDistanceKm(item.distance);
-    const longitude = item.pos?.[0];
-    const latitude = item.pos?.[1];
+    const longitude = item.pos?.[0] || item.longitude;
+    const latitude = item.pos?.[1] || item.latitude;
     const address = getFormattedAddress(item.address) || "";
     const sectionType = item?.stateVectorForMatches ? "fast_match" : "full_search";
     const stateVectorForMatches = item?.stateVectorForMatches;

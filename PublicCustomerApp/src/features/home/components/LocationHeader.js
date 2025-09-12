@@ -12,7 +12,7 @@ import {
   import useLocationStore from '../../../store/useLocationStore';
   import SearchAPI from '../../../controllers/NEMap/Search';
   import HomeMenuIcon from '../../../assets/icons/HomeMenu.svg';
-  import {width} from '../../../utils/Utils';
+  import {utils, width} from '../../../utils/Utils';
 import CurrentLocationIcon from '../../../assets/icons/CurrentLocationIcon.svg';
 import { height } from '../../../utils/Utils';
 import locationTask from '../../../controllers/GetCurrentLocation';
@@ -37,18 +37,15 @@ import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
         try {
           const search = new SearchAPI();
           const response = await search.reverseGeocode(coordinates);
-          if (response) {
-              setCurrentLocationName(
-              response?.properties?.street ||
-                response?.properties?.name ||
-                'Unnamed Location',
-            );
-          }
+          setCurrentLocationName(response);
+          
         } catch (e) {
           console.error('Failed to fetch address', e);
         }
       }
     };
+
+   
   
     useEffect(() => {
       fetchAddressName(); 
@@ -73,7 +70,7 @@ import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
           <View style={{marginLeft: 10}}>
             <Text style={styles.title}>{t('your_location')}</Text>
             <Text style={[styles.address, {maxWidth: responsiveMaxWidth-10}]} numberOfLines={1} ellipsizeMode="tail">
-              {currentLocationName ? currentLocationName : <SkeletonLoader  height={20} width={responsiveMaxWidth-50} backgroundColor={colors.grey_xlight} />}
+              {currentLocationName? utils.getFormatedHeader(currentLocationName) : <SkeletonLoader  height={20} width={responsiveMaxWidth-50} backgroundColor={colors.grey_xlight} />}
             </Text>
           </View>
         </View>

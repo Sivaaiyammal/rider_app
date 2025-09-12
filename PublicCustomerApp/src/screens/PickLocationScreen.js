@@ -11,7 +11,7 @@ import NavBar from '../components/NavBar';
 import useMapStore from '../features/map/store/useMapStore';
 import PickIcon from '../assets/icons/pickupIcon.webp';
 import { colors, Fonts   } from '../constants/constants';
-import { height} from '../utils/Utils';
+import { height, utils} from '../utils/Utils';
 import MapIcon from '../components/Map/MapIcon';
 import SearchAPI from '../controllers/NEMap/Search';
 import SkeletonLoader from '../components/Loaders/SkeletonLoader';
@@ -38,14 +38,9 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   
     try {
       const search = new SearchAPI();
-      const response = await search.reverseGeocode(coordinates);
-      if (response) {
-        return (
-          response?.properties?.street ||
-          response?.properties?.name ||
-          "Unnamed Location"
-        );
-      }
+      const response = await search.reverseGeocode(coordinates);    
+      return response 
+
     } catch (e) {
       console.error("Failed to fetch address", e);
       return "";
@@ -53,16 +48,20 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     
   }, []);
 
-  // Debounced map center change handler to prevent excessive API calls
+ 
   const debouncedMapCenterChange = useDebouncedAPICall(async (data) => {
     setIsAddressLoading(true);
-    const address = await fetchAddressName(data.longitude, data.latitude, true);
+    const response = await fetchAddressName(data.longitude, data.latitude, true);
+    console.log(response,"response")
     let item = {
       latitude: data.longitude,
       longitude: data.latitude,
-      address: address,
+      placeName: response.placeName,
       type:locationType,
       locationFrom:"MAP"
+    }
+    if(response.address){
+      item.address = response.address;
     }
     setPickedLocation(item);
     setIsAddressLoading(false);
@@ -86,6 +85,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       setPickedLocation({
         latitude:defaultLocation.location[1],
         longitude:defaultLocation.location[0],
+        placeName:defaultLocation.placeName,
         address:defaultLocation.address,
         type:locationType,
         locationFrom:"MAP"
@@ -103,12 +103,21 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     setPickedLocation({
       latitude:location[1], 
       longitude: location[0],
-      address: currentLocationName, 
+      placeName: currentLocationName.placeName,
+      address: currentLocationName.address, 
       type:locationType,
       locationFrom:"MAP"
     });
     setIsMapButtonVisible(false);
-    setMapMarkers([]);   
+    setMapMarkers([]); 
+    
+     setTimeout(()=>{
+            setMapLocation({
+              lat: location[1],
+              lng: location[0],
+              zoom: 18,
+            });
+          },100)
     
      return ()=>{
       setOnMapCenterChanged(null);
@@ -162,9 +171,12 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                   </View> */}
           <View style={styles.AddressContainerMain}>
               <Text style={styles.AddressContainerTextTitle}>📍 {t('address')}</Text>
-            {!isAddressLoading && pickedLocation?.address ? (
-              <Text style={styles.AddressContainerTextAddress}>{pickedLocation.address}</Text>
-            ) : (
+             {!isAddressLoading && pickedLocation?.placeName && <Text style={styles.AddressContainerPlaceName}>{utils.capitalizeFirstLetter(pickedLocation?.placeName)}</Text>}
+            {(!isAddressLoading && pickedLocation?.address) &&
+              <Text style={styles.AddressContainerTextAddress}>{utils.formatArrayAddress(pickedLocation.address)}</Text>
+            }
+
+            {isAddressLoading &&
               <View style={styles.AddressContainerSkeleton}>
                 <SkeletonLoader
                   width="100%"
@@ -173,6 +185,9 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                   backgroundColor="#E8E8E8"
                   shimmerColor="#F5F5F5"
                 />
+                
+
+
                 <SkeletonLoader
                   width="70%"
                   height={20}
@@ -181,7 +196,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                   shimmerColor="#F5F5F5"
                 />
               </View>
-            )}
+            }
           </View>
 
         </View>
@@ -279,13 +294,20 @@ const styles = StyleSheet.create({
   },
   AddressContainerTextAddress: {
     fontSize: 14,
-    color: colors.black,
+    color: colors.grey_xxdark,
     textWrap: 'wrap',
     lineHeight: 20,
     fontFamily: Fonts.regular,
   
   },    
-
+  AddressContainerPlaceName: {
+    fontSize: 16,
+    color: colors.black,
+    textWrap: 'wrap',
+    lineHeight: 20,
+    fontFamily: Fonts.medium,
+    marginTop: 10,
+  },
   bottomContainerButton: {
     
     paddingVertical: 15,

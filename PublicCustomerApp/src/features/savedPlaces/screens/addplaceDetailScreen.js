@@ -30,6 +30,8 @@ const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existi
   // Get location data from route params
   const locationData = placeData;
 
+  console.log(locationData,"locationData")
+
   const saveOptions = [
     { key: 'home', label: t('home'),  },
     { key: 'work', label: t('work'), },
@@ -133,8 +135,8 @@ const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existi
             <View style={styles.locationDot} />
           </View>
           <View style={styles.locationTextContainer}>
-            
-                <AdaptiveText style={styles.locationTitle}>{utils.formatAddressName(locationData)}</AdaptiveText>
+            {locationData.placeName && <AdaptiveText style={styles.locationTitle}>{utils.capitalizeFirstLetter(locationData.placeName)}</AdaptiveText>}
+            {locationData.address && <AdaptiveText style={styles.locationSubtitle}>{utils.formatArrayAddress(locationData.address)}</AdaptiveText>}
            
           </View>
         </View>
@@ -196,9 +198,16 @@ const styles = StyleSheet.create({
    bottom:0,
     backgroundColor: '#fff',
   },
+  locationSubtitle:{
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#666',
+    lineHeight: 20,
+  },
   scrollContent: {
     padding: 20,
   },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -258,16 +267,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   locationTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: Fonts.regular,
     color: '#333',
     marginBottom: 4,
   },
-  locationSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-  },
+ 
   section: {
     marginBottom: 20,
   },
