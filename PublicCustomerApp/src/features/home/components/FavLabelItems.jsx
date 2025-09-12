@@ -31,7 +31,7 @@ const FavLabelItems = ({onLabelPress,enableAdd=true}) => {
     <View style={styles.FavouriteAddressContainer}> 
       {userFavPlaces?.length > 0 && <Text style={styles.FavouriteAddressContainerTitle}>{t('favorite_places')}</Text>}
       {hasNoFavorites && enableAdd ? (
-        // Show "Add Favorite Places" only when no favorites exist
+       
         <TouchableOpacity style={styles.FavouriteAddressItem} onPress={handleAddFavPlacePress}>
          
           <View style={styles.AddFavouriteAddressItemTextContainer}>
@@ -39,7 +39,7 @@ const FavLabelItems = ({onLabelPress,enableAdd=true}) => {
           </View>
         </TouchableOpacity>
       ) : (
-        // Show existing favorites when they exist
+    
         userFavPlaces?.map((item,index)=>(
           <TouchableOpacity key={index} style={styles.FavouriteAddressItem} onPress={()=>onLabelPress(item.label,item.locationData)}>
             <View style={styles.FavouriteAddressItemIcon}>
@@ -47,7 +47,7 @@ const FavLabelItems = ({onLabelPress,enableAdd=true}) => {
             </View>
            <View key={index} style={styles.FavouriteAddressItemTextContainer}>
            <Text style={styles.FavouriteAddressItemText}>{item.label}</Text>
-           {/* <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth-5 }]}>{utils.formatAddressName(item.locationData)}</Text> */}
+           <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth-5 }]}>{utils.formatAddressName(item.locationData)}</Text>
        </View>
        </TouchableOpacity>
         ))

@@ -78,13 +78,13 @@ const Home = () => {
 
   const checkOnGoingRideAndLog = async () => {
     const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
-   
+   console.log("currentTrip",currentTrip)
     const currentTripId=currentTrip?.data || null
     try {
       
       const Response = await getUserStats(currentTripId);
     
-      
+      console.log("Response",Response)
       if(Response?.success ){
 
         if(Response?.userStats?.favPlaces?.length > 0){

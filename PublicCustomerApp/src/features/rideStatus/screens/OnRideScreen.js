@@ -278,13 +278,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textAlign: 'center',
     marginTop: 4,
+    color:colors.black
   },
   vehicleDesc: {
-    color: '#555',
+    color:colors.grey_xxdark,
     fontFamily:Fonts.regular,
     fontSize: 14,
     textAlign: 'center',
     marginBottom: 8,
+    
   },
   amountBox: {
     backgroundColor: '#e3ffe6',
@@ -337,6 +339,7 @@ const styles = StyleSheet.create({
   rideInfoValue: {
     fontFamily:Fonts.regular,
     fontSize: 15,
+    color:colors.grey_xxdark
   },
   tripDetailsRow: {
     width:'90%',

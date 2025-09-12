@@ -13,7 +13,7 @@ const HistoryCard = ({ selectCallback, header = true, bottomborder = true,fromSe
   const { t } = useTranslation();
   const setRecentSearches = useCallback(async () => {
     const recentSearches = await DataStore.loadData('recentSearches');
-    console.log(recentSearches)
+    
     setHistoryItems(recentSearches?.data || []);
   }, []);
 

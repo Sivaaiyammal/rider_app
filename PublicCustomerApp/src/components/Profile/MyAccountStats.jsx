@@ -5,8 +5,10 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import PropTypes from 'prop-types';
 
 import { Fonts, colors } from '../../constants/constants';
+import { useTranslation } from 'react-i18next';
 
 const StatCard = ({ iconName, iconLib = 'Ionicons', label, value, bgColor, iconColor }) => {
+ 
   const Icon = iconLib === 'Material' ? MaterialCommunityIcons : Ionicons;
   return (
     <View style={[styles.card, { backgroundColor: bgColor }] }>
@@ -31,11 +33,11 @@ StatCard.propTypes = {
 const MyAccountStats = ({ stats }) => {
     console.log("stats",JSON.stringify(stats));
   const { totalSpend = 0, cancelledTrips = 0, completedTrips = 0, totalTrips = 0 } = stats || {};
-
+  const { t } = useTranslation();
   const data = [
     {
       key: 'totalTrips',
-      label: 'Total Trips',
+      label: 'total_trips',
       value: totalTrips,
       iconName: 'car-outline',
       iconLib: 'Ionicons',
@@ -44,7 +46,7 @@ const MyAccountStats = ({ stats }) => {
     },
     {
       key: 'completedTrips',
-      label: 'Completed',
+      label: 'completed',
       value: completedTrips,
       iconName: 'check-decagram-outline',
       iconLib: 'Material',
@@ -53,7 +55,7 @@ const MyAccountStats = ({ stats }) => {
     },
     {
       key: 'cancelledTrips',
-      label: 'Cancelled',
+      label: 'cancelled',
       value: cancelledTrips,
       iconName: 'close-circle-outline',
       iconLib: 'Material',
@@ -62,7 +64,7 @@ const MyAccountStats = ({ stats }) => {
     },
     {
       key: 'totalSpend',
-      label: 'Total Spend',
+      label: 'total_spend',
       value: totalSpend == null
         ? '-'
         : (typeof totalSpend === 'number' ? `₹${totalSpend.toFixed(0)}` : totalSpend),
@@ -80,7 +82,7 @@ const MyAccountStats = ({ stats }) => {
           key={item.key}
           iconName={item.iconName}
           iconLib={item.iconLib}
-          label={item.label}
+          label={t(item.label)}
           value={item.value}
           bgColor={item.bgColor}
           iconColor={item.iconColor}

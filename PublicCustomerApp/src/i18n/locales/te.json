@@ -339,5 +339,9 @@
     "registration_error": "నమోదు లోపం",
     "network_error_check_connection": "నెట్‌వర్క్ లోపం. దయచేసి మీ కనెక్షన్‌ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.",
     "unexpected_error_occurred": "అనుకోని లోపం జరిగింది. దయచేసి మళ్లీ ప్రయత్నించండి.",
-    "loading": "లోడ్ అవుతోంది..."
+    "loading": "లోడ్ అవుతోంది...",
+    "ride_details": "రైడ్ వివరాలు",
+    "trip_fare": "ట్రిప్ ఛార్జీ",
+    "view_receipt": "రసీదు చూడండి",
+    "show_invoice": "ఇన్వాయిస్ చూపించు"
 }

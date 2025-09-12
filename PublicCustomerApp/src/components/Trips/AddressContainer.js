@@ -40,7 +40,7 @@ const AddressContainer = ({ directions,edit=false ,live=false}) => {
     const {tripId} = useCurrentRideInfoStore()
     const {t} = useTranslation();
     const {setOnGoingRideStops} = useWayPointReorderStore()
-  const handleStopEdit = (item) => {
+  const handleStopEdit = () => {
     setOnGoingRideStops(directions)
     setStackScreen('WaypointScreen',{
       tripId:tripId
@@ -53,12 +53,10 @@ const AddressContainer = ({ directions,edit=false ,live=false}) => {
     {edit && (<View style={{alignItems:"center",paddingVertical:10,flexDirection:"row",justifyContent:"space-between",paddingHorizontal:15}}>
        
   
-       <Text style={{fontSize:16, color:colors.grey_dark,fontFamily:Fonts.regular}}>
-         Stops 
-       </Text>
+       <Text style={{fontSize:16, color:colors.grey_dark,fontFamily:Fonts.regular}}>{t('stops')}</Text>
            <TouchableOpacity style={{flexDirection:'row',gap:5,alignItems:'center',paddingVertical:3,borderRadius:5}} onPress={handleStopEdit}>  
           
-           <Text style={{fontSize:14, color:colors.blue,fontFamily:Fonts.regular}}>Edit</Text>
+           <Text style={{fontSize:14, color:colors.blue,fontFamily:Fonts.regular}}>{t('edit')}</Text>
            <Icon name="edit" size={20} color={colors.blue} />
         
            </TouchableOpacity>
@@ -82,13 +80,13 @@ const AddressContainer = ({ directions,edit=false ,live=false}) => {
                 {index == 0 ? t('pickup') : index != directions.length-1 ? t('stop_index',{stop:index}) : t('drop')}
               </Text>
               <Text numberOfLines={1} ellipsizeMode="tail" style={styles.locationTxt}>
-                {(item.address || item.locationName)?.charAt(0).toUpperCase() + (item.address || item.locationName)?.slice(1)}
+               {item.address ? utils.formatAddressName(item.address) : item.locationName}
               </Text>
               {(item.driverWaitTime || item.waitingTime) ? (
                 <View style={{flexDirection:'row',gap:5,marginTop:5}}>
-                  <Text style={{fontSize:12, color:colors.grey_dark,fontFamily:Fonts.regular}}>Driver Wait Time : </Text>
+                  <Text style={{fontSize:12, color:colors.grey_dark,fontFamily:Fonts.regular}}>{t('driver_wait_time')} : </Text>
                   <Text style={{fontSize:12, color:colors.grey_xxdark,fontFamily:Fonts.semi_bold}}>
-                    {(item.driverWaitTime ? item.driverWaitTime : item.waitingTime) + ' Mins'}
+                    {(item.driverWaitTime ? item.driverWaitTime : item.waitingTime) + ' ' + t('mins')}
                   </Text>
                 </View>
               ) : null}
@@ -127,7 +125,9 @@ AddressContainer.propTypes = {
       name: PropTypes.string,
       locationName: PropTypes.string
     })
-  ).isRequired
+  ).isRequired,
+  edit: PropTypes.bool,
+  live: PropTypes.bool,
 };
 
 const styles = StyleSheet.create({

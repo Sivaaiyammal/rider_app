@@ -68,7 +68,7 @@ export const bookRide = async (payload)=> {
 export const getUserStats = async (currentTripId) => {
   let url = `/publicrides/customer/getUserStats`;
   if (currentTripId !== null && currentTripId !== undefined) {
-    url += `&currentTripId=${currentTripId}`;
+    url += `?currentTripId=${currentTripId}`;
   }
   const { data } = await apiClient.get(url);
   return data;

@@ -84,8 +84,7 @@ const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => 
             </TouchableOpacity>
             </View>
         </View>
-        <View style={styles.handle}></View>
-      
+        {/* <View style={styles.handle}></View> */}
         <RideInfo distance={rideDistance} duration={estimatedDuration} showPreference={setShowPreference}/>
       
         </View>
@@ -245,7 +244,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             }
 
 
-            console.log("data?.result?.data?.fareRanges",data?.result?.data?.fareRanges)
+       
       
             transformEstimateDatStore(data?.result?.data?.fareRanges)
                    

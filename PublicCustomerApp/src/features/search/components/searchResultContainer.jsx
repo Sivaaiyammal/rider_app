@@ -43,17 +43,17 @@ const getFormattedAddress = (address) => {
 };
 
 
-const buildSections = (input) => {
-  if (!Array.isArray(input) || input.length === 0) return [];
-  const looksLikeSections = input.every(s => s && typeof s === 'object' && Object.prototype.hasOwnProperty.call(s, 'data'));
-  if (looksLikeSections) {
-    return input.map(s => ({
-      ...s,
-      data: Array.isArray(s.data) ? s.data : [],
-    }));
-  }
-  return [{ title: 'results', data: input }];
-};
+// const buildSections = (input) => {
+//   if (!Array.isArray(input) || input.length === 0) return [];
+//   const looksLikeSections = input.every(s => s && typeof s === 'object' && Object.prototype.hasOwnProperty.call(s, 'data'));
+//   if (looksLikeSections) {
+//     return input.map(s => ({
+//       ...s,
+//       data: Array.isArray(s.data) ? s.data : [],
+//     }));
+//   }
+//   return [{ title: 'results', data: input }];
+// };
 
 const formatDistanceKm = (meters) => {
   if (!meters && meters !== 0) return '';
@@ -141,7 +141,7 @@ const SearchResultContainer = ({ data, onItemPress }) => {
 
 
 
-  const sections = buildSections(data);
+  const sections = data;
 
 
   return  (

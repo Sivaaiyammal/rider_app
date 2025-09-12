@@ -16,7 +16,7 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
 import { useTranslation } from 'react-i18next';
 import useWayPointReorderStore from '../../booking/store/useWayPointReorderStore';
 import TripDetailsModal from '../../../components/TripDetailsModal';
-import { height } from '../../../utils/Utils';
+import { height,utils } from '../../../utils/Utils';
 import useRouteDraw from '../hooks/useRouteDraw';
 import MapIcon from '../../../components/Map/MapIcon';
 import StatusConatainerWrapper from '../component/StatusConatainerWrapper';
@@ -39,6 +39,8 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
   
 
   const handlePickLocation = async (item) => {
+      const formatedAddress=utils.formatAddressName(item)
+      item.address=formatedAddress
       try {
         const res =  await changeStopLocation(item)
         if (res.success) {
@@ -450,6 +452,7 @@ const styles = StyleSheet.create({
    
     fontSize: 15,
     fontFamily:Fonts.medium,
+    color:colors.grey_xxdark,
   },
   actionRow: {
     flexDirection: 'row',

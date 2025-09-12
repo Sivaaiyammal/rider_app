@@ -26,9 +26,12 @@ export const utils = {
 
   formatArrayAddress: (array) => {
 
-
-
     let addr =""
+
+    if(typeof array === 'string'){
+      return array
+    }
+      
     array.forEach((item,index) => {
       if(item !== ""){
         addr += utils.capitalizeFirstLetter(item) + (index < array.length - 1 ? ", " : " ")
@@ -54,13 +57,13 @@ export const utils = {
   },
   getRideStatus: (status) => {
  
-    if (status == 'COMPLETED') return 'Ride Completed'
-    if (status == 'PAYMENT_COMPLETED') return 'Ride Completed'
-    else if (status == 'DIVERGED') return 'Ride Diverged'
-    else if (status == 'CANCELLED') return 'Ride Cancelled'
-    else if (status == 'failed') return 'Ride Failed'
-    else if (status == 'PENDING') return 'Ride Cancelled'
-   
+    if (status == 'COMPLETED') return 'ride_completed'
+    if (status == 'PAYMENT_COMPLETED') return 'ride_completed'
+    else if (status == 'DIVERGED') return 'ride_diverged'
+    else if (status == 'CANCELLED') return 'ride_cancelled'
+    else if (status == 'failed') return 'ride_failed'
+    else if (status == 'PENDING') return 'ride_cancelled'
+    
   },
   getShortRideStatus: (status) => {
     if (status == 'COMPLETED') return 'COMPLETED'
@@ -520,7 +523,7 @@ export const utils = {
 
   formatAddressName: (address) => {
     if(address.locationFrom === "MAP"){
-      console.log(address,"address")
+     
       return utils.getFormatedHeader(address)
     }else if(address.locationFrom === "SEARCH"){
       return `${address.name},${address.address}`.charAt(0).toUpperCase() + `${address.name},${address.address}`.slice(1)

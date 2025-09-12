@@ -289,8 +289,9 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
   };
 
   const formatDistance = (km) => {
-    if(km){
-      return `${km.toFixed(1)} Km`;
+    const num = Number(km);
+    if (!isNaN(num) && isFinite(num)) {
+      return `${num?.toFixed(1)} Km`;
     }
     return `0 Km`;
   };
@@ -355,7 +356,7 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
               {/* <Text style={styles.companyEmail}> {(mergedRideData.companyInfo && mergedRideData.companyInfo.email) || defaultCompanyInfo.email}</Text> */}
               </View>
           
-              <Text style={styles.companyGstin}>GSTIN: {(mergedRideData.companyInfo && mergedRideData.companyInfo.gstin) || defaultCompanyInfo.gstin}</Text>
+              <Text style={styles.companyGstin}>{t('gstin')}: {(mergedRideData.companyInfo && mergedRideData.companyInfo.gstin) || defaultCompanyInfo.gstin}</Text>
             </View>
             
             <View style={styles.customerInfo}>
@@ -419,19 +420,19 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
 
             {/* Ride Cost */}
             <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>Ride Cost</Text>
+              <Text style={styles.breakdownLabel}>{t('ride_cost')}</Text>
               <Text style={styles.breakdownValue}>{formatCurrency(rideCost)}</Text>
             </View>
 
             {/* Waiting Cost */}
             <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>Waiting Cost</Text>
+              <Text style={styles.breakdownLabel}>{t('waiting_cost')}</Text>
               <Text style={styles.breakdownValue}>{formatCurrency(waitingCost)}</Text>
             </View>
 
             {/* Coupon Discount */}
             <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>Coupon Discount</Text>
+              <Text style={styles.breakdownLabel}>{t('coupon_discount')}</Text>
               <Text style={styles.breakdownValue}>-{formatCurrency(couponDiscount).replace('₹', '')}</Text>
             </View>
 

@@ -66,7 +66,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         {
           name: t('pickup_point'),
           location: [rideStartLocation.longitude, rideStartLocation.latitude],
-          address: utils.getFormatedHeader(rideStartLocation),
+          address: utils.formatAddressName(rideStartLocation),
           waitingTime: 0,
           isReached:false
         }
@@ -78,7 +78,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         stops.push({
           name: `${t('stop')} ${index + 1}`,
           location: [waypoint.longitude, waypoint.latitude],
-          address: utils.getFormatedHeader(waypoint),
+          address: utils.formatAddressName(waypoint),
           waitingTime: waypoint.waitingTime || 0,
           isReached:false
         });
@@ -89,7 +89,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     stops.push({
       name: t('drop_point'),
       location: [rideEndLocation.longitude, rideEndLocation.latitude],
-      address: utils.getFormatedHeader(rideEndLocation),
+      address: utils.formatAddressName(rideEndLocation),
       waitingTime: 0,
       isReached:false
     });

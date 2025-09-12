@@ -67,7 +67,7 @@ const MapScreen = () => {
   const {location,currentLocationName} = useLocationStore();
   const {setRideStartLocation,setRideEndLocation } = useRideBookingLocationStore()
   const { drivers } = useNearbyDriversStore();
-  const {setMapMarkers,setMapLocation} = useMapStore();
+  const {setMapMarkers,setMapLocation,setMapBounds} = useMapStore();
   useEffect(()=>{
 
   
@@ -164,11 +164,10 @@ const MapScreen = () => {
 
   useEffect(()=>{
     if(location && location.length > 0){
-      setMapLocation({
-            lat: location[1],
-            lng: location[0],
-            zoom: 18,
-          });
+      const bounds = utils.getBoundingBox([[location[0],location[1]]])
+      const margin = [50, 100, 50, height*0.4]
+      const finalBounds = [bounds, margin]
+      setMapBounds(finalBounds);
     }
   },[location])
 

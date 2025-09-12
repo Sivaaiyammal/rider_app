@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import PropTypes from 'prop-types';
 import { colors, Fonts } from '../constants/constants';
+import { useTranslation } from 'react-i18next';
 
 const DeleteAccountModal = ({
   visible,
@@ -18,6 +19,7 @@ const DeleteAccountModal = ({
   isLoading = false,
 }) => {
   const [reason, setReason] = useState('');
+  const { t } = useTranslation();
   return (
     <Modal
       animationType="fade"
@@ -33,32 +35,32 @@ const DeleteAccountModal = ({
           </View>
 
           {/* Title */}
-          <Text style={styles.modalTitle}>Delete Account</Text>
+          <Text style={styles.modalTitle}>{t('delete_account')}</Text>
 
           {/* Warning Message */}
           <Text style={styles.warningText}>
-            Are you sure you want to delete your account?
+            {t('delete_account_warning', 'Are you sure you want to delete your account?')}
           </Text>
 
           {/* Info Message */}
           <View style={styles.infoContainer}>
             <Text style={styles.infoText}>
-              • Your account will be permanently deleted after 15 days
+              • {t('delete_account_info_timeline')}
             </Text>
             <Text style={styles.infoText}>
-              • All your data including ride history will be removed
+              • {t('delete_account_info_data')}
             </Text>
             <Text style={styles.infoText}>
-              • This action cannot be undone
+              • {t('delete_account_info_cannot_undo')}
             </Text>
           </View>
 
           {/* Reason Input */}
           <View style={styles.reasonContainer}>
-            <Text style={styles.reasonLabel}>Reason (Optional)</Text>
+            <Text style={styles.reasonLabel}>{t('reason_optional')}</Text>
             <TextInput
               style={styles.reasonInput}
-              placeholder="Enter reason for deleting account..."
+              placeholder={t('delete_account_reason_placeholder')}
               value={reason}
               onChangeText={setReason}
               multiline
@@ -74,7 +76,7 @@ const DeleteAccountModal = ({
               onPress={onClose}
               disabled={isLoading}
             >
-              <Text style={styles.cancelButtonText}>CANCEL</Text>
+              <Text style={styles.cancelButtonText}>{t('cancel').toUpperCase()}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -89,7 +91,7 @@ const DeleteAccountModal = ({
               {isLoading ? (
                 <ActivityIndicator size="small" color="#ffffff" />
               ) : (
-                <Text style={styles.deleteButtonText}>DELETE ACCOUNT</Text>
+                <Text style={styles.deleteButtonText}>{t('delete_account')}</Text>
               )}
             </TouchableOpacity>
           </View>

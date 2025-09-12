@@ -28,9 +28,10 @@ import Overlay from '../../components/Overlay';
 import AppConfig from '../../Config/AppConfig';
 import {DataStore}from '../../controllers/DataStore';
 import PREF from '../../storage/PREF';
+import getGpsData from './services/getgpsdata';
 
 const RideStatus = () => {
-  
+  const { userdetails } = useUserInfoStore();
   const { t } = useTranslation();
   const [showOverlay, setShowOverlay] = useState(false);
   const {incrementCancelledTrips} = useUserInfoStore();
@@ -44,7 +45,7 @@ const RideStatus = () => {
   const [isCalculateDistance,setIsCalculateDistance] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const {gpsDistance, gpsDuration, loading} = useCalculateDistance({ tripId:tripId , startTime: 1717190400000, endTime: new Date().setHours(23, 59, 59, 999),enabled: isCalculateDistance});
-
+ 
 
   const handleOverlay = (action) => {
    
@@ -66,21 +67,20 @@ const RideStatus = () => {
         setShowBottomSheet(false);
         setShowBookingCancelModel(false);
 
-        await DataStore.clearData(PREF.CURRENT_TRIP)
+        
         
 
         incrementCancelledTrips()
 
         if (tripStatus === TripStatus.PICKEDUP && response?.totalFare?.fareDetails?.fare) {
           setOngoingingTripCancelled(true);
+
           setStackScreen('PaymentScreen',{})
           
 
         } else {
-         
-      
+         await DataStore.clearData(PREF.CURRENT_TRIP)
           resetCurrentRideInfo();
-          
           goBack();
           
         } 
@@ -116,9 +116,28 @@ const RideStatus = () => {
 
       // If the ride is ongoing, include total distance and time
       if (tripStatus === TripStatus.PICKEDUP) {
-        setCancelReason(reason);
-        setIsCalculateDistance(true);
+        const access_token = await DataStore.loadData('access_token');
+        const data = await getGpsData({
+          tripId: tripId,
+          startTime: 1717190400000,
+          endTime: new Date().setHours(23, 59, 59, 999),
+          token: access_token?.data,
+        });
+
+
+       if(data.distance && data.duration) {
+        const payload = {
+          tripId,
+          reason: cancelReason,
+          totalDistance: data.distance?.toFixed(2),
+          totalDuration: Math.round(data.duration)
+        };
+        
+        CancelRide(payload);
         return
+      }
+
+
       }
 
       const payload = {

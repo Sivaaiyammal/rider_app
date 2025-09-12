@@ -368,5 +368,12 @@
     "vehicle_number": "ವಾಹನ ಸಂಖ್ಯೆ",
     "download_invoice": "ಚಲನ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
     "email_invoice": "ಇಮೇಲ್ ಚಲನ",
-    "show_invoice": "ಚಲನ ತೋರಿಸಿ"
+    "show_invoice": "ಚಲನ ತೋರಿಸಿ",
+    "invoice": "ಸರಕುಪಟ್ಟಿ",
+    "ride_cost": "ಸವಾರಿ ವೆಚ್ಚ",
+    "waiting_cost": "ಕಾಯುವ ವೆಚ್ಚ",
+    "coupon_discount": "ಕೂಪನ್ ರಿಯಾಯಿತಿ",
+    "gstin": "GSTIN",
+    "ride_details": "ಪ್ರವಾಸದ ವಿವರಗಳು",
+    "trip_fare": "ಸವಾರಿ ದರ"
 }

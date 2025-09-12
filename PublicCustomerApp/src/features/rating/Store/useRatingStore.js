@@ -90,8 +90,12 @@ const useRatingStore = create((set, get) => ({
     }
 
     if (data?.trip?.finalDistance !== undefined) {
-        
-      setTripDistance(data.trip.finalDistance);
+        if(data.trip.finalDistance){
+          const num = Number(data.trip.finalDistance);
+          if (!isNaN(num) && isFinite(num)) {
+            setTripDistance(num);
+          }
+        }
     }
     if (data?.trip?.finalDuration !== undefined) {
       setTripDuration(data.trip.finalDuration);

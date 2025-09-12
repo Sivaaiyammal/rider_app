@@ -120,8 +120,7 @@ const RegisterationScreen = () => {
       setUserdetails(user);
    
       await DataStore.storeData('userdetails', user);
-    
-        
+  
         navigation.reset({
           index: 0,
           routes: [{ name: 'HomeScreen' }],

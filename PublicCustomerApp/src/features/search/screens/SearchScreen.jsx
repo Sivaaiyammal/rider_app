@@ -182,9 +182,6 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
 
         const searchResults = await performSearch(searchParams);
 
-        console.log("searchResults",JSON.stringify(searchResults));
-        
-
         if (searchResults?.unifiedSearchData) {
           const searchDataArray = {
             title:"unifiedSearchData",
@@ -200,7 +197,6 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           });
         } else if (searchResults?.searchData) {
           const searchDataArray = getSearchData(searchResults.searchData);
-          console.log("searchDataArray",JSON.stringify(searchDataArray));
           setOnSearchResults(searchDataArray);
         
           const ms = searchResults?.searchData?.matchedStrings || [];
@@ -299,7 +295,6 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   }, [isSearchFocused]);
  
   const selectedCallBack = async (item) => {
-    console.log("selectedCallBack",item);
     if (item?.sectionType === 'fast_match' || item?.stateVectorForMatches){
      
       if(item?.stateVectorForMatches){
@@ -309,14 +304,13 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           }
     }else{
 
-      console.log("item",item);
       onLocationNamePress(item);
     }
   
   };
 
   const removeStateVecotr = async (item) => {
-    console.log("removeStateVecotr",item);
+
     clearSingleStateVector(item.key, item.index);
     setOnSearchResults([])
     setStateVector(null);
@@ -326,7 +320,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
 
   // onpress on search results
   const onLocationNamePress = useCallback((item) => {
-    console.log("onLocationNamePress",item);
+    
     item["locationFrom"] = "SEARCH";
     storeRecentSearch(item);
     onSearchClick(item, searchType, index);

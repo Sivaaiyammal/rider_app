@@ -11,7 +11,7 @@ const FareHeader = ({ fare = '₹117.50', RideStatus = false }) => {
   return (
     <View style={styles.headerContainer}>
     <ImageBackground source={rideFareBackground} style={styles.imageBackground}>
-    <Text style={styles.TripStatus}>{RideStatus}</Text>
+      <Text style={styles.TripStatus}>{t(RideStatus)}</Text>
       {/* <Text style={styles.label}>{t('ride_fare')}</Text> */}
       <Text style={styles.fare}>₹ {fare != null ? fare.toFixed(2) : '0.00'}</Text>
       

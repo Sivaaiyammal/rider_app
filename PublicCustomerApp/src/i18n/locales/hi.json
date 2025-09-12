@@ -370,5 +370,12 @@
     "unexpected_error_occurred": "एक अप्रत्याशित त्रुटि हुई। कृपया पुनः प्रयास करें।",
     "loading": "लोड हो रहा है...",
     "trip_details": "यात्रा विवरण",
+    "invoice": "चालान",
+    "ride_cost": "सवारी लागत",
+    "waiting_cost": "प्रतीक्षा लागत",
+    "coupon_discount": "कूपन छूट",
+    "gstin": "जीएसटीआईएन",
+    "ride_details": "यात्रा विवरण",
+    "trip_fare": "यात्रा किराया"
     
 }
