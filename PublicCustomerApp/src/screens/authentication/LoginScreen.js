@@ -12,6 +12,7 @@ import {DataStore} from '../../controllers/DataStore';
 
 import {requestOTPMutation} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
+import { colors } from '../../constants/constants';
 
 
 const LoginScreen = () => {
@@ -111,6 +112,7 @@ const LoginScreen = () => {
               keyboardType="number-pad"
               onChangeText={handleChange}
               value={phoneNumber}
+              placeholderTextColor={colors.grey_xdark}
               maxLength={10}
             />
             <View style={loginStyles.phoneIcon}>

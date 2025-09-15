@@ -58,7 +58,7 @@ const LanguageScreen = ({fromDrawer}) => {
   return (
    
    
-    <View style={[styles.screen, { backgroundColor: theme.background }]}>
+    <View style={[styles.screen]}>
       
         <View style={styles.header}> 
       {fromDrawer && <NavBar withBg={true} onBackPress={() => goBack()} title={'Choose Language'} />}       
@@ -84,9 +84,9 @@ const LanguageScreen = ({fromDrawer}) => {
         ))}
       </View>
       <TouchableOpacity
-        style={[styles.nextBtn, { backgroundColor: theme.primary }]}
+        style={[styles.nextBtn]}
         onPress={() => onNextPress()}>
-        <Text style={[styles.nextBtnTxt, { color: isDarkMode ? colors.black : colors.white}]}>{fromDrawer ? t('done') : t('next')}</Text>
+        <Text style={[styles.nextBtnTxt]}>{fromDrawer ? t('done') : t('next')}</Text>
       </TouchableOpacity>
     </View>
     
@@ -167,5 +167,6 @@ const styles = StyleSheet.create({
       fontFamily: Fonts.medium,
       color: colors.white,
       fontSize: 14,
+      textTransform: 'uppercase',
     },
   });           

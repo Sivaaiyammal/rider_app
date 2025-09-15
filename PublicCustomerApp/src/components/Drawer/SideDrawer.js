@@ -20,7 +20,6 @@ import ProfileImage from '../../assets/image/svgIcons/profileImage.svg';
 import useUserInfoStore from '../../store/useUserInfoStore';
 import useSupportStore from '../../features/support/store/useSupportStore';
 import AdaptiveText from '../Common/AdaptiveText';
-import BottomSheetWorkingExample from '../BottomSheetWorkingExample';   
 import LinearGradient from 'react-native-linear-gradient';
 import {colors} from '../../constants/constants';
 const SideDrawerV2 = ({ handleMenu }) => {
@@ -140,7 +139,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
     // {
     //   id: 'test-screen',
     //   name: t('test_screen'),
-    //   screen: 'BottomSheetWorkingExamples',
+    //   screen: 'GoogleMapScreen',
     //   icon: <Ionicons name="flask" size={20} color="black" />,
     // },
   ];

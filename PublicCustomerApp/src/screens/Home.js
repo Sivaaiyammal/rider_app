@@ -35,17 +35,16 @@ import SavedPlacesScreen from '../features/savedPlaces/screens/SavedPlacesScreen
 import PreferencesScreen from '../features/preferences/screens/PreferencesScreen';
 import LegalScreen from '../features/legal/screens/LegalScreen';
 import AddPlaceDetailScreen from '../features/savedPlaces/screens/addplaceDetailScreen';
-import TestScreen from '../features/test/screens/TestScreen';
+import GoogleMapScreen from '../features/googleMap/screens/GoogleMapScreen';
 import SupportScreen from '../features/support/screens/SupportScreen';
 import TicketDetailScreen from '../features/support/screens/TicketDetailScreen';
 import TripSelectionScreen from '../features/support/screens/TripSelectionScreen';
-import BottomSheetWorkingExample from '../components/BottomSheetWorkingExample';
 import PREF from '../storage/PREF';
 const Home = () => {
   const {location} = useLocationStore();
   const { stackScreen } = useStackScreenStore();
   const permissionsRequested = useRef(false);
-  const [mapReady, setMapReady] = useState(false);
+  const [mapReady] = useState(false);
   const { setHomelocation, setWorklocation, setIsPreferenceShow} = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
@@ -251,8 +250,8 @@ const Home = () => {
         return <TicketDetailScreen {...params} />;
       case 'TripSelectionScreen':
         return <TripSelectionScreen {...params} />;
-      case 'BottomSheetWorkingExamples':
-        return <TestScreen {...params} />;
+      case 'GoogleMapScreen':
+        return <GoogleMapScreen {...params} />;
      
       default:
         return null;

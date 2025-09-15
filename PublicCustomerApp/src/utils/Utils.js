@@ -41,16 +41,20 @@ export const utils = {
   },
 
   getFormatedHeader: (currentLocationName) => {
-    // Support both placeName and name fields for the location name
+   
     const name =
       currentLocationName?.placeName ||
       currentLocationName?.name ||
-      '';
+      null;
+
+    
 
     if (name && currentLocationName.address) {
       return `${utils.capitalizeFirstLetter(name)}, ${utils.formatArrayAddress(currentLocationName.address)}`;
     } else if (name) {
       return utils.capitalizeFirstLetter(name);
+    } else if (currentLocationName?.address){
+      return utils.formatArrayAddress(currentLocationName.address)
     }
 
     return currentLocationName;
@@ -522,8 +526,8 @@ export const utils = {
   },
 
   formatAddressName: (address) => {
+   
     if(address.locationFrom === "MAP"){
-     
       return utils.getFormatedHeader(address)
     }else if(address.locationFrom === "SEARCH"){
       return `${address.name},${address.address}`.charAt(0).toUpperCase() + `${address.name},${address.address}`.slice(1)
