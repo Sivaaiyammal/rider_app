@@ -29,7 +29,7 @@ import { DataStore } from '../../../controllers/DataStore';
 import {height} from '../../../utils/Utils';
 import FavLabelItems from '../../home/components/FavLabelItems';
 
-import debounce from 'lodash/debounce';
+// Removed debounce import
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
@@ -53,6 +53,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const searchInputRef = useRef(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
+  const searchRequestIdRef = useRef(0);
 
   // Region configuration
   const REGIONS = useMemo(() => [
@@ -133,26 +134,28 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
 
   const searchAPI = useCallback(
     async (value, statevectore = {}, fullSearch = false) => {
+      const requestId = ++searchRequestIdRef.current;
       try {
-       
+        console.log("call search api", value);
         const normalizedStateVector = statevectore || {};
         const stateVectorStr = JSON.stringify(normalizedStateVector);
         const cacheKey = `${value.toLowerCase().trim()}_${stateVectorStr}`;
         const cachedResult = searchCache.get(cacheKey);
 
-       
         if (cachedResult && Date.now() - cachedResult.timestamp < CACHE_EXPIRY) {
-          setOnSearchResults(cachedResult.results);
-          setMatchedStrings(cachedResult.matchedStrings || []);
-          setHasSearchResults(Boolean(cachedResult.hasSearchResults));
+          // Only apply cached results if this is still the latest request
+          if (requestId === searchRequestIdRef.current) {
+            setOnSearchResults(cachedResult.results);
+            console.log("cachedResult for", value);
+            setMatchedStrings(cachedResult.matchedStrings || []);
+            setHasSearchResults(Boolean(cachedResult.hasSearchResults));
+          }
           return;
         }
 
- 
         if (statevectore && Object.keys(statevectore).length > 0) {
           fullSearch = true;
         }
-
 
         const searchParams = {
           latitude: location[1] || 11.0168,
@@ -170,15 +173,16 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           category: [],
         };
 
+        // Mark loading for the current request
         setIsLoading(true);
 
-
         const searchResults = await performSearch(searchParams);
-
-        if (searchResults?.unifiedSearchData) {
+        // Discard results from stale requests
+        if (requestId !== searchRequestIdRef.current) return;
+        if (searchResults?.unifiedSearchData && searchResults?.unifiedSearchData?.length > 0) {
           const searchDataArray = {
-            title:"unifiedSearchData",
-            data:searchResults.unifiedSearchData
+            title: "unifiedSearchData",
+            data: searchResults.unifiedSearchData,
           };
           setOnSearchResults([searchDataArray]);
           setHasSearchResults(true);
@@ -191,7 +195,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         } else if (searchResults?.searchData) {
           const searchDataArray = getSearchData(searchResults.searchData);
           setOnSearchResults(searchDataArray);
-        
+
           const ms = searchResults?.searchData?.matchedStrings || [];
           setMatchedStrings(ms);
           setHasSearchResults(true);
@@ -213,31 +217,27 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           });
         }
       } catch (e) {
+        // Ignore cancellations or stale requests
+        const msg = String(e?.message || e || '').toLowerCase();
+        const code = String(e?.code || '').toLowerCase();
+        const isCancelled = msg.includes('cancel') || code === 'cancelled' || code === 'canceled' || code === 'ecanceled';
+        if (requestId !== searchRequestIdRef.current || isCancelled) {
+          return;
+        }
         console.error('Error performing search:', value, e);
         setOnSearchResults([]);
       } finally {
-        setIsLoading(false);
+        // Only clear loading if this is the latest active request
+        if (requestId === searchRequestIdRef.current) {
+          setIsLoading(false);
+        }
       }
     },
     [location, setOnSearchResults, selectedRegion]
   );
 
-  const debouncedSetSearchUnit = useMemo(() => debounce((query) => {
-    const trimmedQuery = query.trim();
-    if (trimmedQuery) {
-      searchAPI(trimmedQuery);
-    } else {
-      setOnSearchResults([]);
-    }
-  }, 300), [searchAPI]);
+  // Removed debouncedSetSearchUnit and related useEffect
 
-  useEffect(() => {
-    return () => {
-      debouncedSetSearchUnit.cancel();
-    };
-  }, [debouncedSetSearchUnit]);
-
-  // Cleanup effect to clear all state vectors when component unmounts
   useEffect(() => {
     return () => {
       clearAllStateVectors();
@@ -245,21 +245,11 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     };
   }, []);
 
-  // Memoize the input change handler to avoid unnecessary re-renders
-  const _onChangeText = useCallback(
+  const _onChangeText =
     value => {
       setSearchTxt(value);
-      // Only trigger search if the value has meaningful content (not just spaces)
-      if (value.trim().length > 0) {
-        debouncedSetSearchUnit(value);
-      } else {
-        // Clear results immediately when input is empty
-        setOnSearchResults([]);
-        debouncedSetSearchUnit.cancel();
-      }
-    },
-    [debouncedSetSearchUnit],
-  );
+      searchAPI(value);
+    };
 
   useEffect(() => {
     Animated.parallel([
@@ -339,7 +329,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     // Only trigger search on focus if there's text AND no current results
     // This prevents unnecessary API calls when just focusing the input
     if (searchTxt.trim() && (!onSearchResults || onSearchResults.length === 0)) {
-      debouncedSetSearchUnit(searchTxt);
+      searchAPI(searchTxt);
     }
   };
 
