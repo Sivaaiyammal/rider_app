@@ -7,7 +7,7 @@ const useMapStore = create((set) => ({
     setMapShown: mapShown => set({ mapShown }),
 
     userLocation: null,
-    setUserLocation: loc => set({ userLocation: loc }),
+    setUserLocation: callback => set({ userLocation: callback }),
 
     mapMarkers: [],
     setMapMarkers: markers => set({ mapMarkers: markers }),

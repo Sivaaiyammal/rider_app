@@ -100,12 +100,9 @@ class NEMap extends Component {
     // User location updates
     this.userLocationChangeListener = DeviceEventEmitter.addListener(
       'onUserLocationChange',
-      data => {
-        const fixedData = {
-          longitude: parseFloat(data.longitude.toFixed(5)),
-          latitude: parseFloat(data.latitude.toFixed(5)),
-        };
-        this.props.onUserLocationChange?.(fixedData);
+      (data) => {
+        console.log("data", data);
+        this.props.onUserLocationChange?.(data);
       },
     );
 

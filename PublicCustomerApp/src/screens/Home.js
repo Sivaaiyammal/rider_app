@@ -21,9 +21,8 @@ import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRide
 import PaymentScreen from '../features/payment/screens/PaymentScreen';
 import useAssignedDriverInfoStore  from '../features/rideStatus/store/useAssignedDriverInfoStore';
 import TripFeedbackScreen from '../features/rating/screens/TripFeedbackScreen';
-import useLocationStore from '../store/useLocationStore';
 import { DataStore } from '../controllers/DataStore';
-import useMapStore from '../store/useMapStore';
+import useMapStore from '../features/map/store/useMapStore';
 import { useNearbyPollingControl } from '../store/useNearByDriverPollingControl';
 
 import LanguageScreen from './OnBoard/LanguageScreen.jsx';
@@ -39,9 +38,11 @@ import GoogleMapScreen from '../features/googleMap/screens/GoogleMapScreen';
 import SupportScreen from '../features/support/screens/SupportScreen';
 import TicketDetailScreen from '../features/support/screens/TicketDetailScreen';
 import TripSelectionScreen from '../features/support/screens/TripSelectionScreen';
+import useLocationStore from '../store/useLocationStore';
 import PREF from '../storage/PREF';
 const Home = () => {
   const {location} = useLocationStore();
+  const { setLocation } = useLocationStore.getState();
   const { stackScreen } = useStackScreenStore();
   const permissionsRequested = useRef(false);
   const [mapReady] = useState(false);
@@ -50,7 +51,7 @@ const Home = () => {
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
   const { setUserdetails ,setID,id,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips} = useUserInfoStore();
-  const { setMapShown , mapShown,userLocation} = useMapStore();
+  const { setMapShown , mapShown, setUserLocation} = useMapStore();
   const { setTarget } = useNearbyPollingControl();
   
   const checkAllPermissions = async () => {
@@ -65,6 +66,15 @@ const Home = () => {
     }
    
   };
+  const handleUserLocatioChange = (location) => {
+    console.log("userLocation", location);
+    setLocation([location.longitude, location.latitude]);
+  }
+
+  useEffect(() => {
+    setUserLocation(handleUserLocatioChange);
+   
+  }, []);
 
 
   const checkFavouriteLocation = async () => {

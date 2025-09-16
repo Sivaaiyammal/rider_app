@@ -9,6 +9,7 @@ import {
   Modal,
   Platform,
   ScrollView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -50,7 +51,6 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const { t } = useTranslation(); 
   
   const searchInputRef = useRef(null);
-  const abortControllerRef = useRef(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
@@ -135,13 +135,6 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     async (value, statevectore = {}, fullSearch = false) => {
       try {
        
-        if (abortControllerRef.current) {
-          abortControllerRef.current.abort();
-        }
-
-      
-        abortControllerRef.current = new AbortController();
-
         const normalizedStateVector = statevectore || {};
         const stateVectorStr = JSON.stringify(normalizedStateVector);
         const cacheKey = `${value.toLowerCase().trim()}_${stateVectorStr}`;
@@ -220,14 +213,6 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           });
         }
       } catch (e) {
-        // Silently handle cancellation
-        if (
-          e.name === 'AbortError' ||
-          e.message?.includes('cancelled') ||
-          e.message?.includes('Search operation was cancelled')
-        ) {
-          return;
-        }
         console.error('Error performing search:', value, e);
         setOnSearchResults([]);
       } finally {
@@ -249,9 +234,6 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   useEffect(() => {
     return () => {
       debouncedSetSearchUnit.cancel();
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
     };
   }, [debouncedSetSearchUnit]);
 
@@ -391,7 +373,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   }
 
   return (
-    <View style={styles.screen}>
+    <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
         <NavBar onBackPress={onGoBack} title={t('search')} />
         
         {/* Search Input Container */}
@@ -560,7 +542,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
             </View>
           </TouchableOpacity>
         </Modal>
-      </View>
+      </KeyboardAvoidingView>
   );
 };
 
@@ -754,7 +736,6 @@ const styles = StyleSheet.create({
   },
   bottomBtn: {
     position: 'absolute',
-    
     bottom: 0,
     alignSelf: 'center',
     paddingVertical: 15,

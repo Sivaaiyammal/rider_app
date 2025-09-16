@@ -40,6 +40,7 @@ const MapContainer = ({ mapStyle }) => {
     setSearchPOIResults,
     setUserLocation,
     setMapMoving,
+    userLocation,
     setDisduration,
     setSearchPOIError,
     loading,
@@ -100,7 +101,7 @@ const MapContainer = ({ mapStyle }) => {
         onMapDblclick={mapDblclickCallback}
         navigation={startNavigation}
         onDirectionReady={directionReady}
-        onUserLocationChange={(location) => setUserLocation([location.latitude, location.longitude])}
+        onUserLocationChange={userLocation}
         distanceListner={setDisduration}
         onSearchPOIError={setSearchPOIError}
         onNavigationEnd={(e) => console.log('hari--->>navigationEnd-->>', e)}
