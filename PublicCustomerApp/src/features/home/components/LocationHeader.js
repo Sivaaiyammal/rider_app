@@ -33,10 +33,10 @@ import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
   
     const fetchAddressName = async () => {
       if (location && location.length === 2) {
-        const coordinates = [location[1], location[0]];
+        
         try {
           const search = new SearchAPI();
-          const response = await search.reverseGeocode(coordinates);
+          const response = await search.reverseGeocode(location[0],location[1]);
           setCurrentLocationName(response);
           
         } catch (e) {
