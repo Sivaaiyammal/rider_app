@@ -33,12 +33,12 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   const {pickedLocation,setPickedLocation} = usePropsStore();
   const [mapMoving,setMapMoving] = useState(false)
   const { t } = useTranslation();
-  const fetchAddressName = useCallback(async (lat, lng) => {
-    const coordinates = [lat, lng];
+  const fetchAddressName = useCallback(async (longitude, latitude) => {
+    
   
     try {
       const search = new SearchAPI();
-      const response = await search.reverseGeocode(coordinates);    
+      const response = await search.reverseGeocode(longitude, latitude);    
       return response 
 
     } catch (e) {
@@ -51,11 +51,11 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
  
   const debouncedMapCenterChange = useDebouncedAPICall(async (data) => {
     setIsAddressLoading(true);
-    const response = await fetchAddressName(data.longitude, data.latitude, true);
+    const response = await fetchAddressName(data.longitude, data.latitude);
     console.log(response,"response")
     let item = {
-      latitude: data.longitude,
-      longitude: data.latitude,
+      latitude: data.latitude,
+      longitude: data.longitude,
       placeName: response.placeName,
       type:locationType,
       locationFrom:"MAP"

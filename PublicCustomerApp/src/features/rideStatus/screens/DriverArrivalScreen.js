@@ -1,5 +1,5 @@
         import React, { useRef, useState,useEffect     } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Linking } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Linking, ActivityIndicator } from 'react-native';
 import { Fonts, colors } from '../../../constants/constants';
 import { getVehicleImage } from '../types/vehicleImd';
 import useTrackHook from '../hooks/useTrackHook';
@@ -21,6 +21,8 @@ import useRouteDraw from '../hooks/useRouteDraw';
 import MapIcon from '../../../components/Map/MapIcon';
 import StatusConatainerWrapper from '../component/StatusConatainerWrapper';
 import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
+import useUserInfoStore from '../../../store/useUserInfoStore';
+import { makeMaskedCallToDriver } from '../../../API/EndPoints/EndPoints';
 
   const DriverArrivalScreen = ({onCancel,handleOverlay}) => {
   // Dummy data
@@ -34,7 +36,7 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 
   const {markersList} = useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"pickup");
   const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destinationlat:stops[0].location[1],destinationlon:stops[0].location[0],driverLat:driverLatitude,driverLon:driverLongitude})  
-  
+  const {userdetails} = useUserInfoStore();
 
   
 
@@ -69,10 +71,32 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 
   
 
-  const handleCallDriver = () => {
-    console.log('driverPhone',phone);
-    if (phone) {
-      Linking.openURL(`tel:${phone}`);
+  const handleCallDriver = async () => {
+    if (isCallingDriver) return;
+    const passengerNumber = userdetails?.phone;
+
+    if (!passengerNumber || !phone) {
+      showNotification('Error', 'Unable to place call');
+      return;
+    }
+
+    try {
+      setIsCallingDriver(true);
+      const bodyData = {
+        from: passengerNumber,
+        to: phone,
+      };
+      const makeCall = await makeMaskedCallToDriver(bodyData);
+
+      if (!makeCall?.success) {
+        showNotification('Error', 'Error in making call to driver');
+      }else{
+        showNotification('Calling to Driver', 'Call initiated with driver shortly', 'success');
+      }
+    } catch (error) {
+      showNotification('Error', 'Error in making call to driver');
+    } finally {
+      setIsCallingDriver(false);
     }
   }
 
@@ -92,6 +116,9 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 
   // Check if driver photo URL is valid
   const driverPhotoUri = driverPhoto && driverPhoto.trim() !== '' ? driverPhoto : null;
+
+  // Loading state for calling driver
+  const [isCallingDriver, setIsCallingDriver] = useState(false);
 
     return (
         <StatusConatainerWrapper backgroundColor='black' onMapIconPress={()=>{
@@ -207,9 +234,15 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
       {/* Action buttons */}
       <View style={styles.actionRow}>
      
-        <TouchableOpacity style={styles.callBtn} onPress={handleCallDriver}>
-          <Icon name="phone" size={20} color={colors.white} />
-             <Text style={styles.callBtnText}>{t('call_driver')}</Text> 
+        <TouchableOpacity style={[styles.callBtn, isCallingDriver && { opacity: 0.7 }]} onPress={handleCallDriver} disabled={isCallingDriver}>
+          {isCallingDriver ? (
+            <ActivityIndicator size="small" color={colors.white} />
+          ) : (
+            <>
+              <Icon name="phone" size={20} color={colors.white} />
+              <Text style={styles.callBtnText}>{t('call_driver')}</Text>
+            </>
+          )}
         </TouchableOpacity>
         {/* <TouchableOpacity style={styles.shareBtn}>
           <Icon name="share" size={25} color={colors.white} />

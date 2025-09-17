@@ -36,10 +36,24 @@ const performSearch = async ({
         radius,               // radius - Search radius in meters
         categoryFilter        // category - POI category filter
       );
+
+    console.log("searchResponse", latitude, //24.4539,    // latitude
+      longitude, // 54.3773,  // longitude
+      searchString,         // searchString - Text to search for
+      mapUnitName,                // mapUnitName - Map region/zone name
+      stateVector,          // stateVectorForMatches - State vector for matching results   
+      resultCount,          // resultCount - Number of results to return
+      langCode,             // lang_code - Language code for results
+      debug,                // debug - Enable debug mode
+      onlineOnly,           // onlineOnly - Search only online results
+      makeFullSearch,       // makeFullSearch - Perform full search
+      isPoiSearch,          // isPoiSearch - Search for points of interest
+      radius,               // radius - Search radius in meters
+      categoryFilter  ,searchResponse);
       
     return searchResponse;
   } catch (error) {
-    console.error('Error performing search:', error);
+    console.error('Error performing search:', error, searchString);
     throw error;
   }
 };

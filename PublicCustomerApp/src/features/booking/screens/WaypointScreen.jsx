@@ -60,8 +60,7 @@ const WaypointScreen = ({fromPlanScreen=false}) => {
     
   };
 
-  console.log("onGoingRideStops",onGoingRideStops)
-  console.log("reOrderWaypoints",reOrderWaypoints)
+ 
   
 
 
@@ -70,7 +69,7 @@ const WaypointScreen = ({fromPlanScreen=false}) => {
     if (!reOrderWaypoints.length) {
     
       let Arr = []
-      console.log("fromPlanScreen",fromPlanScreen)
+      
       if (!onGoingRideStops) {
         if (rideStartLocation) {
           Arr.push(rideStartLocation)
@@ -81,13 +80,9 @@ const WaypointScreen = ({fromPlanScreen=false}) => {
         if (rideEndLocation) {
           Arr.push(rideEndLocation)
         }
-        console.log("Arr",Arr)
-
      
 
-     
-
-        // Transform the waypoints with proper type properties
+    
         const transformedData = Arr.map((waypoint, index) => ({
           ...waypoint,
           id: waypoint.id || `waypoint-${index}-${Date.now()}`,

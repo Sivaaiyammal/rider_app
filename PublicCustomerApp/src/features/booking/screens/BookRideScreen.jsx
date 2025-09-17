@@ -54,7 +54,7 @@ const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => 
     const {setMapBounds} = useMapStore()
     
     const handleAddStop = () => {
-        goBack()
+      
         setStackScreen('WaypointScreen',{})
     }
     const handleCurrentLocation = async () => {

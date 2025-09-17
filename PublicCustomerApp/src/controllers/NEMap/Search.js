@@ -21,16 +21,16 @@ class SearchAPI {
         return data;
     }
 
-    async reverseGeocode(location, onlyAddress = false) {
+    async reverseGeocode(longitude, latitude) {
         if (this.searchAbortController) this.searchAbortController.abort()
         this.searchAbortController = new AbortController()
+        
 
-        const longitude = location[1],
-            latitude = location[0]
 
         if (SearchAPI.CACHE[longitude + latitude]) return SearchAPI.CACHE[longitude + latitude]
         let response = await fetch(`${ApiConfig.NE_ROOT_URL}?data={"addDebugInfo":false,"input":"${longitude},${latitude}","language":"en","limitResults":10,"mapunit":"india","sections":["reverse_geocode"],"userPos":[${longitude},${latitude}],"version":"1.2.0.0"}`, { signal: this.searchAbortController.signal })
         let data = await response.json()
+        
         let { reverse_geocode } = data;
 
      

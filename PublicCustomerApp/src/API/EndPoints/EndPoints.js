@@ -150,3 +150,12 @@ export const deleteAccount = async (payload) => {
     const {data} = await apiClient.post('/publicrides/payments/customer/create-order', payload)
     return data
   }
+
+  export const makeMaskedCallToDriver = async (payload) => {
+    const {data} = await apiClient.post('/publicrides/customer/makeMaskedCallToDriver', payload)
+    return data
+  }
+
+
+
+

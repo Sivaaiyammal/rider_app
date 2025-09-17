@@ -276,8 +276,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                             public void onRegionDidChange(boolean b) {
 
                                 LngLat mapCenter = new LngLat(
-                                        mapController.getCameraPosition().latitude,
-                                        mapController.getCameraPosition().longitude);
+                                        mapController.getCameraPosition().longitude,
+                                        mapController.getCameraPosition().latitude);
 
                                 double latitude = mapCenter.latitude;
                                 double longitude = mapCenter.longitude;

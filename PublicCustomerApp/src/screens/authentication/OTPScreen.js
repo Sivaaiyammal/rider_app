@@ -76,11 +76,10 @@ const OTPScreen = ({route}) => {
             }),
           );
         } else {
-          navigation.dispatch(
-            CommonActions.navigate({
-              name: 'HomeScreen',
-            }),
-          );
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'HomeScreen' }],
+          });
         }
         showNotification('OTP Verified', 'OTP Verified Successfully', 'success');
       } else {

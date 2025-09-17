@@ -173,11 +173,10 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           category: [],
         };
 
-        // Mark loading for the current request
         setIsLoading(true);
 
         const searchResults = await performSearch(searchParams);
-        // Discard results from stale requests
+       
         if (requestId !== searchRequestIdRef.current) return;
         if (searchResults?.unifiedSearchData && searchResults?.unifiedSearchData?.length > 0) {
           const searchDataArray = {
