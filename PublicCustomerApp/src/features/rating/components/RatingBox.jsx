@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import PropTypes from 'prop-types';
-import { Fonts } from '../../../constants/constants';
+import { Fonts, colors } from '../../../constants/constants';
 import { useTranslation } from 'react-i18next';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 const RatingBox = ({ onRatingSubmit, title , description}) => {
   const {t} = useTranslation();
   const [rating, setRating] = useState(0);
@@ -46,13 +47,13 @@ const RatingBox = ({ onRatingSubmit, title , description}) => {
     <View style={styles.container}>
       <View style={styles.card}>
         {/* Title */}
-        <Text style={styles.title}>{t('how_is_your_trips')}</Text>
+        <AdaptiveText style={styles.title}>{t('how_is_your_trips')}</AdaptiveText>
         
         {/* Dotted line */}
         <View style={styles.dottedLine} />
         
         {/* Description */}
-        <Text style={styles.description}>{t('your_feedback_will_help_us_improving_driving_experience_better')}</Text>
+        <AdaptiveText style={styles.description}>{t('your_feedback_will_help_us_improving_driving_experience_better')}</AdaptiveText>
         
         {/* Star Rating */}
         <View style={styles.starsContainer}>
@@ -63,7 +64,7 @@ const RatingBox = ({ onRatingSubmit, title , description}) => {
         <TextInput
           style={styles.commentsInput}
           placeholder={t('comments_optional')}
-          placeholderTextColor="#999"
+          placeholderTextColor={colors.grey_dark}
           value={comments}
           onChangeText={setComments}
           multiline
@@ -80,7 +81,7 @@ const RatingBox = ({ onRatingSubmit, title , description}) => {
           onPress={handleSubmit}
           disabled={rating === 0}
         >
-          <Text style={styles.submitButtonText}>{t('submit')}</Text>
+          <AdaptiveText style={styles.submitButtonText}>{t('submit')}</AdaptiveText>
       </TouchableOpacity>
     </View>
   );
@@ -108,13 +109,13 @@ const styles = StyleSheet.create({
     padding: 16,
     width: '100%',
     borderWidth: 0.5,
-    borderColor: '#bdbdbd',
+    borderColor: colors.grey_dark,
     marginBottom: 15,
   },
   title: {
     fontSize: 20,
     fontFamily:Fonts.medium,
-    color: '#000',
+    color: colors.black_primary,
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -124,12 +125,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginHorizontal: 20,
     borderBottomWidth: 1,
-    borderColor: '#bdbdbd',
+    borderColor: colors.grey_dark,
     borderStyle: 'dashed',
   },
   description: {
     fontSize: 14,
-    color: '#666',
+    color: colors.black_primary,
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 20,
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
-    color: '#333',
+    color: colors.black_primary,
     minHeight: 80,
    
   
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ccc',
   },
   submitButtonText: {
-    color: 'white',
+    color: colors.white,
     fontSize: 16,
     fontFamily:Fonts.medium
   },

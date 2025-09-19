@@ -65,11 +65,12 @@ export const drawerStyles = StyleSheet.create({
   },
   contentContainer:{
     marginTop:10,
-    width:'90%',
-    alignSelf:'center'
+    width:'100%',
+    alignSelf:'center',
+    padding:10,
   },
   drawerBtns:{
-    width:"100%",
+    width:'100%',
     flexDirection:'row',
     alignItems:'center',
     justifyContent:'space-between',
@@ -83,6 +84,8 @@ export const drawerStyles = StyleSheet.create({
     fontFamily:Fonts.regular,
     fontSize:17,
     color:colors.black,
+    textWrap:"wrap",
+    maxWidth:'95%',
     
   }
 });

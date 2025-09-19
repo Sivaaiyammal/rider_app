@@ -1,5 +1,5 @@
 import React, { useState ,useEffect} from 'react';
-import { ScrollView, View, StyleSheet ,Text,TouchableOpacity} from 'react-native';
+import { ScrollView, View, StyleSheet ,Text,TouchableOpacity, ActivityIndicator } from 'react-native';
 import FareHeader from '../../rideHistory/components/FareHeader';
 import TripMetaInfo from '../../rideHistory/components/TripMetaInfo';
 import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
@@ -17,15 +17,16 @@ import { getTripDetails } from '../../../API/EndPoints/EndPoints';
 import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
 
 import usePaymentStore from '../store/usePaymentStore';
-import AppConfig from '../../../Config/AppConfig';
 import ScrollHintChevron from '../../../components/Common/ScrollHintChevron';
 import { createOrder } from '../../../API/EndPoints/EndPoints';
 import RazorpayCheckout from 'react-native-razorpay';
-import APIURLConfig from '../../../Config/APIURLConfig';
-import { showToast } from '../../../utils/Toast';
+import Config from "react-native-config";
+
 import { showNotification } from '../../../components/NotificationManger';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import  useUserInfoStore  from '../../../store/useUserInfoStore';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
+import useConfigStore from '../../../store/useConfigStore'; 
 
 const PaymentScreen = () => {
 
@@ -34,7 +35,9 @@ const PaymentScreen = () => {
   const [showInvoice, setShowInvoice] = useState(false);
   const [svHeight, setSvHeight] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
-  const isPaymentGateway = AppConfig.PAYMENT_METHODS === "PG";
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const { appConfig } = useConfigStore();
+  const isPaymentGateway = appConfig?.PAYMENT_METHODS === "PG";
   const {setStackScreen} = useStackScreenStore();
   const { incrementTotalSpend,incrementCompletedTrips } = useUserInfoStore();
   const handleInvoicePress = () => {
@@ -118,91 +121,85 @@ const PaymentScreen = () => {
   const shouldShowScrollHint = contentHeight > svHeight + 20 ;
 
   const handlePayNow = async () => {
+    if (isProcessingPayment) return; // Prevent double tap
+    setIsProcessingPayment(true);
 
-
-       const driveracountNumber = driverDetails?.razorPayId;
-       if(!driveracountNumber){
-        showNotification("Driver account number not found","Please contact support","error");
+    try {
+      console.log(driverDetails,"driverDetails")
+      const driveracountNumber = driverDetails?.razorPayId;
+      if(!driveracountNumber){
+        showNotification(t('driver_account_number_not_found'),t('please_contact_support'),"error");
+        setIsProcessingPayment(false);
         return;
-       }
+      }
 
-       const splitAmount = (
-         (fareDetails?.breakdown?.subtotal ?? 0) +
-         (fareDetails?.breakdown?.taxes?.total ?? 0)
-       ).toFixed(2);
-    
-   
-      
-        const receiptId = `Rept-${rideId}`;
+      const splitAmount = fareDetails?.breakdown?.driverEarnings?.toFixed(2);
 
-        const transfer=[
-          {
-            "account": "acc_RBAIEQk10FZmhU",
-            "amount": splitAmount*100,
-            "currency": "INR",
-          },
-        ]
-        const response = await createOrder({
-          amount: tripFare,
-          currency: 'INR',
-          receiptId: receiptId,
-          transferList:transfer,
-          tripId:currentTripId,
+      const receiptId = `Rept-${rideId}`;
 
-        });
-        console.log(response,"response")
+      const transfer=[
+        {
+          "account": "acc_RBAIEQk10FZmhU",
+          "amount": splitAmount*100,
+          "currency": "INR",
+        },
+      ]
+      const response = await createOrder({
+        amount: tripFare,
+        currency: 'INR',
+        receiptId: receiptId,
+        transferList:transfer,
+        tripId:currentTripId,
+      });
+      console.log(response,"response")
 
-        if(response?.success){
-         
-          const orderId = response?.order?.id;
-          const amount = response?.order?.amount;
-          if (!orderId) {
-            showNotification('Order creation failed. Please try again.');
-            return;
-          }
-          
-          try{
+      if(response?.success){
+        const orderId = response?.order?.id;
+        const amount = response?.order?.amount;
+        if (!orderId) {
+          showNotification(t('order_creation_failed'),t('please_try_again'),"error");
+          setIsProcessingPayment(false);
+          return;
+        }
+        
+        try{
           const options = {
             description: 'Trip Fare',
             image: 'https://virtualmaze.com/images/Logo-header.svg',
             currency: 'INR',
-            key: APIURLConfig.RAZORPAY_KEY_ID,
+            key:appConfig?.RAZORPAY_KEY_ID,
             amount: amount,
-            name: AppConfig.companyName,
+            name: appConfig?.COMPANYNAME,
             order_id: orderId, // Replace this with an order_id created using Orders API.
-           
             theme: { color: 'black' },
           };
-    
+
           RazorpayCheckout.open(options)
             .then((data) => {
-
               console.log(JSON.stringify(data,null,2),"data")
               incrementTotalSpend(tripFare)
               incrementCompletedTrips()
               setStackScreen('TripFeedbackScreen',{});
               // handle success
-              showNotification("Payment Successful",data?.razorpay_payment_id || 'Payment successful','success');
-              
+              showNotification(t('payment_successful'),"","success");
+              setIsProcessingPayment(false);
             })
             .catch((error) => {
               // handle failure
-              showNotification("Payment Failed",error?.message || 'Something went wrong. Please try again.','error');
+              showNotification(t('payment_failed'),error?.message || t('something_went_wrong'),"error");
+              setIsProcessingPayment(false);
             });
         } 
         catch (error) {
-          showNotification("Payment Failed","Something went wrong. Please try again.",'error');
+          showNotification(t('payment_failed'),t('something_went_wrong'),"error");
+          setIsProcessingPayment(false);
         } 
-       
+      } else {
+        setIsProcessingPayment(false);
       }
-  
-
-  
-        
-  
-       
-      
-    
+    } catch (err) {
+      setIsProcessingPayment(false);
+    }
   }
 
   return (
@@ -213,16 +210,16 @@ const PaymentScreen = () => {
         onLayout={(e) => setSvHeight(e.nativeEvent.layout.height)}
         onContentSizeChange={(w, h) => setContentHeight(h)}
       >
-        <FareHeader fare={tripFare}  RideStatus={tripStatus == "CANCELLED" ? "Ride was cancelled midway" : "Destination Reached"}  />
+        <FareHeader fare={tripFare}  RideStatus={tripStatus == "CANCELLED" ? t('ride_was_cancelled_midway') : t('destination_reached')}  />
        
         <TripMetaInfo date={formatDate(bookingTime)} tripId={rideId} />
-        <AddressContainer directions={tripStops} />
+        <AddressContainer directions={tripStops}  completed={true}/>
         <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={driverDetails?.vehicleType} vehicleBrand={driverDetails?.vehicleBrand} vehicleModel={driverDetails?.vehicleModel} vehicleNumber={driverDetails?.vehicleNumber} />
         <View style={{marginVertical:15}}> 
         <TripStats totalDistance={tripDistance} totalDuration={tripDuration} totalFare={tripFare} />
         </View>
         <View style={styles.paymentMethodContainer}>
-          <Text style={styles.paymentMethodLabel}>{t('Pay trip fare to driver')}</Text>
+          <AdaptiveText style={styles.paymentMethodLabel}>{t('Pay_trip_fare_to_driver')}</AdaptiveText>
           <View style={styles.paymentMethodKeyContainer}>
             <Text style={styles.paymentMethodKey}>{t('trip_fare')}</Text>
             <Text style={styles.paymentMethodValue}> ₹ {tripFare}</Text>
@@ -231,23 +228,15 @@ const PaymentScreen = () => {
             <Text style={styles.paymentMethodKey}>{t('payment_method')}</Text>
             <Text style={styles.paymentMethodValue}>{paymentMethod}</Text>
           </View>
-          
-         
         </View>
-        
-        
-        
         {/* <SupportSection onPress={handleSupportPress} /> */}
-        
         {/* Receipt Button */}
         <View style={styles.actionButtonsContainer}>
-       
-         
-        {/* Invoice Button */}
-        <TouchableOpacity style={styles.invoiceButton} onPress={handleInvoicePress}>
-          <FontAwesome5 name="file-invoice" size={20} color={colors.black} />
-          <Text style={styles.invoiceButtonText}>{t('show_invoice')}</Text>
-        </TouchableOpacity>
+          {/* Invoice Button */}
+          <TouchableOpacity style={styles.invoiceButton} onPress={handleInvoicePress}>
+            <FontAwesome5 name="file-invoice" size={20} color={colors.black} />
+            <AdaptiveText style={styles.invoiceButtonText}>{t('show_invoice')}</AdaptiveText>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -256,8 +245,16 @@ const PaymentScreen = () => {
           {shouldShowScrollHint && (
             <ScrollHintChevron direction='down' style={{ top: -30, alignSelf: 'center' }} />
           )}
-          <TouchableOpacity style={styles.bottomButton} onPress={handlePayNow}>
-            <Text style={styles.bottomButtonText}>PAY NOW</Text>
+          <TouchableOpacity
+            style={[styles.bottomButton, isProcessingPayment && { opacity: 0.7 }]}
+            onPress={handlePayNow}
+            disabled={isProcessingPayment}
+          >
+            {isProcessingPayment ? (
+              <ActivityIndicator color={colors.white} size="small" />
+            ) : (
+              <AdaptiveText style={styles.bottomButtonText}>PAY NOW</AdaptiveText>
+            )}
           </TouchableOpacity>
         </View>
       )}

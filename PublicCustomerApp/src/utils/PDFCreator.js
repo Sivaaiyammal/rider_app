@@ -4,12 +4,22 @@ import RNFS from "react-native-fs";
 import moment from 'moment';
 
 import { showNotification } from "../components/NotificationManger";
-import AppConfig from "../Config/AppConfig.js"
 
+import useConfigStore from "../store/useConfigStore";
+
+// FIX: useConfigStore is a hook, should not be called at module level
+// Instead, we will access appConfig inside the class constructor or methods as needed
 
 class PDFCreator {
-
     constructor() {
+        // FIX: get appConfig from store at construction time
+        try {
+            const { appConfig } = useConfigStore.getState ? useConfigStore.getState() : { appConfig: {} };
+            this.appConfig = appConfig || {};
+        } catch (e) {
+            this.appConfig = {};
+        }
+
         this.htmlBody = `<!DOCTYPE html>
       <html lang="en">
       <head>
@@ -40,6 +50,9 @@ class PDFCreator {
       </body>
       </html>
       `;
+        // Branding helpers
+        this.companyName = (this.appConfig && (this.appConfig.COMPANYNAME || this.appConfig.APP_NAME)) ? (this.appConfig.COMPANYNAME || this.appConfig.APP_NAME) : 'Company';
+        this.companyLogoDataUri = null; // Set via setCompanyLogoDataUri if available
     }
 
     /**
@@ -52,11 +65,10 @@ class PDFCreator {
                 await PermissionsAndroid.request(
                     PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
                 );
-               
             } catch (error) {
                 console.log('Notification-->>Error-->>', error);
             }
-        } 
+        }
     }
 
     /**
@@ -68,7 +80,6 @@ class PDFCreator {
             const isPermittedExternalStorage = await PermissionsAndroid.check(
                 PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
             );
-           
 
             if (!isPermittedExternalStorage) {
                 const granted = await PermissionsAndroid.request(
@@ -80,7 +91,6 @@ class PDFCreator {
                         buttonPositive: 'OK',
                     },
                 );
-              
 
                 if (granted === PermissionsAndroid.RESULTS.GRANTED) {
                     return true;
@@ -89,7 +99,6 @@ class PDFCreator {
                     return false;
                 }
             } else {
-          
                 return true;
             }
         } catch (error) {
@@ -136,8 +145,6 @@ class PDFCreator {
         }
 
         try {
-           
-
             let options = {
                 html: htmlElement ?? this.htmlBody,
                 fileName: name ?? 'testing',
@@ -149,7 +156,6 @@ class PDFCreator {
 
             // Create the PDF
             let file = await RNHTMLtoPDF.convert(options);
-       
 
             if (!file || !file.filePath) {
                 throw new Error('PDF creation failed - no file path returned');
@@ -167,7 +173,6 @@ class PDFCreator {
                     );
 
                     if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-                     
                         throw new Error('Storage permission denied');
                     }
                 }
@@ -176,8 +181,6 @@ class PDFCreator {
                 const targetDirectory = customDirectory || RNFS.DownloadDirectoryPath;
                 const fileName = `${name} ${moment(new Date()).format('DD-MM-YYYY-hh-mm-ss-A')}.pdf`;
                 const downloadPath = `${targetDirectory}/${fileName}`;
-
-         
 
                 try {
                     // Read the file from the initial location
@@ -189,8 +192,6 @@ class PDFCreator {
                     // Write the file to the target directory
                     await RNFS.writeFile(downloadPath, fileData, 'base64');
 
-                 
-                    
                     showNotification('PDF Created', `PDF file created at: ${downloadPath}`, "success");
                     this.setNotification(fileName);
 
@@ -202,7 +203,6 @@ class PDFCreator {
                 }
             } else {
                 // iOS: Return the file path directly
-               
                 showNotification('PDF Created', `PDF file created successfully`, "success");
                 this.setNotification(`${name}.pdf`);
                 return file.filePath;
@@ -225,14 +225,14 @@ class PDFCreator {
         try {
             // Format the receipt data
             const receiptData = this.formatReceiptData(rideData);
-            
+
             // Generate HTML content for the receipt
             const htmlContent = this.generateReceiptHTML(receiptData);
-            
+
             // Create PDF with the generated HTML
             const fileName = `Receipt_${receiptData.receiptId}_${moment().format('DD-MM-YYYY')}`;
             const pdfPath = await this.createPDF(htmlContent, fileName, customDirectory);
-            
+
             return pdfPath;
         } catch (error) {
             console.error('Error creating ride receipt PDF:', error);
@@ -249,7 +249,6 @@ class PDFCreator {
             const exists = await RNFS.exists(dirPath);
             if (!exists) {
                 await RNFS.mkdir(dirPath);
-             
             }
         } catch (error) {
             console.error('Error ensuring directory exists:', error);
@@ -463,21 +462,21 @@ class PDFCreator {
 
     generateVendorInvoiceHTML = (receiptData) => {
         const taxRows = receiptData.taxes && receiptData.taxes.breakdown
-    ? Object.entries(receiptData.taxes.breakdown).map(([k, v]) => {
-        const label = (v.label || k).toUpperCase();
-        const rate =
-          v.type === "percentage" && typeof v.value !== "undefined"
-            ? `(${v.value}%)`
-            : v.type === "flat" && typeof v.value !== "undefined"
-            ? `(₹ ${v.value})`
-            : "";
-        return `
+            ? Object.entries(receiptData.taxes.breakdown).map(([k, v]) => {
+                const label = (v.label || k).toUpperCase();
+                const rate =
+                    v.type === "percentage" && typeof v.value !== "undefined"
+                        ? `(${v.value}%)`
+                        : v.type === "flat" && typeof v.value !== "undefined"
+                            ? `(₹ ${v.value})`
+                            : "";
+                return `
           <tr>
             <td>${label} <span class="vendortax-muted">${rate}</span></td>
             <td class="vendortax-money">₹ ${Number(v.tax).toFixed(2)}</td>
           </tr>`;
-      }).join("")
-    : "";
+            }).join("")
+            : "";
         return `
            <div class="tripbill-sheet sheet-page" style="page-break-after: always;">
     <div class="vendortax-invoice">
@@ -604,7 +603,7 @@ class PDFCreator {
             endLocation: rideData.stops?.[rideData.stops.length - 1]?.name || rideData.stops?.[rideData.stops.length - 1]?.address || 'N/A',
             paymentMethod: rideData.paymentMethod || 'Cash',
             paymentStatus: rideData.passengerPaymentStatus || 'completed',
-            companyName: 'Namma Ooru Taxi',
+            companyName: (this.appConfig && (this.appConfig.COMPANYNAME || this.appConfig.APP_NAME)) ? (this.appConfig.COMPANYNAME || this.appConfig.APP_NAME) : 'Namma Ooru Taxi',
             companyLogo: 'https://example.com/logo.png'
         };
     };
@@ -618,12 +617,11 @@ class PDFCreator {
      */
     createCustomPDF = async (htmlContent, fileName, customDirectory) => {
         try {
-            // Ensure custom directory exists
+
             await this.ensureDirectoryExists(customDirectory);
-            
-            // Create PDF in the custom directory
+
             const pdfPath = await this.createPDF(htmlContent, fileName, customDirectory);
-            
+
             return pdfPath;
         } catch (error) {
             console.error('Error creating custom PDF:', error);
@@ -640,29 +638,25 @@ class PDFCreator {
      */
     createMultiSheetPDF = async (sheetData, fileName, customDirectory = null) => {
         try {
-          
-            
             // Generate HTML for each sheet type
             const sheetHTMLs = sheetData.map((sheet, index) => {
                 const html = this.generateSheetHTML(sheet.type, sheet.data, index + 1);
                 return html;
             });
-            
+
             // Combine all sheets into one HTML document
             const combinedHTML = this.combineSheetsHTML(sheetHTMLs, fileName);
-            
+
             // Create PDF with combined HTML
             const pdfPath = await this.createPDF(combinedHTML, fileName, customDirectory);
-            
-          
+
             return pdfPath;
-            
+
         } catch (error) {
             console.error('Error creating multi-sheet PDF:', error);
             throw error;
         }
     };
-
 
     generateDriverInvoiceHTML = (receiptData) => {
         return `
@@ -743,7 +737,7 @@ class PDFCreator {
                         <div class="notes">
                             <p><strong>Notes</strong></p>
                             <ul>
-                            ${receiptData.notes.map(note => `<li>${note}</li>`).join('')}
+                            ${(receiptData.notes || []).map(note => `<li>${note}</li>`).join('')}
                             </ul>
                         </div>
                         <div class="sum">
@@ -772,7 +766,6 @@ class PDFCreator {
                 `;
             }
 
-
     /**
      * Generate HTML for a specific sheet type
      * @param {string} sheetType - Type of sheet (tripBill, tripInvoice, taxInvoice, etc.)
@@ -797,10 +790,6 @@ class PDFCreator {
         }
     };
 
-    // Branding helpers
-    companyName = (AppConfig && (AppConfig.companyName || AppConfig.APP_NAME)) ? (AppConfig.companyName || AppConfig.APP_NAME) : 'Company';
-    companyLogoDataUri = null; // Set via setCompanyLogoDataUri if available
-
     setCompanyLogoDataUri = (dataUri) => {
         this.companyLogoDataUri = dataUri;
     };
@@ -817,7 +806,6 @@ class PDFCreator {
      */
     generateTripBillHTML = (receiptData, pageNumber) => {
         // Normalize and map incoming data keys
-        
 
         return `
             <div class="tripbill-sheet sheet-page" style="page-break-after: always;">
@@ -934,7 +922,7 @@ class PDFCreator {
      * Generate Trip Invoice HTML
      */
     generateTripInvoiceHTML = (data, pageNumber) => {
-        console.log("TRIPiNVOICE",data)
+        // FIX: Remove console.log
         // Map incoming fields
         const invoiceNo = data.invoiceNo || data.invoiceNumber || 'N/A';
         const invoiceDate = data.invoicedate || data.invoiceDate || new Date().toLocaleDateString();
@@ -958,11 +946,12 @@ class PDFCreator {
         `).join('');
 
         // Company from passed data (fallback to AppConfig)
+        const appConfig = this.appConfig || {};
         const company = {
             name: data.companyName || this.companyName,
-            address: data.companyAddress || AppConfig.companyAddress || '-',
-            phone: data.companyPhone || AppConfig.companyPhone || '-',
-            state: data.companyState || AppConfig.companyState || '-',
+            address: data.companyAddress || appConfig.COMPANYADDRESS || '-',
+            phone: data.companyPhone || appConfig.COMPANYPHONE || '-',
+            state: data.companyState || appConfig.COMPANYSTATE || '-',
             gst: data.companyGstNumber || '-',
             pan: data.companyPanNumber || '-'
         };
@@ -1038,7 +1027,6 @@ class PDFCreator {
      * Generate Tax Invoice HTML
      */
     generateTaxInvoiceHTML = (data, pageNumber) => {
-       
         // Map incoming fields
         const invoiceNo = data.invoiceNo || data.invoiceNumber || 'N/A';
         const invoiceDate = data.invoicedate || data.invoiceDate || new Date().toLocaleDateString();
@@ -1055,11 +1043,13 @@ class PDFCreator {
         const taxArray = Array.isArray(data.tax) ? data.tax : [];
         const fees = Array.isArray(data.feewithTaxes) ? data.feewithTaxes : [];
         const finalAmount = data.finalAmount != null ? Number(data.finalAmount) : (fees.length ? fees.reduce((s,f)=>s + Number((f.totalFee != null ? f.totalFee : (Number(f.amount ?? f.value ?? 0) + (Array.isArray(f.tax) ? f.tax.reduce((t,tt)=>t + Number(tt.amount||0),0) : 0)))),0) : totalCost);
+
+        const appConfig = this.appConfig || {};
         const company = {
             name: data.companyName || this.companyName,
-            address: data.companyAddress || AppConfig.companyAddress || '-',
-            phone: data.companyPhone || AppConfig.companyPhone || '-',
-            state: data.companyState || AppConfig.companyState || '-',
+            address: data.companyAddress || appConfig.COMPANYADDRESS || '-',
+            phone: data.companyPhone || appConfig.COMPANYPHONE || '-',
+            state: data.companyState || appConfig.COMPANYSTATE || '-',
             gst: data.companyGstNumber || data.gstNumber || '-',
             pan: data.companyPanNumber || data.panNumber || '-'
         };
@@ -1237,51 +1227,46 @@ class PDFCreator {
         `;
     };
 
-
     generatePlatformInvoiceHTML = (receiptData) => {
-
-
         const currency = receiptData.currency || "₹";
-  const feeBlocks = [];
-  let grandTotal = 0;
+        const feeBlocks = [];
+        let grandTotal = 0;
 
-  if (receiptData.feesWithTax && receiptData.feesWithTax.breakdown) {
-    Object.entries(receiptData.feesWithTax.breakdown).forEach(([feeKey, feeObj]) => {
-      const feeLabel = feeObj.label || (feeKey === "convenienceFee" ? "Convenience Fee (Ride)" : feeKey.replace(/([A-Z])/g, " $1").trim());
-      grandTotal += Number(feeObj.total || 0);
+        if (receiptData.feesWithTax && receiptData.feesWithTax.breakdown) {
+            Object.entries(receiptData.feesWithTax.breakdown).forEach(([feeKey, feeObj]) => {
+                const feeLabel = feeObj.label || (feeKey === "convenienceFee" ? "Convenience Fee (Ride)" : feeKey.replace(/([A-Z])/g, " $1").trim());
+                grandTotal += Number(feeObj.total || 0);
 
-      // Fee row
-      feeBlocks.push(`
-        <tr>
-          <td>${feeLabel}</td>
-          <td class="type-money">${currency} ${Number(feeObj.feeAmount || 0).toFixed(2)}</td>
-        </tr>
-      `);
+                // Fee row
+                feeBlocks.push(`
+                    <tr>
+                        <td>${feeLabel}</td>
+                        <td class="type-money">${currency} ${Number(feeObj.feeAmount || 0).toFixed(2)}</td>
+                    </tr>
+                `);
 
-      // Tax rows under the fee
-      if (feeObj.taxAmount) {
-        Object.entries(feeObj.taxAmount).forEach(([taxKey, t]) => {
-          const taxName = (t.label || taxKey).toUpperCase();
-          const rate =
-            t.type === "percentage" && t.value != null ? `${t.value}%` :
-            t.type === "flat" && t.value != null ? `${currency} ${t.value}` : "";
-          feeBlocks.push(`
-            <tr>
-              <td>${taxName} ${rate ? `<span class="type-muted">(${rate})</span>` : ""}</td>
-              <td class="type-money">${currency} ${Number(t.tax || 0).toFixed(2)}</td>
-            </tr>
-          `);
-        });
-      }
-    });
-  }
+                // Tax rows under the fee
+                if (feeObj.taxAmount) {
+                    Object.entries(feeObj.taxAmount).forEach(([taxKey, t]) => {
+                        const taxName = (t.label || taxKey).toUpperCase();
+                        const rate =
+                            t.type === "percentage" && t.value != null ? `${t.value}%` :
+                                t.type === "flat" && t.value != null ? `${currency} ${t.value}` : "";
+                        feeBlocks.push(`
+                            <tr>
+                                <td>${taxName} ${rate ? `<span class="type-muted">(${rate})</span>` : ""}</td>
+                                <td class="type-money">${currency} ${Number(t.tax || 0).toFixed(2)}</td>
+                            </tr>
+                        `);
+                    });
+                }
+            });
+        }
 
-  const feesTotal = receiptData.feesWithTax?.total != null
-    ? Number(receiptData.feesWithTax.total)
-    : grandTotal;
+        const feesTotal = receiptData.feesWithTax?.total != null
+            ? Number(receiptData.feesWithTax.total)
+            : grandTotal;
 
-
-    
         return `
             <div class="type-page">
     <div class="type-invoice">
@@ -1364,6 +1349,7 @@ class PDFCreator {
     
           `
     }
+
     /**
      * Combine multiple sheets into one HTML document
      */
@@ -1689,4 +1675,4 @@ class PDFCreator {
     };
 }
 
-export default new PDFCreator(); 
+export default new PDFCreator();

@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-useless-catch */
-import Config from '../Config/APIURLConfig';
+import Config from "react-native-config";
 
 const DefaultPostHeaders = {
   'Content-Type': 'application/json',

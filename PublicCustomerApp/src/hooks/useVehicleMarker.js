@@ -1,7 +1,7 @@
 import { getNearByDrivers } from '../API/EndPoints/EndPoints';
 import useLocationStore from '../store/useLocationStore';
 import { useState, useCallback } from 'react';
-import AppConfig from '../Config/AppConfig';
+import useConfigStore from '../store/useConfigStore';
 
 /**
  * Hook for fetching nearby drivers
@@ -12,10 +12,10 @@ const useFetchNearbyDrivers = () => {
   const [error, setError] = useState(null);
   const [nearbyDrivers, setNearbyDrivers] = useState([]);
   const { location } = useLocationStore();
-
+  const { appConfig } = useConfigStore();
   const fetchNearbyDrivers = useCallback(async (customLocation = null) => {
     // Respect config flag
-    if (!AppConfig.SHOW_NEARBY_DRIVER) {
+    if (!appConfig?.SHOW_NEARBY_DRIVER) {
       setNearbyDrivers([]);
       return [];
     }

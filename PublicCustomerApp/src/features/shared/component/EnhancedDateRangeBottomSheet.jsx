@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 import AnimatedBottomSheetWrapper from './AnimatedBottomSheetWrapper';
 import { colors, Fonts } from '../../../constants/constants';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
+import { useTranslation } from 'react-i18next';
 
 export default function EnhancedDateRangeBottomSheet({
   visible,
@@ -34,7 +36,7 @@ export default function EnhancedDateRangeBottomSheet({
   ]
 }) {
   if (!visible) return null;
-
+  const { t } = useTranslation();
   // Validation: If date range is enabled, both dates must be selected and valid
   const isDateRangeValid = !isDateRangeEnabled || (startDate && endDate && startDate <= endDate);
   const isConfirmEnabled = isDateRangeValid;
@@ -45,12 +47,10 @@ export default function EnhancedDateRangeBottomSheet({
   return (
     <AnimatedBottomSheetWrapper onClose={onClose} zIndex={100000}>
       <View style={{ paddingHorizontal: 24, paddingVertical: 20 }}>
-        <Text style={{ fontSize: 18, fontFamily: Fonts.medium, color: colors.black, textAlign: 'center', marginBottom: 16 }}>{title}</Text>
-
-
+        <AdaptiveText style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black, textAlign: 'center', marginBottom: 16 }} color={colors.black}>{title}</AdaptiveText>
           {/* Status Filter Section */}
-          <View style={{ marginBottom: 30 }}>
-          <Text style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black, marginBottom: 12,marginLeft: 8 }}>Status Filter</Text>
+          <View style={{ marginBottom: 30, marginTop: 20}}>
+          <AdaptiveText style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black, marginBottom: 12,marginLeft: 8 }} color={colors.black}>Status Filter</AdaptiveText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {statusOptions.map((option) => (
@@ -66,13 +66,13 @@ export default function EnhancedDateRangeBottomSheet({
                     backgroundColor: selectedStatus === option.value ? colors.black : colors.white,
                   }}
                 >
-                  <Text style={{ 
+                  <AdaptiveText style={{ 
                     fontSize: 14, 
                     fontFamily: Fonts.medium, 
                     color: selectedStatus === option.value ? colors.white : colors.black 
-                  }}>
+                  }} color={selectedStatus === option.value ? colors.white : colors.black}>
                     {option.label}
-                  </Text>
+                  </AdaptiveText>
                 </TouchableOpacity>
               ))}
             </View>
@@ -83,7 +83,7 @@ export default function EnhancedDateRangeBottomSheet({
         <View style={{ marginBottom: 40 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Text style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black,marginLeft: 8 }}>Date Range</Text>
+              <AdaptiveText style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black,marginLeft: 8 }} color={colors.black}>{t('date_range')}</AdaptiveText>
               <Switch
                 value={isDateRangeEnabled}
                 onValueChange={onDateRangeToggle}
@@ -98,28 +98,29 @@ export default function EnhancedDateRangeBottomSheet({
              <View>
                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                  <View style={{ flex: 1,paddingRight: 8 }}>
-                   <Text style={{ fontSize: 14, fontFamily: Fonts.medium, color: colors.grey_xxdark, marginBottom: 8,marginLeft: 8 }}>{fromLabel}</Text>
+                   <AdaptiveText style={{ fontSize: 14, fontFamily: Fonts.medium, color: colors.grey_xxdark, marginBottom: 8,marginLeft: 8 }} color={colors.grey_xxdark}>{fromLabel}</AdaptiveText>
                    <TouchableOpacity onPress={onPressFrom} style={{ borderWidth: 1, borderColor: colors.grey_light, borderRadius: 8, padding: 12, backgroundColor: colors.white }}>
-                     <Text style={{ fontSize: 16, fontFamily: Fonts.regular, color: startDate ? colors.black : colors.grey_xxdark }}>
+                     <AdaptiveText style={{ fontSize: 16, fontFamily: Fonts.regular, color: startDate ? colors.black : colors.grey_xxdark }} color={startDate ? colors.black : colors.grey_xxdark}>
                       {startDate ? new Date(startDate).toDateString() : 'Select Date'}
-                     </Text>
+                     </AdaptiveText>
                    </TouchableOpacity>
                  </View>
                  <View style={{ flex: 1,paddingLeft: 8 }}>
-                   <Text style={{ fontSize: 14, fontFamily: Fonts.medium, color: colors.grey_xxdark, marginBottom: 8,marginLeft: 8 }}>{toLabel}</Text>
+                   <AdaptiveText style={{ fontSize: 14, fontFamily: Fonts.medium, color: colors.grey_xxdark, marginBottom: 8,marginLeft: 8 }} color={colors.grey_xxdark}>{toLabel}</AdaptiveText>
                    <TouchableOpacity onPress={onPressTo} style={{ borderWidth: 1, borderColor: colors.grey_light, borderRadius: 8, padding: 12, backgroundColor: colors.white }}>
-                     <Text style={{ fontSize: 16, fontFamily: Fonts.regular, color: endDate ? colors.black : colors.grey_xxdark }}>
+                     <AdaptiveText style={{ fontSize: 16, fontFamily: Fonts.regular, color: endDate ? colors.black : colors.grey_xxdark }} color={endDate ? colors.black : colors.grey_xxdark}>
                        {endDate ? new Date(endDate).toDateString() : 'Select Date'}
-                     </Text>
+                     </AdaptiveText>
+                   
                    </TouchableOpacity>
                  </View>
                </View>
                {/* Invalid date range warning */}
                {isDateRangeEnabled && startDate && endDate && startDate > endDate && (
                  <View style={{ marginTop: 8, paddingHorizontal: 8 }}>
-                   <Text style={{ fontSize: 12, fontFamily: Fonts.regular, color: '#EF4444', textAlign: 'center' }}>
+                   <AdaptiveText style={{ fontSize: 12, fontFamily: Fonts.regular, color: '#EF4444', textAlign: 'center' }} color={colors.black}>
                      From date cannot be after To date
-                   </Text>
+                   </AdaptiveText>
                  </View>
                )}
              </View>
@@ -131,12 +132,12 @@ export default function EnhancedDateRangeBottomSheet({
         {/* Action Buttons */}
         <View style={{ flexDirection: 'row', gap: 12 }}>
          {!hasActiveFilters && <TouchableOpacity onPress={onCancel} style={{ flex: 1, backgroundColor: colors.grey_light, borderRadius: 8, padding: 12, alignItems: 'center' }}>
-            <Text style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black }}>{cancelLabel}</Text>
+            <AdaptiveText style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black }} color={colors.black}>{cancelLabel}</AdaptiveText>
           </TouchableOpacity>}
           
           {hasActiveFilters && (
             <TouchableOpacity onPress={onClear} style={{ flex: 1, backgroundColor: colors.grey_light, borderRadius: 8, padding: 12, alignItems: 'center' }}>
-              <Text style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black }}>{clearLabel}</Text>
+              <AdaptiveText style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black }} color={colors.black}>{clearLabel}</AdaptiveText>
             </TouchableOpacity>
           )}
           
@@ -152,7 +153,7 @@ export default function EnhancedDateRangeBottomSheet({
               opacity: isConfirmEnabled ? 1 : 0.6
             }}
           >
-            <Text style={{ fontSize: 16, fontFamily: Fonts.medium, color: isConfirmEnabled ? colors.white : colors.white+90 }}>{confirmLabel}</Text>
+            <AdaptiveText style={{ fontSize: 16, fontFamily: Fonts.medium, color: isConfirmEnabled ? colors.white : colors.white+90 }} color={colors.white}>{confirmLabel}</AdaptiveText>
           </TouchableOpacity>
         </View>
       </View>

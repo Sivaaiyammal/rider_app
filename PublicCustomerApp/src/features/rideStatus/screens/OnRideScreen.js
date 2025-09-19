@@ -18,6 +18,7 @@ import useRouteDraw from '../hooks/useRouteDraw';
 import useDrawStopsPolyline from '../hooks/useDrawStopsPolyline';
 import PropTypes from 'prop-types';
 import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {driverName,vehicleNumber,model,brand,driverPhoto,driverLatitude,driverLongitude} = useAssignedDriverInfoStore();
   const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare} = useCurrentRideInfoStore();
@@ -68,9 +69,9 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
       
       <View style={[styles.containerTop,{backgroundColor:'black'}]}>
        
-        <Text style={styles.topBarText}>{t(!iswaypoint ? 'reach_your_destination_in' : 'reach_your_waypoints_in',{stop:currentStop?.name})}</Text>
+        <AdaptiveText style={styles.topBarText}>{t(!iswaypoint ? 'reach_your_destination_in' : 'reach_your_waypoints_in',{stop:currentStop?.name})}</AdaptiveText>
         <View style={styles.timeBox}>
-          <Text style={styles.timeText}>{estimatedDuration} Mins</Text>
+          <AdaptiveText style={styles.timeText}>{estimatedDuration} Mins</AdaptiveText>
             </View>
         
     </View>
@@ -95,25 +96,25 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
         {/* Estimated amount */}
         <View style={styles.amountBox}>
           <FontAwesome name="receipt" size={20} color="#00770d" />
-          <Text style={styles.amountLabel}>{t('estimated_amount_to_be_paid')}</Text>
-          <Text style={styles.amountValue}>₹{estimatedFare || "--"}</Text>
+          <AdaptiveText style={styles.amountLabel}>{t('estimated_amount_to_be_paid')}</AdaptiveText>
+          <AdaptiveText style={styles.amountValue}>₹{estimatedFare || "--"}</AdaptiveText>
         </View>
 
         <>
              
               <View style={styles.rideInfoRow}>
                 <View style={styles.rideInfoItem}>
-                  <Text style={styles.rideInfoLabel}>{t('arrival')}</Text>
+                  <AdaptiveText style={styles.rideInfoLabel}>{t('arrival')}</AdaptiveText>
                   <Text style={styles.rideInfoValue}>{ArrivalTime}</Text>
                 </View>
                 <View style={styles.divider}></View>
                 <View style={styles.rideInfoItem}>
-                  <Text style={styles.rideInfoLabel}>{t('duration')}</Text>
+                  <AdaptiveText style={styles.rideInfoLabel}>{t('duration')}</AdaptiveText>
                   <Text style={styles.rideInfoValue}>{duration} Min</Text>
                 </View>
                 <View style={styles.divider}></View>
                 <View style={styles.rideInfoItem}>
-                  <Text style={styles.rideInfoLabel}>{t('distance')}</Text>
+                  <AdaptiveText style={styles.rideInfoLabel}>{t('distance')}</AdaptiveText>
                   <Text style={styles.rideInfoValue}>{totalDistance} Km</Text>
                 </View>
               </View>
@@ -125,7 +126,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
 
                {/* Trip Details row with chevron */}
         <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
-          <Text style={styles.tripDetailsLabel}>{t('trip_details')}</Text>
+          <AdaptiveText style={styles.tripDetailsLabel}>{t('trip_details')}</AdaptiveText>
           <View style={{flexDirection:"row",alignItems:"center",gap:10}}>
           {
             waitingForDriverApproval === "PENDING" &&

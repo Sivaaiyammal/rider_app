@@ -4,7 +4,8 @@ import {
   Text,
   StyleSheet,
   Image,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator
 } from 'react-native';
 import {useStackScreenStore} from '../store/useStackScreenStore';
 import NavBar from '../components/NavBar';
@@ -23,8 +24,10 @@ import usePropsStore from '../store/usePropsStore';
 import { useDebouncedAPICall } from '../hooks/useDebounce';
 import { useTranslation } from 'react-i18next';
 import LinearGradient from 'react-native-linear-gradient';
+import PropTypes from 'prop-types';
+import AdaptiveText from '../components/Common/AdaptiveText';
 
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,title=null,label=null}) => {
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation} = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -33,6 +36,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   const {pickedLocation,setPickedLocation} = usePropsStore();
   const [mapMoving,setMapMoving] = useState(false)
   const { t } = useTranslation();
+  const [isConfirming, setIsConfirming] = useState(false);
   const fetchAddressName = useCallback(async (longitude, latitude) => {
     
   
@@ -126,13 +130,16 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   
   }},[]);
 
+  useEffect(() => {
+    return () => {
+      setIsConfirming(false);
+    };
+  }, []);
+
   const handleCurrentLocation = async () => {
     await locationTask.getCurrentLocation();
     
   }
-
-  
-
 
   return (
     <>
@@ -163,17 +170,17 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           end={{ x: 0, y: 0 }}
           style={styles.bottomContainerWarrapper}
         >
-          <Text style={styles.bottomContainerText}> {label ? label : t('pick_location')}</Text>
+          <AdaptiveText style={styles.bottomContainerText} color={colors.white}> {label ? label : t('pick_location')}</AdaptiveText>
         </LinearGradient>
         <View style={styles.AddressContainer}>
           {/* <View style={styles.AddressContainerIcon}>
                     <Icon name="location-on" size={30} color="#ffd11a"/>
                   </View> */}
           <View style={styles.AddressContainerMain}>
-              <Text style={styles.AddressContainerTextTitle}>📍 {t('address')}</Text>
-             {!isAddressLoading && pickedLocation?.placeName && <Text style={styles.AddressContainerPlaceName}>{utils.capitalizeFirstLetter(pickedLocation?.placeName)}</Text>}
+              <AdaptiveText style={styles.AddressContainerTextTitle} color={colors.grey_xxdark}>📍 {t('address')}</AdaptiveText>
+             {!isAddressLoading && pickedLocation?.placeName && <Text style={styles.AddressContainerPlaceName} color={colors.black}>{utils.capitalizeFirstLetter(pickedLocation?.placeName)}</Text>}
             {(!isAddressLoading && pickedLocation?.address) &&
-              <Text style={styles.AddressContainerTextAddress}>{utils.formatArrayAddress(pickedLocation.address)}</Text>
+              <Text style={styles.AddressContainerTextAddress} color={colors.grey_xxdark}>{utils.formatArrayAddress(pickedLocation.address)}</Text>
             }
 
             {isAddressLoading &&
@@ -203,15 +210,19 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         <TouchableOpacity
           style={[
             styles.bottomContainerButton,
-            isAddressLoading && styles.bottomContainerButtonDisabled
+            (isAddressLoading || isConfirming) && styles.bottomContainerButtonDisabled
           ]}
-          onPress={() => onPickLocationResultCallback(pickedLocation, locationType)}
-          disabled={isAddressLoading}
+          onPress={() => { setIsConfirming(true); onPickLocationResultCallback(pickedLocation, locationType); }}
+          disabled={isAddressLoading || isConfirming}
         >
-          <Text style={[
+          {isConfirming ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <AdaptiveText style={[
             styles.bottomContainerButtonText,
-            isAddressLoading && styles.bottomContainerButtonTextDisabled
-            ]}>{t('confirm_location')}</Text>
+            (isAddressLoading || isConfirming) && styles.bottomContainerButtonTextDisabled
+            ]} color={colors.white}>{t('confirm_location')}</AdaptiveText>
+          )}
         </TouchableOpacity>
 
 
@@ -377,5 +388,16 @@ const styles = StyleSheet.create({
     transform: [{ scaleX: 2 }],
   },
 });
+
+PickLocationScreen.propTypes = {
+  onPickLocationResultCallback: PropTypes.func.isRequired,
+  locationType: PropTypes.any,
+  defaultLocation: PropTypes.shape({
+    location: PropTypes.arrayOf(PropTypes.number),
+    placeName: PropTypes.string,
+    address: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
+  }),
+  label: PropTypes.string,
+};
 
 export default PickLocationScreen;

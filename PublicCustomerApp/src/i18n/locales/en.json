@@ -403,12 +403,27 @@
     "FAILED": "FAILED",
     "CANCELLED": "CANCELLED",
     "PENDING": "PENDING",
+    "date_range": "Date Range",
+    "booking_successful": "Booking Successful",
+    "your_ride_has_been_booked_successfully": "Your ride has been booked successfully!",
+    "booking_failed": "Booking Failed",
+    "failed_to_book_ride": "Failed to book ride",
     "invoice": "Invoice",
     "ride_cost": "Ride Cost",
     "waiting_cost": "Waiting Cost",
     "coupon_discount": "Coupon Discount",
-    "gstin": "GSTIN"
-
-
-    
+    "gstin": "GSTIN",
+    "cancel_trip": "Cancel Trip",
+    "Pay_trip_fare_to_driver": "Pay trip fare to driver",
+    "ride_was_cancelled_midway": "Ride was cancelled midway",
+    "destination_reached": "Destination Reached",
+    "driver_account_number_not_found": "Driver account number not found",
+    "please_contact_support": "Please contact support",
+    "order_creation_failed": "Order creation failed",
+    "please_try_again": "Please try again",
+    "payment_successful": "Payment Successful",
+    "payment_failed": "Payment Failed",
+    "not_reached": "Not Reached",
+    "no_recent_searches": "No recent searches",
+    "your_recent_searches_will_appear_here": "Your recent searches will appear here"
 }

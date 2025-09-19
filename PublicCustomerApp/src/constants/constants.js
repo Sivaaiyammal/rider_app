@@ -9,7 +9,7 @@ export const Fonts = {
 // langRatios.js
 export const languageFontRatio = {
   en: 1,
-  ta: 0.8 ,
+  ta: 0.9 ,
   // Add more as needed
 };
 

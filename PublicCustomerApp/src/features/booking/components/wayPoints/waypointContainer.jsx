@@ -21,7 +21,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTranslation } from 'react-i18next';
 const ITEM_HEIGHT = 50;
 
-const WaypointContainer = () => {
+const WaypointContainer = ({setEnableConfirmButton}) => {
   const { t } = useTranslation();
   
 
@@ -49,10 +49,19 @@ const WaypointContainer = () => {
         setLastAddStopIndex(reOrderWaypoints.length-1);
       }
     }
+
+    if(reOrderWaypoints.length > 1){
+      console.log("processedData-----------------",reOrderWaypoints.length)
+      setEnableConfirmButton(true)
+    }else{
+      console.log("processedData-----------------",reOrderWaypoints.length)
+      setEnableConfirmButton(false)
+    }
+    
   }, [reOrderWaypoints.length]);
 
 
-  console.log("reOrderWaypoints-----------------",reOrderWaypoints)
+ 
   
 
 
@@ -68,6 +77,8 @@ const WaypointContainer = () => {
       }
       return newData;
     }
+
+    
 
       return reOrderWaypoints;
   }, [reOrderWaypoints, lastAddStopIndex]);
@@ -89,6 +100,7 @@ const WaypointContainer = () => {
 
       // Use React's automatic batching for smoother updates
       setReOrderWaypoints([...processedData]);
+      
       setLastAddStopIndex(lastAddStopIndex);
     }
   }, [reOrderWaypoints]);

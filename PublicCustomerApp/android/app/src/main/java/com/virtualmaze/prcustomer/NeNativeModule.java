@@ -1109,7 +1109,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     .locations(locations)
                     .costing(profile)
                     .costing_options(costingOptions)
-                    .alternates(2)
+                    .alternates(0)
                     .language(languageCode)
                     .units(directionsCriteria)
                     .build();

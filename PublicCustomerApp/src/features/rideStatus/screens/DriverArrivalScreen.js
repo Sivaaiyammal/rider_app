@@ -23,6 +23,7 @@ import StatusConatainerWrapper from '../component/StatusConatainerWrapper';
 import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import { makeMaskedCallToDriver } from '../../../API/EndPoints/EndPoints';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 
   const DriverArrivalScreen = ({onCancel,handleOverlay}) => {
   // Dummy data
@@ -46,7 +47,7 @@ import { makeMaskedCallToDriver } from '../../../API/EndPoints/EndPoints';
       try {
         const res =  await changeStopLocation(item)
         if (res.success) {
-          showNotification('Pickup Location', 'Updated successfully', 'success');
+          showNotification(t('pickup_location'), t('updated_successfully'), 'success');
           goBack()
         }
       } catch (error) {
@@ -76,7 +77,7 @@ import { makeMaskedCallToDriver } from '../../../API/EndPoints/EndPoints';
     const passengerNumber = userdetails?.phone;
 
     if (!passengerNumber || !phone) {
-      showNotification('Error', 'Unable to place call');
+      showNotification(t('error'), t('unable_to_place_call'));
       return;
     }
 
@@ -89,12 +90,12 @@ import { makeMaskedCallToDriver } from '../../../API/EndPoints/EndPoints';
       const makeCall = await makeMaskedCallToDriver(bodyData);
 
       if (!makeCall?.success) {
-        showNotification('Error', 'Error in making call to driver');
+        showNotification(t('error'), t('error_in_making_call_to_driver'),'error');
       }else{
-        showNotification('Calling to Driver', 'Call initiated with driver shortly', 'success');
+        showNotification(t('calling_to_driver'), t('call_initiated_with_driver_shortly'), 'success');
       }
     } catch (error) {
-      showNotification('Error', 'Error in making call to driver');
+      showNotification(t('error'), t('error_in_making_call_to_driver'));
     } finally {
       setIsCallingDriver(false);
     }
@@ -129,9 +130,9 @@ import { makeMaskedCallToDriver } from '../../../API/EndPoints/EndPoints';
                 
       <View style={[styles.containerTop]}>
        
-        <Text style={styles.topBarText}>{t('your_driver_will_arrive_in')}</Text>
+        <AdaptiveText style={styles.topBarText}>{t('your_driver_will_arrive_in')}</AdaptiveText>
         <View style={styles.timeBox}>
-          <Text style={styles.timeText}>{estimatedDuration || '--'} Mins</Text>
+          <AdaptiveText style={styles.timeText}>{estimatedDuration || '--'} Mins</AdaptiveText>
             </View>
         
     </View>
@@ -187,7 +188,7 @@ import { makeMaskedCallToDriver } from '../../../API/EndPoints/EndPoints';
       </View>
   
       <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
-          <Text style={styles.tripDetailsLabel}>{t('trip_details')}</Text>
+          <AdaptiveText style={styles.tripDetailsLabel}>{t('trip_details')}</AdaptiveText>
           <View style={{flexDirection:"row",alignItems:"center",gap:10}}>
           {
             waitingForDriverApproval === "PENDING" &&

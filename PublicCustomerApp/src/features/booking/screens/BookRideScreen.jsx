@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   StyleSheet,
-  Text,
   TouchableOpacity,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +24,7 @@ import RideInfo from '../components/bookRide/RideInfo';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Schdule from '../../../assets/image/svgIcons/schdule.svg';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 
 
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
@@ -42,19 +42,16 @@ import ScrollHintChevron from '../../../components/Common/ScrollHintChevron';
 import { useDebouncedAPICall } from '../../../hooks/useDebounce';
 import useRideSelectionStore from '../../../store/useRideSelectionStore';
 import PropTypes from 'prop-types';
-import  AppConfig  from '../../../Config/AppConfig';
-import { useNearbyPollingControl } from '../../../store/useNearByDriverPollingControl';
-import { useNearbyDriversStore } from '../../../store/useNearByDrivers';
-import Marker from '../../../controllers/NEMap/Marker';
+import { buildKey as buildEstimationCacheKey, getFromCache as getEstimationFromCache, setInCache as setEstimationInCache, prune as pruneEstimationCache } from '../store/useEstimationCacheStore';
 
 
 const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => {
-    const {setStackScreen,goBack} = useStackScreenStore()
+    const {setStackScreen} = useStackScreenStore()
     const {rideStartLocation,rideEndLocation,rideWayPoints} = useRideBookingLocationStore()
     const {setMapBounds} = useMapStore()
     
     const handleAddStop = () => {
-      
+       
         setStackScreen('WaypointScreen',{})
     }
     const handleCurrentLocation = async () => {
@@ -255,11 +252,15 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     const estimationInFlightRef = useRef(false);
 
-    const estimationCaller = useCallback(async (payload) => {
+    const estimationCaller = useCallback(async (payload,cacheKey) => {
         if (estimationInFlightRef.current) return;
         estimationInFlightRef.current = true;
         try {
             const data = await getRideEstimation(payload);
+            // Save to cache on success
+            if (cacheKey && data?.result?.success) {
+                setEstimationInCache(cacheKey, data);
+            }
             onEstimationSuccess(data);
         } catch (error) {
             console.log('Estimation failed:', error);
@@ -279,16 +280,30 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     }, []);
 
     const getEstimatedFare = async () => {
+        // Build a cache key from route coordinates (start, end, waypoints)
+        const cacheKey = buildEstimationCacheKey({
+            start: rideStartLocation,
+            end: rideEndLocation,
+            waypoints: rideWayPoints,
+        });
+
+        // Prune old entries and try cache first
+        pruneEstimationCache();
+        const cached = getEstimationFromCache(cacheKey);
+        if (cached) {
+            console.log('Cached estimation found', cached);
+            onEstimationSuccess(cached);
+            return;
+        }
+
         const payload = {
-            distance: rideDistance, 
-            duration: estimatedDuration, 
-            coordinates: [rideStartLocation.longitude, rideStartLocation.latitude]
+            distance: rideDistance,
+            duration: estimatedDuration,
+            coordinates: [rideStartLocation.longitude, rideStartLocation.latitude],
+            
         };
-        debouncedGetRideEstimation(payload);
+        debouncedGetRideEstimation(payload,cacheKey);
     };
-
-   
-
     // Add effect to trigger estimation when direction data is available
     useEffect(() => {
         if (rideDistance && estimatedDuration ) {
@@ -400,8 +415,8 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
     <NavBar onBackPress={handleBackPress} />
     {scheduleDate && <View style={styles.ScheduleOption}>
     <Schdule />
-            <Text style={styles.rideSelectionTxt}>{scheduleDate && scheduleDate + " - " + scheduleTime}
-            </Text>
+            <AdaptiveText style={styles.rideSelectionTxt}>{scheduleDate && scheduleDate + " - " + scheduleTime}
+            </AdaptiveText>
            <TouchableOpacity 
             onPress={handleChangeScheduleTime}
             style={styles.editButton}
@@ -445,15 +460,15 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                  {!couponCode ? (
                    <>
                      <FontAwesome6 name="percent" size={20} color={colors.black} />
-                     <Text style={styles.CouponText}>{t('offer_coupons')}</Text>
+                     <AdaptiveText style={styles.CouponText}>{t('offer_coupons')}</AdaptiveText>
                      <Icon name="chevron-right" size={20} color="#888" />
                    </>
                  ) : (
                    <>
                     <FontAwesome6 name="percent" size={16} color={colors.grey_dark} />
-                     <Text >{t('coupon')}</Text>
-                     <Text style={[styles.CouponText, {fontFamily:Fonts.semi_bold}]}>{couponCode}</Text>
-                     <Text>{t('applied')}</Text>
+                     <AdaptiveText >{t('coupon')}</AdaptiveText>
+                     <AdaptiveText style={[styles.CouponText, {fontFamily:Fonts.semi_bold}]}>{couponCode}</AdaptiveText>
+                     <AdaptiveText>{t('applied')}</AdaptiveText>
                    </>
                  )}
 
@@ -462,9 +477,9 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
              
                   <TouchableOpacity style={styles.BookingPaymentContainer} onPress={handlePaymentType}>
                       <View style={styles.BookingPaymentHeader}>
-                          <Text style={styles.BookingPaymentHeaderText}>{t('pay_by')}</Text>
+                          <AdaptiveText style={styles.BookingPaymentHeaderText}>{t('pay_by')}</AdaptiveText>
                           <View style={styles.BookingPaymentMode}>
-                              <Text style={styles.BookingPaymentModeText}>{paymentType}</Text>
+                              <AdaptiveText style={styles.BookingPaymentModeText}>{paymentType}</AdaptiveText>
                               <Icon name="arrow-drop-down" color={colors.white} style={{ fontSize: 20 }}></Icon>
                           </View>
                       </View>
@@ -476,9 +491,9 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                           onPress={handleConfirmRide}
                           disabled={isBookingLoading}
                       >
-                          <Text style={styles.BookingButtonText}>
+                          <AdaptiveText style={styles.BookingButtonText}>
                               {isBookingLoading ? t('booking') : t('confirm_ride')}
-                          </Text>
+                          </AdaptiveText>
                       </TouchableOpacity>
                   </View>
 

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import Config from '../Config/APIURLConfig';
+  import Config from "react-native-config";
 import {DataStore} from '../controllers/DataStore';
 
 const apiClient = axios.create({

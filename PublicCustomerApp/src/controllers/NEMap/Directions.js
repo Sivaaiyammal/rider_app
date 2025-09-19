@@ -1,9 +1,9 @@
-import ApiConfig from "../../Config/APIURLConfig.js";
+import Config from "react-native-config";
 // const polyline = require('polyline');
 
 class DirectionAPI {
 
-    constructor(accessToken = ApiConfig.NE_ACCESS_TOKEN) {
+    constructor(accessToken = Config.NE_ACCESS_TOKEN) {
         this.accessToken = accessToken
 
         this.directionsAbortController = null
@@ -62,7 +62,7 @@ class DirectionAPI {
             locationString += `${location[1]},${location[0]}`
             if (index != locations.length - 1) locationString += ";"
         })
-        let url = `${ApiConfig.NE_ROOT_URL}/router/route?access_token=${this.accessToken}&points=${locationString}`
+        let url = `${Config.NE_ROOT_URL}/router/route?access_token=${this.accessToken}&points=${locationString}`
         let response = await fetch(url, { signal: this.directionsAbortController.signal })
         let data = await response.json()
         let route = data.routes[0]
@@ -96,7 +96,7 @@ class DirectionAPI {
         };
         const jsonString = JSON.stringify(jsonObject);
         const encodedData = encodeURIComponent(jsonString);
-        const url = `${ApiConfig.ROUTE_API_URL}?data=${encodedData}&access_token=${ApiConfig.NE_ACCESS_TOKEN}`;
+        const url = `${Config.ROUTE_API_URL}?data=${encodedData}&access_token=${Config.NE_ACCESS_TOKEN}`;
         
         try {
             const response = await fetch(url, {

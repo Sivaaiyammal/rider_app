@@ -187,7 +187,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
                   <View style={{ position: 'relative',flexDirection:'row',alignItems:'center',gap:15 }}>
                     {item.icon}
                  
-                  <Text style={drawerStyles.btnText}>{item.name}</Text>
+                  <AdaptiveText style={drawerStyles.btnText} color={colors.black}>{item.name}</AdaptiveText>
                   </View>
                   <Ionicons name={'chevron-forward'} size={20} color={'#757575'} />
                 </TouchableOpacity>

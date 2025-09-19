@@ -1,5 +1,5 @@
 import apiClient from "../APIClient";
-import APIConfig from "../../Config/APIURLConfig";
+import Config from "react-native-config";
 
 // request OTP
 export const requestOTP = async (payload) => {
@@ -124,7 +124,7 @@ export const deleteFavoritePlace = async (payload) => {
 
 
   export const mapMatch = async (payload) => {
-    const { data } = await apiClient.post(`${APIConfig.MAP_MATCH_URL}`, payload)
+    const { data } = await apiClient.post(`${Config.MAP_MATCH_URL}`, payload)
     return data
   }
 

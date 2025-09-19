@@ -10,6 +10,8 @@ import PREF from '../../../storage/PREF';
  * Simple hook for booking trips with navigation handling
  * @returns {Object} Booking functions and state
  */
+
+
 const useBookTrip = () => {
   const { setStackScreen } = useStackScreenStore();
   const { setCurrentRideInfo } = useCurrentRideInfoStore();

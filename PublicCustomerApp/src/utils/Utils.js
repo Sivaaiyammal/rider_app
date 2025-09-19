@@ -25,19 +25,16 @@ export const utils = {
 
 
   formatArrayAddress: (array) => {
-
-    let addr =""
-
-    if(typeof array === 'string'){
-      return array
+    if (typeof array === 'string') {
+      // Remove trailing comma and spaces if present
+      return array.replace(/,\s*$/, '');
     }
-      
-    array.forEach((item,index) => {
-      if(item !== ""){
-        addr += utils.capitalizeFirstLetter(item) + (index < array.length - 1 ? ", " : " ")
-      }
-    })
-    return addr
+
+    // Filter out empty strings and capitalize each item
+    const filtered = array
+      .filter(item => item && item.trim() !== "")
+      .map(item => utils.capitalizeFirstLetter(item.trim()));
+    return filtered.join(', ');
   },
 
   getFormatedHeader: (currentLocationName) => {
@@ -526,15 +523,15 @@ export const utils = {
   },
 
   formatAddressName: (address) => {
-   
-    if(address.locationFrom === "MAP"){
-      return utils.getFormatedHeader(address)
-    }else if(address.locationFrom === "SEARCH"){
-      return `${address.name},${address.address}`.charAt(0).toUpperCase() + `${address.name},${address.address}`.slice(1)
-    }else{
-     
-      return utils.getFormatedHeader(address)
-      
+    if (address.locationFrom === "MAP") {
+      return utils.getFormatedHeader(address);
+    } else if (address.locationFrom === "SEARCH") {
+      let str = `${address.name},${address.address}`;
+      // Remove trailing comma if present
+      str = str.replace(/,+\s*$/, '');
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    } else {
+      return utils.getFormatedHeader(address);
     }
   },
 

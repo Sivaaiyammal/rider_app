@@ -4,10 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
  
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import PropTypes from 'prop-types';
 
 import NavBar from '../../../components/NavBar';
 import WaypointContainer from '../components/wayPoints/waypointContainer';
@@ -18,18 +18,15 @@ import useWayPointReorderStore from '../store/useWayPointReorderStore';
 import useWaypointDirectionLoad from '../hooks/useWaypointDirectionLoad';
 import useMapStore from '../../../features/map/store/useMapStore';
 import  LocationTypes  from '../types/LocationTypes';
-import { Fonts,colors } from '../../../constants/constants';
+import { colors, Fonts } from '../../../constants/constants';
 import { getPreFinalFare,passangerStopChangeRequest } from '../../../API/EndPoints/EndPoints';
-import { use } from 'i18next';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
-import DataStore from '../../../controllers/DataStore';
-import PREF from '../../../storage/PREF';
 import { height } from '../../../utils/Utils';
 
-const WaypointScreen = ({fromPlanScreen=false}) => {
+const WaypointScreen = () => {
   const {tripId}=useCurrentRideInfoStore()
   const { t } = useTranslation();
-  const [isLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
   const [showFareModal, setShowFareModal] = React.useState(false);
   const [fareData, setFareData] = React.useState(null);
   const [isFareLoading, setIsFareLoading] = React.useState(false);
@@ -38,6 +35,7 @@ const WaypointScreen = ({fromPlanScreen=false}) => {
   const [distance,setDistance] = React.useState(0)
   const [duration,setDuration] = React.useState(0)
   const { goBack,setStackScreen } = useStackScreenStore();
+  const [enableConfirmButton,setEnableConfirmButton] = React.useState(false)
 
  
 
@@ -56,14 +54,13 @@ const WaypointScreen = ({fromPlanScreen=false}) => {
  
   const onBackPress = () => {
     setReOrderWaypoints([])
+    setOnGoingRideStops(null)
+    setReachedStops([])
     goBack();
     
   };
 
  
-  
-
-
   useEffect(() => {
 
     if (!reOrderWaypoints.length) {
@@ -89,6 +86,9 @@ const WaypointScreen = ({fromPlanScreen=false}) => {
           type: index === 0 ? LocationTypes.START_LOCATION : LocationTypes.WAYPOINT_LOCATION
         }));
         console.log("transformedData",transformedData)
+        if(transformedData.length > 1){
+          setEnableConfirmButton(true)
+        }
         setReOrderWaypoints(transformedData)
       } else {
         Arr=onGoingRideStops
@@ -121,9 +121,15 @@ const WaypointScreen = ({fromPlanScreen=false}) => {
 
   setWaitingForDriverApproval(null)
     
-
+ 
 
   }, []);
+
+  useEffect(() => {
+    return () => {
+      setIsLoading(false);
+    }
+  }, [])
 
 
   const handleDirectionReady = (data) => {
@@ -276,7 +282,12 @@ useEffect(() => {
 
   const ConformEditedRoute = async() => {
     const filterKeys = (obj) => {
-      const { latitude, longitude, type, locationFrom, id, ...rest } = obj;
+      const rest = { ...obj };
+      delete rest.latitude;
+      delete rest.longitude;
+      delete rest.type;
+      delete rest.locationFrom;
+      delete rest.id;
       return rest;
     };
 
@@ -335,7 +346,11 @@ useEffect(() => {
    if(res && res.success){
     setWaitingForDriverApproval('PENDING')
     goBack();
+    setOnGoingRideStops(null)
+    setReachedStops([])
    }
+
+
 
     
    
@@ -345,17 +360,30 @@ useEffect(() => {
     <>
       <View style={styles.topContainer}>
         <NavBar onBackPress={onBackPress} title={t('add_stops')} />
-          <WaypointContainer />
+          <WaypointContainer  setEnableConfirmButton={setEnableConfirmButton} />
       </View>
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.confirmButton, isLoading && styles.confirmButtonDisabled]}
-          disabled={isLoading}
-          onPress={onGoingRideStops?getFare:onConfirmRoute}
+          style={[styles.confirmButton, isLoading && styles.confirmButtonDisabled,!enableConfirmButton && styles.confirmButtonDisabled]}
+          disabled={isLoading || !enableConfirmButton}
+          onPress={async () => {
+            setIsLoading(true);
+
+            if (onGoingRideStops) {
+              await getFare();
+              setIsLoading(false);
+            } else {
+              onConfirmRoute();
+            }
+          }}
         >
-          <Text style={styles.confirmButtonText}>
-            {isLoading ? t('confirming') : onGoingRideStops ? t('confirm_edited_route'): t('confirm_route')}
-          </Text>
+        {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={[styles.confirmButtonText]}>
+              {onGoingRideStops ? t('confirm_edited_route'): t('confirm_route')}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
       <FareDetailsModal
@@ -394,12 +422,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: 5,
-    paddingHorizontal: 10,
-   
+    marginBottom:15,
     
-    borderTopColor: '#e9ecef',
-    backgroundColor: 'transparent',
+    marginHorizontal: 10,
+    borderRadius:12,
+
+    backgroundColor: 'white',
   },
   confirmButton: {
     backgroundColor: '#0f223c',
@@ -408,7 +436,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   confirmButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#0f223c'+'90',
   },
   confirmButtonText: {
     color: 'white',
@@ -416,6 +444,9 @@ const styles = StyleSheet.create({
    
     fontFamily: Fonts.medium,
   },
+  confirmButtonDisabledText:{
+    color:colors.grey_dark
+  }
 });
 
 export default WaypointScreen;

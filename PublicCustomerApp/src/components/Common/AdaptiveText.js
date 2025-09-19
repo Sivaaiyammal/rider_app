@@ -12,13 +12,25 @@ const AdaptiveText = ({ style, color, children, ...props }) => {
   const lang = i18n.language || 'en';
   const ratio = languageFontRatio[lang] || 1;
 
-  // Determine base font size considering both width and height for better scaling
+
   let baseFontSize = Math.min(screenWidth, screenHeight) * 0.045; // slightly larger for better readability
 
-  // If style has fontSize, use it as base, else use calculated baseFontSize
-  let fontSize = baseFontSize;
-  if (style && style.fontSize) fontSize = style.fontSize;
+  // Extract color and fontSize from style array or object
+  let extractedColor, extractedFontSize;
+  if (Array.isArray(style)) {
+    style.forEach(s => {
+      if (s && s.color && !extractedColor) extractedColor = s.color;
+      if (s && s.fontSize && !extractedFontSize) extractedFontSize = s.fontSize;
+    });
+  } else if (style) {
+    if (style.color) extractedColor = style.color;
+    if (style.fontSize) extractedFontSize = style.fontSize;
+  }
+  color = extractedColor || color;
 
+  let fontSize = extractedFontSize || baseFontSize;
+  if (style && style.fontSize) fontSize = style.fontSize;
+ 
   // Merge final style
   const mergedStyle = [
     style,

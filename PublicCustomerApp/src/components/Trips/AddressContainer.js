@@ -12,8 +12,8 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import { useTranslation } from 'react-i18next';
 import  useWayPointReorderStore from '../../features/booking/store/useWayPointReorderStore';
 import {utils} from '../../utils/Utils';
-
-const AddressContainer = ({ directions,edit=false ,live=false}) => {
+import AdaptiveText from '../Common/AdaptiveText';
+const AddressContainer = ({ directions,edit=false ,live=false,completed=false}) => {
 
 
   const getLocationIcon = (item,index,length,isReached) => {
@@ -53,10 +53,10 @@ const AddressContainer = ({ directions,edit=false ,live=false}) => {
     {edit && (<View style={{alignItems:"center",paddingVertical:10,flexDirection:"row",justifyContent:"space-between",paddingHorizontal:15}}>
        
   
-       <Text style={{fontSize:16, color:colors.grey_dark,fontFamily:Fonts.regular}}>{t('stops')}</Text>
+       <AdaptiveText style={{fontSize:16, color:colors.grey_dark,fontFamily:Fonts.regular}}>{t('stops')}</AdaptiveText>
            <TouchableOpacity style={{flexDirection:'row',gap:5,alignItems:'center',paddingVertical:3,borderRadius:5}} onPress={handleStopEdit}>  
           
-           <Text style={{fontSize:14, color:colors.blue,fontFamily:Fonts.regular}}>{t('edit')}</Text>
+           <AdaptiveText style={{fontSize:14, color:colors.blue,fontFamily:Fonts.regular}}>{t('edit')}</AdaptiveText>
            <Icon name="edit" size={20} color={colors.blue} />
         
            </TouchableOpacity>
@@ -96,6 +96,13 @@ const AddressContainer = ({ directions,edit=false ,live=false}) => {
                   {item.arrivalTime ? utils.formatDateAndTime(item.arrivalTime) : '--:--'}
                 </Text>
               </View>}
+              {
+                completed && !item.isReached && (
+                  <Text style={{fontSize:12, color:colors.red,fontFamily:Fonts.regular}}>
+                    {t('not_reached')}
+                  </Text>
+                )
+              }
            
              
              

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { colors, Fonts } from '../../../constants/constants';
 import PickLocationIcon from "../../../assets/icons/PickLocationIcon.svg"
 import { useTranslation } from 'react-i18next';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 const PickLocationButton = ({ 
   icon, 
   text, 
@@ -20,7 +21,7 @@ const PickLocationButton = ({
       onPress={onPress}
     >
       <PickLocationIcon height={20} width={20}/>
-      <Text style={[styles.text, { color: textColor }]}>{t('locate_on_map')}</Text>
+      <AdaptiveText style={[styles.text, { color: textColor }]}>{t('locate_on_map')}</AdaptiveText>
     </TouchableOpacity>
   );
 };

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { Fonts } from '../../../constants/constants';
 import { useTranslation } from 'react-i18next';
 import { TripStatus } from '../types/TripStatus';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 const REASONS = {'PENDING':[
   'driver_is_taking_too_long',
   'driver_asked_to_cancel',
@@ -53,7 +54,7 @@ const CancelComponent = ({ onClose, onCancel, loading,rideStatus }) => {
       try {
         if (selected === 'Other') {
           if(!otherReason.trim()) {
-              Alert.alert('Please enter a reason');
+              Alert.alert(t('please_enter_a_reason'));
               setIsLoading(false);
               return;
           }
@@ -62,7 +63,7 @@ const CancelComponent = ({ onClose, onCancel, loading,rideStatus }) => {
           await onCancel(selected);
         }
       } catch (error) {
-        console.error('Cancellation error:', error);
+          console.error(t('error'), error);
       } finally {
         setIsLoading(false);
       }
@@ -71,7 +72,7 @@ const CancelComponent = ({ onClose, onCancel, loading,rideStatus }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('why_are_you_cancelling_the_trip')}</Text>
+      <AdaptiveText style={styles.title}>{t('why_are_you_cancelling_the_trip')}</AdaptiveText>
       <View style={styles.box}>
         <ScrollView>
           {getReasons(rideStatus).map((reason) => (
@@ -84,7 +85,7 @@ const CancelComponent = ({ onClose, onCancel, loading,rideStatus }) => {
               <View style={styles.checkboxOuter}>
                 {selected === reason && <View style={styles.checkboxInner} />}
               </View>
-              <Text style={styles.reasonText}>{t(reason)}</Text>
+              <AdaptiveText style={styles.reasonText}>{t(reason)}</AdaptiveText>
             </TouchableOpacity>
           ))}
           {selected === 'Other' && (
@@ -101,11 +102,11 @@ const CancelComponent = ({ onClose, onCancel, loading,rideStatus }) => {
         </ScrollView>
       </View>
       <View style={styles.noteBox}>
-        <Text style={styles.noteText}>{t('no_cancellation_fees_will_be_charged')}</Text>
+        <AdaptiveText style={styles.noteText}>{t('no_cancellation_fees_will_be_charged')}</AdaptiveText>
       </View>
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.goBackBtn} onPress={onClose}>
-          <Text style={styles.goBackText}>{t('go_back')}</Text>
+          <AdaptiveText style={styles.goBackText}>{t('go_back')}</AdaptiveText>
         </TouchableOpacity>
         <TouchableOpacity
           style={[  styles.confirmBtn, {opacity: !selected || (selected === 'Other' && !otherReason.trim()) || isLoading ? 0.5 : 1}]}
@@ -115,7 +116,7 @@ const CancelComponent = ({ onClose, onCancel, loading,rideStatus }) => {
           {isLoading || loading ? (
             <ActivityIndicator size="small" color="#ff4d4f" />
           ) : (
-            <Text style={styles.confirmText}>{t('confirm_cancellation')}</Text>
+            <AdaptiveText style={styles.confirmText}>{t('confirm_cancellation')}</AdaptiveText>
           )}
         </TouchableOpacity>
       </View>

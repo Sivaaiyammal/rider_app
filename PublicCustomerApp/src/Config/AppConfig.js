@@ -11,10 +11,7 @@ module.exports = {
     DEFAULT_WAIT_TIME: 5,
     WAIT_TIME_CHARGES_PER_MINUTE: 2,
     MAX_WAIT_TIME: 60,
-    RIDE_CANCELLED_MIDWAY_FUEL_CHARGE: true,
-    PAYMENT_METHODS:"NOPG",
+    PAYMENT_METHODS:"PG",
     SHOW_NEARBY_DRIVER: false,
     DRIVER_LOCATION_UPDATE_INTERVAL: 10,
-    // PG - Payment Gateway
-    // NOPG - Non Payment Gateway
 }

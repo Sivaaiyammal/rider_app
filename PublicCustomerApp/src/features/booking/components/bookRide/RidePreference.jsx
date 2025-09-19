@@ -7,7 +7,8 @@ import { Fonts } from "../../../../constants/constants";
 import FemaleDriverIcon from "../../../../assets/icons/femaleDriverOnlyIcon.svg"
 import NightDriveIcon from "../../../../assets/icons/nightDriveIcon.svg"
 import CustomSwitch from "../../../../components/Common/SwitchInput"
-
+import AdaptiveText from "../../../../components/Common/AdaptiveText";
+  
 const RidePreference = () => {
   const { t } = useTranslation();
   const {femaleDriverOnly,setFemaleDriverOnly,safeNightRides,setSafeNightRides} = useRideBookingInfo()
@@ -20,10 +21,10 @@ const RidePreference = () => {
           <FemaleDriverIcon width={28} height={28} color="#fff" />
         </View>
         <View style={styles.textContainer}>
-          <Text style={styles.title}>{t('female_drivers_only')}</Text>
-          <Text style={styles.subtitle}>
+          <AdaptiveText style={styles.title}>{t('female_drivers_only')}</AdaptiveText>
+          <AdaptiveText style={styles.subtitle}>
             {t('female_driver_comfort')}
-          </Text>
+          </AdaptiveText>
         </View>
         <CustomSwitch
           value={femaleDriverOnly}
@@ -37,12 +38,12 @@ const RidePreference = () => {
           <NightDriveIcon width={28} height={28} color="#fff" />
         </View>
         <View style={styles.textContainer}>
-          <Text style={styles.title}>
-            {t('safe_night_rides')} <Text style={styles.timeLabel}>{t('night_time_range')}</Text>
-          </Text>
-          <Text style={styles.subtitle}>
+          <AdaptiveText style={styles.title}>
+            {t('safe_night_rides')} <AdaptiveText style={styles.timeLabel}>{t('night_time_range')}</AdaptiveText>
+          </AdaptiveText>
+          <AdaptiveText style={styles.subtitle}>
             {t('night_ride_description')}
-          </Text>
+          </AdaptiveText>
         </View>
         <CustomSwitch
           value={safeNightRides}

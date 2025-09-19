@@ -25,18 +25,19 @@ import  useUserInfoStore  from '../../store/useUserInfoStore';
 import useCalculateDistance from './hooks/useCalculateDistance';
 import { useTranslation } from 'react-i18next';
 import Overlay from '../../components/Overlay';
-import AppConfig from '../../Config/AppConfig';
 import {DataStore}from '../../controllers/DataStore';
 import PREF from '../../storage/PREF';
 import getGpsData from './services/getgpsdata';
+import { findRoute } from '../../controllers/NEMap/findRoute';
+import useLocationStore from '../../store/useLocationStore';
 
 const RideStatus = () => {
   const { userdetails } = useUserInfoStore();
   const { t } = useTranslation();
   const [showOverlay, setShowOverlay] = useState(false);
-  const {incrementCancelledTrips} = useUserInfoStore();
-  
-  const { duration,totalDistance,tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled} = useCurrentRideInfoStore();
+  const {incrementCancelledTrips,} = useUserInfoStore();
+  const {location} = useLocationStore();
+  const { duration,totalDistance,tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled,stops} = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const {goBack,stackScreen,setStackScreen} = useStackScreenStore();
   const [isPaymentMethodChangeShow,setIspaymentMethodChangeShow] = useState(false);
@@ -114,8 +115,10 @@ const RideStatus = () => {
       //   return
       // }
 
-      // If the ride is ongoing, include total distance and time
+   
       if (tripStatus === TripStatus.PICKEDUP) {
+        let distance = 0;
+        let duration = 0;
         const access_token = await DataStore.loadData('access_token');
         const data = await getGpsData({
           tripId: tripId,
@@ -124,21 +127,62 @@ const RideStatus = () => {
           token: access_token?.data,
         });
 
+        distance = data.distance;
+        duration = data.duration;
 
-       if(data.distance && data.duration) {
+        if( distance == 0 && duration == 0) {
+          const routePoints = stops.filter(stop => stop.isReached == true).map(stop => ({
+            lat: stop.location[1], // latitude
+            lon: stop.location[0]  // longitude
+        }));
+
+        if(location[0] && location[1]) {
+          routePoints.push({
+            lat: location[1],
+            lon: location[0]
+          });
+        }
+
+        
+
+      
+        const routeData = await findRoute(routePoints);
+        
+        
+        if (routeData && routeData.trip && routeData.trip.summary) {
+            const { length, time } = routeData.trip.summary;
+            const durationInMinutes = Math.round(time / 60);
+               
+                distance = length; 
+                duration = durationInMinutes; 
+
+                
+        }
+
+      }
+      
+
+
+       
+
+       if(distance && duration) {
+
+    
         const payload = {
           tripId,
           reason: cancelReason,
-          totalDistance: data.distance?.toFixed(2),
-          totalDuration: Math.round(data.duration)
+          totalDistance: distance?.toFixed(2),
+          totalDuration: Math.round(duration)
         };
+
+        console.log("payload",payload)
         
         CancelRide(payload);
         return
       }
 
 
-      }
+      }else{
 
       const payload = {
         tripId,
@@ -146,6 +190,7 @@ const RideStatus = () => {
     };
     
       await CancelRide(payload);
+  }
   };
 
 

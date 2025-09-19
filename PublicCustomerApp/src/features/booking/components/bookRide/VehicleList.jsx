@@ -20,7 +20,7 @@ import ExSEDAN from "../../../../assets/vehicle/ExSEDAN.webp"
 import SkeletonLoader from '../../../../components/Loaders/SkeletonLoader';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
+import AdaptiveText from '../../../../components/Common/AdaptiveText';
 
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
 
@@ -159,13 +159,13 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
                 <View style={styles.rowBetween}>
                   <View style={styles.timeRow}>
                     <MaterialCommunityIcons name="clock" size={16} color={"#757575"} />
-                    <Text style={[styles.timeText]}>{vehicle.estimatedDuration} {t('min')}</Text>
+                    <AdaptiveText style={[styles.timeText,{fontSize:13}]}>{vehicle.estimatedDuration} {t('min')}</AdaptiveText>
                     {/* <Text style={[styles.dot]}>·</Text>
                     <Text style={[styles.dropTime]}>{vehicle.dropat}</Text> */}
                   </View>
                   <View style={styles.passengerRow}>
                     <MaterialCommunityIcons name="account" size={16} color={ "#757575"} />
-                    <Text style={[styles.passengerText]}>{vehicle.capacity}</Text>
+                    <AdaptiveText style={[styles.passengerText]}>{vehicle.capacity}</AdaptiveText>
                   </View>
                 </View>
               </View>

@@ -8,6 +8,7 @@ import { Fonts } from '../../../../constants/constants';
 import useRideBookingInfo from '../../store/useRideBookingInfo';
 import { utils } from '../../../../utils/Utils';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import AdaptiveText from '../../../../components/Common/AdaptiveText';
 const CouponContainer = ({ onApply }) => {
   const { t } = useTranslation();
   const [allCoupons, setAllCoupons] = useState([]);
@@ -75,15 +76,15 @@ const CouponContainer = ({ onApply }) => {
   const renderCoupon = ({ item }) => (
     <View style={styles.couponCard}>
       <View style={styles.couponInfo}>
-        <Text style={styles.couponCode}>{item.code}</Text>
-        <Text style={styles.couponDesc}>{item.description}</Text>
-        <Text style={styles.couponDiscount}>{renderDiscount(item)}</Text>
+        <AdaptiveText style={styles.couponCode}>{item.code}</AdaptiveText>
+        <AdaptiveText style={styles.couponDesc}>{item.description}</AdaptiveText>
+        <AdaptiveText style={styles.couponDiscount}>{renderDiscount(item)}</AdaptiveText>
       </View>
       <View style={styles.couponValidity}>
         {couponCode === item.code ? (
           <View style={styles.appliedRow}>
             <View style={[styles.applyButton, styles.appliedButton, { flexDirection: 'row', alignItems: 'center', paddingRight: 10 }]}>
-              <Text style={styles.applyButtonText}>{t('coupon_applied')}</Text>
+              <AdaptiveText style={styles.applyButtonText}>{t('coupon_applied')}</AdaptiveText>
               <TouchableOpacity
                 onPress={handleRemove}
                 style={styles.closeButton}
@@ -98,26 +99,26 @@ const CouponContainer = ({ onApply }) => {
             style={styles.applyButton}
             onPress={() => handleApply(item)}
           >
-            <Text style={styles.applyButtonText}>{t('apply_coupon')}</Text>
+            <AdaptiveText style={styles.applyButtonText}>{t('apply_coupon')}</AdaptiveText>
           </TouchableOpacity>
         )}
-        <Text style={styles.couponValidityText}>{t('expiring_on')}</Text>
-        <Text style={[styles.couponValidityText, { fontSize: 12 }]}>
+        <AdaptiveText style={styles.couponValidityText}>{t('expiring_on')}</AdaptiveText>
+        <AdaptiveText style={[styles.couponValidityText, { fontSize: 12 }]}>
           {utils.formatISOToHumanReadable(item.validTo)}
-        </Text>
+        </AdaptiveText>
       </View>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{t('available_coupons')}</Text>
+      <AdaptiveText style={styles.header}>{t('available_coupons')}</AdaptiveText>
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#1A73E8" />
         </View>
       ) : allCoupons.length === 0 ? (
-        <Text style={styles.noCouponsText}>{t('no_coupons_available')}</Text>
+        <AdaptiveText style={styles.noCouponsText}>{t('no_coupons_available')}</AdaptiveText>
       ) : (
         <FlatList
           data={allCoupons}
@@ -202,6 +203,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     borderRadius: 6,
     marginBottom: 5,
+   
   },
   appliedButton: {
     backgroundColor: '#4CAF50',
@@ -210,6 +212,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontFamily: Fonts.regular,
     fontSize: 15,
+  
   },
   appliedRow: {
     flexDirection: 'row',

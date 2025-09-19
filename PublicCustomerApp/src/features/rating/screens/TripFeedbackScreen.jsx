@@ -2,20 +2,17 @@ import React, { useRef, useEffect, useState } from 'react';
 import {
   Animated,
   View,
-  StyleSheet,
-  Dimensions,
+  StyleSheet,   
   TouchableOpacity,
   Pressable,
-  Text,
 } from 'react-native';
 import PropTypes from 'prop-types';
-import { colors } from '../../../constants/constants';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 
 import RatingBox from '../components/RatingBox';    
 import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
 import RideStatusHeader from '../../rideStatus/components/RideStatusHeader';
-import { Fonts } from '../../../constants/constants';
+import { Fonts, colors       } from '../../../constants/constants';
 import { utils } from '../../../utils/Utils';
 import { submitTripFeedback } from '../../../API/EndPoints/EndPoints';
 import { showNotification } from '../../../components/NotificationManger';
@@ -26,6 +23,7 @@ import { getTripDetails } from '../../../API/EndPoints/EndPoints';
 import useRatingStore from '../Store/useRatingStore';
 import LottieView from 'lottie-react-native';
 import { height ,width } from '../../../utils/Utils';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 export default function TripFeedbackScreen() {
   
     
@@ -92,12 +90,12 @@ export default function TripFeedbackScreen() {
     
    
     if(feedback.success){
-      showNotification(t('success'),t('feedback_submitted_successfully'),colors.success)
+      showNotification(t('success'),t('feedback_submitted_successfully'),"success")
       await DataStore.clearData(PREF.CURRENT_TRIP)
       reset()
       
     }else{
-      showNotification(t('error'),t('something_went_wrong'),colors.error)
+      showNotification(t('error'),t('something_went_wrong'),"error")
     }
   }
 
@@ -169,17 +167,17 @@ export default function TripFeedbackScreen() {
         </View>
         <View style={styles.dottedLine}></View>
         <View style={styles.Rideisnfo}>   
-            <Text style={styles.RideFareText}>
+            <AdaptiveText style={styles.RideFareText}>
             ₹ {tripFare}
-            </Text>
+            </AdaptiveText>
             <View style={[styles.RideInfoContainer,]}>
                 <View style={[styles.seprator]}/>
 
               
                 <View style={styles.RideInfoContainerBox}>
-                    <Text style={styles.RideInfoText}>
+                    <AdaptiveText style={styles.RideInfoText}>
                         {typeof tripDistance === 'number' ? tripDistance.toFixed(1) : '--'} Km  .  {utils.formatMinutesToReadable(tripDuration)}
-                    </Text>
+                    </AdaptiveText>
 
                 </View>
                    <View style={[styles.seprator]}/>
@@ -193,9 +191,9 @@ export default function TripFeedbackScreen() {
             </View>
            <RatingBox onRatingSubmit={handleSubmit}/>
            <TouchableOpacity onPress={handleClose}>
-          <Text style={styles.LATERText}>
+          <AdaptiveText style={styles.LATERText}>
             {t('later')}
-          </Text>
+          </AdaptiveText>
         </TouchableOpacity>
           </View>
           
@@ -270,7 +268,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.black,
+    color: colors.black_primary,
     marginBottom: 8,
   },
   subtitle: {
@@ -286,7 +284,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.black,
+    color: colors.black_primary,
     marginBottom: 15,
   },
   starsContainer: {
@@ -315,7 +313,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 14,
-    color: colors.black,
+    color: colors.black_primary,
   },
   commentsSection: {
     marginBottom: 30,
@@ -333,14 +331,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   submitButton: {
-    backgroundColor: colors.primary || '#007AFF',
+    backgroundColor: colors.primary,
     paddingVertical: 16,
+    color: colors.white,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 20,
   },
   submitButtonText: {
-    color: 'white',
+    color: colors.white,
     fontSize: 18,
     fontWeight: '600',
   },
@@ -379,19 +378,19 @@ const styles = StyleSheet.create({
   RideFareText:{
     fontSize:30,
     fontFamily:Fonts.medium,
-    color:colors.black,
+    color:colors.black_primary,
     textAlign:"center"
   },
   RideInfoText:{
     fontSize:16,
     fontFamily:Fonts.regular,
-    color:colors.black, 
+    color:colors.black_primary, 
     textAlign:"center"
   },
   LATERText:{
     fontSize:14,
     fontFamily:Fonts.regular,
-    color:colors.black,
+    color:colors.black_primary,
     textAlign:"center",
     marginTop:20
   },

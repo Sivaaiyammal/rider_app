@@ -146,19 +146,22 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       
       
       if (data.success) {
-        resetRideMatchStatus();        
+
+        resetRideMatchStatus();  
+        showNotification(t('booking_successful'), t('your_ride_has_been_booked_successfully'), 'success'); 
+        setTripStatus(TripStatus.PENDING)      
         await initializeSocket();
         startMatching(data.tripId, userId,data?.trip?.vehicleType);
         incrementTotalTrips()
         setCurrentRideInfo(data)
-        setTripStatus(TripStatus.PENDING)
-        showNotification('Booking Successful', 'Your ride has been booked successfully!', 'success');
+        
+      
         
         if (onSuccess) {
           onSuccess(data);
         }
       } else {
-        showNotification('Booking Failed', data.message || 'Failed to book ride', 'danger');
+        showNotification(t('booking_failed'), data.message || t('failed_to_book_ride'), 'danger');
         
         if (onError) {
           onError(data);

@@ -12,7 +12,8 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {Fonts} from '../../../../constants/constants';
-import AppConfig from '../../../../Config/AppConfig';
+import AdaptiveText from '../../../../components/Common/AdaptiveText'; 
+import useConfigStore from '../../../../store/useConfigStore';
 
 const WaitingTimeModal = ({
   visible,
@@ -23,12 +24,12 @@ const WaitingTimeModal = ({
   const { t } = useTranslation();
   const [selectedTime, setSelectedTime] = useState(5);
   const [customTime, setCustomTime] = useState('');
-
+  const { appConfig } = useConfigStore();
   const predefinedTimes = [10, 15, 20, 30, 45, 60];
-  const defaultwaitingTime = AppConfig.DEFAULT_WAIT_TIME;
-  const waitingTimeChargesPerMinute = AppConfig.WAIT_TIME_CHARGES_PER_MINUTE;
-  const maxwaitingTime = AppConfig.MAX_WAIT_TIME;
-  const showWaitPriceInfo = AppConfig.SHOW_WAIT_PRICE_INFO;
+  const defaultwaitingTime = appConfig?.DEFAULT_WAIT_TIME;
+  const waitingTimeChargesPerMinute = appConfig?.WAIT_TIME_CHARGES_PER_MINUTE;
+  const maxwaitingTime = appConfig?.MAX_WAIT_TIME;
+  const showWaitPriceInfo = appConfig?.SHOW_WAIT_PRICE_INFO;
   
 
 
@@ -100,9 +101,9 @@ const WaitingTimeModal = ({
 
           {/* Info Text */}
           <View style={styles.infoSection}>
-            <Text style={styles.infoText}>
+            <AdaptiveText style={styles.infoText}>
               {t('wait_time_info',{defaultwaitingTime})}
-            </Text>
+            </AdaptiveText>
           </View>
 
           {/* Time Input */}
@@ -149,13 +150,13 @@ const WaitingTimeModal = ({
                     onPress={() => handleTimeSelect(time)}
                     disabled={time < defaultwaitingTime}
                   >
-                    <Text style={[
+                    <AdaptiveText style={[
                       styles.timeButtonText,
                       selectedTime === time && styles.selectedTimeButtonText,
                       time < defaultwaitingTime && styles.disabledTimeButtonText
                     ]}>
                       {time}
-                    </Text>
+                    </AdaptiveText>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -166,9 +167,9 @@ const WaitingTimeModal = ({
           <View style={styles.locationSection}>
             <MaterialIcons name="location-on" size={16} color="#666" style={styles.locationIcon} />
             <View style={styles.locationTextContainer}>
-              <Text style={styles.locationAddress} numberOfLines={2}>
+              <AdaptiveText style={styles.locationAddress} numberOfLines={2}>
                 {waypointData?.item?.address || t('unknown_address')}
-              </Text>
+              </AdaptiveText>
               {/* <Text style={styles.coordinates}>
                 {waypointData?.item?.latitude?.toFixed(4) || 'N/A'}, {waypointData?.item?.longitude?.toFixed(4) || 'N/A'}
               </Text> */}
@@ -181,9 +182,9 @@ const WaitingTimeModal = ({
                 <MaterialIcons name="info" size={16} color="#666" />
               <Text style={styles.chargesTitle}>{t('wait_time_charges')}</Text>
             </View>
-            <Text style={styles.chargesText}>
+            <AdaptiveText style={styles.chargesText}>
               {t('wait_time_charges_info', { defaultwaitingTime, waitingTimeChargesPerMinute, maxwaitingTime })}
-            </Text>
+            </AdaptiveText>
           </View>
           )}
 
@@ -196,14 +197,14 @@ const WaitingTimeModal = ({
                 style={[styles.button, styles.removeButton]}
                 onPress={handleRemovewaitingTime}
               >
-                <Text style={styles.removeButtonText}>{t('remove')}</Text>
+                <AdaptiveText style={styles.removeButtonText}>{t('remove')}</AdaptiveText>
               </TouchableOpacity>
             ):(
               <TouchableOpacity
               style={[styles.button, styles.cancelButton]}
               onPress={onClose}
             >
-              <Text style={styles.cancelButtonText}>{t('skip')}</Text>
+              <AdaptiveText style={styles.cancelButtonText}>{t('skip')}</AdaptiveText>
             </TouchableOpacity>
             )}
             
@@ -216,7 +217,7 @@ const WaitingTimeModal = ({
               onPress={handleSave}
               disabled={!canSave}
             >
-              <Text style={styles.saveButtonText}>{t('set')}</Text>
+              <AdaptiveText style={styles.saveButtonText}>{t('set')}</AdaptiveText>
             </TouchableOpacity>
           </View>
         </View>

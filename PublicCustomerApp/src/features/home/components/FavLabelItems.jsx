@@ -9,9 +9,10 @@ import {  utils, width } from '../../../utils/Utils';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import AddFavIcon from '../../../assets/icons/AddFavIcon.svg';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 
 
-const FavLabelItems = ({onLabelPress,enableAdd=true}) => {
+const FavLabelItems = React.memo(({onLabelPress,enableAdd=true}) => {
   const { t } = useTranslation();
   const responsiveMaxWidth = width * 0.8;
   const {userFavPlaces} = useUserInfoStore();
@@ -29,13 +30,13 @@ const FavLabelItems = ({onLabelPress,enableAdd=true}) => {
   
   return (
     <View style={styles.FavouriteAddressContainer}> 
-      {userFavPlaces?.length > 0 && <Text style={styles.FavouriteAddressContainerTitle}>{t('favorite_places')}</Text>}
+      {userFavPlaces?.length > 0 && <AdaptiveText style={styles.FavouriteAddressContainerTitle}>{t('favorite_places')}</AdaptiveText>}
       {hasNoFavorites && enableAdd ? (
        
         <TouchableOpacity style={styles.FavouriteAddressItem} onPress={handleAddFavPlacePress}>
          
           <View style={styles.AddFavouriteAddressItemTextContainer}>
-            <Text style={[styles.FavouriteAddressItemText,{color:"#757575"}]}>+ {t('add_favorite_places')}</Text>
+            <AdaptiveText style={[styles.FavouriteAddressItemText,{color:"#757575"}]}>+ {t('add_favorite_places')}</AdaptiveText>
           </View>
         </TouchableOpacity>
       ) : (
@@ -46,15 +47,17 @@ const FavLabelItems = ({onLabelPress,enableAdd=true}) => {
               {item.label.toLowerCase() === 'home' ? <HomeIcon width={50} height={50} /> : item.label.toLowerCase() === 'work' ? <WorkIcon width={50} height={50} /> : <View style={{paddingHorizontal:2}}><FavIcon width={45} height={45} /></View>  }
             </View>
            <View key={index} style={styles.FavouriteAddressItemTextContainer}>
-           <Text style={styles.FavouriteAddressItemText}>{item.label}</Text>
-           <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth-5 }]}>{utils.formatAddressName(item.locationData)}</Text>
+           <AdaptiveText style={styles.FavouriteAddressItemText}>{item.label}</AdaptiveText>
+           <AdaptiveText numberOfLines={1} ellipsizeMode="tail" fontSize={13} style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth-5 }]}>{utils.formatAddressName(item.locationData)}</AdaptiveText>
        </View>
        </TouchableOpacity>
         ))
       )}
     </View>
   );
-};
+});
+
+FavLabelItems.displayName = 'FavLabelItems';
 
 const styles = StyleSheet.create({
    
@@ -112,7 +115,7 @@ const styles = StyleSheet.create({
       },
       FavouriteAddressItemSubText: {
         fontFamily: Fonts.regular,
-        fontSize: 13,
+        fontSize: 14,
         color: '#757575',
         textAlign: 'left',
       },

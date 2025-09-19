@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import AddressContainer from './Trips/AddressContainer';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
+import AdaptiveText from './Common/AdaptiveText';
 
 const TripDetailsModal = ({ 
   visible, 
@@ -59,7 +60,7 @@ const TripDetailsModal = ({
     ]}>
       <View style={styles.modalHeader}>
         <View style={styles.modalHandle} />
-        <Text style={styles.modalTitle}>{t('trip_details')}</Text>
+        <AdaptiveText style={styles.modalTitle}>{t('trip_details')}</AdaptiveText>
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
           <Icon name="close" size={24} color="#666" />
         </TouchableOpacity>
@@ -75,9 +76,9 @@ const TripDetailsModal = ({
         {/* Driver Approval Status */}
         {waitingForDriverApproval === "PENDING" && (
           <View style={styles.DriverApprovalContainer}>
-            <Text style={styles.DriverApprovalText}>
+            <AdaptiveText style={styles.DriverApprovalText}>
               Your Stops edit request is pending. Please wait for driver to approve your request
-            </Text>
+            </AdaptiveText>
           </View>
         )}
         
@@ -91,8 +92,8 @@ const TripDetailsModal = ({
           </View>
         </TouchableOpacity> */}
         <View style={styles.paymentRow}>
-          <Text style={styles.paymentLabel}>{t('payment_method_label')}</Text>
-          <Text style={styles.paymentValue}>{paymentMethod}</Text>
+          <AdaptiveText style={styles.paymentLabel}>{t('payment_method_label')}</AdaptiveText>
+          <AdaptiveText style={styles.paymentValue}>{paymentMethod}</AdaptiveText>
         </View>
      
        
@@ -102,7 +103,7 @@ const TripDetailsModal = ({
             onCancel();
           }}>
           {/* <Icon name="close" size={25} color={colors.white} /> */}
-          <Text style={styles.cancelBtnText}>Cancel Trip</Text>
+          <AdaptiveText style={styles.cancelBtnText}>{t('cancel_trip')}</AdaptiveText>
         </TouchableOpacity>
         </View>
         

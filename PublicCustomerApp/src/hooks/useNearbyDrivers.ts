@@ -1,20 +1,19 @@
 // hooks/useNearbyDrivers.ts
 import { useQuery, useQueryClient } from "react-query";
-import AppConfig from "../Config/AppConfig";
 import {  getNearByDrivers } from "../API/EndPoints/EndPoints";
 import { useNearbyDriversStore } from "../store/useNearByDrivers";
 import { useNearbyPollingControl } from "../store/useNearByDriverPollingControl";
-
+import useConfigStore from "../store/useConfigStore";
 
 export function useNearbyDrivers() {
   const qc = useQueryClient();
   const { setDrivers } = useNearbyDriversStore();
   const { enabled, intervalMs, lat, lon } = useNearbyPollingControl();
-
+  const { appConfig } = useConfigStore();
   return useQuery({
     queryKey: ["nearbyDrivers", lat, lon], // cache per target
     queryFn: () => getNearByDrivers(lat!, lon!),
-    enabled: enabled && AppConfig.SHOW_NEARBY_DRIVER && lat != null && lon != null,
+    enabled: enabled && appConfig?.SHOW_NEARBY_DRIVER && lat != null && lon != null,
     staleTime: intervalMs,
     refetchInterval: (q:any) => (q?.state?.fetchFailureCount ? false : intervalMs),
     refetchOnWindowFocus: false, // RN

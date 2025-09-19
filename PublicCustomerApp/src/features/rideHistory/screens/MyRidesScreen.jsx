@@ -23,6 +23,7 @@ import PropTypes from 'prop-types';
 import CalenderIcon from '../../../assets/image/calender.svg';
 import DatePicker from 'react-native-date-picker';
 import EnhancedDateRangeBottomSheet from '../../shared/component/EnhancedDateRangeBottomSheet';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 
 const YourRidesScreen = () => {
     const { t } = useTranslation();
@@ -425,13 +426,14 @@ const YourRidesScreen = () => {
                             borderColor: colors.grey_light,
                             borderRadius: 16,
                             paddingVertical: 8,
-                            paddingHorizontal: 12,
+                         
                             backgroundColor: activeTab === tab.id ? colors.black : colors.white,
                             alignItems: 'center',
                             justifyContent: 'center',
                         }}
                     >
-                        <Text style={{ fontFamily: Fonts.medium, color: activeTab === tab.id ? colors.white : colors.black }}>{tab.label}</Text>
+                        <AdaptiveText numberOfLines={1} style={{ fontSize:16 ,fontFamily:Fonts.regular}} color={activeTab === tab.id ? colors.white : colors.black}>{tab.label}</AdaptiveText>
+                        {/* <AdaptiveText style={{ fontFamily: Fonts.medium, color: activeTab === tab.id ? colors.white : colors.black }}>{tab.label}</AdaptiveText> */}
                     </TouchableOpacity>
                 ))}
                 {/* Calendar icon for custom date range */}

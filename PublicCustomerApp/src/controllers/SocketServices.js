@@ -1,15 +1,16 @@
 import io from 'socket.io-client';
-import Config from '../Config/APIURLConfig';
+  
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore';
 import useAssignedDriverInfoStore from '../features/rideStatus/store/useAssignedDriverInfoStore';
 import useWayPointReorderStore from '../features/booking/store/useWayPointReorderStore';
-import { TripStatus } from '../features/rideStatus/types/TripStatus';
+ 
 import { usePaymentStore } from '../features/payment/store/usePaymentStore';
 import { DataStore } from './DataStore';
 import PREF from '../storage/PREF';
 import useUserInfoStore  from '../store/useUserInfoStore';
+import Config from "react-native-config";
 const SOCKET_URL = Config.ROOT_API_URL;
 
 class WSService {

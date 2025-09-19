@@ -4,6 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import {navStyles} from '../styles/NavStyles';
 import {colors} from '../constants/constants';
 import LinearGradient from 'react-native-linear-gradient';
+import AdaptiveText from './Common/AdaptiveText';
 
 const NavBar = props => {
   const {
@@ -41,7 +42,7 @@ const NavBar = props => {
         </View>
       )}
       <View style={navStyles.content}>
-        <Text style={navStyles.contentTxt}>{title}</Text>
+        <AdaptiveText style={navStyles.contentTxt} color={colors.black}>{title}</AdaptiveText>
       </View>
       {rightIcon && (<TouchableOpacity style={navStyles.rightIcon} onPress={onrightIconPress}>
       

@@ -29,11 +29,11 @@ import { DataStore } from '../../../controllers/DataStore';
 import {height} from '../../../utils/Utils';
 import FavLabelItems from '../../home/components/FavLabelItems';
 
-// Removed debounce import
+// Debounce import
+import debounce from 'lodash.debounce';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
-const CACHE_EXPIRY = 5 * 60 * 1000;
 const searchCache = new Map();
 
 const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwaitingTime=false,title=null,index=null,label=null}) => {
@@ -53,7 +53,9 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const searchInputRef = useRef(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
-  const searchRequestIdRef = useRef(0);
+
+  // Debounce ref for cleanup
+  const debouncedSearchRef = useRef();
 
   // Region configuration
   const REGIONS = useMemo(() => [
@@ -134,24 +136,21 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
 
   const searchAPI = useCallback(
     async (value, statevectore = {}, fullSearch = false) => {
-      const requestId = ++searchRequestIdRef.current;
       try {
-        console.log("call search api", value);
+        // If search is empty, don't call API
+        if (!value && (!statevectore || Object.keys(statevectore).length === 0)) {
+          setOnSearchResults([]);
+          setHasSearchResults(true);
+          setMatchedStrings([]);
+          setIsLoading(false);
+          return;
+        }
+
+        // console.log("call search api", value); // Removed as per instruction
         const normalizedStateVector = statevectore || {};
         const stateVectorStr = JSON.stringify(normalizedStateVector);
         const cacheKey = `${value.toLowerCase().trim()}_${stateVectorStr}`;
-        const cachedResult = searchCache.get(cacheKey);
-
-        if (cachedResult && Date.now() - cachedResult.timestamp < CACHE_EXPIRY) {
-          // Only apply cached results if this is still the latest request
-          if (requestId === searchRequestIdRef.current) {
-            setOnSearchResults(cachedResult.results);
-            console.log("cachedResult for", value);
-            setMatchedStrings(cachedResult.matchedStrings || []);
-            setHasSearchResults(Boolean(cachedResult.hasSearchResults));
-          }
-          return;
-        }
+   
 
         if (statevectore && Object.keys(statevectore).length > 0) {
           fullSearch = true;
@@ -177,7 +176,6 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
 
         const searchResults = await performSearch(searchParams);
        
-        if (requestId !== searchRequestIdRef.current) return;
         if (searchResults?.unifiedSearchData && searchResults?.unifiedSearchData?.length > 0) {
           const searchDataArray = {
             title: "unifiedSearchData",
@@ -216,39 +214,41 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           });
         }
       } catch (e) {
-        // Ignore cancellations or stale requests
+        // Ignore cancellation errors
         const msg = String(e?.message || e || '').toLowerCase();
         const code = String(e?.code || '').toLowerCase();
         const isCancelled = msg.includes('cancel') || code === 'cancelled' || code === 'canceled' || code === 'ecanceled';
-        if (requestId !== searchRequestIdRef.current || isCancelled) {
+        if (isCancelled) {
           return;
         }
         console.error('Error performing search:', value, e);
         setOnSearchResults([]);
       } finally {
-        // Only clear loading if this is the latest active request
-        if (requestId === searchRequestIdRef.current) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     },
     [location, setOnSearchResults, selectedRegion]
   );
 
-  // Removed debouncedSetSearchUnit and related useEffect
+  // Debounced version of searchAPI for typing
+  const debouncedSearchAPI = useMemo(() => debounce((value) => {
+    searchAPI(value);
+  }, 400), [searchAPI]);
 
+  // Cleanup debounce on unmount
   useEffect(() => {
     return () => {
       clearAllStateVectors();
       setStateVector(null);
+      debouncedSearchAPI.cancel && debouncedSearchAPI.cancel();
     };
-  }, []);
+  }, [debouncedSearchAPI]);
 
-  const _onChangeText =
-    value => {
-      setSearchTxt(value);
-      searchAPI(value);
-    };
+  // Debounced onChangeText handler
+  const _onChangeText = value => {
+    setSearchTxt(value);
+    debouncedSearchAPI(value);
+  };
 
   useEffect(() => {
     Animated.parallel([
@@ -267,37 +267,35 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
  
   const selectedCallBack = async (item) => {
     if (item?.sectionType === 'fast_match' || item?.stateVectorForMatches){
-     
       if(item?.stateVectorForMatches){
-            await searchAPI('', item?.stateVectorForMatches);
-            setSearchTxt('');
-            setStateVector(item?.stateVectorForMatches);
-          }
-    }else{
-
+        // For state vector, call API immediately (not debounced)
+        await searchAPI('', item?.stateVectorForMatches);
+        setSearchTxt('');
+        setStateVector(item?.stateVectorForMatches);
+      }
+    } else {
       onLocationNamePress(item);
     }
-  
   };
 
   const removeStateVecotr = async (item) => {
-
     clearSingleStateVector(item.key, item.index);
     setOnSearchResults([])
     setStateVector(null);
     setMatchedStrings([]);
+    // Call API immediately (not debounced)
     await searchAPI(searchTxt, null);
   }
 
   // onpress on search results
   const onLocationNamePress = useCallback((item) => {
-    
     item["locationFrom"] = "SEARCH";
     storeRecentSearch(item);
     onSearchClick(item, searchType, index);
   }, [onSearchClick, searchType, index]);
 
   const fullSearch = () => {
+    // Call API immediately (not debounced)
     searchAPI(searchTxt, null, true);
   }
 
@@ -328,6 +326,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     // Only trigger search on focus if there's text AND no current results
     // This prevents unnecessary API calls when just focusing the input
     if (searchTxt.trim() && (!onSearchResults || onSearchResults.length === 0)) {
+      // Call API immediately (not debounced)
       searchAPI(searchTxt);
     }
   };
@@ -335,7 +334,6 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const handleSearchBlur = () => {
     setIsSearchFocused(false);
   };
-
 
   const hideRegionModal = () => {
     setIsRegionModalVisible(false);
@@ -346,6 +344,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     hideRegionModal();
     searchCache.clear();
     if (searchTxt.trim()) {
+      // Call API immediately (not debounced)
       searchAPI(searchTxt);
     }
   }, [searchTxt, searchAPI]);
@@ -353,6 +352,8 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const handleClearSearch = () => {
     setSearchTxt('');
     setOnSearchResults([]);
+    // Cancel any pending debounced search
+    debouncedSearchAPI.cancel && debouncedSearchAPI.cancel();
   };
 
   const handleFavouriteLocationPress = (locationType,labelLocation) => {

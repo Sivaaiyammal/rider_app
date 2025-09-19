@@ -30,7 +30,7 @@ export default async function getGpsData({ tripId, startTime, endTime, token }) 
 
     const raw = data?.getRecentLocations?.raw;
     if (!Array.isArray(raw) || raw.length === 0) {
-      return { distance: -1, duration: -1 };
+      return { distance: 0, duration: 0 };
     }
 
   
@@ -44,7 +44,7 @@ export default async function getGpsData({ tripId, startTime, endTime, token }) 
 
     const lngLats = processed?.data?.lngLats;
     if (!Array.isArray(lngLats) || lngLats.length < 2) {
-      return { distance: -1, duration: -1 };
+      return { distance: 0, duration: 0 };
       
     }
 
@@ -71,9 +71,9 @@ export default async function getGpsData({ tripId, startTime, endTime, token }) 
       };
     }
 
-    return { distance: -1, duration: -1 };
+    return { distance: 0, duration: 0 };
   } catch (err) {
     console.error("calculateDistance error:", err);
-    return { distance: -1, duration: -1 };
+    return { distance: 0, duration: 0 };
   }
 }

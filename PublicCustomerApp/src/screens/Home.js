@@ -5,17 +5,17 @@ import MapContainer from '../features/map/components/MapContainer.js';
 import { RequestAllPermissions } from '../controllers/PermissionHandler';
 import locationTask from '../controllers/GetCurrentLocation';
 
-import RideSummary from './RideSummary';
 import SearchScreen from '../features/search/screens/SearchScreen';
 import WaypointScreen from '../features/booking/screens/WaypointScreen';
-import { StatusBar } from 'react-native';
+import { StatusBar, View, StyleSheet } from 'react-native';
+import LottieView from 'lottie-react-native';
 import useUserInfoStore from '../store/useUserInfoStore';
 import { getStoredLocation, getPreferenceShowRideStatus} from '../storage/userLocalStorage';
 import PickLocationScreen from './PickLocationScreen';
 import { useCustomBackHandler } from '../hooks/useCustomBackHandler';
 import PlanRideScreen from '../features/booking/screens/PlanRideScreen.jsx';
 import BookRideScreen from '../features/booking/screens/BookRideScreen.jsx';
-import { getUserStats , getNearByDrivers} from '../API/EndPoints/EndPoints';
+import { getUserStats } from '../API/EndPoints/EndPoints';
 import RideStatus from '../features/rideStatus';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 import PaymentScreen from '../features/payment/screens/PaymentScreen';
@@ -40,23 +40,69 @@ import TicketDetailScreen from '../features/support/screens/TicketDetailScreen';
 import TripSelectionScreen from '../features/support/screens/TripSelectionScreen';
 import useLocationStore from '../store/useLocationStore';
 import PREF from '../storage/PREF';
+import { useDebounce } from '../hooks/useDebounce';
+import useConfigStore from '../store/useConfigStore';
+import UnableToConnectOverlay from '../components/UnableToConnectOverlay';
+
+const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
+  return (
+    <View style={styles.overlay}>
+      <View style={styles.lottieContainer}>
+        <LottieView
+          source={require('../assets/lottie/car_travel.json')}
+          autoPlay
+          loop
+          renderMode="HARDWARE"
+          style={styles.lottie}
+        />
+      </View>
+    </View>
+  );
+});
+
+const styles = StyleSheet.create({
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    backgroundColor: 'rgba(254, 254, 254, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+  },
+  lottieContainer: {
+    backgroundColor: 'white',
+    borderRadius: 200,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'yellow',
+  },
+  lottie: {
+    width: 220,
+    height: 220,
+  },
+});
+
 const Home = () => {
   const {location} = useLocationStore();
   const { setLocation } = useLocationStore.getState();
   const { stackScreen } = useStackScreenStore();
   const permissionsRequested = useRef(false);
-  const [mapReady] = useState(false);
+  const [bootLoading, setBootLoading] = useState(true);
+  const [configError, setConfigError] = useState(false);
   const { setHomelocation, setWorklocation, setIsPreferenceShow} = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
-  const { setUserdetails ,setID,id,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips} = useUserInfoStore();
+  const { setUserdetails ,setID,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips} = useUserInfoStore();
   const { setMapShown , mapShown, setUserLocation} = useMapStore();
   const { setTarget } = useNearbyPollingControl();
+  const { setConfig } = useConfigStore();
   
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
-    
     
     permissionsRequested.current = true;
     const permissions = await RequestAllPermissions();
@@ -64,12 +110,31 @@ const Home = () => {
     if (permissions.location) {
       await locationTask.getCurrentLocation();
     }
-   
+    
   };
-  const handleUserLocatioChange = (location) => {
-    console.log("userLocation", location);
-    setLocation([location.longitude, location.latitude]);
-  }
+  const updateLocationDebounced = useDebounce((lng, lat) => {
+    setLocation([lng, lat]);
+  }, 10000);
+  const handleUserLocatioChange = (currentLocation) => {
+    const current = useLocationStore.getState().location;
+    const lng = currentLocation?.longitude;
+    const lat = currentLocation?.latitude;
+    if (lng == null || lat == null) {
+      return;
+    }
+    if (!current) {
+      updateLocationDebounced(lng, lat);
+      return;
+    }
+    if (
+      lng === current?.[0] &&
+      lat === current?.[1]
+    ) {
+      return;
+    }
+
+    updateLocationDebounced(lng, lat);
+  };
 
   useEffect(() => {
     setUserLocation(handleUserLocatioChange);
@@ -87,14 +152,23 @@ const Home = () => {
 
   const checkOnGoingRideAndLog = async () => {
     const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
-   console.log("currentTrip",currentTrip)
+
     const currentTripId=currentTrip?.data || null
     try {
-      
+      setConfigError(false);
       const Response = await getUserStats(currentTripId);
     
-      console.log("Response",Response)
+   
       if(Response?.success ){
+
+        console.log("djjhd",JSON.stringify(Response))
+
+        if(Response?.appConfig){
+          setConfig(Response?.appConfig);
+
+        } else {
+          setConfigError(true);
+        }
 
         if(Response?.userStats?.favPlaces?.length > 0){
           setUserFavPlaces(Response?.userStats?.favPlaces);
@@ -150,9 +224,14 @@ const Home = () => {
         setStackScreen('RideStatus', { });
       }
       
+    } else {
+      setConfigError(true);
     }
     } catch (error) {
       console.error('Error fetching ongoing ride:', error);
+      setConfigError(true);
+    } finally {
+      setBootLoading(false);
     }
   }
 
@@ -186,10 +265,12 @@ const Home = () => {
     
   } 
 
+  const retryLoadAppConfig = async () => {
+    setBootLoading(true);
+    setConfigError(false);
+    await checkOnGoingRideAndLog();
+  }
 
- 
-  
- 
 
   useEffect(() => {
     checkAllPermissions();
@@ -197,7 +278,7 @@ const Home = () => {
     checkFavouriteLocation();
     checkPreferenceShowRideStatus();
     checkOnGoingRideAndLog()
-  }, [mapReady]);
+  }, []);
 
   useCustomBackHandler();
 
@@ -272,12 +353,19 @@ const Home = () => {
 
   return (
     <>
+     {bootLoading && (
+        <BootLoaderOverlay />
+      )}
      <StatusBar barStyle="dark-content" backgroundColor={"white"} />
       {renderContent()}
       <MapContainer
         mapReady={mapShown}
         setMapReady={setMapShown}
       />
+     
+      {configError && (
+        <UnableToConnectOverlay onRetry={retryLoadAppConfig} />
+      )}
 
       {/* {overlayStatuses.includes(tripStatus) && (
         <TripStatusOverlay status={tripStatus} />

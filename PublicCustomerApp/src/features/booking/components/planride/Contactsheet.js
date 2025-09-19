@@ -8,6 +8,7 @@ import useRideBookingInfo from '../../store/useRideBookingInfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PropTypes from 'prop-types';
 import { height } from '../../../../utils/Utils';
+import AdaptiveText from '../../../../components/Common/AdaptiveText';
 
 const Contactsheet = ({ onConfirm }) => {
   const { t } = useTranslation();
@@ -135,7 +136,7 @@ const Contactsheet = ({ onConfirm }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t('book_for')}</Text>
+        <AdaptiveText style={styles.title}>{t('book_for')}</AdaptiveText>
       </View>
       <ScrollView style={{maxHeight:height*0.6}} showsVerticalScrollIndicator={false}>
       <TouchableOpacity 
@@ -146,11 +147,11 @@ const Contactsheet = ({ onConfirm }) => {
             <Ionicons name="person" size={24} color={colors.black} />
           </View>
         <View style={styles.myselfInfo}>
-          <Text style={styles.myselfText}>{t('myself')}</Text>
+          <AdaptiveText style={styles.myselfText}>{t('myself')}</AdaptiveText>
           {userdetails && (
-            <Text style={styles.myselfDetails}>
+            <AdaptiveText style={styles.myselfDetails}>
               {userdetails.name} - {userdetails.phone}
-            </Text>
+            </AdaptiveText>
           )}
         </View>
         {isMyselfSelected && <Ionicons name="checkmark-circle" size={24} color={colors.black} />}
@@ -169,8 +170,8 @@ const Contactsheet = ({ onConfirm }) => {
             <Ionicons name="person" size={24} color={colors.black} />
           </View>
           <View style={styles.contactInfo}>
-            <Text numberOfLines={1} style={styles.contactName} ellipsizeMode="tail">{contact.name}</Text>
-            <Text style={styles.contactPhone}>{contact.phone}</Text>
+            <AdaptiveText numberOfLines={1} style={styles.contactName} ellipsizeMode="tail">{contact.name}</AdaptiveText>
+            <AdaptiveText style={styles.contactPhone}>{contact.phone}</AdaptiveText>
           </View>
           <View style={styles.contactActions}>
             {passangerDetails?.phone === contact.phone && rideBookMode === 'OTHERS' && (
@@ -193,7 +194,7 @@ const Contactsheet = ({ onConfirm }) => {
           onPress={() => setShowAddContact(true)}
         >
           <Ionicons name="add-circle-outline" size={24} color={colors.black} />
-          <Text style={styles.addButtonText}>{t('add_new_contact')}</Text>
+          <AdaptiveText style={styles.addButtonText}>{t('add_new_contact')}</AdaptiveText>
         </TouchableOpacity>
       ) : (
         <View style={styles.addContactForm}>
@@ -225,7 +226,7 @@ const Contactsheet = ({ onConfirm }) => {
               disabled={!isFormValid()}
               onPress={handleAddContact}
             >
-              <Text style={styles.confirmText}>{t('add_contact')}</Text>
+              <AdaptiveText style={styles.confirmText}>{t('add_contact')}</AdaptiveText>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.cancelButton}

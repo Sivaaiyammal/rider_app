@@ -1,4 +1,4 @@
-import ApiConfig from '../../Config/APIURLConfig';
+import Config from "react-native-config";
 
 export async function findRoute(points) {
     if (!points) return null;
@@ -24,7 +24,7 @@ export async function findRoute(points) {
     try {
         const jsonString = JSON.stringify(jsonObject);
         // const encodedData = encodeURIComponent(jsonString);
-        const url = `${ApiConfig.ROUTE_API_URL}?data=${jsonString}&access_token=${ApiConfig.NE_ACCESS_TOKEN}`;
+        const url = `${Config.ROUTE_API_URL}?data=${jsonString}&access_token=${Config.NE_ACCESS_TOKEN}`;
 
     
         

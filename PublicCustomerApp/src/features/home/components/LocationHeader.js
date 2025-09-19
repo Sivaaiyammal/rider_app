@@ -5,7 +5,7 @@ import {
     TouchableOpacity,
     View,
   } from 'react-native';
-  import React, {useEffect} from 'react';
+  import React, {useEffect, useMemo} from 'react';
   import { useTranslation } from 'react-i18next';
   import {Fonts,colors} from '../../../constants/constants';
   import ProfileImage from '../../../assets/image/svgIcons/profileImage.svg';
@@ -17,9 +17,10 @@ import CurrentLocationIcon from '../../../assets/icons/CurrentLocationIcon.svg';
 import { height } from '../../../utils/Utils';
 import locationTask from '../../../controllers/GetCurrentLocation';
 import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
+import PropTypes from 'prop-types';
 
   
-  const LocationHeader = (props) => {
+  const LocationHeader = React.memo((props) => {
     const { t } = useTranslation();
     const {toggleMenu} = props;
     const {location, currentLocationName, setCurrentLocationName} = useLocationStore();
@@ -31,25 +32,21 @@ import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
     // Calculate responsive maxWidth (70% of screen width)
     const responsiveMaxWidth = width * 0.7;
   
-    const fetchAddressName = async () => {
+    const fetchAddressName =useMemo(async () => {
       if (location && location.length === 2) {
         
         try {
           const search = new SearchAPI();
           const response = await search.reverseGeocode(location[0],location[1]);
+          console.log("response",response)
           setCurrentLocationName(response);
           
         } catch (e) {
           console.error('Failed to fetch address', e);
         }
       }
-    };
+    }, [location]);
 
-   
-  
-    useEffect(() => {
-      fetchAddressName(); 
-    }, [location]); 
   
     return (
       <View style={styles.headerWrapper}>
@@ -70,7 +67,7 @@ import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
           <View style={{marginLeft: 10}}>
             <Text style={styles.title}>{t('your_location')}</Text>
             <Text style={[styles.address, {maxWidth: responsiveMaxWidth-10}]} numberOfLines={1} ellipsizeMode="tail">
-              {currentLocationName? utils.getFormatedHeader(currentLocationName) : <SkeletonLoader  height={20} width={responsiveMaxWidth-50} backgroundColor={colors.grey_xlight} />}
+              {currentLocationName? utils.formatAddressName(currentLocationName) : <SkeletonLoader  height={20} width={responsiveMaxWidth-50} backgroundColor={colors.grey_xlight} />}
             </Text>
           </View>
         </View>
@@ -79,7 +76,12 @@ import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
         </TouchableOpacity>
       </View>
     );
+  });
+  LocationHeader.propTypes = {
+    toggleMenu: PropTypes.func.isRequired,
   };
+
+  LocationHeader.displayName = 'LocationHeader';
   
   export default LocationHeader;
   

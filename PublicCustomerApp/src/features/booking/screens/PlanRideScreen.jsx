@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity, View, StyleSheet, ScrollView} from 'react-native';
+import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator} from 'react-native';
 import React, {useCallback, useState,useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
 import NavBar from '../../../components/NavBar';
@@ -30,6 +30,7 @@ import LocationTypes from '../types/LocationTypes.json';
 import { useDebouncedAPICall } from '../../../hooks/useDebounce';
 import useRideBookingInfo from '../store/useRideBookingInfo';
 import { Fonts } from '../../../constants/constants';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
 
 const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   const { t } = useTranslation();
@@ -46,6 +47,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   const [showScheduleContainer, setShowScheduleContainer] = useState(false);
   const [selectedFavPlace, setSelectedFavPlace] = useState(null);
   const isContinueButtonVisible = rideStartLocation && rideEndLocation
+  const [isContinuing, setIsContinuing] = useState(false);
 
   // Handle selectedDestination from SavedPlacesScreen
   useEffect(() => {
@@ -85,14 +87,13 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
     }
   }, []);
 
+  useEffect(() => {
+    return () => {
+      setIsContinuing(false);
+    };
+  }, []);
 
-  
 
-  
-  
-  
-
-  
   const onRideTypePress = () => {
     
     _toggleSubview();
@@ -188,7 +189,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   }
 
   const handlePickLocation = () =>{
-    console.log("pick location")
+    
     setStackScreen('PickLocationScreen',{
       onPickLocationResultCallback:onPickLocationResultCallback,
       locationType:LocationTypes.DESTINATION_LOCATION,
@@ -271,8 +272,12 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
           />
          {
           isContinueButtonVisible && (
-            <TouchableOpacity style={styles.continueButton} onPress={()=>setStackScreen("BookRideScreen",{})}>
-              <Text style={styles.continueButtonText}>{t('continue')}</Text>
+            <TouchableOpacity style={[styles.continueButton, isContinuing && styles.continueButtonDisabled]} onPress={()=>{ setIsContinuing(true); setStackScreen("BookRideScreen",{}); }} disabled={isContinuing}>
+              {isContinuing ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <AdaptiveText style={[styles.continueButtonText, isContinuing && styles.continueButtonTextDisabled]} color={colors.white}>{t('continue')}</AdaptiveText>
+              )}
             </TouchableOpacity>
           )
          }
@@ -353,6 +358,13 @@ const styles = StyleSheet.create({
     color:"#fff",
     fontSize:16,
     fontFamily:Fonts.medium,
+  },
+  continueButtonDisabled:{
+    backgroundColor:'#757575',
+    opacity:0.6,
+  },
+  continueButtonTextDisabled:{
+    color:'#BDBDBD',
   },
 });
 

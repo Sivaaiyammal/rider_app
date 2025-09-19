@@ -7,8 +7,11 @@ import { DataStore } from '../../../controllers/DataStore';
 
 import { useTranslation } from 'react-i18next';
 import CategoryIcon from '../../../components/Common/CategoryIcon';
+import AdaptiveText from '../../../components/Common/AdaptiveText';
+import {utils} from '../../../utils/Utils';
 
-const HistoryCard = ({ selectCallback, header = true, bottomborder = true,fromSearchScreen=false }) => {
+
+const HistoryCard = React.memo(({ selectCallback, header = true, bottomborder = true,fromSearchScreen=false }) => {
   const [historyItems, setHistoryItems] = useState([]);
   const { t } = useTranslation();
   const setRecentSearches = useCallback(async () => {
@@ -23,7 +26,7 @@ const HistoryCard = ({ selectCallback, header = true, bottomborder = true,fromSe
 
   return (
     <View style={styles.container}>
-      {(historyItems?.length > 0 && header) && <Text style={styles.title}> {t('recent')}</Text>}
+      {(historyItems?.length > 0 && header) && <AdaptiveText style={styles.title}> {t('recent')}</AdaptiveText>}
       {historyItems?.length > 0 ? (
         historyItems.map((item, index) => (
           <TouchableOpacity key={index} onPress={() => selectCallback(item)}>
@@ -33,7 +36,7 @@ const HistoryCard = ({ selectCallback, header = true, bottomborder = true,fromSe
               </View>
               <View style={styles.textContainer}>
                 <Text style={[styles.name,fromSearchScreen&&{fontSize:15}]} numberOfLines={1} ellipsizeMode="tail">{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</Text>
-                {item.address && <Text style={[styles.address,fromSearchScreen&&{fontSize:14}]} numberOfLines={1} ellipsizeMode="tail">{item.address}</Text>}
+                {item.address && <Text style={[styles.address,{fontSize:14}]} numberOfLines={1} ellipsizeMode="tail" color={colors.grey_xxdark}>{utils.formatArrayAddress(item.address)}</Text>}
               </View>
             </View>
           </TouchableOpacity>
@@ -43,20 +46,23 @@ const HistoryCard = ({ selectCallback, header = true, bottomborder = true,fromSe
         <View style={styles.noHistoryIconContainer}>
             <Ionicons name="search-outline" size={40} color={"#757575"} />
           </View>
-          <Text style={styles.noHistoryText}>No recent searches</Text>
-          <Text style={styles.noHistorySubtext}>Your recent searches will appear here</Text>
+          <AdaptiveText style={styles.noHistoryText}>{t('no_recent_searches')}</AdaptiveText>
+          <AdaptiveText style={styles.noHistorySubtext}>{t('your_recent_searches_will_appear_here')}</AdaptiveText>
           
         </View>
       )}
     </View>
   );
-};
+});
 
+HistoryCard.displayName = 'HistoryCard';
 HistoryCard.propTypes = {
   selectCallback: PropTypes.func.isRequired,
   header: PropTypes.bool,
   bottomborder: PropTypes.bool,
+  fromSearchScreen: PropTypes.bool,
 };
+
 
 const styles = StyleSheet.create({
   container: {
