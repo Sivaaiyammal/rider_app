@@ -37,7 +37,7 @@ const PaymentScreen = () => {
   const [contentHeight, setContentHeight] = useState(0);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const { appConfig } = useConfigStore();
-  const isPaymentGateway = appConfig?.PAYMENT_METHODS === "PG";
+  const isPaymentGateway = appConfig?.PAYMENT_METHODS === "PG" && driverDetails?.razorPayId;
   const {setStackScreen} = useStackScreenStore();
   const { incrementTotalSpend,incrementCompletedTrips } = useUserInfoStore();
   const handleInvoicePress = () => {
@@ -47,6 +47,9 @@ const PaymentScreen = () => {
   const handleInvoiceClose = () => {
     setShowInvoice(false);
   };
+
+  console.log(driverDetails,"driverDetails")
+  console.log(appConfig?.PAYMENT_METHODS,"appConfig")
 
   const fetchTripDetails = async () => {
     const currentTripId = await DataStore.loadData(PREF.CURRENT_TRIP);
@@ -139,7 +142,7 @@ const PaymentScreen = () => {
 
       const transfer=[
         {
-          "account": "acc_RBAIEQk10FZmhU",
+          "account": driveracountNumber,
           "amount": splitAmount*100,
           "currency": "INR",
         },

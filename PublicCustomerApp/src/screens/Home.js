@@ -43,10 +43,13 @@ import PREF from '../storage/PREF';
 import { useDebounce } from '../hooks/useDebounce';
 import useConfigStore from '../store/useConfigStore';
 import UnableToConnectOverlay from '../components/UnableToConnectOverlay';
+import AdaptiveText from '../components/Common/AdaptiveText';
+import { colors, Fonts } from '../constants/constants';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
+     
       <View style={styles.lottieContainer}>
         <LottieView
           source={require('../assets/lottie/car_travel.json')}
@@ -55,7 +58,10 @@ const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
           renderMode="HARDWARE"
           style={styles.lottie}
         />
+        
       </View>
+      <AdaptiveText style={styles.loadingText}>Warming up the engine…</AdaptiveText>
+      
     </View>
   );
 });
@@ -67,21 +73,35 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    backgroundColor: 'rgba(254, 254, 254, 0.95)',
+    backgroundColor: 'rgba(254, 254, 254, 0.94)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 9999,
   },
   lottieContainer: {
-    backgroundColor: 'white',
+    backgroundColor:'rgb(249, 249, 249)' ,
     borderRadius: 200,
     padding: 20,
-    borderWidth: 1,
-    borderColor: 'yellow',
+   
+   
+    
   },
   lottie: {
     width: 220,
     height: 220,
+  },
+  loadingText: {
+    position: 'absolute',
+    bottom: "20%",
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    fontSize: 16,
+    marginTop: 20,
+   
+    color: 'black',
+   
+    fontFamily: Fonts.semi_bold,
   },
 });
 

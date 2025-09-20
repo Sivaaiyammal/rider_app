@@ -107,6 +107,7 @@ export const passangerStopChangeRequest = async (payload) => {
 
 // get customer trips
 export const getCustomerTrips = async (payload) => {
+  console.log("payload",payload)
   
   const { data } = await apiClient.get('/publicrides/customer/getTrips', { params: payload })
   return data

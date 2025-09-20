@@ -38,7 +38,10 @@ const getFormattedAddress = (address) => {
       finalAddress += captitalizeFirstLetter(addr) + ", ";
     }
   });
-  
+  // Remove the last trailing comma and space, if present
+  if (finalAddress.endsWith(", ")) {
+    finalAddress = finalAddress.slice(0, -2);
+  }
   return finalAddress;
 };
 

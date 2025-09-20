@@ -87,7 +87,7 @@
     "saved_places_empty_subtitle": "Your saved locations will appear here",
     "saved_places_empty_description": "Tap the + button to add your first saved place",
     "delete_place": "Delete Place",
-    "delete_place_confirmation": "Are you sure you want to delete this place?",
+    "delete_place_confirmation": "Are you sure you want to delete this place ",
     "place_deleted_successfully": "Place deleted successfully",
     "failed_to_delete_place": "Failed to delete place",
     "failed_to_delete_place_try_again": "Failed to delete place. Please try again.",
@@ -425,5 +425,10 @@
     "payment_failed": "Payment Failed",
     "not_reached": "Not Reached",
     "no_recent_searches": "No recent searches",
-    "your_recent_searches_will_appear_here": "Your recent searches will appear here"
+    "your_recent_searches_will_appear_here": "Your recent searches will appear here",
+    "updated_successfully": "Updated Successfully",
+    "calling_to_driver": "Calling to driver",
+    "call_initiated_with_driver_shortly": "Call initiated with driver shortly",
+    "error_in_making_call_to_driver": "Error in making call to driver"
+    
 }

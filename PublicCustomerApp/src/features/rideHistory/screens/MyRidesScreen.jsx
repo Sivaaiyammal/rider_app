@@ -20,7 +20,6 @@ import { colors, Fonts } from '../../../constants/constants';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { DateTimeFormatter } from '../../../utils/DateTimeFormatter';
 import PropTypes from 'prop-types';
-import CalenderIcon from '../../../assets/image/calender.svg';
 import DatePicker from 'react-native-date-picker';
 import EnhancedDateRangeBottomSheet from '../../shared/component/EnhancedDateRangeBottomSheet';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
@@ -33,7 +32,6 @@ const YourRidesScreen = () => {
 
     const [FilterStart, setFilterStart] = useState('');
     const [FilterEnd, setFilterEnd] = useState('');
-    const [FilterPage, setFilterPage] = useState(1);
     const [FilterLimit] = useState(10);
     const [isRefreshing, setIsRefreshing] = useState(true);
     const [isLoadMore, setIsLoadMore] = useState(false);
@@ -41,7 +39,6 @@ const YourRidesScreen = () => {
     const [durationFilterSet, setDurationFilterSet] = useState(false);
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
     const [hasMoreData, setHasMoreData] = useState(true);
     // Filter state
     const [selectedStatus, setSelectedStatus] = useState('');
@@ -85,27 +82,18 @@ const YourRidesScreen = () => {
                 limit: FilterLimit
             }
             
-            // Only add date filters if they are provided and custom date range is selected
-            if (FilterStart && FilterEnd && isCustomDateRangeSelected) {
-                // Convert ISO strings to milliseconds if they're not already timestamps
-                let startTime, endTime;
-                
-                if (typeof FilterStart === 'string') {
-                    // If it's an ISO string, convert to milliseconds
-                    startTime = new Date(FilterStart).getTime();
-                } else {
-                    // If it's already a timestamp, use as is
-                    startTime = FilterStart;
+            // Only add date filters if provided (today/week/custom). Skip for "all".
+            if (FilterStart !== null && FilterEnd !== null) {
+                let startTime = FilterStart;
+                let endTime = FilterEnd;
+
+                if (typeof startTime === 'string') {
+                    startTime = new Date(startTime).getTime();
                 }
-                
-                if (typeof FilterEnd === 'string') {
-                    // If it's an ISO string, convert to milliseconds
-                    endTime = new Date(FilterEnd).getTime();
-                } else {
-                    // If it's already a timestamp, use as is
-                    endTime = FilterEnd;
+                if (typeof endTime === 'string') {
+                    endTime = new Date(endTime).getTime();
                 }
-                
+
                 payload.startTime = startTime;
                 payload.endTime = endTime;
             }
@@ -136,7 +124,6 @@ const YourRidesScreen = () => {
                 // Update pagination state
                 if (pagination) {
                     setCurrentPage(pagination.page);
-                    setTotalPages(pagination.totalPages);
                     setHasMoreData(pagination.page < pagination.totalPages);
                 }
             } else {
@@ -158,11 +145,6 @@ const YourRidesScreen = () => {
         setStackScreen('RideDetailScreen', { TripData: ride });     
     }
 
-    const HandleRefresh = () => {
-        setCurrentPage(1);
-        setHasMoreData(true);
-        LoadRides(1, false);
-    }
 
     const HandleLoadMore = () => {
         if (isRefreshing || isLoadMore || !hasMoreData) return;

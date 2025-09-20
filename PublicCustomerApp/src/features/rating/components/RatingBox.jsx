@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
-    color: colors.black_primary,
+    color: colors.black,
     minHeight: 80,
    
   
