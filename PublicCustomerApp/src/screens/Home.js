@@ -44,7 +44,10 @@ import { useDebounce } from '../hooks/useDebounce';
 import useConfigStore from '../store/useConfigStore';
 import UnableToConnectOverlay from '../components/UnableToConnectOverlay';
 import AdaptiveText from '../components/Common/AdaptiveText';
-import { colors, Fonts } from '../constants/constants';
+import { Fonts } from '../constants/constants';
+import { utils } from '../utils/Utils';
+import { height } from '../utils/Utils';
+import SearchAPI from '../controllers/NEMap/Search';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -106,7 +109,7 @@ const styles = StyleSheet.create({
 });
 
 const Home = () => {
-  const {location} = useLocationStore();
+  const {location, setCurrentLocationName} = useLocationStore();
   const { setLocation } = useLocationStore.getState();
   const { stackScreen } = useStackScreenStore();
   const permissionsRequested = useRef(false);
@@ -117,9 +120,49 @@ const Home = () => {
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
   const { setUserdetails ,setID,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips} = useUserInfoStore();
-  const { setMapShown , mapShown, setUserLocation} = useMapStore();
+  const { setMapShown , mapShown, setUserLocation,setMapBounds} = useMapStore();
   const { setTarget } = useNearbyPollingControl();
   const { setConfig } = useConfigStore();
+  
+
+  const hasInitialLocationProcessed = useRef(false);
+  const lastProcessedKey = useRef(null);
+  const geocodeCache = useRef(new Map());
+  const processLocationRef = useRef(null);
+  
+ 
+  const stableDebounceCallback = useRef((lng, lat) => {
+    if (processLocationRef.current) {
+      processLocationRef.current(lng, lat);
+    }
+  }).current;
+  const debouncedProcessLocation = useDebounce(stableDebounceCallback, 600);
+
+
+  processLocationRef.current = async (lng, lat) => {
+    try {
+     
+
+      const key = `${lng},${lat}`;
+      const cachedAddress = geocodeCache.current.get(key);
+      if (cachedAddress) {
+        setCurrentLocationName(cachedAddress);
+        return;
+      }
+
+      const search = new SearchAPI();
+      const response = await search.reverseGeocode(lng, lat);
+      geocodeCache.current.set(key, response);
+      setCurrentLocationName(response);
+
+      const bounds = utils.getBoundingBox([[lng, lat]]);
+      const margin = [50, 100, 50, height*0.4];
+      const finalBounds = [bounds, margin];
+      setMapBounds(finalBounds);
+    } catch (e) {
+      console.error('Failed to fetch address', e);
+    }
+  };
   
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
@@ -132,10 +175,44 @@ const Home = () => {
     }
     
   };
-  const updateLocationDebounced = useDebounce((lng, lat) => {
+
+
+  const updateLocationDebounced = async (lng, lat) => {
     setLocation([lng, lat]);
-  }, 10000);
+    if (lng && lat) {
+      try {
+        const key = `${lng},${lat}`;
+
+      
+        if (lastProcessedKey.current === key) {
+          const cached = geocodeCache.current.get(key);
+          if (cached) {
+            setCurrentLocationName(cached);
+          }
+          return;
+        }
+        lastProcessedKey.current = key;
+
+     
+        if (!hasInitialLocationProcessed.current) {
+          hasInitialLocationProcessed.current = true;
+          await processLocationRef.current(lng, lat);
+          return;
+        }
+
+     
+        debouncedProcessLocation(lng, lat);
+      } catch (e) {
+        console.error('Failed to handle location update', e);
+      }
+    }
+  };
+
+
+
+
   const handleUserLocatioChange = (currentLocation) => {
+    console.log("handleUserLocatioChange at home" ,JSON.stringify(currentLocation))
     const current = useLocationStore.getState().location;
     const lng = currentLocation?.longitude;
     const lat = currentLocation?.latitude;
@@ -152,13 +229,11 @@ const Home = () => {
     ) {
       return;
     }
-
     updateLocationDebounced(lng, lat);
   };
 
   useEffect(() => {
     setUserLocation(handleUserLocatioChange);
-   
   }, []);
 
 
@@ -180,8 +255,6 @@ const Home = () => {
 
    
       if(Response?.success ){
-
-        console.log("djjhd",JSON.stringify(Response))
 
         if(Response?.appConfig){
           setConfig(Response?.appConfig);

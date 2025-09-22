@@ -32,20 +32,7 @@ import PropTypes from 'prop-types';
     // Calculate responsive maxWidth (70% of screen width)
     const responsiveMaxWidth = width * 0.7;
   
-    const fetchAddressName =useMemo(async () => {
-      if (location && location.length === 2) {
-        
-        try {
-          const search = new SearchAPI();
-          const response = await search.reverseGeocode(location[0],location[1]);
-          console.log("response",response)
-          setCurrentLocationName(response);
-          
-        } catch (e) {
-          console.error('Failed to fetch address', e);
-        }
-      }
-    }, [location]);
+   
 
   
     return (
