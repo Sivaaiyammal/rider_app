@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity, View, DeviceEventEmitter, PermissionsAndroid} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import React, {useState, useEffect, useRef} from 'react';
 
 import {loginStyles} from '../../styles/UserStyles';
@@ -13,6 +13,7 @@ import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import messaging from '@react-native-firebase/messaging';
 import DeviceInfo from 'react-native-device-info';  
+import PropTypes from 'prop-types';  
 // Utility function to mask phone number
 const maskPhoneNumber = (phoneNumber) => {
   if (!phoneNumber || phoneNumber.length < 5) return phoneNumber;
@@ -138,6 +139,12 @@ const OTPScreen = ({route}) => {
     }
   },[otpInput])
 
+ 
+  const onOtpChange = (text) => {
+    const digitsOnly = (text || '').replace(/[^0-9]/g, '');
+    const code = digitsOnly.slice(0, 6);
+    setOtpInput(code);
+  };
   
   const handleResendSuccess = (data) => {
     if(data.success){
@@ -208,9 +215,12 @@ const OTPScreen = ({route}) => {
             borderRadius: 5,
             color: colors.black,
           }}
-          handleTextChange={setOtpInput}
+          handleTextChange={onOtpChange}
           focusedBorderColor="#2785ff"
           autoFocus={true}
+          keyboardType="number-pad"
+          textContentType="oneTimeCode"
+          autoComplete="sms-otp"
           tintColor={[
             colors.blue_xxdark,
             colors.blue_xxdark,
@@ -229,6 +239,15 @@ const OTPScreen = ({route}) => {
       </TouchableOpacity>
     </View>
   );
+};
+
+OTPScreen.propTypes = {
+  route: PropTypes.shape({
+    params: PropTypes.shape({
+      phoneNumber: PropTypes.string.isRequired,
+      countryCode: PropTypes.string.isRequired,
+    }).isRequired,
+  }).isRequired,
 };
 
 export default OTPScreen;
