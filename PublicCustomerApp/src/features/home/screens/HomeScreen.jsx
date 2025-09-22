@@ -96,6 +96,16 @@ const MapScreen = () => {
   },[drivers])
 
 
+  useEffect(()=>{
+    if(location && location.length > 0){
+      const bounds = utils.getBoundingBox([[location[0],location[1]]])
+      const margin = [50, 100, 50, height*0.4]
+      const finalBounds = [bounds, margin]
+      setMapBounds(finalBounds);
+    }
+  },[location])
+
+
 
   
   

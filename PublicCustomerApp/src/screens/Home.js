@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import Homescreen from '../features/home/screens/HomeScreen.jsx'
 import MapContainer from '../features/map/components/MapContainer.js';
@@ -154,11 +154,6 @@ const Home = () => {
       const response = await search.reverseGeocode(lng, lat);
       geocodeCache.current.set(key, response);
       setCurrentLocationName(response);
-
-      const bounds = utils.getBoundingBox([[lng, lat]]);
-      const margin = [50, 100, 50, height*0.4];
-      const finalBounds = [bounds, margin];
-      setMapBounds(finalBounds);
     } catch (e) {
       console.error('Failed to fetch address', e);
     }
@@ -211,7 +206,7 @@ const Home = () => {
 
 
 
-  const handleUserLocatioChange = (currentLocation) => {
+  const handleUserLocatioChange = useCallback(currentLocation => {
     console.log("handleUserLocatioChange at home" ,JSON.stringify(currentLocation))
     const current = useLocationStore.getState().location;
     const lng = currentLocation?.longitude;
@@ -230,7 +225,7 @@ const Home = () => {
       return;
     }
     updateLocationDebounced(lng, lat);
-  };
+  }, [updateLocationDebounced]);
 
   useEffect(() => {
     setUserLocation(handleUserLocatioChange);
