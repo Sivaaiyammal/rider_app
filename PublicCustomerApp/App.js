@@ -4,8 +4,12 @@ import { QueryClient, QueryClientProvider } from 'react-query'
 import { I18nextProvider } from 'react-i18next';
 import i18n from './src/i18n';
 import Config from "react-native-config";
+import ErrorBoundary from "react-native-error-boundary";
+
+import crashlytics from '@react-native-firebase/crashlytics';
 
 import { ApolloProvider, HttpLink, ApolloClient, InMemoryCache } from '@apollo/client';
+
 
 const App = () => {
 
@@ -34,14 +38,25 @@ const client = new ApolloClient({
     },
   }), []);
 
+  const myErrorHandler = (error, stackTrace) => {
+   
+    crashlytics().recordError(error);
+  };
+
+
   return (
-   <ApolloProvider client={client}>
+    <ErrorBoundary onError={myErrorHandler}>
+      <ApolloProvider client={client}>
       <I18nextProvider i18n={i18n}>
         <QueryClientProvider client={queryClient}>
-          <MainApp />
+          
+            <MainApp />
+       
+   
         </QueryClientProvider>
       </I18nextProvider>
     </ApolloProvider>
+    </ErrorBoundary>
 
   );
 };
