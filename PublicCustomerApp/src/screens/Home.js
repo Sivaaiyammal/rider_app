@@ -177,7 +177,7 @@ const Home = () => {
     try {
       setConfigError(false);
       const Response = await getUserStats(currentTripId);
-    
+
    
       if(Response?.success ){
 
@@ -217,16 +217,22 @@ const Home = () => {
 
 
 
-        if(Response?.trip?.status == "DROPPED" || Response?.trip?.status == "CANCELLED"){
+        if(Response?.trip?.status == "DROPPED" || ( Response?.trip?.status == "CANCELLED" && Response?.trip?.fareDetails)){
           setStackScreen('PaymentScreen', { });
           return;
         }
-        if(Response?.trip?.status == "COMPLETED" && currentTrip ){
+        if((Response?.trip?.status == "COMPLETED" || Response?.trip?.status == "DIVERGED") && currentTrip ){
           setStackScreen('TripFeedbackScreen', { });
           return;
         }
       
       if(Response?.trip){
+
+
+        if (Response?.trip?.status == "CANCELLED" && Response?.trip?.status == "PENDING"){
+          await DataStore.clearData(PREF.CURRENT_TRIP)
+          return;
+        }
        
         setCurrentRideInfo(Response?.trip);
         if(Response?.assignDriver){

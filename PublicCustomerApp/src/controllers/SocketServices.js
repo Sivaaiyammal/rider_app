@@ -178,6 +178,11 @@ class WSService {
 
   async initSocket(userId) {
 
+    // ensure any existing socket is fully cleaned up before creating a new one
+    if (this.socket) {
+      this.close();
+    }
+
     this.interval = setInterval(() => {
     }, 5000)
     
@@ -194,6 +199,12 @@ class WSService {
           query: {
             accessToken: userId,
           },
+          transports: ['websocket','polling'],
+          reconnection: true,
+          reconnectionAttempts: Infinity,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
+          timeout: 10000,
         });
         this.socket.on('connect', () => {
           console.log("socket connected", this.socket.id)
@@ -212,9 +223,28 @@ class WSService {
 
         // this.socket.on('passangerTripFareUpdate', this.driverFareUpdate);
 
-        this.socket.on('disconnect', () => {
-          console.log("socket disconnected")
-        
+        this.socket.on('disconnect', (reason) => {
+          console.log("socket disconnected", reason)
+        })
+
+        // helpful diagnostics around reconnection lifecycle
+        this.socket.on('reconnect', (attempt) => {
+          console.log('socket reconnect', attempt)
+        })
+        this.socket.on('reconnect_attempt', (attempt) => {
+          console.log('socket reconnect_attempt', attempt)
+        })
+        this.socket.on('reconnect_error', (error) => {
+          console.log('socket reconnect_error', error)
+        })
+        this.socket.on('reconnect_failed', () => {
+          console.log('socket reconnect_failed')
+        })
+        this.socket.on('connect_timeout', () => {
+          console.log('socket connect_timeout')
+        })
+        this.socket.on('error', (error) => {
+          console.log('socket error', error)
         })
 
         this.socket.on('connect_error', error => {
@@ -267,8 +297,13 @@ class WSService {
   close() {
     if (this.socket) {
       console.log("Socket disconnected")
-      this.socket.close();
+      try { this.socket.removeAllListeners(); } catch (e) { console.warn('socket removeAllListeners error', e) }
+      try { this.socket.disconnect(); } catch (e) { console.warn('socket disconnect error', e) }
+      this.socket = null;
+    }
+    if (this.interval) {
       clearInterval(this.interval)
+      this.interval = null;
     }
   }
 
