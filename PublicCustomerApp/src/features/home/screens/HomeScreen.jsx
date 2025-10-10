@@ -32,6 +32,8 @@ import Marker from '../../../controllers/NEMap/Marker';
 import useMapStore from '../../../features/map/store/useMapStore';
 import  AppConfig  from '../../../Config/AppConfig';
 import  {useNearbyPollingControl}  from '../../../store/useNearByDriverPollingControl';
+import PropTypes from 'prop-types';
+import { checkNotificationPermissions, RequestNotificationPermission } from '../../../controllers/PermissionHandler';
 
 
 const BottomSheetHeader = ({makeRidePlan}) => {
@@ -67,7 +69,7 @@ const MapScreen = () => {
   const {location,currentLocationName} = useLocationStore();
   const {setRideStartLocation,setRideEndLocation } = useRideBookingLocationStore()
   const { drivers } = useNearbyDriversStore();
-  const {setMapMarkers,setMapLocation,setMapBounds} = useMapStore();
+  const {setMapMarkers,setMapBounds} = useMapStore();
   useEffect(()=>{
 
   
@@ -171,6 +173,20 @@ const MapScreen = () => {
     }
   },[])
 
+  // Request notification permission on HomeScreen mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const notifGranted = await checkNotificationPermissions();
+        if (!notifGranted) {
+          await RequestNotificationPermission();
+        }
+      } catch (e) {
+        // no-op
+      }
+    })();
+  }, []);
+
 
   useEffect(()=>{
     if(location && location.length > 0){
@@ -190,6 +206,26 @@ const MapScreen = () => {
   }, [showMenu]);
 
   
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const granted = await checkFineLocationPermissions();
+  //       setHasLocationPermission(!!granted);
+  //     } catch (e) {
+  //       setHasLocationPermission(false);
+  //     }
+  //   })();
+  // }, []);
+
+  // const handleEnableLocationPermission = useCallback(async () => {
+  //   try {
+  //     const granted = await RequestFineLocationPermission();
+  //     setHasLocationPermission(!!granted);
+  //   } catch (e) {
+  //     setHasLocationPermission(false);
+  //   }
+  // }, []);
+
   const onHistoryPress = useCallback((item) => {
     try {
       if (!item) {
@@ -309,13 +345,13 @@ const MapScreen = () => {
          width: 50,
          height: 4,
        }}>
-        <View style={styles.bottomSheetContent}>
        
-
-        <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
-
-        <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false} />
-        </View>
+            <>
+              <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
+              <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false} />
+            </>
+        
+        
       </BottomSheetWrapper>
 
       {showMenu && <SideDrawer handleMenu={handleMenu} />}
@@ -325,6 +361,10 @@ const MapScreen = () => {
 };
 
 export default MapScreen;
+
+BottomSheetHeader.propTypes = {
+  makeRidePlan: PropTypes.func,
+};
 
 const styles = StyleSheet.create({
   headerContainer: {

@@ -4,10 +4,9 @@ import Homescreen from '../features/home/screens/HomeScreen.jsx'
 import MapContainer from '../features/map/components/MapContainer.js';
 import { RequestAllPermissions } from '../controllers/PermissionHandler';
 import locationTask from '../controllers/GetCurrentLocation';
-
 import SearchScreen from '../features/search/screens/SearchScreen';
 import WaypointScreen from '../features/booking/screens/WaypointScreen';
-import { StatusBar, View, StyleSheet } from 'react-native';
+import { StatusBar, View, StyleSheet, AppState } from 'react-native';
 import LottieView from 'lottie-react-native';
 import useUserInfoStore from '../store/useUserInfoStore';
 import { getStoredLocation, getPreferenceShowRideStatus} from '../storage/userLocalStorage';
@@ -45,9 +44,9 @@ import useConfigStore from '../store/useConfigStore';
 import UnableToConnectOverlay from '../components/UnableToConnectOverlay';
 import AdaptiveText from '../components/Common/AdaptiveText';
 import { Fonts } from '../constants/constants';
-import { utils } from '../utils/Utils';
-import { height } from '../utils/Utils';
 import SearchAPI from '../controllers/NEMap/Search';
+import { useNavigation } from '@react-navigation/native';
+import { checkFineLocationPermissions } from '../controllers/PermissionHandler';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -112,15 +111,19 @@ const Home = () => {
   const {location, setCurrentLocationName} = useLocationStore();
   const { setLocation } = useLocationStore.getState();
   const { stackScreen } = useStackScreenStore();
+  const navigation = useNavigation();
+  const appState = useRef(AppState.currentState);
   const permissionsRequested = useRef(false);
   const [bootLoading, setBootLoading] = useState(true);
   const [configError, setConfigError] = useState(false);
+  const [hasLocationPermission, setHasLocationPermission] = useState(null);
+  
   const { setHomelocation, setWorklocation, setIsPreferenceShow} = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
   const { setUserdetails ,setID,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips} = useUserInfoStore();
-  const { setMapShown , mapShown, setUserLocation,setMapBounds} = useMapStore();
+  const { setMapShown , mapShown, setUserLocation} = useMapStore();
   const { setTarget } = useNearbyPollingControl();
   const { setConfig } = useConfigStore();
   
@@ -374,6 +377,44 @@ const Home = () => {
     checkOnGoingRideAndLog()
   }, []);
 
+  const navigateToPermissionIfNeeded = useCallback(async () => {
+    try {
+      const granted = await checkFineLocationPermissions();
+      setHasLocationPermission(!!granted);
+      if (!granted) {
+        navigation.navigate('LocationPermission');
+      }
+    } catch (e) {
+      setHasLocationPermission(false);
+    }
+  }, [navigation]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        // Ensure we cache current permission state early
+        const grantedNow = await checkFineLocationPermissions();
+        setHasLocationPermission(!!grantedNow);
+        const onBoarding = await DataStore.loadData('onBoarding');
+        if (onBoarding?.data === 'onBoardingDone') {
+          await navigateToPermissionIfNeeded();
+        }
+      } catch (e) {
+        // no-op
+      }
+    })();
+  }, [navigateToPermissionIfNeeded]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextState => {
+      appState.current = nextState;
+      if (nextState === 'active') {
+        navigateToPermissionIfNeeded();
+      }
+    });
+    return () => subscription.remove();
+  }, [navigateToPermissionIfNeeded]);
+
   useCustomBackHandler();
 
   useEffect(()=>{
@@ -452,10 +493,12 @@ const Home = () => {
       )}
      <StatusBar barStyle="dark-content" backgroundColor={"white"} />
       {renderContent()}
-      <MapContainer
-        mapReady={mapShown}
-        setMapReady={setMapShown}
-      />
+     {hasLocationPermission && (
+       <MapContainer
+         mapReady={mapShown}
+         setMapReady={setMapShown}
+       />
+     )}
      
       {configError && (
         <UnableToConnectOverlay onRetry={retryLoadAppConfig} />

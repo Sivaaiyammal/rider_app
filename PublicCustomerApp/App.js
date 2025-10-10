@@ -9,6 +9,7 @@ import ErrorBoundary from "react-native-error-boundary";
 import crashlytics from '@react-native-firebase/crashlytics';
 
 import { ApolloProvider, HttpLink, ApolloClient, InMemoryCache } from '@apollo/client';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 
 const App = () => {
@@ -49,8 +50,9 @@ const client = new ApolloClient({
       <ApolloProvider client={client}>
       <I18nextProvider i18n={i18n}>
         <QueryClientProvider client={queryClient}>
-          
+           <SafeAreaProvider> 
             <MainApp />
+            </SafeAreaProvider>
        
    
         </QueryClientProvider>
