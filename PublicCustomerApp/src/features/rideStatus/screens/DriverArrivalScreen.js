@@ -27,7 +27,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
 
   const DriverArrivalScreen = ({onCancel,handleOverlay}) => {
   // Dummy data
-  const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone,driverLatitude,driverLongitude} = useAssignedDriverInfoStore();
+  const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
   const {stops,otp,duration,totalDistance,vehicleType,estimatedFare,paymentMethod} = useCurrentRideInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setMapStyle} = useMapStyleStore();
@@ -35,7 +35,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
   const {waitingForDriverApproval} = useWayPointReorderStore();
   // Initialize tracking hook for driver arrival screen with polyline support
 
-  const {markersList} = useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"pickup");
+  const {markersList} = useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"pickup",driverAngle);
   const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destinationlat:stops[0].location[1],destinationlon:stops[0].location[0],driverLat:driverLatitude,driverLon:driverLongitude})  
   const {userdetails} = useUserInfoStore();
 

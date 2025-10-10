@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import Marker from "../../../controllers/NEMap/Marker";
 import useMapStore from "../../map/store/useMapStore";
 
-const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,markerType="default") => {
-    const { setMapMarkers } = useMapStore();
+const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,markerType="default",driverAngle=0) => {
+    const { setMapMarkers } = useMapStore();    
     const [markersList, setMarkersList] = useState([]);
 
     // Add or update driver marker
@@ -13,9 +13,12 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
             const filtered = prevMarkers.filter(marker => marker.id !== 'driver');
             if (!driverLatitude || !driverLongitude) return filtered;
             const driverMarker = new Marker('driver-to-start','driver', driverLongitude, driverLatitude, vehicleType?.toLowerCase(), 48);
+            if(driverAngle){
+                driverMarker.setAngle(driverAngle);
+            }
             return [...filtered, driverMarker];
         });
-    }, [driverLatitude, driverLongitude]);
+    }, [driverLatitude, driverLongitude, driverAngle]);
 
     // Add stop markers
     useEffect(() => {
@@ -27,6 +30,9 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
 
         
         const driverMarker = new Marker('driver-to-start','driver', driverLongitude, driverLatitude, vehicleType?.toLowerCase(), 48);
+        if(driverAngle){
+            driverMarker.setAngle(driverAngle);
+        }
 
         if(markerType === "pickup"){  
             setMarkersList(prevMarkers => {

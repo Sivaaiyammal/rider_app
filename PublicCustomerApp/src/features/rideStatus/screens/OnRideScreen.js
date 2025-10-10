@@ -20,14 +20,14 @@ import PropTypes from 'prop-types';
 import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
-  const {driverName,vehicleNumber,model,brand,driverPhoto,driverLatitude,driverLongitude} = useAssignedDriverInfoStore();
+  const {driverName,vehicleNumber,model,brand,driverPhoto,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
   const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare} = useCurrentRideInfoStore();
   const {waitingForDriverApproval} = useWayPointReorderStore();
   const currentStop = useMemo(() => stops?.find(item => item.isReached === false) || null, [stops]);
   const {t} = useTranslation();
   
   const {stopspolyline} = useDrawStopsPolyline();
-  useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType);
+  useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,driverAngle);
   const {estimatedDuration,SetViewBoundingBox} = useRouteDraw({destinationlat:currentStop?.location[1],destinationlon:currentStop?.location[0],driverLat:driverLatitude,driverLon:driverLongitude,remainingStops: stopspolyline})  
   const animation = useRef(new Animated.Value(0)).current;
   

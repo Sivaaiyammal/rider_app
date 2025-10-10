@@ -51,10 +51,9 @@ const WaypointContainer = ({setEnableConfirmButton}) => {
     }
 
     if(reOrderWaypoints.length > 1){
-      console.log("processedData-----------------",reOrderWaypoints.length)
       setEnableConfirmButton(true)
     }else{
-      console.log("processedData-----------------",reOrderWaypoints.length)
+      
       setEnableConfirmButton(false)
     }
     
