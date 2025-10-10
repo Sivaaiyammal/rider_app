@@ -411,7 +411,7 @@ const WaypointContainer = ({setEnableConfirmButton}) => {
             return `${item.name}-${item.address}-${index}`;
           }}
           renderItem={renderItem}
-          
+           
           onDragEnd={handleReorder}
           scrollEnabled={true}
           dragItemOverflow={true}
@@ -423,10 +423,12 @@ const WaypointContainer = ({setEnableConfirmButton}) => {
           })}
           removeClippedSubviews={false}
           showsVerticalScrollIndicator={false}
-          bounces={false}
+          bounces={true}
           // Add these props for smoother animations
           autoscrollSpeed={100}
           autoscrollThreshold={30}
+          activationDistance={0}
+         
         />
       </View>
 

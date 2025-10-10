@@ -1,4 +1,4 @@
-import {useColorScheme} from 'react-native';
+import {useColorScheme ,StatusBar} from 'react-native';
 import React, { useCallback, useEffect } from 'react';
 import firebase from '@react-native-firebase/app';
 import Navigation from './navigation/Navigation';
@@ -14,7 +14,8 @@ import { NetworkProvider, useNetwork } from './context/NetworkContext';
 import NoNetworkOverlay from './components/NoNetworkOverlay';
 import i18n from './i18n';
 import { useNearbyDrivers } from './hooks/useNearbyDrivers';
-import { useNearbyPollingControl } from './store/useNearByDriverPollingControl';
+// import { useNearbyPollingControl } from './store/useNearByDriverPollingControl';
+
 
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
@@ -70,17 +71,21 @@ const MainAppContent = () => {
     return unsubscribe;
   }, []);
   useNearbyDrivers();
+  
+  
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>
        <ContextProvider>
         <AlertNotificationRoot theme="light">
-          <NavigationContainer>
-            <Navigation />
-          </NavigationContainer>
-          {!isConnected && (
-            <NoNetworkOverlay onRetry={checkConnection} />
-          )}
+          <>
+            <NavigationContainer>
+              <Navigation />
+            </NavigationContainer>
+            {!isConnected && (
+              <NoNetworkOverlay onRetry={checkConnection} />
+            )}
+          </>
       </AlertNotificationRoot>
       </ContextProvider>
     </GestureHandlerRootView>
@@ -89,6 +94,7 @@ const MainAppContent = () => {
 
 const MainApp = () => (
   <NetworkProvider>
+    <StatusBar barStyle="dark-content" backgroundColor={"white"} />
     <MainAppContent />
   </NetworkProvider>
 );

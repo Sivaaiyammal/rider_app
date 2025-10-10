@@ -101,7 +101,7 @@ class NEMap extends Component {
     this.userLocationChangeListener = DeviceEventEmitter.addListener(
       'onUserLocationChange',
       (data) => {
-        
+        console.log("onUserLocationChange", data)
         this.props.onUserLocationChange?.(data);
       },
     );

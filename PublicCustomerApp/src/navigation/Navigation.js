@@ -5,12 +5,14 @@ import SplashScreen from '../screens/SplashScreen';
 import LanguageScreen from '../screens/OnBoard/LanguageScreen.jsx';
 import OnBoarding from '../screens/OnBoard/OnBoarding.jsx';
 import Home from '../screens/Home';
+import LocationPermissionScreen from '../screens/LocationPermissionScreen';
 import LoginScreen from '../screens/authentication/LoginScreen';
 import RegisterationScreen from '../screens/authentication/RegisterationScreen';
 import OTPScreen from '../screens/authentication/OTPScreen';
 import useUserInfoStore from '../store/useUserInfoStore';
 import { GlobalContext } from '../context/GlobalContext';
-import {decode as atob} from 'base-64';
+import PropTypes from 'prop-types';
+import i18n from '../i18n';
 
 // import YourRidesScreen from '../screens/Rides/YourRidesScreen';
 // import YourRideDetailsScreen from '../screens/Rides/YourRideDetailsScreen';
@@ -23,7 +25,7 @@ import {decode as atob} from 'base-64';
 // import AboutScreen from '../screens/AboutScreen';
 // import LegalScreen from '../screens/LegalScreen';
 
-const Navigation = () => {
+const Navigation = ({ onSplashComplete }) => {
   const Stack = createNativeStackNavigator();
   const [initialRoute, setInitialRoute] = useState('LanguageScreen');
   const [isSplashLoading, setIsSplashLoading] = useState(true);
@@ -45,6 +47,7 @@ const Navigation = () => {
     } else if (language.data && language.data !== 'languageDone') {
       // If language is stored as a language code (en, ta, hi, etc.)
       setLanguage(language.data);
+      try { i18n.changeLanguage(language.data); } catch (e) { console.warn('i18n changeLanguage failed', e); }
       
       if (onBoarding.data === 'onBoardingDone') {
         setInitialRoute('LoginScreen');
@@ -57,12 +60,16 @@ const Navigation = () => {
   }, []);
 
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       nextScreen().finally(() => {
         setIsSplashLoading(false);
+        if (typeof onSplashComplete === 'function') {
+          onSplashComplete();
+        }
       });
     }, 2000);
-  }, []);
+    return () => clearTimeout(timer);
+  }, [nextScreen, onSplashComplete]);
 
   if (isSplashLoading) {
     return <SplashScreen />;
@@ -79,9 +86,14 @@ const Navigation = () => {
       <Stack.Screen name="RegisterationScreen" component={RegisterationScreen} />
       <Stack.Screen name="OTPScreen" component={OTPScreen} />
       <Stack.Screen name="HomeScreen" component={Home} />
+      <Stack.Screen name="LocationPermission" component={LocationPermissionScreen} />
     
     </Stack.Navigator>
   );
 };
 
 export default Navigation;
+
+Navigation.propTypes = {
+  onSplashComplete: PropTypes.func,
+};

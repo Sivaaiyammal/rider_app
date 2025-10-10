@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator} from 'react-native';
+import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler} from 'react-native';
 import React, {useCallback, useState,useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
 import NavBar from '../../../components/NavBar';
@@ -61,6 +61,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   }, [showBottomSheet]);
 
   const onBackPress = async () => {
+    console.log("onBackPress")
     resetRideBookingLocation()
     setScheduleDateTime(null)
     goBack();
@@ -92,6 +93,17 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
       setIsContinuing(false);
     };
   }, []);
+
+  useEffect(() => {
+    const handleHardwareBackPress = () => {
+      onBackPress();
+      return true;
+    };
+    const subscription = BackHandler.addEventListener('hardwareBackPress', handleHardwareBackPress);
+    return () => {
+      subscription.remove();
+    };
+  }, [onBackPress]);
 
 
   const onRideTypePress = () => {

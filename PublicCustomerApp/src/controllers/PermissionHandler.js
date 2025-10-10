@@ -92,11 +92,11 @@ export const RequestNotificationPermission = async () => {
 export const RequestAllPermissions = async () => {
   try {
     // Request both location and notification permissions
-    const locationPermission = await RequestFineLocationPermission();
+    // const locationPermission = await RequestFineLocationPermission();
     const notificationPermission = await RequestNotificationPermission();
     
     return {
-      location: locationPermission,
+      // location: locationPermission,
       notification: notificationPermission
     };
   } catch (error) {
