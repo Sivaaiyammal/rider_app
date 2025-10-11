@@ -31,11 +31,12 @@ const WaypointScreen = () => {
   const [fareData, setFareData] = React.useState(null);
   const [isFareLoading, setIsFareLoading] = React.useState(false);
   const {rideStartLocation,rideEndLocation,rideWayPoints,setRideStartLocation,setRideEndLocation,setRideWayPoints} =  useRideBookingLocationStore()
-  const {reOrderWaypoints,setReOrderWaypoints,setReachedStops,reachedStops,waitingForDriverApproval,setWaitingForDriverApproval,onGoingRideStops,setOnGoingRideStops} = useWayPointReorderStore()
+  const {reOrderWaypoints,setReOrderWaypoints,setReachedStops,reachedStops,waitingForDriverApproval,setWaitingForDriverApproval,onGoingRideStops,setOnGoingRideStops,setEditedRoutecheckText,editedRoutecheckText} = useWayPointReorderStore()
   const [distance,setDistance] = React.useState(0)
   const [duration,setDuration] = React.useState(0)
   const { goBack,setStackScreen } = useStackScreenStore();
   const [enableConfirmButton,setEnableConfirmButton] = React.useState(false)
+  
 
  
 
@@ -59,6 +60,8 @@ const WaypointScreen = () => {
     goBack();
     
   };
+
+  
 
  
   useEffect(() => {
@@ -109,6 +112,12 @@ const WaypointScreen = () => {
           latitude: waypoint.location[1],
           longitude: waypoint.location[0]
         }));
+
+        const editedRoutecheckText = transformedData.map((item)=>{
+          return `${item.latitude},${item.longitude}`
+        }).join(",")
+        console.log("waypoint editedRoutecheckText",editedRoutecheckText)
+        setEditedRoutecheckText(editedRoutecheckText)
 
 
        
@@ -359,8 +368,8 @@ useEffect(() => {
   return (
     <>
       <View style={styles.topContainer}>
-        <NavBar onBackPress={onBackPress} title={t('add_stops')} />
-          <WaypointContainer  setEnableConfirmButton={setEnableConfirmButton} />
+      <NavBar onBackPress={onBackPress} title={t('add_stops')} />
+          <WaypointContainer  setEnableConfirmButton={setEnableConfirmButton} editedRoutecheckText={editedRoutecheckText} />
       </View>
       <View style={styles.footer}>
         <TouchableOpacity
@@ -375,6 +384,7 @@ useEffect(() => {
             } else {
               onConfirmRoute();
             }
+            setEditedRoutecheckText("")
           }}
         >
         {isLoading ? (

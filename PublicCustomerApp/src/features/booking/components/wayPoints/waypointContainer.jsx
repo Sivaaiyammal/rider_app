@@ -21,7 +21,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTranslation } from 'react-i18next';
 const ITEM_HEIGHT = 50;
 
-const WaypointContainer = ({setEnableConfirmButton}) => {
+const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
   const { t } = useTranslation();
   
 
@@ -50,10 +50,13 @@ const WaypointContainer = ({setEnableConfirmButton}) => {
       }
     }
 
-    if(reOrderWaypoints.length > 1){
+    const editedRoutecheckTextcurrent = reOrderWaypoints.map((item)=>{
+      return `${item.latitude},${item.longitude}`
+    }).join(",")
+    
+    if(editedRoutecheckText !== editedRoutecheckTextcurrent){
       setEnableConfirmButton(true)
     }else{
-      
       setEnableConfirmButton(false)
     }
     

@@ -9,6 +9,7 @@ const GetLocations = (deviceId, deviceImei, startTime, endTime) => {
   } else {
     variableQuery = `deviceId: "${deviceId}", startTime: ${startTime}, endTime: ${endTime}`
   }
+  console.log("variableQuery",variableQuery)
   return gql`
       query GETLOCATIONS {
         getRecentLocations(${variableQuery}) {

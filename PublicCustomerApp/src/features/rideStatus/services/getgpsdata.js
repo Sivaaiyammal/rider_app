@@ -28,6 +28,8 @@ export default async function getGpsData({ tripId, startTime, endTime, token }) 
       fetchPolicy: "no-cache",
     });
 
+    console.log("data",JSON.stringify(data))
+
     const raw = data?.getRecentLocations?.raw;
     if (!Array.isArray(raw) || raw.length === 0) {
       return { distance: 0, duration: 0 };
@@ -42,14 +44,16 @@ export default async function getGpsData({ tripId, startTime, endTime, token }) 
       },
     });
 
-    const lngLats = processed?.data?.lngLats;
+    const lngLats = data?.getRecentLocations?.raw?.map((item) => [item.longitude, item.latitude]);
+    console.log("lngLats",lngLats)
     if (!Array.isArray(lngLats) || lngLats.length < 2) {
       return { distance: 0, duration: 0 };
       
     }
 
     const latLngs = lngLats.map(([lng, lat]) => [lat, lng]);
-    const encoded = polyline.encode(latLngs);
+    const encoded = polyline.encode(latLngs,6);
+    console.log("encoded",encoded)
 
 
     // const encoded = "c}`aTgdi}qCwEXzCvl@ei@jDhHvzBw\fCuAdEnDjyAz@d^xQ`AvH`@lBBlUPh_@Vrp@f@f^^pWR|KHpbAdAlEPnIJpABdKhCjEZpg@fChP`AnFQbIe@hBAdQOtGG|H_@zCnEbLtRfJlM`S`ZxKtOpFxGzVd^xEbFl]h`@vY~[da@rg@tE`FlXp]zXn^lEnG"

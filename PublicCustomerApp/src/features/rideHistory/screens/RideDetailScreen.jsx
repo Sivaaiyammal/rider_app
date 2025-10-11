@@ -19,6 +19,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 
 const RideDetailScreen = ({ TripData }) => {
+  console.log("TripData",TripData)
   const { t } = useTranslation();
   const { goBack } = useStackScreenStore();
   const [showReceipt, setShowReceipt] = useState(false);

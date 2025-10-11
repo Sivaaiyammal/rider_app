@@ -117,18 +117,22 @@ const RideStatus = () => {
 
    
       if (tripStatus === TripStatus.PICKEDUP) {
+        const pickupTime = stops[0]?.arrivalTime;
         let distance = 0;
         let duration = 0;
         const access_token = await DataStore.loadData('access_token');
         const data = await getGpsData({
           tripId: tripId,
-          startTime: 1717190400000,
+          startTime: pickupTime,
           endTime: new Date().setHours(23, 59, 59, 999),
           token: access_token?.data,
         });
 
         distance = data.distance;
         duration = data.duration;
+
+        console.log("distance",distance)
+        console.log("duration",duration)
 
         if( distance == 0 && duration == 0) {
           const routePoints = stops.filter(stop => stop.isReached == true).map(stop => ({

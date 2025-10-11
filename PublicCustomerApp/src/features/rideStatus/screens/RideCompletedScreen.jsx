@@ -119,15 +119,6 @@ const RideCompletedScreen = ({type}) => {
           </TouchableOpacity> */}
         </View>
       </View>
-      
-      
-
-
-    
-      
-      
-
-      
     </>
   );
 };
