@@ -1,5 +1,5 @@
 import {Text, TouchableOpacity, View} from 'react-native';
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useContext} from 'react';
 
 import {loginStyles} from '../../styles/UserStyles';
 import OTPTextInput from 'react-native-otp-textinput';
@@ -14,6 +14,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import messaging from '@react-native-firebase/messaging';
 import DeviceInfo from 'react-native-device-info';  
 import PropTypes from 'prop-types';  
+import { GlobalContext } from '../../context/GlobalContext';
 // Utility function to mask phone number
 const maskPhoneNumber = (phoneNumber) => {
   if (!phoneNumber || phoneNumber.length < 5) return phoneNumber;
@@ -27,6 +28,7 @@ const maskPhoneNumber = (phoneNumber) => {
 
 const OTPScreen = ({route}) => {
   const navigation = useNavigation();
+  const {addListener} = useContext(GlobalContext);
   const [loginPhoneNumber] = useState(
     route.params.phoneNumber,
   );
@@ -68,6 +70,7 @@ const OTPScreen = ({route}) => {
         setUserdetails(user);
 
         await DataStore.storeData('access_token', user?.token);
+        addListener(user?.token);
         await DataStore.storeData('userdetails', user);
         
         if (isNewUser) {
