@@ -5,7 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
- 
+  BackHandler,
+
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -22,6 +23,7 @@ import { colors, Fonts } from '../../../constants/constants';
 import { getPreFinalFare,passangerStopChangeRequest } from '../../../API/EndPoints/EndPoints';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
 import { height } from '../../../utils/Utils';
+import {utils} from '../../../utils/Utils';
 
 const WaypointScreen = () => {
   const {tripId}=useCurrentRideInfoStore()
@@ -64,6 +66,18 @@ const WaypointScreen = () => {
   
 
  
+  useEffect(() => {
+    const onHardwareBack = () => {
+      onBackPress();
+      return true;
+    };
+
+    BackHandler.addEventListener('hardwareBackPress', onHardwareBack);
+
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', onHardwareBack);
+    };
+  }, [onBackPress]);
   useEffect(() => {
 
     if (!reOrderWaypoints.length) {
@@ -300,21 +314,25 @@ useEffect(() => {
       return rest;
     };
 
+    console.log("reOrderWaypoints",reOrderWaypoints)
+
     const updatedBalanceStops = reOrderWaypoints.map(item => ({
-      address: item.address,
+      ...filterKeys(item),
+      address: utils.getFormatedHeader(item),
       location: item.location ? item.location : [item.longitude, item.latitude],
       isReached: item?.isReached || false,
       waitingTime: item?.waitingTime || 0,
-      ...filterKeys(item)
     }));
+
+    console.log("updatedBalanceStops",updatedBalanceStops)
 
     const updatedRideWayPoints = [
       ...reachedStops.map(item => ({
+        ...filterKeys(item),
         address: item.address,
         location: item.location ? item.location : [item.longitude, item.latitude],
         isReached: item?.isReached || false,
         waitingTime: item?.waitingTime || 0,
-        ...filterKeys(item)
       })),
       ...updatedBalanceStops
     ];
@@ -340,6 +358,8 @@ useEffect(() => {
       };
     });
 
+    console.log("finalWaypoints",finalWaypoints)
+
 
     const finalPayload = {
       tripId:tripId,
@@ -356,13 +376,9 @@ useEffect(() => {
     setWaitingForDriverApproval('PENDING')
     goBack();
     setOnGoingRideStops(null)
+    setReOrderWaypoints([])
     setReachedStops([])
    }
-
-
-
-    
-   
   }
 
   return (

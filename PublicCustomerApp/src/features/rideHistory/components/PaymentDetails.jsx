@@ -14,14 +14,14 @@ const PaymentDetails = ({
         {/* Main item */}
         <View style={styles.row}>
           <Text style={styles.label}>{item.key}</Text>
-          <Text style={styles.value}>₹{item.value}</Text>
+          <Text style={styles.value}>₹{item.value != null ? Number(item.value).toFixed(2) : '0.00'}</Text>
         </View>
         
         {/* Tax items if they exist */}
         {item.tax && item.tax.map((taxItem, taxIndex) => (
           <View key={`${index}-${taxIndex}`} style={styles.taxRow}>
             <Text style={styles.taxLabel}>{taxItem.key} {taxItem?.tax && `- ${taxItem?.tax}`}</Text>
-            <Text style={styles.taxValue}>₹{taxItem.value}</Text>
+            <Text style={styles.taxValue}>₹{taxItem.value != null ? Number(taxItem.value).toFixed(2) : '0.00'}</Text>
           </View>
         ))}
       </View>

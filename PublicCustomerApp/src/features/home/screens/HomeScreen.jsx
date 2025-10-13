@@ -465,8 +465,9 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 12,
   },
+
+
   bottomSheetHeader: {
-   
     display:"flex",
     flexDirection:"column",
     justifyContent:"space-between",
@@ -476,7 +477,7 @@ const styles = StyleSheet.create({
     width:width,
     flex:1,
     gap:5,
-    top:-40,
+    top:-45,
     
   },
   bottomSheetHeaderIconContainer: {

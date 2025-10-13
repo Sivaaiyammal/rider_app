@@ -7,19 +7,20 @@ const useDrawStopsPolyline = () => {
     const {stops} = useCurrentRideInfoStore();
     const [stopspolyline,setPolyline] = useState(null);
 
+    // Build a signature string from stop content so updates are detected even if the array reference is re-used
+    const stopsSignature = (stops || [])
+        .map(stop => `${Boolean(stop.isReached)}:${stop?.location?.[0]},${stop?.location?.[1]}`)
+        .join('|');
+
     const points = useMemo(() => {
         return (stops || [])
             .filter(stop => !stop.isReached)
             .map(stop => ({ lat: stop.location[1], lon: stop.location[0] }));
-    }, [stops]);
+    }, [stopsSignature]);
 
-    const pointsSignature = useMemo(() => {
-        return JSON.stringify(points);
-    }, [points]);
-  
     const fetchStops = useCallback(async () => {
         console.log("points",points);
-        if (!points || points.length === 1) {
+        if (!points || points.length == 1) {
             setPolyline(null);
             return;
         }
@@ -53,7 +54,7 @@ const useDrawStopsPolyline = () => {
 
     useEffect(() => {
         fetchStops();
-    }, [fetchStops, pointsSignature]);
+    }, [fetchStops, stopsSignature]);
 
     return {stopspolyline};
     

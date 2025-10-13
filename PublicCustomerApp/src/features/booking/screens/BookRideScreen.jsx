@@ -500,7 +500,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
               </View>
           </View>
 
-   {isPaymentTypeOpen  && (
+        { isPaymentTypeOpen  && (
           <AnimatedBottomSheetWrapper onClose={()=>setIsPaymentTypeOpen(false)} zIndex={100000}>
             <PaymentType onSelect={handlePaymentSelect} initialValue={paymentType} />
           </AnimatedBottomSheetWrapper>

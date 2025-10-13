@@ -37,11 +37,12 @@ const AddressContainer = ({ directions,edit=false ,live=false,completed=false}) 
   };
 
     const {setStackScreen} = useStackScreenStore()
-    const {tripId} = useCurrentRideInfoStore()
+    const {tripId,stops} = useCurrentRideInfoStore()
     const {t} = useTranslation();
     const {setOnGoingRideStops} = useWayPointReorderStore()
   const handleStopEdit = () => {
-    setOnGoingRideStops(directions)
+    console.log("beforeEditStops",stops)
+    setOnGoingRideStops(stops)
     setStackScreen('WaypointScreen',{
       tripId:tripId
     })

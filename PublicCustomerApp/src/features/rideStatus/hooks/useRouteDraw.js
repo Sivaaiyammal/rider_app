@@ -23,6 +23,25 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 		
 	}, [destinationlat, destinationlon]);
 
+	// When remaining stops change, force a fresh route on next draw and reset progress
+	useEffect(() => {
+		if (!remainingStops) return;
+		setIsDiverted(true);
+		currentPolylineRef.current = [];
+		setRemainingDistance(0);
+		// Immediately reflect the updated remaining-stops polyline on the map
+		// so UI updates without waiting for the next driver position tick.
+		setGeometries([remainingStops]);
+		// Adjust bounds to the stops polyline if available
+		if (remainingStops?.coordinates && remainingStops.coordinates.length > 1) {
+			const bounds = utils.getBoundingBox(remainingStops.coordinates);
+			if (bounds) {
+				const margin = [20,100,20,500];
+				setMapBounds([bounds, margin]);
+			}
+		}
+	}, [remainingStops]);
+
 	// Helpers: distance computations and simplification
 	const EARTH_RADIUS_M = 6371000;
 	function toRadians(deg) { return deg * Math.PI / 180; }
@@ -187,10 +206,17 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 		
 		currentPolylineRef.current = coordinates;
 		setIsDiverted(false)
-		setRemainingDistance(computePolylineLengthMeters(coordinates));
+		const totalRemaining = computePolylineLengthMeters(coordinates);
+		setRemainingDistance(totalRemaining);
 		const routeSummary = extractRouteSummary(routeData);
-		setOriginalDistance(routeSummary?.length);
-		setOriginalDuration(routeSummary?.time);
+		const originalKm = routeSummary?.length;
+		const originalSec = routeSummary?.time;
+		setOriginalDistance(originalKm);
+		setOriginalDuration(originalSec);
+		const estimatedTime = calculateEstimatedTime(totalRemaining, originalSec, originalKm);
+		if (estimatedTime != null) {
+			setEstimatedDuration(estimatedTime);
+		}
 		return coordinates;
 	  }
 
@@ -270,6 +296,7 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 				const polylineObj = makePolyline(coordinates)
 				polylineArray.push(polylineObj)
 			}
+			
 		} else {
 			if (currentPolylineRef.current && currentPolylineRef.current.length >= 2) {
 				// Trim current polyline ahead of driver location, then simplify

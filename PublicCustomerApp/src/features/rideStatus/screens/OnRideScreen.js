@@ -56,6 +56,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   });
 
   const ArrivalTime =utils.getTimeAfterMinutes(estimatedDuration)
+  
   const iswaypoint = stops.length > 2;
 
   // Check if driver photo URL is valid

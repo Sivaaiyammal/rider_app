@@ -55,6 +55,9 @@ class PDFCreator {
         this.companyLogoDataUri = null; // Set via setCompanyLogoDataUri if available
     }
 
+    // Standard currency formatter: always return two decimals
+    formatMoney = (n) => Number(n || 0).toFixed(2);
+
     /**
      * Set notification for downloaded file
      * @param {string} fileName - Name of the downloaded file
@@ -529,11 +532,11 @@ class PDFCreator {
               </tr>
             </thead>
             <tbody>
-              <tr><td class="vendortax-money">₹ ${receiptData.baseFare}</td></tr>
+              <tr><td class="vendortax-money">₹ ${this.formatMoney(receiptData.baseFare)}</td></tr>
               
-              <tr><td>Total Waiting Fare</td><td class="vendortax-money">₹ ${receiptData.waitingFare}</td></tr>
-              <tr><td class="vendortax-muted">Discount</td><td class="vendortax-money">− ₹ ${receiptData.discount}</td></tr>
-              <tr><td><b>Sub Total</b></td><td class="vendortax-money"><b>₹ ${receiptData.subTotal}</b></td></tr>
+              <tr><td>Total Waiting Fare</td><td class="vendortax-money">₹ ${this.formatMoney(receiptData.waitingFare)}</td></tr>
+              <tr><td class="vendortax-muted">Discount</td><td class="vendortax-money">− ₹ ${this.formatMoney(receiptData.discount)}</td></tr>
+              <tr><td><b>Sub Total</b></td><td class="vendortax-money"><b>₹ ${this.formatMoney(receiptData.subTotal)}</b></td></tr>
             </tbody>
           </table>
 
@@ -558,10 +561,10 @@ class PDFCreator {
             <ul>${(receiptData.notes || []).map(n => `<li>${n}</li>`).join("")}</ul>
           </div>
           <div class="vendortax-sum">
-            <div class="vendortax-row"><div>Sub Total</div><div class="vendortax-money">₹ ${receiptData.subTotal}</div></div>
+            <div class="vendortax-row"><div>Sub Total</div><div class="vendortax-money">₹ ${this.formatMoney(receiptData.subTotal)}</div></div>
             <div class="vendortax-row"><div>Tax Total</div><div class="vendortax-money">₹ ${Number(receiptData?.taxes?.total || 0).toFixed(2)}</div></div>
-            <div class="vendortax-row"><div>Discount</div><div class="vendortax-money">− ₹ ${receiptData.discount}</div></div>
-            <div class="vendortax-row vendortax-total"><div>Net Payable</div><div class="vendortax-money">₹ ${receiptData.netFare}</div></div>
+            <div class="vendortax-row"><div>Discount</div><div class="vendortax-money">− ₹ ${this.formatMoney(receiptData.discount)}</div></div>
+            <div class="vendortax-row vendortax-total"><div>Net Payable</div><div class="vendortax-money">₹ ${this.formatMoney(receiptData.netFare)}</div></div>
           </div>
         </div>
       </div>
@@ -717,18 +720,18 @@ class PDFCreator {
                             <tr>
                            
                             <td class="money">–</td>
-                            <td class="money">${receiptData.baseFare}</td>
+                            <td class="money">${this.formatMoney(receiptData.baseFare)}</td>
                             </tr>
                            
                             <tr>
                             <td>Total Waiting Fare</td>
                             <td class="money">–</td>
-                            <td class="money">${receiptData.waitingFare}</td>
+                            <td class="money">${this.formatMoney(receiptData.waitingFare)}</td>
                             </tr>
                             <tr>
                             <td class="muted">Discount</td>
                             <td class="money">–</td>
-                            <td class="money">− ${receiptData.discount}</td>
+                            <td class="money">− ${this.formatMoney(receiptData.discount)}</td>
                             </tr>
                         </tbody>
                         </table>
@@ -741,9 +744,9 @@ class PDFCreator {
                             </ul>
                         </div>
                         <div class="sum">
-                            <div class="row"><div>Sub Total</div><div class="money">${receiptData.subTotal}</div></div>
-                            <div class="row"><div>Discount</div><div class="money">− ${receiptData.discount}</div></div>
-                            <div class="row total"><div>Net Fare</div><div class="money">${receiptData.netFare}</div></div>
+                            <div class="row"><div>Sub Total</div><div class="money">${this.formatMoney(receiptData.subTotal)}</div></div>
+                            <div class="row"><div>Discount</div><div class="money">− ${this.formatMoney(receiptData.discount)}</div></div>
+                            <div class="row total"><div>Net Fare</div><div class="money">${this.formatMoney(receiptData.netFare)}</div></div>
                         </div>
                         </div>
                     </div>
@@ -816,7 +819,7 @@ class PDFCreator {
                 </div>
                 <div class="tripbill-right">
                     <div class="tripbill-muted">${receiptData.dateLong}</div>
-                    <div class="amt tripbill-money">${receiptData.currency || "₹"} ${receiptData.totalAmount}</div>
+                    <div class="amt tripbill-money">${receiptData.currency || "₹"} ${this.formatMoney(receiptData.totalAmount)}</div>
                 </div>
                 </div>
 
@@ -840,11 +843,11 @@ class PDFCreator {
                 <!-- Amount rows -->
                 <div class="tripbill-kv">
                     <div class="l">Your Trip</div>
-                    <div class="r tripbill-money">${receiptData.currency || "₹"} ${receiptData.yourTripAmount}</div>
+                    <div class="r tripbill-money">${receiptData.currency || "₹"} ${this.formatMoney(receiptData.yourTripAmount)}</div>
                 </div>
                 <div class="tripbill-kv" style="background:${'var(--soft)'}">
                     <div class="l"><b>Total Payable</b><br><span class="tripbill-muted">${receiptData.taxesLine}</span></div>
-                    <div class="r tripbill-money"><b>${receiptData.currency || "₹"} ${receiptData.totalPayable}</b></div>
+                    <div class="r tripbill-money"><b>${receiptData.currency || "₹"} ${this.formatMoney(receiptData.totalPayable)}</b></div>
                 </div>
                 </div>
 

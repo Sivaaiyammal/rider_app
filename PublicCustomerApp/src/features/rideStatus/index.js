@@ -156,11 +156,10 @@ const RideStatus = () => {
         if (routeData && routeData.trip && routeData.trip.summary) {
             const { length, time } = routeData.trip.summary;
             const durationInMinutes = Math.round(time / 60);
-               
                 distance = length; 
                 duration = durationInMinutes; 
-
-                
+                console.log("after distance",distance)
+                console.log("after duration",duration)     
         }
 
       }

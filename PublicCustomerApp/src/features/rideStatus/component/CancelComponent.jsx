@@ -88,7 +88,7 @@ const CancelComponent = ({ onClose, onCancel, loading,rideStatus }) => {
               <AdaptiveText style={styles.reasonText}>{t(reason)}</AdaptiveText>
             </TouchableOpacity>
           ))}
-          {selected === 'Other' && (
+          {selected === 'other' && (
             <View style={{ marginTop: 8 }}>
               <TextInput
                 style={styles.input}
