@@ -27,7 +27,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {t} = useTranslation();
   
   const {stopspolyline} = useDrawStopsPolyline();
-  useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,driverAngle);
+  useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"default",driverAngle);
   const {estimatedDuration,SetViewBoundingBox} = useRouteDraw({destinationlat:currentStop?.location[1],destinationlon:currentStop?.location[0],driverLat:driverLatitude,driverLon:driverLongitude,remainingStops: stopspolyline})  
   const animation = useRef(new Animated.Value(0)).current;
   

@@ -30,6 +30,7 @@ import PREF from '../../storage/PREF';
 import getGpsData from './services/getgpsdata';
 import { findRoute } from '../../controllers/NEMap/findRoute';
 import useLocationStore from '../../store/useLocationStore';
+import useAssignedDriverInfoStore from './store/useAssignedDriverInfoStore';
 
 const RideStatus = () => {
   const { userdetails } = useUserInfoStore();
@@ -37,6 +38,7 @@ const RideStatus = () => {
   const [showOverlay, setShowOverlay] = useState(false);
   const {incrementCancelledTrips,} = useUserInfoStore();
   const {location} = useLocationStore();
+  const {driverLatitude,driverLongitude} = useAssignedDriverInfoStore();
   const { duration,totalDistance,tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled,stops} = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const {goBack,stackScreen,setStackScreen} = useStackScreenStore();
@@ -128,8 +130,8 @@ const RideStatus = () => {
           token: access_token?.data,
         });
 
-        distance = data.distance;
-        duration = data.duration;
+        distance = data?.distance ? data.distance : 0;
+        duration = data?.duration ? Math.round(data.duration) : 0;
 
         console.log("distance",distance)
         console.log("duration",duration)
@@ -140,26 +142,42 @@ const RideStatus = () => {
             lon: stop.location[0]  // longitude
         }));
 
+
+        if(driverLatitude && driverLongitude) {
+          routePoints.push({
+            lat: driverLatitude,
+            lon: driverLongitude
+          });
+        }else{
+
         if(location[0] && location[1]) {
           routePoints.push({
             lat: location[1],
             lon: location[0]
           });
         }
+      }
+
+
+        console.log("routePoints",routePoints)
 
         
 
       
         const routeData = await findRoute(routePoints);
+        console.log("routeData",JSON.stringify(routeData))
         
         
         if (routeData && routeData.trip && routeData.trip.summary) {
-            const { length, time } = routeData.trip.summary;
-            const durationInMinutes = Math.round(time / 60);
-                distance = length; 
-                duration = durationInMinutes; 
-                console.log("after distance",distance)
-                console.log("after duration",duration)     
+          distance = routeData.trip.summary.length; 
+          const finalArrivalMs = Number(stops?.[0]?.arrivalTime ?? 0); 
+          const nowMs = Date.now(); 
+          const totalDurationMs = nowMs-finalArrivalMs;
+          duration = totalDurationMs / 60000;
+          
+      
+
+
         }
 
       }
@@ -168,7 +186,7 @@ const RideStatus = () => {
 
        
 
-       if(distance && duration) {
+       if(distance != null && duration != null && duration > 0 ) {
 
     
         const payload = {
@@ -192,7 +210,7 @@ const RideStatus = () => {
         reason,
     };
     
-      await CancelRide(payload);
+       await CancelRide(payload);
   }
   };
 

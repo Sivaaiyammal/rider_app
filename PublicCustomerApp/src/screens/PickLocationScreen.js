@@ -80,6 +80,27 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     setMapMoving(true);
   }
 
+
+
+  const centerMap = async ()=>{
+    setPickedLocation({
+      latitude:location[1], 
+      longitude: location[0],
+      placeName: currentLocationName.placeName,
+      address: currentLocationName.address, 
+      type:locationType,
+      locationFrom:"MAP"
+    });
+    setTimeout(()=>{
+      setMapLocation({
+        lat: location[1],
+        lng: location[0],
+        zoom: 18,
+      });
+    },100)
+
+  }
+
   useEffect(()=>{
 
    
@@ -161,7 +182,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         <View style={styles.mapIconContainer}>
           <MapIcon />
         </View>
-        <TouchableOpacity style={styles.currentLocationIconContainer} onPress={handleCurrentLocation}>
+        <TouchableOpacity style={styles.currentLocationIconContainer} onPress={centerMap}>
           <CurrentLocationIcon width={25} height={25} />
         </TouchableOpacity>
         <LinearGradient
@@ -237,8 +258,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 100,
-    
-    
   },
   pickIcon: {
     width: 25,
