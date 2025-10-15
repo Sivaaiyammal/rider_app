@@ -128,7 +128,7 @@ const WaypointScreen = () => {
         }));
 
         const editedRoutecheckText = transformedData.map((item)=>{
-          return `${item.latitude},${item.longitude}`
+          return `${item.latitude},${item.longitude},${item.waitingTime}`
         }).join(",")
         console.log("waypoint editedRoutecheckText",editedRoutecheckText)
         setEditedRoutecheckText(editedRoutecheckText)
@@ -240,13 +240,13 @@ useEffect(() => {
 
   const getFare =async()=>{
 
-    if(!distance && !duration){
+  if(!distance && !duration){
    return 0
   }
 
    let TotalwaitingTime = 0
 
-   const newWayPoints = [...reachedStops,...reOrderWaypoints]
+  const newWayPoints = [...reachedStops,...reOrderWaypoints]
 
   newWayPoints.map((item)=>{
     if(item === newWayPoints[0] || item === newWayPoints[newWayPoints.length - 1]){
@@ -267,7 +267,10 @@ useEffect(() => {
 
    setIsFareLoading(true)
    try {
+    console.log("Payload",Payload)
      const res = await getPreFinalFare(Payload)
+
+     console.log("res",res)
    
      
      if (res && res.fare) {
@@ -311,6 +314,7 @@ useEffect(() => {
       delete rest.type;
       delete rest.locationFrom;
       delete rest.id;
+      delete rest.placeName;
       return rest;
     };
 

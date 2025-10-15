@@ -47,6 +47,7 @@ import { Fonts } from '../constants/constants';
 import SearchAPI from '../controllers/NEMap/Search';
 import { useNavigation } from '@react-navigation/native';
 import { checkFineLocationPermissions } from '../controllers/PermissionHandler';
+import EmergencyHomeScreen from '../features/emergencyContact/screens/EmergencyHomeScreen';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -478,6 +479,8 @@ const Home = () => {
         return <TripSelectionScreen {...params} />;
       case 'GoogleMapScreen':
         return <GoogleMapScreen {...params} />;
+      case 'EmergencyScreen':
+        return <EmergencyHomeScreen {...params} />;
      
       default:
         return null;

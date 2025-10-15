@@ -41,7 +41,6 @@ export const utils = {
    
     const name =
       currentLocationName?.placeName ||
-      currentLocationName?.name ||
       null;
     
 
@@ -49,7 +48,7 @@ export const utils = {
 
     if (name && currentLocationName.address) {
       const formattedAddress = `${utils.capitalizeFirstLetter(name)}, ${utils.formatArrayAddress(currentLocationName.address)}`;
-      console.log("formattedAddress",formattedAddress)
+      
       return formattedAddress;
     } else if (name) {
       return utils.capitalizeFirstLetter(name);

@@ -51,7 +51,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
     }
 
     const editedRoutecheckTextcurrent = reOrderWaypoints.map((item)=>{
-      return `${item.latitude},${item.longitude}`
+      return `${item.latitude},${item.longitude},${item.waitingTime}`
     }).join(",")
     
     if(editedRoutecheckText !== editedRoutecheckTextcurrent){
@@ -59,8 +59,14 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
     }else{
       setEnableConfirmButton(false)
     }
+    if(!reachedStops?.length && reOrderWaypoints.length ==1){
+      setEnableConfirmButton(false)
+    }
+    if(reachedStops?.length && reOrderWaypoints.length ==0){
+      setEnableConfirmButton(false)
+    }
     
-  }, [reOrderWaypoints.length]);
+  }, [reOrderWaypoints]);
 
 
  
@@ -68,7 +74,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
 
 
   const finalData = useMemo(() => {
-    if (reOrderWaypoints.length === 0) return [];
+    if (reOrderWaypoints.length === 0 && !reachedStops?.length) return [];
     
     const addStopItem = { type: 'add-stop', key: 'add-stop', id: 'add-stop' };
   
@@ -174,15 +180,20 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
 
 
   const onClickAddWayPoint=(index)=>{
+    const actualindex = index + reachedStops.length 
+    let finalindex = finalData.length 
+    if(lastAddStopIndex < index){
+      finalindex = finalindex+reachedStops.length
+    }
     
-    
+    const label = actualindex == 0 ? t('locate_pickup_location') :actualindex == finalindex ? t('locate_drop_location') : t('locate_stop',{stop:actualindex})
       setStackScreen("SearchScreen",{
         onSearchClick:onSearchClickResultCallback,
         index:index,
         searchType:LocationTypes.WAYPOINT_LOCATION,
         fromaddWayPoint:index != 0 && index != finalData.length-1 ? true : false,
         getwaitingTime:index !== 0 && index !== finalData.length-1 ? true : false,
-        label:index == 0 ? t('locate_pickup_location') :index == finalData.length-1 ? t('locate_drop_location') : t('locate_stop',{stop:index})
+        label:label
       })
     }
     
@@ -223,11 +234,17 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
   }
 
   const handleWaypointPress = (index) => {
+    const actualindex = index + reachedStops.length
+    let finalindex = finalData.length-1
+    if(lastAddStopIndex < index){
+      finalindex = finalindex+reachedStops.length
+    }
+    const label = actualindex == 0 ? t('locate_pickup_location') :actualindex == finalindex ? t('locate_drop_location') : t('locate_stop',{stop:actualindex})
     setStackScreen("SearchScreen",{
       onSearchClick:onSearchReplaceWaypointCallback,
       index:index,
       searchType:LocationTypes.WAYPOINT_LOCATION,
-      label:index == 0 ? t('locate_pickup_location') :index == finalData.length-1 ? t('locate_drop_location') : t('locate_stop',{stop:index})
+      label:label
     })
   }
 
@@ -239,7 +256,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
         <View style={[styles.row]}>
           <TouchableOpacity 
             style={styles.draggableArea}
-            onPress={()=>onClickAddWayPoint(index)}
+            onPress={()=>isReached ? null : onClickAddWayPoint(index)}
             onLongPress={drag}
             delayLongPress={100}
           >
@@ -271,7 +288,10 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
     );
 
     const isLastWaypoint = index === finalData.length - 1;
-    const isStartLocation = index == 0
+    const isStartLocation =  index==0
+
+    const isOngoingTrip = reachedStops.length > 0;
+    
     return (
       <View style={[styles.row]}>
         <TouchableOpacity
@@ -279,7 +299,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
           onLongPress={drag}
           delayLongPress={100}
           onPress={
-          ()=>handleWaypointPress(index)
+          isReached ? null : ()=>handleWaypointPress(index)
           }
         >
           <View style={[styles.AddressContainer,isActive && styles.draggingItem,isReached && {backgroundColor:"grey"}]}>
@@ -293,16 +313,15 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
           
 
         { !isReached && <View style={styles.actionCol}>
-          {((isWaypoint && !isLastWaypoint) ||  (!item?.isReached && !isLastWaypoint && !isStartLocation && !reachedStops.length > 0) || (reachedStops.length > 0 && !isLastWaypoint)) && <WaitingTimeIconContainer onPress={() => handleaddwaitingTime(actualIndex, item)} value={item.waitingTime}/>}
-            
+          {(((isWaypoint && !isLastWaypoint) ||  (!item?.isReached && !isLastWaypoint && !isStartLocation && !reachedStops.length > 0) || (reachedStops.length > 0 && !isLastWaypoint)) && ((reachedStops.length > 0 && reOrderWaypoints.length > 1)|| (!isOngoingTrip && (reOrderWaypoints.length > 2)))) && <WaitingTimeIconContainer onPress={() => handleaddwaitingTime(actualIndex, item)} value={item.waitingTime}/>}
             <MaterialIcons name="drag-handle" size={24} color="black" />
           </View>
   }
           </View>
-          {((isWaypoint && !isLastWaypoint && !isStartLocation) || (!item?.isReached && !isLastWaypoint && !isStartLocation && !reachedStops.length > 0) || (reachedStops.length>0 && !isLastWaypoint && isStartLocation))  ?(
+          {((isWaypoint && !isLastWaypoint && !isStartLocation) || (!item?.isReached && !isLastWaypoint && !isStartLocation && !reachedStops.length > 0) || (reachedStops.length>0 && !isLastWaypoint && isStartLocation) || (reachedStops.length > 0 && isStartLocation && reOrderWaypoints.length > 1) || (reachedStops.length > 0 && !isLastWaypoint && !isReached && reOrderWaypoints.length > 1))  ?(
               <TouchableOpacity
                 style={styles.actionBtn}
-                onPress={() => handleRemoveWaypoint(actualIndex)}
+                onPress={() => handleRemoveWaypoint(actualIndex)} 
               >
                  <Icon name="close" size={24} color="black" />
               </TouchableOpacity>

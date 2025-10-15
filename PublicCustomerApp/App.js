@@ -10,6 +10,7 @@ import crashlytics from '@react-native-firebase/crashlytics';
 
 import { ApolloProvider, HttpLink, ApolloClient, InMemoryCache } from '@apollo/client';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import FallbackComponent from './src/components/FallbackComponent';
 
 
 const App = () => {
@@ -40,13 +41,14 @@ const client = new ApolloClient({
   }), []);
 
   const myErrorHandler = (error, stackTrace) => {
-   
+    console.log("error",error)
+    console.log("stackTrace",stackTrace)
     crashlytics().recordError(error);
   };
 
 
   return (
-    <ErrorBoundary onError={myErrorHandler}>
+    <ErrorBoundary onError={myErrorHandler} FallbackComponent={FallbackComponent}>
       <ApolloProvider client={client}>
       <I18nextProvider i18n={i18n}>
         <QueryClientProvider client={queryClient}>

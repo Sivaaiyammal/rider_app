@@ -107,3 +107,37 @@ export const RequestAllPermissions = async () => {
     };
   }
 }
+
+
+export const RequestContactsPermission = async () => {
+  const result = await PermissionsAndroid.request(
+    PermissionsAndroid.PERMISSIONS.READ_CONTACTS,
+  );
+
+  if (result === "never_ask_again") {
+    Alert.alert(
+      'Permission Required','',
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "Open Settings",
+          onPress: () => Linking.openSettings()
+        }
+      ]
+    );
+  }
+  return result === PermissionsAndroid.RESULTS.GRANTED;
+
+
+}
+export const checkContactsPermission = async () => {
+  const result = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.READ_CONTACTS);
+  return result;
+}
+
+
+
+

@@ -119,6 +119,13 @@ const SideDrawerV2 = ({ handleMenu }) => {
       icon: <Ionicons name="help-circle" size={20} color="black" />,
     },
     {
+      id: 'emergency',
+      name: t('emergency_contact'),
+      screen: 'EmergencyScreen',
+      icon: <Ionicons name="alert-circle" size={20} color="black" />,
+
+    },
+    {
       id: 'contact-us',
       name: t('contact_us'),
       screen: 'ContactScreen',
@@ -136,6 +143,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
       screen: 'LegalScreen',
       icon: <Ionicons name="document-text" size={20} color="black" />,
     },
+    
     // {
     //   id: 'test-screen',
     //   name: t('test_screen'),

@@ -80,7 +80,7 @@ const AddressContainer = ({ directions,edit=false ,live=false,completed=false}) 
               <Text style={{fontSize:14, color:'#212121',fontFamily:Fonts.semi_bold}}>
                 {index == 0 ? t('pickup') : index != directions.length-1 ? t('stop_index',{stop:index}) : t('drop')}
               </Text>
-              <Text numberOfLines={1} ellipsizeMode="tail" style={styles.locationTxt}>
+              <Text numberOfLines={2} ellipsizeMode="tail" style={styles.locationTxt}>
                {item.address ? utils.formatAddressName(item.address) : item.locationName}
               </Text>
               {(item.driverWaitTime || item.waitingTime) ? (

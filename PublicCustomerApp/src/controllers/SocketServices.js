@@ -115,10 +115,11 @@ class WSService {
       }
       else{
 
-      this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
+      
       if(data?.tripData?.stops){
         this.useCurrentRideInfoStore.getState().setStops(data?.tripData?.stops)
       }
+      this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
       if(data?.tripData?.estimatedFare){
         this.useCurrentRideInfoStore.getState().setEstimatedFare(data?.tripData?.estimatedFare);
       }

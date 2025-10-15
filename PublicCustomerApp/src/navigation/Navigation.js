@@ -43,6 +43,7 @@ const Navigation = ({ onSplashComplete }) => {
     if (access_token.data) {
       setInitialRoute('HomeScreen');
       addListener(access_token.data);
+      console.log('access_token.data', access_token.data);
       
     } else if (language.data && language.data !== 'languageDone') {
       // If language is stored as a language code (en, ta, hi, etc.)
