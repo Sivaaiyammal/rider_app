@@ -1,0 +1,243 @@
+// components/OTPInput.js
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {View, TextInput, StyleSheet, Pressable, Platform} from 'react-native';
+import PropTypes from 'prop-types';
+
+const OTPInput = ({
+  inputCount = 6,
+  value,
+  onChange,
+  onComplete,
+  autoFocus = true,
+  containerStyle,
+  inputStyle,
+  focusedBorderColor = '#2785ff',
+  tintColor, // array or single color; applied to borders
+  keyboardType = 'number-pad',
+  textContentType = 'oneTimeCode',
+  autoComplete = 'sms-otp',
+  secureTextEntry = false,
+  editable = true,
+}) => {
+  const inputsRef = useRef([]);
+  const [internal, setInternal] = useState(Array(inputCount).fill(''));
+  const isControlled = typeof value === 'string';
+  const digits = useMemo(() => {
+    const src = isControlled ? value : internal.join('');
+    return (src || '').slice(0, inputCount).split('');
+  }, [value, internal, inputCount, isControlled]);
+
+  // Normalize tint colors
+  const tintArray = useMemo(() => {
+    if (!tintColor) return Array(inputCount).fill(undefined);
+    if (Array.isArray(tintColor)) return tintColor.slice(0, inputCount);
+    return Array(inputCount).fill(tintColor);
+  }, [tintColor, inputCount]);
+
+  // Autofocus first box
+  useEffect(() => {
+    if (!autoFocus || !editable) return;
+    const t = setTimeout(() => {
+      inputsRef.current[0]?.focus?.();
+    }, 50);
+    return () => clearTimeout(t);
+  }, [autoFocus, editable]);
+
+  // Helpers
+  const commit = (next) => {
+    const joined = next.join('');
+    if (!isControlled) setInternal(next);
+    onChange?.(joined);
+    if (joined.length === inputCount) onComplete?.(joined);
+  };
+
+  const setCharAt = (idx, char) => {
+    const next = Array(inputCount).fill('');
+    // start with current
+    digits.forEach((d, i) => { next[i] = d || ''; });
+    next[idx] = char;
+    commit(next);
+  };
+
+  const handleChange = (text, index) => {
+    const onlyDigits = (text || '').replace(/[^0-9]/g, '');
+    if (onlyDigits.length === 0) {
+      setCharAt(index, '');
+      return;
+    }
+
+    // PASTE CASE: user pasted entire code or multiple digits
+    if (onlyDigits.length > 1) {
+      const next = Array(inputCount).fill('');
+      for (let i = 0; i < inputCount; i++) {
+        next[i] = onlyDigits[i] || '';
+      }
+      commit(next);
+      // focus last filled or last
+      const last = Math.min(onlyDigits.length, inputCount) - 1;
+      inputsRef.current[last]?.focus?.();
+      return;
+    }
+
+    // Single digit
+    setCharAt(index, onlyDigits);
+    // move to next
+    if (index < inputCount - 1) {
+      inputsRef.current[index + 1]?.focus?.();
+    } else {
+      // Last box – blur to trigger autofill suggestions to hide
+      inputsRef.current[index]?.blur?.();
+    }
+  };
+
+  const handleKeyPress = (e, index) => {
+    if (e.nativeEvent.key === 'Backspace') {
+      if (!digits[index]) {
+        // Move to previous if empty
+        if (index > 0) inputsRef.current[index - 1]?.focus?.();
+      } else {
+        // Clear current
+        setCharAt(index, '');
+      }
+    } else if (e.nativeEvent.key === 'ArrowLeft' && index > 0) {
+      inputsRef.current[index - 1]?.focus?.();
+    } else if (e.nativeEvent.key === 'ArrowRight' && index < inputCount - 1) {
+      inputsRef.current[index + 1]?.focus?.();
+    }
+  };
+
+  const handleFocus = (index) => {
+    // Place cursor at end on Android (cosmetic)
+    if (Platform.OS === 'android') {
+      setTimeout(() => inputsRef.current[index]?.setNativeProps?.({selection: {start: 1, end: 1}}), 0);
+    }
+  };
+
+  const borderTint = (index, focused) => {
+    const base = tintArray[index];
+    if (focused) return focusedBorderColor || base || styles.input.borderColor;
+    return base || styles.input.borderColor;
+  };
+
+  return (
+    <Pressable
+      onPress={() => inputsRef.current.find(i => i && i.isFocused && i.isFocused()) ? null : inputsRef.current[0]?.focus?.()}
+      style={[styles.container, containerStyle]}
+      accessibilityRole="adjustable"
+      accessibilityLabel="One Time Password input"
+      accessibilityHint={`Enter ${inputCount}-digit code`}
+    >
+      {Array.from({length: inputCount}).map((_, index) => (
+        <Box
+          key={index}
+          index={index}
+          value={digits[index] || ''}
+          inputRef={(r) => (inputsRef.current[index] = r)}
+          onChangeText={(t) => handleChange(t, index)}
+          onKeyPress={(e) => handleKeyPress(e, index)}
+          onFocus={() => handleFocus(index)}
+          keyboardType={keyboardType}
+          textContentType={textContentType}
+          autoComplete={autoComplete}
+          inputStyle={inputStyle}
+          focusedBorderColor={focusedBorderColor}
+          borderTintProvider={(focused) => borderTint(index, focused)}
+          secureTextEntry={secureTextEntry}
+          editable={editable}
+          // Autofill hints mainly respected on the *first* input for iOS
+          importantForAutofill={index === 0 ? 'yes' : 'no'}
+          autoFocus={autoFocus && index === 0}
+        />
+      ))}
+    </Pressable>
+  );
+};
+
+const Box = ({
+  value,
+  inputRef,
+  onChangeText,
+  onKeyPress,
+  onFocus,
+  keyboardType,
+  textContentType,
+  autoComplete,
+  inputStyle,
+  borderTintProvider,
+  secureTextEntry,
+  editable,
+  importantForAutofill,
+  autoFocus,
+}) => {
+  const [focused, setFocused] = useState(false);
+
+  return (
+    <TextInput
+      ref={inputRef}
+      value={value}
+      onChangeText={onChangeText}
+      onKeyPress={onKeyPress}
+      onFocus={() => { setFocused(true); onFocus?.(); }}
+      onBlur={() => setFocused(false)}
+      keyboardType={keyboardType}
+      textContentType={textContentType}
+      autoComplete={autoComplete}
+      autoCapitalize="none"
+      autoCorrect={false}
+      maxLength={1}
+      secureTextEntry={secureTextEntry}
+      editable={editable}
+      importantForAutofill={importantForAutofill}
+      autoFocus={autoFocus}
+      style={[
+        styles.input,
+        { borderColor: borderTintProvider(focused) },
+        inputStyle,
+      ]}
+      // iOS hint for code autofill
+      // Android 13+ also respects 'sms-otp' / 'oneTimeCode'
+      inputMode="numeric"
+      // Prevent iOS from showing predictive bar
+      contextMenuHidden
+      selectTextOnFocus
+      // Visually center the digit
+    />
+  );
+};
+
+OTPInput.propTypes = {
+  inputCount: PropTypes.number,
+  value: PropTypes.string,
+  onChange: PropTypes.func,
+  onComplete: PropTypes.func,
+  autoFocus: PropTypes.bool,
+  containerStyle: PropTypes.any,
+  inputStyle: PropTypes.any,
+  focusedBorderColor: PropTypes.string,
+  tintColor: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
+  keyboardType: PropTypes.string,
+  textContentType: PropTypes.string,
+  autoComplete: PropTypes.string,
+  secureTextEntry: PropTypes.bool,
+  editable: PropTypes.bool,
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 8,
+  },
+  input: {
+    width: 40,
+    height: 60,
+    borderWidth: 1,
+    borderColor: 'gray',
+    borderRadius: 5,
+    textAlign: 'center',
+    fontSize: 20,
+  },
+});
+
+export default OTPInput;

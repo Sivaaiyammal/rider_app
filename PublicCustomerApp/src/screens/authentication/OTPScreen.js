@@ -16,6 +16,7 @@ import DeviceInfo from 'react-native-device-info';
 import PropTypes from 'prop-types';  
 import { GlobalContext } from '../../context/GlobalContext';
 import useRideMatching from '../../hooks/useRideMatching';
+import OTPInput from '../../components/Common/OTPInput';
 // Utility function to mask phone number
 const maskPhoneNumber = (phoneNumber) => {
   if (!phoneNumber || phoneNumber.length < 5) return phoneNumber;
@@ -209,35 +210,34 @@ const OTPScreen = ({route}) => {
       
 
       <View style={loginStyles.otpContainer}>
-        <OTPTextInput
-          ref={otpRef}
-          inputCount={6}
-          textInputStyle={{
-            width: 40,
-            height: 60,
-            borderColor: 'gray',
-            borderWidth: 1,
-            margin: 5,
-            borderRadius: 5,
-            color: colors.black,
-          }}
-          handleTextChange={onOtpChange}
-          focusedBorderColor="#2785ff"
-          autoFocus={true}
-          keyboardType="number-pad"
-          textContentType="oneTimeCode"
-          autoComplete="sms-otp"
-          tintColor={[
-            colors.blue_xxdark,
-            colors.blue_xxdark,
-            colors.blue_xxdark,
-            colors.blue_xxdark,
-            colors.blue_xxdark,
-            colors.blue_xxdark,
-          ]}
-        />
+      <OTPInput
+   inputCount={6}
+  onChange={onOtpChange}
+  onComplete={(code) => setOtpInput(code)}  // your effect will auto-verify when length===6
+  autoFocus
+  keyboardType="number-pad"
+  textContentType="oneTimeCode"
+  autoComplete="sms-otp"
+  focusedBorderColor={colors.blue_xxdark}
+  tintColor={[
+    colors.grey_xdark,
+    colors.grey_xdark ,
+    colors.grey_xdark,
+    colors.grey_xdark,
+    colors.grey_xdark,
+    colors.grey_xdark,
+  ]}
+  inputStyle={{
+    width: 40,
+    height: 60,
+    borderWidth: 1,
+    margin: 5,
+    borderRadius: 5,
+     color: colors.black,
+   }}
+ />
       </View>
-      <TouchableOpacity onPress={()=>resendOTP()}>
+      <TouchableOpacity onPress={()=> isButtonDisabled ? null : resendOTP()}>
       <Text style={loginStyles.resendOTP}>Resend OTP {isButtonDisabled ? `in ${timer}` : null}</Text>
       </TouchableOpacity>
       <TouchableOpacity style={loginStyles.otpBtn} onPress={() => verifyOtp()}>

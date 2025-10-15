@@ -31,12 +31,13 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
   const {stops,otp,duration,totalDistance,vehicleType,estimatedFare,paymentMethod} = useCurrentRideInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setMapStyle} = useMapStyleStore();
+  
   const {t} = useTranslation();
   const {waitingForDriverApproval} = useWayPointReorderStore();
   // Initialize tracking hook for driver arrival screen with polyline support
 
   const {markersList} = useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"pickup",driverAngle);
-  const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destinationlat:stops[0].location[1],destinationlon:stops[0].location[0],driverLat:driverLatitude,driverLon:driverLongitude})  
+  const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destinationlat:stops?.length > 0 ? stops[0].location[1] : 0,destinationlon:stops?.length > 0 ? stops[0].location[0] : 0,driverLat:driverLatitude,driverLon:driverLongitude})  
   const {userdetails} = useUserInfoStore();
 
   
@@ -177,11 +178,11 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
         <View style={{flex:1,gap:5,paddingVertical:10}}>
           <Text style={{ color: '#888', fontSize: 13,fontFamily:Fonts.regular }}>{t('pickup_location')}</Text>
           <Text style={{ color: '#222', fontSize: 15,maxWidth:"90%",fontFamily:Fonts.regular,textAlign:'left' }} numberOfLines={1} ellipsizeMode="tail">
-            {stops[0]?.address}
+            {stops?.length > 0 ? stops[0]?.address : '--'}
           </Text>
         </View>
           <TouchableOpacity style={{borderColor: '#4289e5', borderWidth:1, borderRadius: 8, paddingVertical: 8, paddingHorizontal: 12 }} onPress={()=>{
-            handleChangeLocation(stops[0])
+            handleChangeLocation(stops?.length > 0 ? stops[0] : null)
           }}>
           <Text style={{ color:colors.blue, fontSize: 14, fontFamily:Fonts.regular }}>{t('change')}</Text>
         </TouchableOpacity>
@@ -209,7 +210,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
       <TripDetailsModal
         visible={expanded}
         onClose={toggleExpand}
-        stops={stops}
+        stops={stops?.length > 0 ? stops : []}
         waitingForDriverApproval={waitingForDriverApproval}
         height={height} // You can adjust this value or import height from utils
         onCancel={onCancel}

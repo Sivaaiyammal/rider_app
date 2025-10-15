@@ -74,14 +74,10 @@ class NEMap extends Component {
       this.triggerResize();
     });
 
-    // Navigation ready event handling
+    // Navigation ready event handling (do not flip mapLoaded here)
     this.navigationReadyListener = DeviceEventEmitter.addListener("onNavigationReady", () => {
       this.props.onMapReady?.();
       setTimeout(() => {
-        this.setState(prevState => ({
-          ...prevState,
-          mapLoaded: true
-        }));
         this.triggerResizeNav()
       }, 100)
     });
@@ -211,14 +207,10 @@ class NEMap extends Component {
     this.userLocationChangeListener.remove();
     this.directionReadyListener.remove();
     this.directionInitListener.remove();
-    // this.routeLoadingListener.remove();
-    this.nativeErrorListener.remove();
-    this.navigationErrorListener.remove();
     this.markerClickListener.remove();
     this.onMapDblclickListener.remove();
     this.navigationReadyListener.remove();
     this.distanceListner.remove();
-    NeNativeModule.endNavigation();
    
   
     setDirectionPoints(null)
@@ -262,7 +254,7 @@ class NEMap extends Component {
               : null
           }
           autoPOISearch={this.props.autoPOISearch}
-          mode={this.props.mode}
+          {...(this.state.mapLoaded ? { mode: this.props.mode } : {})}
           settingsProps={this.props.settingsProps}
           searchUnit={this.props.searchUnit}
           geometries={this.state.mapLoaded ? this.props.geometries : null}
@@ -272,7 +264,7 @@ class NEMap extends Component {
               : null
           }
           navigation={this.props.navigation}
-          bounds={this.props.bounds}
+          {...(this.state.mapLoaded ? { bounds: this.props.bounds } : {})}
         />
       </>
     ) : (

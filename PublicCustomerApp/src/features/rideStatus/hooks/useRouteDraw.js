@@ -13,7 +13,9 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
     const [originalDistance, setOriginalDistance] = useState(0);
     const [originalDuration, setOriginalDuration] = useState(0);
 	const { setGeometries, setMapBounds } = useMapStore();
-
+    console.log("destinationlat",destinationlat,destinationlon)
+	console.log("driverLat",driverLat,driverLon)
+	console.log("remainingStops",remainingStops)
 	// Reset diversion state when destination changes so next DrawRoute fetches fresh route
 	useEffect(() => {
 		if (destinationlat == null || destinationlon == null) return;
@@ -32,12 +34,16 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 		// Immediately reflect the updated remaining-stops polyline on the map
 		// so UI updates without waiting for the next driver position tick.
 		setGeometries([remainingStops]);
+		console.log("remainingStops",remainingStops)
 		// Adjust bounds to the stops polyline if available
 		if (remainingStops?.coordinates && remainingStops.coordinates.length > 1) {
 			const bounds = utils.getBoundingBox(remainingStops.coordinates);
 			if (bounds) {
 				const margin = [20,100,20,500];
-				setMapBounds([bounds, margin]);
+				console.log("bounds",bounds,margin)
+				const finalBounds = [bounds, margin]
+				console.log("finalBounds",finalBounds)
+				setMapBounds(finalBounds);
 			}
 		}
 	}, [remainingStops]);
@@ -238,6 +244,7 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
         const margin = [20,100,20,500]
         // Structure bounds properly: [bounds, margin] where bounds is [minLon, minLat, maxLon, maxLat]
         const finalBounds = [bounds, margin]
+		console.log("finalBounds",finalBounds)
         setMapBounds(finalBounds);
 		
     }

@@ -64,9 +64,9 @@ const RideStatus = () => {
     try{
     const response = await cancelRide(payload);
     console.log('response',response)
-      if (response.success && !response?.message === 'Not OnGoing Trip') {
+    if (response.success) {
         showNotification('Ride cancelled successfully');
-        setShowBottomSheet(false);
+       
         setShowBookingCancelModel(false);
         incrementCancelledTrips()
 
@@ -82,6 +82,7 @@ const RideStatus = () => {
           goBack();
         } 
       }
+      
     }
     catch (error) {
       console.error("Error cancelling ride:", error);
@@ -90,7 +91,7 @@ const RideStatus = () => {
   }
   const handleCancel = async (reason) => {
     
-      if(tripStatus == TripStatus.PENDING){
+      if(tripStatus === TripStatus.PENDING){
         await DataStore.clearData(PREF.CURRENT_TRIP)
         stopMatching(tripId,userId)
         resetCurrentRideInfo();
@@ -206,6 +207,7 @@ const RideStatus = () => {
     
        await CancelRide(payload);
   }
+  setShowBottomSheet(false);
   };
 
 

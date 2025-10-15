@@ -108,7 +108,7 @@ import com.dot.nenativemap.search.SearchData;
 
 public class NeNativeModule extends ViewGroupManager<MapView> implements LifecycleEventListener {
     public static final String REACT_CLASS = "NeNativeModule";
-    private int mapLoaded = 1;
+    private int mapLoaded = 0;
     private MapView mapView;
     private String navMode = "realtime";
     private MapController mapController;
@@ -138,6 +138,15 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     private HashMap<String, String> markerTextures = new HashMap<>();
 
     private int[] routeMargins = new int[]{50, 50, 50, 700};
+
+    // Stores a requested mode until the map scene is ready
+    private String pendingMode = null;
+    // Stores a requested bounds until the map scene is ready
+    private ReadableArray pendingBounds = null;
+    // Stores a requested route until the map scene is ready
+    private ReadableMap pendingRoute = null;
+    // Stores a requested homeLocation until the map scene is ready
+    private ReadableArray pendingHomeLocation = null;
 
     private TouchInput.TapResponder tapResponder = new TouchInput.TapResponder() {
         @Override
@@ -172,7 +181,39 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             mapView.onResume();
             Log.e("RESUME", "RESUME");
         }
-
+        // Try to apply any pending props on resume if controller is ready
+        if (mapController != null && mapLoaded == 1) {
+            // pending mode
+            if (pendingMode != null) {
+                try {
+                    String mapStyleString = pendingMode.equals("light") ? "DAY2" : "NIGHT2";
+                    MapController.MapStyle mapStyle = MapController.MapStyle.valueOf(mapStyleString);
+                    mapController.setMapStyle(mapStyle);
+                } catch (Throwable t) {
+                    Log.e("NeNativeModule", "Failed to apply pending mode on resume", t);
+                } finally {
+                    pendingMode = null;
+                }
+            }
+            // pending home
+            if (pendingHomeLocation != null) {
+                try { setHomeLocation(mapView, pendingHomeLocation); } catch (Throwable t) {
+                    Log.e("NeNativeModule", "Failed to apply pending home on resume", t);
+                } finally { pendingHomeLocation = null; }
+            }
+            // pending bounds
+            if (pendingBounds != null) {
+                try { applyBounds(pendingBounds); } catch (Throwable t) {
+                    Log.e("NeNativeModule", "Failed to apply pending bounds on resume", t);
+                } finally { pendingBounds = null; }
+            }
+            // pending route
+            if (pendingRoute != null) {
+                try { findRoute(mapView, pendingRoute); } catch (Throwable t) {
+                    Log.e("NeNativeModule", "Failed to apply pending route on resume", t);
+                } finally { pendingRoute = null; }
+            }
+        }
     }
 
     @ReactMethod
@@ -311,6 +352,48 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                                 Log.e("AJIN", "" + sceneId);
                                 mapLoaded = 1;
                                 initSearch("southern-zone", "India Southern Zone");
+                                // Apply any pending map mode requested before scene was ready
+                                if (pendingMode != null) {
+                                    try {
+                                        String mapStyleString = pendingMode.equals("light") ? "DAY2" : "NIGHT2";
+                                        MapController.MapStyle mapStyle = MapController.MapStyle.valueOf(mapStyleString);
+                                        mapController.setMapStyle(mapStyle);
+                                    } catch (Throwable t) {
+                                        Log.e("NeNativeModule", "Failed to apply pending mode", t);
+                                    } finally {
+                                        pendingMode = null;
+                                    }
+                                }
+                                // Apply any pending bounds
+                                if (pendingBounds != null) {
+                                    try {
+                                        applyBounds(pendingBounds);
+                                    } catch (Throwable t) {
+                                        Log.e("NeNativeModule", "Failed to apply pending bounds", t);
+                                    } finally {
+                                        pendingBounds = null;
+                                    }
+                                }
+                                // Apply any pending homeLocation
+                                if (pendingHomeLocation != null) {
+                                    try {
+                                        setHomeLocation(mapView, pendingHomeLocation);
+                                    } catch (Throwable t) {
+                                        Log.e("NeNativeModule", "Failed to apply pending homeLocation", t);
+                                    } finally {
+                                        pendingHomeLocation = null;
+                                    }
+                                }
+                                // Apply any pending route
+                                if (pendingRoute != null) {
+                                    try {
+                                        findRoute(mapView, pendingRoute);
+                                    } catch (Throwable t) {
+                                        Log.e("NeNativeModule", "Failed to apply pending route", t);
+                                    } finally {
+                                        pendingRoute = null;
+                                    }
+                                }
                                 reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                                         .emit("onMapReady", new WritableNativeMap());
                             }
@@ -423,16 +506,34 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     @ReactProp(name = "mode")
     public void setMode(MapView mapView, String mode) {
-        if (mapController != null) {
+        // If controller or scene is not ready, store requested mode to apply later
+        if (mapController == null || mapLoaded == 0) {
+            pendingMode = mode;
+            return;
+        }
+        try {
             String mapStyleString = mode.equals("light") ? "DAY2" : "NIGHT2";
             MapController.MapStyle mapStyle = MapController.MapStyle.valueOf(mapStyleString);
             mapController.setMapStyle(mapStyle);
+        } catch (Throwable t) {
+            // If the underlying controller pointer became invalid (e.g., after process death),
+            // cache the mode and let it apply after a fresh controller is created
+            Log.e("NeNativeModule", "setMode failed; deferring", t);
+            pendingMode = mode;
         }
     }
 
     @ReactProp(name = "homeLocation")
     public void setHomeLocation(MapView mapView, ReadableArray location) {
-        if (mapController != null && location != null) {
+        if (location == null) {
+            return;
+        }
+        if (mapController == null || mapLoaded == 0) {
+            // cache until ready
+            try { pendingHomeLocation = location; } catch (Throwable ignored) {}
+            return;
+        }
+        try {
             Log.e("homeLocation", "location: " + location);
             ReadableMap homeLocation = location.getMap(0);
             CameraPosition camera = mapController.getCameraPosition();
@@ -440,25 +541,39 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             camera.latitude = homeLocation.getDouble("lat");
             camera.zoom = homeLocation.getInt("zoom");
             mapController.flyToCameraPosition(camera, 1000, null);
+        } catch (Throwable t) {
+            Log.e("NeNativeModule", "setHomeLocation failed; deferring", t);
+            try { pendingHomeLocation = location; } catch (Throwable ignored) {}
         }
-
     }
 
     // Add this method to handle cleanup when the component unmounts
 
     public void onDropViewInstance(MapView view) {
-        if (mapController != null) {
-            // Release any resources here if needed
-            mapView.onDestroy(); // For example, to clean up the MapView
-            mapController = null;
-            mapView = null;
-            addedPolylines = new HashSet<>();
-            directions.getInstance().onDestroy();
-            directions = null;
-//            navigator = null;
-            // routeInstructionsDisplay=null;
+        if (mapView != null) {
+            try {
+                mapView.onDestroy();
+            } catch (Throwable t) {
+                Log.e("NeNativeModule", "Error destroying mapView", t);
+            }
         }
-
+        mapController = null;
+        mapView = null;
+        addedPolylines = new HashSet<>();
+        pendingMode = null;
+        pendingBounds = null;
+        pendingRoute = null;
+        pendingHomeLocation = null;
+        mapLoaded = 0;
+        if (directions != null) {
+            try {
+                directions.getInstance().onDestroy();
+            } catch (Throwable t) {
+                Log.e("NeNativeModule", "Error destroying directions", t);
+            }
+        }
+        directions = null;
+        // routeInstructionsDisplay=null;
     }
     public Integer getMarkerDrawable(String type) {
         switch (type) {
@@ -730,8 +845,10 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     @ReactProp(name = "polylines")
     public void setPolylines(MapView mapView, ReadableArray polylines) {
-
-        if (mapController != null) {
+        if (mapController == null || mapLoaded == 0) {
+            return;
+        }
+        try {
             // For every props update remove all previous polylines
             // Because the native code does not provide functionality to edit or delete
             // indiividual polylines
@@ -775,30 +892,46 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     }
                 }
             }
+        } catch (Throwable t) {
+            Log.e("NeNativeModule", "setPolylines failed", t);
         }
     }
 
     @ReactProp(name="bounds")
     public void zoomToBounds(MapView mapview, ReadableArray boundData){
-        if(boundData==null){
+        if (boundData == null) {
             return;
         }
-        if(mapController==null){
+        // Defer until controller and scene ready
+        if (mapController == null || mapLoaded == 0) {
+            pendingBounds = boundData;
             return;
         }
+        try {
+            applyBounds(boundData);
+        } catch (Throwable t) {
+            Log.e("NeNativeModule", "zoomToBounds failed; deferring", t);
+            pendingBounds = boundData;
+        }
+    }
+
+    // Helper to apply bounds safely when controller is valid
+    private void applyBounds(ReadableArray boundData) {
+        if (mapController == null || boundData == null) return;
         ReadableArray bounds = boundData.getArray(0);
         ReadableArray margin = boundData.getArray(1);
-
         double minLon = bounds.getDouble(0);
         double minLat = bounds.getDouble(1);
-
         double maxLon = bounds.getDouble(2);
         double maxLat = bounds.getDouble(3);
-
         mapController.updateCameraPosition(
-            CameraUpdateFactory.newLngLatBounds(new LngLat(minLon, minLat), new LngLat(maxLon, maxLat),
-                    new Rect(margin.getInt(0), margin.getInt(1), margin.getInt(2), margin.getInt(3))),500);
-        Log.d("ZOOM", "HELLWO  22");
+                CameraUpdateFactory.newLngLatBounds(
+                        new LngLat(minLon, minLat),
+                        new LngLat(maxLon, maxLat),
+                        new Rect(margin.getInt(0), margin.getInt(1), margin.getInt(2), margin.getInt(3)
+                        )
+                ), 500
+        );
     }
 
     public void renderPolyline(ReadableMap polyline) {
@@ -914,7 +1047,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     @ReactProp(name = "geometries")
     public void setGeometries(MapView mapView, ReadableArray geometries) {
-        if (mapController == null) return;
+        if (mapController == null || mapLoaded == 0) return;
         if (geometries == null) {
             mapController.clearLines();
             return;
@@ -935,8 +1068,13 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     @ReactProp(name = "findRoute")
     public void findRoute(MapView mapView, ReadableMap routeData) {
-        
+        // Defer until controller and scene ready
+        if (routeData != null && (mapController == null || mapLoaded == 0)) {
+            pendingRoute = routeData;
+            return;
+        }
         if (mapView != null && routeData != null && mapController != null) {
+            try {
             ReadableArray locationArray = routeData.getArray("locations");
             String type = routeData.getString("type");
 
@@ -1116,9 +1254,11 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
             double currBearingInDegrees = 0;
             directions.getInstance().getRouteAsync(reactNativeContext, request, currBearingInDegrees);
-
-
-
+            } catch (Throwable t) {
+                Log.e("NeNativeModule", "findRoute failed; deferring", t);
+                pendingRoute = routeData;
+                return;
+            }
         } else {
             Log.e("routeLOG", "inside remove 1");
 

@@ -736,7 +736,7 @@ const styles = StyleSheet.create({
         
     },
     CouponText:{
-        fontSize:16,
+        fontSize:14,
         fontFamily:Fonts.regular,
         color:colors.black,
     },
