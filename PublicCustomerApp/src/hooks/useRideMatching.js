@@ -29,14 +29,15 @@ const useRideMatching = () => {
   /**
    * Initialize socket connection for ride matching
    */
-  const initializeSocket = useCallback(async () => {
-    if (socketInitializedRef.current || !userId) {
+  const initializeSocket = useCallback(async (uid) => {
+    if (socketInitializedRef.current || !uid) {
+      console.log('userId',userId)
       return false;
     }
-
+    
     try {
       console.log('🔌 Initializing ride matching socket...');
-      const connected = await rideMatchingSocketService.initSocket(userId);
+      const connected = await rideMatchingSocketService.initSocket(uid);
       
       if (connected) {
         console.log('✅ Ride matching socket initialized successfully');

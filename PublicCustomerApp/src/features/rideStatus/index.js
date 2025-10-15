@@ -63,29 +63,23 @@ const RideStatus = () => {
   const CancelRide = async (payload) => {
     try{
     const response = await cancelRide(payload);
-      
-
-      if (response.success) {
+    console.log('response',response)
+      if (response.success && !response?.message === 'Not OnGoing Trip') {
         showNotification('Ride cancelled successfully');
         setShowBottomSheet(false);
         setShowBookingCancelModel(false);
-
-        
-        
-
         incrementCancelledTrips()
 
         if (tripStatus === TripStatus.PICKEDUP && response?.totalFare?.fareDetails?.fare) {
           setOngoingingTripCancelled(true);
 
           setStackScreen('PaymentScreen',{})
-          
-
+    
         } else {
-         await DataStore.clearData(PREF.CURRENT_TRIP)
+          console.log('tripStatus',tripStatus)
+          await DataStore.clearData(PREF.CURRENT_TRIP)
           resetCurrentRideInfo();
           goBack();
-          
         } 
       }
     }

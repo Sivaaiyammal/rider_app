@@ -176,7 +176,7 @@ export default function TripFeedbackScreen() {
               
                 <View style={styles.RideInfoContainerBox}>
                     <AdaptiveText style={styles.RideInfoText}>
-                        {typeof tripDistance === 'number' ? tripDistance.toFixed(1) : '--'} Km  .  {utils.formatMinutesToReadable(tripDuration)}
+                        {typeof tripDistance === 'number' ? tripDistance.toFixed(1) : '0'} Km  .  {utils.formatMinutesToReadable(tripDuration)}
                     </AdaptiveText>
 
                 </View>

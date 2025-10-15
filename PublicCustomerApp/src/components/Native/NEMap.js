@@ -5,6 +5,7 @@ import { requireNativeComponent, View } from 'react-native';
 import { DeviceEventEmitter } from 'react-native';
 import PropTypes from 'prop-types';
 import { NativeModules } from 'react-native';
+import useMapStore from '../../features/map/store/useMapStore';
 // This component wraps a native map module called 'NeNativeModule' and provides a React interface to it
 const MapView = requireNativeComponent('NeNativeModule');
 const { NeNativeModule } = NativeModules;
@@ -202,6 +203,25 @@ class NEMap extends Component {
   componentWillUnmount() {
     this.mapReadyListener.remove();
     this.mapClickListener.remove();
+    const {setDirectionPoints} = useMapStore.getState()
+    console.log("Map unmounted")
+    // Don't forget to remove the listener to avoid memory leaks
+    this.mapReadyListener.remove();
+    this.mapClickListener.remove();
+    this.userLocationChangeListener.remove();
+    this.directionReadyListener.remove();
+    this.directionInitListener.remove();
+    // this.routeLoadingListener.remove();
+    this.nativeErrorListener.remove();
+    this.navigationErrorListener.remove();
+    this.markerClickListener.remove();
+    this.onMapDblclickListener.remove();
+    this.navigationReadyListener.remove();
+    this.distanceListner.remove();
+    NeNativeModule.endNavigation();
+   
+  
+    setDirectionPoints(null)
   }
 
   getmapReady() {

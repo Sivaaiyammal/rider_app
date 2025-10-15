@@ -15,6 +15,7 @@ import messaging from '@react-native-firebase/messaging';
 import DeviceInfo from 'react-native-device-info';  
 import PropTypes from 'prop-types';  
 import { GlobalContext } from '../../context/GlobalContext';
+import useRideMatching from '../../hooks/useRideMatching';
 // Utility function to mask phone number
 const maskPhoneNumber = (phoneNumber) => {
   if (!phoneNumber || phoneNumber.length < 5) return phoneNumber;
@@ -29,6 +30,7 @@ const maskPhoneNumber = (phoneNumber) => {
 const OTPScreen = ({route}) => {
   const navigation = useNavigation();
   const {addListener} = useContext(GlobalContext);
+  const { initializeSocket} = useRideMatching();
   const [loginPhoneNumber] = useState(
     route.params.phoneNumber,
   );
@@ -72,6 +74,7 @@ const OTPScreen = ({route}) => {
         await DataStore.storeData('access_token', user?.token);
         addListener(user?.token);
         await DataStore.storeData('userdetails', user);
+      
         
         if (isNewUser) {
           navigation.dispatch(

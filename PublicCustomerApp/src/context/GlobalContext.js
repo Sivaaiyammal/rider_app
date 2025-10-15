@@ -5,11 +5,13 @@ import {useColorScheme} from 'react-native';
 import { DataStore } from '../controllers/DataStore';
 import wsService from '../controllers/SocketServices';
 import { lightTheme, darkTheme } from '../constants/theme';
+import useRideMatching from '../hooks/useRideMatching';
 
 export const GlobalContext = createContext();
 
 export const ContextProvider = ({children}) => {
   const systemColorScheme = useColorScheme();
+  
   const [theme, setTheme] = useState(() => {
     // Initialize with device theme immediately
     return systemColorScheme === 'dark' ? darkTheme : lightTheme;
@@ -100,7 +102,7 @@ export const ContextProvider = ({children}) => {
     try {
       // Initialize main socket service
       await wsService.initSocket(token);
-      
+    
       // Initialize ride matching socket service (optional)
      
     } catch (error) {

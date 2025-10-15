@@ -1,11 +1,14 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import useBookingService from '../services/useBookingService';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
 import { setDummyDriverInfo } from '../../rideStatus/store/useAssignedDriverInfoStore';
 import { DataStore } from '../../../controllers/DataStore';
 import PREF from '../../../storage/PREF';
-
+import { showNotification } from '../../../components/NotificationManger';
+import { useTranslation } from 'react-i18next';
+import useRideMatching from '../../../hooks/useRideMatching';
+import useUserInfoStore from '../../../store/useUserInfoStore';
 /**
  * Simple hook for booking trips with navigation handling
  * @returns {Object} Booking functions and state
@@ -14,7 +17,11 @@ import PREF from '../../../storage/PREF';
 
 const useBookTrip = () => {
   const { setStackScreen } = useStackScreenStore();
+  const [loading, setLoading] = useState(false);
   const { setCurrentRideInfo } = useCurrentRideInfoStore();
+  const { t } = useTranslation();
+  const { initializeSocket, startMatching } = useRideMatching();
+  const { id: userId } = useUserInfoStore();
   // Booking success callback - navigate to appropriate screen
   const handleBookingSuccess = useCallback((data) => {
       //  console.log('data', data)
@@ -41,22 +48,18 @@ const useBookTrip = () => {
    */
   const handleBookTrip = useCallback(async (customData = null) => {
     try {
-      // Check if booking is ready
-      if (!bookingService.isBookingReady()) {
-        const errors = bookingService.getBookingValidationErrors();
-       
-        return;
-      }
-
-      // Execute booking
+      setLoading(true);
+    
       const result = await bookingService.bookTrip(customData);
-
       
       if(result?.success && result?.trip){
         await DataStore.storeData(PREF.CURRENT_TRIP, result.trip?._id);
         setCurrentRideInfo(result.trip);
         setStackScreen('RideStatus', {
         });
+        showNotification(t('booking_successful'), t('your_ride_has_been_booked_successfully'), 'success'); 
+       
+        startMatching(result.tripId, userId,result?.trip?.vehicleType);
         return result;
       }
       return result;
@@ -64,6 +67,8 @@ const useBookTrip = () => {
     } catch (error) {
       console.error('Booking failed:', error);
       throw error;
+    } finally {
+      setLoading(false);
     }
   }, [bookingService]);
 
@@ -82,7 +87,7 @@ const useBookTrip = () => {
 
   return {
     // Booking state
-    isLoading: bookingService.isLoading,
+    isLoading: loading,
     isError: bookingService.isError,
     error: bookingService.error,
     data: bookingService.data,

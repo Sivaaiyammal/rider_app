@@ -48,6 +48,7 @@ import SearchAPI from '../controllers/NEMap/Search';
 import { useNavigation } from '@react-navigation/native';
 import { checkFineLocationPermissions } from '../controllers/PermissionHandler';
 import EmergencyHomeScreen from '../features/emergencyContact/screens/EmergencyHomeScreen';
+import useRideMatching from '../hooks/useRideMatching';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -127,7 +128,7 @@ const Home = () => {
   const { setMapShown , mapShown, setUserLocation} = useMapStore();
   const { setTarget } = useNearbyPollingControl();
   const { setConfig } = useConfigStore();
-  
+  const { initializeSocket} = useRideMatching();
 
   const hasInitialLocationProcessed = useRef(false);
   const lastProcessedKey = useRef(null);
@@ -355,6 +356,9 @@ const Home = () => {
       
       setUserdetails(userdetails.data);
       setID(userdetails.data._id);
+      if(userdetails.data._id){
+        await initializeSocket(userdetails.data._id);
+      }
     }
   
   }

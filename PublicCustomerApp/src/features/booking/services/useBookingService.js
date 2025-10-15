@@ -1,11 +1,10 @@
-import { useMutation } from 'react-query';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { bookRide } from '../../../API/EndPoints/EndPoints';
 import { showNotification } from '../../../components/NotificationManger';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import useRideBookingInfo from '../store/useRideBookingInfo';
 import useRideVehicleStore from '../store/useRideVehicleStore';
-import useRideMatching from '../../../hooks/useRideMatching';
 import useRideMatchStore from '../../rideStatus/store/useRideMatchStore';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
@@ -41,8 +40,8 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
   
   const { selectedVehicle } = useRideVehicleStore();
   const { resetRideMatchStatus } = useRideMatchStore();
-  const { initializeSocket, startMatching } = useRideMatching();
-  const { id: userId } = useUserInfoStore();
+  // const { initializeSocket, startMatching } = useRideMatching();
+  // const { id: userId } = useUserInfoStore();
   const { setCurrentRideInfo,setTripStatus } = useCurrentRideInfoStore();
   const { incrementTotalTrips } = useUserInfoStore();
   /**
@@ -135,50 +134,10 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
   /**
    * Booking mutation using react-query
    */
-  const bookingMutation = useMutation({
-    mutationFn: async (customPayload = null) => {
-      const payload = customPayload || prepareBookingPayload();
-      console.log('Booking payload:', JSON.stringify(payload));
-      
-      return await bookRide(payload);
-    },
-    onSuccess: async (data) => {
-      
-      
-      if (data.success) {
-
-        resetRideMatchStatus();  
-        showNotification(t('booking_successful'), t('your_ride_has_been_booked_successfully'), 'success'); 
-        setTripStatus(TripStatus.PENDING)      
-        await initializeSocket();
-        startMatching(data.tripId, userId,data?.trip?.vehicleType);
-        incrementTotalTrips()
-        setCurrentRideInfo(data)
-        
-      
-        
-        if (onSuccess) {
-          onSuccess(data);
-        }
-      } else {
-        showNotification(t('booking_failed'), data.message || t('failed_to_book_ride'), 'danger');
-        
-        if (onError) {
-          onError(data);
-        }
-      }
-    },
-    onError: (error) => {
-      console.error('Booking error:', error);
-      
-      const errorMessage = error?.message?.message || error?.message || t('failed_to_book_ride');
-      showNotification(t('booking_error'), errorMessage, 'danger');
-      
-      if (onError) {
-        onError(error);
-      }
-    }
-  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState(null);
+  const [data, setData] = useState(null);
 
   /**
    * Book trip with validation
@@ -199,14 +158,47 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       if (!paymentType) {
         throw new Error(t('please_select_payment_method'));
       }
+      setIsLoading(true);
+      setIsError(false);
+      setError(null);
 
-      // Execute booking mutation
-      return await bookingMutation.mutateAsync(customData);
+      const payload = customData || prepareBookingPayload();
+      console.log('Booking payload:', JSON.stringify(payload));
+
+      const response = await bookRide(payload);
+      setData(response);
+
+      if (response?.success) {
+        resetRideMatchStatus();
+        setTripStatus(TripStatus.PENDING);
+        incrementTotalTrips();
+        setCurrentRideInfo(response);
+
+        if (onSuccess) {
+          await onSuccess(response);
+        }
+      } else {
+        showNotification(
+          t('booking_failed'),
+          response?.message || t('failed_to_book_ride'),
+          'danger'
+        );
+        if (onError) {
+          await onError(response);
+        }
+      }
+
+      return response;
       
     } catch (error) {
       console.error('Booking validation error:', error);
-      showNotification(t('booking_error'), error.message, 'danger');
+      setIsError(true);
+      setError(error);
+      const errorMessage = error?.message?.message || error?.message || t('failed_to_book_ride');
+      showNotification(t('booking_error'), errorMessage, 'danger');
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -240,10 +232,10 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
 
   return {
     // Mutation state
-    isLoading: bookingMutation.isLoading,
-    isError: bookingMutation.isError,
-    error: bookingMutation.error,
-    data: bookingMutation.data,
+    isLoading,
+    isError,
+    error,
+    data,
     
     // Actions
     bookTrip,

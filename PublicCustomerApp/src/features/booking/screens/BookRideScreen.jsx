@@ -49,6 +49,7 @@ const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => 
     const {setStackScreen} = useStackScreenStore()
     const {rideStartLocation,rideEndLocation,rideWayPoints} = useRideBookingLocationStore()
     const {setMapBounds} = useMapStore()
+    const {availableVehicles} = useRideVehicleStore()
     
     const handleAddStop = () => {
        
@@ -62,7 +63,8 @@ const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => 
         
         const bounds = utils.getBoundingBox(coords)
        
-        const margin = [50, 100, 50, height*0.65]
+        // const margin = [50, 100, 50,height*0.65-availableVehicles?.length*50]
+        const margin = [50, 100, 50,height*0.65]
         // Structure bounds properly: [bounds, margin] where bounds is [minLon, minLat, maxLon, maxLat]
         const finalBounds = [bounds, margin]
         setMapBounds(finalBounds);
@@ -97,6 +99,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const {setAvailableVehicles,availableVehicles,setSelectedVehicle} = useRideVehicleStore()
     const [showPreference,setShowPreference] = useState(false)
     const [,setScrolledUntillBottom] = useState(false)
+    const [bottomSheetHeight,setBottomSheetHeight] = useState(350)
     
     // Use the direction load hook to transform ride locations to direction points
     const { 
@@ -218,7 +221,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
  
         // Debug earlier to verify transform time
         console.log("vehicleList")
-
+        setBottomSheetHeight(height*0.4 + vehicleList.length * 10)
         // Set store state in one pass to minimize renders
         useRideVehicleStore.setState({
             availableVehicles: vehicleList,
@@ -324,7 +327,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             const result = transformRideLocationsToDirectionPoints({
                 clearMarkers: true,
                 vehicleType: 'car',
-                padding:  [50, 50, 50, height*0.65]
+                padding:  [50, 50, 50, height*0.5]
             });
             console.log("directionEnded")
             if (result.success) {
@@ -428,9 +431,11 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
     </View>
 }
 
+
+
    </View>
    <BottomSheetWrapper
-        snapPoints={['60%']}
+        snapPoints={[bottomSheetHeight]}
         index={0}
         enablePanDownToClose={false}
         enableOverDrag={true}
@@ -455,7 +460,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
    </BottomSheetWrapper>
  
           <View style={styles.bottomContainer}>
-          <ScrollHintChevron direction='down' style={{ top: -30, alignSelf: 'center' }} />
+         { availableVehicles?.length >3 && <ScrollHintChevron direction='down' style={{ top: -30, alignSelf: 'center' }} />}
               <TouchableOpacity style={styles.CouponContainer} onPress={handleCouponPress}>
                  {!couponCode ? (
                    <>

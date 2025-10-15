@@ -75,7 +75,7 @@ const CancelComponent = ({ onClose, onCancel, loading,rideStatus }) => {
       <AdaptiveText style={styles.title}>{t('why_are_you_cancelling_the_trip')}</AdaptiveText>
       <View style={styles.box}>
         <ScrollView>
-          {getReasons(rideStatus).map((reason) => (
+          {getReasons(rideStatus)?.map((reason) => (
             <TouchableOpacity
               key={reason}
               style={styles.row}

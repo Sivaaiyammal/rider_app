@@ -89,7 +89,7 @@ const MapContainer = ({ mapStyle }) => {
         searchUnit={searchStr}
         autoPOISearch={searchPOI}
         settingsProps={defaultSettings}
-        bounds={mapBounds}
+        bounds={mapBounds?.length > 0 ? mapBounds : null}
         onSearchResults={setOnSearchResults}
         onSearchPOIResults={setSearchPOIResults}
         mode={mode}
