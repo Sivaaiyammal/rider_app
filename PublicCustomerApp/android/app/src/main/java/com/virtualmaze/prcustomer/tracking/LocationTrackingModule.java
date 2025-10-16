@@ -5,6 +5,7 @@ import android.os.Build;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -41,7 +42,11 @@ public class LocationTrackingModule extends ReactContextBaseJavaModule {
       }
     };
     IntentFilter f = new IntentFilter("com.virtualmaze.prcustomer.tracking.STOPPED");
-    ctx.registerReceiver(stopReceiver, f);
+    if (Build.VERSION.SDK_INT >= 33) {
+      ctx.registerReceiver(stopReceiver, f, Context.RECEIVER_NOT_EXPORTED);
+    } else {
+      ctx.registerReceiver(stopReceiver, f);
+    }
   }
 
   @NonNull
@@ -108,5 +113,16 @@ public class LocationTrackingModule extends ReactContextBaseJavaModule {
     } catch (Exception e) {
       promise.reject("E_STATUS", e);
     }
+  }
+
+  @Override
+  public void onCatalystInstanceDestroy() {
+    super.onCatalystInstanceDestroy();
+    try {
+      if (stopReceiver != null) {
+        getReactApplicationContext().unregisterReceiver(stopReceiver);
+      }
+    } catch (IllegalArgumentException ignored) {}
+    stopReceiver = null;
   }
 }
