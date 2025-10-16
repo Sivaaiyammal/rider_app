@@ -13,16 +13,12 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
     const [originalDistance, setOriginalDistance] = useState(0);
     const [originalDuration, setOriginalDuration] = useState(0);
 	const { setGeometries, setMapBounds } = useMapStore();
-	
 	useEffect(() => {
 		if (destinationlat == null || destinationlon == null) return;
 		setIsDiverted(true);
 		currentPolylineRef.current = [];
 		setRemainingDistance(0);
-		
 	}, [destinationlat, destinationlon]);
-
-	
 	useEffect(() => {
 		if (!remainingStops) return;
 		setIsDiverted(true);

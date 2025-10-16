@@ -157,6 +157,12 @@ export const deleteAccount = async (payload) => {
     return data
   }
 
+  // Trigger SOS
+  export const triggerSOS = async (payload) => {
+    const { data } = await apiClient.post('/publicrides/customer/sosTriggered', payload)
+    return data
+  }
+
 
 
 

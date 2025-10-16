@@ -1,21 +1,24 @@
 import React from "react";
-import { View, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity, Text } from "react-native";
 import MapIcon from "../../../components/Map/MapIcon";
 import { StyleSheet } from "react-native";
 import { Fonts ,colors} from "../../../constants/constants";
 import CurrentLocationIcon from "../../../assets/icons/CurrentLocationIcon.svg";
 
-const StatusConatainerWrapper = ({ children,backgroundColor ,onMapIconPress}) => {
+const StatusConatainerWrapper = ({ children,backgroundColor ,onMapIconPress ,onSOSClick = null}) => {
     return (
         <>
             <View style={[styles.containerTop]}>
                 <View style={[styles.containerTop_inner]}>
                     <MapIcon />
-
+                    <View style={styles.currentLocationIconContainer}>
                     <TouchableOpacity onPress={onMapIconPress} style={styles.currentLocationIcon}  >
                         <CurrentLocationIcon />
                     </TouchableOpacity>
-
+                    {onSOSClick && <TouchableOpacity onPress={onSOSClick} style={[styles.currentLocationIcon, styles.sOSIcon]}  >
+                        <Text style={styles.sOSIconText}>SOS</Text>
+                    </TouchableOpacity>}
+                    </View>
                 </View>
             </View>
             <View style={[styles.container_inner, { backgroundColor: backgroundColor }]}>
@@ -34,13 +37,15 @@ const styles = StyleSheet.create({
     containerTop: {
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
+
       },
       containerTop_inner: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-end',
         paddingHorizontal: 15,
-        paddingVertical:5
+        paddingVertical:5,
+       
       
     
       },
@@ -71,5 +76,40 @@ const styles = StyleSheet.create({
         padding:10,
         top:-10
        
+      },
+      currentLocationIconContainer: {
+        flexDirection: 'column-reverse',
+        alignItems: 'center',
+        paddingHorizontal: 15,
+        paddingVertical:10,
+        gap: 15,
+        position:"absolute",
+        right:0,
+        bottom:15,
+        zIndex: 1000,
+    
+      
+    
+      },
+      sOSIcon: {
+        backgroundColor: 'red',
+        borderRadius: 50,
+        borderWidth: 1,
+        borderColor: 'red',
+        elevation: 10,
+        padding:10,
+        top:-10,
+        width: 50,
+        height: 50,
+        alignItems: 'center',
+        justifyContent: 'center',
+       
+      },
+      sOSIconText: {
+        fontFamily: Fonts.medium,
+        fontSize: 14,
+        color: colors.white,
+        textAlign: 'center',
+     
       },
 })

@@ -14,6 +14,7 @@ const ALLOWED_KEYS = [
   'currentTrip',
   'ThemeMode',  
   'IsDefault',
+  'sOS_EVENTID',
 ]
 
 // const KEYS_TO_CLEAR_ON_SESSION_END = [

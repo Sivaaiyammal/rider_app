@@ -143,6 +143,12 @@ const SideDrawerV2 = ({ handleMenu }) => {
       screen: 'LegalScreen',
       icon: <Ionicons name="document-text" size={20} color="black" />,
     },
+    {
+      id: 'tracking-test',
+      name: 'Tracking Test',
+      screen: 'TrackingTestScreen',
+      icon: <Ionicons name="locate" size={20} color="black" />,
+    },
     
     // {
     //   id: 'test-screen',

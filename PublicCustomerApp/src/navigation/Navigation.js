@@ -5,6 +5,7 @@ import SplashScreen from '../screens/SplashScreen';
 import LanguageScreen from '../screens/OnBoard/LanguageScreen.jsx';
 import OnBoarding from '../screens/OnBoard/OnBoarding.jsx';
 import Home from '../screens/Home';
+import TrackingTestScreen from '../screens/TrackingTestScreen.jsx';
 import LocationPermissionScreen from '../screens/LocationPermissionScreen';
 import LoginScreen from '../screens/authentication/LoginScreen';
 import RegisterationScreen from '../screens/authentication/RegisterationScreen';
@@ -86,6 +87,7 @@ const Navigation = ({ onSplashComplete }) => {
       <Stack.Screen name="RegisterationScreen" component={RegisterationScreen} />
       <Stack.Screen name="OTPScreen" component={OTPScreen} />
       <Stack.Screen name="HomeScreen" component={Home} />
+      <Stack.Screen name="TrackingTestScreen" component={TrackingTestScreen} />
       <Stack.Screen name="LocationPermission" component={LocationPermissionScreen} />
     
     </Stack.Navigator>

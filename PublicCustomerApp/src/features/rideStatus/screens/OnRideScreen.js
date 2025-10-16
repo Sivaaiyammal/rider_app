@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Modal } from 'react-native';
 import { getVehicleImage } from '../types/vehicleImd';
 import {Fonts} from '../../../constants/constants';
 
@@ -19,6 +19,9 @@ import useDrawStopsPolyline from '../hooks/useDrawStopsPolyline';
 import PropTypes from 'prop-types';
 import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
+import SOSModal from '../component/SOSModal';
+import { DataStore } from '../../../controllers/DataStore';
+import PREF from '../../../storage/PREF';
 const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {driverName,vehicleNumber,model,brand,driverPhoto,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
   const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare} = useCurrentRideInfoStore();
@@ -34,6 +37,8 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const isElectricVehicle = vehicleType == "ELECTRIC_AUTO" || vehicleType == "ELECTRIC_BIKE" || vehicleType == "ELECTRIC_HATCHBACK" || vehicleType == "ELECTRIC_SEDAN" || vehicleType == "ELECTRIC_SUV" || vehicleType == "ELECTRIC_EXSEDAN";
   
   const [expanded, setExpanded] = useState(false);
+  const [showSOS, setShowSOS] = useState(false);
+  const [sosPreset, setSosPreset] = useState(false);
   const toggleExpand = () => {
     console.log("toggleExpand",expanded);
     expanded ? handleOverlay('close') : handleOverlay('open');
@@ -45,6 +50,20 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
       SetViewBoundingBox()
     }, 1000)
   }, [stops])
+
+  useEffect(() => {
+    (async () => {
+      try{
+        const val = await DataStore.loadData(PREF.SOS_EVENTID);
+        if (val && val.data) {
+          setSosPreset(true);
+          setShowSOS(true);
+        }
+      }catch(e){
+        // ignore
+      }
+    })();
+  }, []);
 
   
 
@@ -61,11 +80,16 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
 
   // Check if driver photo URL is valid
   const driverPhotoUri = driverPhoto && driverPhoto.trim() !== '' ? driverPhoto : null;
+
+
+  const onSOSClick = () => {
+    setShowSOS(true);
+  }
   
   return (
     <>
-      {/* Top info bar */}
-      <StatusConatainerWrapper backgroundColor='black' onMapIconPress={()=>{SetViewBoundingBox()}}>
+     
+      <StatusConatainerWrapper backgroundColor='black' onMapIconPress={()=>{SetViewBoundingBox()}} onSOSClick={onSOSClick}>
 
       
       <View style={[styles.containerTop,{backgroundColor:'black'}]}>
@@ -164,6 +188,19 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
     />
     }
     </StatusConatainerWrapper>
+    {showSOS && (
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={showSOS}
+        onRequestClose={() => {}}
+        presentationStyle="fullScreen"
+      >
+        <View style={{flex:1, backgroundColor:'white'}}>
+          <SOSModal onClose={()=>setShowSOS(false)} presetTriggered={sosPreset} />
+        </View>
+      </Modal>
+    )}
     
     </>
   );

@@ -49,6 +49,7 @@ import { useNavigation } from '@react-navigation/native';
 import { checkFineLocationPermissions } from '../controllers/PermissionHandler';
 import EmergencyHomeScreen from '../features/emergencyContact/screens/EmergencyHomeScreen';
 import useRideMatching from '../hooks/useRideMatching';
+import TrackingTestScreen from './TrackingTestScreen';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -485,6 +486,8 @@ const Home = () => {
         return <GoogleMapScreen {...params} />;
       case 'EmergencyScreen':
         return <EmergencyHomeScreen {...params} />;
+      case 'TrackingTestScreen':
+        return <TrackingTestScreen {...params} />;
      
       default:
         return null;

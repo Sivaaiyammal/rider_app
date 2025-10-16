@@ -13,9 +13,6 @@ import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.soloader.SoLoader;
 import com.virtualmaze.prcustomer.newarchitecture.MainApplicationReactNativeHost;
 
-
-import com.virtualmaze.prcustomer.NeNativePackage;
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -31,7 +28,6 @@ public class MainApplication extends Application implements ReactApplication {
   private ReactApplicationContext mReactApplicationContext;
 
   private final ReactNativeHost mReactNativeHost = new ReactNativeHost(this) {
-
     @Override
     public boolean getUseDeveloperSupport() {
       return BuildConfig.DEBUG;
@@ -42,9 +38,9 @@ public class MainApplication extends Application implements ReactApplication {
       @SuppressWarnings("UnnecessaryLocalVariable")
       List<ReactPackage> packages = new PackageList(this).getPackages();
       packages.add(new com.virtualmaze.prcustomer.NeNativePackage());
+      packages.add(new com.virtualmaze.prcustomer.tracking.LocationTrackingPackage());
       return packages;
     }
-
 
     @Override
     protected String getJSMainModuleName() {
@@ -67,55 +63,32 @@ public class MainApplication extends Application implements ReactApplication {
   public void onCreate() {
     super.onCreate();
 
-    // Initialize SoLoader
     SoLoader.init(this, /* native exopackage */ false);
 
-    // Initialize other services that don't require ReactContext
     NEApiServices.initialize(getApplicationContext());
     NENative.getInstance(getApplicationContext(), NEApiServices.getAccessToken());
 
-    // If you opted-in for the New Architecture, we enable the TurboModule system
     ReactFeatureFlags.useTurboModules = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
 
-    // Initialize Flipper for debugging
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
 
-    // Add a listener to ensure ReactContext is properly initialized
     getReactNativeHost().getReactInstanceManager().addReactInstanceEventListener(new ReactInstanceEventListener() {
-        @Override
-        public void onReactContextInitialized(ReactContext context) {
-            // Use the properly initialized ReactContext here
-            mReactApplicationContext = (ReactApplicationContext) context;
-
-            // Initialize any components that require the ReactApplicationContext
-            I18nUtil sharedI18nUtilInstance = I18nUtil.getInstance();
-            sharedI18nUtilInstance.allowRTL(mReactApplicationContext, true);
-        }
+      @Override
+      public void onReactContextInitialized(ReactContext context) {
+        mReactApplicationContext = (ReactApplicationContext) context;
+        I18nUtil sharedI18nUtilInstance = I18nUtil.getInstance();
+        sharedI18nUtilInstance.allowRTL(mReactApplicationContext, true);
+      }
     });
 
-    // Trigger the initialization of the React context
     getReactNativeHost().getReactInstanceManager().createReactContextInBackground();
   }
 
-  /**
-   * Loads Flipper in React Native templates. Call this in the onCreate method
-   * with something like
-   * initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
-   *
-   * @param context
-   * @param reactInstanceManager
-   */
-  private static void initializeFlipper(
-      Context context, ReactInstanceManager reactInstanceManager) {
+  private static void initializeFlipper(Context context, ReactInstanceManager reactInstanceManager) {
     if (BuildConfig.DEBUG) {
       try {
-        /*
-         * We use reflection here to pick up the class that initializes Flipper,
-         * since Flipper library is not available in release mode
-         */
         Class<?> aClass = Class.forName("com.virtualmaze.prcustomer.ReactNativeFlipper");
-        aClass
-            .getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
+        aClass.getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
             .invoke(null, context, reactInstanceManager);
       } catch (ClassNotFoundException e) {
         e.printStackTrace();
