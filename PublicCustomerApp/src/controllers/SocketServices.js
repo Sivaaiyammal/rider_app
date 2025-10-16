@@ -33,15 +33,22 @@ class WSService {
     this.useUserInfoStore = useUserInfoStore
   }
 
-  driverAllocated(data){
-
- 
+  async driverAllocated(data){
     if(data?.driver && data?.otp){
+      console.log("driverAllocated",JSON.stringify(data))
+      if(data?.tripData){
+        this.useCurrentRideInfoStore.getState().setCurrentRideInfo(data?.tripData);
+      }
+      if(data?._id){
+        await DataStore.storeData(PREF.CURRENT_TRIP,data?._id);
+      }
+    
       this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
       this.useAssignedDriverInfoStore.getState().setAllocatedDriverInfo(data?.driver);
       this.useCurrentRideInfoStore.getState().setOtp(data?.otp);
       this.useCurrentRideInfoStore.getState().setEstimatedFare(data?.tripData?.estimatedFare);
       this.useStackScreenStore.getState().setStackScreen('RideStatus',{});
+      console.log("driverAllocatedooooooo",JSON.stringify(this.useCurrentRideInfoStore.getState()))
     }
   }
   async onRideStatus(data){

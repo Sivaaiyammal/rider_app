@@ -1,8 +1,8 @@
-        import React, { useRef, useState,useEffect     } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Linking, ActivityIndicator } from 'react-native';
+        import React, { useState,useEffect     } from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, ActivityIndicator } from 'react-native';
+import PropTypes from 'prop-types';
 import { Fonts, colors } from '../../../constants/constants';
 import { getVehicleImage } from '../types/vehicleImd';
-import useTrackHook from '../hooks/useTrackHook';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -12,13 +12,11 @@ import useAssignedDriverInfoStore from '../store/useAssignedDriverInfoStore';
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 import { changeStopLocation } from '../services/StopLocationChangeService';
 import {showNotification} from '../../../components/NotificationManger';
-import useMapStyleStore from '../../../store/useMapStyleStore';
 import { useTranslation } from 'react-i18next';
 import useWayPointReorderStore from '../../booking/store/useWayPointReorderStore';
 import TripDetailsModal from '../../../components/TripDetailsModal';
 import { height,utils } from '../../../utils/Utils';
 import useRouteDraw from '../hooks/useRouteDraw';
-import MapIcon from '../../../components/Map/MapIcon';
 import StatusConatainerWrapper from '../component/StatusConatainerWrapper';
 import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 import useUserInfoStore from '../../../store/useUserInfoStore';
@@ -30,14 +28,13 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
   const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
   const {stops,otp,duration,totalDistance,vehicleType,estimatedFare,paymentMethod} = useCurrentRideInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
-  const {setMapStyle} = useMapStyleStore();
   
   const {t} = useTranslation();
   const {waitingForDriverApproval} = useWayPointReorderStore();
   // Initialize tracking hook for driver arrival screen with polyline support
 
-  const {markersList} = useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"pickup",driverAngle);
-  const {estimatedDuration,remainingDistance,SetViewBoundingBox} = useRouteDraw({destinationlat:stops?.length > 0 ? stops[0].location[1] : 0,destinationlon:stops?.length > 0 ? stops[0].location[0] : 0,driverLat:driverLatitude,driverLon:driverLongitude})  
+  useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"pickup",driverAngle);
+  const {estimatedDuration,SetViewBoundingBox} = useRouteDraw({destinationlat:stops?.length > 0 ? stops[0].location[1] : null,destinationlon:stops?.length > 0 ? stops[0].location[0] : null,driverLat:driverLatitude,driverLon:driverLongitude})  
   const {userdetails} = useUserInfoStore();
 
   
@@ -102,7 +99,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
     }
   }
 
-  const isElectricVehicle = vehicleType == "ELECTRIC_AUTO" || vehicleType == "ELECTRIC_BIKE" || vehicleType == "ELECTRIC_HATCHBACK" || vehicleType == "ELECTRIC_SEDAN" || vehicleType == "ELECTRIC_SUV" || vehicleType == "ELECTRIC_EXSEDAN";
+  
 
   
 
@@ -582,4 +579,8 @@ const styles = StyleSheet.create({
 });
   
   export default DriverArrivalScreen;
+DriverArrivalScreen.propTypes = {
+  onCancel: PropTypes.func,
+  handleOverlay: PropTypes.func,
+};
   

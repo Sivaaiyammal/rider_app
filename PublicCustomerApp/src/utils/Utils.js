@@ -596,12 +596,41 @@ export const utils = {
       return `${minutes} Mins`;
     }
   },
-  getBoundingBox(coordinates){
-   
-    const minLat = Math.min(...coordinates.map(coord => coord[1]))
-    const maxLat = Math.max(...coordinates.map(coord => coord[1]))
-    const minLon = Math.min(...coordinates.map(coord => coord[0]))
-    const maxLon = Math.max(...coordinates.map(coord => coord[0]))
+  // Expects location as [lon, lat]
+  getBoundingBoxFromLocation(location, bufferMeters = 200) {
+    if (
+      !Array.isArray(location) ||
+      location.length !== 2 ||
+      !Number.isFinite(location[0]) ||
+      !Number.isFinite(location[1])
+    ) return null;
+    return utils.getBoundingBox([location], bufferMeters);
+  },
+  getBoundsForPoint(lon, lat, bufferMeters = 200){
+    if (!Number.isFinite(lon) || !Number.isFinite(lat)) return null;
+    return utils.getBoundingBox([[lon, lat]], bufferMeters)
+  },
+  getBoundingBox(coordinates, bufferMeters = 200){
+    // Guard: coordinates must be an array with at least 1 valid [lon, lat] entry
+    if (!Array.isArray(coordinates) || coordinates.length < 1) return null;
+    const valid = coordinates.filter(coord => Array.isArray(coord) && Number.isFinite(coord[0]) && Number.isFinite(coord[1]));
+    if (valid.length < 1) return null;
+
+    // Single-point case: create a small padded bbox around the point
+    if (valid.length === 1) {
+      const [lon, lat] = valid[0];
+      const metersPerDegLat = 111320; // approximate
+      const metersPerDegLon = 111320 * Math.max(0.000001, Math.cos((lat * Math.PI) / 180)); // avoid division by zero near poles
+      const dLat = bufferMeters / metersPerDegLat;
+      const dLon = bufferMeters / metersPerDegLon;
+      return [lon - dLon, lat - dLat, lon + dLon, lat + dLat]
+    }
+
+    const minLat = Math.min(...valid.map(coord => coord[1]));
+    const maxLat = Math.max(...valid.map(coord => coord[1]));
+    const minLon = Math.min(...valid.map(coord => coord[0]));
+    const maxLon = Math.max(...valid.map(coord => coord[0]));
+    if (!Number.isFinite(minLat) || !Number.isFinite(maxLat) || !Number.isFinite(minLon) || !Number.isFinite(maxLon)) return null;
     return [minLon, minLat, maxLon, maxLat]
   },
 

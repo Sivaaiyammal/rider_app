@@ -23,8 +23,8 @@ export async function findRoute(points) {
     
     try {
         const jsonString = JSON.stringify(jsonObject);
-        // const encodedData = encodeURIComponent(jsonString);
-        const url = `${Config.ROUTE_API_URL}?data=${jsonString}&access_token=${Config.NE_ACCESS_TOKEN}`;
+        const encodedData = encodeURIComponent(jsonString);
+        const url = `${Config.ROUTE_API_URL}?data=${encodedData}&access_token=${Config.NE_ACCESS_TOKEN}`;
 
     
         

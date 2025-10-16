@@ -13,10 +13,7 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
     const [originalDistance, setOriginalDistance] = useState(0);
     const [originalDuration, setOriginalDuration] = useState(0);
 	const { setGeometries, setMapBounds } = useMapStore();
-    console.log("destinationlat",destinationlat,destinationlon)
-	console.log("driverLat",driverLat,driverLon)
-	console.log("remainingStops",remainingStops)
-	// Reset diversion state when destination changes so next DrawRoute fetches fresh route
+	
 	useEffect(() => {
 		if (destinationlat == null || destinationlon == null) return;
 		setIsDiverted(true);
@@ -25,7 +22,7 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 		
 	}, [destinationlat, destinationlon]);
 
-	// When remaining stops change, force a fresh route on next draw and reset progress
+	
 	useEffect(() => {
 		if (!remainingStops) return;
 		setIsDiverted(true);

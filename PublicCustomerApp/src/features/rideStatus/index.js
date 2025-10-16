@@ -128,8 +128,8 @@ const RideStatus = () => {
         distance = data?.distance ? data.distance : 0;
         duration = data?.duration ? Math.round(data.duration) : 0;
 
-        console.log("distance",distance)
-        console.log("duration",duration)
+        console.log("gpsdistance",distance)
+        console.log("gps duration",duration)
 
         if( distance == 0 && duration == 0) {
           const routePoints = stops.filter(stop => stop.isReached == true).map(stop => ({
@@ -154,13 +154,13 @@ const RideStatus = () => {
       }
 
 
-        console.log("routePoints",routePoints)
+       
 
         
 
       
         const routeData = await findRoute(routePoints);
-        console.log("routeData",JSON.stringify(routeData))
+       
         
         
         if (routeData && routeData.trip && routeData.trip.summary) {
@@ -210,37 +210,6 @@ const RideStatus = () => {
   setShowBottomSheet(false);
   };
 
-
-  useEffect(()=>{
-    console.log("gpsDistance",gpsDistance)
-    console.log("calculate distance",isCalculateDistance)
-    if(gpsDistance == -1 && gpsDuration == -1 ){
-      const payload = {
-        tripId,
-        reason: cancelReason
-      };
-    
-      CancelRide(payload);
-      
-      return
-    }
-    if(isCalculateDistance && gpsDistance && gpsDuration ){
-      
-      
-      // Now that we have the distance and duration, proceed with cancellation
-      const payload = {
-        tripId,
-        reason: cancelReason,
-        totalDistance: gpsDistance,
-        totalDuration: Math.round(gpsDuration)
-      };
-      
-      CancelRide(payload);
-    }
-    if(isCalculateDistance) {
-      setIsCalculateDistance(false);
-    }
-  },[gpsDistance, gpsDuration, cancelReason, isCalculateDistance])
  
   const renderScreen = () => {
    
