@@ -50,6 +50,7 @@ import { checkFineLocationPermissions } from '../controllers/PermissionHandler';
 import EmergencyHomeScreen from '../features/emergencyContact/screens/EmergencyHomeScreen';
 import useRideMatching from '../hooks/useRideMatching';
 import TrackingTestScreen from './TrackingTestScreen';
+import { useNetwork } from '../context/NetworkContext';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -125,11 +126,14 @@ const Home = () => {
   const { setStackScreen } = useStackScreenStore();
   const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
-  const { setUserdetails ,setID,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips} = useUserInfoStore();
+  const { setUserdetails ,setID,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips,id} = useUserInfoStore();
   const { setMapShown , mapShown, setUserLocation} = useMapStore();
   const { setTarget } = useNearbyPollingControl();
   const { setConfig } = useConfigStore();
-  const { initializeSocket} = useRideMatching();
+  const { initializeSocket,resetSocket} = useRideMatching();
+  const { isConnected } = useNetwork();
+  
+  const prevIsConnectedRef = useRef(isConnected);
 
   const hasInitialLocationProcessed = useRef(false);
   const lastProcessedKey = useRef(null);
@@ -252,7 +256,7 @@ const Home = () => {
     try {
       setConfigError(false);
       const Response = await getUserStats(currentTripId);
-
+      console.log("Response",JSON.stringify(Response))
    
       if(Response?.success ){
 
@@ -302,8 +306,9 @@ const Home = () => {
       if(Response?.trip){
 
 
-        if (Response?.trip?.status == "CANCELLED" && Response?.trip?.status == "PENDING"){
+        if (Response?.trip?.status == "CANCELLED" || Response?.trip?.status == "PENDING"){
           await DataStore.clearData(PREF.CURRENT_TRIP)
+          setStackScreen('Home', {});
           return;
         }
        
@@ -368,9 +373,15 @@ const Home = () => {
   } 
 
   const retryLoadAppConfig = async () => {
+    
     setBootLoading(true);
     setConfigError(false);
     await checkOnGoingRideAndLog();
+    if(id){
+      await resetSocket();
+      await initializeSocket(id);
+    }
+    
   }
 
 
@@ -409,6 +420,20 @@ const Home = () => {
       }
     })();
   }, [navigateToPermissionIfNeeded]);
+
+  useEffect(() => {
+    const handleReconnect = async () => {
+      if (prevIsConnectedRef.current === false && isConnected) {
+        await checkOnGoingRideAndLog();
+        if (id) {
+          await resetSocket();
+          await initializeSocket(id);
+        }
+      }
+      prevIsConnectedRef.current = isConnected;
+    };
+    handleReconnect();
+  }, [isConnected, id, initializeSocket, resetSocket]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextState => {

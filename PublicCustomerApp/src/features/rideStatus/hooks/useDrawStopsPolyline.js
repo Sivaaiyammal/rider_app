@@ -45,7 +45,7 @@ const useDrawStopsPolyline = () => {
             'driver-to-start',
             'Driver to Pickup',
             coordinates,
-            '#0000FF',
+            '#888888',
             'small'
         );
         polylineObj.setFocus(false)

@@ -30,6 +30,7 @@ const useRideMatching = () => {
    * Initialize socket connection for ride matching
    */
   const initializeSocket = useCallback(async (uid) => {
+    console.log('initializeSocket',uid)
     if (socketInitializedRef.current || !uid) {
       console.log('userId',userId)
       return false;
@@ -68,6 +69,19 @@ const useRideMatching = () => {
       return false;
     }
   }, [userId]);
+
+
+
+  const resetSocket = useCallback(() => {
+    console.log('resetSocket')
+    socketInitializedRef.current = false;
+    matchingActiveRef.current = false;
+    setRideMatchStatus({
+      status: null,
+      message: null,
+      driver: null
+    });
+  }, [setRideMatchStatus]);
 
   /**
    * Start ride matching process
@@ -229,7 +243,8 @@ const useRideMatching = () => {
     setMessage,
     setDriverName,
     setCurrentDriverLatitude,
-    setCurrentDriverLongitude
+    setCurrentDriverLongitude,
+    resetSocket
   };
 };
 

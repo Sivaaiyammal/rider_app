@@ -429,6 +429,25 @@
     "updated_successfully": "Updated Successfully",
     "calling_to_driver": "Calling to driver",
     "call_initiated_with_driver_shortly": "Call initiated with driver shortly",
-    "error_in_making_call_to_driver": "Error in making call to driver"
+    "error_in_making_call_to_driver": "Error in making call to driver",
+    "emergency": {
+      "contacts_title": "Emergency Contacts",
+      "empty_title": "No Emergency Contact",
+      "empty_subtitle": "Add a trusted contact who can be notified in case of emergency.",
+      "add_contact": "Add Emergency Contact",
+      "edit_contacts": "Edit Contacts",
+      "limit_reached": "Maximum of {count} contacts reached",
+      "select_contacts_title": "Select Contacts",
+      "search_placeholder": "Search by name or number",
+      "select_up_to_contacts": "Select up to {count} contacts",
+      "selected_count": "{count} selected",
+      "maximum_selected": "Maximum of {count} selected",
+      "add_contacts_cta": "Add Emergency Contacts",
+      "emergency_contact":"Emergency Contact",
+      "remove_contact":"Remove Contact",
+      "remove_contact_message":"Are you sure you want to remove this contact",
+      "cancel":"Cancel",
+      "delete":"Delete"
+    }
     
 }

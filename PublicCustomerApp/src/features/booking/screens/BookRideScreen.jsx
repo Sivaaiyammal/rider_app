@@ -49,7 +49,7 @@ const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => 
     const {setStackScreen} = useStackScreenStore()
     const {rideStartLocation,rideEndLocation,rideWayPoints} = useRideBookingLocationStore()
     const {setMapBounds} = useMapStore()
-    const {availableVehicles} = useRideVehicleStore()
+    // const {availableVehicles} = useRideVehicleStore()
     
     const handleAddStop = () => {
        
@@ -369,18 +369,16 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     const handleConfirmRide = async () => {
         try {
-            // Check if booking is ready
+          
             if (!isBookingReady()) {
                 const errors = getBookingValidationErrors();
                 console.log('Booking validation errors:', errors);
                 return;
             }
 
-            // Get current payload for debugging
             const payload = getCurrentBookingPayload();
             console.log('Booking payload:', payload);
 
-            // Execute booking
             await bookTrip();
             
         } catch (error) {
@@ -416,7 +414,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
     <>
    <View>
     <NavBar onBackPress={handleBackPress} />
-    {scheduleDate && <View style={styles.ScheduleOption}>
+    {!!scheduleDate && <View style={styles.ScheduleOption}>
     <Schdule />
             <AdaptiveText style={styles.rideSelectionTxt}>{scheduleDate && scheduleDate + " - " + scheduleTime}
             </AdaptiveText>
@@ -461,7 +459,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
  
           <View style={styles.bottomContainer}>
          { availableVehicles?.length >3 && <ScrollHintChevron direction='down' style={{ top: -30, alignSelf: 'center' }} />}
-              <TouchableOpacity style={styles.CouponContainer} onPress={handleCouponPress}>
+              <TouchableOpacity style={styles.CouponContainer } onPress={handleCouponPress}>
                  {!couponCode ? (
                    <>
                      <FontAwesome6 name="percent" size={20} color={colors.black} />
@@ -478,7 +476,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                  )}
 
               </TouchableOpacity>
-              <View style={styles.BookingButtonContainer}>
+              <View style={[styles.BookingButtonContainer, {backgroundColor: availableVehicles?.length === 0 ? colors.grey_xxdark : colors.black}]}>
              
                   <TouchableOpacity style={styles.BookingPaymentContainer} onPress={handlePaymentType}>
                       <View style={styles.BookingPaymentHeader}>
@@ -492,8 +490,8 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
                   <View style={styles.BookingButtonSection}>
                       <TouchableOpacity
-                          style={[styles.BookingButton, isBookingLoading && styles.BookingButtonDisabled]}
-                          onPress={handleConfirmRide}
+                          style={[styles.BookingButton, isBookingLoading || availableVehicles?.length === 0 && styles.BookingButtonDisabled]}
+                          onPress={availableVehicles?.length === 0 ? null : handleConfirmRide}
                           disabled={isBookingLoading}
                       >
                           <AdaptiveText style={styles.BookingButtonText}>
@@ -649,7 +647,7 @@ const styles = StyleSheet.create({
         textAlign:"center",
     },
     BookingButtonDisabled:{
-        backgroundColor:'#666',
+        backgroundColor:colors.grey_light,
         opacity:0.7,
     },
     

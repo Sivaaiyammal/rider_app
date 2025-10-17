@@ -32,6 +32,7 @@ import { findRoute } from '../../controllers/NEMap/findRoute';
 import useLocationStore from '../../store/useLocationStore';
 import useAssignedDriverInfoStore from './store/useAssignedDriverInfoStore';
 import useMapStore from '../map/store/useMapStore';
+import useWayPointReorderStore from '../booking/store/useWayPointReorderStore';
 
 const RideStatus = () => {
   const { userdetails } = useUserInfoStore();
@@ -50,6 +51,7 @@ const RideStatus = () => {
   const {goBack,stackScreen,setStackScreen} = useStackScreenStore();
   const [isPaymentMethodChangeShow,setIspaymentMethodChangeShow] = useState(false);
   const {stopMatching} = useRideMatching();
+  const {setWaitingForDriverApproval} = useWayPointReorderStore();
   const {id:userId} = useUserInfoStore();
   const [isCalculateDistance,setIsCalculateDistance] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
@@ -197,9 +199,9 @@ const RideStatus = () => {
           totalDuration: Math.round(duration)
         };
 
-        console.log("payload",payload)
-        
+    
         CancelRide(payload);
+        setWaitingForDriverApproval(null);
         return
       }
 
@@ -210,10 +212,11 @@ const RideStatus = () => {
         tripId,
         reason,
     };
-    
-       await CancelRide(payload);
+    await CancelRide(payload);
+    setWaitingForDriverApproval(null);
   }
   setShowBottomSheet(false);
+
   };
 
  

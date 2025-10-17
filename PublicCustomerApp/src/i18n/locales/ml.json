@@ -421,5 +421,24 @@
     "please_try_again": "ദയവായി വീണ്ടും ശ്രമിക്കുക",
     "payment_successful": "പേയ്മെൻറ് വിജയകരമായി",
     "payment_failed": "പേയ്മെൻറ് പരാജയപ്പെട്ടു",
-    "not_reached": "എത്തിയില്ല"
+    "not_reached": "എത്തിയില്ല",
+    "emergency": {
+      "contacts_title": "ആപത് ബന്ധപ്പെടേണ്ടവർ",
+      "empty_title": "ആപത് ബന്ധപ്പെടേണ്ടവർ ഇല്ല",
+      "empty_subtitle": "ആപത് സമയത്ത് അറിയിക്കാൻ വിശ്വസനീയനായ ബന്ധത്തെ ചേർക്കുക.",
+      "add_contact": "ആപത് ബന്ധം ചേർക്കുക",
+      "edit_contacts": "ബന്ധങ്ങൾ എഡിറ്റ് ചെയ്യുക",
+      "limit_reached": "പരമാവധി {count} ബന്ധങ്ങൾ എത്തിയിരിക്കുന്നു",
+      "select_contacts_title": "ബന്ധങ്ങൾ തിരഞ്ഞെടുക്കുക",
+      "search_placeholder": "പേര് അല്ലെങ്കിൽ നമ്പർ ഉപയോഗിച്ച് തിരയുക",
+      "select_up_to_contacts": "പരമാവധി {count} ബന്ധങ്ങൾ തിരഞ്ഞെടുക്കുക",
+      "selected_count": "{count} തിരഞ്ഞെടുക്കപ്പെട്ടു",
+      "maximum_selected": "പരമാവധി {count} തിരഞ്ഞെടുക്കപ്പെട്ടു",
+      "add_contacts_cta": "ആപത് ബന്ധങ്ങൾ ചേർക്കുക",
+      "emergency_contact":"ആപത് ബന്ധം",
+      "remove_contact":"ബന്ധം നീക്കംചെയ്യുക",
+      "remove_contact_message":"നിങ്ങൾ ഈ ബന്ധം നീക്കംചെയ്യാൻ ഖചಿതമായി ബയസുന്നാരോ?",
+      "cancel":"രദ്ദു ചെയ്യുക",
+      "delete":"നീക്കംചെയ്യുക"
+    }
 }

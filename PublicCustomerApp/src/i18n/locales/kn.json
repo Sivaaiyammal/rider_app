@@ -424,5 +424,24 @@
     "please_try_again": "ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
     "payment_successful": "ಪಾವತಿ ಯಶಸ್ವಿಯಾಗಿದೆ",
     "payment_failed": "ಪಾವತಿ ವಿಫಲವಾಗಿದೆ",
-    "not_reached": "ತಲುಪಿದೆ"
+    "not_reached": "ತಲುಪಿದೆ",
+    "emergency": {
+      "contacts_title": "ತುರ್ತು ಸಂಪರ್ಕಗಳು",
+      "empty_title": "ಯಾವುದೇ ತುರ್ತು ಸಂಪರ್ಕಗಳಿಲ್ಲ",
+      "empty_subtitle": "ತುರ್ತು ಪರಿಸ್ಥಿತಿಯಲ್ಲಿ ತಿಳಿಸಲು ವಿಶ್ವಾಸಾರ್ಹ ಸಂಪರ್ಕವನ್ನು ಸೇರಿಸಿ.",
+      "add_contact": "ತುರ್ತು ಸಂಪರ್ಕವನ್ನು ಸೇರಿಸಿ",
+      "edit_contacts": "ಸಂಪರ್ಕಗಳನ್ನು ಸಂಪಾದಿಸಿ",
+      "limit_reached": "ಗರಿಷ್ಠ {count} ಸಂಪರ್ಕಗಳು ತಲುಪಿದೆ",
+      "select_contacts_title": "ಸಂಪರ್ಕಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      "search_placeholder": "ಹೆಸರು ಅಥವಾ ಸಂಖ್ಯೆಯಿಂದ ಹುಡುಕಿ",
+      "select_up_to_contacts": "ಗರಿಷ್ಠ {count} ಸಂಪರ್ಕಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      "selected_count": "{count} ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ",
+      "maximum_selected": "ಗರಿಷ್ಠ {count} ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ",
+      "add_contacts_cta": "ತುರ್ತು ಸಂಪರ್ಕಗಳನ್ನು ಸೇರಿಸಿ",
+      "emergency_contact":"ತುರ್ತು ಸಂಪರ್ಕ",
+      "remove_contact":"ಸಂಪರ್ಕವನ್ನು ಅಳಿಸಿ",
+      "remove_contact_message":"ನೀವು ಈ ಸಂಪರ್ಕವನ್ನು ಅಳಿಸಲು ಖಚಿತವಾಗಿ ಬಯಸುವಿರಾ?",
+      "cancel":"ರದ್ದು ಮಾಡಿ",
+      "delete":"ಅಳಿಸಿ"
+    }
 }

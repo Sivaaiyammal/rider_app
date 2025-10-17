@@ -1,12 +1,36 @@
-import React, { useMemo, useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, FlatList } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, StyleSheet, Text, TouchableOpacity, FlatList, Alert } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useTranslation } from 'react-i18next';
 import NavBar from '../../../components/NavBar';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import AddEmergencyContactScreen from './AddEmergencyContactScreen'
 import { useEmergencyContactsStore } from '../store/useEmergencyContactsStore';
+import { fetchEmergencyContacts, removeEmergencyContact } from '../services/api';
+import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
 const EmergencyHomeScreen = () => {
+  const { t } = useTranslation();
   const { goBack, setStackScreen } = useStackScreenStore();
   const contacts = useEmergencyContactsStore((s) => s.contacts);
+  const setContacts = useEmergencyContactsStore((s) => s.setContacts);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const list = await fetchEmergencyContacts();
+        if (mounted) setContacts(list);
+      } catch (e) {
+        if (mounted) setError('Failed to load contacts');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false };
+  }, [setContacts]);
   const [currentScreen, setCurrentScreen] = useState('EmergencyHomeScreen');
 
  
@@ -29,18 +53,32 @@ const EmergencyHomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <NavBar withBg onBackPress={handleBackBtn} title={'Emergency Contacts'} />
+      <NavBar withBg onBackPress={handleBackBtn} title={t('emergency.contacts_title')} />
       <View style={styles.contentContainer}>
-        {contacts.length === 0 ? (
+        {loading ? (
+          <View style={{ width: '100%', paddingHorizontal: 16 }}>
+            <SkeletonLoader height={20} width={'60%'} borderRadius={6} />
+            <View style={{ height: 12 }} />
+            {[...Array(4)].map((_, i) => (
+              <View key={i} style={{ marginBottom: 16 }}>
+                <SkeletonLoader height={16} width={'40%'} borderRadius={6} />
+                <View style={{ height: 8 }} />
+                <SkeletonLoader height={12} width={'70%'} borderRadius={6} />
+              </View>
+            ))}
+          </View>
+        ) : contacts.length === 0 ? (
           <>
-            <View style={styles.infoContainer}>
-              <Text style={styles.infoText}>No Emergency Contact</Text>
-              <Text style={styles.infoSubText}>
-                Add a trusted contact who can be notified in case of emergency.
-              </Text>
+            <View style={styles.emptyCenter}>
+              <View style={styles.infoContainer}>
+                <Text style={styles.infoText}>{t('emergency.empty_title')}</Text>
+                <Text style={styles.infoSubText}>
+                  {t('emergency.empty_subtitle')}
+                </Text>
+              </View>
             </View>
-            <TouchableOpacity style={styles.button} onPress={handleAddEmergencyContact}>
-              <Text style={styles.buttonText}>Add Emergency Contact</Text>
+            <TouchableOpacity style={styles.fixedButton} onPress={handleAddEmergencyContact}>
+              <Text style={styles.fixedButtonText}>{t('emergency.add_contact')}</Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -50,23 +88,58 @@ const EmergencyHomeScreen = () => {
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
                 <View style={styles.contactItem}>
-                  <Text style={styles.contactName}>{item.name}</Text>
-                  <Text style={styles.contactPhone}>{item.phone}</Text>
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>{(item.name || '?').trim().charAt(0).toUpperCase()}</Text>
+                  </View>
+                  <View style={styles.contactContent}>
+                    <Text style={styles.contactName} numberOfLines={1}>{item.name}</Text>
+                    <Text style={styles.contactPhone} numberOfLines={1}>{item.phone}</Text>
+                  </View>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel={`Delete ${item.name}`}
+                    onPress={() => {
+                      Alert.alert(
+                        t('emergency.remove_contact'),
+                        t('emergency.remove_contact_message', { name: item.name }),
+                        [
+                          { text: t('emergency.cancel'), style: 'cancel' },
+                          {
+                            text: t('emergency.delete'),
+                            style: 'destructive',
+                            onPress: async () => {
+                              try {
+                                await removeEmergencyContact(item.phone);
+                                setContacts(contacts.filter((c) => c.phone !== item.phone));
+                              } catch (e) {
+                                // Optionally show error toast
+                              }
+                            },
+                          },
+                        ]
+                      );
+                    }}
+                    style={styles.deleteBtn}
+                  >
+                    <Icon name="delete" size={22} color="#ef4444" />
+                  </TouchableOpacity>
                 </View>
               )}
               contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
             />
 
-            <TouchableOpacity style={styles.button}
+            <TouchableOpacity
+              style={[styles.fixedButton, contacts.length >= 5 && styles.fixedButtonDisabled]}
               onPress={handleAddEmergencyContact}
               disabled={contacts.length >= 5}
             >
-              <Text style={styles.buttonText}>
-                {contacts.length >= 5 ? 'Edit Contacts' : 'Add Emergency Contact'}
+              <Text style={styles.fixedButtonText}>
+                {contacts.length >= 5 ? t('emergency.edit_contacts') : t('emergency.add_contact')}
               </Text>
             </TouchableOpacity>
             {contacts.length >= 5 && (
-              <Text style={styles.limitText}>Maximum of 5 contacts reached</Text>
+              <Text style={styles.limitText}>{t('emergency.limit_reached', { count: 5 })}</Text>
             )}
           </>
         )}
@@ -84,21 +157,53 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
+    paddingTop: 8,
+    paddingBottom: 96, // leave room for fixed bottom button
     backgroundColor: '#fff',
+  },
+  emptyCenter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
   },
   listContent: {
     paddingHorizontal: 16,
     paddingBottom: 16,
-    width: '100%',
   },
   contactItem: {
-    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#eee',
+  },
+  deleteBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteText: {
+    fontSize: 18,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  avatarText: {
+    color: '#111827',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  contactContent: {
+    flex: 1,
   },
   contactName: {
     fontSize: 16,
@@ -110,8 +215,9 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     alignItems: 'center',
+    marginTop: 48,
     marginBottom: 32,
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
   },
   infoText: {
     fontSize: 18,
@@ -144,5 +250,25 @@ const styles = StyleSheet.create({
   limitText: {
     marginTop: 8,
     color: '#999',
+    textAlign: 'center',
+  },
+  fixedButton: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: 24,
+    backgroundColor: '#111',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    elevation: 2,
+  },
+  fixedButtonDisabled: {
+    backgroundColor: '#bbb',
+  },
+  fixedButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });

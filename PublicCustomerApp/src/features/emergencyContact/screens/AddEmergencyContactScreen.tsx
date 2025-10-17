@@ -5,6 +5,7 @@ import { RequestContactsPermission, checkContactsPermission } from '../../../con
 import { useEmergencyContactsStore } from '../store/useEmergencyContactsStore';
 import { addEmergencyContacts } from '../services/api';
 import NavBar from '../../../components/NavBar';
+import { useTranslation } from 'react-i18next';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 
 type PhoneContact = {
@@ -20,6 +21,7 @@ type Props = {
 };
 
 const AddEmergencyContactScreen = ({ onBack }: Props) => {
+  const { t } = useTranslation();
   const addContact = useEmergencyContactsStore((s) => s.addContact);
   const existingContacts = useEmergencyContactsStore((s) => s.contacts);
   const goBack = useStackScreenStore((s) => s.goBack);
@@ -71,7 +73,11 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
         if (!uniqueByPhone.has(c.phone)) uniqueByPhone.set(c.phone, c);
       }
 
-      const list = Array.from(uniqueByPhone.values()).sort((a, b) => a.name.localeCompare(b.name));
+      const list = Array.from(uniqueByPhone.values()).sort((a, b) => {
+        const an = (a.name || '').toLowerCase();
+        const bn = (b.name || '').toLowerCase();
+        if (an < bn) return -1; if (an > bn) return 1; return 0;
+      });
       setContacts(list);
     } catch (err) {
       console.error('Failed to load contacts', err);
@@ -125,11 +131,22 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
 
   const filteredContacts = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return contacts;
-    return contacts.filter((c) =>
-      c.name.toLowerCase().includes(q) || c.phone.toLowerCase().includes(q)
-    );
-  }, [contacts, query]);
+    const base = q
+      ? contacts.filter((c) =>
+          c.name.toLowerCase().includes(q) || c.phone.toLowerCase().includes(q)
+        )
+      : contacts;
+
+    // Sort so that selected contacts appear first, then by name
+    return base.slice().sort((a, b) => {
+      const aSelected = selectedIds.has(a.id);
+      const bSelected = selectedIds.has(b.id);
+      if (aSelected !== bSelected) return aSelected ? -1 : 1;
+      const an = (a.name || '').toLowerCase();
+      const bn = (b.name || '').toLowerCase();
+      if (an < bn) return -1; if (an > bn) return 1; return 0;
+    });
+  }, [contacts, query, selectedIds]);
 
   const submit = useCallback(async () => {
     try {
@@ -175,7 +192,7 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
 
   return (
     <View style={styles.container}>
-      <NavBar withBg onBackPress={() => (onBack ? onBack() : goBack())} title={'Select Contacts'} />
+      <NavBar withBg onBackPress={() => (onBack ? onBack() : goBack())} title={t('emergency.select_contacts_title')} />
 
       {isLoading ? (
         <View style={styles.center}> 
@@ -185,17 +202,24 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
       ) : (
         <>
           <View style={styles.header}>
-            <TextInput
-              value={query}
-              onChangeText={setQuery}
-              placeholder="Search by name or number"
-              placeholderTextColor="#999"
-              style={styles.search}
-            />
-            <Text style={styles.title}>Select up to {MAX_SELECTION} contacts</Text>
-            <Text style={styles.subtitle}>{selectedCount} selected</Text>
+            <View style={styles.searchWrapper}>
+              <TextInput
+                value={query}
+                onChangeText={setQuery}
+              placeholder={t('emergency.search_placeholder')}
+                placeholderTextColor="#999"
+                style={[styles.search, query ? { paddingRight: 36 } : null]}
+              />
+              {!!query && (
+                <TouchableOpacity accessibilityRole="button" onPress={() => setQuery('')} style={styles.clearBtn}>
+                  <Text style={styles.clearText}>×</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            <Text style={styles.title}>{t('emergency.select_up_to_contacts', { count: MAX_SELECTION })}</Text>
+            <Text style={styles.subtitle}>{t('emergency.selected_count', { count: selectedCount })}</Text>
             {selectedCount >= MAX_SELECTION && (
-              <Text style={styles.maxText}>Maximum of {MAX_SELECTION} selected</Text>
+              <Text style={styles.maxText}>{t('emergency.maximum_selected', { count: MAX_SELECTION })}</Text>
             )}
           </View>
 
@@ -218,7 +242,7 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
         {submitting ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.submitText}>Add Emergency Contacts</Text>
+          <Text style={styles.submitText}>{t('emergency.add_contacts_cta')}</Text>
         )}
           </TouchableOpacity>
         </>
@@ -249,6 +273,27 @@ const styles = StyleSheet.create({
     color: '#222',
     backgroundColor: '#fafafa',
     marginBottom: 10,
+  },
+  searchWrapper: {
+    position: 'relative',
+  },
+  clearBtn: {
+    position: 'absolute',
+    right: 8,
+    top: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#e5e7eb',
+  },
+  clearText: {
+    color: '#111827',
+    fontSize: 16,
+    lineHeight: 16,
+    fontWeight: '600',
+    marginTop: -2,
   },
   title: {
     fontSize: 18,

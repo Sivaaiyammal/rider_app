@@ -14,6 +14,7 @@ import Config from "react-native-config";
 import useMapStore from '../features/map/store/useMapStore';
 const SOCKET_URL = Config.ROOT_API_URL;
 
+
 class WSService {
   constructor() {
     this.socket = null;
@@ -33,6 +34,8 @@ class WSService {
     this.usePaymentStore = usePaymentStore
     this.useUserInfoStore = useUserInfoStore
     this.useMapStore = useMapStore
+    this.DataStore = DataStore
+    
   }
 
   async driverAllocated(data){
@@ -42,7 +45,7 @@ class WSService {
         this.useCurrentRideInfoStore.getState().setCurrentRideInfo(data?.tripData);
       }
       if(data?._id){
-        await DataStore.storeData(PREF.CURRENT_TRIP,data?._id);
+        await this.DataStore.storeData(PREF.CURRENT_TRIP,data?._id);
       }
     
       this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
@@ -62,29 +65,23 @@ class WSService {
           
           if(data?.isOnGoingTrip && data?.fareDetails){
             this.useStackScreenStore.getState().setStackScreen('PaymentScreen',{});
+            
             this.useCurrentRideInfoStore.getState().setFareDetails(data?.tripFare);
             this.useCurrentRideInfoStore.getState().setFinalDistance(data?.tripFare?.distance);
             this.useCurrentRideInfoStore.getState().setFinalDuration(data?.tripFare?.duration);
             this.useCurrentRideInfoStore.getState().setOngoingingTripCancelled(true);
           }else{
-            
-            this.useCurrentRideInfoStore.getState().setOtp(null);
-            this.useAssignedDriverInfoStore.getState().setDriverInfo(null);
-            
-            this.useCurrentRideInfoStore.getState().setOngoingingTripCancelled(false);
-            this.useRideMatchStore.getState().resetRideMatchStatus();
             this.useMapStore.getState().setGeometries([]);
             this.useMapStore.getState().setMapMarkers([]);
+            this.useCurrentRideInfoStore.getState().setOtp(null);
+            this.useAssignedDriverInfoStore.getState().setDriverInfo(null);
+            this.useCurrentRideInfoStore.getState().setOngoingingTripCancelled(false);
+            this.useRideMatchStore.getState().resetRideMatchStatus();
             this.useCurrentRideInfoStore.getState().setTripStatus(null);
-      
-            console.log("this.useStackScreenStore.getState().stackScreen",this.useStackScreenStore.getState().stackScreen)
-            if(this.useStackScreenStore.getState().stackScreen === 'RideStatus'){
-              this.useStackScreenStore.getState().goBack();
+            this.useWayPointReorderStore.getState().setWaitingForDriverApproval(null);
+            this.useStackScreenStore.getState().goBackToScreen('BookRideScreen',{});
+            await this.DataStore.clearData(PREF.CURRENT_TRIP);
             
-            }else{
-              this.useStackScreenStore.getState().goBackToScreen('BookRideScreen',{});
-            }
-            this.DataStore.clearData(PREF.CURRENT_TRIP);
           }
           
         } catch (error) {
@@ -104,7 +101,7 @@ class WSService {
       }
 
       if(data?.tripStatus === 'COMPLETED' || data?.tripStatus === 'DIVERGED'){
-        const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
+        const currentTrip = await this.DataStore.loadData(PREF.CURRENT_TRIP);
         
 
         

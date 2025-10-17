@@ -120,7 +120,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
     },
     {
       id: 'emergency',
-      name: t('emergency_contact'),
+      name: t('emergency.emergency_contact'),
       screen: 'EmergencyScreen',
       icon: <Ionicons name="alert-circle" size={20} color="black" />,
 
@@ -143,12 +143,12 @@ const SideDrawerV2 = ({ handleMenu }) => {
       screen: 'LegalScreen',
       icon: <Ionicons name="document-text" size={20} color="black" />,
     },
-    {
-      id: 'tracking-test',
-      name: 'Tracking Test',
-      screen: 'TrackingTestScreen',
-      icon: <Ionicons name="locate" size={20} color="black" />,
-    },
+    // {
+    //   id: 'tracking-test',
+    //   name: 'Tracking Test',
+    //   screen: 'TrackingTestScreen',
+    //   icon: <Ionicons name="locate" size={20} color="black" />,
+    // },
     
     // {
     //   id: 'test-screen',

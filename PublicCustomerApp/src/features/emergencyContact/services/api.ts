@@ -17,7 +17,22 @@ export async function addEmergencyContacts(payload: AddEmergencyContactsPayload)
 }
 
 export async function fetchEmergencyContacts(): Promise<EmergencyContact[]> {
-  return [];
+  const { data } = await apiClient.get('/publicrides/customer/getEmergencyContacts');
+  // Response shape example:
+  // { "success": true, "message": "Emergency Contacts", "emergencyContacts": [{ name, phone }] }
+  const list = Array.isArray(data?.emergencyContacts) ? data.emergencyContacts : [];
+  return list.map((c: any, idx: number) => ({
+    id: String(c.id ?? c._id ?? idx),
+    name: String(c.name ?? ''),
+    phone: String(c.phone ?? ''),
+    relation: 'Emergency',
+  }));
+}
+
+export async function removeEmergencyContact(phone: string): Promise<{ success: boolean; message?: string }> {
+  const payload = { phone };
+  const { data } = await apiClient.post('/publicrides/customer/removeEmergencyContact', payload);
+  return data;
 }
 
 

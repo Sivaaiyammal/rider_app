@@ -93,14 +93,12 @@ const styles = StyleSheet.create({
       },
       sOSIcon: {
         backgroundColor: 'red',
-        borderRadius: 50,
+        borderRadius: 60,
         borderWidth: 1,
         borderColor: 'red',
         elevation: 10,
-        padding:10,
+        padding:15,
         top:-10,
-        width: 50,
-        height: 50,
         alignItems: 'center',
         justifyContent: 'center',
        

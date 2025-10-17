@@ -425,6 +425,25 @@
     "please_try_again": "कृपया पुनः प्रयास करें",
     "payment_successful": "भुगतान सफल",
     "payment_failed": "भुगतान विफल",
-    "not_reached": "पहुँच नहीं हुई"
+    "not_reached": "पहुँच नहीं हुई",
+    "emergency": {
+      "contacts_title": "आपातकालीन संपर्क",
+      "empty_title": "कोई आपातकालीन संपर्क नहीं",
+      "empty_subtitle": "आपातकाल की स्थिति में सूचित करने के लिए एक विश्वसनीय संपर्क जोड़ें।",
+      "add_contact": "आपातकालीन संपर्क जोड़ें",
+      "edit_contacts": "संपर्क संपादित करें",
+      "limit_reached": "अधिकतम {count} संपर्क पूरे हुए",
+      "select_contacts_title": "संपर्क चुनें",
+      "search_placeholder": "नाम या नंबर से खोजें",
+      "select_up_to_contacts": "अधिकतम {count} संपर्क चुनें",
+      "selected_count": "{count} चयनित",
+      "maximum_selected": "अधिकतम {count} चयनित",
+      "add_contacts_cta": "आपातकालीन संपर्क जोड़ें",
+      "emergency_contact":"आपातकालीन संपर्क",
+      "remove_contact":"संपर्क हटाएं",
+      "remove_contact_message":"क्या आप वास्तव में इस संपर्क को हटाना चाहते हैं?",
+      "cancel":"रद्द करें",
+      "delete":"हटाएं"
+    }
     
 }

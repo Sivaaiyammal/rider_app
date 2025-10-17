@@ -12,8 +12,10 @@ import messaging from '@react-native-firebase/messaging';
 import PushNotifications from './controllers/PushNotification';
 import { NetworkProvider, useNetwork } from './context/NetworkContext';
 import NoNetworkOverlay from './components/NoNetworkOverlay';
+import NetworkBanner from './components/NetworkBanner';
 import i18n from './i18n';
 import { useNearbyDrivers } from './hooks/useNearbyDrivers';
+import { useStackScreenStore } from './store/useStackScreenStore';
 // import { useNearbyPollingControl } from './store/useNearByDriverPollingControl';
 
 
@@ -24,6 +26,10 @@ if (!firebase.apps.length) {
 const MainAppContent = () => {
   const appearance = useColorScheme();
   const { isConnected, checkConnection } = useNetwork();
+  const { getCurrentScreen } = useStackScreenStore();
+  const currentScreen = typeof getCurrentScreen === 'function' ? getCurrentScreen() : '';
+
+  const screens = ['BookRideScreen', 'PlanRideScreen', 'RideStatus','PaymentScreen'];
   
   const setAppTheme = useCallback(async () => {
     const IS_FIRST = await DataStore.loadData('IS_FIRST');
@@ -82,9 +88,12 @@ const MainAppContent = () => {
             <NavigationContainer>
               <Navigation />
             </NavigationContainer>
-            {!isConnected && (
-              <NoNetworkOverlay onRetry={checkConnection} />
-            )}
+            {(!isConnected && (
+              <NetworkBanner onRetry={checkConnection} />
+            ))}
+             {/* {(!isConnected && !screens.includes(currentScreen)) && (
+            //   <NoNetworkOverlay onRetry={checkConnection} />
+            // )} */}
           </>
       </AlertNotificationRoot>
       </ContextProvider>

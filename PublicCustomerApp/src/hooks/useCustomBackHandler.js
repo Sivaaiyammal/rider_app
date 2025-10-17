@@ -29,5 +29,5 @@ export const useCustomBackHandler = () => {
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', onBackPress);
     };
-  }, [stackScreen, goBack]);
+  }, [stackScreen, goBack,tripStatus]);
 }; 

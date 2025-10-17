@@ -421,5 +421,24 @@
     "please_try_again": "దయచేసి మళ్లీ ప్రయత్నించండి",
     "payment_successful": "చెల్లింపు విజయవంతం",
     "payment_failed": "చెల్లింపు విఫలమైంది",
-    "not_reached": "చేరినప్పటికి చేరలేదు"
+    "not_reached": "చేరినప్పటికి చేరలేదు",
+    "emergency": {
+      "contacts_title": "అత్యవసర పరిచయాలు",
+      "empty_title": "అత్యవసర పరిచయాలు లేవు",
+      "empty_subtitle": "అత్యవసర పరిస్థితిలో తెలియజేయడానికి నమ్మదగిన పరిచయాన్ని జోడించండి.",
+      "add_contact": "అత్యవసర పరిచయం జోడించండి",
+      "edit_contacts": "పరిచయాలను సవరించండి",
+      "limit_reached": "గరిష్టం {count} పరిచయాలు చేరాయి",
+      "select_contacts_title": "పరిచయాలను ఎంచుకోండి",
+      "search_placeholder": "పేరు లేదా నంబర్‌తో శోధించండి",
+      "select_up_to_contacts": "గరిష్టం {count} పరిచయాలను ఎంచుకోండి",
+      "selected_count": "{count} ఎంచుకోబడ్డాయి",
+      "maximum_selected": "గరిష్టం {count} ఎంచుకోబడ్డాయి",
+      "add_contacts_cta": "అత్యవసర పరిచయాలు జోడించండి",
+      "emergency_contact":"అత్యవసర పరిచయం",
+      "remove_contact":"పరిచయం తీసివేయి",
+      "remove_contact_message":"మీరు ఈ పరిచయాన్ని తీసివేయడానికి నిజంగా అనుమతిస్తారా?",
+      "cancel":"రద్దు చేయి",
+      "delete":"తీసివేయి"
+    }
 }

@@ -185,11 +185,12 @@ const SOSModal = ({ onClose, presetTriggered = false }) => {
               <AdaptiveText style={styles.timerLabel}>Auto triggering in</AdaptiveText>
             </View>
             <View style={styles.actions}>
-              <TouchableOpacity onPress={handleCancel} style={[styles.btn, styles.cancel]} activeOpacity={0.7}>
-                <Text style={styles.btnText}>Cancel</Text>
-              </TouchableOpacity>
+             
               <TouchableOpacity onPress={handleCallNow} style={[styles.btn, styles.primary]} activeOpacity={0.7}>
                 <Text style={[styles.btnText, styles.primaryText]}>Trigger now</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleCancel} style={[styles.btn, styles.cancel]} activeOpacity={0.7}>
+                <Text style={styles.btnText}>Cancel</Text>
               </TouchableOpacity>
             </View>
             <View style={styles.detailsBox}>
@@ -327,19 +328,19 @@ const styles = StyleSheet.create({
     color: colors.grey_xxdark,
   },
   actions: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-between',
     gap: 12,
-    marginTop: 8,
+   
   },
   actionsAfter: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-between',
     gap: 12,
     marginTop: 16,
   },
   btn: {
-    flex: 1,
+    
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
@@ -429,7 +430,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   reasonActions: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-between',
     gap: 12,
     marginTop: 12,

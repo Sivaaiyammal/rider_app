@@ -33,12 +33,14 @@ const FavLabelItems = React.memo(({onLabelPress,enableAdd=true}) => {
       {userFavPlaces?.length > 0 && <AdaptiveText style={styles.FavouriteAddressContainerTitle}>{t('favorite_places')}</AdaptiveText>}
       {hasNoFavorites && enableAdd ? (
        
-        <TouchableOpacity style={styles.FavouriteAddressItem} onPress={handleAddFavPlacePress}>
+        // <TouchableOpacity style={styles.FavouriteAddressItem} onPress={handleAddFavPlacePress}>
          
-          <View style={styles.AddFavouriteAddressItemTextContainer}>
-            <AdaptiveText style={[styles.FavouriteAddressItemText,{color:"#757575"}]}>+ {t('add_favorite_places')}</AdaptiveText>
+        //   <View style={styles.AddFavouriteAddressItemTextContainer}>
+        //     <AdaptiveText style={[styles.FavouriteAddressItemText,{color:"#757575"}]}>+ {t('add_favorite_places')}</AdaptiveText>
+        //   </View>
+        // </TouchableOpacity>
+        <View style={styles.noLocationItem}>
           </View>
-        </TouchableOpacity>
       ) : (
     
         userFavPlaces?.map((item,index)=>(
