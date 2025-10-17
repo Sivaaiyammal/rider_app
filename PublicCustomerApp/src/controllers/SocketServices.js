@@ -11,6 +11,7 @@ import { DataStore } from './DataStore';
 import PREF from '../storage/PREF';
 import useUserInfoStore  from '../store/useUserInfoStore';
 import Config from "react-native-config";
+import useMapStore from '../features/map/store/useMapStore';
 const SOCKET_URL = Config.ROOT_API_URL;
 
 class WSService {
@@ -31,6 +32,7 @@ class WSService {
     this.useRideMatchStore = useRideMatchStore  
     this.usePaymentStore = usePaymentStore
     this.useUserInfoStore = useUserInfoStore
+    this.useMapStore = useMapStore
   }
 
   async driverAllocated(data){
@@ -65,14 +67,24 @@ class WSService {
             this.useCurrentRideInfoStore.getState().setFinalDuration(data?.tripFare?.duration);
             this.useCurrentRideInfoStore.getState().setOngoingingTripCancelled(true);
           }else{
-            this.useStackScreenStore.getState().setStackScreen('RideStatus',{});
+            
             this.useCurrentRideInfoStore.getState().setOtp(null);
             this.useAssignedDriverInfoStore.getState().setDriverInfo(null);
-            this.useCurrentRideInfoStore.getState().setTripStatus(null);
+            
             this.useCurrentRideInfoStore.getState().setOngoingingTripCancelled(false);
             this.useRideMatchStore.getState().resetRideMatchStatus();
-            this.useStackScreenStore.getState().goBack();
+            this.useMapStore.getState().setGeometries([]);
+            this.useMapStore.getState().setMapMarkers([]);
+            this.useCurrentRideInfoStore.getState().setTripStatus(null);
+      
+            console.log("this.useStackScreenStore.getState().stackScreen",this.useStackScreenStore.getState().stackScreen)
+            if(this.useStackScreenStore.getState().stackScreen === 'RideStatus'){
+              this.useStackScreenStore.getState().goBack();
             
+            }else{
+              this.useStackScreenStore.getState().goBackToScreen('BookRideScreen',{});
+            }
+            this.DataStore.clearData(PREF.CURRENT_TRIP);
           }
           
         } catch (error) {

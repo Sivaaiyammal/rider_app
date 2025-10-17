@@ -20,7 +20,9 @@ class currentLocation {
       console.log("bounds",bounds)
       const margin = [50, 100, 50, height*0.4]
       const finalBounds = [bounds, margin]
-      setMapBounds(finalBounds);
+      setTimeout(() => {
+        setMapBounds(finalBounds);
+      }, 2000);
       setLoading(false); 
     }
     else{

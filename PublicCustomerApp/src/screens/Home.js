@@ -155,7 +155,6 @@ const Home = () => {
         setCurrentLocationName(cachedAddress);
         return;
       }
-
       const search = new SearchAPI();
       const response = await search.reverseGeocode(lng, lat);
       geocodeCache.current.set(key, response);

@@ -103,7 +103,9 @@ const MapScreen = () => {
       const bounds = utils.getBoundingBox([[location[0],location[1]]])
       const margin = [50, 100, 50, height*0.4]
       const finalBounds = [bounds, margin]
-      setMapBounds(finalBounds);
+      setTimeout(() => {  
+        setMapBounds(finalBounds);
+      }, 2000);
     }
   },[location])
 
@@ -193,7 +195,9 @@ const MapScreen = () => {
       const bounds = utils.getBoundingBox([[location[0],location[1]]])
       const margin = [50, 100, 50, height*0.4]
       const finalBounds = [bounds, margin]
-      setMapBounds(finalBounds);
+      setTimeout(() => {
+        setMapBounds(finalBounds);
+      }, 2000);
     }
   },[location])
 

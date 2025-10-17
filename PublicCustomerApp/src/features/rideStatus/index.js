@@ -31,6 +31,7 @@ import getGpsData from './services/getgpsdata';
 import { findRoute } from '../../controllers/NEMap/findRoute';
 import useLocationStore from '../../store/useLocationStore';
 import useAssignedDriverInfoStore from './store/useAssignedDriverInfoStore';
+import useMapStore from '../map/store/useMapStore';
 
 const RideStatus = () => {
   const { userdetails } = useUserInfoStore();
@@ -38,6 +39,11 @@ const RideStatus = () => {
   const [showOverlay, setShowOverlay] = useState(false);
   const {incrementCancelledTrips,} = useUserInfoStore();
   const {location} = useLocationStore();
+  const {
+    setGeometries,
+    setMapBounds,
+    setMapMarkers
+  } = useMapStore();
   const {driverLatitude,driverLongitude} = useAssignedDriverInfoStore();
   const { duration,totalDistance,tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled,stops} = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
@@ -237,7 +243,8 @@ const RideStatus = () => {
   useEffect(()=>{
     return () => {
       setShowBookingCancelModel(false);
-      
+      setGeometries([])
+      setMapMarkers([])
     }
   },[])
 
