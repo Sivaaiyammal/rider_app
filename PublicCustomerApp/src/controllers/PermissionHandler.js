@@ -109,6 +109,97 @@ export const RequestAllPermissions = async () => {
 }
 
 
+// Background Location Permissions (Android focused)
+export const checkBackgroundLocationPermissions = async () => {
+  try {
+    if (Platform.OS !== 'android') {
+      return true;
+    }
+    if (Platform.Version < 29) {
+      // Below Android 10, background access is covered by fine location
+      return await checkFineLocationPermissions();
+    }
+    const granted = await PermissionsAndroid.check(
+      PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+    );
+    return granted;
+  } catch (error) {
+    console.error('Error checking background location permissions:', error);
+    return false;
+  }
+}
+
+export const RequestBackgroundLocationPermission = async () => {
+  try {
+    if (Platform.OS !== 'android') {
+      return true;
+    }
+
+    // Ensure fine location first
+    let hasFineLocation = await checkFineLocationPermissions();
+    if (!hasFineLocation) {
+      const fineResult = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      );
+
+      if (fineResult === 'never_ask_again') {
+        Alert.alert(
+          'Permission Required',
+          'Location permission is required to proceed.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          ],
+        );
+        return false;
+      }
+
+      if (fineResult !== PermissionsAndroid.RESULTS.GRANTED) {
+        Alert.alert('Permission Required', 'Please allow location permission to continue.');
+        return false;
+      }
+
+      hasFineLocation = true;
+    }
+
+    if (Platform.Version < 29) {
+      // Background location not separately required before Android 10
+      return true;
+    }
+
+    const hasBackground = await checkBackgroundLocationPermissions();
+    if (hasBackground) {
+      return true;
+    }
+
+    const backgroundResult = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION,
+    );
+
+    if (backgroundResult === 'never_ask_again') {
+      Alert.alert(
+        'Permission Required',
+        'Allow "Location" -> "Allow all the time" in Settings to enable SOS live location.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Open Settings', onPress: () => Linking.openSettings() },
+        ],
+      );
+      return false;
+    }
+
+    if (backgroundResult !== PermissionsAndroid.RESULTS.GRANTED) {
+      Alert.alert('Permission Required', 'Background location is required to use SOS.');
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error requesting background location permission:', error);
+    return false;
+  }
+}
+
 export const RequestContactsPermission = async () => {
   const result = await PermissionsAndroid.request(
     PermissionsAndroid.PERMISSIONS.READ_CONTACTS,

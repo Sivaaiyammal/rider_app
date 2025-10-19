@@ -20,8 +20,10 @@ import PropTypes from 'prop-types';
 import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import SOSModal from '../component/SOSModal';
+import BackgroundLocationPreInfoModal from '../component/BackgroundLocationPreInfoModal';
 import { DataStore } from '../../../controllers/DataStore';
 import PREF from '../../../storage/PREF';
+import { RequestBackgroundLocationPermission } from '../../../controllers/PermissionHandler';
 const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {driverName,vehicleNumber,model,brand,driverPhoto,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
   const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare} = useCurrentRideInfoStore();
@@ -38,6 +40,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   
   const [expanded, setExpanded] = useState(false);
   const [showSOS, setShowSOS] = useState(false);
+  const [showPreInfo, setShowPreInfo] = useState(false);
   const [sosPreset, setSosPreset] = useState(false);
   const toggleExpand = () => {
     console.log("toggleExpand",expanded);
@@ -82,8 +85,16 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const driverPhotoUri = driverPhoto && driverPhoto.trim() !== '' ? driverPhoto : null;
 
 
-  const onSOSClick = () => {
-    setShowSOS(true);
+  const onSOSClick = async () => {
+    setShowPreInfo(true);
+  }
+
+  const handlePreInfoProceed = async () => {
+    setShowPreInfo(false);
+    const granted = await RequestBackgroundLocationPermission();
+    if (granted) {
+      setShowSOS(true);
+    }
   }
   
   return (
@@ -188,6 +199,20 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
     />
     }
     </StatusConatainerWrapper>
+    {showPreInfo && (
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showPreInfo}
+        onRequestClose={() => setShowPreInfo(false)}
+        presentationStyle="overFullScreen"
+      >
+        <BackgroundLocationPreInfoModal
+          onClose={() => setShowPreInfo(false)}
+          onProceed={handlePreInfoProceed}
+        />
+      </Modal>
+    )}
     {showSOS && (
       <Modal
         animationType="slide"
