@@ -597,6 +597,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             case "stop_5": return R.drawable.stop_5;
             case "stop_6": return R.drawable.stop_6;
             case "drop_point": return R.drawable.drop_point;
+            case "pickup_point": return R.drawable.pickup_point;
          
             default: return R.drawable.marker_stop_grey;
         }

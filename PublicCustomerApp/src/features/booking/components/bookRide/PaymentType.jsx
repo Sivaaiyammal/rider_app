@@ -8,8 +8,8 @@ import { colors } from '../../../../constants/constants';
 import { Fonts } from '../../../../constants/constants';
 
 const PAYMENT_OPTIONS = [
-  { key: 'cash', label: 'Cash', Icon: PaymentCashIcon,value:"CASH" },
-  { key: 'upi', label: 'UPI', Icon: PaymentUPIIcon,value:"UPI" },
+  { key: 'cash', label: 'Cash',value:"CASH" },
+  { key: 'upi', label: 'Online', value:"ONLINE" },
 ];
 
 const PaymentType = ({ onSelect, initialValue }) => {
@@ -35,7 +35,7 @@ const PaymentType = ({ onSelect, initialValue }) => {
           onPress={() => handleSelect(value)}
           activeOpacity={0.8}
         >
-          <Icon width={28} height={28} style={styles.icon} />
+          {/* <Icon width={28} height={28} style={styles.icon} /> */}
           <Text style={styles.label}>{label}</Text>
           <View style={styles.radioOuter}>
             {selected === value && <View style={styles.radioInner} />}

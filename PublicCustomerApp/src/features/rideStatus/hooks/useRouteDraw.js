@@ -234,7 +234,7 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
         if(!bounds){
             return
         }
-        const margin = [20,100,20,500]
+        const margin = [50,100,50,500]
         // Structure bounds properly: [bounds, margin] where bounds is [minLon, minLat, maxLon, maxLat]
         const finalBounds = [bounds, margin]
 		console.log("finalBounds",finalBounds)
