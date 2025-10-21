@@ -5,7 +5,8 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import {useStackScreenStore} from '../store/useStackScreenStore';
 import NavBar from '../components/NavBar';
@@ -19,14 +20,16 @@ import SkeletonLoader from '../components/Loaders/SkeletonLoader';
 import useLocationStore from '../store/useLocationStore';
 import useMapStyleStore from '../store/useMapStyleStore';
 import CurrentLocationIcon from '../assets/icons/CurrentLocationIcon.svg';
-import locationTask from "../controllers/GetCurrentLocation";
+
+// import locationTask from "../controllers/GetCurrentLocation";
 import usePropsStore from '../store/usePropsStore';
 import { useDebouncedAPICall } from '../hooks/useDebounce';
 import { useTranslation } from 'react-i18next';
 import LinearGradient from 'react-native-linear-gradient';
 import PropTypes from 'prop-types';
 import AdaptiveText from '../components/Common/AdaptiveText';
-
+import { findRoute } from '../controllers/NEMap/findRoute';
+import polyline from '@mapbox/polyline';
 const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation} = useMapStore();
@@ -37,6 +40,38 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   const [mapMoving,setMapMoving] = useState(false)
   const { t } = useTranslation();
   const [isConfirming, setIsConfirming] = useState(false);
+  const getLastLatLngfromPolyLine = useCallback(async (polylineData) => {
+    console.log("polylineData",polylineData)
+    const encodedPolyline = polylineData.trip.legs?.[0].shape || null;
+
+    if(!encodedPolyline){
+      return null;
+    }
+    const coordinates = await polyline.decode(encodedPolyline, 6);
+    console.log("coordinates",coordinates)
+    return coordinates[coordinates.length - 1];
+  }, []);
+  const extractRouteSummary = useCallback((routeData) => {
+        if (!routeData?.trip?.legs || routeData.trip.legs.length === 0) {
+          return null;
+        }
+        if (routeData.trip.legs.length > 1) {
+          let totalTime = 0;
+          let totalLength = 0;
+          routeData.trip.legs.forEach(leg => {
+            if (leg.summary) {
+              totalTime += leg.summary.time || 0;
+              totalLength += leg.summary.length || 0;
+            }
+          });
+          return { time: totalTime, length: totalLength };
+        }
+        const leg = routeData.trip.legs[0];
+        if (leg.summary) {
+          return leg.summary;
+        }
+        return null;
+      }, []);
   const fetchAddressName = useCallback(async (longitude, latitude) => {
     
   
@@ -157,10 +192,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     };
   }, []);
 
-  const handleCurrentLocation = async () => {
-    await locationTask.getCurrentLocation();
-    
-  }
+  // removed unused handleCurrentLocation to satisfy linter
 
   return (
     <>
@@ -233,7 +265,50 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
             styles.bottomContainerButton,
             (isAddressLoading || isConfirming) && styles.bottomContainerButtonDisabled
           ]}
-          onPress={() => { setIsConfirming(true); onPickLocationResultCallback(pickedLocation, locationType); }}
+          onPress={async () => {
+            if (isAddressLoading || isConfirming) return;
+            setIsConfirming(true);
+            try {
+              const fromLat = location?.[1];
+              const fromLon = location?.[0];
+              const toLat = pickedLocation?.latitude;
+              const toLon = pickedLocation?.longitude;
+              if (fromLat == null || fromLon == null || toLat == null || toLon == null) {
+                Alert.alert('Invalid location', 'Current or selected location is missing.');
+                return;
+              }
+              const points = [
+                { lat: fromLat, lon: fromLon },
+                { lat: toLat, lon: toLon }
+              ];
+              const routeData = await findRoute(points);
+              const summary = await extractRouteSummary(routeData);
+              const lastLatLng = await getLastLatLngfromPolyLine(routeData);
+             
+           
+              const distanceKm = summary?.length || null;
+            
+              if (distanceKm >= 0.2) {
+                if(lastLatLng){
+                  pickedLocation.latitude = lastLatLng[0];
+                  pickedLocation.longitude = lastLatLng[1];
+                }
+                onPickLocationResultCallback(pickedLocation, locationType);
+              } else if (distanceKm == null ) {
+                Alert.alert('No route found', 'No route is available to the selected location.');
+               
+              } else {
+                const title = t('min_distance_title', { defaultValue: 'Distance too short' });
+                const message = t('min_distance_message', { defaultValue: 'Ride distance must be at least 200 m' });
+                Alert.alert(title, message);
+              }
+            } catch (e) {
+              console.error('Route check failed', e);
+              Alert.alert('Error', 'Failed to find a route. Please try again.');
+            } finally {
+              setIsConfirming(false);
+            }
+          }}
           disabled={isAddressLoading || isConfirming}
         >
           {isConfirming ? (
