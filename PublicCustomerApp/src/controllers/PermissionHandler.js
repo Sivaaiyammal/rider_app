@@ -1,4 +1,5 @@
 import { Alert, Linking, Platform } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 
 import { PermissionsAndroid } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
@@ -7,6 +8,7 @@ import messaging from '@react-native-firebase/messaging';
 export const checkFineLocationPermissions = async () => {
   try {
     let grantedFineLocation = await PermissionsAndroid.check(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+    console.log("grantedFineLocation",grantedFineLocation)
     return grantedFineLocation;
   } catch (error) {
     console.error('Error checking fine location permissions:', error);
@@ -92,11 +94,11 @@ export const RequestNotificationPermission = async () => {
 export const RequestAllPermissions = async () => {
   try {
     // Request both location and notification permissions
-    // const locationPermission = await RequestFineLocationPermission();
+    const locationPermission = await RequestFineLocationPermission();
     const notificationPermission = await RequestNotificationPermission();
     
     return {
-      // location: locationPermission,
+      location: locationPermission,
       notification: notificationPermission
     };
   } catch (error) {
@@ -197,6 +199,36 @@ export const RequestBackgroundLocationPermission = async () => {
   } catch (error) {
     console.error('Error requesting background location permission:', error);
     return false;
+  }
+}
+
+// System-wide Location Services (GPS) status
+export const isSystemLocationEnabled = async () => {
+  try {
+    const enabled = await DeviceInfo.isLocationEnabled();
+    return !!enabled;
+  } catch (error) {
+    console.error('Error checking system location services:', error);
+    // Fail-open to avoid blocking app if API fails
+    return true;
+  }
+}
+
+export const openSystemLocationSettings = async () => {
+  try {
+    if (Platform.OS === 'android') {
+      if (typeof Linking.sendIntent === 'function') {
+        await Linking.sendIntent('android.settings.LOCATION_SOURCE_SETTINGS');
+        return;
+      }
+      // Fallback: open app settings if intent unavailable
+      await Linking.openSettings();
+      return;
+    }
+    // iOS fallback to app settings
+    await Linking.openSettings();
+  } catch (error) {
+    console.error('Failed to open system location settings', error);
   }
 }
 

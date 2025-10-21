@@ -10,7 +10,7 @@ import { Fonts, colors } from '../../../constants/constants';
 import PDFCreator from '../../../utils/PDFCreator';
 import { utils } from '../../../utils/Utils';
 
-const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,supplierDetails,recipientDetails,adminInfo,visible, onClose }) => {
+const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,supplierDetails,recipientDetails,adminInfo,visible, onClose, mode = 'modal', showHeader }) => {
   const { t } = useTranslation();
   const { goBack } = useStackScreenStore();
   const [customFolder] = useState('');
@@ -55,6 +55,8 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
   // Merge actual data with defaults
   const mergedRideData = fareDetails?.breakdown || {};
 
+  const effectiveShowHeader = typeof showHeader === 'boolean' ? showHeader : mode === 'modal';
+
   const handleBackPress = () => {
     if (onClose) {
       onClose();
@@ -67,6 +69,8 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
     try {
       const supportUrl = adminInfo?.supportUrl || "https://nammaoorutaxi.com";
       const currency = fareDetails?.currency || "₹";
+
+      console.log("fareDetails",driverDetails?.driverPhoto)
 
       const sheets = [
         {
@@ -87,7 +91,7 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
             taxesLine: `Includes ${currency} ${fareDetails?.breakdown?.taxes?.total} Taxes`,
           
             driverName: driverDetails?.driverName,
-            driverPhotoUrl: driverDetails?.driverPhotoUrl,
+            driverPhotoUrl: driverDetails?.driverPhoto,
          
           
             distance: tripDistance,
@@ -318,16 +322,10 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
   const taxes = mergedRideData?.taxes?.breakdown || {};
   const feesWithTax = mergedRideData?.feesWithTax?.breakdown || {};
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={false}
-      onRequestClose={handleBackPress}
-    >
+  const content = (
       <View style={styles.container}>
-        <NavBar withBg onBackPress={handleBackPress} title={t('invoice_detail')} />
-        
+        {effectiveShowHeader && <NavBar withBg onBackPress={handleBackPress} title={t('invoice_detail')} />}
+
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Invoice Header */}
           <View style={styles.invoiceHeader}>
@@ -530,8 +528,23 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
           </View>
         )}
       </View>
-    </Modal>
   );
+
+  if (mode === 'modal') {
+    return (
+      <Modal
+        visible={visible}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={handleBackPress}
+      >
+        {content}
+      </Modal>
+    );
+  }
+
+  // Inline mode: ignore `visible` and just render content
+  return content;
 };
 
 const styles = StyleSheet.create({
@@ -896,6 +909,8 @@ InvoiceScreen.propTypes = {
   adminInfo: PropTypes.object,
   visible: PropTypes.bool,
   onClose: PropTypes.func,
+  mode: PropTypes.oneOf(['modal', 'inline']),
+  showHeader: PropTypes.bool,
 };
 
 export default InvoiceScreen; 

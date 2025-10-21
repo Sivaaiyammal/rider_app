@@ -67,9 +67,10 @@ const MapScreen = () => {
   const [error, setError] = useState(null);
   const {setStackScreen} = useStackScreenStore();
   const {location,currentLocationName} = useLocationStore();
-  const {setRideStartLocation,setRideEndLocation } = useRideBookingLocationStore()
+  const {setRideStartLocation,setRideEndLocation,resetRideBookingLocation } = useRideBookingLocationStore()
   const { drivers } = useNearbyDriversStore();
   const {setMapMarkers,setMapBounds} = useMapStore();
+  
   useEffect(()=>{
 
   
@@ -167,6 +168,7 @@ const MapScreen = () => {
   }, [showMenu]);
 
   useEffect(()=>{
+    resetRideBookingLocation();
     if(AppConfig.SHOW_NEARBY_DRIVER){
       start();
     }

@@ -9,12 +9,12 @@ import {
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import PermissionImage from '../assets/image/permissionImage.svg';
-import { height, width } from '../utils/Utils';
+// import { height, width } from '../utils/Utils';
 
 const LocationPermissionOverlay = ({ onEnable }) => {
   const { t } = useTranslation();
 
-  const openSettings = () => {
+  const openSettings = async () => {
     Linking.openSettings();
   };
 

@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, 
 import Contacts from 'react-native-contacts';
 import { RequestContactsPermission, checkContactsPermission } from '../../../controllers/PermissionHandler';
 import { useEmergencyContactsStore } from '../store/useEmergencyContactsStore';
-import { addEmergencyContacts } from '../services/api';
+import { addEmergencyContacts, removeEmergencyContact } from '../services/api';
 import NavBar from '../../../components/NavBar';
 import { useTranslation } from 'react-i18next';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
@@ -24,6 +24,7 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
   const { t } = useTranslation();
   const addContact = useEmergencyContactsStore((s) => s.addContact);
   const existingContacts = useEmergencyContactsStore((s) => s.contacts);
+  const setStoreContacts = useEmergencyContactsStore((s) => s.setContacts);
   const goBack = useStackScreenStore((s) => s.goBack);
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -152,22 +153,41 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
     try {
       setSubmitting(true);
 
-      // Build payload for API
-      const payload = {
-        contactsData: selectedContacts.map((c) => ({ name: c.name, phone: c.phone })),
-      };
+      const normalize = (p: string) => (p || '').replace(/\s+/g, '');
 
-      // Call API once with contactsData
-      await addEmergencyContacts(payload);
-
-      // Save to zustand
+      const selectedByPhone = new Map<string, { name: string; phone: string }>();
       for (const c of selectedContacts) {
+        selectedByPhone.set(normalize(c.phone), { name: c.name, phone: normalize(c.phone) });
+      }
+
+      const existingByPhone = new Map<string, typeof existingContacts[number]>();
+      for (const c of existingContacts) {
+        existingByPhone.set(normalize(c.phone), c);
+      }
+
+      const toRemovePhones: string[] = [];
+      for (const [phone] of existingByPhone) {
+        if (!selectedByPhone.has(phone)) toRemovePhones.push(phone);
+      }
+
+      const toAddContacts = Array.from(selectedByPhone.values()).filter((c) => !existingByPhone.has(c.phone));
+
+      if (toRemovePhones.length > 0) {
+        await Promise.allSettled(toRemovePhones.map((p) => removeEmergencyContact(p)));
+      }
+
+      if (toAddContacts.length > 0) {
+        await addEmergencyContacts({ contactsData: toAddContacts });
+      }
+
+      const kept = existingContacts.filter((c) => selectedByPhone.has(normalize(c.phone)));
+      setStoreContacts(kept);
+      for (const c of toAddContacts) {
         addContact({ name: c.name, phone: c.phone, relation: 'Emergency' });
       }
 
       Alert.alert('Emergency contacts added');
       setSelectedIds(new Set());
-      // Navigate back to previous screen
       if (onBack) onBack(); else goBack();
     } catch (err) {
       console.log('Failed to submit emergency contacts', err);
@@ -175,7 +195,7 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
     } finally {
       setSubmitting(false);
     }
-  }, [addContact, selectedContacts]);
+  }, [addContact, existingContacts, selectedContacts, setStoreContacts]);
 
   const renderItem = useCallback(({ item }: { item: PhoneContact }) => {
     const isSelected = selectedIds.has(item.id);

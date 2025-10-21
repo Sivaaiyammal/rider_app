@@ -186,7 +186,10 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
       finalindex = finalindex+reachedStops.length
     }
     
-    const label = actualindex == 0 ? t('locate_pickup_location') :actualindex == finalindex ? t('locate_drop_location') : t('locate_stop',{stop:actualindex})
+    let label = actualindex == 0 ? t('locate_pickup_location') :actualindex == finalindex ? t('locate_drop_location') : t('locate_stop',{stop:actualindex})
+    if(!reachedStops?.length && reOrderWaypoints.length == 1){
+      label=t('locate_drop_location')
+    }
       setStackScreen("SearchScreen",{
         onSearchClick:onSearchClickResultCallback,
         index:index,
@@ -239,7 +242,8 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
     if(lastAddStopIndex < index){
       finalindex = finalindex+reachedStops.length
     }
-    const label = actualindex == 0 ? t('locate_pickup_location') :actualindex == finalindex ? t('locate_drop_location') : t('locate_stop',{stop:actualindex})
+    let label = actualindex == 0 ? t('locate_pickup_location') :actualindex == finalindex ? t('locate_drop_location') : t('locate_stop',{stop:actualindex})
+   
     setStackScreen("SearchScreen",{
       onSearchClick:onSearchReplaceWaypointCallback,
       index:index,

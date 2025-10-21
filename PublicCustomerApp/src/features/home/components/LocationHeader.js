@@ -1,40 +1,67 @@
 import {
-    ActivityIndicator,
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
+    Alert,
   } from 'react-native';
-  import React, {useEffect, useMemo} from 'react';
+  import React from 'react';
   import { useTranslation } from 'react-i18next';
   import {Fonts,colors} from '../../../constants/constants';
   import ProfileImage from '../../../assets/image/svgIcons/profileImage.svg';
+  import FemaleAvatar from '../../../assets/image/femaleAvatar.svg';
   import useLocationStore from '../../../store/useLocationStore';
-  import SearchAPI from '../../../controllers/NEMap/Search';
   import HomeMenuIcon from '../../../assets/icons/HomeMenu.svg';
   import {utils, width} from '../../../utils/Utils';
 import CurrentLocationIcon from '../../../assets/icons/CurrentLocationIcon.svg';
 import { height } from '../../../utils/Utils';
 import locationTask from '../../../controllers/GetCurrentLocation';
+import { isSystemLocationEnabled, openSystemLocationSettings } from '../../../controllers/PermissionHandler';
 import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
 import PropTypes from 'prop-types';
-
+import useUserInfoStore from '../../../store/useUserInfoStore';
   
   const LocationHeader = React.memo((props) => {
     const { t } = useTranslation();
     const {toggleMenu} = props;
-    const {location, currentLocationName, setCurrentLocationName} = useLocationStore();
+    const {userdetails} = useUserInfoStore();
+    const { currentLocationName } = useLocationStore();
    
     const handleCurrentLocation = async () => {
-      await locationTask.getCurrentLocation();
-      
+      try {
+        await locationTask.getCurrentLocation();
+        const enabled = await isSystemLocationEnabled();
+        if (!enabled) {
+          Alert.alert(
+            'Location is turned off',
+            'Please enable system Location services to continue.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Enable',
+                onPress: async () => {
+                  try {
+                    const stillOff = await isSystemLocationEnabled();
+                    if (!stillOff) {
+                      await openSystemLocationSettings();
+                      return;
+                    }
+                  } catch (e) { /* no-op */ }
+                },
+              },
+            ],
+          );
+          return;
+        }
+      } catch (e) { /* no-op */ }
+     
     }
     // Calculate responsive maxWidth (70% of screen width)
     const responsiveMaxWidth = width * 0.7;
   
    
+   console.log("userdetails",userdetails)
 
-  
     return (
       <View style={styles.headerWrapper}>
         <View style={styles.addressContainer}>
@@ -48,7 +75,7 @@ import PropTypes from 'prop-types';
               <HomeMenuIcon width={20} height={20} />
             </TouchableOpacity>
             <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
-              <ProfileImage />
+             {userdetails?.gender === 'female' ? <FemaleAvatar width={40} height={40} /> : <ProfileImage width={40} height={40} />}
             </TouchableOpacity>
           </View>
           <View style={{marginLeft: 10}}>

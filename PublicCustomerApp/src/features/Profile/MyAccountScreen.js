@@ -23,6 +23,7 @@ import MyAccountProfileImage from '../../components/Profile/MyAccountProfileImag
 import MyAccountInfo from '../../components/Profile/MyAccountInfo';
 import MyAccountStats from '../../components/Profile/MyAccountStats';
 import SwipeBtn from '../../components/SwipeBtn';
+import FemaleAvatar from '../../assets/image/femaleAvatar.svg';
 import { useStackScreenStore } from '../../store/useStackScreenStore';  
 
 const MyAccountScreen = () => {

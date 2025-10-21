@@ -2,16 +2,19 @@ import React, { useRef, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ImageBackground, Image, Animated, Dimensions, useColorScheme, Appearance } from "react-native";
 
 import BackArrow from '../../assets/image/backArrow.svg';
-import ProfileImage from '../../assets/image/account/Profile.webp';
+import ProfileImage from '../../assets/image/svgIcons/profileImage.svg';
 
 import { Colors } from 'react-native/Libraries/NewAppScreen'
 import { styles } from '../../styles/Account/account'
 import { lightThemeStyles, darkThemeStyles } from '../../styles/ColorSet'
 import { Fonts } from '../../constants/constants';
+import FemaleAvatar from '../../assets/image/femaleAvatar.svg';
+import useUserInfoStore from '../../store/useUserInfoStore';
 
 const MyAccountProfileImage = (props) => {
 
     const { id, name, ratingData } = props
+    const {userdetails} = useUserInfoStore();
 
     const ColorSet = Appearance.getColorScheme() === 'light' ? lightThemeStyles : lightThemeStyles;
 
@@ -20,8 +23,8 @@ const MyAccountProfileImage = (props) => {
         <>
             <View style={[styles.container, { zIndex: 100 }]}>
                 <View style={styles.profileImgContainer}>
-                    <Image style={styles.profileImg} source={ProfileImage} />
-                </View>
+                    {userdetails?.gender === 'female' ? <FemaleAvatar width={100} height={100} /> : <ProfileImage width={100} height={100} />}
+                </View> 
             </View>
             <View style={[styles.container, { borderTopLeftRadius: 10, borderTopRightRadius: 10 ,paddingBottom:20}]}>
 

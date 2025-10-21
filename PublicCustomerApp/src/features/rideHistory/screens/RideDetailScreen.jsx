@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ScrollView, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { ScrollView, View, StyleSheet, Text, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import NavBar from '../../../components/NavBar';
@@ -24,6 +24,8 @@ const RideDetailScreen = ({ TripData }) => {
   const { goBack } = useStackScreenStore();
   const [showReceipt, setShowReceipt] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
+  const screenHeight = Dimensions.get('window').height;
+  const overlayAnim = useRef(new Animated.Value(screenHeight)).current;
   
  
   
@@ -39,20 +41,44 @@ const RideDetailScreen = ({ TripData }) => {
     
   };
 
+  const animateIn = () => {
+    Animated.timing(overlayAnim, {
+      toValue: 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const animateOut = (onEnd) => {
+    Animated.timing(overlayAnim, {
+      toValue: screenHeight,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      if (onEnd) onEnd();
+    });
+  };
+
   const handleReceiptPress = () => {
+    setShowInvoice(false);
+    overlayAnim.setValue(screenHeight);
     setShowReceipt(true);
+    requestAnimationFrame(animateIn);
   };
 
   const handleReceiptClose = () => {
-    setShowReceipt(false);
+    animateOut(() => setShowReceipt(false));
   };
 
   const handleInvoicePress = () => {
+    setShowReceipt(false);
+    overlayAnim.setValue(screenHeight);
     setShowInvoice(true);
+    requestAnimationFrame(animateIn);
   };
 
   const handleInvoiceClose = () => {
-    setShowInvoice(false);
+    animateOut(() => setShowInvoice(false));
   };
 
   const formatDate = (timestamp) => {
@@ -163,45 +189,52 @@ const RideDetailScreen = ({ TripData }) => {
         }
       </ScrollView>
       
-      {/* Receipt Modal Overlay */}
-      <ReceiptScreen 
-        rideId={rideData?.rideId}
-        tripFare={rideData.fareDetails?.fare}
-        tripDistance={rideData.finalDistance }
-        tripDuration={rideData.finalDuration }
-        driverDetails={rideData.driverInfo}
-        vehicleDetails={rideData.driverInfo}
-        tripStops={rideData.stops}
-        bookingTime={rideData.bookingTime}
-        fareDetails={rideData.fareDetails}
-        paymentMethod={rideData.paymentMethod}
-        supplierDetails={rideData.supplier}
-        recipientDetails={rideData.recipient}
-        adminInfo={rideData.adminInfo}
-        paymentStatus={rideData.passengerPaymentStatus}
-        visible={showReceipt}
-        onClose={handleReceiptClose}
-      />
-      
-      {/* Invoice Modal Overlay */}
-      <InvoiceScreen 
-       rideId={rideData?.rideId}
-       tripFare={rideData.fareDetails?.fare}
-       tripDistance={rideData.finalDistance }
-       tripDuration={rideData.finalDuration}
-       driverDetails={rideData.driverInfo}
-       vehicleDetails={rideData.driverInfo}
-       tripStops={rideData.stops}
-       bookingTime={rideData.bookingTime}
-       fareDetails={rideData.fareDetails}
-       paymentMethod={rideData.paymentMethod}
-       supplierDetails={rideData.supplier}
-       recipientDetails={rideData.recipient}
-       adminInfo={rideData.adminInfo}
-       paymentStatus={rideData.passengerPaymentStatus}
-        visible={showInvoice}
-        onClose={handleInvoiceClose}
-      />
+      {/* Overlay layers rendered on top with zIndex */}
+      {showReceipt && (
+        <Animated.View style={[styles.overlayContainer, { transform: [{ translateY: overlayAnim }] }]}>
+          <ReceiptScreen 
+            rideId={rideData?.rideId}
+            tripFare={rideData.fareDetails?.fare}
+            tripDistance={rideData.finalDistance }
+            tripDuration={rideData.finalDuration }
+            driverDetails={rideData.driverInfo}
+            vehicleDetails={rideData.driverInfo}
+            tripStops={rideData.stops}
+            bookingTime={rideData.bookingTime}
+            fareDetails={rideData.fareDetails}
+            paymentMethod={rideData.paymentMethod}
+            recipientDetails={rideData.recipient}
+            adminInfo={rideData.adminInfo}
+            paymentStatus={rideData.passengerPaymentStatus}
+            mode="inline"
+            showHeader={true}
+            onClose={handleReceiptClose}
+          />
+        </Animated.View>
+      )}
+      {showInvoice && (
+        <Animated.View style={[styles.overlayContainer, { transform: [{ translateY: overlayAnim }] }]}>
+          <InvoiceScreen 
+            rideId={rideData?.rideId}
+            tripFare={rideData.fareDetails?.fare}
+            tripDistance={rideData.finalDistance }
+            tripDuration={rideData.finalDuration}
+            driverDetails={rideData.driverInfo}
+            vehicleDetails={rideData.driverInfo}
+            tripStops={rideData.stops}
+            bookingTime={rideData.bookingTime}
+            fareDetails={rideData.fareDetails}
+            paymentMethod={rideData.paymentMethod}
+            supplierDetails={rideData.supplier}
+            recipientDetails={rideData.recipient}
+            adminInfo={rideData.adminInfo}
+            paymentStatus={rideData.passengerPaymentStatus}
+            mode="inline"
+            showHeader={true}
+            onClose={handleInvoiceClose}
+          />
+        </Animated.View>
+      )}
     </View>
   );
 };
@@ -313,6 +346,37 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 14,
     color: colors.grey_xxdark,
+  },
+  inlinePanel:{
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+    shadowColor: colors.black,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  inlineHeader:{
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  inlineTitle:{
+    fontFamily: Fonts.semi_bold,
+    fontSize: 16,
+    color: colors.black,
+  },
+  overlayContainer:{
+    position:'absolute',
+    left:0,
+    right:0,
+    top:0,
+    bottom:0,
+    backgroundColor: colors.white,
+    zIndex: 9999,
+    elevation: 12,
   },
   
 });

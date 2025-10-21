@@ -9,12 +9,9 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import PDFCreator from '../../../utils/PDFCreator';
 import { utils } from '../../../utils/Utils';
 
-const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,supplierDetails,recipientDetails,adminInfo,visible, onClose }) => {
+const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,recipientDetails,adminInfo,visible, onClose, mode = 'modal', showHeader }) => {
   const { t } = useTranslation();
   const { goBack } = useStackScreenStore();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [lastGeneratedPath, setLastGeneratedPath] = useState(null);
-  const [customFolder, setCustomFolder] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const toastTimerRef = useRef(null);
@@ -48,6 +45,8 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
     vehicleInfo: vehicleDetails
   };
 
+  const effectiveShowHeader = typeof showHeader === 'boolean' ? showHeader : mode === 'modal';
+
   const handleBackPress = () => {
     if (onClose) {
       onClose();
@@ -58,7 +57,6 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
 
   const handleMultiSheetPDF = async () => {
     try {
-      setIsGenerating(true);
       const supportUrl = adminInfo?.supportUrl || "https://nammaoorutaxi.com";
       const currency = fareDetails?.currency || "₹";
 
@@ -103,10 +101,7 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
       ];
 
       const fileName = 'Receipt_' + rideId;
-      const pdfPath = await PDFCreator.createMultiSheetPDF(sheets, fileName, customFolder || null);
-
-      
-      setLastGeneratedPath(pdfPath);
+      const pdfPath = await PDFCreator.createMultiSheetPDF(sheets, fileName, null);
       // Show floating toast (2s) with saved path
       setToastMessage(`Saved to:\n${pdfPath}`);
       setShowToast(true);
@@ -117,8 +112,6 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
     } catch (error) {
       console.error('Multi-sheet PDF error:', error);
       Alert.alert('Error', 'Failed to create multi-sheet PDF: ' + error.message, [{ text: 'OK' }]);
-    } finally {
-      setIsGenerating(false);
     }
   };  
 
@@ -155,17 +148,17 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
     return `${km} Km`;
   };
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={false}
-      onRequestClose={handleBackPress}
-    >
+  const content = (
       <View style={styles.container}>
-        <NavBar withBg onBackPress={handleBackPress} title={t('receipt')} />
-        
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {effectiveShowHeader && <NavBar withBg onBackPress={handleBackPress} title={t('receipt')} />}
+
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled
+          keyboardShouldPersistTaps="handled"
+        >
         {/* Receipt Header with Car Image */}
         <View style={styles.receiptHeader}>
           <View style={styles.headerLeft}>
@@ -254,13 +247,29 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
 
       {/* Floating Toast */}
       {showToast && (
-        <View style={styles.toast}>
+        <View style={styles.toast} pointerEvents="none">
           <Text style={styles.toastText}>{toastMessage}</Text>
         </View>
       )}
       </View>
-    </Modal>
   );
+
+  if (mode === 'modal') {
+    return (
+      <Modal
+        visible={visible}
+        animationType="slide"
+        transparent={false}
+        presentationStyle="fullScreen"
+        onRequestClose={handleBackPress}
+      >
+        {content}
+      </Modal>
+    );
+  }
+
+  // Inline mode: ignore `visible` prop and simply render content
+  return content;
 };
 
 const styles = StyleSheet.create({
@@ -268,9 +277,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
   },
+  scroll: {
+    flex: 1,
+  },
   scrollContent: {
     padding: 16,
     paddingBottom: 32,
+    flexGrow: 1,
   },
   receiptHeader: {
     backgroundColor: colors.black,
@@ -390,10 +403,8 @@ const styles = StyleSheet.create({
     gap: 10,
     justifyContent: 'center',
     alignItems: 'center',
-  
     borderRadius: 10,
     padding: 16,
-    alignItems: 'center',
     marginRight: 6,
   },
   downloadButtonText: {
@@ -447,6 +458,9 @@ ReceiptScreen.propTypes = {
     driverName: PropTypes.string,
     driverRating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     driverPhotoUrl: PropTypes.string,
+    vehicleBrand: PropTypes.string,
+    vehicleModel: PropTypes.string,
+    vehicleNumber: PropTypes.string,
   }),
   vehicleDetails: PropTypes.shape({
     vehicleBrand: PropTypes.string,
@@ -470,6 +484,8 @@ ReceiptScreen.propTypes = {
   adminInfo: PropTypes.object,
   visible: PropTypes.bool,
   onClose: PropTypes.func,
+  mode: PropTypes.oneOf(['modal', 'inline']),
+  showHeader: PropTypes.bool,
 };
 
 export default ReceiptScreen; 

@@ -1,5 +1,5 @@
-import React, { useState ,useEffect} from 'react';
-import { ScrollView, View, StyleSheet ,Text,TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState ,useEffect, useRef } from 'react';
+import { ScrollView, View, StyleSheet ,Text,TouchableOpacity, ActivityIndicator, Animated, Dimensions } from 'react-native';
 import FareHeader from '../../rideHistory/components/FareHeader';
 import TripMetaInfo from '../../rideHistory/components/TripMetaInfo';
 import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
@@ -33,6 +33,8 @@ const PaymentScreen = () => {
   const {t} = useTranslation();
   const {currentTripId,tripStatus,rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,paymentMethod,isLoading,setTripDetails,tripStops,fareDetails,bookingTime,supplierDetails,recipientDetails,adminDetails,paymentStatus,invoiceId } = usePaymentStore();
   const [showInvoice, setShowInvoice] = useState(false);
+  const screenHeight = Dimensions.get('window').height;
+  const overlayAnim = useRef(new Animated.Value(screenHeight)).current;
   const [svHeight, setSvHeight] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -40,12 +42,32 @@ const PaymentScreen = () => {
   const isPaymentGateway = appConfig?.PAYMENT_METHODS === "PG" && driverDetails?.razorPayId;
   const {setStackScreen} = useStackScreenStore();
   const { incrementTotalSpend,incrementCompletedTrips } = useUserInfoStore();
+  const animateIn = () => {
+    Animated.timing(overlayAnim, {
+      toValue: 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const animateOut = (onEnd) => {
+    Animated.timing(overlayAnim, {
+      toValue: screenHeight,
+      duration: 250,
+      useNativeDriver: true,
+    }).start(() => {
+      if (onEnd) onEnd();
+    });
+  };
+
   const handleInvoicePress = () => {
+    overlayAnim.setValue(screenHeight);
     setShowInvoice(true);
+    requestAnimationFrame(animateIn);
   };
  
   const handleInvoiceClose = () => {
-    setShowInvoice(false);
+    animateOut(() => setShowInvoice(false));
   };
 
   console.log(driverDetails,"driverDetails")
@@ -262,26 +284,31 @@ const PaymentScreen = () => {
         </View>
       )}
       
-      {/* Invoice Modal Overlay */}
-      <InvoiceScreen 
-       invoiceId={invoiceId}
-       rideId={rideId}
-       tripFare={tripFare}
-       tripDistance={tripDistance}
-       tripDuration={tripDuration}
-       driverDetails={driverDetails}
-       vehicleDetails={driverDetails}
-       tripStops={tripStops}
-       bookingTime={bookingTime}
-       fareDetails={fareDetails}
-       paymentMethod={paymentMethod}
-       supplierDetails={supplierDetails}
-       recipientDetails={recipientDetails}
-       adminInfo={adminDetails}
-       paymentStatus={paymentStatus}
-        visible={showInvoice}
-        onClose={handleInvoiceClose}
-      />
+      {/* Invoice Overlay */}
+      {showInvoice && (
+        <Animated.View style={[styles.overlayContainer, { transform: [{ translateY: overlayAnim }] }]}>
+          <InvoiceScreen 
+            invoiceId={invoiceId}
+            rideId={rideId}
+            tripFare={tripFare}
+            tripDistance={tripDistance}
+            tripDuration={tripDuration}
+            driverDetails={driverDetails}
+            vehicleDetails={driverDetails}
+            tripStops={tripStops}
+            bookingTime={bookingTime}
+            fareDetails={fareDetails}
+            paymentMethod={paymentMethod}
+            supplierDetails={supplierDetails}
+            recipientDetails={recipientDetails}
+            adminInfo={adminDetails}
+            paymentStatus={paymentStatus}
+            mode="inline"
+            showHeader={true}
+            onClose={handleInvoiceClose}
+          />
+        </Animated.View>
+      )}
       {/* <PayButton amount={finalFare} onPress={handlePayNow} paymentMethod={paymentMethod} /> */}
     </View>
   );
@@ -435,6 +462,16 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 16,
     color: colors.white,
+  },
+  overlayContainer:{
+    position:'absolute',
+    left:0,
+    right:0,
+    top:0,
+    bottom:0,
+    backgroundColor: colors.white,
+    zIndex: 9999,
+    elevation: 12,
   },
 });
 

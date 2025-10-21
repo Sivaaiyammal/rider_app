@@ -288,7 +288,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
            
               const distanceKm = summary?.length || null;
             
-              if (distanceKm >= 0.2) {
+              if (distanceKm >= 0.1) {
                 if(lastLatLng){
                   pickedLocation.latitude = lastLatLng[0];
                   pickedLocation.longitude = lastLatLng[1];

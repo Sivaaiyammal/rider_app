@@ -6,7 +6,7 @@ import { RequestAllPermissions } from '../controllers/PermissionHandler';
 import locationTask from '../controllers/GetCurrentLocation';
 import SearchScreen from '../features/search/screens/SearchScreen';
 import WaypointScreen from '../features/booking/screens/WaypointScreen';
-import { StatusBar, View, StyleSheet, AppState } from 'react-native';
+import { StatusBar, View, StyleSheet, AppState, Alert } from 'react-native';
 import LottieView from 'lottie-react-native';
 import useUserInfoStore from '../store/useUserInfoStore';
 import { getStoredLocation, getPreferenceShowRideStatus} from '../storage/userLocalStorage';
@@ -46,7 +46,7 @@ import AdaptiveText from '../components/Common/AdaptiveText';
 import { Fonts } from '../constants/constants';
 import SearchAPI from '../controllers/NEMap/Search';
 import { useNavigation } from '@react-navigation/native';
-import { checkFineLocationPermissions } from '../controllers/PermissionHandler';
+import { checkFineLocationPermissions, isSystemLocationEnabled, openSystemLocationSettings } from '../controllers/PermissionHandler';
 import EmergencyHomeScreen from '../features/emergencyContact/screens/EmergencyHomeScreen';
 import useRideMatching from '../hooks/useRideMatching';
 import TrackingTestScreen from './TrackingTestScreen';
@@ -394,13 +394,45 @@ const Home = () => {
   }, []);
 
   const navigateToPermissionIfNeeded = useCallback(async () => {
+    console.log("navigateToPermissionIfNeeded")
     try {
-      const granted = await checkFineLocationPermissions();
-      setHasLocationPermission(!!granted);
+      const [granted, systemEnabled] = await Promise.all([
+        checkFineLocationPermissions(),
+        isSystemLocationEnabled(),
+      ]);
+      console.log("granted", granted, "systemEnabled", systemEnabled)
+      setHasLocationPermission(!!granted && !!systemEnabled);
       if (!granted) {
+        console.log("navigate to location permission")
         navigation.navigate('LocationPermission');
+        return;
+      }
+      if (granted && !systemEnabled) {
+        Alert.alert(
+          'Location is turned off',
+          'Please enable system Location services to continue.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Enable',
+              onPress: async () => {
+                try {
+                  const enabled = await isSystemLocationEnabled();
+                  if (!enabled) {
+                    await openSystemLocationSettings();
+                    return;
+                  }
+                } catch (e) {
+                  // no-op
+                }
+              },
+            },
+          ],
+        );
+        return;
       }
     } catch (e) {
+      console.log("error",e)
       setHasLocationPermission(false);
     }
   }, [navigation]);
@@ -436,10 +468,12 @@ const Home = () => {
   }, [isConnected, id, initializeSocket, resetSocket]);
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', nextState => {
+    const subscription = AppState.addEventListener('change', async nextState => {
       appState.current = nextState;
+      console.log("nextState",nextState)
       if (nextState === 'active') {
-        navigateToPermissionIfNeeded();
+        console.log("navigate to permission if needed")
+        await navigateToPermissionIfNeeded();
       }
     });
     return () => subscription.remove();
