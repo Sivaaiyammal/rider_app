@@ -107,7 +107,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
        
         <AdaptiveText style={styles.topBarText}>{t(!iswaypoint ? 'reach_your_destination_in' : 'reach_your_waypoints_in',{stop:currentStop?.name})}</AdaptiveText>
         <View style={styles.timeBox}>
-          <AdaptiveText style={styles.timeText}>{estimatedDuration} Mins</AdaptiveText>
+          <AdaptiveText style={styles.timeText}>{estimatedDuration} {estimatedDuration == 1 ? 'Min' : 'Mins'}</AdaptiveText>
             </View>
         
     </View>

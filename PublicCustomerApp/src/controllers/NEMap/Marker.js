@@ -2,7 +2,7 @@
 const markerTypes = ['driver', 'marker_start','location_pin', 'marker_end', 'marker_waypoint', 'car', 'default', "car_red", "car_yellow", "car_green"]
    
 
-const markerSizes = [24, 36, 48, 64]
+const markerSizes = [24, 36, 48, 64,75, 128]
 
 class Marker {
 

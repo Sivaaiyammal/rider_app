@@ -130,7 +130,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
        
         <AdaptiveText style={styles.topBarText}>{t('your_driver_will_arrive_in')}</AdaptiveText>
         <View style={styles.timeBox}>
-          <AdaptiveText style={styles.timeText}>{estimatedDuration || '--'} Mins</AdaptiveText>
+          <AdaptiveText style={styles.timeText}>{estimatedDuration || '--'} {estimatedDuration == 1 ? 'Min' : 'Mins'}</AdaptiveText>
             </View>
         
     </View>
