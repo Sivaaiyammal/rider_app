@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useRef} from 'react';
 import {
   View,
   Text,
@@ -30,7 +30,7 @@ import PropTypes from 'prop-types';
 import AdaptiveText from '../components/Common/AdaptiveText';
 import { findRoute } from '../controllers/NEMap/findRoute';
 import polyline from '@mapbox/polyline';
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null}) => {
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation} = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -40,6 +40,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   const [mapMoving,setMapMoving] = useState(false)
   const { t } = useTranslation();
   const [isConfirming, setIsConfirming] = useState(false);
+  const searchRef = useRef(new SearchAPI());
   const getLastLatLngfromPolyLine = useCallback(async (polylineData) => {
     console.log("polylineData",polylineData)
     const encodedPolyline = polylineData.trip.legs?.[0].shape || null;
@@ -73,11 +74,8 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         return null;
       }, []);
   const fetchAddressName = useCallback(async (longitude, latitude) => {
-    
-  
     try {
-      const search = new SearchAPI();
-      const response = await search.reverseGeocode(longitude, latitude);    
+      const response = await searchRef.current.reverseGeocode(longitude, latitude);    
       return response 
 
     } catch (e) {
@@ -91,7 +89,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   const debouncedMapCenterChange = useDebouncedAPICall(async (data) => {
     setIsAddressLoading(true);
     const response = await fetchAddressName(data.longitude, data.latitude);
-    console.log(response,"response")
+    
     let item = {
       latitude: data.latitude,
       longitude: data.longitude,
@@ -104,10 +102,12 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     }
     setPickedLocation(item);
     setIsAddressLoading(false);
-  }, 300);
+  }, 500);
 
   const onmapCenterChanged = async (data)=>{
     setMapMoving(false);
+    setPickedLocation(null)
+    setIsAddressLoading(true);
     debouncedMapCenterChange(data);
   }
 
@@ -192,6 +192,17 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     };
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (debouncedMapCenterChange && debouncedMapCenterChange.cancel) {
+        debouncedMapCenterChange.cancel();
+      }
+      if (searchRef.current && searchRef.current.searchAbortController) {
+        searchRef.current.searchAbortController.abort();
+      }
+    };
+  }, []);
+
   // removed unused handleCurrentLocation to satisfy linter
 
   return (
@@ -236,7 +247,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
               <Text style={styles.AddressContainerTextAddress} color={colors.grey_xxdark}>{utils.formatArrayAddress(pickedLocation.address)}</Text>
             }
 
-            {isAddressLoading &&
+            {(isAddressLoading || !pickedLocation?.placeName)  &&
               <View style={styles.AddressContainerSkeleton}>
                 <SkeletonLoader
                   width="100%"
@@ -263,12 +274,17 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         <TouchableOpacity
           style={[
             styles.bottomContainerButton,
-            (isAddressLoading || isConfirming) && styles.bottomContainerButtonDisabled
+            (isAddressLoading || isConfirming || !pickedLocation?.placeName) && styles.bottomContainerButtonDisabled
           ]}
           onPress={async () => {
-            if (isAddressLoading || isConfirming) return;
+            if (isAddressLoading || isConfirming || !pickedLocation?.placeName) return;
             setIsConfirming(true);
             try {
+
+              if(!isFromRidePointsSelection){
+                onPickLocationResultCallback(pickedLocation, locationType);
+                return;
+              }
               const fromLat = location?.[1];
               const fromLon = location?.[0];
               const toLat = pickedLocation?.latitude;
@@ -277,18 +293,36 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                 Alert.alert('Invalid location', 'Current or selected location is missing.');
                 return;
               }
+              const toRadians = (degrees) => (degrees * Math.PI) / 180;
+              const R = 6371000; // meters
+              const dLat = toRadians(toLat - fromLat);
+              const dLon = toRadians(toLon - fromLon);
+              const lat1Rad = toRadians(fromLat);
+              const lat2Rad = toRadians(toLat);
+              const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                        Math.cos(lat1Rad) * Math.cos(lat2Rad) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+              const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+              const distanceMeters = R * c;
+              const isSameLocation = distanceMeters < 30; // treat <30m as same location
+              if (isSameLocation) {
+                Alert.alert('Same location', 'Current and selected location are the same.');
+                return;
+              }
               const points = [
                 { lat: fromLat, lon: fromLon },
                 { lat: toLat, lon: toLon }
               ];
+
               const routeData = await findRoute(points);
               const summary = await extractRouteSummary(routeData);
               const lastLatLng = await getLastLatLngfromPolyLine(routeData);
              
+              
            
               const distanceKm = summary?.length || null;
             
-              if (distanceKm >= 0.1) {
+              if (distanceKm >= 0.2) {
                 if(lastLatLng){
                   pickedLocation.latitude = lastLatLng[0];
                   pickedLocation.longitude = lastLatLng[1];
@@ -309,14 +343,14 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
               setIsConfirming(false);
             }
           }}
-          disabled={isAddressLoading || isConfirming}
+          disabled={isAddressLoading || isConfirming || !pickedLocation?.placeName}
         >
           {isConfirming ? (
             <ActivityIndicator color="white" />
           ) : (
             <AdaptiveText style={[
             styles.bottomContainerButtonText,
-            (isAddressLoading || isConfirming) && styles.bottomContainerButtonTextDisabled
+            (isAddressLoading || isConfirming || !pickedLocation?.placeName) && styles.bottomContainerButtonTextDisabled
             ]} color={colors.white}>{t('confirm_location')}</AdaptiveText>
           )}
         </TouchableOpacity>
@@ -492,6 +526,7 @@ PickLocationScreen.propTypes = {
     address: PropTypes.oneOfType([PropTypes.array, PropTypes.string]),
   }),
   label: PropTypes.string,
+  isFromRidePointsSelection: PropTypes.bool,
 };
 
 export default PickLocationScreen;

@@ -31,7 +31,7 @@ StatCard.propTypes = {
 };
 
 const MyAccountStats = ({ stats }) => {
-    console.log("stats",JSON.stringify(stats));
+  console.log("stats",JSON.stringify(stats));
   const { totalSpend = 0, cancelledTrips = 0, completedTrips = 0, totalTrips = 0 } = stats || {};
   const { t } = useTranslation();
   const data = [
@@ -83,7 +83,7 @@ const MyAccountStats = ({ stats }) => {
           iconName={item.iconName}
           iconLib={item.iconLib}
           label={t(item.label)}
-          value={item.value}
+          value={item.value || "0"}
           bgColor={item.bgColor}
           iconColor={item.iconColor}
         />

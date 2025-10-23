@@ -199,7 +199,7 @@ const RideStatus = () => {
           totalDuration: Math.round(duration)
         };
 
-    
+        console.log("payload",payload)
         CancelRide(payload);
         setWaitingForDriverApproval(null);
         return

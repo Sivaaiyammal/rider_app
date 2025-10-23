@@ -205,7 +205,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
     setStackScreen('PickLocationScreen',{
       onPickLocationResultCallback:onPickLocationResultCallback,
       locationType:LocationTypes.DESTINATION_LOCATION,
-      label:t('locate_drop_location')
+      label:t('locate_drop_location'),
+      isFromRidePointsSelection:true
     })
   }
 

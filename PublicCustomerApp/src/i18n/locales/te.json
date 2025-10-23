@@ -212,6 +212,11 @@
     "enter_name": "పేరు నమోదు చేయండి",
     "enter_mobile_number": "మొబైల్ నంబర్‌ను నమోదు చేయండి",
     "add_contact": "పరిచయాన్ని జోడించండి",
+    "import_contact": "పరిచయాన్ని దిగుమతి చేయండి",
+    "search_contacts_placeholder": "పరిచయాలను శోధించండి",
+    "no_contacts_found": "పరిచయాలు కనబడలేదు",
+    "try_different_name_or_number": "వేరే పేరు లేదా నంబర్ ప్రయత్నించండి",
+    "contact_privacy_note": "మీ పరిచయపు పేరు డ్రైవర్‌తో పంచబడదు.",
     "invalid_input": "చెల్లని ఇన్‌పుట్",
     "invalid_mobile_number": "దయచేసి చెల్లుబాటు అయ్యే భారతీయ మొబైల్ నంబర్‌ను నమోదు చేయండి (10 అంకెలు 6-9తో మొదలవుతాయి)",
     "contact_exists": "పరిచయం ఉంది",
@@ -440,5 +445,6 @@
       "remove_contact_message":"మీరు ఈ పరిచయాన్ని తీసివేయడానికి నిజంగా అనుమతిస్తారా?",
       "cancel":"రద్దు చేయి",
       "delete":"తీసివేయి"
-    }
+    },
+    "import_from_contacts": "పరిచయాలను ఆమదು మాడండి"
 }

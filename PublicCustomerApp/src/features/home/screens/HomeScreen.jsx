@@ -149,6 +149,8 @@ const MapScreen = () => {
     }
   }, [scaleValue, offsetValue, closeButtonOffset]);
 
+
+  
  
   const toggleMenu = useCallback(() => {
     try {

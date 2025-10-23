@@ -1,6 +1,6 @@
 // components/OTPInput.js
 import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {View, TextInput, StyleSheet, Pressable, Platform} from 'react-native';
+import {TextInput, StyleSheet, Pressable, Platform} from 'react-native';
 import PropTypes from 'prop-types';
 
 const OTPInput = ({
@@ -68,6 +68,10 @@ const OTPInput = ({
 
     // PASTE CASE: user pasted entire code or multiple digits
     if (onlyDigits.length > 1) {
+      // Prevent brief flash of full code in the first box
+      if (index === 0) {
+        inputsRef.current[index]?.setNativeProps?.({ text: '' });
+      }
       const next = Array(inputCount).fill('');
       for (let i = 0; i < inputCount; i++) {
         next[i] = onlyDigits[i] || '';
@@ -144,6 +148,7 @@ const OTPInput = ({
           borderTintProvider={(focused) => borderTint(index, focused)}
           secureTextEntry={secureTextEntry}
           editable={editable}
+          maxLength={index === 0 ? inputCount : 1}
           // Autofill hints mainly respected on the *first* input for iOS
           importantForAutofill={index === 0 ? 'yes' : 'no'}
           autoFocus={autoFocus && index === 0}
@@ -168,6 +173,7 @@ const Box = ({
   editable,
   importantForAutofill,
   autoFocus,
+  maxLength,
 }) => {
   const [focused, setFocused] = useState(false);
 
@@ -184,7 +190,7 @@ const Box = ({
       autoComplete={autoComplete}
       autoCapitalize="none"
       autoCorrect={false}
-      maxLength={1}
+      maxLength={maxLength}
       secureTextEntry={secureTextEntry}
       editable={editable}
       importantForAutofill={importantForAutofill}
@@ -203,6 +209,24 @@ const Box = ({
       // Visually center the digit
     />
   );
+};
+
+Box.propTypes = {
+  value: PropTypes.string,
+  inputRef: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+  onChangeText: PropTypes.func,
+  onKeyPress: PropTypes.func,
+  onFocus: PropTypes.func,
+  keyboardType: PropTypes.string,
+  textContentType: PropTypes.string,
+  autoComplete: PropTypes.string,
+  inputStyle: PropTypes.any,
+  borderTintProvider: PropTypes.func,
+  secureTextEntry: PropTypes.bool,
+  editable: PropTypes.bool,
+  importantForAutofill: PropTypes.string,
+  autoFocus: PropTypes.bool,
+  maxLength: PropTypes.number,
 };
 
 OTPInput.propTypes = {

@@ -241,6 +241,11 @@
     "enter_name": "नाम दर्ज करें",
     "enter_mobile_number": "मोबाइल नंबर दर्ज करें",
     "add_contact": "संपर्क जोड़ें",
+    "import_contact": "संपर्क आयात करें",
+    "search_contacts_placeholder": "संपर्क खोजें",
+    "no_contacts_found": "कोई संपर्क नहीं मिला",
+    "try_different_name_or_number": "कोई दूसरा नाम या नंबर आज़माएं",
+    "contact_privacy_note": "आपके संपर्क का नाम ड्राइवर के साथ साझा नहीं किया जाएगा।",
     "invalid_input": "अमान्य निवेश",
     "invalid_mobile_number": "कृपया एक वैध भारतीय मोबाइल नंबर दर्ज करें (6-9 से शुरू होने वाले 10 अंक)",
     "contact_exists": "संपर्क मौजूद है",
@@ -444,6 +449,9 @@
       "remove_contact_message":"क्या आप वास्तव में इस संपर्क को हटाना चाहते हैं?",
       "cancel":"रद्द करें",
       "delete":"हटाएं"
-    }
+    },
+    "import_from_contacts": "संपर्कों से आयात करें",
+    
+
     
 }

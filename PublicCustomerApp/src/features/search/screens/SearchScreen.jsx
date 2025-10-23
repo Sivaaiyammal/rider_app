@@ -317,7 +317,8 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
       getwaitingTime: getwaitingTime,
       title: title,
       index: index,
-      label: label
+      label: label,
+      isFromRidePointsSelection:searchType !== 'savedPlaces' ? true : false
     });
   }
 

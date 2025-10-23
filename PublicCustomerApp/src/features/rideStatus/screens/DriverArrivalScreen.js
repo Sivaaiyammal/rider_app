@@ -58,7 +58,8 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
       onPickLocationResultCallback:handlePickLocation,
       locationType:LocationTypes.START_LOCATION,
       defaultLocation:item,
-      label:t('edit_pickup_location')
+      label:t('edit_pickup_location'),
+      isFromRidePointsSelection:false
     })
   }
 

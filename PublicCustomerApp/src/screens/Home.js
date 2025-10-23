@@ -51,7 +51,8 @@ import EmergencyHomeScreen from '../features/emergencyContact/screens/EmergencyH
 import useRideMatching from '../hooks/useRideMatching';
 import TrackingTestScreen from './TrackingTestScreen';
 import { useNetwork } from '../context/NetworkContext';
-
+import DeviceInfo from 'react-native-device-info';
+import { showNotification } from '../components/NotificationManger';
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -114,7 +115,7 @@ const styles = StyleSheet.create({
 const Home = () => {
   const {location, setCurrentLocationName} = useLocationStore();
   const { setLocation } = useLocationStore.getState();
-  const { stackScreen } = useStackScreenStore();
+  const { stackScreen,reset } = useStackScreenStore();
   const navigation = useNavigation();
   const appState = useRef(AppState.currentState);
   const permissionsRequested = useRef(false);
@@ -240,6 +241,20 @@ const Home = () => {
     setUserLocation(handleUserLocatioChange);
   }, []);
 
+  const logout = async () => {
+
+   
+    await DataStore.storeData('access_token', null);
+    await DataStore.storeData('refresh_token', null);
+    await DataStore.storeData('userdetails', null);
+    reset()
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'LoginScreen' }],
+    });
+    showNotification('Logged Out', 'You have been logged out due to account Logged in from another device', 'warning');
+  }
+
 
   const checkFavouriteLocation = async () => {
     const homeLocation = await getStoredLocation('Home');
@@ -248,6 +263,14 @@ const Home = () => {
     setHomelocation(homeLocation);
     setWorklocation(workLocation);
   };
+
+  const checkDeviceImei = async (fcmToken) => {
+    const deviceImei = await DeviceInfo.getUniqueId();
+    if(deviceImei === fcmToken?.deviceImei){
+      return true;
+    }
+    return false;
+  } 
 
   const checkOnGoingRideAndLog = async () => {
     const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
@@ -259,6 +282,18 @@ const Home = () => {
       console.log("Response",JSON.stringify(Response))
    
       if(Response?.success ){
+
+
+        if(Response?.userStats?.fcmToken){
+          console.log("fcmToken",Response?.userStats?.fcmToken)
+          const isActiveLogin = await checkDeviceImei(Response?.userStats?.fcmToken);
+          if(!isActiveLogin){
+            
+            logout();
+            return;
+          }
+          
+        }
 
         if(Response?.appConfig){
           setConfig(Response?.appConfig);

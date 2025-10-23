@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import PropTypes from 'prop-types';
 import AnimatedBottomSheetWrapper from './AnimatedBottomSheetWrapper';
 import { colors, Fonts } from '../../../constants/constants';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { useTranslation } from 'react-i18next';
 
@@ -23,7 +22,6 @@ export default function EnhancedDateRangeBottomSheet({
   onCancel,
   onConfirm,
   onClear,
-  onClearDateRange,
   selectedStatus,
   onStatusChange,
   isDateRangeEnabled,
@@ -37,12 +35,20 @@ export default function EnhancedDateRangeBottomSheet({
 }) {
   if (!visible) return null;
   const { t } = useTranslation();
-  // Validation: If date range is enabled, both dates must be selected and valid
-  const isDateRangeValid = !isDateRangeEnabled || (startDate && endDate && startDate <= endDate);
+  const startTime = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : null;
+  const endTime = endDate ? new Date(endDate).setHours(0, 0, 0, 0) : null;
+  const isSameDay = !!(startTime && endTime) && startTime === endTime;
+  const isDateRangeValid = !isDateRangeEnabled || (startTime && endTime && startTime < endTime);
   const isConfirmEnabled = isDateRangeValid;
   
   // Check if any filters are applied
   const hasActiveFilters = selectedStatus !== '' || (isDateRangeEnabled && startDate && endDate);
+
+  React.useEffect(() => {
+    if (visible && isDateRangeEnabled && isSameDay) {
+      Alert.alert('Invalid date range', 'From and To dates cannot be the same.');
+    }
+  }, [visible, isDateRangeEnabled, isSameDay]);
 
   return (
     <AnimatedBottomSheetWrapper onClose={onClose} zIndex={100000}>
@@ -115,14 +121,21 @@ export default function EnhancedDateRangeBottomSheet({
                    </TouchableOpacity>
                  </View>
                </View>
-               {/* Invalid date range warning */}
-               {isDateRangeEnabled && startDate && endDate && startDate > endDate && (
+              {/* Invalid date range warning */}
+              {isDateRangeEnabled && startTime && endTime && startTime > endTime && (
                  <View style={{ marginTop: 8, paddingHorizontal: 8 }}>
                    <AdaptiveText style={{ fontSize: 12, fontFamily: Fonts.regular, color: '#EF4444', textAlign: 'center' }} color={colors.black}>
                      From date cannot be after To date
                    </AdaptiveText>
                  </View>
                )}
+              {isDateRangeEnabled && isSameDay && (
+                <View style={{ marginTop: 8, paddingHorizontal: 8 }}>
+                  <AdaptiveText style={{ fontSize: 12, fontFamily: Fonts.regular, color: '#EF4444', textAlign: 'center' }} color={colors.black}>
+                    From and To dates cannot be the same
+                  </AdaptiveText>
+                </View>
+              )}
              </View>
            )}
         </View>
@@ -177,7 +190,6 @@ EnhancedDateRangeBottomSheet.propTypes = {
   onCancel: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,
   onClear: PropTypes.func.isRequired,
-  onClearDateRange: PropTypes.func.isRequired,
   selectedStatus: PropTypes.string,
   onStatusChange: PropTypes.func.isRequired,
   isDateRangeEnabled: PropTypes.bool,

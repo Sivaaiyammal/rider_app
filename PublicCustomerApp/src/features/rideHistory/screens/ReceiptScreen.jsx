@@ -79,7 +79,7 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
             taxesLine: `Includes ${currency} ${fareDetails?.breakdown?.taxes?.total} Taxes`,
           
             driverName: driverDetails?.driverName,
-            driverPhotoUrl: driverDetails?.driverPhotoUrl,
+            driverPhotoUrl:  driverDetails?.driverPhoto,
          
           
             distance: tripDistance,

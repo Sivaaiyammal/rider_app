@@ -12,9 +12,9 @@ const FallbackComponent = ({ error, resetError }) => {
         <Text style={styles.subtitle}>An unexpected error occurred.</Text>
 
         <ScrollView style={styles.errorContainer} contentContainerStyle={styles.errorContent}>
-          <Text selectable style={styles.errorText}>
+          {/* <Text selectable style={styles.errorText}>
             {errorMessage}
-          </Text>
+          </Text> */}
         </ScrollView>
 
         <TouchableOpacity accessibilityRole="button" onPress={resetError} style={styles.button}>

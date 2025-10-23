@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert, ScrollView } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert, ScrollView, FlatList, ActivityIndicator, Modal, SafeAreaView, Platform } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { colors, Fonts } from '../../../../constants/constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -9,6 +9,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import PropTypes from 'prop-types';
 import { height } from '../../../../utils/Utils';
 import AdaptiveText from '../../../../components/Common/AdaptiveText';
+import Contacts from 'react-native-contacts';
+import { RequestContactsPermission } from '../../../../controllers/PermissionHandler';
 
 const Contactsheet = ({ onConfirm }) => {
   const { t } = useTranslation();
@@ -17,6 +19,10 @@ const Contactsheet = ({ onConfirm }) => {
   const [showAddContact, setShowAddContact] = useState(false);
   const [newContact, setNewContact] = useState({ name: '', phone: '' });
   const [contactDetails, setContactDetails] = useState([]);
+  const [contactsPickerVisible, setContactsPickerVisible] = useState(false);
+  const [deviceContacts, setDeviceContacts] = useState([]);
+  const [loadingDeviceContacts, setLoadingDeviceContacts] = useState(false);
+  const [pickerQuery, setPickerQuery] = useState('');
   
 
   // Load contacts from local storage on component mount
@@ -58,6 +64,15 @@ const Contactsheet = ({ onConfirm }) => {
     return phoneRegex.test(phone);
   };
 
+  const normalizeToIndianMobile = (raw) => {
+    if (!raw) return '';
+    const digits = String(raw).replace(/\D+/g, '');
+    if (digits.length >= 10) {
+      return digits.slice(-10);
+    }
+    return digits;
+  };
+
   const isFormValid = () => {
     return newContact.name.trim() !== '' && validatePhoneNumber(newContact.phone);
   };
@@ -81,8 +96,83 @@ const Contactsheet = ({ onConfirm }) => {
     setShowAddContact(false);
   };
 
+  const openContactsPicker = async () => {
+    try {
+      setContactsPickerVisible(true);
+      setLoadingDeviceContacts(true);
+      let granted = true;
+      try {
+        granted = await RequestContactsPermission();
+      } catch (e) {
+        granted = Platform.OS === 'ios';
+      }
+      if (!granted) {
+        setLoadingDeviceContacts(false);
+        setContactsPickerVisible(false);
+        return;
+      }
+      if (Platform.OS === 'ios') {
+        const iosPerm = await Contacts.requestPermission();
+        if (iosPerm !== 'authorized') {
+          setLoadingDeviceContacts(false);
+          setContactsPickerVisible(false);
+          return;
+        }
+      }
+      const all = await Contacts.getAll();
+      const simplified = all
+        .map((c) => {
+          const name = [c.givenName, c.middleName, c.familyName].filter(Boolean).join(' ').trim() || 'Unknown';
+          const firstNumber = Array.isArray(c.phoneNumbers) && c.phoneNumbers.length > 0 ? c.phoneNumbers[0].number : '';
+          return {
+            id: c.recordID || `${name}-${firstNumber}`,
+            name,
+            phone: (firstNumber || '').replace(/\s+/g, ''),
+          };
+        })
+        .filter((c) => !!c.phone);
+
+      const uniqueByPhone = new Map();
+      for (const c of simplified) {
+        const key = c.phone;
+        if (!uniqueByPhone.has(key)) uniqueByPhone.set(key, c);
+      }
+      const list = Array.from(uniqueByPhone.values()).sort((a, b) => {
+        const an = (a.name || '').toLowerCase();
+        const bn = (b.name || '').toLowerCase();
+        if (an < bn) return -1; if (an > bn) return 1; return 0;
+      });
+      setDeviceContacts(list);
+      setPickerQuery('');
+    } catch (e) {
+      console.error('Failed to load contacts', e);
+      Alert.alert('Unable to load contacts');
+    } finally {
+      setLoadingDeviceContacts(false);
+    }
+  };
+
+  const handlePickDeviceContact = (item) => {
+    const normalized = normalizeToIndianMobile(item.phone);
+    setNewContact({ name: item.name, phone: normalized });
+    setContactsPickerVisible(false);
+  };
+
+  const filteredDeviceContacts = useMemo(() => {
+    const q = pickerQuery.trim().toLowerCase();
+    if (!q) return deviceContacts;
+    return deviceContacts.filter((c) => {
+      return (c.name || '').toLowerCase().includes(q) || (c.phone || '').toLowerCase().includes(q);
+    });
+  }, [deviceContacts, pickerQuery]);
+
+  const isPhoneAlreadySaved = (phone) => {
+    const normalized = normalizeToIndianMobile(phone);
+    return contactDetails.some((c) => normalizeToIndianMobile(c.phone) === normalized);
+  };
+
   const handleSelectContact = (contact) => {
-   
+    
     setPassangerDetails(contact);
     setRideBookMode('OTHERS');
     onConfirm();
@@ -139,6 +229,7 @@ const Contactsheet = ({ onConfirm }) => {
         <AdaptiveText style={styles.title}>{t('book_for')}</AdaptiveText>
       </View>
       <ScrollView style={{maxHeight:height*0.6}} showsVerticalScrollIndicator={false}>
+     
       <TouchableOpacity 
         style={styles.myselfButton}
         onPress={handleSelectMyself}
@@ -219,6 +310,15 @@ const Contactsheet = ({ onConfirm }) => {
           </View>
           <View style={styles.buttonRow}>
             <TouchableOpacity 
+              style={styles.importButton}
+              onPress={openContactsPicker}
+              accessibilityLabel="Import from contacts"
+            >
+              {/* <Ionicons name="book-outline" size={20} color={colors.black} /> */}
+              <AdaptiveText style={styles.importButtonText}>{t('import_from_contacts') || 'Import from contacts'}</AdaptiveText>
+            </TouchableOpacity>
+            <View style={styles.buttonSeparator}> 
+            <TouchableOpacity 
               style={[
                 styles.confirmButton,
                 !isFormValid() && styles.disabledButton
@@ -237,9 +337,100 @@ const Contactsheet = ({ onConfirm }) => {
             >
               <Ionicons name="close" style={{ color: colors.grey_dark }} size={20} />
             </TouchableOpacity>
+            </View>
           </View>
         </View>
       )}
+      <Modal
+        visible={contactsPickerVisible}
+        onRequestClose={() => setContactsPickerVisible(false)}
+        animationType="slide"
+        presentationStyle="fullScreen"
+      >
+        <SafeAreaView style={styles.pickerScreen}>
+          <View style={styles.pickerHeaderBar}>
+            <TouchableOpacity onPress={() => setContactsPickerVisible(false)} style={styles.headerIconBtn}>
+              <Ionicons name="chevron-back" size={24} color={colors.black} />
+            </TouchableOpacity>
+            <AdaptiveText style={styles.pickerHeaderTitle}>{t('import_contact') || 'Import contact'}</AdaptiveText>
+            <View style={styles.headerIconBtn} />
+          </View>
+          {/* <View style={styles.infoBanner}>
+            <Ionicons name="information-circle-outline" size={18} color={colors.grey_dark} />
+            <AdaptiveText style={styles.infoBannerText}>{t('contact_privacy_note') || 'Your contact’s name will not be shared with the driver.'}</AdaptiveText>
+          </View> */}
+          <View style={styles.pickerSearchWrapper}>
+            <Ionicons name="search" size={18} color="#9CA3AF" style={styles.pickerSearchIcon} />
+            <TextInput
+              value={pickerQuery}
+              onChangeText={setPickerQuery}
+              placeholder={t('search_contacts_placeholder') || t('search') || 'Search'}
+              placeholderTextColor="#999"
+              style={styles.pickerSearch}
+              autoFocus
+            />
+            {!!pickerQuery && (
+              <TouchableOpacity accessibilityRole="button" onPress={() => setPickerQuery('')} style={styles.pickerClearBtn}>
+                <Text style={styles.pickerClearText}>×</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {loadingDeviceContacts ? (
+            <View style={{flex:1,alignItems:'center',justifyContent:'center'}}>
+              <ActivityIndicator size="large" color={colors.black} />
+            </View>
+          ) : (
+            <FlatList
+              data={filteredDeviceContacts}
+              keyExtractor={(item) => item.id}
+              renderItem={({item}) => {
+                const alreadySaved = isPhoneAlreadySaved(item.phone);
+                const initials = (item.name || '')
+                  .split(' ')
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((w) => w[0])
+                  .join('')
+                  .toUpperCase() || '?';
+                return (
+                  <TouchableOpacity
+                    style={[styles.pickerRow, alreadySaved && styles.pickerRowDisabled]}
+                    onPress={() => {
+                      if (alreadySaved) {
+                        Alert.alert(t('contact_exists'), t('contact_already_exists'));
+                        return;
+                      }
+                      handlePickDeviceContact(item);
+                    }}
+                    // accessibilityState={{ disabled: alreadySaved }}
+                  >
+                    <View style={styles.pickerAvatar}>
+                      <Text style={styles.pickerAvatarText}>{initials}</Text>
+                    </View>
+                    <View style={styles.pickerTextCol}>
+                      <Text style={styles.pickerName} numberOfLines={1}>{item.name}</Text>
+                      <Text style={styles.pickerPhone} numberOfLines={1}>{item.phone}</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }}
+              contentContainerStyle={styles.pickerListContent}
+              ItemSeparatorComponent={() => <View style={styles.pickerSeparator} />}
+              ListEmptyComponent={() => (
+                <View style={styles.emptyState}>
+                  <Ionicons name="search" size={36} color="#9CA3AF" />
+                  <Text style={styles.emptyTitle}>{t('no_contacts_found') || 'No contacts found'}</Text>
+                  <Text style={styles.emptySubtitle}>{t('try_different_name_or_number') || 'Try a different name or number'}</Text>
+                </View>
+              )}
+              initialNumToRender={20}
+              windowSize={10}
+              keyboardShouldPersistTaps="handled"
+            />
+          )}
+        </SafeAreaView>
+      </Modal>
       
     </View>
   );
@@ -341,7 +532,7 @@ const styles = StyleSheet.create({
     color: colors.black
   },
   addContactForm: {
-    marginTop: 10
+    marginTop: 50
   },
   input: {
     borderWidth: 1,
@@ -374,9 +565,21 @@ const styles = StyleSheet.create({
   buttonRow: {
     display: 'flex',
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 10
+  },
+  buttonSeparator: {
+    display: 'flex',
+    flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
     gap: 10
+  },
+  importButton: {
+     paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center'
   },
   cancelButton: {
     backgroundColor: colors.grey_light,
@@ -385,10 +588,156 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center'
   },
+  importButtonText: {
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+    color: colors.commonBlack
+  },
   divider: {
     height: 1,
     backgroundColor: colors.grey_light,
    
+  },
+  infoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+    marginBottom: 8,
+    marginHorizontal: 12
+  },
+  infoBannerText: {
+    flex: 1,
+    color: '#4B5563',
+    fontFamily: Fonts.regular,
+    fontSize: 12
+  },
+  pickerScreen: {
+    flex: 1,
+    backgroundColor: colors.white
+  },
+  pickerHeaderBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#EEE'
+  },
+  headerIconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  pickerHeaderTitle: {
+    fontFamily: Fonts.semi_bold,
+    fontSize: 18,
+    color: colors.black
+  },
+  pickerSearchWrapper: {
+    position: 'relative',
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 6
+  },
+  pickerSearch: {
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingLeft: 40,
+    paddingRight: 36,
+    backgroundColor: '#F9FAFB',
+    color: '#111827',
+    fontFamily: Fonts.regular
+  },
+  pickerSearchIcon: {
+    position: 'absolute',
+    left: 22,
+    top: 22
+  },
+  pickerClearBtn: {
+    position: 'absolute',
+    right: 22,
+    top: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E5E7EB'
+  },
+  pickerClearText: {
+    color: '#111827',
+    fontSize: 18,
+    lineHeight: 18,
+    fontWeight: '700',
+    marginTop: -2
+  },
+  pickerListContent: {
+    paddingHorizontal: 8,
+    paddingBottom: 16
+  },
+  pickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10
+  },
+  pickerRowDisabled: {
+    opacity: 0.5
+  },
+  pickerSeparator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#EEE',
+    marginLeft: 64
+  },
+  pickerAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#EEF2FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12
+  },
+  pickerAvatarText: {
+    color: '#3730A3',
+    fontFamily: Fonts.semi_bold
+  },
+  pickerTextCol: {
+    flex: 1
+  },
+  pickerName: {
+    fontFamily: Fonts.medium,
+    fontSize: 16,
+    color: colors.black
+  },
+  pickerPhone: {
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+    color: colors.grey_dark,
+    marginTop: 2
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 48
+  },
+  emptyTitle: {
+    marginTop: 8,
+    fontFamily: Fonts.medium,
+    color: '#111827'
+  },
+  emptySubtitle: {
+    marginTop: 4,
+    color: '#6B7280'
   }
 });
 
