@@ -1,8 +1,10 @@
 import {
   ScrollView,
   View,
+  Text,
+  TouchableOpacity,
 } from 'react-native';
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useNavigation } from '@react-navigation/native';
@@ -18,13 +20,14 @@ import Card from '../../assets/image/account/card.svg';
 import MainProfile from '../../assets/image/account/MainProfile.svg';
 import Profile from '../../assets/image/account/profile.svg';
 
-import MyAccountHeader from '../../components/Profile/MyAccountHeader';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import SettingsDropdown from '../../components/Profile/SettingsDropdown';
 import MyAccountProfileImage from '../../components/Profile/MyAccountProfileImage';
 import MyAccountInfo from '../../components/Profile/MyAccountInfo';
 import MyAccountStats from '../../components/Profile/MyAccountStats';
 import SwipeBtn from '../../components/SwipeBtn';
-import FemaleAvatar from '../../assets/image/femaleAvatar.svg';
-import { useStackScreenStore } from '../../store/useStackScreenStore';  
+import { useStackScreenStore } from '../../store/useStackScreenStore'; 
+import { GlobalContext } from '../../context/GlobalContext';
 
 const MyAccountScreen = () => {
   const { t } = useTranslation();
@@ -32,19 +35,16 @@ const MyAccountScreen = () => {
   const { goBack,reset } = useStackScreenStore();
   const { userdetails ,ratingData  ,totalSpend,cancelledTrips,completedTrips,totalTrips} = useUserInfoStore();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const { removeListener } = useContext(GlobalContext);
 
-
-  
-  
-  
 
   const [Info_Items] = useState([
-    {
-      key: t('full_name'),
-      value: utils.toTitleCase(userdetails?.name) || '',
-      image: <MainProfile width={'25'} height={'25'} />,
-      imageType: 'svg',
-    },
+    // {
+    //   key: t('full_name'),
+    //   value: utils.toTitleCase(userdetails?.name) || '',
+    //   image: <MainProfile width={'25'} height={'25'} />,
+    //   imageType: 'svg',
+    // },
     {
       key: t('gender'),
       value: userdetails.gender ? utils.toTitleCase(userdetails?.gender) : '',
@@ -86,11 +86,12 @@ const MyAccountScreen = () => {
     await DataStore.storeData('refresh_token', null);
     await DataStore.storeData('userdetails', null);
     reset()
+    await removeListener();
     navigation.reset({
       index: 0,
       routes: [{ name: 'LoginScreen' }],
     });
-    
+
   };
 
   // Delete account mutation
@@ -116,24 +117,46 @@ const MyAccountScreen = () => {
     setShowDeleteModal(false);
   };
 
+  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+  const toggleSettingsDropdown = () => {
+    setShowSettingsDropdown(!showSettingsDropdown);
+  };
+  const closeSettingsDropdown = () => {
+    setShowSettingsDropdown(false);
+  };
+
   return (
-    <ScrollView style={{backgroundColor: 'white'}}>
-      <MyAccountHeader 
-        title={t('my_account')} 
-        onBackClick={HandleBackBtn} 
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#eee' }}>
+        <TouchableOpacity onPress={HandleBackBtn}>
+          <Ionicons name="chevron-back" size={24} color="black" />
+        </TouchableOpacity>
+        <Text style={{ fontSize: 18, fontWeight: '600', color: 'black' }}>{t('my_account')}</Text>
+        <TouchableOpacity onPress={toggleSettingsDropdown}>
+          <View style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="settings-outline" size={20} color="black" />
+          </View>
+        </TouchableOpacity>
+      </View>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 30 }}>
+        <MyAccountProfileImage
+          name={utils.toTitleCase(userdetails?.name || '')}
+          id={userdetails?._id || ''}
+          ratingData={ratingData}
+        />
+        <MyAccountInfo infos={Info_Items} />
+        <MyAccountStats stats={{totalSpend,cancelledTrips,completedTrips,totalTrips}} />
+        <View style={{alignContent:'center',justifyContent:'center',marginTop:30,marginBottom:30}}>
+          <SwipeBtn name={t('swipe_to_logout')} onHandleSwipeEnd={Logout} />
+        </View>
+      </ScrollView>
+
+      <SettingsDropdown
+        visible={showSettingsDropdown}
+        onClose={closeSettingsDropdown}
         onDeleteAccount={handleDeleteAccount}
       />
-      <MyAccountProfileImage
-        name={utils.toTitleCase(userdetails?.name || '')}
-        id={userdetails?._id || ''}
-        ratingData={ratingData}
-      />
-      <MyAccountInfo infos={Info_Items} />
-      <MyAccountStats stats={{totalSpend,cancelledTrips,completedTrips,totalTrips}} />
-      <View style={{alignContent:'center',justifyContent:'center',marginTop:30,marginBottom:30}}>
-      <SwipeBtn name={t('swipe_to_logout')} onHandleSwipeEnd={Logout} />
-      </View>
-      
+
       {/* Delete Account Modal */}
       <DeleteAccountModal
         visible={showDeleteModal}
@@ -141,7 +164,7 @@ const MyAccountScreen = () => {
         onConfirm={handleConfirmDelete}
         isLoading={deleteAccount.isLoading}
       />
-    </ScrollView>
+    </View>
   );
 };
 

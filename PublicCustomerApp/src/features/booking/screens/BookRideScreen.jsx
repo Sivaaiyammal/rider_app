@@ -207,12 +207,14 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         const vehicleList = vehicleType.reduce((acc, spec, index) => {
             const rideTypeData = data?.[spec.type];
             if (!rideTypeData) return acc;
+            const minFareNumber = Number(rideTypeData.minFare);
+            const maxFareNumber = Number(rideTypeData.maxFare);
             acc.push({
                 id: index,
                 type: spec.type,
                 capacity: spec.capacity,
-                minFare: rideTypeData.minFare,
-                maxFare: rideTypeData.maxFare,
+                minFare: Number.isFinite(minFareNumber) ? minFareNumber : null,
+                maxFare: Number.isFinite(maxFareNumber) ? maxFareNumber : null,
                 currency: rideTypeData.currency,
                 estimatedDuration: rideTypeData.estimatedDuration ?? spec.estimatedDuration,
             });
@@ -245,7 +247,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
 
        
-      
+         
             transformEstimateDatStore(data?.result?.data?.fareRanges)
                    
         } else {
@@ -260,6 +262,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         estimationInFlightRef.current = true;
         try {
             const data = await getRideEstimation(payload);
+            
             // Save to cache on success
             if (cacheKey && data?.result?.success) {
                 setEstimationInCache(cacheKey, data);
@@ -305,6 +308,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             coordinates: [rideStartLocation.longitude, rideStartLocation.latitude],
             
         };
+        
         debouncedGetRideEstimation(payload,cacheKey);
     };
     // Add effect to trigger estimation when direction data is available

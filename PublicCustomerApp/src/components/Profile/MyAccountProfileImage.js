@@ -21,14 +21,14 @@ const MyAccountProfileImage = (props) => {
 
     return (
         <>
-            <View style={[styles.container, { zIndex: 100 }]}>
-                <View style={styles.profileImgContainer}>
+            <View style={[styles.container, { paddingTop: 24 }]}>
+                <View style={[styles.profileImgContainer, { position: 'relative', marginTop: 0, zIndex: 1 }] }>
                     {userdetails?.gender === 'female' ? <FemaleAvatar width={100} height={100} /> : <ProfileImage width={100} height={100} />}
                 </View> 
             </View>
-            <View style={[styles.container, { borderTopLeftRadius: 10, borderTopRightRadius: 10 ,paddingBottom:20}]}>
+            <View style={[styles.container, { paddingBottom:20 }]}>
 
-                <Text style={{ fontSize: 24, fontFamily:Fonts.semi_bold, color: ColorSet.black, marginTop: 60 }}>{name}</Text>
+                <Text style={{ fontSize: 24, fontFamily:Fonts.semi_bold, color: ColorSet.black, marginTop: 12 }}>{name}</Text>
                 {/* <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#6c63ff' }}>{id}</Text> */}
                 
                 {/* Rating Display */}

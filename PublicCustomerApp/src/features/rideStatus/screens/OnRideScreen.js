@@ -55,6 +55,13 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   }, [stops])
 
   useEffect(() => {
+    const setinterval = setInterval(() => {
+      SetViewBoundingBox()
+    }, 60000); 
+    return () => clearInterval(setinterval);
+  }, []);
+
+  useEffect(() => {
     (async () => {
       try{
         const val = await DataStore.loadData(PREF.SOS_EVENTID);

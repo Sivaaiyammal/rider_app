@@ -453,7 +453,10 @@
       "cancel":"ரத்து செய்யவும்",
       "delete":"அழிக்கவும்"
         },
-        "import_from_contacts": "தொடர்புகளைத் தேர்வு செய்யவும்"
+        "import_from_contacts": "தொடர்புகளைத் தேர்வு செய்யவும்",
+        "status_filter": "நிலை வட்டி",
+    "all_status": "அனைத்து நிலை",
+    "diverged": "பிரிந்தது"
 
  
 }

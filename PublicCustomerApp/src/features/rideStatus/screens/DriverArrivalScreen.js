@@ -37,20 +37,24 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
   const {estimatedDuration,SetViewBoundingBox} = useRouteDraw({destinationlat:stops?.length > 0 ? stops[0].location[1] : null,destinationlon:stops?.length > 0 ? stops[0].location[0] : null,driverLat:driverLatitude,driverLon:driverLongitude})  
   const {userdetails} = useUserInfoStore();
 
+  const [loading,setLoading] = useState(false);
+
   
 
   const handlePickLocation = async (item) => {
+      goBack()
       const formatedAddress=utils.formatAddressName(item)
       item.address=formatedAddress
       try {
         const res =  await changeStopLocation(item)
         if (res.success) {
           showNotification(t('pickup_location'), t('updated_successfully'), 'success');
-          goBack()
+         
         }
       } catch (error) {
         console.log('error',error);
       }
+    
     }
 
   const handleChangeLocation = (item) => {
@@ -59,7 +63,8 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
       locationType:LocationTypes.START_LOCATION,
       defaultLocation:item,
       label:t('edit_pickup_location'),
-      isFromRidePointsSelection:false
+      isFromRidePointsSelection:false,
+      loading:loading
     })
   }
 
@@ -68,6 +73,16 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
       SetViewBoundingBox()
     }, 1000)
   }, [stops])
+
+  useEffect(() => {
+    const setinterval = setInterval(() => {
+      SetViewBoundingBox()
+    }, 60000); 
+    return () => clearInterval(setinterval);
+  }, []);
+
+
+
 
   
 

@@ -36,7 +36,7 @@ const WaypointScreen = () => {
   const {reOrderWaypoints,setReOrderWaypoints,setReachedStops,reachedStops,waitingForDriverApproval,setWaitingForDriverApproval,onGoingRideStops,setOnGoingRideStops,setEditedRoutecheckText,editedRoutecheckText} = useWayPointReorderStore()
   const [distance,setDistance] = React.useState(0)
   const [duration,setDuration] = React.useState(0)
-  const { goBack,setStackScreen } = useStackScreenStore();
+  const { goBack,setStackScreen,goBackToScreen } = useStackScreenStore();
   const [enableConfirmButton,setEnableConfirmButton] = React.useState(false)
   
 
@@ -72,10 +72,10 @@ const WaypointScreen = () => {
       return true;
     };
 
-    BackHandler.addEventListener('hardwareBackPress', onHardwareBack);
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onHardwareBack);
 
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', onHardwareBack);
+      subscription.remove();
     };
   }, [onBackPress]);
   useEffect(() => {
@@ -227,7 +227,7 @@ useEffect(() => {
     // Reset reorder waypoints and go back
     setReOrderWaypoints([]);
     // goBack();
-    setStackScreen('BookRideScreen',{
+    goBackToScreen('BookRideScreen',{
       DurationFromAddStopsScreen:duration,
       DistanceFromAddStopsScreen:distance,
     })
@@ -291,7 +291,6 @@ useEffect(() => {
   }
 
   const handleFareConfirm = () => {
-    
     ConformEditedRoute();
   };
 
@@ -307,6 +306,7 @@ useEffect(() => {
 
 
   const ConformEditedRoute = async() => {
+    setIsLoading(true);
     const filterKeys = (obj) => {
       const rest = { ...obj };
       delete rest.latitude;
@@ -377,12 +377,13 @@ useEffect(() => {
     const res = await passangerStopChangeRequest(finalPayload)
 
    if(res && res.success){
-    setWaitingForDriverApproval('PENDING')
     goBack();
+    setWaitingForDriverApproval('PENDING')
     setOnGoingRideStops(null)
     setReOrderWaypoints([])
     setReachedStops([])
    }
+   setIsLoading(false);
   }
 
   return (
@@ -423,6 +424,7 @@ useEffect(() => {
         fareData={fareData}
         isLoading={isFareLoading}
         driverWaitingApproval={waitingForDriverApproval}
+        loading={isLoading}
       />
     </>
   );

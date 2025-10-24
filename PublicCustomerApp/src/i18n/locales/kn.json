@@ -449,5 +449,8 @@
       "cancel":"ರದ್ದು ಮಾಡಿ",
       "delete":"ಅಳಿಸಿ"
     },
-    "import_from_contacts": "ಸಂಪರ್ಕಗಳಿಂದ ಆಮದು ಮಾಡಿ"
+    "import_from_contacts": "ಸಂಪರ್ಕಗಳಿಂದ ಆಮದು ಮಾಡಿ",
+    "status_filter": "ಸ್ಥಿತಿ ಫಿಲ್ಟರ್",
+    "all_status": "ಎಲ್ಲಾ ಸ್ಥಿತಿ",
+    "diverged": "ಮಾರ್ಗ ತಪ್ಪಿದೆ"
 }

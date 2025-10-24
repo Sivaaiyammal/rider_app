@@ -125,7 +125,8 @@ const FareDetailsModal = ({
   onConfirm,
   fareData,
   isLoading = false,
-  driverWaitingApproval=null
+  driverWaitingApproval=null,
+  loading=false
 }) => {
   const { t } = useTranslation();
   const { distance, duration, fare, waitingTime = 0 } = fareData || {};
@@ -242,10 +243,10 @@ const FareDetailsModal = ({
                 isLoading && styles.disabledButton
               ]}
               onPress={onConfirm}
-              disabled={isLoading}
+              disabled={isLoading || loading}
             >
               <Text style={styles.confirmButtonText}>
-                {isLoading ? t('confirming') : t('confirm')}
+                {isLoading  || loading ? t('confirming') : t('confirm')}
               </Text>
             </TouchableOpacity>
             </>

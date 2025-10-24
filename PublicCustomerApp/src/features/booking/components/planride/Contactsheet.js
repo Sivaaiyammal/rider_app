@@ -77,13 +77,20 @@ const Contactsheet = ({ onConfirm }) => {
     return newContact.name.trim() !== '' && validatePhoneNumber(newContact.phone);
   };
 
+  const isPhoneInvalid = newContact.phone !== '' && !validatePhoneNumber(newContact.phone);
+
   const handleAddContact = () => {
     if (!isFormValid()) {
       Alert.alert(t('invalid_input'), t('invalid_mobile_number'));
       return;
     }
 
-    const alreadyExists = contactDetails.some(c => c.phone === newContact.phone);
+    const alreadyExists = contactDetails.some(c => c.phone === newContact.phone );
+    if(newContact.phone === userdetails.phone){
+      Alert.alert(t('contact_exists'), t('contact_already_exists'));
+      return;
+    }
+    
     if (alreadyExists) {
       Alert.alert(t('contact_exists'), t('contact_already_exists'));
       return;
@@ -296,10 +303,10 @@ const Contactsheet = ({ onConfirm }) => {
             value={newContact.name}
             onChangeText={(text) => setNewContact({ ...newContact, name: text })}
           />
-          <View style={[styles.input, {flexDirection:'row',gap:10}]}>
+          <View style={[styles.input, {flexDirection:'row',gap:10}, isPhoneInvalid && styles.inputError]}>
             <Text style={{fontFamily:Fonts.medium,fontSize:16,color:colors.black}}>+91</Text>
             <TextInput
-              style={{flex: 1}}
+              style={{flex: 1,color:colors.black}}
               placeholder={t('enter_mobile_number')}
               placeholderTextColor="grey"
               keyboardType="phone-pad"
@@ -308,6 +315,9 @@ const Contactsheet = ({ onConfirm }) => {
               onChangeText={(text) => setNewContact({ ...newContact, phone: text })}
             />
           </View>
+          {isPhoneInvalid && (
+            <Text style={styles.errorText}>{t('invalid_mobile_number')}</Text>
+          )}
           <View style={styles.buttonRow}>
             <TouchableOpacity 
               style={styles.importButton}
@@ -545,6 +555,16 @@ const styles = StyleSheet.create({
     height: 50,
     color:"black",
     placeholderTextColor:'black'
+  },
+  inputError: {
+    borderColor: colors.red
+  },
+  errorText: {
+    color: colors.red,
+    fontFamily: Fonts.regular,
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 8
   },
   confirmButton: {
     backgroundColor: colors.black,

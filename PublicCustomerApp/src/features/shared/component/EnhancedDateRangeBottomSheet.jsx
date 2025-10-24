@@ -27,10 +27,10 @@ export default function EnhancedDateRangeBottomSheet({
   isDateRangeEnabled,
   onDateRangeToggle,
   statusOptions = [
-    { value: '', label: 'All Status' },
-    { value: 'COMPLETED', label: 'Completed' },
-    { value: 'DIVERGED', label: 'Diverged' },
-    { value: 'CANCELLED', label: 'Cancelled' }
+    { value: '', label: 'all_status' },
+    { value: 'COMPLETED', label: 'completed' },
+    { value: 'DIVERGED', label: 'diverged' },
+    { value: 'CANCELLED', label: 'cancelled' }
   ]
 }) {
   if (!visible) return null;
@@ -56,7 +56,7 @@ export default function EnhancedDateRangeBottomSheet({
         <AdaptiveText style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black, textAlign: 'center', marginBottom: 16 }} color={colors.black}>{title}</AdaptiveText>
           {/* Status Filter Section */}
           <View style={{ marginBottom: 30, marginTop: 20}}>
-          <AdaptiveText style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black, marginBottom: 12,marginLeft: 8 }} color={colors.black}>Status Filter</AdaptiveText>
+          <AdaptiveText style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black, marginBottom: 12,marginLeft: 8 }} color={colors.black}>{t('status_filter')}</AdaptiveText>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {statusOptions.map((option) => (
@@ -77,7 +77,7 @@ export default function EnhancedDateRangeBottomSheet({
                     fontFamily: Fonts.medium, 
                     color: selectedStatus === option.value ? colors.white : colors.black 
                   }} color={selectedStatus === option.value ? colors.white : colors.black}>
-                    {option.label}
+                    {t(option.label)}
                   </AdaptiveText>
                 </TouchableOpacity>
               ))}

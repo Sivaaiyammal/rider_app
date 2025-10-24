@@ -21,6 +21,8 @@ export const useStackScreenStore = create((set, get) => ({
   },
   
   goBack: (params) => {
+
+    console.log('goBack..............................',params);
     const stack = get().stackScreen;
     if(stack.length > 1){
       const arr = stack.slice(0, -1);
@@ -50,13 +52,20 @@ export const useStackScreenStore = create((set, get) => ({
         newStack[targetIndex] = { ...newStack[targetIndex], params };
       }
       
-
+      
       set({stackScreen: newStack});
     }
     else{
       // Screen not found in stack, go back to home
-     
-      set({stackScreen: [{ name: 'Home', params: null }]});
+      const currentStack = get().stackScreen;
+     const currentScreenName = currentStack[currentStack.length - 1].name;
+    
+    // Only add to stack if the screen name is different from current screen
+      if (currentScreenName !== screenName) {
+        const newStack = [...currentStack, { name: screenName, params }];
+        set({stackScreen: newStack});
+      }
+      
     }
   },
   
@@ -68,4 +77,5 @@ export const useStackScreenStore = create((set, get) => ({
     const stack = get().stackScreen;
     return stack[stack.length - 1];
   }
+  
 }));

@@ -28,6 +28,7 @@ import HistoryCard from '../../shared/component/HistoryCard';
 import { DataStore } from '../../../controllers/DataStore';
 import {height} from '../../../utils/Utils';
 import FavLabelItems from '../../home/components/FavLabelItems';
+import { LocationTypes } from '../../booking/types/LocationTypes';
 
 // Debounce import
 import debounce from 'lodash.debounce';
@@ -54,8 +55,25 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
 
-  // Debounce ref for cleanup
-  const debouncedSearchRef = useRef();
+  // Debounce ref for cleanup (removed unused ref)
+
+  // Remove emojis and related modifiers from input
+  const sanitizeNoEmoji = useCallback((text) => {
+    if (!text) return '';
+    const disallowedCodePoints = new Set([0x200D, 0xFE0E, 0xFE0F]); // ZWJ and variation selectors
+    const sanitized = Array.from(text)
+      .filter(ch => {
+        const cp = ch.codePointAt(0);
+        if (!cp) return false;
+        if (disallowedCodePoints.has(cp)) return false;
+        // Common emoji ranges
+        if (cp >= 0x1F000 && cp <= 0x1FAFF) return false; // Misc symbols & pictographs, supplemental symbols & pictographs, etc.
+        if (cp >= 0x2600 && cp <= 0x27BF) return false;   // Misc symbols, dingbats
+        return true;
+      })
+      .join('');
+    return sanitized;
+  }, []);
 
   // Region configuration
   const REGIONS = useMemo(() => [
@@ -246,8 +264,9 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
 
   // Debounced onChangeText handler
   const _onChangeText = value => {
-    setSearchTxt(value);
-    debouncedSearchAPI(value);
+    const cleaned = sanitizeNoEmoji(value);
+    setSearchTxt(cleaned);
+    debouncedSearchAPI(cleaned);
   };
 
   useEffect(() => {
@@ -318,7 +337,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
       title: title,
       index: index,
       label: label,
-      isFromRidePointsSelection:searchType !== 'savedPlaces' ? true : false
+      isFromRidePointsSelection:searchType === 'DESTINATION_LOCATION' ? true : false
     });
   }
 
@@ -366,7 +385,6 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
         <NavBar onBackPress={onGoBack} title={t('search')} />
-        
         {/* Search Input Container */}
         <View style={styles.inputContainer}>
           <View style={styles.searchContainer}>

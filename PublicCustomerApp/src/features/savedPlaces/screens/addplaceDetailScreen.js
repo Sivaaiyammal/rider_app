@@ -19,12 +19,37 @@ import useMapStyleStore from '../../../store/useMapStyleStore';
 import {height } from '../../../utils/Utils'
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 
+// Utility to remove emojis and related modifiers/ZWJ sequences
+const stripEmojis = (input) => {
+  if (!input) return '';
+  let result = '';
+  for (let i = 0; i < input.length; ) {
+    const codePoint = input.codePointAt(i);
+    const char = String.fromCodePoint(codePoint);
+    const isEmoji =
+      codePoint > 0xFFFF ||
+      (codePoint >= 0x2600 && codePoint <= 0x27BF) ||
+      (codePoint >= 0x1F300 && codePoint <= 0x1F6FF) ||
+      (codePoint >= 0x1F900 && codePoint <= 0x1F9FF) ||
+      (codePoint >= 0x1FA70 && codePoint <= 0x1FAFF) ||
+      (codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF) ||
+      codePoint === 0x200D ||
+      (codePoint >= 0x1F3FB && codePoint <= 0x1F3FF) ||
+      codePoint === 0xFE0F;
+    if (!isEmoji) result += char;
+    i += char.length;
+  }
+  return result;
+};
+
 const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existingLabel = '' }) => {
   const { t } = useTranslation();
   const {goBack} = useStackScreenStore();
   const { setMapMarkers ,setMapLocation} = useMapStore();
   const [selectedOption, setSelectedOption] = useState(edit ? (existingLabel === 'home' || existingLabel === 'work' ? existingLabel : 'nickname') : 'nickname');
-  const [nickname, setNickname] = useState(edit && existingLabel !== 'home' && existingLabel !== 'work' ? existingLabel : '');
+  const [nickname, setNickname] = useState(
+    edit && existingLabel !== 'home' && existingLabel !== 'work' ? stripEmojis(existingLabel) : ''
+  );
   const {setMapStyle} = useMapStyleStore();
 
   // Get location data from route params
@@ -157,7 +182,7 @@ const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existi
               style={styles.input}
               placeholder={t('enter_nickname_placeholder')}
               value={nickname}
-              onChangeText={setNickname}
+              onChangeText={(text) => setNickname(stripEmojis(text))}
               placeholderTextColor="#999"
             />
           </View>
@@ -354,6 +379,8 @@ const styles = StyleSheet.create({
 AddPlaceDetailScreen.propTypes = {
   placeData: PropTypes.object.isRequired,
   handleSavePlace: PropTypes.func.isRequired,
+  edit: PropTypes.bool,
+  existingLabel: PropTypes.string,
 };
 
 AddPlaceDetailScreen.defaultProps = {

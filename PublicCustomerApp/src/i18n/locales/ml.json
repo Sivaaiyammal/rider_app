@@ -446,5 +446,8 @@
       "cancel":"രദ്ദു ചെയ്യുക",
       "delete":"നീക്കംചെയ്യുക"
     },
-    "import_from_contacts": "സംപര്കങ്ങൾ നൽകുക"
+    "import_from_contacts": "സംപര്കങ്ങൾ നൽകുക",
+    "status_filter": "സ്ഥിതി ഫില്ടർ",
+    "all_status": "എല്ലാ സ്ഥിതി",
+    "diverged": "മാറി"
 }

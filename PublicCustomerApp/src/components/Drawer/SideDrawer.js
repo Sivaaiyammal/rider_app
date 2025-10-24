@@ -32,9 +32,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
   const navigation = useNavigation();
   const slideAnim = useRef(new Animated.Value(-300)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const { userDetails } = useUserInfoStore();
-
-
+  const isFemale = userdetails?.gender === 'female';
 
   useEffect(() => {
     Animated.parallel([
@@ -159,6 +157,8 @@ const SideDrawerV2 = ({ handleMenu }) => {
     // },
   ];
 
+
+
   const HandleOpenDrawerMenu = (menu) => {
     if (menu.screen) {
       if (menu.screen === 'LanguageScreen'){
@@ -172,6 +172,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
     }
     closeDrawer();
   }
+  
 
 
   return (
@@ -179,7 +180,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
       <Animated.View style={[drawerStyles.drawercontainer, {transform: [{translateX: slideAnim}]}]}>
         <LinearGradient colors={[colors.grey_dark,'#303030']}  start={{ x: 1, y: 0 }}
           end={{ x: 0, y: 0 }}style={drawerStyles.profileContainer}>
-          {userDetails?.gender === 'female' ? <FemaleAvatar width={60} height={60} /> : <ProfileImage width={60} height={60} />}
+          {isFemale ? <FemaleAvatar width={60} height={60} /> : <ProfileImage width={60} height={60} /> }
           <View style={{flexDirection:'column',alignItems:'flex-start',gap:0,flex:1}}>
           <Text style={drawerStyles.userName}  numberOfLines={1} >{userdetails?.name}</Text>
         {(ratingData && ratingData.currentrating != null) && (

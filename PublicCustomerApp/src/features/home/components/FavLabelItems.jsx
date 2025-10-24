@@ -50,7 +50,7 @@ const FavLabelItems = React.memo(({onLabelPress,enableAdd=true}) => {
             </View>
            <View key={index} style={styles.FavouriteAddressItemTextContainer}>
            <AdaptiveText style={styles.FavouriteAddressItemText}>{item.label}</AdaptiveText>
-           <AdaptiveText numberOfLines={1} ellipsizeMode="tail" fontSize={13} style={[styles.FavouriteAddressItemSubText, { maxWidth: "95%" }]}>{utils.formatAddressName(item.locationData)}</AdaptiveText>
+           <AdaptiveText numberOfLines={1} ellipsizeMode="tail" fontSize={13} style={[styles.FavouriteAddressItemSubText, { maxWidth: responsiveMaxWidth-10 }]}>{utils.formatAddressName(item.locationData)}</AdaptiveText>
        </View>
        </TouchableOpacity>
         ))

@@ -24,10 +24,10 @@ export const useCustomBackHandler = () => {
       return false; // let OS handle (e.g., exit app)
     };
 
-    BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
 
     return () => {
-      BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      backHandler.remove();
     };
   }, [stackScreen, goBack,tripStatus]);
 }; 

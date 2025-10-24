@@ -446,5 +446,8 @@
       "cancel":"రద్దు చేయి",
       "delete":"తీసివేయి"
     },
-    "import_from_contacts": "పరిచయాలను ఆమదು మాడండి"
+    "import_from_contacts": "పరిచయాలను ఆమదು మాడండి",
+    "status_filter": "స్థితి ఫిల్టర్",
+    "all_status": "అన్ని స్థితి",
+    "diverged": "మార్గం తప్పింది"
 }

@@ -53,6 +53,7 @@ import TrackingTestScreen from './TrackingTestScreen';
 import { useNetwork } from '../context/NetworkContext';
 import DeviceInfo from 'react-native-device-info';
 import { showNotification } from '../components/NotificationManger';
+import { useTranslation } from 'react-i18next';
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -116,6 +117,7 @@ const Home = () => {
   const {location, setCurrentLocationName} = useLocationStore();
   const { setLocation } = useLocationStore.getState();
   const { stackScreen,reset } = useStackScreenStore();
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const appState = useRef(AppState.currentState);
   const permissionsRequested = useRef(false);
@@ -252,7 +254,7 @@ const Home = () => {
       index: 0,
       routes: [{ name: 'LoginScreen' }],
     });
-    showNotification('Logged Out', 'You have been logged out due to account Logged in from another device', 'warning');
+    showNotification(t('session.logged_out_title'), t('session.logged_out_other_device_message'), 'warning');
   }
 
 

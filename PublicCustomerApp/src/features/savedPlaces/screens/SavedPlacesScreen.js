@@ -58,14 +58,19 @@ const SavedPlacesScreen = () => {
   const handlePlacePress = (place) => {
     // Navigate to booking screen with the selected place as destination
     const locationData = place.locationData;
+
+    console.log("locationData",locationData)
     const destinationData = {
-      name: locationData.name || utils.formatAddressName(locationData),
-      address: locationData.address,
+      name: locationData.name|| utils.formatAddressName(locationData),
+      placeName: locationData.placeName || utils.formatAddressName(locationData),
+      address: locationData.address || [],
       latitude: locationData.latitude,
       longitude: locationData.longitude,
       type: 'DESTINATION_LOCATION',
       locationFrom: locationData.locationFrom || 'SAVED_PLACE'
     };
+
+    console.log("destinationData",destinationData)
     
     setStackScreen('PlanRideScreen', {
       selectedDestination: destinationData

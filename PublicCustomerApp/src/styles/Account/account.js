@@ -49,9 +49,7 @@ const styles = StyleSheet.create({
         borderColor: 'white',
         borderRadius: 100,
         alignItems: 'center',
-        justifyContent: 'center',
-        position: 'absolute',
-        zIndex: 200
+        justifyContent: 'center'
     },
     profileImg: {
         height: 100,

@@ -30,7 +30,7 @@ import PropTypes from 'prop-types';
 import AdaptiveText from '../components/Common/AdaptiveText';
 import { findRoute } from '../controllers/NEMap/findRoute';
 import polyline from '@mapbox/polyline';
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false}) => {
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,loading=false}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation} = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -243,7 +243,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           <View style={styles.AddressContainerMain}>
               <AdaptiveText style={styles.AddressContainerTextTitle} color={colors.grey_xxdark}>📍 {t('address')}</AdaptiveText>
              {!isAddressLoading && pickedLocation?.placeName && <Text style={styles.AddressContainerPlaceName} color={colors.black}>{utils.capitalizeFirstLetter(pickedLocation?.placeName)}</Text>}
-            {(!isAddressLoading && pickedLocation?.address) &&
+            {(!isAddressLoading && pickedLocation?.address && pickedLocation?.placeName) &&
               <Text style={styles.AddressContainerTextAddress} color={colors.grey_xxdark}>{utils.formatArrayAddress(pickedLocation.address)}</Text>
             }
 
@@ -281,10 +281,13 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
             setIsConfirming(true);
             try {
 
+              console.log('pickedLocation----------------------',pickedLocation);
+
               if(!isFromRidePointsSelection){
                 onPickLocationResultCallback(pickedLocation, locationType);
                 return;
               }
+        
               const fromLat = location?.[1];
               const fromLon = location?.[0];
               const toLat = pickedLocation?.latitude;

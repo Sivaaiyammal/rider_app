@@ -93,6 +93,10 @@
     "failed_to_delete_place_try_again": "Failed to delete place. Please try again.",
     "success": "Success",
     "error": "Error",
+  "session": {
+    "logged_out_title": "Logged Out",
+    "logged_out_other_device_message": "You have been logged out because your account was used on another device"
+  },
     "add_place": "Add Place",
     "edit_place": "Edit Place",
     "address": "Address",
@@ -454,5 +458,9 @@
       "cancel":"Cancel",
       "delete":"Delete"
     },
-    "import_from_contacts": "Import from contacts"
+    "import_from_contacts": "Import from contacts",
+    "status_filter": "Status Filter",
+    "all_status": "All Status",
+    "diverged": "Diverged"
+    
 }

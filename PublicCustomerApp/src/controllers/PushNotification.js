@@ -32,10 +32,9 @@ class PushNotifications {
 
   async notificationEvents (notification) {
     const { setStackScreen } = useStackScreenStore.getState();
-    if (notification.title === 'Trip Cancelled By Driver') {
-  
-      setStackScreen('TripDetailsScreen')
-    }
+    // if (notification.title === 'Trip Cancelled By Driver') {
+    //   setStackScreen('TripDetailsScreen')
+    // }
     
   }
 

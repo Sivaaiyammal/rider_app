@@ -2,6 +2,7 @@ import {useColorScheme ,StatusBar} from 'react-native';
 import React, { useCallback, useEffect } from 'react';
 import firebase from '@react-native-firebase/app';
 import Navigation from './navigation/Navigation';
+import { navigationRef } from './navigation/RootNavigation';
 import {NavigationContainer} from '@react-navigation/native';
 import {AlertNotificationRoot} from 'react-native-alert-notification';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
@@ -85,7 +86,7 @@ const MainAppContent = () => {
        <ContextProvider>
         <AlertNotificationRoot theme="light">
           <>
-            <NavigationContainer>
+            <NavigationContainer ref={navigationRef}>
               <Navigation />
             </NavigationContainer>
             {(!isConnected && (

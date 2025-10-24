@@ -12,6 +12,9 @@ import PREF from '../storage/PREF';
 import useUserInfoStore  from '../store/useUserInfoStore';
 import Config from "react-native-config";
 import useMapStore from '../features/map/store/useMapStore';
+import { resetTo } from '../navigation/RootNavigation';
+import { showNotification } from '../components/NotificationManger';
+import i18n from '../i18n';
 const SOCKET_URL = Config.ROOT_API_URL;
 
 
@@ -25,6 +28,7 @@ class WSService {
     this.onRideStatus = this.onRideStatus.bind(this)
     this.driverTestSimulation = this.driverTestSimulation.bind(this)
     this.passangerLocationChange = this.passangerLocationChange.bind(this)
+    this.passangerAccount = this.passangerAccount.bind(this)
     this.useWayPointReorderStore = useWayPointReorderStore
     // this.driverFareUpdate = this.driverFareUpdate.bind(this)
     this.useStackScreenStore = useStackScreenStore
@@ -35,7 +39,6 @@ class WSService {
     this.useUserInfoStore = useUserInfoStore
     this.useMapStore = useMapStore
     this.DataStore = DataStore
-    
   }
 
   async driverAllocated(data){
@@ -52,20 +55,25 @@ class WSService {
       this.useAssignedDriverInfoStore.getState().setAllocatedDriverInfo(data?.driver);
       this.useCurrentRideInfoStore.getState().setOtp(data?.otp);
       this.useCurrentRideInfoStore.getState().setEstimatedFare(data?.tripData?.estimatedFare);
-      this.useStackScreenStore.getState().setStackScreen('RideStatus',{});
-      console.log("driverAllocatedooooooo",JSON.stringify(this.useCurrentRideInfoStore.getState()))
+      this.useStackScreenStore.getState().setStackScreen('RideStatus',{});  console.log("driverAllocatedooooooo",JSON.stringify(this.useCurrentRideInfoStore.getState()))
     }
   }
   async onRideStatus(data){
-    console.log("onRideStatus",JSON.stringify(data))
+    const currentTrip = await this.DataStore.loadData(PREF.CURRENT_TRIP);
+    console.log("currentTrip",currentTrip)
+    // if(currentTrip?.data){
+    //   console.log("currentTrip?.data?._id",currentTrip?.data)
+    //   console.log("data?._id",data?._id)
+    //   if(currentTrip?.data !== data?._id){
+    //     return;
+    //   }
+    // }
+    
     if(data?.tripStatus){
-     
       if(data?.tripStatus === 'CANCELLED'){
         try {
-          
           if(data?.isOnGoingTrip && data?.fareDetails){
             this.useStackScreenStore.getState().setStackScreen('PaymentScreen',{});
-            
             this.useCurrentRideInfoStore.getState().setFareDetails(data?.tripFare);
             this.useCurrentRideInfoStore.getState().setFinalDistance(data?.tripFare?.distance);
             this.useCurrentRideInfoStore.getState().setFinalDuration(data?.tripFare?.duration);
@@ -81,7 +89,6 @@ class WSService {
             this.useWayPointReorderStore.getState().setWaitingForDriverApproval(null);
             this.useStackScreenStore.getState().goBackToScreen('BookRideScreen',{});
             await this.DataStore.clearData(PREF.CURRENT_TRIP);
-            
           }
           
         } catch (error) {
@@ -150,6 +157,32 @@ class WSService {
       this.useCurrentRideInfoStore.getState().setpassangerLocationChange(data)
       this.useWayPointReorderStore.getState().setWaitingForDriverApproval("APPROVED")
     }
+  }
+
+
+  passangerAccount(data){
+
+    try {
+      console.log("passangerAccount",JSON.stringify(data))
+      if(data?.type === 'LOG_OUT'){
+        this.DataStore.clearData('access_token', null);
+        this.DataStore.clearData('refresh_token', null);
+        this.DataStore.clearData('userdetails', null);
+        this.useStackScreenStore.getState().reset();
+        this.close();
+        showNotification(
+          i18n.t('session.logged_out_title'),
+          i18n.t('session.logged_out_other_device_message'),
+          'warning'
+        );
+        resetTo('LoginScreen');
+  
+      }
+      
+    } catch (error) {
+      console.error('Error resetting app:', error);
+    }
+  
   }
  
   
@@ -237,6 +270,8 @@ class WSService {
         this.socket.on('passangerTripStatus', this.onRideStatus);
 
         this.socket.on('passangerLocationChange', this.passangerLocationChange);
+
+        this.socket.on('passangerAccount', this.passangerAccount);
 
         // this.socket.on('passangerTripFareUpdate', this.driverFareUpdate);
 

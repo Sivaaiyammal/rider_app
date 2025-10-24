@@ -185,15 +185,13 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   }
 
   // Debounced pick location callback
-  const debouncedPickLocationCallback = useDebouncedAPICall((item, type) => {
-  
-    HandsetRideLocation(item,type)
-    
+  const debouncedPickLocationCallback = (item, type) => {
     goBack()
+    HandsetRideLocation(item,type)
     if(type !== LocationTypes.START_LOCATION){
       setStackScreen('BookRideScreen',{})
     }
-  }, 300);
+  };
 
   const onPickLocationResultCallback = (item,type) =>{
     debouncedPickLocationCallback(item,type)

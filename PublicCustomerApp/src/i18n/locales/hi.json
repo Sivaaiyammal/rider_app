@@ -85,6 +85,10 @@
     "failed_to_delete_place_try_again": "स्थान हटाया नहीं जा सका. कृपया पुनः प्रयास करें.",
     "success": "सफलता",
     "error": "गलती",
+  "session": {
+    "logged_out_title": "लॉगआउट हुआ",
+    "logged_out_other_device_message": "आपको लॉगआउट कर दिया गया है क्योंकि आपका खाता किसी अन्य डिवाइस पर उपयोग किया गया"
+  },
     "add_place": "स्थान जोड़ें",
     "edit_place": "स्थान संपादित करें",
     "address": "पता",
@@ -451,6 +455,9 @@
       "delete":"हटाएं"
     },
     "import_from_contacts": "संपर्कों से आयात करें",
+    "status_filter": "स्थिति फ़िल्टर",
+    "all_status": "सभी स्थिति",
+    "diverged": "भटक गई"
     
 
     

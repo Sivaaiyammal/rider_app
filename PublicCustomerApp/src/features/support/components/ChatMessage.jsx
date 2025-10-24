@@ -1,15 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Fonts } from '../../../constants/constants';
+import { colors, Fonts } from '../../../constants/constants';
 
 const ChatMessage = ({ message, isUser = false }) => {
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    const time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    return `${day} ${month} ${year}, ${time}`;
   };
 
   return (
@@ -29,20 +31,8 @@ const ChatMessage = ({ message, isUser = false }) => {
         </Text>
         
         <View style={styles.messageFooter}>
-          <Text style={styles.timestamp}>{formatTime(message.timestamp)}</Text>
-          {isUser && (
-            <View style={styles.statusContainer}>
-              {message.status === 'sent' && (
-                <Ionicons name="checkmark" size={12} color="#6B7280" />
-              )}
-              {message.status === 'delivered' && (
-                <Ionicons name="checkmark-done" size={12} color="#6B7280" />
-              )}
-              {message.status === 'read' && (
-                <Ionicons name="checkmark-done" size={12} color="#3B82F6" />
-              )}
-            </View>
-          )}
+          <Text style={[styles.timestamp, {color : isUser ? colors.green_xlight: colors.black}]}>{formatTime(message.timestamp)}</Text>
+          
         </View>
       </View>
     </View>

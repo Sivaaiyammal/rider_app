@@ -196,7 +196,8 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
         searchType:LocationTypes.WAYPOINT_LOCATION,
         fromaddWayPoint:index != 0 && index != finalData.length-1 ? true : false,
         getwaitingTime:index !== 0 && index !== finalData.length-1 ? true : false,
-        label:label
+        label:label,
+        
       })
     }
     

@@ -24,11 +24,20 @@ import AdaptiveText from '../../../../components/Common/AdaptiveText';
 
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
 
-const VehicleList = ({ isLoading = false ,availableVehicles}) => {
+const VehicleList = ({ availableVehicles }) => {
   const { t } = useTranslation();
   const {selectedVehicle,setSelectedVehicle} = useRideVehicleStore()
   const [slideAnim] = useState(new Animated.Value(0));
   const firstRenderEndedRef = useRef(false);
+  const firstRenderStartRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof console.time === 'function') {
+      console.time('availableVehicles->firstRender');
+    } else {
+      firstRenderStartRef.current = Date.now();
+    }
+  }, []);
 
   useEffect(() => {
     // Animate the component in only when vehicles are loaded
@@ -41,12 +50,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
     }
   }, [availableVehicles]);
 
-  useEffect(() => {
-    if (!firstRenderEndedRef.current && availableVehicles && availableVehicles.length > 0) {
-      console.timeEnd('availableVehicles->firstRender');
-      firstRenderEndedRef.current = true;
-    }
-  }, [availableVehicles]);
+  
 
   // Removed redundant vehicle selection - handled by parent component
 
@@ -103,7 +107,7 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
     return renderSkeletonLoader();
   }
   const isEv = (vehicleType) => {
-    return vehicleType.includes("ELECTRIC");
+    return typeof vehicleType === 'string' && vehicleType.includes("ELECTRIC");
   };
 
 
@@ -182,7 +186,6 @@ const VehicleList = ({ isLoading = false ,availableVehicles}) => {
 VehicleList.propTypes = {
   initialValue: PropTypes.object,
   availableVehicles: PropTypes.array,
-  isLoading: PropTypes.bool,
 };
 
 const styles = StyleSheet.create({

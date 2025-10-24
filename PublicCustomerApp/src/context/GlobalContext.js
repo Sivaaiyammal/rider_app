@@ -110,6 +110,16 @@ export const ContextProvider = ({children}) => {
     }
   }, []);
 
+
+
+  const removeListener = useCallback(async () => {
+    try {
+      await wsService.close();
+    } catch (error) {
+      console.error('Error removing listener:', error);
+    }
+  }, []);
+
   // Update theme when system color scheme changes (only if using default mode)
   useEffect(() => {
     if (themeMode === 'default' && isInitialized) {
@@ -134,6 +144,7 @@ export const ContextProvider = ({children}) => {
         resetToSystemTheme,
         getCurrentDeviceTheme,
         addListener,
+        removeListener,
         isDarkMode: themeMode === 'dark' || (themeMode === 'default' && systemColorScheme === 'dark'),
         systemColorScheme,
         isInitialized
