@@ -244,9 +244,9 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
             {!scheduleDate && <Ionicons name={"chevron-down"} size={14} color={"white"} />}
           </TouchableOpacity>
 
-          <TouchableOpacity style={[addLocation.rideSelection,scheduleDate && {flex:1/4}]} onPress={() => onTripForPress()}>
+          <TouchableOpacity style={[addLocation.rideSelection,scheduleDate && {flex:1/4,justifyContent:'centers'}]} onPress={() => onTripForPress()}>
             <Ionicons name="person" size={18} color={colors.white} />
-           {!scheduleDate && <Text style={addLocation.rideSelectionTxt}>{rideBookMode === 'MYSELF' ? t('myself') : passangerDetails?.name || t('others')}</Text>}
+           {!scheduleDate && <Text style={[addLocation.rideSelectionTxt, {width:'60%',justifyContent:'center',textAlign:'center'}]} numberOfLines={1} ellipsizeMode="tail">{rideBookMode === 'MYSELF' ? t('myself') : passangerDetails?.name || t('others')}</Text>}
             <Ionicons name="chevron-down" size={18} color={colors.white} />
           </TouchableOpacity>
         </View>
