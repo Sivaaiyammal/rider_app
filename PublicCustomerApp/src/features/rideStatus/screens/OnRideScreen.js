@@ -32,7 +32,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {t} = useTranslation();
   
   const {stopspolyline} = useDrawStopsPolyline();
-  useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"default",driverAngle);
+  useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"drop",driverAngle);
   const {estimatedDuration,SetViewBoundingBox} = useRouteDraw({destinationlat:currentStop?.location[1],destinationlon:currentStop?.location[0],driverLat:driverLatitude,driverLon:driverLongitude,remainingStops: stopspolyline})  
   const animation = useRef(new Animated.Value(0)).current;
   
@@ -57,7 +57,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   useEffect(() => {
     const setinterval = setInterval(() => {
       SetViewBoundingBox()
-    }, 60000); 
+    }, 15000); 
     return () => clearInterval(setinterval);
   }, []);
 

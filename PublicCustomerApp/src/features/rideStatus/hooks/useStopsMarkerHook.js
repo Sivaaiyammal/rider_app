@@ -48,7 +48,18 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
                     return [stopMarker0];
                 }
             });
-          }else{
+          }else if(markerType === "drop"){
+            setMarkersList(prevMarkers => {
+                // Remove all stop markers (keep only driver marker)
+                const stopMarker0 = new Marker(`${0}-stop${markerType}`, stops[stops.length - 1].name, stops[stops.length - 1].location[0], stops[stops.length - 1].location[1], 'drop_point', 75 )
+                if(driverLatitude && driverLongitude){
+                    return [driverMarker, stopMarker0];
+                }else{
+                    return [stopMarker0];
+                }
+            });
+          }
+          else{
         setMarkersList(prevMarkers => {
             // Remove all stop markers (keep only driver marker)
             const stopMarkers = stops.filter((stop)=>stop.isReached === false).map((stop,index) => {

@@ -77,7 +77,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
   useEffect(() => {
     const setinterval = setInterval(() => {
       SetViewBoundingBox()
-    }, 60000); 
+    }, 15000);
     return () => clearInterval(setinterval);
   }, []);
 

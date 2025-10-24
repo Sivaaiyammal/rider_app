@@ -31,7 +31,7 @@ import useConfigStore from '../../../store/useConfigStore';
 const PaymentScreen = () => {
 
   const {t} = useTranslation();
-  const {currentTripId,tripStatus,rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,paymentMethod,isLoading,setTripDetails,tripStops,fareDetails,bookingTime,supplierDetails,recipientDetails,adminDetails,paymentStatus,invoiceId } = usePaymentStore();
+  const {currentTripId,tripStatus,rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,paymentMethod,isLoading,setTripDetails,tripStops,fareDetails,bookingTime,supplierDetails,recipientDetails,adminDetails,paymentStatus,invoiceId, razorPayAccountId } = usePaymentStore();
   const [showInvoice, setShowInvoice] = useState(false);
   const screenHeight = Dimensions.get('window').height;
   const overlayAnim = useRef(new Animated.Value(screenHeight)).current;
@@ -39,7 +39,7 @@ const PaymentScreen = () => {
   const [contentHeight, setContentHeight] = useState(0);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const { appConfig } = useConfigStore();
-  const isPaymentGateway = appConfig?.PAYMENT_METHODS === "PG" && driverDetails?.razorPayId;
+  const isPaymentGateway = appConfig?.PAYMENT_METHODS === "PG" && razorPayAccountId;
   const {setStackScreen} = useStackScreenStore();
   const { incrementTotalSpend,incrementCompletedTrips } = useUserInfoStore();
   const animateIn = () => {

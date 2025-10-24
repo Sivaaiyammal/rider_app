@@ -7,6 +7,10 @@ const usePaymentStore = create((set, get) => ({
   invoiceId: null,
   setInvoiceId: (invoiceId) => set({ invoiceId: invoiceId }),
 
+
+  razorPayAccountId: null,
+  setRazorPayAccountId: (razorPayAccountId) => set({ razorPayAccountId: razorPayAccountId }),
+
   rideId: null,
   setRideId: (rideId) => set({ rideId: rideId }),
 
@@ -79,7 +83,12 @@ const usePaymentStore = create((set, get) => ({
       setRecipientDetails,
       setAdminDetails,
       setInvoiceId,
+      setRazorPayAccountId,
     } = get();
+
+
+
+    console.log(JSON.stringify(data),"data")
 
     if (data?.trip?.rideId !== undefined) {
       setRideId(data.trip.rideId);
@@ -87,6 +96,15 @@ const usePaymentStore = create((set, get) => ({
 
     if(data?.trip?.fareDetails?.invoiceId !== undefined){
       setInvoiceId(data.trip?.fareDetails?.invoiceId);
+    }
+
+    if(data?.trip?.driverInfo?.razorPayId !== undefined){
+      if(data.trip?.driverInfo?.razorPayId !== null && (data.trip?.driverInfo?.activationStatus === 'activated' || data.trip?.driverInfo?.status === 'activated')){
+        setRazorPayAccountId(data.trip?.driverInfo?.razorPayId);
+      }
+      else{
+        setRazorPayAccountId(null);
+      }
     }
 
     if (data?.trip?.finalDistance !== undefined) {
