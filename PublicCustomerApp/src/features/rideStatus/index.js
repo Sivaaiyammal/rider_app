@@ -57,7 +57,7 @@ const RideStatus = () => {
   const [cancelReason, setCancelReason] = useState('');
   const {gpsDistance, gpsDuration, loading} = useCalculateDistance({ tripId:tripId , startTime: 1717190400000, endTime: new Date().setHours(23, 59, 59, 999),enabled: isCalculateDistance});
  
-
+ const [cancelLoading, setCancelLoading] = useState(false);
   const handleOverlay = (action) => {
    
     
@@ -98,7 +98,7 @@ const RideStatus = () => {
     }
   }
   const handleCancel = async (reason) => {
-    
+     setCancelLoading(true);
       if(tripStatus === TripStatus.PENDING){
         await DataStore.clearData(PREF.CURRENT_TRIP)
         stopMatching(tripId,userId)
@@ -141,8 +141,8 @@ const RideStatus = () => {
 
         if( distance == 0 && duration == 0) {
           const routePoints = stops.filter(stop => stop.isReached == true).map(stop => ({
-            lat: stop.location[1], // latitude
-            lon: stop.location[0]  // longitude
+            lat: stop.location[1], 
+            lon: stop.location[0] 
         }));
 
 
@@ -188,10 +188,10 @@ const RideStatus = () => {
 
 
        
+  
+       if(distance != null && duration != null ) {
 
-       if(distance != null && duration != null && duration > 0 ) {
-
-    
+      
         const payload = {
           tripId,
           reason: cancelReason,
@@ -216,7 +216,7 @@ const RideStatus = () => {
     setWaitingForDriverApproval(null);
   }
   setShowBottomSheet(false);
-
+  setCancelLoading(false);
   };
 
  
@@ -303,7 +303,7 @@ const RideStatus = () => {
         {
       showBottomSheet &&
       <AnimatedBottomSheetWrapper onClose={()=>{setShowBottomSheet(false)}}>
-        <CancelComponent onClose={()=>{setShowBottomSheet(false)}} onCancel={handleCancel}  loading={loading} rideStatus={tripStatus} />
+        <CancelComponent onClose={()=>{setShowBottomSheet(false)}} onCancel={handleCancel}  loading={loading} cancelLoading={cancelLoading} rideStatus={tripStatus} />
       </AnimatedBottomSheetWrapper>
       
     }

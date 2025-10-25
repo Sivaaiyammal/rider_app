@@ -35,7 +35,7 @@ const getReasons = (rideStatus) => {
 
 
 
-const CancelComponent = ({ onClose, onCancel, loading,rideStatus }) => {
+const CancelComponent = ({ onClose, onCancel, loading,cancelLoading,rideStatus }) => {
   const [selected, setSelected] = useState('');
   const [otherReason, setOtherReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -111,9 +111,9 @@ const CancelComponent = ({ onClose, onCancel, loading,rideStatus }) => {
         <TouchableOpacity
           style={[  styles.confirmBtn, {opacity: !selected || (selected === 'Other' && !otherReason.trim()) || isLoading ? 0.5 : 1}]}
           onPress={handleConfirm}
-          disabled={!selected || (selected === 'Other' && !otherReason.trim()) || isLoading}
+          disabled={!selected || (selected === 'Other' && !otherReason.trim()) || isLoading || cancelLoading || loading}
         >
-          {isLoading || loading ? (
+          {isLoading || cancelLoading || loading ? (
             <ActivityIndicator size="small" color="#ff4d4f" />
           ) : (
             <AdaptiveText style={styles.confirmText}>{t('confirm_cancellation')}</AdaptiveText>

@@ -580,7 +580,7 @@ export const utils = {
   formatMinutesToReadable(minutes) {
     if (!minutes || minutes < 0) {
       console.warn('Invalid minutes provided:', minutes);
-      return '0 Mins';
+      return '0 Min';
     }
     
     if (minutes >= 60) {
