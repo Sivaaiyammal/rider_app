@@ -306,6 +306,7 @@ const PaymentScreen = () => {
             mode="inline"
             showHeader={true}
             onClose={handleInvoiceClose}
+            rideStatus={tripStatus}
           />
         </Animated.View>
       )}

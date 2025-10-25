@@ -10,7 +10,7 @@ import { Fonts, colors } from '../../../constants/constants';
 import PDFCreator from '../../../utils/PDFCreator';
 import { utils } from '../../../utils/Utils';
 
-const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,supplierDetails,recipientDetails,adminInfo,visible, onClose, mode = 'modal', showHeader }) => {
+const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,supplierDetails,recipientDetails,adminInfo,visible, onClose, mode = 'modal', showHeader, rideStatus }) => {
   const { t } = useTranslation();
   const { goBack } = useStackScreenStore();
   const [customFolder] = useState('');
@@ -104,7 +104,7 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
           
             
             dropAddress: tripStops[tripStops.length-1].address,
-            dropTime: utils.formatDateAndTime(tripStops[tripStops.length-1].arrivalTime),
+            dropTime: rideStatus === 'COMPLETED' ? utils.formatDateAndTime(tripStops[tripStops.length-1].arrivalTime) : '--',
             supportUrl: supportUrl,
             supportUrlText: supportUrl,
             footerNote: "Above fare based on travel distance and waiting. Toll, Parking, Permit charges may apply. T&C apply."

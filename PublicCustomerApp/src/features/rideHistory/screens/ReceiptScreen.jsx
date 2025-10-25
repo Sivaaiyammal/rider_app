@@ -9,7 +9,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import PDFCreator from '../../../utils/PDFCreator';
 import { utils } from '../../../utils/Utils';
 
-const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,recipientDetails,adminInfo,visible, onClose, mode = 'modal', showHeader }) => {
+const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,recipientDetails,adminInfo,visible, onClose, mode = 'modal', showHeader, rideStatus }) => {
   const { t } = useTranslation();
   const { goBack } = useStackScreenStore();
   const [showToast, setShowToast] = useState(false);
@@ -92,7 +92,7 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
           
             
             dropAddress: tripStops[tripStops.length-1].address,
-            dropTime: utils.formatDateAndTime(tripStops[tripStops.length-1].arrivalTime),
+            dropTime: rideStatus === 'COMPLETED' ? utils.formatDateAndTime(tripStops[tripStops.length-1].arrivalTime) : '--',
             supportUrl: supportUrl,
             supportUrlText: supportUrl,
             footerNote: "Above fare based on travel distance and waiting. Toll, Parking, Permit charges may apply. T&C apply."
@@ -486,6 +486,7 @@ ReceiptScreen.propTypes = {
   onClose: PropTypes.func,
   mode: PropTypes.oneOf(['modal', 'inline']),
   showHeader: PropTypes.bool,
+  rideStatus: PropTypes.string,
 };
 
 export default ReceiptScreen; 

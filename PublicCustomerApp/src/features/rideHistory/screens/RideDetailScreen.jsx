@@ -209,6 +209,7 @@ const RideDetailScreen = ({ TripData }) => {
             mode="inline"
             showHeader={true}
             onClose={handleReceiptClose}
+            rideStatus={rideData?.status}
           />
         </Animated.View>
       )}
@@ -232,6 +233,7 @@ const RideDetailScreen = ({ TripData }) => {
             mode="inline"
             showHeader={true}
             onClose={handleInvoiceClose}
+            rideStatus={rideData?.status}
           />
         </Animated.View>
       )}
