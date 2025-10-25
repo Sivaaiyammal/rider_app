@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ScrollView, View, StyleSheet, Text, TouchableOpacity, Alert, Modal } from 'react-native';
+import { ScrollView, View, StyleSheet, Text, TouchableOpacity, Alert, Modal, BackHandler } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -25,6 +25,17 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
       }
     };
   }, []);
+  
+  useEffect(() => {
+    // Ensure Android hardware back triggers the same behavior
+    if (mode !== 'modal') {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+        handleBackPress();
+        return true; // consume the event
+      });
+      return () => subscription.remove();
+    }
+  }, [mode, onClose]);
   
   const defaultCompanyInfo = {
     name: supplierDetails?.name || 'N/A',
@@ -886,6 +897,7 @@ InvoiceScreen.propTypes = {
     driverName: PropTypes.string,
     driverRating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     driverPhotoUrl: PropTypes.string,
+    driverPhoto: PropTypes.string,
   }),
   vehicleDetails: PropTypes.shape({
     vehicleBrand: PropTypes.string,
@@ -911,6 +923,7 @@ InvoiceScreen.propTypes = {
   onClose: PropTypes.func,
   mode: PropTypes.oneOf(['modal', 'inline']),
   showHeader: PropTypes.bool,
+  rideStatus: PropTypes.string,
 };
 
 export default InvoiceScreen; 

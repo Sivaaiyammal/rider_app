@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect }   from 'react';
-import { ScrollView, View, StyleSheet, Text, TouchableOpacity, Alert, Modal } from 'react-native';
+import { ScrollView, View, StyleSheet, Text, TouchableOpacity, Alert, Modal, BackHandler } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
@@ -23,6 +23,17 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
       }
     };
   }, []);
+  
+  useEffect(() => {
+    // Ensure Android hardware back triggers the same behavior when inline
+    if (mode !== 'modal') {
+      const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+        handleBackPress();
+        return true; // consume the event
+      });
+      return () => subscription.remove();
+    }
+  }, [mode, onClose]);
   // Use the actual trip data or dummy data if not provided
   const rideData = {
     _id: rideId,
@@ -458,6 +469,7 @@ ReceiptScreen.propTypes = {
     driverName: PropTypes.string,
     driverRating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     driverPhotoUrl: PropTypes.string,
+    driverPhoto: PropTypes.string,
     vehicleBrand: PropTypes.string,
     vehicleModel: PropTypes.string,
     vehicleNumber: PropTypes.string,
