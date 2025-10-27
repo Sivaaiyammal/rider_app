@@ -42,6 +42,7 @@ node_modules/
 android/libs
 npm-debug.log
 yarn-error.log
+package-lock.json
 
 # fastlane
 #
@@ -68,7 +69,7 @@ yarn-error.log
 # testing
 /coverage
 
-package-lock.json
+
 
 # Yarn
 .yarn/*
