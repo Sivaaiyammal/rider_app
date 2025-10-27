@@ -589,6 +589,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             case "electric_hatchback": return R.drawable.hatchback;
             case "electric_sedan": return R.drawable.sedan;
             case "electric_suv": return R.drawable.suv;
+            case "electric_auto": return R.drawable.electric_auto;
             case "location_pin": return R.drawable.marker_stop_grey;
             case "stop_1": return R.drawable.stop_1;
             case "stop_2": return R.drawable.stop_2;
