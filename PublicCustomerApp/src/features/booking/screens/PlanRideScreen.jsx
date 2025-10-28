@@ -38,9 +38,9 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
 
-  const {selectedRide, setSelectedRide, scheduleDateTime, setScheduleDateTime} =
+  const {selectedRide, setSelectedRide } =
     useRideSelectionStore();
-  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails} = useRideBookingInfo()
+  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime} = useRideBookingInfo()
 
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showTripFor, setShowTripFor] = useState(false);
@@ -64,6 +64,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
     console.log("onBackPress")
     resetRideBookingLocation()
     setScheduleDateTime(null)
+    setSelectedRide(rideType[0])
+    setIsScheduledTrip(false)
     goBack();
   };
 
@@ -117,9 +119,11 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
     setSelectedRide(item);
     if (item.name === 'Schedule') {
       setShowScheduleContainer(true)
+      setIsScheduledTrip(true)
     } else {
       _toggleSubview();
       setScheduleDateTime(null);
+      setIsScheduledTrip(false)
     }
   };
 
@@ -222,7 +226,9 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
 
 
 
-const scheduleDate = scheduleDateTime?.date ? utils.formatDate(scheduleDateTime?.date) : ""
+const isScheduleSelected = Boolean(scheduleDateTime?.date)
+const isScheduleToday = isScheduleSelected ? utils.isToday(scheduleDateTime.date) : false
+const scheduleDateLabel = isScheduleSelected ? (isScheduleToday ? t('today') : utils.formatDate(scheduleDateTime.date, 'ddd DD')) : ""
 const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(scheduleDateTime?.time) : ""
 
   return (
@@ -236,17 +242,17 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
         <View style={addLocation.rideSelectionContainer}>
           <TouchableOpacity
-            style={[addLocation.rideSelection,scheduleDate&&{flex:2}]}
+            style={[addLocation.rideSelection,scheduleDateLabel&&{flex:2}]}
             onPress={() => onRideTypePress()}>
             <Schdule />
-            <Text style={addLocation.rideSelectionTxt}>{t(selectedRide.translationKey)}{' '}{scheduleDate ? scheduleDate + " - " + scheduleTime.toUpperCase() : scheduleTime.toUpperCase()}
+            <Text style={addLocation.rideSelectionTxt}>{!scheduleDateLabel && t(selectedRide.translationKey)}{' '}{scheduleDateLabel ? scheduleDateLabel + " - " + scheduleTime.toUpperCase() : scheduleTime.toUpperCase()}
             </Text>
-            {!scheduleDate && <Ionicons name={"chevron-down"} size={14} color={"white"} />}
+            {!scheduleDateLabel && <Ionicons name={"chevron-down"} size={14} color={"white"} />}
           </TouchableOpacity>
 
-          <TouchableOpacity style={[addLocation.rideSelection,scheduleDate && {flex:1/4,justifyContent:'centers'}]} onPress={() => onTripForPress()}>
+          <TouchableOpacity style={[addLocation.rideSelection]} onPress={() => onTripForPress()}>
             <Ionicons name="person" size={18} color={colors.white} />
-           {!scheduleDate && <Text style={[addLocation.rideSelectionTxt, {width:'60%',justifyContent:'center',textAlign:'center'}]} numberOfLines={1} ellipsizeMode="tail">{rideBookMode === 'MYSELF' ? t('myself') : passangerDetails?.name || t('others')}</Text>}
+           { <Text style={[addLocation.rideSelectionTxt, {width:'60%',justifyContent:'center',textAlign:'center'}]} numberOfLines={1} ellipsizeMode="tail">{rideBookMode === 'MYSELF' ? t('myself') : passangerDetails?.name || t('others')}</Text>}
             <Ionicons name="chevron-down" size={18} color={colors.white} />
           </TouchableOpacity>
         </View>

@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 import {colors} from '../../constants/constants';
 import {utils} from '../../utils/Utils';
 import DatePicker from 'react-native-date-picker';
-import useRideSelectionStore from '../../store/useRideSelectionStore';
 import {scheduleContainerStyles} from '../../styles/AddLocationStyles';
 import {showNotification} from '../../components/NotificationManger';
+import useRideBookingInfo from '../../features/booking/store/useRideBookingInfo';
 
 const ScheduleContainer = props => {
   const { t } = useTranslation();
@@ -19,7 +19,7 @@ const ScheduleContainer = props => {
     scheduleDate,
   } = props;
   const fiveDaysWithDayNames = utils.getNextDayLists(5);
-  const {setScheduleDateTime} = useRideSelectionStore();
+  const {setScheduleDateTime} = useRideBookingInfo();
 
   const filteredData = fiveDaysWithDayNames.filter(item => {
     const itemDate = (
@@ -140,6 +140,7 @@ const ScheduleContainer = props => {
       <View style={scheduleContainerStyles.datePickerContainer}>
         <DatePicker
           mode="time"
+          theme="light"
           date={selectedTime}
           is24hourSource="locale"
           onDateChange={onDateChange}

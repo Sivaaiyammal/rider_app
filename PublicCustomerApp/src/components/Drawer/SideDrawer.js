@@ -149,12 +149,12 @@ const SideDrawerV2 = ({ handleMenu }) => {
     //   icon: <Ionicons name="locate" size={20} color="black" />,
     // },
     
-    // {
-    //   id: 'test-screen',
-    //   name: t('test_screen'),
-    //   screen: 'GoogleMapScreen',
-    //   icon: <Ionicons name="flask" size={20} color="black" />,
-    // },
+    {
+      id: 'test-screen',
+      name: t('test_screen'),
+      screen: 'ScheduleScreen',
+      icon: <Ionicons name="flask" size={20} color="black" />,
+    },
   ];
 
 

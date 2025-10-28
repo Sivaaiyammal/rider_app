@@ -24,7 +24,7 @@ const useUserInfoStore = create(set => ({
   isPreferenceShow:false,
   setIsPreferenceShow: isPreferenceShow => set({ isPreferenceShow }),
 
-  userFavPlaces:null,
+  userFavPlaces:[],
   setUserFavPlaces: userFavPlaces => set({ userFavPlaces }),
 
   

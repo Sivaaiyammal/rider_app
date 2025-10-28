@@ -30,6 +30,13 @@ const useRideBookingInfo = create(set => ({
   safeNightRides: false,
   setSafeNightRides: (safeNightRides) => set({ safeNightRides }),
 
+  scheduleDateTime: null,
+  setScheduleDateTime: (scheduleDateTime) => set({ scheduleDateTime }),
+
+
+  isScheduledTrip: false,
+  setIsScheduledTrip: (isScheduledTrip) => set({ isScheduledTrip }),
+
 
   couponCode: null,
   setCouponCode: (couponCode) => set({ couponCode }),

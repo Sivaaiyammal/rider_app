@@ -54,6 +54,7 @@ import { useNetwork } from '../context/NetworkContext';
 import DeviceInfo from 'react-native-device-info';
 import { showNotification } from '../components/NotificationManger';
 import { useTranslation } from 'react-i18next';
+import ScheduleScreen from '../features/schedule/screens/ScheduleScreen';
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -583,6 +584,8 @@ const Home = () => {
         return <EmergencyHomeScreen {...params} />;
       case 'TrackingTestScreen':
         return <TrackingTestScreen {...params} />;
+      case 'ScheduleScreen':
+        return <ScheduleScreen {...params} />;
      
       default:
         return null;

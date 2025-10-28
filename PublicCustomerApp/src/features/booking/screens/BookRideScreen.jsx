@@ -93,7 +93,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const { t } = useTranslation();
     
     const {goBack,goBackToScreen} = useStackScreenStore()
-        const {paymentType,setPaymentType, rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode, updateBookingInfo} = useRideBookingInfo()
+        const {paymentType,setPaymentType, rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode, updateBookingInfo,scheduleDateTime} = useRideBookingInfo()
     const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false)
     const {isPreferenceShow,setIsPreferenceShow} = useUserInfoStore()
     const {setAvailableVehicles,availableVehicles,setSelectedVehicle} = useRideVehicleStore()
@@ -114,7 +114,6 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     const { setDirectionReady} = useMapStore()     
 
-    const {scheduleDateTime} = useRideSelectionStore();
 
     // Use the booking hook for trip booking
     const {
@@ -411,7 +410,7 @@ const handleChangeScheduleTime=()=>{
 }
 
 
-const scheduleDate = scheduleDateTime?.date ? utils.formatDate(scheduleDateTime?.date) : ""
+const scheduleDate = scheduleDateTime?.date ? utils.formatDate(scheduleDateTime?.date, 'ddd DD MMM YYYY') : ""
 const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(scheduleDateTime?.time) : ""
 
   return (
@@ -419,7 +418,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
    <View>
     <NavBar onBackPress={handleBackPress} />
     {!!scheduleDate && <View style={styles.ScheduleOption}>
-    <Schdule />
+            <Schdule />
             <AdaptiveText style={styles.rideSelectionTxt}>{scheduleDate && scheduleDate + " - " + scheduleTime}
             </AdaptiveText>
            <TouchableOpacity 

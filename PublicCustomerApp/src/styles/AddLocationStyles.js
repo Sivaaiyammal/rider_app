@@ -111,7 +111,7 @@ export const addLocation = StyleSheet.create({
     backgroundColor: colors.black,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 5,
     width: '46%',
     paddingHorizontal: 15,
     borderRadius: 15,

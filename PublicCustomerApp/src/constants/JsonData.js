@@ -103,7 +103,7 @@ export const rideType = [
     translationKey: 'schedule',
     name: 'Schedule',
     value:'schedule',
-    disabled: true,
+    disabled: false,
     comingSoon: true
   }
 ];

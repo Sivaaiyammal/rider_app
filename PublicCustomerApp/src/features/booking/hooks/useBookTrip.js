@@ -9,6 +9,7 @@ import { showNotification } from '../../../components/NotificationManger';
 import { useTranslation } from 'react-i18next';
 import useRideMatching from '../../../hooks/useRideMatching';
 import useUserInfoStore from '../../../store/useUserInfoStore';
+import useScheduleStore from '../../schedule/store/useScheduleStore';
 /**
  * Simple hook for booking trips with navigation handling
  * @returns {Object} Booking functions and state
@@ -21,6 +22,7 @@ const useBookTrip = () => {
   const { setCurrentRideInfo } = useCurrentRideInfoStore();
   const { t } = useTranslation();
   const { initializeSocket, startMatching } = useRideMatching();
+  const { setFromPayload } = useScheduleStore();
   const { id: userId } = useUserInfoStore();
   // Booking success callback - navigate to appropriate screen
   const handleBookingSuccess = useCallback((data) => {
@@ -53,14 +55,33 @@ const useBookTrip = () => {
       const result = await bookingService.bookTrip(customData);
       
       if(result?.success && result?.trip){
-        await DataStore.storeData(PREF.CURRENT_TRIP, result.trip?._id);
-        setCurrentRideInfo(result.trip);
-        setStackScreen('RideStatus', {
-        });
-        showNotification(t('booking_successful'), t('your_ride_has_been_booked_successfully'), 'success'); 
-       
-        startMatching(result.tripId, userId,result?.trip?.vehicleType);
-        return result;
+        console.log("=====> RESULT", JSON.stringify(result))
+        if(result?.trip?.isScheduledTrip){
+          try {
+            setFromPayload(result.trip);
+            await DataStore.storeData(PREF.SCHEDULED_TRIP, result.trip?._id);
+            setStackScreen('ScheduleScreen', {
+              tripId: result.trip?._id
+            });
+            return result;
+          } catch (err) {
+            console.error('Error handling scheduled trip:', err);
+            throw err;
+          }
+        }
+        try {
+          await DataStore.storeData(PREF.CURRENT_TRIP, result.trip?._id);
+          setCurrentRideInfo(result.trip);
+          setStackScreen('RideStatus', {
+          });
+          showNotification(t('booking_successful'), t('your_ride_has_been_booked_successfully'), 'success'); 
+         
+          startMatching(result.tripId, userId,result?.trip?.vehicleType);
+          return result;
+        } catch (err) {
+          console.error('Error handling current trip:', err);
+          throw err;
+        }
       }
       return result;
       

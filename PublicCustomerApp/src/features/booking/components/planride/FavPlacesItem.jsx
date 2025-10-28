@@ -46,7 +46,7 @@ const getIcon = (label,type) => {
 };
 
 FavPlacesItem.propTypes = {
-  type: PropTypes.oneOf(['home', 'work','add']).isRequired,
+  type: PropTypes.oneOf(['home', 'work','add']),
   onPress: PropTypes.func.isRequired,
 };
 

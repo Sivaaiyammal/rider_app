@@ -35,8 +35,12 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     femaleDriverOnly,
     couponCode,
     regionOfficeId,
-    regionOfficeCode
+    regionOfficeCode,
+    isScheduledTrip,
+    scheduleDateTime
   } = useRideBookingInfo();
+
+  
   
   const { selectedVehicle } = useRideVehicleStore();
   const { resetRideMatchStatus } = useRideMatchStore();
@@ -93,7 +97,9 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       isReached:false
     });
 
-    console.log("=====> SELECTED VEHICLE", JSON.stringify(selectedVehicle))
+    
+
+    
 
     // Build payload with dummy values for testing
     const payload = {
@@ -101,6 +107,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       startLocation: [rideStartLocation.longitude, rideStartLocation.latitude],
       endLocation: [rideEndLocation.longitude, rideEndLocation.latitude],
       stops: stops,
+      isScheduledTrip: isScheduledTrip,
 
       // Vehicle and trip data
       vehicleType: selectedVehicle.type || 'AUTO',
@@ -122,12 +129,28 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       femaleOnly:femaleDriverOnly,
       regionalOffice: regionOfficeId || null,
       regionCode: regionOfficeCode || 'default',
-
+     
+      
     };
+
+    if (isScheduledTrip) {
+      if (scheduleDateTime?.date && scheduleDateTime?.time) {
+        const dateObj = new Date(scheduleDateTime.date);
+        const timeObj = new Date(scheduleDateTime.time);
+        if (!isNaN(dateObj) && !isNaN(timeObj)) {
+          dateObj.setHours(timeObj.getHours());
+          dateObj.setMinutes(timeObj.getMinutes());
+          dateObj.setSeconds(0);
+          dateObj.setMilliseconds(0);
+          payload.scheduleDateTime = dateObj.getTime();
+        }
+      }
+    }
     if(couponCode){
       payload.offerCoupon = couponCode
     }
 
+    
     return payload;
   };
 

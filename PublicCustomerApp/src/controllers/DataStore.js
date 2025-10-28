@@ -14,6 +14,7 @@ const ALLOWED_KEYS = [
   'currentTrip',
   'ThemeMode',  
   'IsDefault',
+  'scheduledTrip',
   'sOS_EVENTID',
 ]
 
