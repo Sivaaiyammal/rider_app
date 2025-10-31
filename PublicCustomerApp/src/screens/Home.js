@@ -57,6 +57,7 @@ import { useTranslation } from 'react-i18next';
 import ScheduleScreen from '../features/schedule/screens/ScheduleScreen';
 import useScheduleTripStore from '../store/useScheduleTripStore';
 import RideHistory from '../features/rideHistory/index.js';
+import { utils } from '../utils/Utils';
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -145,6 +146,7 @@ const Home = () => {
   const lastProcessedKey = useRef(null);
   const geocodeCache = useRef(new Map());
   const processLocationRef = useRef(null);
+  const lastProcessedLocationRef = useRef(null); // Track last processed location to avoid rerenders
   
  
   const stableDebounceCallback = useRef((lng, lat) => {
@@ -187,7 +189,7 @@ const Home = () => {
   };
 
 
-  const updateLocationDebounced = async (lng, lat) => {
+  const updateLocationDebounced = useCallback(async (lng, lat) => {
     setLocation([lng, lat]);
     if (lng && lat) {
       try {
@@ -216,35 +218,46 @@ const Home = () => {
         console.error('Failed to handle location update', e);
       }
     }
-  };
+  }, [setLocation, setCurrentLocationName, debouncedProcessLocation]);
 
 
 
 
   const handleUserLocatioChange = useCallback(currentLocation => {
-    console.log("handleUserLocatioChange at home" ,JSON.stringify(currentLocation))
-    const current = useLocationStore.getState().location;
     const lng = currentLocation?.longitude;
     const lat = currentLocation?.latitude;
     if (lng == null || lat == null) {
       return;
     }
-    if (!current) {
+    
+    // Get last processed location from ref (avoids store access and rerenders)
+    const lastProcessed = lastProcessedLocationRef.current;
+    
+    // If no previous location, update immediately
+    if (!lastProcessed) {
+      lastProcessedLocationRef.current = { lng, lat };
       updateLocationDebounced(lng, lat);
       return;
     }
-    if (
-      lng === current?.[0] &&
-      lat === current?.[1]
-    ) {
-      return;
+    
+    // Calculate distance in meters
+    const distanceInMeters = utils.calculateDistanceInMeters(
+      lastProcessed.lat,
+      lastProcessed.lng,
+      lat,
+      lng
+    );
+    
+    // Only update if moved more than 100 meters
+    if (distanceInMeters > 100) {
+      lastProcessedLocationRef.current = { lng, lat };
+      updateLocationDebounced(lng, lat);
     }
-    updateLocationDebounced(lng, lat);
   }, [updateLocationDebounced]);
 
   useEffect(() => {
     setUserLocation(handleUserLocatioChange);
-  }, []);
+  }, [handleUserLocatioChange, setUserLocation]);
 
   const logout = async () => {
 
