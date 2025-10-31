@@ -1,4 +1,4 @@
-import processDataMobile from "../../../core/location/DataProcessorMobile";
+import processData from "../../../core/location/DataProcessorDriver";
 import { mapMatch } from "../../../API/EndPoints/EndPoints";
 import polyline from "@mapbox/polyline";
 import client from "../../../API/apolloClient"; // your configured Apollo client
@@ -25,7 +25,7 @@ export default async function getGpsData({ tripId, startTime, endTime, token }) 
       fetchPolicy: "no-cache",
     });
 
-    console.log("data",JSON.stringify(data))
+    
 
     const raw = data?.getRecentLocations?.raw;
     if (!Array.isArray(raw) || raw.length === 0) {
@@ -33,7 +33,7 @@ export default async function getGpsData({ tripId, startTime, endTime, token }) 
     }
 
   
-    const processed = processDataMobile({
+    const processed = processData({
       data: data.getRecentLocations,
       options: {
         range: { start: startTime, end: endTime },
@@ -41,40 +41,38 @@ export default async function getGpsData({ tripId, startTime, endTime, token }) 
       },
     });
 
-    const lngLats = data?.getRecentLocations?.raw?.map((item) => [item.longitude, item.latitude]);
-  
+    
+
+    const GPSDistance = processed?.data?.sessions!=0 ? processed?.data?.sessions?.reduce((acc, session) => acc + (session[5] || 0), 0) : [];
+    const times = processed?.data?.times || [];
+    const totalDuration = times.length > 1 ? times[times.length - 1] - times[0] : 0;
+    const minutes = Math.floor(totalDuration / 60000);
+    const lngLats = processed?.data?.lngLats || [];
     if (!Array.isArray(lngLats) || lngLats.length < 2) {
       return { distance: 0, duration: 0 };
-      
     }
 
-    const latLngs = lngLats.map(([lng, lat]) => [lat, lng]);
-    const encoded = polyline.encode(latLngs,6);
+    console.log("GPSDistance.........",GPSDistance)
+    console.log("minutes.........",minutes)
+
+    // const latLngs = lngLats.map(([lng, lat]) => [lat, lng]);
+    // const encoded = polyline.encode(latLngs,6);
   
-
-
     // const encoded = "c}`aTgdi}qCwEXzCvl@ei@jDhHvzBw\fCuAdEnDjyAz@d^xQ`AvH`@lBBlUPh_@Vrp@f@f^^pWR|KHpbAdAlEPnIJpABdKhCjEZpg@fChP`AnFQbIe@hBAdQOtGG|H_@zCnEbLtRfJlM`S`ZxKtOpFxGzVd^xEbFl]h`@vY~[da@rg@tE`FlXp]zXn^lEnG"
 
-    // 4. Call Valhalla map_match
-    const resp = await mapMatch({
-      encoded_polyline: encoded,
-      shape_match: "map_snap",
-      costing: "auto",
-    });
+    // const resp = await mapMatch({
+    //   encoded_polyline: encoded,
+    //   shape_match: "map_snap",
+    //   costing: "auto",
+    // });
 
-    const lengthMeters = resp?.trip?.summary?.length;
-    const timeSeconds = resp?.trip?.summary?.time;
+    // const lengthMeters = resp?.trip?.summary?.length;
+    // const timeSeconds = resp?.trip?.summary?.time;
 
-    if (typeof lengthMeters === "number" && typeof timeSeconds === "number") {
-      return {
-        distance: lengthMeters,         // meters
-        duration: timeSeconds / 60,     // minutes
-      };
-    }
-
-    return { distance: 0, duration: 0 };
+  
+    return { distance: GPSDistance, duration: minutes };
   } catch (err) {
     console.error("calculateDistance error:", err);
-    return { distance: 0, duration: 0 };
+    return { distance: -1, duration: -1 };
   }
 }

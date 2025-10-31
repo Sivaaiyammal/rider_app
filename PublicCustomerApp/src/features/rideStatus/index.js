@@ -98,126 +98,127 @@ const RideStatus = () => {
     }
   }
   const handleCancel = async (reason) => {
-     setCancelLoading(true);
-      if(tripStatus === TripStatus.PENDING){
-        await DataStore.clearData(PREF.CURRENT_TRIP)
-        stopMatching(tripId,userId)
-        resetCurrentRideInfo();
-        goBack();
-        return
-      }
+    setCancelLoading(true);
+    if(tripStatus === TripStatus.PENDING){
+      await DataStore.clearData(PREF.CURRENT_TRIP)
+      stopMatching(tripId,userId)
+      resetCurrentRideInfo();
+      goBack();
+      return
+    }
 
-      // if(AppConfig.RIDE_CANCELLED_MIDWAY_FUEL_CHARGE){
-      //   const payload = {
-      //     tripId,
-      //     reason,
-      //     totalDistance: totalDistance,
-      //     totalDuration: Math.round(gpsDuration)
-      // };
+    // if(AppConfig.RIDE_CANCELLED_MIDWAY_FUEL_CHARGE){
+    //   const payload = {
+    //     tripId,
+    //     reason,
+    //     totalDistance: totalDistance,
+    //     totalDuration: Math.round(gpsDuration)
+    // };
+    
+    //   await CancelRide(payload);
       
-      //   await CancelRide(payload);
-        
-      //   return
-      // }
+    //   return
+    // }
 
    
-      if (tripStatus === TripStatus.PICKEDUP) {
-        const pickupTime = stops[0]?.arrivalTime;
-        let distance = 0;
-        let duration = 0;
-        const access_token = await DataStore.loadData('access_token');
-        const data = await getGpsData({
-          tripId: tripId,
-          startTime: pickupTime,
-          endTime: new Date().setHours(23, 59, 59, 999),
-          token: access_token?.data,
-        });
+    if (tripStatus === TripStatus.PICKEDUP) {
+      const pickupTime = stops[0]?.arrivalTime;
+      let GPSdistance = 0;
+      let GPSduration = 0;
+      const access_token = await DataStore.loadData('access_token');
 
-        distance = data?.distance ? data.distance : 0;
-        duration = data?.duration ? Math.round(data.duration) : 0;
-
-        console.log("gpsdistance",distance)
-        console.log("gps duration",duration)
-
-        if( distance == 0 && duration == 0) {
-          const routePoints = stops.filter(stop => stop.isReached == true).map(stop => ({
-            lat: stop.location[1], 
-            lon: stop.location[0] 
-        }));
+      const data = await getGpsData({
+        tripId: tripId,
+        startTime: pickupTime,
+        endTime: new Date().setHours(23, 59, 59, 999),
+        token: access_token?.data,
+      });
 
 
-        if(driverLatitude && driverLongitude) {
-          routePoints.push({
-            lat: driverLatitude,
-            lon: driverLongitude
-          });
-        }else{
+      if(data){
 
-        if(location[0] && location[1]) {
-          routePoints.push({
-            lat: location[1],
-            lon: location[0]
-          });
-        }
+      GPSdistance = data?.distance ? data.distance : null;
+      GPSduration = data?.duration ? Math.round(data.duration) : null;
+
+      let FinalDuration = 0;
+      if(stops?.[0]?.arrivalTime){
+        const finalArrivalMs = Number(stops?.[0]?.arrivalTime ?? 0); 
+        const nowMs = Date.now(); 
+        const totalDurationMs = nowMs-finalArrivalMs;
+        FinalDuration = totalDurationMs / 60000;
+      }
+      else{
+        FinalDuration = GPSduration;
       }
 
-
-       
-
-        
-
+      // if( distance == null && duration == null) {
+      //   const routePoints = stops.filter(stop => stop.isReached == true).map(stop => ({
+      //     lat: stop.location[1], 
+      //     lon: stop.location[0] 
+      // }));
+      //   if(driverLatitude && driverLongitude) {
+      //     routePoints.push({
+      //       lat: driverLatitude,
+      //       lon: driverLongitude
+      //     });
+      //   }else{
+      //   if(location[0] && location[1]) {
+      //     routePoints.push({
+      //       lat: location[1],
+      //       lon: location[0]
+      //     });
+      //   }
+      // }
+      // const routeData = await findRoute(routePoints);
+      // if (routeData && routeData.trip && routeData.trip.summary) {
+      // distance = routeData.trip.summary.length; 
+      //  }
+      // }
       
-        const routeData = await findRoute(routePoints);
-       
-        
-        
-        if (routeData && routeData.trip && routeData.trip.summary) {
-          distance = routeData.trip.summary.length; 
-          const finalArrivalMs = Number(stops?.[0]?.arrivalTime ?? 0); 
-          const nowMs = Date.now(); 
-          const totalDurationMs = nowMs-finalArrivalMs;
-          duration = totalDurationMs / 60000;
-          
-      
+      const payload = {
+        tripId,
+        reason: cancelReason,
+        totalDistance: GPSdistance?.toFixed(2),
+        totalDuration: Math.round(FinalDuration)
+      };
 
-
-        }
-
-      }
-      
-
-
-       
-  
-       if(distance != null && duration != null ) {
-
-      
-        const payload = {
-          tripId,
-          reason: cancelReason,
-          totalDistance: distance?.toFixed(2),
-          totalDuration: Math.round(duration)
-        };
-
-        console.log("payload",payload)
-        CancelRide(payload);
+      console.log("payload",payload)
+      const response = await CancelRide(payload);
+      if (response.success) {
         setWaitingForDriverApproval(null);
-        return
+        setShowBottomSheet(false);
+        setCancelLoading(false);
+       
       }
+      else{
+        showNotification('Failed to cancel ride. Please try again.');
+      }
+      
+    
+      setCancelLoading(false);
+     
+     
+      return
+    }
+      
 
 
-      }else{
+     }else {
 
       const payload = {
         tripId,
-        reason,
+        reason
+      };
+
+      await CancelRide(payload);
+      setWaitingForDriverApproval(null);
+      setShowBottomSheet(false);
+      setCancelLoading(false);
+      return
+
+      }
+ 
     };
-    await CancelRide(payload);
-    setWaitingForDriverApproval(null);
-  }
-  setShowBottomSheet(false);
-  setCancelLoading(false);
-  };
 
  
   const renderScreen = () => {

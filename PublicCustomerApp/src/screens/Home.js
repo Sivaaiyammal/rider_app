@@ -55,6 +55,8 @@ import DeviceInfo from 'react-native-device-info';
 import { showNotification } from '../components/NotificationManger';
 import { useTranslation } from 'react-i18next';
 import ScheduleScreen from '../features/schedule/screens/ScheduleScreen';
+import useScheduleTripStore from '../store/useScheduleTripStore';
+import RideHistory from '../features/rideHistory/index.js';
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -136,7 +138,7 @@ const Home = () => {
   const { setConfig } = useConfigStore();
   const { initializeSocket,resetSocket} = useRideMatching();
   const { isConnected } = useNetwork();
-  
+  const { setScheduledTrips } = useScheduleTripStore();
   const prevIsConnectedRef = useRef(isConnected);
 
   const hasInitialLocationProcessed = useRef(false);
@@ -275,17 +277,19 @@ const Home = () => {
     return false;
   } 
 
+
+
+
   const checkOnGoingRideAndLog = async () => {
     const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
-
+    
     const currentTripId=currentTrip?.data || null
     try {
       setConfigError(false);
       const Response = await getUserStats(currentTripId);
-      console.log("Response",JSON.stringify(Response))
-   
-      if(Response?.success ){
+      console.log("Response------------------",JSON.stringify(Response))
 
+      if(Response?.success ){
 
         if(Response?.userStats?.fcmToken){
           console.log("fcmToken",Response?.userStats?.fcmToken)
@@ -296,6 +300,10 @@ const Home = () => {
             return;
           }
           
+        }
+        
+        if(Response?.scheduleTrips && Response?.scheduleTrips?.length > 0){
+          setScheduledTrips(Response?.scheduleTrips);
         }
 
         if(Response?.appConfig){
@@ -554,7 +562,7 @@ const Home = () => {
       case 'TripFeedbackScreen':
         return <TripFeedbackScreen {...params} />;
       case 'MyRidesScreen':
-        return <MyRidesScreen {...params} />;
+        return < RideHistory  {...params}/>;
       case 'RideDetailScreen':
         return <RideDetailScreen {...params} />;
       case 'MyAccountScreen':

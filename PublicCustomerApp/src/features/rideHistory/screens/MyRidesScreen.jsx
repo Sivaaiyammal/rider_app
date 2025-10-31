@@ -70,9 +70,7 @@ const YourRidesScreen = () => {
     };
 
 
-    const HandleBackBtn = () => {
-           setStackScreen('Home');
-    }
+  
 
     // Replace useQuery with normal API call
     const LoadRides = async (page = 1, isLoadMoreRequest = false) => {
@@ -367,7 +365,7 @@ const YourRidesScreen = () => {
 
     return (
         <View style={yourRidesStyles.mainContainer}>
-            <NavBar withBg onBackPress={HandleBackBtn} title={t('your_rides')} />
+         
 
             {/* <ToggleHeader
                 options={Header_Options}
@@ -407,14 +405,12 @@ const YourRidesScreen = () => {
                             borderWidth: 1,
                             borderColor: colors.grey_light,
                             borderRadius: 16,
-                            paddingVertical: 8,
-                         
                             backgroundColor: activeTab === tab.id ? colors.black : colors.white,
                             alignItems: 'center',
                             justifyContent: 'center',
                         }}
                     >
-                        <AdaptiveText numberOfLines={1} style={{ fontSize:16 ,fontFamily:Fonts.regular}} color={activeTab === tab.id ? colors.white : colors.black}>{tab.label}</AdaptiveText>
+                        <AdaptiveText numberOfLines={1} style={{ fontSize:14 ,fontFamily:Fonts.regular}} color={activeTab === tab.id ? colors.white : colors.black}>{tab.label}</AdaptiveText>
                         {/* <AdaptiveText style={{ fontFamily: Fonts.medium, color: activeTab === tab.id ? colors.white : colors.black }}>{tab.label}</AdaptiveText> */}
                     </TouchableOpacity>
                 ))}

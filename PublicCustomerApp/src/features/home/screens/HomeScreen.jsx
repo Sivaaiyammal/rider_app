@@ -34,6 +34,8 @@ import  AppConfig  from '../../../Config/AppConfig';
 import  {useNearbyPollingControl}  from '../../../store/useNearByDriverPollingControl';
 import PropTypes from 'prop-types';
 import { checkNotificationPermissions, RequestNotificationPermission } from '../../../controllers/PermissionHandler';
+import useScheduleTripStore from '../../../store/useScheduleTripStore';
+import ScheduledTripBanner from '../components/ScheduledTripBanner';
 
 
 const BottomSheetHeader = ({makeRidePlan}) => {
@@ -70,6 +72,7 @@ const MapScreen = () => {
   const {setRideStartLocation,setRideEndLocation,resetRideBookingLocation } = useRideBookingLocationStore()
   const { drivers } = useNearbyDriversStore();
   const {setMapMarkers,setMapBounds} = useMapStore();
+  const { scheduledTrips } = useScheduleTripStore();
   
   useEffect(()=>{
 
@@ -354,10 +357,11 @@ const MapScreen = () => {
          height: 4,
        }}>
        
-            <>
+            <View style={{marginTop:60}}>
+              {<ScheduledTripBanner/>}
               <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
               <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false} />
-            </>
+            </View>
         
         
       </BottomSheetWrapper>

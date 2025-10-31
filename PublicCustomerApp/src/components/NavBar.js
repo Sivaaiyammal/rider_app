@@ -15,6 +15,7 @@ const NavBar = props => {
     onrightIconPress,
     withBg = false,
     withShadow = false, 
+    paddingBottom = 0,  
   } = props;
   return (
    
@@ -24,7 +25,8 @@ const NavBar = props => {
         {
           backgroundColor:  withBg ? 'white' : 'transparent',
           elevation: withShadow ? 5 : 0,
-        },
+          
+        }
       ]}>
 
      {onBackPress && ( <TouchableOpacity style={navStyles.leftIcon} onPress={onBackPress}>
@@ -35,7 +37,7 @@ const NavBar = props => {
        
         
       </TouchableOpacity>
-       )}
+       )} 
       {leftTitle && (
         <View style={navStyles.leftcontent}>
           <Text style={navStyles.leftcontentTxt}>{leftTitle}</Text>

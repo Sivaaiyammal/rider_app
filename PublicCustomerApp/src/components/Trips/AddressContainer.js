@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import  useWayPointReorderStore from '../../features/booking/store/useWayPointReorderStore';
 import {utils} from '../../utils/Utils';
 import AdaptiveText from '../Common/AdaptiveText';
-const AddressContainer = ({ directions,edit=false ,live=false,completed=false}) => {
+const AddressContainer = ({ directions,edit=false ,live=false,completed=false , bg=null}) => {
 
 
   const getLocationIcon = (item,index,length,isReached) => {
@@ -66,7 +66,7 @@ const AddressContainer = ({ directions,edit=false ,live=false,completed=false}) 
          </View> )}
      
     
-    <View style={[styles.locationContainer,!edit && {backgroundColor:colors.white_dirt}]}>
+    <View style={[styles.locationContainer,!edit && {backgroundColor:colors.white_dirt},bg && {backgroundColor:bg}]}>
       
         
    

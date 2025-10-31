@@ -577,6 +577,25 @@ export const utils = {
     return `${day}/${month}/${year} ${formattedHours}:${minutes} ${ampm}`;
   },
 
+  // Format various date inputs to: "DD MMM YY . hh:mm AM" in local timezone
+  // Accepts Date | number (ms or seconds) | string (ISO)
+  formatScheduleDateTimeLabel(input) {
+    if (!input) return '';
+    let m;
+    if (input instanceof Date) {
+      m = moment(input);
+    } else if (typeof input === 'number') {
+      let ms = input;
+      // If it looks like seconds, convert to ms
+      if (ms < 1e12) ms = ms * 1000;
+      m = moment(ms);
+    } else {
+      m = moment(input);
+    }
+    if (!m.isValid()) return '';
+    return m.tz(currentTimezone).format('DD MMM YY . hh:mm A');
+  },
+
   formatMinutesToReadable(minutes) {
     if (!minutes || minutes < 0) {
       console.warn('Invalid minutes provided:', minutes);

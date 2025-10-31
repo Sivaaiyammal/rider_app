@@ -3,63 +3,52 @@ import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { colors, Fonts } from '../../../constants/constants';
-import DroppedTickIcon from '../../../assets/icons/DroppedTickIcon.svg';
-import PaymentCashIcon from '../../../assets/icons/payments/PaymentCashIcon.svg';
-import WorkIcon from '../../../assets/icons/WorkIcon.svg';
-import HomeIcon from '../../../assets/icons/HomeIcon.svg';
-import HatchbackIcon from '../../../assets/vehicle/HATCHBACK.webp';
+// removed unused tick and cash icon imports
+import PropTypes from 'prop-types';
+import ScheduleImage from '../../../assets/image/scheduleImage.webp';
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
 import ScheduleContainer from '../../../screens/SearchLocation/ScheduleContainer';
 import useRideBookingInfo from '../../booking/store/useRideBookingInfo';
-import useScheduleStore from '../store/useScheduleStore';
 import { utils } from '../../../utils/Utils';
 import AddressContainer from '../../../components/Trips/AddressContainer';
+import Icon from 'react-native-vector-icons/Ionicons';
+import VehicleDriverPreview from '../../../components/Common/VehicleDriverPreview';
+import CancelComponent from '../../rideStatus/component/CancelComponent';
+import { cancelRide } from '../../../API/EndPoints/EndPoints';
+import { showNotification } from '../../../components/NotificationManger';
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
+import useScheduleTripStore from '../../../store/useScheduleTripStore';
+import { TripStatus } from '../../rideStatus/types/TripStatus';
+import { useTranslation } from 'react-i18next';
 
-const vehicleTypeToImage = {
-	AUTO: require('../../../assets/vehicle/AUTO.webp'),
-	BIKE: require('../../../assets/vehicle/BIKE.webp'),
-	HATCHBACK: require('../../../assets/vehicle/HATCHBACK.webp'),
-	SEDAN: require('../../../assets/vehicle/SEDAN.webp'),
-	SUV: require('../../../assets/vehicle/SUV.webp'),
-	EXSEDAN: require('../../../assets/vehicle/ExSEDAN.webp'),
-};
-
-const vehicleTypeToLabel = {
-	AUTO: 'Auto',
-	BIKE: 'Bike',
-	HATCHBACK: 'Hatchback',
-	SEDAN: 'Sedan',
-	SUV: 'SUV',
-	EXSEDAN: 'Executive Sedan',
-};
-
-const ScheduleScreen = () => {
+const ScheduleScreen = ({ trip, fromBookScreen=false }) => {
 	const sheetRef = useRef(null);
 	const { scheduleDateTime } = useRideBookingInfo();
 	const [showScheduleContainer, setShowScheduleContainer] = useState(false);
-	const schedule = useScheduleStore();
+	const [showCancelBottomSheet, setShowCancelBottomSheet] = useState(false);
+	const [cancelLoading, setCancelLoading] = useState(false);
+	const { t } = useTranslation();
+	const { goBack } = useStackScreenStore();
+	const { removeScheduledTrip } = useScheduleTripStore();
+	const schedule = trip || {};
 
-	const dateLabel = useMemo(() => {
-		const isSelected = Boolean(scheduleDateTime?.date);
-		const scheduleDateLabel = isSelected ? (utils.isToday(scheduleDateTime.date) ? 'Today' : utils.formatDate(scheduleDateTime.date, 'ddd DD')) : '';
-		const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(scheduleDateTime?.time) : '';
-		return isSelected ? `${scheduleDateLabel} - ${scheduleTime.toUpperCase()}` : 'Thu, 02 Nov 23 - 3:00 PM';
-	}, [scheduleDateTime]);
+// date label is directly formatted where needed
 
-	const vehicleImage = useMemo(() => {
-		return vehicleTypeToImage[schedule.vehicleType] || HatchbackIcon;
-	}, [schedule.vehicleType]);
 
-	const vehicleLabel = useMemo(() => {
-		return vehicleTypeToLabel[schedule.vehicleType] || 'Hatchback';
-	}, [schedule.vehicleType]);
-
-	const fareLabel = useMemo(() => {
-		if (schedule.minFare != null && schedule.maxFare != null) {
-			return `₹${Math.round(schedule.minFare)}`; // show min as in design; can be range
-		}
-		return '₹100';
+	const fareRangeLabel = useMemo(() => {
+		const hasMin = schedule.minFare != null;
+		const hasMax = schedule.maxFare != null;
+		if (hasMin && hasMax) return `₹${Math.round(schedule.minFare)} - ₹${Math.round(schedule.maxFare)}`;
+		if (hasMin) return `₹${Math.round(schedule.minFare)}`;
+		return '₹0';
 	}, [schedule.minFare, schedule.maxFare]);
+
+	const timeDistanceLabel = useMemo(() => {
+		const mins = schedule.estimatedDuration || 0;
+		const distance = Number(schedule.estimatedDistance || 0);
+		const minsLabel = utils.formatMinutesToReadable(mins).replace('Mins', 'Min');
+		return `${minsLabel}  .  ${distance.toFixed(1)} Km`;
+	}, [schedule.estimatedDuration, schedule.estimatedDistance]);
 
 	const oncloseDateTime = () => {
 		setShowScheduleContainer(false);
@@ -68,63 +57,115 @@ const ScheduleScreen = () => {
 		setShowScheduleContainer(false);
 	};
 
+	const handleCancel = async (reason) => {
+		if (!schedule?._id) {
+			showNotification(t('error') || 'Error', t('invalid_trip_id') || 'Invalid trip ID', 'danger');
+			return;
+		}
+
+		setCancelLoading(true);
+		try {
+			const payload = {
+				tripId: schedule.tripId || schedule._id,
+				reason: reason,
+			};
+			const response = await cancelRide(payload);
+			
+			if (response.success) {
+				showNotification(t('ride_cancelled_successfully') || 'Ride cancelled successfully');
+				// Remove from scheduled trips store
+				removeScheduledTrip(schedule.tripId || schedule.id);
+				setShowCancelBottomSheet(false);
+				goBack();
+			} else {
+				showNotification(t('failed_to_cancel_ride') || 'Failed to cancel ride', response.message || '', 'danger');
+			}
+		} catch (error) {
+			console.error('Error cancelling scheduled ride:', error);
+			showNotification(t('failed_to_cancel_ride') || 'Failed to cancel ride', t('please_try_again') || 'Please try again', 'danger');
+		} finally {
+			setCancelLoading(false);
+		}
+	};
+
+	const vehicleType = schedule?.vehicleType || 'AUTO';
+	const isElectricVehicle =
+		vehicleType === 'ELECTRIC_AUTO' || vehicleType === 'ELECTRIC_BIKE' || vehicleType === 'ELECTRIC_HATCHBACK' || vehicleType === 'ELECTRIC_SEDAN' || vehicleType === 'ELECTRIC_SUV' || vehicleType === 'ELECTRIC_EXSEDAN';		
+    const DriverImageSource = schedule?.driverData?.driverPhoto || schedule?.driver?.photo || null;; // Assuming no driver photo for scheduled trips
 	return (
 		<View style={styles.container}>
 			<BottomSheetWrapper
 				ref={sheetRef}
 				index={1}
 				enableScroll
-				snapPoints={['40%', '85%']}
+				snapPoints={['40%', '100%']}
 				style={styles.sheet}
 			>
-				{/* Success banner */}
-				<View style={styles.successBanner}>
-					<View style={styles.successIcon}>
-						<DroppedTickIcon width={22} height={22} />
-					</View>
-					<View style={styles.successTextWrap}>
-						<AdaptiveText style={styles.successTitle}>Your scheduled ride booked successfully</AdaptiveText>
-						<AdaptiveText style={styles.successSub}>Your driver will be assigned 10 minutes before scheduled time</AdaptiveText>
+				{/* Header */}
+				<View style={styles.headerWrap}>
+					<Image source={ScheduleImage} style={styles.calendarImg} resizeMode="contain" />
+					<AdaptiveText style={styles.headerTitle}>{fromBookScreen?"Scheduled Ride Booked Successfully":"Scheduled Ride"}</AdaptiveText>
+					<AdaptiveText style={styles.headerSub}>Your driver will be assigned 10 minutes before scheduled time</AdaptiveText>
+				</View>
+				<View style={styles.dashedDivider} />
+
+				<View style={styles.estimateBlock}>
+					<AdaptiveText style={styles.estimateTitle}>Estimated Amount to Pay (Price may vary)</AdaptiveText>
+					<AdaptiveText style={styles.estimatePrice}>{fareRangeLabel}</AdaptiveText>
+					<View style={styles.timeDistancePill}>
+						<AdaptiveText style={styles.timeDistanceText}>{timeDistanceLabel}</AdaptiveText>
 					</View>
 				</View>
 
-				{/* Estimate ribbon */}
-				<View style={styles.estimateWrap}>
-					<AdaptiveText style={styles.estimateLabel}>Estimated amount to be paid</AdaptiveText>
-					<AdaptiveText style={styles.estimateValue}>{fareLabel}</AdaptiveText>
-				</View>
-
-				{/* Vehicle card */}
-				<View style={styles.vehicleCard}>
-					<Image source={vehicleImage} style={styles.vehicleImg} />
-					<View style={styles.vehicleMeta}>
-						<AdaptiveText style={styles.vehicleName}>{vehicleLabel}</AdaptiveText>
-						<AdaptiveText style={styles.vehicleSeats}>{schedule.passangerCount || 4}</AdaptiveText>
+				<View style={styles.cardsRow}>
+					<View style={[styles.tileCard, { marginRight: 10,display:'flex',flexDirection:'row',alignItems:'center',justifyContent:'space-between'}]}>
+						 <VehicleDriverPreview
+								vehicleType={vehicleType}
+								driverPhoto={DriverImageSource}
+								isElectricVehicle={isElectricVehicle}
+							/>
+					</View>
+					<View style={styles.tileCard}>
+						<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+							<View style={{ flexDirection: 'column', alignItems: 'center', flex: 1 ,gap: 10}}>
+								<Icon name="time-outline" color={colors.black} size={40} />
+								<AdaptiveText style={[styles.rowLeft, { marginLeft: 8 }]}>{utils.formatScheduleDateTimeLabel(schedule.scheduleDateTime)}</AdaptiveText>
+							</View>
+							{/* <TouchableOpacity onPress={() => setShowScheduleContainer(true)}>
+								<Icon name="create-outline" size={18} color={colors.blue} />
+							</TouchableOpacity> */}
+						</View>
 					</View>
 				</View>
 
 				{/* Date & time row */}
-				<View style={styles.row}> 
-					<AdaptiveText style={styles.rowLeft}>{dateLabel}</AdaptiveText>
-					<TouchableOpacity onPress={() => setShowScheduleContainer(true)}>
+				{/* <View style={styles.row}> 
+					<Icon name="time-outline" color="black" size={20} />
+					<AdaptiveText style={styles.rowLeft}>{utils.formatScheduleDateTimeLabel(schedule.scheduleDateTime)}</AdaptiveText>
+					 <TouchableOpacity onPress={() => setShowScheduleContainer(true)}>
 						<AdaptiveText style={styles.link}>Change</AdaptiveText>
-					</TouchableOpacity>
-				</View>
+					</TouchableOpacity> 
+				</View> */}
 
-				{/* From/To addresses */}
-				<AddressContainer directions={schedule.stops} />
+			
+
+			{/* From/To addresses */}
+			<AddressContainer directions={schedule.stops || []} bg={colors.white} />
 
 				{/* Payment method */}
-				<View style={styles.row}>
+				<View style={[styles.row, { justifyContent: 'space-between' }]}>
 					<AdaptiveText style={styles.rowLeft}>Payment Method</AdaptiveText>
-					<View style={styles.rowRightPill}>
-						<PaymentCashIcon width={18} height={18} />
+					<View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
 						<AdaptiveText style={styles.pillText}>{(schedule.paymentMethod || 'CASH').charAt(0) + (schedule.paymentMethod || 'CASH').slice(1).toLowerCase()}</AdaptiveText>
+						<Icon name="chevron-forward" size={18} color={colors.grey_xxdark} />
 					</View>
 				</View>
 
 				{/* Cancel booking */}
-				<TouchableOpacity style={styles.cancelBtn}>
+				<TouchableOpacity 
+					style={styles.cancelBtn}
+					onPress={() => setShowCancelBottomSheet(true)}
+				>
 					<AdaptiveText style={styles.cancelText}>Cancel Booking</AdaptiveText>
 				</TouchableOpacity>
 			</BottomSheetWrapper>
@@ -140,18 +181,56 @@ const ScheduleScreen = () => {
 					/>
 				</AnimatedBottomSheetWrapper>
 			)}
+			{showCancelBottomSheet && (
+				<AnimatedBottomSheetWrapper onClose={() => setShowCancelBottomSheet(false)}>
+					<CancelComponent 
+						onClose={() => setShowCancelBottomSheet(false)} 
+						onCancel={handleCancel}
+						loading={false}
+						cancelLoading={cancelLoading}
+						rideStatus={TripStatus.PENDING}
+					/>
+				</AnimatedBottomSheetWrapper>
+			)}
 		</View>
 	);
 };
 
 const styles = StyleSheet.create({
 	sheet: {
+		
 		backgroundColor: colors.white,
         paddingHorizontal:10
 	},
     container: {
         flex: 1,
+		
     },
+	headerWrap: {
+		alignItems: 'center',
+		marginTop: 20,
+	},
+	calendarImg: { width: 64, height: 64 },
+	headerTitle: {
+		fontFamily: Fonts.semi_bold,
+		fontSize: 16,
+		color: colors.black,
+		marginTop: 8,
+		textAlign: 'center',
+	},
+	headerSub: {
+		fontFamily: Fonts.light,
+		fontSize: 12,
+		color: colors.grey_xxdark,
+		marginTop: 4,
+		textAlign: 'center',
+	},
+	dashedDivider: {
+		marginTop: 10,
+		borderTopWidth: 1,
+		borderStyle: 'dashed',
+		borderColor: colors.grey_light,
+	},
 	successBanner: {
 		flexDirection: 'row',
 		alignItems: 'center',
@@ -182,42 +261,50 @@ const styles = StyleSheet.create({
 		fontSize: 12,
 		color: colors.grey_xxdark,
 	},
-	estimateWrap: {
-		marginTop: 12,
-		paddingVertical: 8,
-		paddingHorizontal: 12,
-		backgroundColor: colors.yellow_xxlight,
-		borderRadius: 10,
-		flexDirection: 'row',
-		alignItems: 'center',
-		justifyContent: 'space-between',
-		borderWidth: 1,
-		borderColor: colors.yellow_light,
-	},
-	estimateLabel: {
-		fontFamily: Fonts.regular,
-		fontSize: 13,
-		color: colors.black,
-	},
-	estimateValue: {
-		fontFamily: Fonts.bold,
-		fontSize: 18,
-		color: colors.black,
-	},
-	vehicleCard: {
-		marginTop: 12,
-		padding: 10,
-		borderRadius: 12,
-		borderWidth: 1,
-		borderColor: colors.grey_light,
-		flexDirection: 'row',
-		alignItems: 'center',
-		gap: 10,
-	},
-	vehicleImg: { width: 80, height: 48 },
-	vehicleMeta: { flex: 1 },
+		estimateBlock: {
+			marginTop: 12,
+			alignItems: 'center',
+		},
+		estimateTitle: {
+			fontFamily: Fonts.regular,
+			fontSize: 12,
+			color: colors.grey_xxdark,
+		},
+		estimatePrice: {
+			fontFamily: Fonts.bold,
+			fontSize: 24,
+			color: colors.green,
+			marginTop: 6,
+		},
+		timeDistancePill: {
+			marginTop: 10,
+			borderWidth: 1,
+			borderColor: colors.grey_light,
+			borderRadius: 18,
+			paddingHorizontal: 12,
+			paddingVertical: 6,
+			backgroundColor: colors.white,
+		},
+		timeDistanceText: {
+			fontFamily: Fonts.semi_bold,
+			fontSize: 13,
+			color: colors.black,
+		},
+		cardsRow: { flexDirection: 'row', marginTop: 12 },
+		tileCard: {
+			flex: 1,
+			padding: 12,
+			borderRadius: 12,
+			borderWidth: 1,
+			borderColor: colors.grey_light,
+			backgroundColor: colors.white,
+			justifyContent: 'center',
+			alignItems: 'center',
+		},
+	vehicleImg: { width: 80, height: 60, marginRight: 10 },
+	vehicleMeta: { flex: 1, alignItems: 'flex-end' },
 	vehicleName: { fontFamily: Fonts.semi_bold, fontSize: 14, color: colors.blue_xxdark },
-	vehicleSeats: { fontFamily: Fonts.regular, fontSize: 12, color: colors.grey_xxdark, marginTop: 2 },
+		vehicleSeats: { fontFamily: Fonts.regular, fontSize: 12, color: colors.grey_xxdark, marginLeft: 6 },
 	row: {
 		marginTop: 12,
 		paddingVertical: 14,
@@ -227,7 +314,7 @@ const styles = StyleSheet.create({
 		borderColor: colors.grey_light,
 		flexDirection: 'row',
 		alignItems: 'center',
-		justifyContent: 'space-between',
+		gap: 10,
 	},
 	rowLeft: { fontFamily: Fonts.semi_bold, fontSize: 14, color: colors.black },
 	link: { fontFamily: Fonts.semi_bold, fontSize: 13, color: colors.blue },
@@ -265,3 +352,9 @@ const styles = StyleSheet.create({
 });
 
 export default ScheduleScreen;
+
+ScheduleScreen.propTypes = {
+	trip: PropTypes.object,
+	fromBookScreen: PropTypes.bool,
+};
+
