@@ -21,6 +21,7 @@ const OTPInput = ({
 }) => {
   const inputsRef = useRef([]);
   const [internal, setInternal] = useState(Array(inputCount).fill(''));
+  const backspaceHandledRef = useRef(false);
   const isControlled = typeof value === 'string';
   const digits = useMemo(() => {
     const src = isControlled ? value : internal.join('');
@@ -60,7 +61,40 @@ const OTPInput = ({
   };
 
   const handleChange = (text, index) => {
+    // Skip if backspace was already handled by onKeyPress
+    if (backspaceHandledRef.current && (text || '').length === 0) {
+      backspaceHandledRef.current = false;
+      return;
+    }
+
     const onlyDigits = (text || '').replace(/[^0-9]/g, '');
+    const currentDigit = digits[index] || '';
+    
+    // Handle backspace/empty text - this is the PRIMARY handler for backspace
+    if (onlyDigits.length === 0 && currentDigit.length > 0) {
+      // Field had a value and is now empty - clear it immediately
+      inputsRef.current[index]?.setNativeProps?.({ text: '' });
+      setCharAt(index, '');
+      return;
+    }
+    
+    // Field is empty and text is also empty - user pressed backspace on empty field
+    if (onlyDigits.length === 0 && currentDigit.length === 0 && index > 0) {
+      // Move to previous field and clear it if it has value
+      const prevIndex = index - 1;
+      if (digits[prevIndex]) {
+        // Clear previous field immediately
+        inputsRef.current[prevIndex]?.setNativeProps?.({ text: '' });
+        setCharAt(prevIndex, '');
+        inputsRef.current[prevIndex]?.focus?.();
+      } else {
+        // Previous is also empty, just move focus
+        inputsRef.current[prevIndex]?.focus?.();
+      }
+      return;
+    }
+    
+    // If somehow we got empty text but the above cases didn't catch it
     if (onlyDigits.length === 0) {
       setCharAt(index, '');
       return;
@@ -96,12 +130,25 @@ const OTPInput = ({
 
   const handleKeyPress = (e, index) => {
     if (e.nativeEvent.key === 'Backspace') {
-      if (!digits[index]) {
-        // Move to previous if empty
-        if (index > 0) inputsRef.current[index - 1]?.focus?.();
-      } else {
-        // Clear current
+      // If current field has a value, clear it immediately
+      // This handles the case where onKeyPress fires reliably (like when text is selected)
+      if (digits[index]) {
+        // Force clear immediately, bypassing any selection state
+        inputsRef.current[index]?.setNativeProps?.({ text: '' });
         setCharAt(index, '');
+        backspaceHandledRef.current = true;
+      } else if (index > 0) {
+        // Field is empty, move to previous
+        const prevIndex = index - 1;
+        inputsRef.current[prevIndex]?.focus?.();
+        // If previous has value, clear it immediately (single backspace clears previous too)
+        if (digits[prevIndex]) {
+          requestAnimationFrame(() => {
+            inputsRef.current[prevIndex]?.setNativeProps?.({ text: '' });
+            setCharAt(prevIndex, '');
+            backspaceHandledRef.current = true;
+          });
+        }
       }
     } else if (e.nativeEvent.key === 'ArrowLeft' && index > 0) {
       inputsRef.current[index - 1]?.focus?.();
