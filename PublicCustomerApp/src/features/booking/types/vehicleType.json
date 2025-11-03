@@ -4,11 +4,11 @@
 },
     {
         "type":"AUTO",
-        "capacity":2
+        "capacity":3
     },
     {
         "type":"HATCHBACK",
-        "capacity":3
+        "capacity":4
     },
     {
         "type":"SEDAN",
@@ -24,7 +24,7 @@
     },
     {
         "type":"ELECTRIC_AUTO",
-        "capacity":2
+        "capacity":3
     },
     {
         "type":"ELECTRIC_HATCHBACK",

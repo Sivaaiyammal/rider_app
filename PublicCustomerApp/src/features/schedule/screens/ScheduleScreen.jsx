@@ -1,5 +1,5 @@
-import React, { useRef, useState, useMemo } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useRef, useState, useMemo, useEffect } from 'react';
+import { View, StyleSheet, Image, TouchableOpacity, BackHandler } from 'react-native';
 import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { colors, Fonts } from '../../../constants/constants';
@@ -28,9 +28,30 @@ const ScheduleScreen = ({ trip, fromBookScreen=false }) => {
 	const [showCancelBottomSheet, setShowCancelBottomSheet] = useState(false);
 	const [cancelLoading, setCancelLoading] = useState(false);
 	const { t } = useTranslation();
-	const { goBack } = useStackScreenStore();
+	const { goBack, reset } = useStackScreenStore();
 	const { removeScheduledTrip } = useScheduleTripStore();
 	const schedule = trip || {};
+
+
+
+	const onBackPress = () => {
+		if(fromBookScreen){
+			reset();
+		}else{
+			goBack();
+		}
+	};
+
+	useEffect(() => {
+		const handleHardwareBackPress = () => {
+		  onBackPress();
+		  return true;
+		};
+		const subscription = BackHandler.addEventListener('hardwareBackPress', handleHardwareBackPress);
+		return () => {
+		  subscription.remove();
+		};
+	  }, [onBackPress]);
 
 // date label is directly formatted where needed
 
@@ -74,9 +95,9 @@ const ScheduleScreen = ({ trip, fromBookScreen=false }) => {
 			if (response.success) {
 				showNotification(t('ride_cancelled_successfully') || 'Ride cancelled successfully');
 				// Remove from scheduled trips store
-				removeScheduledTrip(schedule.tripId || schedule.id);
+				removeScheduledTrip( schedule._id);
 				setShowCancelBottomSheet(false);
-				goBack();
+				onBackPress();
 			} else {
 				showNotification(t('failed_to_cancel_ride') || 'Failed to cancel ride', response.message || '', 'danger');
 			}
@@ -167,6 +188,13 @@ const ScheduleScreen = ({ trip, fromBookScreen=false }) => {
 					onPress={() => setShowCancelBottomSheet(true)}
 				>
 					<AdaptiveText style={styles.cancelText}>Cancel Booking</AdaptiveText>
+				</TouchableOpacity>
+
+				<TouchableOpacity 
+					style={styles.backBtn}
+					onPress={onBackPress}
+				>
+					<AdaptiveText style={styles.backText}>{fromBookScreen ? 'Go to Home' : 'Go Back'}</AdaptiveText>
 				</TouchableOpacity>
 			</BottomSheetWrapper>
 
@@ -348,6 +376,14 @@ const styles = StyleSheet.create({
 		paddingVertical: 14,
 		alignItems: 'center',
 	},
+	backBtn: {
+		marginTop: 10,
+		backgroundColor: colors.grey_xdark,
+		borderRadius: 12,
+		paddingVertical: 14,
+		alignItems: 'center',
+	},
+	backText: { fontFamily: Fonts.semi_bold, fontSize: 15, color: colors.black },
 	cancelText: { fontFamily: Fonts.semi_bold, fontSize: 15, color: colors.white },
 });
 

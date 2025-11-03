@@ -7,7 +7,7 @@ const useScheduleTripStore = create((set) => ({
     scheduledTrips: [...state.scheduledTrips, trip]
   })),
   removeScheduledTrip: (tripId) => set((state) => ({
-    scheduledTrips: state.scheduledTrips.filter(trip => trip.id !== tripId)
+    scheduledTrips: state.scheduledTrips?.filter(trip => trip._id !== tripId)
   })),
   clearScheduledTrips: () => set({ scheduledTrips: [] })
 }));

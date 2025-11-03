@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import useRideMatching from '../../../hooks/useRideMatching';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import useScheduleStore from '../../schedule/store/useScheduleStore';
+import useScheduleTripStore from '../../../store/useScheduleTripStore';
 /**
  * Simple hook for booking trips with navigation handling
  * @returns {Object} Booking functions and state
@@ -24,6 +25,7 @@ const useBookTrip = () => {
   const { initializeSocket, startMatching } = useRideMatching();
   const { setFromPayload } = useScheduleStore();
   const { id: userId } = useUserInfoStore();
+  const { addScheduledTrip } = useScheduleTripStore();
   // Booking success callback - navigate to appropriate screen
   const handleBookingSuccess = useCallback((data) => {
       //  console.log('data', data)
@@ -60,8 +62,10 @@ const useBookTrip = () => {
           try {
             setFromPayload(result.trip);
             await DataStore.storeData(PREF.SCHEDULED_TRIP, result.trip?._id);
+            addScheduledTrip(result.trip);
             setStackScreen('ScheduleScreen', {
-              tripId: result.trip?._id
+              fromBookScreen: true,
+              trip:result.trip
             });
             return result;
           } catch (err) {

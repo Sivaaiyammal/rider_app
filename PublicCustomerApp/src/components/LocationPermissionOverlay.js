@@ -42,11 +42,11 @@ const LocationPermissionOverlay = ({ onEnable }) => {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.secondaryButton} onPress={openSettings}>
+        {/* <TouchableOpacity style={styles.secondaryButton} onPress={openSettings}>
           <Text style={styles.secondaryButtonText}>
             {t('open_settings', 'Open settings')}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );

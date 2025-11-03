@@ -37,9 +37,14 @@ export const checkNotificationPermissions = async () => {
   }
 }
 
-export const RequestFineLocationPermission = async () => {
+let locationSettingsModalCallback = null;
 
-  const hasFineLocationPermission = await checkFineLocationPermissions()
+export const setLocationSettingsModalCallback = (callback) => {
+  locationSettingsModalCallback = callback;
+};
+
+export const RequestFineLocationPermission = async () => {
+  const hasFineLocationPermission = await checkFineLocationPermissions();
   if (hasFineLocationPermission) {
     return true;
   } else {
@@ -48,19 +53,23 @@ export const RequestFineLocationPermission = async () => {
     );
 
     if (result === "never_ask_again") {
-      Alert.alert(
-        'Permission Required','',
-        [
-          {
-            text: "Cancel",
-            style: "cancel"
-          },
-          {
-            text: "Open Settings",
-            onPress: () => Linking.openSettings()
-          }
-        ]
-      );
+      // Show custom modal if callback is set
+      if (locationSettingsModalCallback) {
+        locationSettingsModalCallback(true);
+      }
+      // Alert.alert(
+      //   'Permission Required','',
+      //   [
+      //     {
+      //       text: "Cancel",
+      //       style: "cancel"
+      //     },
+      //     {
+      //       text: "Open Settings",
+      //       onPress: () => Linking.openSettings()
+      //     }
+      //   ]
+      // );
       return false
     }
 

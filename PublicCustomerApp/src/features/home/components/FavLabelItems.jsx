@@ -39,7 +39,7 @@ const FavLabelItems = React.memo(({onLabelPress,enableAdd=true}) => {
         //     <AdaptiveText style={[styles.FavouriteAddressItemText,{color:"#757575"}]}>+ {t('add_favorite_places')}</AdaptiveText>
         //   </View>
         // </TouchableOpacity>
-        <View style={styles.noLocationItem}>
+        <View >
           </View>
       ) : (
     
