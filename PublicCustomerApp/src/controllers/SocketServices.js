@@ -242,14 +242,16 @@ class WSService {
         const protocolAndHost = urlParts.slice(0, 3).join('/');
         const path = '/' + urlParts.slice(3).join('/');
 
-       
-
+        console.log("protocolAndHost",protocolAndHost)
+        console.log("path",path)
+        console.log("userId",userId)
+        console.log('Connecting to sockeEEEEEEEt server at:', `${protocolAndHost}/public-rides-customer`, 'with path:', path);
         this.socket = io(`${protocolAndHost}/public-rides-customer`, {
           path: path !== '/' ? path + '/socket.io' : '/socket.io',
           query: {
             accessToken: userId,
           },
-          transports: ['websocket','polling'],
+      
           reconnection: true,
           reconnectionAttempts: Infinity,
           reconnectionDelay: 1000,
@@ -300,16 +302,16 @@ class WSService {
         })
 
         this.socket.on('connect_error', error => {
-          console.error(
-            'Socket error: Failed to connect to socket server',
-            error,
-          );
-          reject(
-            new Error(
-              'Socket error: Failed to connect to socket server [Error: server error]',
-              +error,
-            ),
-          );
+          console.error('Socket connect_error:', {
+            message: error?.message,
+            description: error?.description,
+            context: {
+              host: protocolAndHost,
+              path: this?.socket?.io?.opts?.path,
+             
+            }
+          });
+          reject(new Error(error?.message || 'Socket connection failed'));
         });
       } catch (error) {
         // console.error('Error during socket initialization', error);

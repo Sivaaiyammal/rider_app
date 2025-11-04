@@ -16,6 +16,10 @@ const ALLOWED_KEYS = [
   'IsDefault',
   'scheduledTrip',
   'sOS_EVENTID',
+  'emergency_contact',
+  'firstOutdatedDate',
+  'updateSkipDate',
+
 ]
 
 // const KEYS_TO_CLEAR_ON_SESSION_END = [

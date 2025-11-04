@@ -58,6 +58,9 @@ import ScheduleScreen from '../features/schedule/screens/ScheduleScreen';
 import useScheduleTripStore from '../store/useScheduleTripStore';
 import RideHistory from '../features/rideHistory/index.js';
 import { utils } from '../utils/Utils';
+import EmergencyContactScreenOverlay from './OnBoard/EmergencyContactScreen.jsx';
+import { checkUpdateStatus } from '../components/UpdateChecker';
+import UpdateOverlay from '../components/UpdateOverlay';
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -141,6 +144,8 @@ const Home = () => {
   const { isConnected } = useNetwork();
   const { setScheduledTrips } = useScheduleTripStore();
   const prevIsConnectedRef = useRef(isConnected);
+  const [showemergencyOverlay, setShowEmergencyOverlay] = useState(false);
+  const [updateMode, setUpdateMode] = useState('none');
 
   const hasInitialLocationProcessed = useRef(false);
   const lastProcessedKey = useRef(null);
@@ -189,6 +194,16 @@ const Home = () => {
   };
 
 
+  const checkEmergencyContactSaved = async () => {
+    const emergencyContact = await DataStore.loadData('emergency_contact');
+    console.log("emergencyContact",emergencyContact)
+    if (!emergencyContact?.data) {
+      return setShowEmergencyOverlay(true);
+    } else {
+      return setShowEmergencyOverlay(false);
+    }
+  };
+
   const updateLocationDebounced = useCallback(async (lng, lat) => {
     setLocation([lng, lat]);
     if (lng && lat) {
@@ -221,6 +236,8 @@ const Home = () => {
   }, [setLocation, setCurrentLocationName, debouncedProcessLocation]);
 
 
+
+  
 
 
   const handleUserLocatioChange = useCallback(currentLocation => {
@@ -321,6 +338,11 @@ const Home = () => {
 
         if(Response?.appConfig){
           setConfig(Response?.appConfig);
+          console.log("App Config Set in Home Screen:", Response?.appConfig);
+          if(Response?.appConfig?.APP_BUILD_NUMBER){
+            checkForUpdates(Response?.appConfig?.APP_BUILD_NUMBER);
+            
+          }
 
         } else {
           setConfigError(true);
@@ -406,10 +428,14 @@ const Home = () => {
     }
   }
 
+ const checkForUpdates = async (buildNumber) => {
+        const mode = await checkUpdateStatus(buildNumber);
+        console.log("update mode",mode)
+        setUpdateMode(mode);
+      };
 
 
 
-  
 
 
   const loadUserDetails = async () => {
@@ -450,6 +476,7 @@ const Home = () => {
     checkFavouriteLocation();
     checkPreferenceShowRideStatus();
     checkOnGoingRideAndLog()
+    checkEmergencyContactSaved();
   }, []);
 
   const navigateToPermissionIfNeeded = useCallback(async () => {
@@ -548,6 +575,13 @@ const Home = () => {
     }
   },[location])
 
+
+  if(showemergencyOverlay){
+    return <EmergencyContactScreenOverlay onClose={async () => {
+      setShowEmergencyOverlay(false);
+    }} />
+  }
+
   
 
 
@@ -620,6 +654,16 @@ const Home = () => {
      {bootLoading && (
         <BootLoaderOverlay />
       )}
+
+      {
+        updateMode !== 'none' && (
+           <UpdateOverlay
+                          visible={updateMode !== 'none'}
+                          mode={updateMode}
+                          onClose={() => setUpdateMode('none')}
+          />
+        ) 
+      }
      <StatusBar barStyle="dark-content" backgroundColor={"white"} />
       {renderContent()}
      {hasLocationPermission && (
