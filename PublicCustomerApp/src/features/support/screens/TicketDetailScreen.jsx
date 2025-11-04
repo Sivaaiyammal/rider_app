@@ -10,6 +10,8 @@ import {
   Alert,
   FlatList,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import ChatMessage from '../components/ChatMessage';
@@ -25,8 +27,11 @@ const TicketDetailScreen = () => {
   const { t } = useTranslation();
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const [inputBarHeight, setInputBarHeight] = useState(56); // default guess
   const { userInfo,id } = useUserInfoStore();
   const flatListRef = useRef(null);
+  const insets = useSafeAreaInsets();
   const {
     selectedTicket,
     isLoading,
@@ -211,12 +216,17 @@ const TicketDetailScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : 0}
+      >
       {/* Header */}
-      <View style={styles.header}>
+      <View
+        style={styles.header}
+        onLayout={e => setHeaderHeight(e.nativeEvent.layout.height)}
+      >
                  <TouchableOpacity
            style={styles.backButton}
            onPress={() => setStackScreen('SupportScreen')}
@@ -295,8 +305,12 @@ const TicketDetailScreen = () => {
              data={selectedTicket.messages}
              renderItem={renderMessage}
              keyExtractor={(item) => item.id}
-             showsVerticalScrollIndicator={false}
-             contentContainerStyle={styles.messagesList}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[
+              styles.messagesList,
+              { paddingBottom: (inputBarHeight || 56) + 12 + insets.bottom }
+            ]}
+            keyboardShouldPersistTaps="handled"
              ListFooterComponent={renderTypingIndicator}
            />
          ) : (
@@ -305,7 +319,10 @@ const TicketDetailScreen = () => {
        </View>
 
       {/* Message Input */}
-      <View style={styles.inputContainer}>
+      <View
+        style={[styles.inputContainer, { paddingBottom: Math.max(16, 16 + insets.bottom) }]}
+        onLayout={e => setInputBarHeight(e.nativeEvent.layout.height)}
+      >
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.textInput}
@@ -315,6 +332,8 @@ const TicketDetailScreen = () => {
             multiline
             maxLength={500}
             placeholderTextColor="#9CA3AF"
+            underlineColorAndroid="transparent"
+            blurOnSubmit={false}
           />
           <TouchableOpacity
             style={[styles.sendButton, !message.trim() && styles.sendButtonDisabled]}
@@ -329,7 +348,8 @@ const TicketDetailScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
@@ -469,7 +489,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
   },
   textInput: {
     flex: 1,
