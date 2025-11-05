@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   BackHandler,
+  Alert,
 
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -169,6 +170,24 @@ const WaypointScreen = () => {
 useEffect(() => {
   setDirectionReady(handleDirectionReady)
 }, [])
+
+
+  const hasNearbyDuplicateStops = (points, thresholdMeters = 100) => {
+    const coords = (points || [])
+      .map(p => {
+        const lat = (p && p.latitude != null) ? p.latitude : (Array.isArray(p?.location) ? p.location[1] : undefined);
+        const lon = (p && p.longitude != null) ? p.longitude : (Array.isArray(p?.location) ? p.location[0] : undefined);
+        return (typeof lat === 'number' && typeof lon === 'number') ? { lat, lon } : null;
+      })
+      .filter(Boolean);
+    for (let i = 0; i < coords.length; i++) {
+      for (let j = i + 1; j < coords.length; j++) {
+        const d = utils.calculateDistanceInMeters(coords[i].lat, coords[i].lon, coords[j].lat, coords[j].lon);
+        if (d <= thresholdMeters) return true;
+      }
+    }
+    return false;
+  };
 
 
   // Transform waypoints to direction points when waypoints are ready
@@ -397,6 +416,13 @@ useEffect(() => {
           style={[styles.confirmButton, isLoading && styles.confirmButtonDisabled,!enableConfirmButton && styles.confirmButtonDisabled]}
           disabled={isLoading || !enableConfirmButton}
           onPress={async () => {
+            // Validate that no stops are within 100m of each other
+            const pointsToValidate = onGoingRideStops ? [...reachedStops, ...reOrderWaypoints] : reOrderWaypoints;
+            if (hasNearbyDuplicateStops(pointsToValidate, 100)) {
+              Alert.alert(t('invalid_stops') || 'Invalid stops', t('stops_too_close') || 'Two stops are within 100 meters. Please adjust your stops.');
+              return;
+            }
+
             setIsLoading(true);
 
             if (onGoingRideStops) {

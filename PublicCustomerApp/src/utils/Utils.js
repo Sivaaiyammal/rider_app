@@ -698,4 +698,28 @@ export const utils = {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; // Distance in meters
   },
+  
+  /**
+   * Clean text by trimming, collapsing extra spaces, preserving line breaks,
+   * and removing spaces before common punctuation.
+   * @param {string} text
+   * @returns {string}
+   */
+  cleanText: (text) => {
+    if (text === undefined || text === null) return '';
+    let s = String(text);
+
+    // Normalize newlines to \n
+    s = s.replace(/\r\n?/g, '\n');
+    // Collapse runs of horizontal whitespace to a single space
+    s = s.replace(/[ \t]+/g, ' ');
+    // Trim spaces around newlines
+    s = s.replace(/ *\n */g, '\n');
+    // Limit excessive blank lines to at most one empty line
+    s = s.replace(/\n{3,}/g, '\n\n');
+    // Remove spaces before punctuation like ", . ! ? ;"
+    s = s.replace(/\s+([\.,!?;])(?=\s|$)/g, '$1');
+
+    return s.trim();
+  },
 };

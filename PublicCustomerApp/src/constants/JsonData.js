@@ -103,13 +103,12 @@ export const rideType = [
     translationKey: 'schedule',
     name: 'Schedule',
     value:'schedule',
-    disabled: false,
+    disabled: true,
     comingSoon: true
   }
 ];
 
 export const getVehicleDetailsById = (id) => {
-
   switch (id) {
     case 'MOTORBIKE':
       return {

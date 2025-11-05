@@ -1,5 +1,5 @@
-import {Text, TextInput, TouchableOpacity, View} from 'react-native';
-import React, {useState} from 'react';
+import {Text, TextInput, TouchableOpacity, View, Platform} from 'react-native';
+import React, {useState, useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 
 
@@ -13,6 +13,7 @@ import {DataStore} from '../../controllers/DataStore';
 import {requestOTPMutation} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 import { colors } from '../../constants/constants';
+import { showPhoneNumberHint } from '@shayrn/react-native-android-phone-number-hint';
 
 
 const LoginScreen = () => {
@@ -88,6 +89,39 @@ const LoginScreen = () => {
     }
   };
 
+  const handlePhoneInputFocus = async () => {
+    if (Platform.OS !== 'android' || phoneNumber) {
+      return;
+    }
+    try {
+      const hinted = await showPhoneNumberHint();
+      if (hinted) {
+        const digits = String(hinted).replace(/[^0-9]/g, '');
+        const cc = country.callingCode[0];
+        let local = digits;
+        if (local.startsWith(cc)) {
+          local = local.slice(cc.length);
+        }
+        if (local.length > 10) local = local.slice(-10);
+        setPhoneNumber(local);
+        if (local.length !== 10) {
+          setPhoneNumErr(t('phone_number_must_be_10_digits'));
+        } else {
+          setPhoneNumErr('');
+        }
+      }
+    } catch (e) {
+      // Handle known error codes gracefully; keep silent in UI
+      // console.log('Phone number hint error:', e);
+    }
+  };
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      handlePhoneInputFocus();
+    }
+  }, []);
+
 
 
   return (
@@ -111,6 +145,7 @@ const LoginScreen = () => {
               placeholder={t('mobile_number')}
               keyboardType="number-pad"
               onChangeText={handleChange}
+              onFocus={handlePhoneInputFocus}
               value={phoneNumber}
               placeholderTextColor={colors.grey_xdark}
               maxLength={10}

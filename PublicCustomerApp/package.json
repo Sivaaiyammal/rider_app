@@ -31,6 +31,7 @@
     "@react-native-firebase/messaging": "^22.0.0",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
+    "@shayrn/react-native-android-phone-number-hint": "^0.1.5",
     "axios": "^1.7.7",
     "base-64": "^1.0.0",
     "buffer": "^6.0.3",

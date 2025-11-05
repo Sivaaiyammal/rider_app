@@ -40,7 +40,7 @@ const OTPScreen = ({route}) => {
   );
   const [otpInput, setOtpInput] = useState('');
 
-  const [timer, setTimer] = useState(30);
+  const [timer, setTimer] = useState(120);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
   
 
@@ -49,7 +49,11 @@ const OTPScreen = ({route}) => {
   // Add ref for OTP input to enable auto-fill
   const otpRef = useRef(null);
 
-  
+  const formatTime = (totalSeconds) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
 
   useEffect(() => {
     if (timer > 0) {
@@ -172,7 +176,7 @@ const OTPScreen = ({route}) => {
     };
     DataStore.storeData('login_phoneNumber', loginPhoneNumber);
     requestOTPMutate(payload);
-    setTimer(30);
+    setTimer(120);
     setIsButtonDisabled(true);
   };
 
@@ -211,34 +215,34 @@ const OTPScreen = ({route}) => {
 
       <View style={loginStyles.otpContainer}>
       <OTPInput
-   inputCount={6}
-  onChange={onOtpChange}
-  onComplete={(code) => setOtpInput(code)}  // your effect will auto-verify when length===6
-  autoFocus
-  keyboardType="number-pad"
-  textContentType="oneTimeCode"
-  autoComplete="sms-otp"
-  focusedBorderColor={colors.blue_xxdark}
-  tintColor={[
-    colors.grey_xdark,
-    colors.grey_xdark ,
-    colors.grey_xdark,
-    colors.grey_xdark,
-    colors.grey_xdark,
-    colors.grey_xdark,
-  ]}
-  inputStyle={{
-    width: 40,
-    height: 60,
-    borderWidth: 1,
-    margin: 5,
-    borderRadius: 5,
-     color: colors.black,
-   }}
- />
+          inputCount={6}
+          onChange={onOtpChange}
+          onComplete={(code) => setOtpInput(code)}  // your effect will auto-verify when length===6
+          autoFocus
+          keyboardType="number-pad"
+          textContentType="oneTimeCode"
+          autoComplete="sms-otp"
+          focusedBorderColor={colors.blue_xxdark}
+          tintColor={[
+            colors.grey_xdark,
+            colors.grey_xdark ,
+            colors.grey_xdark,
+            colors.grey_xdark,
+            colors.grey_xdark,
+            colors.grey_xdark,
+          ]}
+          inputStyle={{
+            width: 40,
+            height: 60,
+            borderWidth: 1,    
+            margin: 5,
+            borderRadius: 5,
+            color: colors.black,
+          }}
+      />
       </View>
-      <TouchableOpacity onPress={()=> isButtonDisabled ? null : resendOTP()}>
-      <Text style={loginStyles.resendOTP}>Resend OTP {isButtonDisabled ? `in ${timer}` : null}</Text>
+      <TouchableOpacity disabled={isButtonDisabled} onPress={()=> isButtonDisabled ? null : resendOTP()}>
+      <Text style={loginStyles.resendOTP}>Resend OTP {isButtonDisabled ? `in ${formatTime(timer)}` : null}</Text>
       </TouchableOpacity>
       <TouchableOpacity style={loginStyles.otpBtn} onPress={() => verifyOtp()}>
         <Text style={loginStyles.otptxt}>Verify OTP</Text>

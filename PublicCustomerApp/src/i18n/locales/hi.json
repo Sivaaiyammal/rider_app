@@ -295,6 +295,8 @@
     "add_stops": "स्टॉप जोड़ें",
     "confirm_edited_route": "संपादित मार्ग की पुष्टि करें",
     "confirm_route": "मार्ग की पुष्टि करें",
+    "invalid_stops": "अमान्य स्टॉप",
+    "stops_too_close": "दो स्टॉप 100 मीटर के अंदर हैं। कृपया अपने स्टॉप बदलें।",
     "pickup_point": "पिक अप बिंदु",
     "drop_point": "ड्रॉप बिंदु",
     "start_end_locations_required": "आरंभ और समाप्ति स्थान आवश्यक हैं",
@@ -469,8 +471,60 @@
     "import_from_contacts": "संपर्कों से आयात करें",
     "status_filter": "स्थिति फ़िल्टर",
     "all_status": "सभी स्थिति",
-    "diverged": "भटक गई"
+    "diverged": "भटक गई",
+    "support_categories": {
+      "trip_fare_issues": {
+        "name": "यात्रा किराया से जुड़ी समस्याएँ",
+        "description": "यात्रा मूल्य निर्धारण, बिलिंग और भुगतान से संबंधित समस्याएँ"
+      },
+      "driver_app_issues": {
+        "name": "ग्राहक ऐप से जुड़ी समस्याएँ",
+        "description": "ड्राइवर मोबाइल एप्लिकेशन से संबंधित तकनीकी समस्याएँ"
+      },
+      "lost_item_report": {
+        "name": "खोई हुई वस्तु की रिपोर्ट",
+        "description": "मैं अपनी वस्तुएँ वाहन में छोड़ आया/आई और उन्हें वापस पाने में सहायता चाहिए"
+      },
+      "vehicle_not_as_expected": {
+        "name": "वाहन अपेक्षा के अनुरूप नहीं",
+        "description": "ड्राइवर बुक किए गए वाहन से अलग प्रकार के वाहन के साथ आया (जैसे एसयूवी की जगह सेडान)"
+      },
+      "trip_cancellation_fee_dispute": {
+        "name": "यात्रा रद्द शुल्क विवाद",
+        "description": "मान्य कारण होने पर भी यात्री से गलत तरीके से रद्दीकरण शुल्क लिया गया"
+      },
+      "driver_late_arrival": {
+        "name": "ड्राइवर का देर से पहुँचना",
+        "description": "ड्राइवर अनुमानित पिकअप समय से काफी देर से पहुँचा, जिससे यात्री को असुविधा हुई"
+      }
+    }
+    ,
+    "support_create_form": {
+      "title": "नया टिकट बनाएं",
+      "subtitle": "अपनी समस्या का वर्णन करें, हम आपकी मदद करेंगे",
+      "ticket_type": "टिकट प्रकार",
+      "app_related": "ऐप संबंधित",
+      "trip_related": "यात्रा संबंधित",
+      "select_trip_label": "यात्रा चुनें",
+      "select_trip_placeholder": "अपनी यात्रा इतिहास से एक यात्रा चुनें",
+      "trip_details": "यात्रा विवरण",
+      "from": "से",
+      "to": "तक",
+      "date": "तारीख",
+      "fare": "किराया",
+      "distance": "दूरी",
+      "driver": "ड्राइवर",
+      "status": "स्थिति",
+      "category_label": "वर्ग",
+      "loading_categories": "वर्ग लोड हो रहे हैं...",
+      "no_categories": "इस टिकट प्रकार के लिए कोई वर्ग उपलब्ध नहीं",
+      "description_label": "विवरण",
+      "description_placeholder": "कृपया अपनी समस्या के बारे में विस्तार से लिखें...",
+      "error_subject_required": "विषय आवश्यक है",
+      "error_description_required": "विवरण आवश्यक है",
+      "error_category_required": "कृपया एक वर्ग चुनें",
+      "error_select_trip": "कृपया एक यात्रा चुनें"
+    }
     
-
     
 }

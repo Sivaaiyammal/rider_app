@@ -307,6 +307,8 @@
     "add_stops": "Add Stops",
     "confirm_edited_route": "Confirm Edited Route",
     "confirm_route": "Confirm Route",
+    "invalid_stops": "Invalid stops",
+    "stops_too_close": "Two stops are within 100 meters. Please adjust your stops.",
     "pickup_point": "Pickup Point",
     "drop_point": "Drop Point",
     "start_end_locations_required": "Start and end locations are required",
@@ -476,6 +478,59 @@
     "import_from_contacts": "Import from contacts",
     "status_filter": "Status Filter",
     "all_status": "All Status",
-    "diverged": "Diverged"
+    "diverged": "Diverged",
+    "support_categories": {
+      "trip_fare_issues": {
+        "name": "Trip Fare Issues",
+        "description": "Issues related to trip pricing, billing, and payment"
+      },
+      "driver_app_issues": {
+        "name": "Customer App Issues",
+        "description": "Technical problems with the customer mobile application"
+      },
+      "lost_item_report": {
+        "name": "Lost Item Report",
+        "description": "I left my belongings in the vehicle and needs assistance recovering them"
+      },
+      "vehicle_not_as_expected": {
+        "name": "Vehicle Not As Expected",
+        "description": "Driver arrived with a different vehicle type than booked (e.g., sedan instead of SUV)"
+      },
+      "trip_cancellation_fee_dispute": {
+        "name": "Trip Cancellation Fee Dispute",
+        "description": "Passenger was wrongly charged a cancellation fee despite valid reasons"
+      },
+      "driver_late_arrival": {
+        "name": "Driver Late Arrival",
+        "description": "Driver arrived much later than estimated pickup time causing passenger inconvenience"
+      }
+  ,
+  "support_create_form": {
+    "title": "Create New Ticket",
+    "subtitle": "Describe your issue and we'll help you resolve it",
+    "ticket_type": "Ticket Type",
+    "app_related": "App Related",
+    "trip_related": "Trip Related",
+    "select_trip_label": "Select Trip",
+    "select_trip_placeholder": "Select a trip from your ride history",
+    "trip_details": "Trip Details",
+    "from": "From",
+    "to": "To",
+    "date": "Date",
+    "fare": "Fare",
+    "distance": "Distance",
+    "driver": "Driver",
+    "status": "Status",
+    "category_label": "Category",
+    "loading_categories": "Loading categories...",
+    "no_categories": "No categories available for this ticket type",
+    "description_label": "Description",
+    "description_placeholder": "Please provide detailed information about your issue...",
+    "error_subject_required": "Subject is required",
+    "error_description_required": "Description is required",
+    "error_category_required": "Please select a category",
+    "error_select_trip": "Please select a trip"
+  }
+    }
     
 }

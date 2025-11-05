@@ -21,6 +21,7 @@ import { Fonts } from '../../../constants/constants';
 import UserTicketService from '../services/UserTicketService';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
+import {utils} from '../../../utils/Utils'; 
 
 
 const TicketDetailScreen = () => {
@@ -262,6 +263,11 @@ const TicketDetailScreen = () => {
              </View>
            </View>
          )}
+           <View style={styles.infoRowDescription}>
+          <AdaptiveText style={styles.infoLabel} color="#6B7280">{t('description')}</AdaptiveText>
+          <AdaptiveText style={styles.infoValue} color="#374151">{ utils.cleanText(selectedTicket.description)}</AdaptiveText>
+        </View>
+
         <View style={styles.infoRow}>
           <AdaptiveText style={styles.infoLabel} color="#6B7280">{t('created')}</AdaptiveText>
           <AdaptiveText style={styles.infoValue} color="#374151">{formatDate(selectedTicket.createdAt)}</AdaptiveText>
@@ -411,6 +417,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
+  infoRowDescription: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    marginBottom: 10,
+  },
   infoLabel: {
     fontSize: 12,
     fontFamily: Fonts.regular,
@@ -421,6 +433,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: Fonts.medium,
     color: '#374151',
+    
+    width: '80%',
   },
   priorityBadge: {
     paddingHorizontal: 6,
