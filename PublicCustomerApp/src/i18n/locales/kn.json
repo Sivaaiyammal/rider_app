@@ -87,6 +87,7 @@
     "to": "ಗೆ",
     "cancel": "ರದ್ದುಮಾಡಿ",
     "confirm": "ದೃಢೀಕರಿಸಿ",
+    "ok": "ಸರಿ",
     "no_saved_places": "ಉಳಿಸಿದ ಸ್ಥಳಗಳಿಲ್ಲ",
     "saved_places_empty_subtitle": "ನಿಮ್ಮ ಉಳಿಸಿದ ಸ್ಥಳಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ",
     "saved_places_empty_description": "ನಿಮ್ಮ ಮೊದಲ ಉಳಿಸಿದ ಸ್ಥಳವನ್ನು ಸೇರಿಸಲು + ಬಟನ್ ಟ್ಯಾಪ್ ಮಾಡಿ",
@@ -190,6 +191,9 @@
     "select_vehicle": "ವಾಹನವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
     "no_vehicles_available": "ಯಾವುದೇ ವಾಹನಗಳು ಲಭ್ಯವಿಲ್ಲ",
     "loading_vehicles": "ವಾಹನಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+    "ride_estimation_title": "Ride Estimation",
+    "request_failed": "Request failed",
+    "failed_to_get_fare_estimation": "Failed to get fare estimation",
     "payment_methods": "ಪಾವತಿ ವಿಧಾನಗಳು",
     "cash": "ನಗದು",
     "upi": "UPI",
@@ -252,6 +256,7 @@
     "unknown_address": "ಅಜ್ಞಾತ ವಿಳಾಸ",
     "search_destination": "ಗಮ್ಯಸ್ಥಾನವನ್ನು ಹುಡುಕಿ",
     "search_pickup_location": "ಪಿಕಪ್ ಸ್ಥಳವನ್ನು ಹುಡುಕಿ",
+    "cant_find_you_set_pickup": "We can't find you. Set pickup location",
     "current_location": "ಪ್ರಸ್ತುತ ಸ್ಥಳ",
     "destination": "ಗಮ್ಯಸ್ಥಾನ",
     "stop": "ನಿಲ್ಲಿಸು",
@@ -519,5 +524,6 @@
       "error_description_required": "ವಿವರಣೆ ಅಗತ್ಯವಿದೆ",
       "error_category_required": "ದಯವಿಟ್ಟು ಒಂದು ವರ್ಗವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
       "error_select_trip": "ದಯವಿಟ್ಟು ಒಂದು ಟ್ರಿಪ್ ಆಯ್ಕೆಮಾಡಿ"
-    }
+    },
+    "network_error": "ನೆಟ್ವರ్ಕ్ ಸಮಸ్ಯ"
 }

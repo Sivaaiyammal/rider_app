@@ -86,6 +86,7 @@
     "to": "కు",
     "cancel": "రద్దు చేయి",
     "confirm": "నిర్ధారించండి",
+    "ok": "సరి",
     "no_saved_places": "సేవ్ చేయబడిన స్థలాలు లేవు",
     "saved_places_empty_subtitle": "మీరు సేవ్ చేసిన స్థానాలు ఇక్కడ కనిపిస్తాయి",
     "saved_places_empty_description": "మీ మొదటి సేవ్ చేసిన స్థలాన్ని జోడించడానికి + బటన్‌ను నొక్కండి",
@@ -189,6 +190,9 @@
     "select_vehicle": "వాహనాన్ని ఎంచుకోండి",
     "no_vehicles_available": "వాహనాలు అందుబాటులో లేవు",
     "loading_vehicles": "వాహనాలను లోడ్ చేస్తోంది...",
+    "ride_estimation_title": "Ride Estimation",
+    "request_failed": "Request failed",
+    "failed_to_get_fare_estimation": "Failed to get fare estimation",
     "payment_methods": "చెల్లింపు పద్ధతులు",
     "cash": "నగదు",
     "upi": "UPI",
@@ -251,6 +255,7 @@
     "unknown_address": "తెలియని చిరునామా",
     "search_destination": "గమ్యాన్ని శోధించండి",
     "search_pickup_location": "పికప్ స్థానాన్ని శోధించండి",
+    "cant_find_you_set_pickup": "We can't find you. Set pickup location",
     "current_location": "ప్రస్తుత స్థానం",
     "destination": "గమ్యం",
     "stop": "ఆపు",
@@ -516,5 +521,6 @@
       "error_description_required": "వివరణ అవసరం",
       "error_category_required": "దయచేసి ఒక వర్గాన్ని ఎంచుకోండి",
       "error_select_trip": "దయచేసి ఒక యాత్రను ఎంచుకోండి"
-    }
+    },
+    "network_error": "నెట్వర్క్ సమస్య"
 }

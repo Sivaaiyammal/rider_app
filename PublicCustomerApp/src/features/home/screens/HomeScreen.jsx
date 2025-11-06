@@ -313,7 +313,7 @@ const MapScreen = () => {
   const makeRidePlan=()=>{
 
     if(!location || !currentLocationName || !location.length){
-      Alert.alert(t('location_not_found'))
+      setStackScreen("PlanRideScreen",{})
       return;
     }
 

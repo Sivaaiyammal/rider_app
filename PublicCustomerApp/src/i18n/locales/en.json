@@ -95,6 +95,7 @@
     "to": "To",
     "cancel": "Cancel",
     "confirm": "Confirm",
+    "ok": "OK",
     "no_saved_places": "No Saved Places",
     "saved_places_empty_subtitle": "Your saved locations will appear here",
     "saved_places_empty_description": "Tap the + button to add your first saved place",
@@ -231,6 +232,9 @@
     "select_vehicle": "Select Vehicle",
     "no_vehicles_available": "No vehicles available",
     "loading_vehicles": "Loading vehicles...",
+    "ride_estimation_title": "Ride Estimation",
+    "request_failed": "Request failed",
+    "failed_to_get_fare_estimation": "Failed to get fare estimation",
     "payment_methods": "Payment Methods",
     "cash": "Cash",
     "upi": "UPI",
@@ -296,6 +300,7 @@
     "unknown_address": "Unknown Address",
     "search_destination": "Search Destination",
     "search_pickup_location": "Search Pickup Location",
+    "cant_find_you_set_pickup": "We can't find you. Set pickup location",
     "current_location": "Current Location",
     "destination": "Destination",
     "stop": "Stop",
@@ -469,7 +474,7 @@
       "select_up_to_contacts": "Select up to {count} contacts",
       "selected_count": "{count} selected",
       "maximum_selected": "Maximum of {count} selected",
-      "add_contacts_cta": "Add Emergency Contacts",
+      "add_contacts_cta": "Confirm",
       "emergency_contact":"Emergency Contact",
       "remove_contact":"Remove Contact",
       "remove_contact_message":"Are you sure you want to remove this contact",
@@ -532,6 +537,7 @@
     "error_category_required": "Please select a category",
     "error_select_trip": "Please select a trip"
   }
-    }
+    },
+    "network_error": "Network Error"
     
 }

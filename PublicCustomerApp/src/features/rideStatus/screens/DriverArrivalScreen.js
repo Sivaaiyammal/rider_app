@@ -87,15 +87,15 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
   
 
   const handleCallDriver = async () => {
+
     if (isCallingDriver) return;
     const passengerNumber = userdetails?.phone;
-
     if (!passengerNumber || !phone) {
-      showNotification(t('error'), t('unable_to_place_call'));
+      showNotification(t('error'), t('unable_to_place_call'),'error');
       return;
     }
 
-    try {
+    try{
       setIsCallingDriver(true);
       const bodyData = {
         from: passengerNumber,
@@ -106,10 +106,10 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
       if (!makeCall?.success) {
         showNotification(t('error'), t('error_in_making_call_to_driver'),'error');
       }else{
-        showNotification(t('calling_to_driver'), t('call_initiated_with_driver_shortly'), 'success');
+        showNotification(t('calling_to_driver'), t('call_initiated_with_driver_shortly'), 'error');
       }
     } catch (error) {
-      showNotification(t('error'), t('error_in_making_call_to_driver'));
+      showNotification(t('error'), t('error_in_making_call_to_driver'),'error');
     } finally {
       setIsCallingDriver(false);
     }

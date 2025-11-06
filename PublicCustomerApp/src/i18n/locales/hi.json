@@ -87,6 +87,7 @@
     "to": "को",
     "cancel": "रद्द करना",
     "confirm": "पुष्टि करना",
+    "ok": "ठीक है",
     "no_saved_places": "कोई सहेजा गया स्थान नहीं",
     "saved_places_empty_subtitle": "आपके सहेजे गए स्थान यहां दिखाई देंगे",
     "saved_places_empty_description": "अपना पहला सहेजा गया स्थान जोड़ने के लिए + बटन पर टैप करें",
@@ -222,6 +223,9 @@
     "select_vehicle": "वाहन चुनें",
     "no_vehicles_available": "कोई वाहन उपलब्ध नहीं है",
     "loading_vehicles": "वाहन लोड हो रहे हैं...",
+    "ride_estimation_title": "किराया अनुमान",
+    "request_failed": "अनुरोध विफल",
+    "failed_to_get_fare_estimation": "किराया अनुमान प्राप्त करने में विफल",
     "payment_methods": "भुगतान विधियाँ",
     "cash": "नकद",
     "upi": "है मैं",
@@ -284,6 +288,7 @@
     "unknown_address": "अज्ञात पता",
     "search_destination": "खोज गंतव्य",
     "search_pickup_location": "पिकअप स्थान खोजें",
+    "cant_find_you_set_pickup": "We can't find you. Set pickup location",
     "current_location": "वर्तमान स्थान",
     "destination": "गंतव्य",
     "stop": "रुकना",
@@ -524,7 +529,8 @@
       "error_description_required": "विवरण आवश्यक है",
       "error_category_required": "कृपया एक वर्ग चुनें",
       "error_select_trip": "कृपया एक यात्रा चुनें"
-    }
+    },
+    "network_error": "नेटवर्क त्रुटि"
     
     
 }

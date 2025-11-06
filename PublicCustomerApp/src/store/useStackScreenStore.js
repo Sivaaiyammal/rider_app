@@ -52,6 +52,7 @@ export const useStackScreenStore = create((set, get) => ({
         newStack[targetIndex] = { ...newStack[targetIndex], params };
       }
       
+      console.log('newStack',JSON.stringify(newStack))
       
       set({stackScreen: newStack});
     }

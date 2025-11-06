@@ -2,6 +2,9 @@ import { useEffect, useCallback, useRef } from 'react';
 import rideMatchingSocketService from '../controllers/RideMatchingSocketService';
 import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore';
 import useUserInfoStore from '../store/useUserInfoStore';
+import { Alert } from 'react-native';
+import { useStackScreenStore } from '../store/useStackScreenStore';
+import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 
 /**
  * Custom hook to manage ride matching status and socket integration
@@ -25,7 +28,9 @@ const useRideMatching = () => {
   const { id: userId } = useUserInfoStore();
   const socketInitializedRef = useRef(false);
   const matchingActiveRef = useRef(false);
-
+  const { goBack,goBackToScreen } = useStackScreenStore();
+  const { setTripStatus } = useCurrentRideInfoStore();
+  
   /**
    * Initialize socket connection for ride matching
    */
@@ -53,9 +58,14 @@ const useRideMatching = () => {
         rideMatchingSocketService.onMatchingUpdate((matchingData) => {
           console.log('📡 Received matching update:', matchingData);
           setRideMatchStatus(matchingData);
+          if(matchingData?.status === 'error'){
+            resetSocket();
+            setTripStatus(null);
+            goBackToScreen('BookRideScreen',{RideMatchDriverNotFound:true});
+          }
         });
         rideMatchingSocketService.onCancelRideMatch((matchingData) => {
-          console.log('📡 Received matching update:', matchingData);
+          console.log('📡 Received matching update cancel ride match:', matchingData);
           setRideMatchStatus(matchingData);
         });
 

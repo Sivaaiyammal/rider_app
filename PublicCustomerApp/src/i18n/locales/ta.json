@@ -93,6 +93,7 @@
     "date_range": "தேதி வரம்பைத் தேர்ந்தெடுக்கவும்",
     "cancel": "ரத்து செய்",
     "confirm": "உறுதிப்படுத்தவும்",
+    "ok": "சரி",
     "no_saved_places": "சேமிக்கப்பட்ட இடங்கள் இல்லை",
     "saved_places_empty_subtitle": "நீங்கள் சேமித்த இருப்பிடங்கள் இங்கே தோன்றும்",
     "saved_places_empty_description": "நீங்கள் முதலில் சேமித்த இடத்தைச் சேர்க்க + பொத்தானைத் தட்டவும்",
@@ -196,6 +197,9 @@
     "select_vehicle": "வாகனத்தைத் தேர்ந்தெடுக்கவும்",
     "no_vehicles_available": "வாகனங்கள் இல்லை",
     "loading_vehicles": "வாகனங்களை ஏற்றுகிறது...",
+    "ride_estimation_title": "Ride Estimation",
+    "request_failed": "Request failed",
+    "failed_to_get_fare_estimation": "Failed to get fare estimation",
     "payment_methods": "பணம் செலுத்தும் முறைகள்",
     "cash": "பணம்",
     "upi": "UPI",
@@ -267,6 +271,7 @@
     "unknown_address": "தெரியாத முகவரி",
     "search_destination": "இலக்கைத் தேடுங்கள்",
     "search_pickup_location": "பிக்கப் இடத்தைத் தேடுங்கள்",
+    "cant_find_you_set_pickup": "We can't find you. Set pickup location",
     "current_location": "தற்போதைய இடம்",
     "destination": "இலக்கு",
     "stop": "நிறுத்து",
@@ -523,7 +528,8 @@
       "error_description_required": "விளக்கம் அவசியம்",
       "error_category_required": "தயவுசெய்து ஒரு வகையைத் தேர்வுசெய்க",
       "error_select_trip": "தயவுசெய்து ஒரு பயணத்தைத் தேர்வுசெய்க"
-    }
+    },
+    "network_error": "பிணைய பிழை"
 
  
 }

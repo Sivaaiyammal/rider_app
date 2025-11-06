@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import Svg, { Circle, Path } from 'react-native-svg';
 import PropTypes from 'prop-types';
 import DestinationIcon from '../../../../assets/icons/destinationIcon';
 import { Fonts } from '../../../../constants/constants';
@@ -14,11 +13,9 @@ import DashedLine from '../../../../components/Common/DashedLine';
 
 
 
-const LineWidth = 2;
 const RideLocationSetBox = ({
   onAddWaypoint,
   onLocationClick,
-  onWaypointClick,
 }) => {
   const { t } = useTranslation();
   const {rideStartLocation,rideEndLocation,rideWayPoints} = useRideBookingLocationStore()
@@ -27,6 +24,7 @@ const RideLocationSetBox = ({
 
   const destination = rideEndLocation ? utils.formatAddressName(rideEndLocation) : t('search_destination')
   const pickup = rideStartLocation ? utils.formatAddressName(rideStartLocation) : t('search_destination')
+  const setPickupText = t('cant_find_you_set_pickup')
 
   const startLocationLable = rideStartLocation?.name === "Current Location" ? t('current_location') : t('pickup_location')
 
@@ -34,7 +32,13 @@ const RideLocationSetBox = ({
 
 
   return (
-    <View style={styles.container}>
+    <View>
+      {!rideStartLocation && (
+        <View style={styles.warningTextContainer}>  
+          <Text style={styles.warningText}>{setPickupText}</Text>
+        </View>
+      )}
+      <View style={styles.container}>
       {/* Pickup Row */}
       <TouchableOpacity style={[styles.row]} onPress={()=>onLocationClick(LocationTypes.START_LOCATION)}>
         <View style={styles.iconContainer}>
@@ -100,7 +104,8 @@ const RideLocationSetBox = ({
           {rideEndLocation ? <Text style={styles.address} numberOfLines={1}>{destination}</Text>:<Text style={styles.placeHolder}>{t('search_destination')}</Text>}
         </View>
       </TouchableOpacity>
-   
+  
+      </View>
     </View>
   );
 };
@@ -109,10 +114,27 @@ RideLocationSetBox.propTypes = {
   pickup: PropTypes.string,
   destination: PropTypes.string,
   onAddWaypoint: PropTypes.func,
+  onLocationClick: PropTypes.func,
   onSearchDestination: PropTypes.func,
 };
 
 const styles = StyleSheet.create({
+  warningTextContainer: {
+    backgroundColor: '#FFC107'+'30',
+    padding: 5,
+    borderRadius: 10,
+    marginHorizontal: 8,
+    marginTop: 4,
+  },
+  warningText: {
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: '#FFC107',
+    marginHorizontal: 8,
+    marginTop: 4,
+    marginBottom: 2,
+    textAlign: 'center',
+  },
   container: {
     backgroundColor: '#fff',
     borderRadius: 16,

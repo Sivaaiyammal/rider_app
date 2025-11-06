@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import useBookingService from '../services/useBookingService';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
-import { setDummyDriverInfo } from '../../rideStatus/store/useAssignedDriverInfoStore';
 import { DataStore } from '../../../controllers/DataStore';
 import PREF from '../../../storage/PREF';
 import { showNotification } from '../../../components/NotificationManger';
@@ -11,6 +10,7 @@ import useRideMatching from '../../../hooks/useRideMatching';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import useScheduleStore from '../../schedule/store/useScheduleStore';
 import useScheduleTripStore from '../../../store/useScheduleTripStore';
+import rideMatchingSocketService from '../../../controllers/RideMatchingSocketService';
 /**
  * Simple hook for booking trips with navigation handling
  * @returns {Object} Booking functions and state
@@ -20,14 +20,14 @@ import useScheduleTripStore from '../../../store/useScheduleTripStore';
 const useBookTrip = () => {
   const { setStackScreen } = useStackScreenStore();
   const [loading, setLoading] = useState(false);
-  const { setCurrentRideInfo } = useCurrentRideInfoStore();
+  const { setCurrentRideInfo, setTripStatus } = useCurrentRideInfoStore();
   const { t } = useTranslation();
   const { initializeSocket, startMatching } = useRideMatching();
   const { setFromPayload } = useScheduleStore();
   const { id: userId } = useUserInfoStore();
   const { addScheduledTrip } = useScheduleTripStore();
   // Booking success callback - navigate to appropriate screen
-  const handleBookingSuccess = useCallback((data) => {
+  const handleBookingSuccess = useCallback(() => {
       //  console.log('data', data)
       // Navigate to ride status screen with booking data
       
@@ -76,11 +76,21 @@ const useBookTrip = () => {
         try {
           await DataStore.storeData(PREF.CURRENT_TRIP, result.trip?._id);
           setCurrentRideInfo(result.trip);
+          // Ensure ride-matching socket is connected before proceeding
+          let connected = rideMatchingSocketService.isConnected();
+          if (!connected) {
+            connected = await initializeSocket(userId);
+          }
+          if (!connected) {
+            showNotification(t('network_error'), t('please_try_again'), 'danger');
+            return result;
+          }
+
           setStackScreen('RideStatus', {
           });
-          showNotification(t('booking_successful'), t('your_ride_has_been_booked_successfully'), 'success'); 
-         
-          startMatching(result.tripId, userId,result?.trip?.vehicleType);
+          // showNotification(t('booking_successful'), t('your_ride_has_been_booked_successfully'), 'success'); 
+          
+          startMatching(result.tripId, userId, result?.trip?.vehicleType);
           return result;
         } catch (err) {
           console.error('Error handling current trip:', err);
@@ -95,7 +105,7 @@ const useBookTrip = () => {
     } finally {
       setLoading(false);
     }
-  }, [bookingService]);
+  }, [bookingService, initializeSocket, userId, t, setCurrentRideInfo, setStackScreen, startMatching]);
 
   /**
    * Get current booking payload for debugging

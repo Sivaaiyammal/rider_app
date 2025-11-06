@@ -3,6 +3,8 @@ import {
   View,
   StyleSheet,
   TouchableOpacity,
+  Modal,
+  Image,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import NavBar from '../../../components/NavBar';
@@ -40,10 +42,12 @@ import { utils } from '../../../utils/Utils';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import ScrollHintChevron from '../../../components/Common/ScrollHintChevron';
 import { useDebouncedAPICall } from '../../../hooks/useDebounce';
-import useRideSelectionStore from '../../../store/useRideSelectionStore';
+// import useRideSelectionStore from '../../../store/useRideSelectionStore';
 import PropTypes from 'prop-types';
 import { buildKey as buildEstimationCacheKey, getFromCache as getEstimationFromCache, setInCache as setEstimationInCache, prune as pruneEstimationCache } from '../store/useEstimationCacheStore';
+import { showNotification } from '../../../components/NotificationManger';
 
+const DriverNotFoundImage = require('../../../assets/image/Driver_Not_Found.webp')
 
 const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => {
     const {setStackScreen} = useStackScreenStore()
@@ -89,7 +93,7 @@ const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => 
         </View>
     )
 }
-const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsScreen = null}) => {
+const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsScreen = null,RideMatchDriverNotFound=false}) => {
     const { t } = useTranslation();
     
     const {goBack,goBackToScreen} = useStackScreenStore()
@@ -100,6 +104,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const [showPreference,setShowPreference] = useState(false)
     const [,setScrolledUntillBottom] = useState(false)
     const [bottomSheetHeight,setBottomSheetHeight] = useState(350)
+    const [isEstimationError, setIsEstimationError] = useState(false)
     
     // Use the direction load hook to transform ride locations to direction points
     const { 
@@ -129,6 +134,8 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     // const { selectedVehicle } = useRideVehicleStore();
 
     const [showCoupon,setShowCoupon] = useState(false)
+    const [isEstimationLoading, setIsEstimationLoading] = useState(false)
+    const [showDriverNotFoundModal, setShowDriverNotFoundModal] = useState(!!RideMatchDriverNotFound)
 
 
 
@@ -202,6 +209,12 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         }
     }, [])
 
+    useEffect(() => {
+        if (RideMatchDriverNotFound) {
+            setShowDriverNotFoundModal(true)
+        }
+    }, [RideMatchDriverNotFound])
+
     const transformEstimateDatStore=(data)=>{
         const vehicleList = vehicleType.reduce((acc, spec, index) => {
             const rideTypeData = data?.[spec.type];
@@ -236,6 +249,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const onEstimationSuccess = (data) => {
        
         if (data?.result?.success) {
+            setIsEstimationError(false)
             // Handle successful estimation
             if(data?.regionCode){
                 setRegionOfficeCode(data?.regionCode)
@@ -250,7 +264,13 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             transformEstimateDatStore(data?.result?.data?.fareRanges)
                    
         } else {
-            console.log('Estimation failed:', data?.message);
+            showNotification(t('ride_estimation_title'), data?.message || t('failed_to_get_fare_estimation'), 'danger');
+            setIsEstimationError(true)
+            setBottomSheetHeight(350)
+            useRideVehicleStore.setState({
+                availableVehicles: [],
+                selectedVehicle: null,
+            })
         }
     };
 
@@ -260,6 +280,8 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         if (estimationInFlightRef.current) return;
         estimationInFlightRef.current = true;
         try {
+            setIsEstimationLoading(true)
+            setIsEstimationError(false)
             const data = await getRideEstimation(payload);
             
             // Save to cache on success
@@ -268,9 +290,20 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             }
             onEstimationSuccess(data);
         } catch (error) {
-            console.log('Estimation failed:', error);
+            showNotification(
+                t('ride_estimation_title'),
+                t('request_failed'),
+                'danger'
+            );
+            setIsEstimationError(true)
+            setBottomSheetHeight(350)
+            useRideVehicleStore.setState({
+                availableVehicles: [],
+                selectedVehicle: null,
+            })
         } finally {
             estimationInFlightRef.current = false;
+            setIsEstimationLoading(false)
         }
     }, []);
 
@@ -454,7 +487,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
       
     
    
-      <VehicleList  availableVehicles={availableVehicles} setScrolledUntillBottom={setScrolledUntillBottom}/>
+      <VehicleList  availableVehicles={availableVehicles} isLoading={isEstimationLoading} isEstimationError={isEstimationError} setScrolledUntillBottom={setScrolledUntillBottom}/>
       <View style={{height:100}}/>
            
 
@@ -528,6 +561,30 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
             </AnimatedBottomSheetWrapper>
             )
         }
+
+        { showDriverNotFoundModal && (
+            <Modal
+                animationType="fade"
+                transparent
+                visible
+                onRequestClose={() => setShowDriverNotFoundModal(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalView}>
+                        <Image source={DriverNotFoundImage} style={styles.modalImage} resizeMode="contain" />
+                        <AdaptiveText style={styles.modalTitle}>{t('driver_not_found')}</AdaptiveText>
+                        <AdaptiveText style={styles.modalMessage}>{t('unable_to_find_driver')}</AdaptiveText>
+                        <TouchableOpacity
+                            style={styles.modalButton}
+                            onPress={() => setShowDriverNotFoundModal(false)}
+                            activeOpacity={0.8}
+                        >
+                            <AdaptiveText style={styles.modalButtonText}>{t('ok', 'OK')}</AdaptiveText>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+        )}
    </>
   );
 };
@@ -535,6 +592,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 BookRideScreen.propTypes = {
   DurationFromAddStopsScreen: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   DistanceFromAddStopsScreen: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  RideMatchDriverNotFound: PropTypes.bool,
 };
 
 const styles = StyleSheet.create({
@@ -781,6 +839,54 @@ const styles = StyleSheet.create({
         height:7,
         backgroundColor:colors.grey_light,
         borderRadius:10,
+    },
+    modalContainer:{
+        flex:1,
+        justifyContent:'center',
+        alignItems:'center',
+        backgroundColor:'rgba(0,0,0,0.5)'
+    },
+    modalView:{
+        width:'85%',
+        backgroundColor:colors.white,
+        borderRadius:16,
+        padding:20,
+        paddingTop:0,
+        alignItems:'center',
+        elevation:5
+    },
+    modalImage:{
+        width: '90%',
+        height: 250,
+        marginBottom: 10,
+    },
+    modalTitle:{
+        fontFamily:Fonts.semi_bold,
+        fontSize:18,
+        color:colors.black,
+        marginBottom:8,
+        textAlign:'center'
+    },
+    modalMessage:{
+        fontFamily:Fonts.regular,
+        fontSize:14,
+        color:colors.black,
+        textAlign:'center',
+        marginBottom:16
+    },
+    modalButton:{
+        backgroundColor:colors.black,
+        borderRadius:10,
+        paddingVertical:12,
+        paddingHorizontal:28,
+        minWidth:160,
+        alignSelf:'center'
+    },
+    modalButtonText:{
+        color:colors.white,
+        fontFamily:Fonts.semi_bold,
+        fontSize:14,
+        textAlign:'center'
     },
     vehicleCard: {
         flexDirection: 'row',

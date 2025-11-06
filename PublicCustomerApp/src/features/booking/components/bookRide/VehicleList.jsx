@@ -21,14 +21,14 @@ import SkeletonLoader from '../../../../components/Loaders/SkeletonLoader';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AdaptiveText from '../../../../components/Common/AdaptiveText';
+import VehicleSearchIcon from '../../../../assets/image/svgIcons/vehicleSearch.svg'
 
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
 
-const VehicleList = ({ availableVehicles }) => {
+const VehicleList = ({ availableVehicles, isLoading, isEstimationError }) => {
   const { t } = useTranslation();
   const {selectedVehicle,setSelectedVehicle} = useRideVehicleStore()
   const [slideAnim] = useState(new Animated.Value(0));
-  const firstRenderEndedRef = useRef(false);
   const firstRenderStartRef = useRef(null);
 
   useEffect(() => {
@@ -104,7 +104,17 @@ const VehicleList = ({ availableVehicles }) => {
   };
 
   if (availableVehicles?.length === 0 || availableVehicles == null) {
-    return renderSkeletonLoader();
+    if (isLoading || !isEstimationError) {
+      return renderSkeletonLoader();
+    }
+    return (
+      <View style={[styles.container, { alignItems: 'center', justifyContent: 'center', paddingVertical: 24 }]}> 
+        <View style={styles.emptyWrapper}>
+          <VehicleSearchIcon width={80} height={80} />
+          <AdaptiveText style={styles.emptyText}>{t('no_vehicles_available')}</AdaptiveText>
+        </View>
+      </View>
+    );
   }
   const isEv = (vehicleType) => {
     return typeof vehicleType === 'string' && vehicleType.includes("ELECTRIC");
@@ -186,6 +196,8 @@ const VehicleList = ({ availableVehicles }) => {
 VehicleList.propTypes = {
   initialValue: PropTypes.object,
   availableVehicles: PropTypes.array,
+  isLoading: PropTypes.bool,
+  isEstimationError: PropTypes.bool,
 };
 
 const styles = StyleSheet.create({
@@ -327,6 +339,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: Fonts.bold,
     color: colors.white,
+  },
+  emptyWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.grey_xxlight,
+    borderRadius: 12,
+    paddingVertical: 20,
+    paddingHorizontal: 24,
+    width: '85%',
+  },
+  emptyText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#757575',
+    fontFamily: Fonts.regular,
+    textAlign: 'center',
   },
 });
 
