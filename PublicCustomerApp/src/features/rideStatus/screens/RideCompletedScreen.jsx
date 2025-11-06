@@ -92,9 +92,9 @@ const RideCompletedScreen = ({type}) => {
           title={type !== TripStatus.CANCELLED ? t('your_ride_is_completed') : t('your_ride_is_cancelled_inbetween_ride')}
           subtitle={type !== TripStatus.CANCELLED ? t('please_proceed_with_the_payment') : t('kindly_pay_the_fare_for_the_distance_travelled')}
         />
-        <Text style={styles.fare}>₹ {fare}</Text>
+        <Text style={styles.fare}>₹ {fare != null && !isNaN(Number(fare)) ? Number(fare).toFixed(2) : '0.00'}</Text>
         {/* cjheck */}
-        <Text style={styles.info}>{utils.formatMinutesToReadable(finalDuration)}  .  {finalDistance.toFixed(1)} Km</Text>
+        <Text style={styles.info}>{utils.formatMinutesToReadable(finalDuration || 0)}  .  {Number(finalDistance ?? 0).toFixed(1)} Km</Text>
         {(
           <Animated.View 
             style={[

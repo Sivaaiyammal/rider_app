@@ -457,6 +457,7 @@
     "call_initiated_with_driver_shortly": "Call initiated with driver shortly",
     "error_in_making_call_to_driver": "Error in making call to driver",
     "emergency": {
+      "add_emergency_contact_title": "ADD EMERGENCY CONTACT",
       "contacts_title": "Emergency Contacts",
       "empty_title": "No Emergency Contact",
       "empty_subtitle": "Add a trusted contact who can be notified in case of emergency.",

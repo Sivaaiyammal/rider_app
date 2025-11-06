@@ -673,9 +673,9 @@ const Home = () => {
        />
      )}
      
-      {configError && (
+      {/* {configError && (
         <UnableToConnectOverlay onRetry={retryLoadAppConfig} />
-      )}
+      )} */}
 
       {/* {overlayStatuses.includes(tripStatus) && (
         <TripStatusOverlay status={tripStatus} />

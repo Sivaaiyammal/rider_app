@@ -252,7 +252,7 @@ const Box = ({
       inputMode="numeric"
       // Prevent iOS from showing predictive bar
       contextMenuHidden
-      selectTextOnFocus
+      selectTextOnFocus={Platform.OS === 'ios'}
       // Visually center the digit
     />
   );

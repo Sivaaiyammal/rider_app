@@ -22,14 +22,14 @@ const NoNetworkOverlay = ({ onRetry }) => {
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>
+        {/* <Text style={styles.title}>
           {t('noNetwork.title', 'No Internet Connection')}
-        </Text>
+        </Text> */}
 
         {/* Description */}
-        <Text style={styles.description}>
+        {/* <Text style={styles.description}>
           {t('noNetwork.description', 'Please check your internet connection and try again.')}
-        </Text>
+        </Text> */}
 
         {/* Retry Button */}
         <TouchableOpacity style={styles.retryButton} onPress={onRetry}>

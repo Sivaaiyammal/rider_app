@@ -6,5 +6,10 @@
     -->
     <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+        <!-- Disable text selection/insertion handles to avoid Magnifier crashes on some devices -->
+        <item name="android:textSelectHandle">@null</item>
+        <item name="android:textSelectHandleLeft">@null</item>
+        <item name="android:textSelectHandleRight">@null</item>
+        <item name="android:textSelectHandleMiddle">@null</item>
     </style>
 </resources>

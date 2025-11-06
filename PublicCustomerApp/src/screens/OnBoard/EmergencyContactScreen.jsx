@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, Text, TouchableOpacity, Alert, StyleSheet, ActivityIndicator, Image } from 'react-native';
+import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { DataStore } from '../../controllers/DataStore';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
+import SOS from '../../assets/image/SOS.webp';
+import { Fonts } from '../../constants/constants';
 
 export default function EmergencyContactScreenOverlay({ onClose }) {
   const { t } = useTranslation();
   const { setStackScreen } = useStackScreenStore();
+  const [isProcessing, setIsProcessing] = useState(false);
 
 
   const storeViewdEmergencyContactScreen = async () => {
@@ -19,38 +22,74 @@ export default function EmergencyContactScreenOverlay({ onClose }) {
   }
 
   const saveAndProceed = async () => {
+    if (isProcessing) return;
     try {
-      storeViewdEmergencyContactScreen();
+      setIsProcessing(true);
+      await storeViewdEmergencyContactScreen();
       onClose();
       setStackScreen('EmergencyScreen');
-
     } catch (e) {
       console.warn('Failed to save emergency contact', e);
       Alert.alert(t('error'), e.message);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   const skipAndProceed = async () => {
-    storeViewdEmergencyContactScreen();
-    onClose();
+    if (isProcessing) return;
+    try {
+      setIsProcessing(true);
+      await storeViewdEmergencyContactScreen();
+      onClose();
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('emergency_contact_title')}</Text>
-      <Text style={styles.description}>{t('emergency_contact_description')}</Text>
+      <View style={styles.iconWrap}>
+       
+          <Image source={SOS} style={styles.icon} />
+      
+      </View>
+      <View style={styles.content}>
+        <Text style={styles.heading}>{t('emergency.emergency_contact')}</Text>
+        <Text style={styles.title}>{t('emergency.add_emergency_contact_title')}</Text>
+        <Text style={styles.description}>{t('emergency_contact_description')}</Text>
+        <View style={styles.benefits}>
+          <Text style={styles.benefitItem}>• Stay safer with a trusted contact on file</Text>
+          <Text style={styles.benefitItem}>• Quick help in emergencies</Text>
+          <Text style={styles.benefitItem}>• You can manage contacts anytime from Menu → Emergency Contact</Text>
+        </View>
+      </View>
       <View style={styles.buttons}>
-        <TouchableOpacity style={[styles.btn, styles.skipBtn]} onPress={skipAndProceed} testID="skip-emergency">
-          <Text style={styles.skipText}>{t('skip')}</Text>
+        <TouchableOpacity
+          style={[styles.btn, styles.skipBtn, isProcessing && styles.btnDisabled]}
+          onPress={skipAndProceed}
+          disabled={isProcessing}
+          testID="skip-emergency"
+        >
+          {isProcessing ? <ActivityIndicator color="#333" /> : <Text style={styles.skipText}>{t('skip')}</Text>}
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.btn, styles.saveBtn]} onPress={saveAndProceed} testID="save-emergency">
-          <Text style={styles.saveText}>{t('add_contact')}</Text>
+        <TouchableOpacity
+          style={[styles.btn, styles.saveBtn, isProcessing && styles.btnDisabled]}
+          onPress={saveAndProceed}
+          disabled={isProcessing}
+          testID="save-emergency"
+        >
+          {isProcessing ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>{t('add_contact')}</Text>}
         </TouchableOpacity>
       </View>
     </View>
   );
 }
+
+EmergencyContactScreenOverlay.propTypes = {
+  onClose: PropTypes.func.isRequired,
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -59,17 +98,63 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
+  content: {
+    width: '100%',
+    maxWidth: 360,
+    alignSelf: 'center',
+  },
+  heading: {
+    fontSize: 12,
+    fontFamily: Fonts.semi_bold,
+    color: '#111',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  iconWrap: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  iconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#E6F0FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: {
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 10,
     textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    fontFamily: Fonts.bold,
   },
   description: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: '#666',
-    marginBottom: 20,
+    marginBottom: 12,
     textAlign: 'center',
+    lineHeight: 20,
+  },
+  benefits: {
+    marginTop: 4,
+    marginBottom: 8,
+    alignSelf: 'center',
+    width: '100%',
+    maxWidth: 360,
+  },
+  benefitItem: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: '#111',
+    marginTop: 4,
+    textAlign: 'left',
+    lineHeight: 20,
   },
   label: {
     marginTop: 8,
@@ -84,6 +169,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 8,
   },
+  icon: {
+    width: '100%',
+    maxWidth: 400,
+    height: 300,
+    resizeMode: 'contain',
+    alignSelf: 'center',
+  },
   buttons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -97,16 +189,23 @@ const styles = StyleSheet.create({
     marginHorizontal: 6,
   },
   skipBtn: {
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#e5e7eb',
   },
   saveBtn: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#111',
+  },
+  btnDisabled: {
+    opacity: 0.7,
   },
   skipText: {
-    color: '#333',
+    color: '#111',
+    fontFamily: Fonts.regular,
   },
   saveText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    fontFamily: Fonts.regular,
   },
 });

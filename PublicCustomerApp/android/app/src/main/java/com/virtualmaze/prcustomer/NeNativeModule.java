@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.view.MotionEvent;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -139,6 +140,9 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     private int[] routeMargins = new int[]{50, 50, 50, 700};
 
+    // Guard against late callbacks arriving after the view/module has been destroyed
+    private volatile boolean isViewDestroyed = false;
+
     // Stores a requested mode until the map scene is ready
     private String pendingMode = null;
     // Stores a requested bounds until the map scene is ready
@@ -244,6 +248,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     @Override
     public void onHostDestroy() {
+        isViewDestroyed = true;
         if (mapView != null) {
             mapView.onDestroy();
             Log.e("DESTROY", "DESTROY");
@@ -253,9 +258,34 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     @Override
     protected MapView createViewInstance(ThemedReactContext reactContext) {
         reactNativeContext = reactContext;
-        mapView = new MapView(reactContext);
+        isViewDestroyed = false;
+        // Prefer Activity context for views that may display UI (dialogs),
+        // falling back to themed context if Activity is unavailable.
+        Activity activity = reactContext.getCurrentActivity();
+        boolean useActivity = activity != null
+                && !activity.isFinishing()
+                && (android.os.Build.VERSION.SDK_INT < 17 || !activity.isDestroyed());
+        mapView = new MapView(useActivity ? activity : reactContext);
         mapView.onCreate(null);
         reactContext.addLifecycleEventListener(this);
+
+        // Guard against rare MotionEvent pointerIndex crashes from the underlying SDK
+        mapView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                try {
+                    return v.onTouchEvent(event);
+                } catch (IllegalArgumentException iae) {
+                    // Known Android quirk: "invalid pointerIndex" may be thrown during multi-touch
+                    // Swallow to avoid app crash; skip this problematic event
+                    if (iae.getMessage() != null && iae.getMessage().contains("pointerIndex")) {
+                        Log.w("NeNativeModule", "Swallowed invalid pointerIndex touch event", iae);
+                        return true;
+                    }
+                    throw iae;
+                }
+            }
+        });
 
         if (settingsProps != null) {
             boolean enable3D = Boolean.parseBoolean(settingsProps.get("enable3D"));
@@ -271,10 +301,31 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     @Override
                     public void onMapReady(MapController mapCtrler) {
 
+                        // Ignore callbacks if the view/module has already been destroyed
+                        if (isViewDestroyed) {
+                            Log.w("NeNativeModule", "onMapReady called after destroy; ignoring");
+                            return;
+                        }
+
+                        // Defensive: controller may be null if underlying map failed to initialize
+                        if (mapCtrler == null) {
+                            Log.e("NeNativeModule", "onMapReady called with null MapController");
+                            return;
+                        }
+
                         // set map controller
                         mapController = mapCtrler;
-                        // set click listener
-                        mapController.getTouchInput().setTapResponder(tapResponder);
+                        // set click listener safely
+                        try {
+                            TouchInput ti = mapCtrler.getTouchInput();
+                            if (ti != null) {
+                                ti.setTapResponder(tapResponder);
+                            } else {
+                                Log.w("NeNativeModule", "TouchInput is null on onMapReady");
+                            }
+                        } catch (Throwable t) {
+                            Log.e("NeNativeModule", "Failed to set tap responder", t);
+                        }
 
                         mapController.enable3dBuildingsVisibility(false);
                         mapController.enableExtrusionsVisibility(false);
@@ -550,6 +601,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     // Add this method to handle cleanup when the component unmounts
 
     public void onDropViewInstance(MapView view) {
+        isViewDestroyed = true;
         if (mapView != null) {
             try {
                 mapView.onDestroy();
@@ -1785,8 +1837,23 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 return;
             }
             try {
-                NENativeMap.getInstance().initializeOfflineFilesDownload(reactNativeContext,
-                        NENativeMap.OfflineType.ALL, true, new NENativeDownloadListener() {
+                // Use a valid Activity context for any UI the SDK might attempt to show,
+                // and avoid triggering SDK dialogs by passing the UI flag as false.
+                android.app.Activity activity = reactNativeContext.getCurrentActivity();
+                boolean isActivityInvalid = (activity == null)
+                        || activity.isFinishing()
+                        || (android.os.Build.VERSION.SDK_INT >= 17 && activity.isDestroyed());
+
+                if (isActivityInvalid) {
+                    WritableNativeMap eventData = new WritableNativeMap();
+                    eventData.putString("message", "Cannot start download: Activity not available");
+                    reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                            .emit("onDownloadFailed", eventData);
+                    return;
+                }
+
+                NENativeMap.getInstance().initializeOfflineFilesDownload(activity,
+                        NENativeMap.OfflineType.ALL, false, new NENativeDownloadListener() {
                             @Override
                             public void onDownloading(int progressValue, ProgressType progressType,
                                     String progressData) {

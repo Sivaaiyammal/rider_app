@@ -44,11 +44,23 @@ const LoadingToast = ({ message, visible, onHide }) => {
 
   if (!visible) return null;
 
+  const displayMessage = (() => {
+    if (message == null) return t('fetching_your_trips');
+    if (typeof message === 'string') return message;
+    if (typeof message === 'number' || typeof message === 'boolean') return String(message);
+    if (message instanceof Error) return message.message || String(message);
+    if (typeof message === 'object') {
+      if (typeof message.message === 'string') return message.message;
+      try { return JSON.stringify(message); } catch (_e) { return t('fetching_your_trips'); }
+    }
+    return t('fetching_your_trips');
+  })();
+
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       <View style={styles.toast}>
         <Animated.View style={[styles.spinner, { transform: [{ rotate: spin }] }]} />
-        <Text style={styles.message}>{message || t('fetching_your_trips')}</Text>
+        <Text style={styles.message}>{displayMessage}</Text>
       </View>
     </Animated.View>
   );

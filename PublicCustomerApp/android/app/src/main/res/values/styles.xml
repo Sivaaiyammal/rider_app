@@ -4,6 +4,11 @@
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+        <!-- Disable text selection/insertion handles to avoid Magnifier crashes on some devices -->
+        <item name="android:textSelectHandle">@null</item>
+        <item name="android:textSelectHandleLeft">@null</item>
+        <item name="android:textSelectHandleRight">@null</item>
+        <item name="android:textSelectHandleMiddle">@null</item>
     </style>
 
 </resources>
