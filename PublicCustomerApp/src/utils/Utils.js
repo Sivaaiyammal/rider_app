@@ -18,6 +18,39 @@ export const utils = {
     else if (type == '6') return require('../assets/image/vehicle/luxsedan_left.png')
   },
 
+  /**
+   * Check if a trip has exceeded its estimated final arrival time with an offset.
+   * Times can be ISO strings, numbers (ms/seconds), or Date.
+   * Logic: if now > (finalArrivalTime + offsetMinutes) → true
+   * Falls back to bookingTime when pickupArrivalTime is missing, but the check is based on finalArrivalTime.
+   * @param {Date|string|number|null} bookingTime
+   * @param {Date|string|number|null} pickupArrivalTime - stops[0]?.arrivalTime
+   * @param {Date|string|number|null} finalArrivalTime - trip arrivalTime or estArrivalTime
+   * @param {number} offsetMinutes - grace period in minutes (default 10)
+   * @returns {boolean}
+   */
+  isTripOverEstimatedDuration(bookingTime, pickupArrivalTime, finalArrivalTime, offsetMinutes = 10) {
+    // Helper to normalize different inputs into a valid moment instance
+    const toMoment = (input) => {
+      if (input === null || input === undefined) return null;
+      // If number is seconds (e.g., 10 digits), convert to ms
+      if (typeof input === 'number' && input < 1e12) {
+        return moment(input * 1000);
+      }
+      return moment(input);
+    };
+
+    const pickup = toMoment(pickupArrivalTime) || toMoment(bookingTime);
+    const finalArr = toMoment(finalArrivalTime);
+
+    if (!finalArr || !finalArr.isValid()) return false;
+    // Optional: ensure we only consider after pickup start
+    if (pickup && pickup.isValid() && moment().isBefore(pickup)) return false;
+
+    const threshold = finalArr.clone().add(offsetMinutes || 0, 'minutes');
+    return moment().isAfter(threshold);
+  },
+
   capitalizeFirstLetter: (string) => {
     if(!string) return ""
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -718,7 +751,7 @@ export const utils = {
     // Limit excessive blank lines to at most one empty line
     s = s.replace(/\n{3,}/g, '\n\n');
     // Remove spaces before punctuation like ", . ! ? ;"
-    s = s.replace(/\s+([\.,!?;])(?=\s|$)/g, '$1');
+    s = s.replace(/\s+([.,!?;])(?=\s|$)/g, '$1');
 
     return s.trim();
   },

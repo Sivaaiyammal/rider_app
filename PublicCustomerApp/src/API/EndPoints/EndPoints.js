@@ -163,6 +163,13 @@ export const deleteAccount = async (payload) => {
     return data
   }
 
+  // confirm trip status (customer reported)
+  export const confirmTripStatus = async (payload) => {
+    // expects { tripId, tripStatus }
+    const { data } = await apiClient.post('/publicrides/customer/confirmTripStatus', payload)
+    return data
+  }
+
 
 
 

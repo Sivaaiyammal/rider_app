@@ -14,7 +14,7 @@ import PickLocationScreen from './PickLocationScreen';
 import { useCustomBackHandler } from '../hooks/useCustomBackHandler';
 import PlanRideScreen from '../features/booking/screens/PlanRideScreen.jsx';
 import BookRideScreen from '../features/booking/screens/BookRideScreen.jsx';
-import { getUserStats } from '../API/EndPoints/EndPoints';
+import { getUserStats, confirmTripStatus } from '../API/EndPoints/EndPoints';
 import RideStatus from '../features/rideStatus';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 import PaymentScreen from '../features/payment/screens/PaymentScreen';
@@ -25,7 +25,6 @@ import useMapStore from '../features/map/store/useMapStore';
 import { useNearbyPollingControl } from '../store/useNearByDriverPollingControl';
 
 import LanguageScreen from './OnBoard/LanguageScreen.jsx';
-import MyRidesScreen from '../features/rideHistory/screens/MyRidesScreen';
 import AboutScreen from '../features/Profile/MyAccountScreen';
 import RideDetailScreen from '../features/rideHistory/screens/RideDetailScreen';
 import ContactScreen from '../features/about/screens/ContactScreen';
@@ -41,7 +40,6 @@ import useLocationStore from '../store/useLocationStore';
 import PREF from '../storage/PREF';
 import { useDebounce } from '../hooks/useDebounce';
 import useConfigStore from '../store/useConfigStore';
-import UnableToConnectOverlay from '../components/UnableToConnectOverlay';
 import AdaptiveText from '../components/Common/AdaptiveText';
 import { Fonts } from '../constants/constants';
 import SearchAPI from '../controllers/NEMap/Search';
@@ -61,6 +59,7 @@ import { utils } from '../utils/Utils';
 import EmergencyContactScreenOverlay from './OnBoard/EmergencyContactScreen.jsx';
 import { checkUpdateStatus } from '../components/UpdateChecker';
 import UpdateOverlay from '../components/UpdateOverlay';
+import OverdueTripModal from '../components/OverdueTripModal';
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -129,13 +128,13 @@ const Home = () => {
   const appState = useRef(AppState.currentState);
   const permissionsRequested = useRef(false);
   const [bootLoading, setBootLoading] = useState(true);
-  const [configError, setConfigError] = useState(false);
+  const [, setConfigError] = useState(false);
   const [hasLocationPermission, setHasLocationPermission] = useState(null);
   
   const { setHomelocation, setWorklocation, setIsPreferenceShow} = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
-  const { setCurrentRideInfo , setFareDetails } = useCurrentRideInfoStore();
-  const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
+  const { setCurrentRideInfo , setFareDetails ,tripId,resetCurrentRideInfo} = useCurrentRideInfoStore();
+  const { setAllocatedDriverInfo ,clearDriverInfo} = useAssignedDriverInfoStore();
   const { setUserdetails ,setID,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips,id} = useUserInfoStore();
   const { setMapShown , mapShown, setUserLocation} = useMapStore();
   const { setTarget } = useNearbyPollingControl();
@@ -146,6 +145,7 @@ const Home = () => {
   const prevIsConnectedRef = useRef(isConnected);
   const [showemergencyOverlay, setShowEmergencyOverlay] = useState(false);
   const [updateMode, setUpdateMode] = useState('none');
+  const [showOverdueModal, setShowOverdueModal] = useState(false);
 
   const hasInitialLocationProcessed = useRef(false);
   const lastProcessedKey = useRef(null);
@@ -339,7 +339,8 @@ const Home = () => {
         if(Response?.appConfig){
           setConfig(Response?.appConfig);
           console.log("App Config Set in Home Screen:", Response?.appConfig);
-          if(Response?.appConfig?.APP_BUILD_NUMBER){
+          if(Response?.appConfig?.APP_BUILD_NUMBER && !currentTripId){
+
             checkForUpdates(Response?.appConfig?.APP_BUILD_NUMBER);
             
           }
@@ -407,6 +408,20 @@ const Home = () => {
            setFareDetails(fareData)
         }
         setStackScreen('RideStatus', { });
+        // Check if trip has exceeded estimated duration by 10 minutes from pickup context
+        try{
+          const isOverdue = utils.isTripOverEstimatedDuration(
+            Response?.userStats?.bookingTime || Response?.trip?.bookingTime,
+            Response?.trip?.stops?.[0]?.arrivalTime,
+            Response?.trip?.estimatedDuration,
+            10
+          );
+          if(isOverdue){
+            setShowOverdueModal(true);
+          }
+        } catch (e) {
+          // no-op
+        }
       }
       
     } else {
@@ -457,17 +472,7 @@ const Home = () => {
     
   } 
 
-  const retryLoadAppConfig = async () => {
-    
-    setBootLoading(true);
-    setConfigError(false);
-    await checkOnGoingRideAndLog();
-    if(id){
-      await resetSocket();
-      await initializeSocket(id);
-    }
-    
-  }
+ 
 
 
   useEffect(() => {
@@ -647,6 +652,37 @@ const Home = () => {
     }
   };
 
+  const updateTripStatusApi = async (tripId, status) => {
+    try {
+      const resp = await confirmTripStatus({ tripId, tripStatus: status });
+      console.log("resp",resp)
+      if (resp?.success) {
+        showNotification(t('success'), resp?.message || t('updated_successfully'), 'success');
+        await DataStore.clearData(PREF.CURRENT_TRIP)
+        resetCurrentRideInfo();
+        clearDriverInfo();
+        setShowOverdueModal(false);
+        setStackScreen('Home', {});
+
+      } else {
+        showNotification(t('error'), resp?.message || t('something_went_wrong'), 'error');
+        setShowOverdueModal(false);
+      }
+    } catch (e) {
+      console.log("error",e)
+      showNotification(t('error'), t('something_went_wrong'), 'error');
+      setShowOverdueModal(false);
+    }
+  }
+
+  const handleOverdueTripSelect = (status,TripId) => {
+    console.log("handleOverdueTripSelect",status)
+ 
+    if(TripId){
+      updateTripStatusApi(TripId,status);
+    }
+  }
+
   
 
   return (
@@ -664,6 +700,14 @@ const Home = () => {
           />
         ) 
       }
+      {showOverdueModal && (
+        <OverdueTripModal
+          visible={showOverdueModal}
+          onClose={() => setShowOverdueModal(false)}
+          onSelect={handleOverdueTripSelect}
+          TripId={tripId}
+        />
+      )}
      <StatusBar barStyle="dark-content" backgroundColor={"white"} />
       {renderContent()}
      {hasLocationPermission && (
