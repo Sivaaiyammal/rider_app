@@ -31,6 +31,7 @@ import { useDebouncedAPICall } from '../../../hooks/useDebounce';
 import useRideBookingInfo from '../store/useRideBookingInfo';
 import { Fonts } from '../../../constants/constants';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
+import { openFeedback } from '../../../utils/feedback';
 
 const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   const { t } = useTranslation();
@@ -67,6 +68,23 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
     setSelectedRide(rideType[0])
     setIsScheduledTrip(false)
     goBack();
+  };
+
+  const onFeedbackPress = () => {
+    const startName = (rideStartLocation && (rideStartLocation.name || rideStartLocation.address)) || '';
+    const endName = (rideEndLocation && (rideEndLocation.name || rideEndLocation.address)) || '';
+    const pickupCoords = rideStartLocation && rideStartLocation.latitude != null && rideStartLocation.longitude != null
+      ? `${rideStartLocation.latitude},${rideStartLocation.longitude}` : '';
+    const dropCoords = rideEndLocation && rideEndLocation.latitude != null && rideEndLocation.longitude != null
+      ? `${rideEndLocation.latitude},${rideEndLocation.longitude}` : '';
+    openFeedback({
+      screenName: 'PlanRideScreen',
+      params: { rideMode: rideBookMode, tripStartName: startName, tripEndName: endName, pickupCoords, dropCoords },
+      initialValues: { tripStartName: startName, tripEndName: endName, pickupCoords, dropCoords },
+      onSubmit: async () => {
+        // hook to send feedback if needed
+      },
+    });
   };
 
   const handleFavouriteLocationPress = useCallback((location) => {
@@ -237,7 +255,13 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
 
       <View style={styles.PlanRideScreen}>
-        <NavBar withBg onBackPress={onBackPress} title={t('plan_your_trip')} />
+        <NavBar
+          withBg
+          onBackPress={onBackPress}
+          title={t('plan_your_trip')}
+          feedbackIcon={true}
+          onrightIconPress={onFeedbackPress}
+        />
 
 
         <View style={addLocation.rideSelectionContainer}>

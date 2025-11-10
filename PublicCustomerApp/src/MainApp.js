@@ -18,6 +18,7 @@ import i18n from './i18n';
 import { useNearbyDrivers } from './hooks/useNearbyDrivers';
 import { useStackScreenStore } from './store/useStackScreenStore';
 // import { useNearbyPollingControl } from './store/useNearByDriverPollingControl';
+import FeedbackBottomSheet from './components/FeedbackBottomSheet';
 
 
 if (!firebase.apps.length) {
@@ -56,8 +57,11 @@ const MainAppContent = () => {
     initLanguage();
     
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-   
-      PushNotifications.sendNotification(remoteMessage.notification.body, remoteMessage.notification.title, remoteMessage.data)
+      const notification = remoteMessage?.notification;
+      const data = remoteMessage?.data || {};
+      const title = notification?.title ?? data?.title ?? 'Notification';
+      const body = notification?.body ?? data?.message ?? data?.body ?? '';
+      PushNotifications.sendNotification(body, title, data);
     });
 
     messaging()
@@ -89,6 +93,7 @@ const MainAppContent = () => {
             <NavigationContainer ref={navigationRef}>
               <Navigation />
             </NavigationContainer>
+            <FeedbackBottomSheet />
             {(!isConnected && (
               <NetworkBanner onRetry={checkConnection} />
             ))}

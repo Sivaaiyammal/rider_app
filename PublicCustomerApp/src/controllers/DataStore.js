@@ -7,6 +7,7 @@ const ALLOWED_KEYS = [
   'access_token',
   'refresh_token',
   'userdetails',
+  'login_phoneNumber',
   'Theme',
   'IS_FIRST',
   'IsDefault',

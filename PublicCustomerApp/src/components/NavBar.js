@@ -16,6 +16,7 @@ const NavBar = props => {
     withBg = false,
     withShadow = false, 
     paddingBottom = 0,  
+    feedbackIcon = false,
   } = props;
   return (
    
@@ -46,14 +47,12 @@ const NavBar = props => {
       <View style={navStyles.content}>
         <AdaptiveText style={navStyles.contentTxt} color={colors.black}>{title}</AdaptiveText>
       </View>
-      {rightIcon && (<TouchableOpacity style={navStyles.rightIcon} onPress={onrightIconPress}>
-      
-          <View style={navStyles.leftBtn}>
-            <Text>{rightIcon}</Text>
-          </View>
-       
+      {feedbackIcon && (<TouchableOpacity style={navStyles.rightIcon} onPress={onrightIconPress}>
+         
+        <Ionicons name={"chatbubble-ellipses-outline"} size={20} color={colors.black} />
+         
       </TouchableOpacity>
-       )}
+      )}
     </View>
   
   );

@@ -46,6 +46,7 @@ import { useDebouncedAPICall } from '../../../hooks/useDebounce';
 import PropTypes from 'prop-types';
 import { buildKey as buildEstimationCacheKey, getFromCache as getEstimationFromCache, setInCache as setEstimationInCache, prune as pruneEstimationCache } from '../store/useEstimationCacheStore';
 import { showNotification } from '../../../components/NotificationManger';
+import { openFeedback } from '../../../utils/feedback';
 
 const DriverNotFoundImage = require('../../../assets/image/Driver_Not_Found.webp')
 
@@ -449,7 +450,29 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
   return (
     <>
    <View>
-    <NavBar onBackPress={handleBackPress} />
+    <NavBar onBackPress={handleBackPress} feedbackIcon={true} onrightIconPress={() => {
+      try {
+        const startName = rideStartLocation;
+        const endName = rideEndLocation ;
+        const distanceKm = rideDistance != null ? String(rideDistance) : '';
+        const pickupCoords = rideStartLocation && rideStartLocation.latitude != null && rideStartLocation.longitude != null
+          ? `${rideStartLocation.latitude},${rideStartLocation.longitude}` : '';
+        const dropCoords = rideEndLocation && rideEndLocation.latitude != null && rideEndLocation.longitude != null
+          ? `${rideEndLocation.latitude},${rideEndLocation.longitude}` : '';
+        openFeedback({
+          screenName: 'BookRideScreen',
+          initialValues: {
+            tripStartName: startName,
+            tripEndName: endName,
+            tripDistanceKm: distanceKm,
+            pickupCoords,
+            dropCoords,
+          },
+        });
+      } catch (e) {
+        // no-op
+      }
+    }} />
     {!!scheduleDate && <View style={styles.ScheduleOption}>
             <Schdule />
             <AdaptiveText style={styles.rideSelectionTxt}>{scheduleDate && scheduleDate + " - " + scheduleTime}

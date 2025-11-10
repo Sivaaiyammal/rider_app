@@ -33,6 +33,7 @@ import useLocationStore from '../../store/useLocationStore';
 import useAssignedDriverInfoStore from './store/useAssignedDriverInfoStore';
 import useMapStore from '../map/store/useMapStore';
 import useWayPointReorderStore from '../booking/store/useWayPointReorderStore';
+import { openFeedback } from '../../utils/feedback';
 
 const RideStatus = () => {
   const { userdetails } = useUserInfoStore();
@@ -46,7 +47,7 @@ const RideStatus = () => {
     setMapMarkers
   } = useMapStore();
   const {driverLatitude,driverLongitude} = useAssignedDriverInfoStore();
-  const { duration,totalDistance,tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled,stops} = useCurrentRideInfoStore();
+  const { duration,totalDistance,tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled,stops,estimatedFare} = useCurrentRideInfoStore();
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const {goBack,stackScreen,setStackScreen} = useStackScreenStore();
   const [isPaymentMethodChangeShow,setIspaymentMethodChangeShow] = useState(false);
@@ -101,6 +102,7 @@ const RideStatus = () => {
     setCancelLoading(true);
     if(tripStatus === TripStatus.PENDING){
       await DataStore.clearData(PREF.CURRENT_TRIP)
+      incrementCancelledTrips()
       stopMatching(tripId,userId)
       resetCurrentRideInfo();
       goBack();
@@ -139,6 +141,10 @@ const RideStatus = () => {
 
       GPSdistance = data?.distance ? data.distance : null;
       GPSduration = data?.duration ? Math.round(data.duration) : null;
+
+      console.log("GPSdistance,GPSduration",GPSdistance,GPSduration)
+
+      setIsCalculateDistance(true);
 
       let FinalDuration = 0;
       if(stops?.[0]?.arrivalTime){
@@ -272,6 +278,31 @@ const RideStatus = () => {
     setPaymentMethod(paymentMethod);
   }
 
+  const onFeedbackPress = () => {
+    try {
+      const startStop = Array.isArray(stops) && stops.length > 0 ? stops[0] : undefined;
+      const endStop = Array.isArray(stops) && stops.length > 0 ? stops[stops.length - 1] : undefined;
+      const pickupCoords = startStop?.location; // expected [lon, lat]
+      const dropCoords = endStop?.location; // expected [lon, lat]
+      const distanceKm = typeof totalDistance === 'number' ? String(totalDistance) : '';
+
+      openFeedback({
+        screenName: 'RideStatus',
+        initialValues: {
+          tripId,
+          tripStartName: startStop?.address || '',
+          tripEndName: endStop?.address || '',
+          tripDistanceKm: distanceKm,
+          pickupCoords,
+          dropCoords,
+          estimatedFare: estimatedFare || '',
+        },
+      });
+    } catch (e) {
+      // no-op
+    }
+  };
+
  const getTitle = () => {
   switch(tripStatus){
     case TripStatus.PICKEDUP:
@@ -296,7 +327,7 @@ const RideStatus = () => {
       zIndex={0}
   >
     </Overlay>}
-        <NavBar title={t(getTitle())} />
+        <NavBar title={t(getTitle())} feedbackIcon={true} onrightIconPress={onFeedbackPress} />
         <View style={styles.container}>
             {renderScreen()}
         </View>

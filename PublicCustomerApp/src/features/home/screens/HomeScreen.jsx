@@ -275,7 +275,7 @@ const MapScreen = () => {
         <TouchableOpacity 
           style={styles.errorButton}
           onPress={() => setError(null)}
-        >
+        > 
           <Text style={styles.errorButtonText}>{t('dismiss')}</Text>
         </TouchableOpacity>
       </View>

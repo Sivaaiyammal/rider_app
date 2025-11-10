@@ -40,6 +40,21 @@ const useUserInfoStore = create(set => ({
   incrementCancelledTrips: () => set(state => ({ cancelledTrips: state.cancelledTrips + 1 })),
   incrementTotalSpend: (amount) => set(state => ({ totalSpend: state.totalSpend + amount })),
 
+  resetUserInfo: () => set({
+    id: null,
+    userdetails: null,
+    homelocation: null,
+    worklocation: null,
+    isFavouriteLocationSearchEnabled: false,
+    CurrentSearchFavouriteLocation: null,
+    isPreferenceShow: false,
+    userFavPlaces: [],
+    totalSpend: 0,
+    totalTrips: 0,
+    cancelledTrips: 0,
+    completedTrips: 0
+  }),
+
 
   language:null,
   setLanguage: async (language) => {

@@ -55,6 +55,13 @@ export const submitTripFeedback = async (payload)=> {
 }
 
 
+// submit general app feedback
+export const submitAppFeedback = async (payload) => {
+  const { data } = await apiClient.post('/publicrides/customer/submitFeedback', payload)
+  return data
+}
+
+
 
 // Book Ride
 export const bookRide = async (payload)=> {

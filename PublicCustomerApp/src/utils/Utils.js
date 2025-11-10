@@ -30,24 +30,78 @@ export const utils = {
    * @returns {boolean}
    */
   isTripOverEstimatedDuration(bookingTime, pickupArrivalTime, finalArrivalTime, offsetMinutes = 10) {
-    // Helper to normalize different inputs into a valid moment instance
+    /**
+     * Normalize a value into a moment instance when possible.
+     * Handles Date, moment, ISO strings, milliseconds and seconds.
+     */
     const toMoment = (input) => {
-      if (input === null || input === undefined) return null;
-      // If number is seconds (e.g., 10 digits), convert to ms
-      if (typeof input === 'number' && input < 1e12) {
-        return moment(input * 1000);
+      if (input === null || input === undefined || input === '') return null;
+
+      if (moment.isMoment(input)) {
+        return input.clone();
       }
-      return moment(input);
+
+      if (input instanceof Date) {
+        return moment(input);
+      }
+
+      if (typeof input === 'number' && Number.isFinite(input)) {
+        if (input >= 1e12) { // milliseconds since epoch
+          return moment(input);
+        }
+        if (input >= 1e9) { // seconds since epoch
+          return moment(input * 1000);
+        }
+        return null; // treat small numbers as durations elsewhere
+      }
+
+      if (typeof input === 'string') {
+        const trimmed = input.trim();
+        if (trimmed === '') return null;
+        const asNumber = Number(trimmed);
+        if (Number.isFinite(asNumber)) {
+          if (asNumber >= 1e12) {
+            return moment(asNumber);
+          }
+          if (asNumber >= 1e9) {
+            return moment(asNumber * 1000);
+          }
+          // fall through to duration handling in caller
+          return null;
+        }
+        const parsed = moment(trimmed);
+        return parsed.isValid() ? parsed : null;
+      }
+
+      const parsed = moment(input);
+      return parsed.isValid() ? parsed : null;
     };
 
     const pickup = toMoment(pickupArrivalTime) || toMoment(bookingTime);
-    const finalArr = toMoment(finalArrivalTime);
+    const baseTime = pickup || toMoment(bookingTime);
+
+    let finalArr = toMoment(finalArrivalTime);
+
+    if (!finalArr) {
+      const durationMinutes = Number(finalArrivalTime);
+      if (
+        Number.isFinite(durationMinutes) &&
+        durationMinutes >= 0 &&
+        baseTime &&
+        baseTime.isValid()
+      ) {
+        finalArr = baseTime.clone().add(durationMinutes, 'minutes');
+      }
+    }
 
     if (!finalArr || !finalArr.isValid()) return false;
+
     // Optional: ensure we only consider after pickup start
     if (pickup && pickup.isValid() && moment().isBefore(pickup)) return false;
 
-    const threshold = finalArr.clone().add(offsetMinutes || 0, 'minutes');
+    const offset = Number(offsetMinutes);
+    const threshold = finalArr.clone().add(Number.isFinite(offset) ? offset : 0, 'minutes');
+
     return moment().isAfter(threshold);
   },
 
@@ -106,8 +160,8 @@ export const utils = {
     if (status == 'PAYMENT_COMPLETED') return 'COMPLETED'
     else if (status == 'DIVERGED') return 'DIVERGED'
     else if (status == 'CANCELLED') return 'CANCELLED'
-    else if (status == 'failed') return 'FAILED'
-    else if (status == 'PENDING') return 'CANCELLED'
+    else if (status == 'failed') return 'DRIVER NOT FOUND'
+    else if (status == 'PENDING') return 'DRIVER NOT FOUND'
   },
   metersToKilometers(meters) {
     return meters / 1000;

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, Alert, Platform, TextInput } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, Alert, Platform, TextInput, BackHandler } from 'react-native';
 import Contacts from 'react-native-contacts';
 import { RequestContactsPermission, checkContactsPermission } from '../../../controllers/PermissionHandler';
 import { useEmergencyContactsStore } from '../store/useEmergencyContactsStore';
@@ -148,6 +148,18 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
       if (an < bn) return -1; if (an > bn) return 1; return 0;
     });
   }, [contacts, query, selectedIds]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (onBack) onBack();
+      else goBack();
+      return true;
+    });
+
+    return () => subscription.remove();
+  }, [goBack, onBack]);
 
   const submit = useCallback(async () => {
     try {

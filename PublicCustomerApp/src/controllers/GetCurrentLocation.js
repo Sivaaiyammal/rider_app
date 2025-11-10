@@ -15,14 +15,14 @@ class currentLocation {
     const {setMapLocation,setLoading,mapShown,setMapBounds,} = useMapStore.getState();
     setLoading(true); // Set loading to true before starting the geolocation process
     if(location){
-      console.log("location",location)
+      
       const bounds = utils.getBoundingBoxFromLocation(location, 200)
-      console.log("bounds",bounds)
+    
       const margin = [50, 100, 50, height*0.4]
       const finalBounds = [bounds, margin]
-      setTimeout(() => {
-        setMapBounds(finalBounds);
-      }, 2000);
+      
+      setMapBounds(finalBounds);
+     
       setLoading(false); 
     }
     else{

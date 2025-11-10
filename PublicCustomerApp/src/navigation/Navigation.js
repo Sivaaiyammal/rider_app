@@ -15,6 +15,7 @@ import { GlobalContext } from '../context/GlobalContext';
 import PropTypes from 'prop-types';
 import i18n from '../i18n';
 import useRideMatching from '../hooks/useRideMatching'; 
+import InAppUpdates from '../utils/InAppUpdates';
 
 // import YourRidesScreen from '../screens/Rides/YourRidesScreen';
 // import YourRideDetailsScreen from '../screens/Rides/YourRideDetailsScreen';
@@ -33,7 +34,7 @@ const Navigation = ({ onSplashComplete }) => {
   const [isSplashLoading, setIsSplashLoading] = useState(true);
   const {addListener} = useContext(GlobalContext);
   const {setLanguage} = useUserInfoStore();
-  const { initializeSocket} = useRideMatching();
+  useRideMatching();
   const nextScreen = useCallback(async () => {
     const language = await DataStore.loadData('language');
     const onBoarding = await DataStore.loadData('onBoarding');
@@ -71,6 +72,17 @@ const Navigation = ({ onSplashComplete }) => {
     }, 2000);
     return () => clearTimeout(timer);
   }, [nextScreen, onSplashComplete]);
+
+
+    // Call in-app update check with 2-second delay after splash screen completes
+    useEffect(() => {
+      if (isSplashLoading) return;
+      const timeoutId = setTimeout(() => {
+        console.log('[Navigation] Checking for in-app updates (immediate/force) after splash...');
+        InAppUpdates.checkUpdateStatus();
+      }, 2000);
+      return () => clearTimeout(timeoutId);
+    }, [isSplashLoading]);
 
   if (isSplashLoading) {
     return <SplashScreen />;

@@ -1,13 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import NavBar from '../../../components/NavBar';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../../constants/constants';
 import ContactPageImage from '../../../assets/image/common/contactPageImage.svg';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
+import { useTranslation } from 'react-i18next';
 
 const ContactScreen = () => {
   const {goBack} = useStackScreenStore();
+  const { t } = useTranslation();
   
   const contactData = {
     logo: require('../../../assets/image/common/contactPageImage.svg'),
@@ -35,7 +37,7 @@ const ContactScreen = () => {
 
   return (
     <>
-      <NavBar withBg={true} onBackPress={HandleBackBtn} title={'Contact Us'} />
+      <NavBar withBg={true} onBackPress={HandleBackBtn} title={t('contact_us')} />
       <View style={styles.container}>
         
         {/* Logo Section */}
@@ -48,14 +50,14 @@ const ContactScreen = () => {
           <View style={styles.infoRow}>
             <Ionicons name="call-outline" size={30} color={colors.violet} />
             <View>
-              <Text style={styles.infoTextHeading}>Call Us</Text>
+              <Text style={styles.infoTextHeading}>{t('contact.call_us')}</Text>
               <Text style={styles.infoText}>{contactData.phone}</Text>
             </View>
           </View>
           <View style={styles.infoRow}>
             <Ionicons name="mail-outline" size={30} color={colors.violet} />
             <View>
-              <Text style={styles.infoTextHeading}>Email Us</Text>
+              <Text style={styles.infoTextHeading}>{t('contact.email_us')}</Text>
               <Text style={styles.infoText}>{contactData.email}</Text>
             </View>
             

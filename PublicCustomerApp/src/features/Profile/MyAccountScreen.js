@@ -33,7 +33,7 @@ const MyAccountScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const { goBack,reset } = useStackScreenStore();
-  const { userdetails ,ratingData  ,totalSpend,cancelledTrips,completedTrips,totalTrips} = useUserInfoStore();
+  const { userdetails ,ratingData  ,totalSpend,cancelledTrips,completedTrips,totalTrips,resetUserInfo} = useUserInfoStore();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { removeListener } = useContext(GlobalContext);
 
@@ -86,6 +86,7 @@ const MyAccountScreen = () => {
     await DataStore.storeData('refresh_token', null);
     await DataStore.storeData('userdetails', null);
     reset()
+    resetUserInfo();
     await removeListener();
     navigation.reset({
       index: 0,

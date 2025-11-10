@@ -1,4 +1,5 @@
 {
+  "trip_stopped_midway": "Trip stopped midway",
     "enable_location_steps": "How to enable location",
     "go_to_app_settings": "Go to App Settings",
     "go_to_settings": "Go to Settings",
@@ -34,7 +35,12 @@
     "language": "Language",
     "support": "Support",
     "contact_us": "Contact Us",
+    "contact": {
+        "call_us": "Call Us",
+        "email_us": "Email Us"
+    },
     "legal": "Legal",
+    "feedback_menu": "Feedback",
     "test_screen": "Test Screen",
     "full_name": "Full Name",
     "gender": "Gender",
@@ -544,4 +550,44 @@
       "message": "May I know your trip status? Please select one option below.",
       "cancelled_midway": "Cancelled midway"
     }
+  ,
+  "feedback": {
+    "title": "Your Feedback Matters",
+    "subtitle": "Help us enhance your riding experience.",
+    "email_hint": "We use your email only to follow up on this feedback.",
+    "search_query_label": "Search term: {query}",
+    "search_issue_title": "Search issue",
+    "good_things_title": "Good things",
+    "bad_things_title": "Bad things",
+    "improvements_title": "Improvements",
+    "issue_title": "Issue",
+    "email_title": "Email (Optional)",
+    "search_issue_label": "What place wasn’t found or what went wrong?",
+    "search_issue_placeholder": "Tell us the place/search query that had an issue",
+    "pick_location_issue_title": "Pick location issue",
+    "pick_location_issue_label": "What went wrong while picking a location?",
+    "pick_location_issue_placeholder": "Describe the issue with selecting a location",
+    "selected_coords": "Selected coords",
+    "trip_issue_title": "Trip issue",
+    "trip_issue_label": "What went wrong with this trip?",
+    "trip_issue_placeholder": "Describe the issue with start/end or route",
+    "pickup_label": "Pickup",
+    "drop_label": "Drop",
+    "distance_label": "Distance",
+    "good_things_label": "What did you like?",
+    "good_things_placeholder": "Share the good things about the app",
+    "bad_things_label": "What didn't you like?",
+    "bad_things_placeholder": "Tell us what's not working for you",
+    "improvements_label": "Improvements",
+    "improvements_placeholder": "Suggestions to make it better",
+    "issue_label": "Issue details",
+    "issue_placeholder": "Describe the issue you faced",
+    "contact_email_label": "Contact email",
+    "email_placeholder": "Your Email Address",
+    "consent_text": "I consent to be contacted at this email (communication purpose only)",
+    "validation_any_message": "Please add at least one message (good, bad, improvement or issue).",
+    "estimated_fare_label": "Estimated fare",
+    "validation_email": "Please provide a valid contact email or turn off the consent.",
+    "validation_email_consent": "Please enable the consent checkbox to allow us to contact you by email."
+  }
 }

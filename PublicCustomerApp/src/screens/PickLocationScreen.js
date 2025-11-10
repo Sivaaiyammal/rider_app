@@ -20,6 +20,7 @@ import SkeletonLoader from '../components/Loaders/SkeletonLoader';
 import useLocationStore from '../store/useLocationStore';
 import useMapStyleStore from '../store/useMapStyleStore';
 import CurrentLocationIcon from '../assets/icons/CurrentLocationIcon.svg';
+import { openFeedback } from '../utils/feedback';
 
 // import locationTask from "../controllers/GetCurrentLocation";
 import usePropsStore from '../store/usePropsStore';
@@ -30,7 +31,7 @@ import PropTypes from 'prop-types';
 import AdaptiveText from '../components/Common/AdaptiveText';
 import { findRoute } from '../controllers/NEMap/findRoute';
 import polyline from '@mapbox/polyline';
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,loading=false}) => {
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation} = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -138,10 +139,26 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
   useEffect(()=>{
 
-   
     setOnMapCenterChanged(onmapCenterChanged);
     setOnMapRotationChanged(onMapRotationChangedCallback);
-    if (defaultLocation){
+
+    const hasExistingPick = !!(
+      pickedLocation &&
+      pickedLocation.latitude != null &&
+      pickedLocation.longitude != null
+    );
+
+    if (hasExistingPick) {
+      setIsMapButtonVisible(false);
+      setMapMarkers([]);
+      setTimeout(() => {
+        setMapLocation({
+          lat: pickedLocation.latitude,
+          lng: pickedLocation.longitude,
+          zoom: 18,
+        });
+      }, 100);
+    } else if (defaultLocation){
       setPickedLocation({
         latitude:defaultLocation.location[1],
         longitude:defaultLocation.location[0],
@@ -150,41 +167,36 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         type:locationType,
         locationFrom:"MAP"
       });
-
-      
-      
+      setMapLocation({
+        lat: defaultLocation.location[1],
+        lng: defaultLocation.location[0],
+        zoom: 25,
+      });
+    } else {
+      setPickedLocation({
+        latitude:location[1], 
+        longitude: location[0],
+        placeName: currentLocationName.placeName,
+        address: currentLocationName.address, 
+        type:locationType,
+        locationFrom:"MAP"
+      });
+      setIsMapButtonVisible(false);
+      setMapMarkers([]); 
+      setTimeout(()=>{
         setMapLocation({
-          lat: defaultLocation.location[1],
-          lng: defaultLocation.location[0],
-          zoom: 25,
+          lat: location[1],
+          lng: location[0],
+          zoom: 18,
         });
-      
-    }else{
-    setPickedLocation({
-      latitude:location[1], 
-      longitude: location[0],
-      placeName: currentLocationName.placeName,
-      address: currentLocationName.address, 
-      type:locationType,
-      locationFrom:"MAP"
-    });
-    setIsMapButtonVisible(false);
-    setMapMarkers([]); 
-    
-     setTimeout(()=>{
-            setMapLocation({
-              lat: location[1],
-              lng: location[0],
-              zoom: 18,
-            });
-          },100)
-    
-     return ()=>{
+      },100);
+    }
+
+    return ()=>{
       setOnMapCenterChanged(null);
       setIsMapButtonVisible(true);
-     }
-  
-  }},[]);
+    };
+  },[]);
 
   useEffect(() => {
     return () => {
@@ -210,6 +222,16 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       <NavBar
         title={ t('locate_on_map')}
         onBackPress={() => goBack()}
+        feedbackIcon={true}
+        onrightIconPress={() => {
+          const lat = pickedLocation?.latitude.toFixed(6);
+          const lon = pickedLocation?.longitude.toFixed(6);
+          const coordStr = (lat != null && lon != null) ? `${lat} , ${lon}` : '';
+          openFeedback({
+            screenName: 'PickLocationScreen',
+            initialValues: { coords: coordStr },
+          });
+        }}
       />
       <View style={[styles.container]}>
         <View style={[mapMoving && { marginBottom: 7 },{ alignSelf: 'center', alignItems: 'center' }]}>

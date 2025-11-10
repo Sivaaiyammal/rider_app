@@ -28,7 +28,7 @@ import HistoryCard from '../../shared/component/HistoryCard';
 import { DataStore } from '../../../controllers/DataStore';
 import {height} from '../../../utils/Utils';
 import FavLabelItems from '../../home/components/FavLabelItems';
-import { LocationTypes } from '../../booking/types/LocationTypes';
+import { openFeedback } from '../../../utils/feedback';
 
 // Debounce import
 import debounce from 'lodash.debounce';
@@ -323,6 +323,16 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
     setSelectedInput(null); // to disable locate on map when goBack
   }
 
+  const onFeedbackPress = () => {
+    openFeedback({
+      screenName: 'SearchScreen',
+      initialValues: {
+        searchQuery: searchTxt || '',
+        searchIssue: '',
+      },
+    });
+  };
+
   const handleLocateOnMapCallback = (item) => {
     onSearchClick(item, searchType, index);
   }
@@ -384,7 +394,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
-        <NavBar onBackPress={onGoBack} title={t('search')} />
+        <NavBar onBackPress={onGoBack} title={t('search')} feedbackIcon={true} onrightIconPress={onFeedbackPress} />
         {/* Search Input Container */}
         <View style={styles.inputContainer}>
           <View style={styles.searchContainer}>
@@ -494,17 +504,25 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
             )}
           </View>
         ) : (
+          <>
+           <TouchableOpacity style={styles.bottomBtnSearch} onPress={()=>handleLocateOnMap()}>
+                <Entypo name="location" size={18} color={colors.white} />
+                <Text style={[styles.bottomBtnTxt, { color: colors.white }]}>{t('locate_on_map')}</Text>
+              </TouchableOpacity>
           <ScrollView style={{paddingHorizontal:5, flex: 1}} contentContainerStyle={{paddingBottom: height*0.2}}>
+             
             <FavLabelItems style={{marginBottom:10}} onLabelPress={handleFavouriteLocationPress} enableAdd={false}/>
             <HistoryCard style={{marginBottom:10}} selectCallback={onLocationNamePress}/>
 
           </ScrollView>
+          </>
         )}
         
-        <TouchableOpacity style={styles.bottomBtn} onPress={()=>handleLocateOnMap()}>
+       { !(searchTxt.trim() == '' || stateVector ) && ( <TouchableOpacity style={styles.bottomBtn} onPress={()=>handleLocateOnMap()}>
           <Entypo name="location" size={18} color={colors.black} />
           <Text style={styles.bottomBtnTxt}>{t('locate_on_map')}</Text>
         </TouchableOpacity>
+       )}
 
         {/* Region Selection Modal */}
         <Modal
@@ -590,6 +608,17 @@ const styles = StyleSheet.create({
     
     height: 50,
   
+  },
+  bottomBtnSearch: {  
+    
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.black,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    alignSelf: 'center',
+    marginVertical: 10,
   },
   searchContainer: {
     flex: 1,

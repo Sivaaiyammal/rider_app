@@ -135,7 +135,7 @@ const Home = () => {
   const { setStackScreen } = useStackScreenStore();
   const { setCurrentRideInfo , setFareDetails ,tripId,resetCurrentRideInfo} = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo ,clearDriverInfo} = useAssignedDriverInfoStore();
-  const { setUserdetails ,setID,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips,id} = useUserInfoStore();
+  const { setUserdetails ,setID,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips,id,resetUserInfo} = useUserInfoStore();
   const { setMapShown , mapShown, setUserLocation} = useMapStore();
   const { setTarget } = useNearbyPollingControl();
   const { setConfig } = useConfigStore();
@@ -283,6 +283,7 @@ const Home = () => {
     await DataStore.storeData('refresh_token', null);
     await DataStore.storeData('userdetails', null);
     reset()
+    resetUserInfo();
     navigation.reset({
       index: 0,
       routes: [{ name: 'LoginScreen' }],
@@ -409,10 +410,11 @@ const Home = () => {
         }
         setStackScreen('RideStatus', { });
         // Check if trip has exceeded estimated duration by 10 minutes from pickup context
+        const pickupArrivalTime = Response?.trip?.stops?.[0]?.arrivalTime || null;
         try{
           const isOverdue = utils.isTripOverEstimatedDuration(
             Response?.userStats?.bookingTime || Response?.trip?.bookingTime,
-            Response?.trip?.stops?.[0]?.arrivalTime,
+            pickupArrivalTime,
             Response?.trip?.estimatedDuration,
             10
           );

@@ -23,6 +23,7 @@ import AdaptiveText from '../Common/AdaptiveText';
 import LinearGradient from 'react-native-linear-gradient';
 import {colors} from '../../constants/constants';
 import FemaleAvatar from '../../assets/image/femaleAvatar.svg';
+import { openFeedbackSheet } from '../../store/useFeedbackSheetStore';
 const SideDrawerV2 = ({ handleMenu }) => {
   const { t } = useTranslation();
   const { userdetails,ratingData } = useUserInfoStore();
@@ -118,6 +119,12 @@ const SideDrawerV2 = ({ handleMenu }) => {
       icon: <Ionicons name="help-circle" size={20} color="black" />,
     },
     {
+      id: 'feedback',
+      name: t('feedback_menu', 'Feedback'),
+      icon: <Ionicons name="chatbubbles-outline" size={20} color="black" />,
+      action: () => openFeedbackSheet({ screenName: 'SideDrawer' }),
+    },
+    {
       id: 'emergency',
       name: t('emergency.emergency_contact'),
       screen: 'EmergencyScreen',
@@ -169,6 +176,8 @@ const SideDrawerV2 = ({ handleMenu }) => {
         setStackScreen(menu.screen);
       }
       
+    } else if (typeof menu.action === 'function') {
+      menu.action();
     }
     closeDrawer();
   }

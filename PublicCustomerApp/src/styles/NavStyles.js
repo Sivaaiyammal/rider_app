@@ -25,7 +25,7 @@ export const navStyles = StyleSheet.create({
     
   },
   leftBtn: {
-
+ elevation:5,
     paddingRight:40,
     paddingLeft:10,
   
@@ -37,8 +37,14 @@ export const navStyles = StyleSheet.create({
    
   },
   rightIcon: {
+    position:"absolute",
+    right:0,
+    zIndex:100000,
     width: '20%',
     padding: 13,
+    alignItems:'center',
+    justifyContent:'center',
+  
   },
   content: {
     flex:1,

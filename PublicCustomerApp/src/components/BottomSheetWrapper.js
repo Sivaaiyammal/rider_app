@@ -1,6 +1,6 @@
 import React, { useMemo, forwardRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import BottomSheet, { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetScrollView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import PropTypes from 'prop-types';
 
 const BottomSheetWrapper = forwardRef(({
@@ -13,9 +13,11 @@ const BottomSheetWrapper = forwardRef(({
   enableDynamicSizing = false,
   handleIndicatorStyle,
   handleComponent,
+  backdropComponent,
+  backdrop = false,
   style,
-  setBottomSheetScrollToBottom,
-  
+  // setBottomSheetScrollToBottom,
+ 
   isLoading = false,
   ...props
 }, ref) => {
@@ -38,6 +40,15 @@ const BottomSheetWrapper = forwardRef(({
       enableDynamicSizing={enableDynamicSizing}
       handleIndicatorStyle={handleIndicatorStyle}
       handleComponent={handleComponent}
+      backdropComponent={backdrop ? (backdropComponent || ((backdropProps) => (
+        <BottomSheetBackdrop
+          {...backdropProps}
+          appearsOnIndex={0}
+          disappearsOnIndex={-1}
+          pressBehavior="close"
+          opacity={0.5}
+        />
+      ))) : undefined}
       style={[styles.bottomSheet, style]}
       {...props}
     >
@@ -96,6 +107,8 @@ BottomSheetWrapper.propTypes = {
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   setBottomSheetScrollToBottom: PropTypes.func,
   isLoading: PropTypes.bool,
+  backdrop: PropTypes.bool,
+  backdropComponent: PropTypes.oneOfType([PropTypes.func, PropTypes.element]),
 };
 
 BottomSheetWrapper.defaultProps = {
@@ -106,6 +119,7 @@ BottomSheetWrapper.defaultProps = {
   enableScroll: false,
   enableDynamicSizing: false,
   isLoading: false,
+  backdrop: false,
 };
 
 BottomSheetWrapper.displayName = 'BottomSheetWrapper';

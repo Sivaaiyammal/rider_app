@@ -27,7 +27,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
 export default function TripFeedbackScreen() {
   
     
-   const {tripFare,tripDistance,tripDuration,driverDetails,currentTripId,setTripDetails,isLoading,setIsLoading } = useRatingStore();
+  const {tripFare,tripDistance,tripDuration,driverDetails,currentTripId,setTripDetails,isLoading,setIsLoading,tripStatus } = useRatingStore();
 
     
     const bounceValue = useRef(new Animated.Value(height)).current;
@@ -161,9 +161,13 @@ export default function TripFeedbackScreen() {
           <View style={styles.contentContainer}>
           <View style={styles.header}>
           <RideStatusHeader 
-          title={t('your_ride_is_completed')}
-        
-            />
+            title={t('your_ride_is_completed')}
+          />
+          {tripStatus === 'DIVERGED' && (
+            <AdaptiveText style={{color: '#E57373', fontSize: 14, marginTop: 4, textAlign: 'center',fontFamily:Fonts.regular}}>
+              {t('trip_stopped_midway')}
+            </AdaptiveText>
+          )}
         </View>
         <View style={styles.dottedLine}></View>
         <View style={styles.Rideisnfo}>   
