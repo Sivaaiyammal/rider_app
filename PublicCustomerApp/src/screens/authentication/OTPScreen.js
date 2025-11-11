@@ -96,7 +96,7 @@ const OTPScreen = ({route}) => {
         showNotification('OTP Verified', 'OTP Verified Successfully', 'success');
       } else {
         if(data?.message.typeof === 'string'){  
-          showNotification('Failed', data.message, 'danger');
+          showNotification('Failed', "Invalid OTP", 'danger');
         }else{
           showNotification('Failed', "Something went wrong", 'danger');
         }

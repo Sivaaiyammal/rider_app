@@ -11,6 +11,7 @@ export const yourRidesStyles = StyleSheet.create({
         justifyContent: 'flex-start',
         backgroundColor: colors.white,
         gap: 10,
+        paddingTop: 10,
     },
     ridesContainerItems: {
         width: '100%',
@@ -53,9 +54,7 @@ export const yourRidesStyles = StyleSheet.create({
     ridesContainerItemRight: {
         flex:1,
         display: 'flex',
-        flexDirection: 'column',
-       
-      
+        flexDirection: 'column'
     },
     ridesContainerItemImgs: {
         position: 'relative',

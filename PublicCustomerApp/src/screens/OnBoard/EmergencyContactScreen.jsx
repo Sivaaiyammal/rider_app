@@ -80,7 +80,7 @@ export default function EmergencyContactScreenOverlay({ onClose }) {
           disabled={isProcessing}
           testID="save-emergency"
         >
-          {isProcessing ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>{t('add_contact')}</Text>}
+          <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>{t('add_contact')}</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -51,7 +51,7 @@ export default function EnhancedDateRangeBottomSheet({
   }, [visible, isDateRangeEnabled, isSameDay]);
 
   return (
-    <AnimatedBottomSheetWrapper onClose={onClose} zIndex={100000}>
+    <AnimatedBottomSheetWrapper onClose={onClose} zIndex={9999} overlay={false}>
       <View style={{ paddingHorizontal: 24, paddingVertical: 20 }}>
         <AdaptiveText style={{ fontSize: 16, fontFamily: Fonts.medium, color: colors.black, textAlign: 'center', marginBottom: 16 }} color={colors.black}>{title}</AdaptiveText>
           {/* Status Filter Section */}

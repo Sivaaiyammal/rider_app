@@ -47,10 +47,10 @@ const RideHistory = ({setScreen=false}) => {
 
 	return (
         <>
-        <NavBar withBg onBackPress={HandleBackBtn} title={t('your_rides')} paddingBottom={10} />
+        <NavBar withBg onBackPress={HandleBackBtn} title={t('your_rides')} paddingBottom={10} marginBottom={10} />
 		<View style={styles.container}>
             
-			<View style={styles.tabs}>
+			{/* <View style={styles.tabs}>
                 <Animated.View 
                     style={[
                         styles.slider, 
@@ -76,7 +76,7 @@ const RideHistory = ({setScreen=false}) => {
                         </Text>
                     </TouchableOpacity>
                 </View>
-			</View>
+			</View> */}
 
 			<Animated.View style={[styles.pager, { width: SCREEN_WIDTH * 2, transform: [{ translateX }] }]}>
 				<View style={{ width: SCREEN_WIDTH }}>
@@ -96,7 +96,8 @@ const styles = StyleSheet.create({
     container: { 
         flex: 1, 
         backgroundColor: '#ffffffff', 
-        width: '100%' 
+        width: '100%', 
+     
     },
     tabs: { 
         position: 'relative',
@@ -138,6 +139,7 @@ const styles = StyleSheet.create({
         zIndex: 0
     },
     pager: { 
+        
         flexDirection: 'row', 
         flex: 1 
     }
