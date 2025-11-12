@@ -1,5 +1,6 @@
 import {Text, TouchableOpacity, View} from 'react-native';
 import React, {useState, useEffect, useRef, useContext} from 'react';
+import {useTranslation} from 'react-i18next';
 
 import {loginStyles} from '../../styles/UserStyles';
 import OTPTextInput from 'react-native-otp-textinput';
@@ -17,6 +18,7 @@ import PropTypes from 'prop-types';
 import { GlobalContext } from '../../context/GlobalContext';
 import useRideMatching from '../../hooks/useRideMatching';
 import OTPInput from '../../components/Common/OTPInput';
+import AdaptiveText from '../../components/Common/AdaptiveText';
 // Utility function to mask phone number
 const maskPhoneNumber = (phoneNumber) => {
   if (!phoneNumber || phoneNumber.length < 5) return phoneNumber;
@@ -29,6 +31,7 @@ const maskPhoneNumber = (phoneNumber) => {
 };
 
 const OTPScreen = ({route}) => {
+  const {t} = useTranslation();
   const navigation = useNavigation();
   const {addListener} = useContext(GlobalContext);
   const { initializeSocket} = useRideMatching();
@@ -93,17 +96,17 @@ const OTPScreen = ({route}) => {
             routes: [{ name: 'HomeScreen' }],
           });
         }
-        showNotification('OTP Verified', 'OTP Verified Successfully', 'success');
+        showNotification(t('otp_verified'), t('otp_verified_successfully'), 'success');
       } else {
         if(data?.message.typeof === 'string'){  
-          showNotification('Failed', "Invalid OTP", 'danger');
+          showNotification(t('failed'), t('invalid_otp'), 'danger');
         }else{
-          showNotification('Failed', "Something went wrong", 'danger');
+          showNotification(t('failed'), t('something_went_wrong'), 'danger');
         }
       }
     } catch (error) {
       console.error('Error in handleVerificationSuccess:', error);
-      showNotification('Failed', 'Something went wrong', 'danger');
+      showNotification(t('failed'), t('something_went_wrong'), 'danger');
     }
   };
 
@@ -123,7 +126,7 @@ const OTPScreen = ({route}) => {
 
   const verifyOtp = async () => {
     if (otpInput.length === 0) {
-      showNotification('Please Verify OTP', 'Invalid Otp', 'danger');
+      showNotification(t('please_verify_OTP'), t('invalid_otp'), 'danger');
     } else {
       const fcmToken = await getFcmToken();
       const deviceImei = await DeviceInfo.getUniqueId().catch(error => {
@@ -159,10 +162,10 @@ const OTPScreen = ({route}) => {
   
   const handleResendSuccess = (data) => {
     if(data.success){
-      showNotification('OTP Resend', 'OTP Resend Successfully', 'success');
+      showNotification(t('otp_resend'), t('otp_resend_successfully'), 'success');
       
     }else{
-      showNotification('OTP Resend', "Failed to resend OTP", 'danger');
+      showNotification(t('otp_resend'), t('failed_to_resend_otp') , 'danger');
     }
   };
   const {mutate: requestOTPMutate} = requestOTPMutation(
@@ -204,12 +207,12 @@ const OTPScreen = ({route}) => {
         </TouchableOpacity>
       </View>
       
-      <Text style={[loginStyles.headerTxt, loginStyles.otpHeaderTxt]}>
-        One Time{'\n'}Password(OTP)
-      </Text>
-      <Text style={[loginStyles.headerContent, loginStyles.otpHeaderTxt]}>
-        An OTP has been sent to mobile number
-      </Text>
+      <AdaptiveText style={[loginStyles.headerTxt, loginStyles.otpHeaderTxt]}>
+        {t('one_time_password_otp')}
+      </AdaptiveText>
+      <AdaptiveText style={[loginStyles.headerContent, loginStyles.otpHeaderTxt]}>
+        {t('otp_sent_to_mobile')}
+      </AdaptiveText>
       <Text style={loginStyles.phoneTxt}>{maskPhoneNumber(loginPhoneNumber)}</Text>
       
 
@@ -242,10 +245,10 @@ const OTPScreen = ({route}) => {
       />
       </View>
       <TouchableOpacity disabled={isButtonDisabled} onPress={()=> isButtonDisabled ? null : resendOTP()}>
-      <Text style={loginStyles.resendOTP}>Resend OTP {isButtonDisabled ? `in ${formatTime(timer)}` : null}</Text>
+      <Text style={loginStyles.resendOTP}>{t('resend_otp')} {isButtonDisabled ? `${t('in')} ${formatTime(timer)}` : null}</Text>
       </TouchableOpacity>
       <TouchableOpacity style={loginStyles.otpBtn} onPress={() => verifyOtp()}>
-        <Text style={loginStyles.otptxt}>Verify OTP</Text>
+        <Text style={loginStyles.otptxt}>{t('verify_otp')}</Text>
       </TouchableOpacity>
     </View>
   );

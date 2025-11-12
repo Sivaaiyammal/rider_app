@@ -9,6 +9,7 @@ import {
   deleteAccount,
 } from '../EndPoints/EndPoints';
 import {showNotification} from '../../components/NotificationManger';
+import { t } from 'i18next';
 
 const queryClient = new QueryClient();
 
@@ -22,13 +23,13 @@ export const requestOTPMutation = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification('Login Failed', data.message, 'danger');
+        showNotification(t('login_failed'), t('something_went_wrong'), 'danger');
       }
     },
     onError: error => {
       showNotification(
-        `Login Failed - (${error.status})`,
-        error?.message,
+        t(`login_failed`),
+        t('something_went_wrong'),
         'danger',
       );
     },
@@ -44,13 +45,13 @@ export const testLogin = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification('Login Failed', data.message, 'danger');
+        showNotification(t('login_failed'), t('something_went_wrong'), 'danger');
       }
     },
     onError: error => {
       showNotification(
-        `Login Failed - (${error.status})`,
-        error?.message,
+        t('login_failed'),
+        t('something_went_wrong'),
         'danger',
       );
     },
@@ -68,13 +69,13 @@ export const verifyOTPMutation = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification('Verification Failed', data.message, 'danger');
+        showNotification(t('verification_failed'), t('some_error_occurred'), 'danger');
       }
     },
     onError: error => {
       showNotification(
-        `Verification Failed - (${error.status})`,
-        error?.message,
+        t('verification_failed'),
+        t(`some_error_occurred`),
         'danger',
       );
     },
@@ -91,15 +92,11 @@ export const profileUpdateMutations = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification('Registration Failed', data.message, 'danger');
+        showNotification(t('registration_failed'), t('something_went_wrong'), 'danger');
       }
     },
     onError: error => {
-      showNotification(
-        `Registration Failed - (${error.status})`,
-        error?.message,
-        'danger',
-      );
+      showNotification(t('registration_failed'), t('something_went_wrong'), 'danger');
     },
   });
 };
@@ -142,13 +139,13 @@ export const deleteAccountMutation = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification('Delete Account Failed', data.message, 'danger');
+        showNotification(t('delete_account_failed'), t('something_went_wrong') , 'danger');
       }
     },
     onError: error => {
       showNotification(
-        `Delete Account Failed - (${error.status})`,
-        error?.message,
+        t(`delete_account_failed`),
+        t('something_went_wrong'),
         'danger',
       );
     },

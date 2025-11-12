@@ -20,11 +20,13 @@ export async function findRoute(points) {
         locations: latlngs,
         units: 'kilometers',
     };
+    console.log("Route Request Object:", jsonObject);
     
     try {
         const jsonString = JSON.stringify(jsonObject);
         const encodedData = encodeURIComponent(jsonString);
         const url = `${Config.ROUTE_API_URL}?data=${encodedData}&access_token=${Config.NE_ACCESS_TOKEN}`;
+        console.log("Route Request URL:", url);
 
     
         
@@ -40,6 +42,7 @@ export async function findRoute(points) {
         
         
         const routeData = await response.json();
+        console.log("Route Response Data:", JSON.stringify(routeData));
         return routeData;
     } catch (error) {
         console.error("Error fetching route:", error);

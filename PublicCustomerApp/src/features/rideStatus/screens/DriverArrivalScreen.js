@@ -1,5 +1,5 @@
         import React, { useState,useEffect     } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, ActivityIndicator } from 'react-native';
+        import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, ActivityIndicator, Linking, Platform } from 'react-native';
 import PropTypes from 'prop-types';
 import { Fonts, colors } from '../../../constants/constants';
 import { getVehicleImage } from '../types/vehicleImd';
@@ -83,8 +83,67 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
 
 
 
-
   
+  /**
+   * Attempts to initiate a phone call to the driver with platform specific behaviour.
+   * - iOS: uses telprompt (fallback to tel) so user gets confirmation sheet.
+   * - Android: uses tel scheme directly.
+   * - Sanitises phone number, strips spaces, brackets, dashes.
+   * - If masked calling feature (API) is desired, keep existing handleCallDriver for backend initiation.
+   */
+  const makeCallIntent = async () => {
+    if (isCallingDriver) return; // prevent spamming
+    const passengerNumber = userdetails?.phone;
+    const driverNumberRaw = phone;
+
+    if (!passengerNumber || !driverNumberRaw) {
+      showNotification(t('error'), t('unable_to_place_call'),'error');
+      return;
+    }
+
+    // Basic sanitisation – keep leading + for international format
+    const driverNumber = driverNumberRaw.replace(/[^+\d]/g, '');
+    if (driverNumber.length < 5) { // arbitrary minimal length check
+      showNotification(t('error'), t('invalid_driver_phone_number'),'error');
+      return;
+    }
+
+    try {
+      setIsCallingDriver(true);
+
+      // Optionally trigger masked call API if required by business logic
+      // If masking is mandatory, uncomment below and remove direct dial fallback on success.
+      // const bodyData = { from: passengerNumber, to: driverNumber };
+      // const makeCall = await makeMaskedCallToDriver(bodyData);
+      // if (!makeCall?.success) {
+      //   showNotification(t('error'), t('error_in_making_call_to_driver'),'error');
+      //   return;
+      // }
+
+      // Construct URL
+      const scheme = Platform.OS === 'ios' ? 'telprompt:' : 'tel:';
+      const url = `${scheme}${driverNumber}`;
+      const canOpen = await Linking.canOpenURL(url);
+      if (!canOpen) {
+        // Fallback: try plain tel on iOS if telprompt failed.
+        if (Platform.OS === 'ios' && scheme === 'telprompt:') {
+          const fallbackUrl = `tel:${driverNumber}`;
+          const fallbackOk = await Linking.canOpenURL(fallbackUrl);
+          if (fallbackOk) {
+            await Linking.openURL(fallbackUrl);
+            return;
+          }
+        }
+        showNotification(t('error'), t('unable_to_place_call'),'error');
+        return;
+      }
+      await Linking.openURL(url);
+    } catch (error) {
+      showNotification(t('error'), t('error_in_making_call_to_driver'),'error');
+    } finally {
+      setIsCallingDriver(false);
+    }
+  };
 
   const handleCallDriver = async () => {
 
@@ -249,7 +308,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
       {/* Action buttons */}
       <View style={styles.actionRow}>
      
-        <TouchableOpacity style={[styles.callBtn, isCallingDriver && { opacity: 0.7 }]} onPress={handleCallDriver} disabled={isCallingDriver}>
+        <TouchableOpacity style={[styles.callBtn, isCallingDriver && { opacity: 0.7 }]} onPress={makeCallIntent} disabled={isCallingDriver}>
           {isCallingDriver ? (
             <ActivityIndicator size="small" color={colors.white} />
           ) : (

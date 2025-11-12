@@ -87,12 +87,19 @@ export const loginStyles = StyleSheet.create({
   },
   otpHeaderTxt: {
     textAlign: 'center',
-    marginTop: 20
+    marginTop: 20,
+    width: '90%',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    fontSize: 24,
+    color: colors.black,
   },
   headerContent: {
     fontFamily: Fonts.light,
     fontSize: 16,
-    color: colors.black
+    color: colors.black,
+    
+    textAlign: 'center',
   },
   phoneTxt: {
     fontFamily: Fonts.medium,

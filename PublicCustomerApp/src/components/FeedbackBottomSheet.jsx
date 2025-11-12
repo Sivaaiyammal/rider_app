@@ -37,18 +37,18 @@ OptionItem.propTypes = {
 // Centralized field generator (labels/placeholders via i18n)
 const buildFields = (t, screenName) => ([
   ...(screenName && String(screenName).toLowerCase().includes('search') ? [
-    { name: 'searchIssue', label: t('feedback.search_issue_label'), type: 'multiline', placeholder: t('feedback.search_issue_placeholder') },
+    { name: 'searchIssue', label: t('feedback.search_issue_label'), type: 'multiline', placeholder: t('feedback.search_issue_placeholder'), required: true },
   ] : []),
   ...(screenName && String(screenName).toLowerCase().includes('picklocation') ? [
-    { name: 'pickLocationIssue', label: t('feedback.pick_location_issue_label'), type: 'multiline', placeholder: t('feedback.pick_location_issue_placeholder') },
+    { name: 'pickLocationIssue', label: t('feedback.pick_location_issue_label'), type: 'multiline', placeholder: t('feedback.pick_location_issue_placeholder'), required: true },
   ] : []),
   ...(screenName && (String(screenName).toLowerCase().includes('bookride') || String(screenName).toLowerCase().includes('planride')) ? [
-    { name: 'tripIssue', label: t('feedback.trip_issue_label'), type: 'multiline', placeholder: t('feedback.trip_issue_placeholder') },
+    { name: 'tripIssue', label: t('feedback.trip_issue_label'), type: 'multiline', placeholder: t('feedback.trip_issue_placeholder'), required: true },
   ] : []),
-  { name: 'goodThings', label: t('feedback.good_things_label'), type: 'multiline', placeholder: t('feedback.good_things_placeholder') },
-  { name: 'badThings', label: t('feedback.bad_things_label'), type: 'multiline', placeholder: t('feedback.bad_things_placeholder') },
-  { name: 'improvements', label: t('feedback.improvements_label'), type: 'multiline', placeholder: t('feedback.improvements_placeholder') },
-  { name: 'issueMessage', label: t('feedback.issue_label'), type: 'multiline', placeholder: t('feedback.issue_placeholder') },
+  { name: 'goodThings', label: t('feedback.good_things_label'), type: 'multiline', placeholder: t('feedback.good_things_placeholder'), required: true },
+  { name: 'badThings', label: t('feedback.bad_things_label'), type: 'multiline', placeholder: t('feedback.bad_things_placeholder'), required: true },
+  { name: 'improvements', label: t('feedback.improvements_label'), type: 'multiline', placeholder: t('feedback.improvements_placeholder'), required: true },
+  { name: 'issueMessage', label: t('feedback.issue_label'), type: 'multiline', placeholder: t('feedback.issue_placeholder'), required: true },
   { name: 'contactEmail', label: t('feedback.contact_email_label'), type: 'email', placeholder: t('feedback.email_placeholder'), autoCapitalize: 'none' },
   { name: 'consentEmail', label: t('feedback.consent_text'), type: 'toggle', defaultValue: false },
 ]);
@@ -130,16 +130,29 @@ const FeedbackBottomSheet = () => {
   }, [isVisible, fields]);
 
   const onSubmitPress = async () => {
-    // At least one content field must be provided
-    const contentFields = ['goodThings', 'badThings', 'improvements', 'issueMessage'];
-    const hasAnyContent = contentFields.some((k) => {
-      const v = values[k];
-      return v && typeof v === 'string' && v.trim().length > 0;
+    const visibleFields = fields.filter(f => {
+      if (f.name === 'issueMessage') {
+        return showGenericIssue;
+      }
+      if (['searchIssue', 'pickLocationIssue', 'tripIssue'].includes(f.name)) {
+        const lowerScreenName = typeof screenName === 'string' ? String(screenName).toLowerCase() : '';
+        if (f.name === 'searchIssue') return lowerScreenName.includes('search');
+        if (f.name === 'pickLocationIssue') return lowerScreenName.includes('picklocation');
+        if (f.name === 'tripIssue') return lowerScreenName.includes('bookride') ;
+      }
+      return true;
     });
-    if (!hasAnyContent) {
-      // eslint-disable-next-line no-alert
-      alert(t('feedback.validation_any_message'));
-      return;
+
+    for (const field of visibleFields) {
+      console.log("field",field)
+      if (field.required) {
+        const value = values[field.name];
+        if (!value || (typeof value === 'string' && value.trim().length === 0)) {
+          // eslint-disable-next-line no-alert
+          alert(t('fill_all_required_fields'));
+          return;
+        }
+      }
     }
 
     const trimmedEmail = typeof values.contactEmail === 'string' ? values.contactEmail.trim() : '';

@@ -39,7 +39,7 @@ export default function EmergencyContactScreenOverlay({ onClose }) {
   const skipAndProceed = async () => {
     if (isProcessing) return;
     try {
-      setIsProcessing(true);
+   
       await storeViewdEmergencyContactScreen();
       onClose();
     } finally {
@@ -56,12 +56,12 @@ export default function EmergencyContactScreenOverlay({ onClose }) {
       </View>
       <View style={styles.content}>
         <Text style={styles.heading}>{t('emergency.emergency_contact')}</Text>
-        <Text style={styles.title}>{t('emergency.add_emergency_contact_title')}</Text>
-        <Text style={styles.description}>{t('emergency_contact_description')}</Text>
+       
+        <Text style={styles.description}>{t('emergency.description')}</Text>
         <View style={styles.benefits}>
-          <Text style={styles.benefitItem}>• Stay safer with a trusted contact on file</Text>
-          <Text style={styles.benefitItem}>• Quick help in emergencies</Text>
-          <Text style={styles.benefitItem}>• You can manage contacts anytime from Menu → Emergency Contact</Text>
+          <Text style={styles.benefitItem}>• {t('emergency.benefit_1')}</Text>
+          <Text style={styles.benefitItem}>• {t('emergency.benefit_2')}</Text>
+          <Text style={styles.benefitItem}>• {t('emergency.benefit_3')}</Text>
         </View>
       </View>
       <View style={styles.buttons}>
@@ -71,7 +71,7 @@ export default function EmergencyContactScreenOverlay({ onClose }) {
           disabled={isProcessing}
           testID="skip-emergency"
         >
-          {isProcessing ? <ActivityIndicator color="#333" /> : <Text style={styles.skipText}>{t('skip')}</Text>}
+          {isProcessing ? <ActivityIndicator color="#333" /> : <Text style={styles.skipText}>{t('skip_for_now')}</Text>}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -80,7 +80,11 @@ export default function EmergencyContactScreenOverlay({ onClose }) {
           disabled={isProcessing}
           testID="save-emergency"
         >
-          <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>{t('add_contact')}</Text>
+          {isProcessing ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.saveText}>{t('add_contact')}</Text>
+          )}
         </TouchableOpacity>
       </View>
     </View>
@@ -104,7 +108,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   heading: {
-    fontSize: 12,
+    fontSize: 20,
     fontFamily: Fonts.semi_bold,
     color: '#111',
     textAlign: 'center',
@@ -134,7 +138,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bold,
   },
   description: {
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: Fonts.regular,
     color: '#666',
     marginBottom: 12,
@@ -142,16 +146,18 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   benefits: {
+    paddingHorizontal: 10,
     marginTop: 4,
     marginBottom: 8,
     alignSelf: 'center',
     width: '100%',
     maxWidth: 360,
+    gap: 5,
   },
   benefitItem: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: Fonts.regular,
-    color: '#111',
+    color: '#353535ff',
     marginTop: 4,
     textAlign: 'left',
     lineHeight: 20,
@@ -187,6 +193,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     alignItems: 'center',
     marginHorizontal: 6,
+    alignItems: 'center',
   },
   skipBtn: {
     backgroundColor: '#e5e7eb',

@@ -145,7 +145,7 @@ const LoginScreen = () => {
               placeholder={t('mobile_number')}
               keyboardType="number-pad"
               onChangeText={handleChange}
-              onFocus={handlePhoneInputFocus}
+              // onFocus={handlePhoneInputFocus}
               value={phoneNumber}
               placeholderTextColor={colors.grey_xdark}
               maxLength={10}

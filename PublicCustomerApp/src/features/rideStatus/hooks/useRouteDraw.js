@@ -193,16 +193,21 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 		  return [];
 		}
 		
-		const coordinates = await routeData.trip.legs.map(leg => {
-		  if (!leg.shape) {
-			return [];
-		  }
+		// const coordinates = await routeData.trip.legs.map(leg => {
+		//   if (!leg.shape) {
+		// 	return [];
+		//   }
 		  
-		  const decoded = polyline.decode(leg.shape, 6);
-		  return decoded.map(([lat, lon]) => [lon, lat]);
-		}).flat();
-		
-		
+		//   const decoded = polyline.decode(leg.shape, 6);
+		//   return decoded.map(([lat, lon]) => [lon, lat]);
+		// }).flat();
+
+		console.log("routeData",routeData?.trip?.legs[0]?.shape)
+		console.log("decoded",polyline.decode(routeData.trip.legs[0].shape, 6))
+
+		const coordinates = routeData?.trip?.legs[0]?.shape ? polyline.decode(routeData.trip.legs[0].shape, 6).map(([lat, lon]) => [lon, lat]) : [];
+
+
 		currentPolylineRef.current = coordinates;
 		setIsDiverted(false)
 		const totalRemaining = computePolylineLengthMeters(coordinates);

@@ -31,6 +31,8 @@ import PropTypes from 'prop-types';
 import AdaptiveText from '../components/Common/AdaptiveText';
 import { findRoute } from '../controllers/NEMap/findRoute';
 import polyline from '@mapbox/polyline';
+import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore';
+
 const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation} = useMapStore();
@@ -42,6 +44,11 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   const { t } = useTranslation();
   const [isConfirming, setIsConfirming] = useState(false);
   const searchRef = useRef(new SearchAPI());
+  const { 
+    rideStartLocation, 
+    rideEndLocation, 
+    rideWayPoints 
+  } = useRideBookingLocationStore();
   const getLastLatLngfromPolyLine = useCallback(async (polylineData) => {
     console.log("polylineData",polylineData)
     const encodedPolyline = polylineData.trip.legs?.[0].shape || null;
@@ -119,6 +126,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
 
   const centerMap = async ()=>{
+    if(!location) return;
     setPickedLocation({
       latitude:location[1], 
       longitude: location[0],
@@ -159,6 +167,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         });
       }, 100);
     } else if (defaultLocation){
+      if(!defaultLocation.location) return;
       setPickedLocation({
         latitude:defaultLocation.location[1],
         longitude:defaultLocation.location[0],
@@ -173,6 +182,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         zoom: 25,
       });
     } else {
+      if(!location) return;
       setPickedLocation({
         latitude:location[1], 
         longitude: location[0],
@@ -310,12 +320,26 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                 return;
               }
         
-              const fromLat = location?.[1];
-              const fromLon = location?.[0];
+              let fromLat = null;
+              let fromLon = null;
+
+              console.log('rideStartLocation,rideEndLocation,rideWayPoints',rideStartLocation,rideEndLocation,rideWayPoints);
+              
+              if(rideStartLocation){
+                console.log('rideStartLocation',rideStartLocation);
+                 fromLat = rideStartLocation?.latitude;
+                 fromLon = rideStartLocation?.longitude;
+              }
+              if(rideEndLocation && locationType==="END_LOCATION"){
+                console.log('rideEndLocation',rideEndLocation);
+                 fromLat = rideEndLocation?.latitude;
+                 fromLon = rideEndLocation?.longitude;
+              }
+           
               const toLat = pickedLocation?.latitude;
               const toLon = pickedLocation?.longitude;
-              if (fromLat == null || fromLon == null || toLat == null || toLon == null) {
-                Alert.alert('Invalid location', 'Current or selected location is missing.');
+              if (fromLat == null || fromLon == null ) {
+                onPickLocationResultCallback(pickedLocation, locationType);
                 return;
               }
               const toRadians = (degrees) => (degrees * Math.PI) / 180;
@@ -331,7 +355,9 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
               const distanceMeters = R * c;
               const isSameLocation = distanceMeters < 30; // treat <30m as same location
               if (isSameLocation) {
-                Alert.alert('Same location', 'Current and selected location are the same.');
+                const title = t('same_location_title', { defaultValue: 'Locations too close' });
+                const message = t('same_location_message', { defaultValue: 'Pickup and drop-off locations are very close. Please choose a farther location.' });
+                Alert.alert(title, message);
                 return;
               }
               const points = [

@@ -179,7 +179,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   const debouncedSearchCallback = useDebouncedAPICall((item, type) => {
     HandsetRideLocation(item, type);
     goBack();
-    if(type !== LocationTypes.START_LOCATION){
+    if(type !== LocationTypes.START_LOCATION && rideStartLocation && rideEndLocation){
       setStackScreen('BookRideScreen',{})
     }
   }, 300);
@@ -237,7 +237,9 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
 
   const handleHistoryLocationClick=(item)=>{
     debouncedHistoryCallback(item)
+    if(rideStartLocation && rideEndLocation){
     setStackScreen('BookRideScreen',{})
+    }
 
   }
 

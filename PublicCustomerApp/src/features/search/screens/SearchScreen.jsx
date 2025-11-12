@@ -493,7 +493,9 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
             ) : (!hasSearchResults || (onSearchResults && onSearchResults.length === 0 ) )? (
               <View style={styles.noResultsContainer}>
                 <Ionicons name="search-outline" size={40} color={colors.black} />
-                <Text style={styles.noResultsText}>No results found</Text>
+                <Text style={styles.noResultsText}>{t('no_results_found')}</Text>
+
+                <Text style={styles.alternateFound}>{t('if_you_cannot_find_place_through_search_choose_place_by_mark_on_the_map')}</Text>
               </View>
             ) : (
                 <SearchResultContainer    
@@ -519,7 +521,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
         )}
         
        { !(searchTxt.trim() == '' || stateVector ) && ( <TouchableOpacity style={styles.bottomBtn} onPress={()=>handleLocateOnMap()}>
-          <Entypo name="location" size={18} color={colors.black} />
+          <Entypo name="location" size={18} color={colors.white} />
           <Text style={styles.bottomBtnTxt}>{t('locate_on_map')}</Text>
         </TouchableOpacity>
        )}
@@ -723,6 +725,14 @@ const styles = StyleSheet.create({
     color: colors.black,
     marginTop: 10,
   },
+  alternateFound: {
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: colors.grey_dark,
+    marginTop: 15,
+    textAlign: 'center',
+    paddingHorizontal: 20,
+  },
   regionModalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -781,13 +791,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
-    backgroundColor: colors.white,
+    backgroundColor: colors.black,
     borderTopWidth: 1,
     borderTopColor: colors.grey_light,
   },
   bottomBtnTxt: {
     fontFamily: Fonts.regular,
-    color: colors.black,
+    color: colors.white,
     fontSize: 16,
     marginLeft: 15,
   },

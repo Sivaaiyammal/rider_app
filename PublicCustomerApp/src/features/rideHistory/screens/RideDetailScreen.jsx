@@ -17,6 +17,7 @@ import { utils } from '../../../utils/Utils';
 import PropTypes from 'prop-types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import { openFeedback } from '../../../utils/feedback';
 
 const RideDetailScreen = ({ TripData }) => {
   console.log("TripData",TripData)
@@ -39,6 +40,34 @@ const RideDetailScreen = ({ TripData }) => {
   const handleSupportPress = () => {
     // Handle support button press
     
+  };
+
+  const onFeedbackPress = () => {
+    try {
+      const stops = Array.isArray(rideData?.stops) ? rideData.stops : [];
+      const startStop = stops.length > 0 ? stops[0] : undefined;
+      const endStop = stops.length > 0 ? stops[stops.length - 1] : undefined;
+      const pickupCoords = startStop?.location; // expected [lon, lat]
+      const dropCoords = endStop?.location; // expected [lon, lat]
+      const distanceKm = typeof rideData?.finalDistance === 'number' ? String(rideData.finalDistance) : '';
+      const tripId = rideData?.rideId;
+      const estimatedFare = rideData?.fareDetails?.fare || rideData?.estimatedFare;
+
+      openFeedback({
+        screenName: 'RideStatus',
+        initialValues: {
+          tripId,
+          tripStartName: startStop?.address || '',
+          tripEndName: endStop?.address || '',
+          tripDistanceKm: distanceKm,
+          pickupCoords,
+          dropCoords,
+          estimatedFare: estimatedFare || '',
+        },
+      });
+    } catch (e) {
+      // silent fail
+    }
   };
 
   const animateIn = () => {
@@ -139,6 +168,13 @@ const RideDetailScreen = ({ TripData }) => {
           totalDuration={rideData.finalDuration } 
           totalFare={rideData.fareDetails?.fare} 
         />
+        
+        </View>
+        <View style={[{backgroundColor:'transparent',elevation:0,shadowOpacity:0,justifyContent:'center',alignItems:'center'}]}>
+        <TouchableOpacity style={styles.feedbackButton} onPress={onFeedbackPress}>
+          <MaterialIcons name="feedback" size={20} color={colors.white} />
+          <Text style={styles.feedbackButtonText}>{t('give_feedback')}</Text>
+        </TouchableOpacity>
         </View>
        {/* {isFareCalculated && <PaymentDetails 
           finalFare={rideData.fareDetails?.fare || rideData.estimatedFare} 
@@ -185,8 +221,12 @@ const RideDetailScreen = ({ TripData }) => {
           <FontAwesome5 name="file-invoice" size={20} color={colors.white} />
           <Text style={styles.invoiceButtonText}>{t('show_invoice')}</Text>
         </TouchableOpacity>
+        {/* Feedback Button */}
+        
         </View>
         }
+
+
       </ScrollView>
       
       {/* Overlay layers rendered on top with zIndex */}
@@ -327,6 +367,22 @@ const styles = StyleSheet.create({
     flex:1
   },
   invoiceButtonText: {
+    fontFamily: Fonts.medium,
+    fontSize: 16,
+    color: colors.white,
+  },
+  feedbackButton:{
+    backgroundColor: colors.blue,
+    borderRadius: 30,
+    padding: 16,
+    marginVertical: 10,
+    alignItems: 'center',
+    flexDirection:'row',
+    justifyContent:'center',
+    width:"50%",
+    gap:10
+  },
+  feedbackButtonText:{
     fontFamily: Fonts.medium,
     fontSize: 16,
     color: colors.white,

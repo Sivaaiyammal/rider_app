@@ -46,6 +46,7 @@ import SearchAPI from '../controllers/NEMap/Search';
 import { useNavigation } from '@react-navigation/native';
 import { checkFineLocationPermissions, isSystemLocationEnabled, openSystemLocationSettings } from '../controllers/PermissionHandler';
 import EmergencyHomeScreen from '../features/emergencyContact/screens/EmergencyHomeScreen';
+import { CommonActions } from '@react-navigation/native';
 import useRideMatching from '../hooks/useRideMatching';
 import TrackingTestScreen from './TrackingTestScreen';
 import { useNetwork } from '../context/NetworkContext';
@@ -60,6 +61,7 @@ import EmergencyContactScreenOverlay from './OnBoard/EmergencyContactScreen.jsx'
 import { checkUpdateStatus } from '../components/UpdateChecker';
 import UpdateOverlay from '../components/UpdateOverlay';
 import OverdueTripModal from '../components/OverdueTripModal';
+import { log } from '@react-native-firebase/crashlytics';
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -331,6 +333,24 @@ const Home = () => {
             return;
           }
           
+        }
+
+        if(!(Response?.userStats)){ 
+
+          logout();
+          return;
+
+        }
+
+        if(Response?.userStats?.name == ""){
+          console.log("Navigate to Registration Screen")
+          navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: 'RegisterationScreen' }],
+                }),
+              );  
+
         }
         
         if(Response?.scheduleTrips && Response?.scheduleTrips?.length > 0){
