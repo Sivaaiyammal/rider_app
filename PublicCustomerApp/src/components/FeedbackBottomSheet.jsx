@@ -8,6 +8,7 @@ import { Fonts } from '../constants/constants';
 import { colors } from '../constants/constants';
 import { useTranslation } from 'react-i18next';
 import { submitAppFeedback } from '../API/EndPoints/EndPoints';
+import { showNotification } from './NotificationManger';
 import { utils } from '../utils/Utils';
 
 const FieldLabel = ({ label, required }) => (
@@ -289,8 +290,15 @@ const FeedbackBottomSheet = () => {
         return acc;
       }, {});
 
-      console.log("payload",payload)
-      await submitAppFeedback(payload);
+      console.log('payload', payload);
+      const response = await submitAppFeedback(payload);
+      showNotification(
+        t('success'),
+        response?.message || t('feedback_submitted_successfully'),
+        'success',
+        3000,
+        'toast'
+      );
       sheetRef.current?.close();
     } catch (e) {
       // eslint-disable-next-line no-alert

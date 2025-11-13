@@ -125,7 +125,7 @@ const SearchResultContainer = ({ data, onItemPress }) => {
 
         <View style={styles.rightContent}>
           {(!!category) && <Text numberOfLines={1} style={styles.categoryChip}>{category}</Text>}
-          {!!distance && <Text style={styles.distanceText}>{distance}</Text>}
+          {/* {!!distance && <Text style={styles.distanceText}>{distance}</Text>} */}
         </View>
       </TouchableOpacity>
     );

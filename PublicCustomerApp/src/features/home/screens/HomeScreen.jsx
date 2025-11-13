@@ -357,7 +357,7 @@ const MapScreen = () => {
          height: 4,
        }}>
        
-            <View style={{marginTop:60}}>
+            <View style={{marginTop:50}}>
               {/* {<ScheduledTripBanner/>} */}
               <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
               <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false} />

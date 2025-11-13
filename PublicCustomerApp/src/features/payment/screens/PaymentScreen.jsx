@@ -1,5 +1,5 @@
 import React, { useState ,useEffect, useRef } from 'react';
-import { ScrollView, View, StyleSheet ,Text,TouchableOpacity, ActivityIndicator, Animated, Dimensions } from 'react-native';
+import { ScrollView, View, StyleSheet ,Text,TouchableOpacity, ActivityIndicator, Animated, Dimensions, BackHandler, Platform } from 'react-native';
 import FareHeader from '../../rideHistory/components/FareHeader';
 import TripMetaInfo from '../../rideHistory/components/TripMetaInfo';
 import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
@@ -7,6 +7,7 @@ import TripStats from '../../rideHistory/components/TripStats';
 import AddressContainer from '../../../components/Trips/AddressContainer';
 import {Fonts} from '../../../constants/constants';
 import { useTranslation } from 'react-i18next'; 
+import { useFocusEffect } from '@react-navigation/native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { colors } from '../../../constants/constants';
 import InvoiceScreen from '../../rideHistory/screens/InvoiceScreen';
@@ -91,6 +92,27 @@ const PaymentScreen = () => {
       console.log(driverDetails,"driverDetails")
     }
   },[driverDetails])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const handleBackPress = () => {
+        if (showInvoice) {
+          handleInvoiceClose();
+          return true;
+        }
+
+        if (Platform.OS === 'android') {
+          BackHandler.exitApp();
+          return true;
+        }
+
+        return false;
+      };
+
+      const backHandlerSub = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+      return () => backHandlerSub.remove();
+    }, [showInvoice, handleInvoiceClose]),
+  );
 
   if(isLoading){
     return (
@@ -221,8 +243,11 @@ const PaymentScreen = () => {
         } 
       } else {
         setIsProcessingPayment(false);
+        showNotification(t('make_online_payment_failed'), t('please_try_again'),"error");
       }
     } catch (err) {
+        showNotification(t('make_online_payment_failed'), t('please_try_again'),"error");
+    
       setIsProcessingPayment(false);
     }
   }

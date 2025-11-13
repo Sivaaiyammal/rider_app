@@ -618,5 +618,6 @@
     "give_feedback": "Give Feedback"
   ,
   "same_location_title": "Locations too close",
-  "same_location_message": "Pickup and drop-off locations are very close. Please choose a farther location."
+  "same_location_message": "Pickup and drop-off locations are very close. Please choose a farther location.",
+  "make_online_payment_failed": "Failed to make online payment."
 }

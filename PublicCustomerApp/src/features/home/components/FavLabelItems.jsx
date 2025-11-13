@@ -10,9 +10,10 @@ import useUserInfoStore from '../../../store/useUserInfoStore';
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import AddFavIcon from '../../../assets/icons/AddFavIcon.svg';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 
-const FavLabelItems = React.memo(({onLabelPress,enableAdd=true}) => {
+const FavLabelItems = React.memo(({onLabelPress,enableAdd=true,onLocationAdd=null}) => {
   const { t } = useTranslation();
   const responsiveMaxWidth = width * 0.8;
   const {userFavPlaces} = useUserInfoStore();
@@ -30,6 +31,18 @@ const FavLabelItems = React.memo(({onLabelPress,enableAdd=true}) => {
   
   return (
     <View style={styles.FavouriteAddressContainer}> 
+      {onLocationAdd && (
+        <TouchableOpacity  style={styles.FavouriteAddressItem} onPress={()=>onLocationAdd()}>
+            <View style={[styles.FavouriteAddressItemIcon,{backgroundColor:colors.grey_xlight, borderRadius:30, padding:10,marginLeft:5}]}>
+               <Icon name="location-on" size={24} color={colors.dark} />
+            </View>
+           <View  style={styles.FavouriteAddressItemTextContainer}>
+           <AdaptiveText style={styles.FavouriteAddressItemText}>{t('locate_on_map')}</AdaptiveText>
+           
+       </View>
+       </TouchableOpacity>
+
+      )}
       {userFavPlaces?.length > 0 && <AdaptiveText style={styles.FavouriteAddressContainerTitle}>{t('favorite_places')}</AdaptiveText>}
       {hasNoFavorites && enableAdd ? (
        

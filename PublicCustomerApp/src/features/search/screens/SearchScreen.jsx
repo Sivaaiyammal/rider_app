@@ -190,6 +190,8 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           category: [],
         };
 
+        console.log("Search Params:", searchParams);
+
         setIsLoading(true);
 
         const searchResults = await performSearch(searchParams);
@@ -507,13 +509,13 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           </View>
         ) : (
           <>
-           <TouchableOpacity style={styles.bottomBtnSearch} onPress={()=>handleLocateOnMap()}>
-                <Entypo name="location" size={18} color={colors.white} />
-                <Text style={[styles.bottomBtnTxt, { color: colors.white }]}>{t('locate_on_map')}</Text>
-              </TouchableOpacity>
+           {/* <TouchableOpacity style={styles.bottomBtnSearch} onPress={()=>handleLocateOnMap()}>
+                <Entypo name="location" size={18} color={colors.black} />
+                <Text style={[styles.bottomBtnTxt, { color: colors.black }]}>{t('locate_on_map')}</Text>
+              </TouchableOpacity> */}
           <ScrollView style={{paddingHorizontal:5, flex: 1}} contentContainerStyle={{paddingBottom: height*0.2}}>
              
-            <FavLabelItems style={{marginBottom:10}} onLabelPress={handleFavouriteLocationPress} enableAdd={false}/>
+            <FavLabelItems style={{marginBottom:10}} onLabelPress={handleFavouriteLocationPress} enableAdd={false} onLocationAdd={handleLocateOnMap} />
             <HistoryCard style={{marginBottom:10}} selectCallback={onLocationNamePress}/>
 
           </ScrollView>
@@ -615,12 +617,13 @@ const styles = StyleSheet.create({
     
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.black,
+    backgroundColor: colors.grey_xdark,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 20,
+    borderRadius: 10,
     alignSelf: 'center',
-    marginVertical: 10,
+    marginVertical: 5,
+    
   },
   searchContainer: {
     flex: 1,

@@ -380,11 +380,11 @@ export const SearchResultV2 = (props) => {
                 ) : item.sectionType && title !== "Full_search" && title !== "Fast_match" && getSectionTypeDisplay(item.sectionType) !== '' && (
                   <Text style={styles.categoryText}>{getSectionTypeDisplay(item.sectionType)}</Text>
                 )}
-                {item.distance ? (
+                {/* {item.distance ? (
                   <Text style={styles.itemSubText}>
                     {utils.metersToKilometers(item.distance).toFixed(1)} km
                   </Text>
-                ) : null}
+                ) : null} */}
               </View>
             </View>
           </TouchableOpacity>

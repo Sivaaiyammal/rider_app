@@ -224,6 +224,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     minHeight: 40,
     marginTop: 4,
+    color: '#222',
+    fontFamily: Fonts.regular,
   },
 });
 

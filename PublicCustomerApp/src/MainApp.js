@@ -19,6 +19,8 @@ import { useNearbyDrivers } from './hooks/useNearbyDrivers';
 import { useStackScreenStore } from './store/useStackScreenStore';
 // import { useNearbyPollingControl } from './store/useNearByDriverPollingControl';
 import FeedbackBottomSheet from './components/FeedbackBottomSheet';
+import tripAlert from './controllers/TripAlert';
+import { log } from '@react-native-firebase/crashlytics';
 
 
 if (!firebase.apps.length) {
@@ -59,10 +61,24 @@ const MainAppContent = () => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       const notification = remoteMessage?.notification;
       const data = remoteMessage?.data || {};
-      const title = notification?.title ?? data?.title ?? 'Notification';
+      const title = data?.title ?? 'Notification';
       const body = notification?.body ?? data?.message ?? data?.body ?? '';
+
+      console.log('Foreground message received:', data);
+
+      const clearedtxt = title?.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, '').trim();
+      console.log('clearedtxt',clearedtxt);
+      console.log(clearedtxt , '===','driver assigned');
+      console.log(clearedtxt == 'driver assigned');
+    
+      if (clearedtxt == 'driver assigned') {
+        console.log('Playing trip alert sound');
+        tripAlert.playAlertSound()
+      }
       PushNotifications.sendNotification(body, title, data);
-    });
+    }); 
+
+
 
     messaging()
     .getInitialNotification()
@@ -71,9 +87,25 @@ const MainAppContent = () => {
     });
 
     // Listen for background messages
+   
+
+
     messaging().setBackgroundMessageHandler(async remoteMessage => {
-      console.log('Message handled in the background!', remoteMessage);
-    });
+      console.log('Message handled in the background!',remoteMessage);
+      // await PushNotifications.updateDataFromRequest(remoteMessage);
+      const data = remoteMessage?.data || {};
+       const title = data?.title ?? 'Notification';
+        const clearedtxt = title?.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, '').trim();
+      console.log('clearedtxt',clearedtxt);
+      console.log(clearedtxt , '===','driver assigned');
+      console.log(clearedtxt == 'driver assigned');
+    
+      if (clearedtxt == 'driver assigned') {
+        console.log('Playing trip alert sound');
+        tripAlert.playAlertSound()
+      }
+    })
+
 
     messaging()
       .getToken()

@@ -13,6 +13,7 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import com.virtualmaze.services_core.utils.NEApiServices
+import com.virtualmaze.prcustomer.notificationSound.PlaySoundPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -22,6 +23,7 @@ class MainApplication : Application(), ReactApplication {
             PackageList(this).packages.apply {
               add(com.virtualmaze.prcustomer.NeNativePackage())
               add(com.virtualmaze.prcustomer.tracking.LocationTrackingPackage())
+              add(PlaySoundPackage());
             }
 
         override fun getJSMainModuleName(): String = "index"
