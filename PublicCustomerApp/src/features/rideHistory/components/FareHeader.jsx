@@ -5,7 +5,7 @@ import { colors, Fonts } from '../../../constants/constants';
 import { ImageBackground } from 'react-native';
 import rideFareBackground from "../../../assets/image/rideFareBackground.webp"
 
-const FareHeader = ({ fare = '₹117.50', RideStatus = false }) => {
+const FareHeader = ({ fare = '₹117.50', RideStatus = false , hideFare = false }) => {
   const { t } = useTranslation();
   
   return (
@@ -13,7 +13,7 @@ const FareHeader = ({ fare = '₹117.50', RideStatus = false }) => {
     <ImageBackground source={rideFareBackground} style={styles.imageBackground}>
       <Text style={styles.TripStatus}>{t(RideStatus)}</Text>
       {/* <Text style={styles.label}>{t('ride_fare')}</Text> */}
-      <Text style={styles.fare}>₹ {fare != null ? fare.toFixed(2) : '0.00'}</Text>
+     {!hideFare && <Text style={styles.fare}>₹ {fare != null ? fare.toFixed(2) : '0.00'}</Text>}
       
     </ImageBackground>
     </View>

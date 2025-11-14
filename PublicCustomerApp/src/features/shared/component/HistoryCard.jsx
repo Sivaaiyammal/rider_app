@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity ,Vibration} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
 import { colors, Fonts } from '../../../constants/constants';
@@ -11,44 +11,64 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
 import {utils} from '../../../utils/Utils';
 
 
-const HistoryCard = React.memo(({ selectCallback, header = true, bottomborder = true,fromSearchScreen=false }) => {
+
+const HistoryCard = React.memo(({ selectCallback, header = true, bottomborder = true, fromSearchScreen = false }) => {
   const [historyItems, setHistoryItems] = useState([]);
+  const [showDeleteIndex, setShowDeleteIndex] = useState(null);
   const { t } = useTranslation();
+
   const setRecentSearches = useCallback(async () => {
     const recentSearches = await DataStore.loadData('recentSearches');
-    
     setHistoryItems(recentSearches?.data || []);
+    // console.log('Recent Searches:', recentSearches);
   }, []);
 
   useEffect(() => {
     setRecentSearches();
   }, [setRecentSearches]);
 
+  const handleDelete = async (index) => {
+    const updatedItems = historyItems.filter((_, i) => i !== index);
+    setHistoryItems(updatedItems);
+    setShowDeleteIndex(null);
+    await DataStore.saveData('recentSearches', { data: updatedItems });
+  };
+
   return (
     <View style={styles.container}>
       {(historyItems?.length > 0 && header) && <AdaptiveText style={styles.title}> {t('recent')}</AdaptiveText>}
       {historyItems?.length > 0 ? (
         historyItems.map((item, index) => (
-          <TouchableOpacity key={index} onPress={() => selectCallback(item)}>
-            <View style={[styles.historyItem, bottomborder && {borderBottomWidth: index === historyItems.length - 1 ? 0 : 0.5} ]}>
-              <View style={styles.iconContainer}>
-                <CategoryIcon category={item.label}  isFromHistory={true} />
+          <View key={index}>
+            <TouchableOpacity
+              onPress={() => { Vibration.vibrate(100); selectCallback(item); }}
+              onLongPress={() => setShowDeleteIndex(index)}
+              delayLongPress={400}
+            >
+              <View style={[styles.historyItem, bottomborder && { borderBottomWidth: index === historyItems.length - 1 ? 0 : 0.5 }]}> 
+                <View style={styles.iconContainer}>
+                  <CategoryIcon category={item.label} isFromHistory={true} />
+                </View>
+                <View style={styles.textContainer}>
+                  <Text style={[styles.name, fromSearchScreen && { fontSize: 15 }]} numberOfLines={1} ellipsizeMode="tail">{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</Text>
+                  {item.address && <Text style={[styles.address, { fontSize: 14 }]} numberOfLines={1} ellipsizeMode="tail" color={colors.grey_xxdark}>{utils.formatArrayAddress(item.address)}</Text>}
+                </View>
+                {showDeleteIndex === index && (
+                  <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(index)}>
+                    <Ionicons name="trash-outline" size={22} color="#e53935" />
+                  </TouchableOpacity>
+                )}
               </View>
-              <View style={styles.textContainer}>
-                <Text style={[styles.name,fromSearchScreen&&{fontSize:15}]} numberOfLines={1} ellipsizeMode="tail">{item.name.charAt(0).toUpperCase() + item.name.slice(1)}</Text>
-                {item.address && <Text style={[styles.address,{fontSize:14}]} numberOfLines={1} ellipsizeMode="tail" color={colors.grey_xxdark}>{utils.formatArrayAddress(item.address)}</Text>}
-              </View>
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         ))
       ) : (
         <View style={styles.noHistoryContainer}>
-        <View style={styles.noHistoryIconContainer}>
+          <View style={styles.noHistoryIconContainer}>
             <Ionicons name="search-outline" size={40} color={"#757575"} />
           </View>
           <AdaptiveText style={styles.noHistoryText}>{t('no_recent_searches')}</AdaptiveText>
           <AdaptiveText style={styles.noHistorySubtext}>{t('your_recent_searches_will_appear_here')}</AdaptiveText>
-          
         </View>
       )}
     </View>
@@ -78,6 +98,19 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.grey,
     gap: 15,
     marginBottom:5,
+  },
+  deleteButton: {
+    marginLeft: 10,
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
   },
   iconContainer: {
     width: 45,

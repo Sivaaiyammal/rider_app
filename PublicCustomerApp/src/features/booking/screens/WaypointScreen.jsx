@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   BackHandler,
   Alert,
+  Vibration
 
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -417,6 +418,7 @@ useEffect(() => {
           disabled={isLoading || !enableConfirmButton}
           onPress={async () => {
             // Validate that no stops are within 100m of each other
+            Vibration.vibrate(100);
             const pointsToValidate = onGoingRideStops ? [...reachedStops, ...reOrderWaypoints] : reOrderWaypoints;
             if (hasNearbyDuplicateStops(pointsToValidate, 100)) {
               Alert.alert(t('invalid_stops') || 'Invalid stops', t('stops_too_close') || 'Two stops are within 100 meters. Please adjust your stops.');

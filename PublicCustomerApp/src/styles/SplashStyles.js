@@ -11,7 +11,7 @@ export const SplashStyles = StyleSheet.create({
   logoContainer: {
     width: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     flex: 0.35,
   },
   splashTitle: {

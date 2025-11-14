@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, Alert, Platform, TextInput, BackHandler } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, StyleSheet, Alert, Platform, TextInput, BackHandler, Vibration } from 'react-native';
 import Contacts from 'react-native-contacts';
 import { RequestContactsPermission, checkContactsPermission } from '../../../controllers/PermissionHandler';
 import { useEmergencyContactsStore } from '../store/useEmergencyContactsStore';
@@ -163,6 +163,7 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
 
   const submit = useCallback(async () => {
     try {
+      Vibration.vibrate(100);
       setSubmitting(true);
 
       const normalize = (p: string) => (p || '').replace(/\s+/g, '');

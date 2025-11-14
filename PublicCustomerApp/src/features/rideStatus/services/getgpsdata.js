@@ -73,6 +73,6 @@ export default async function getGpsData({ tripId, startTime, endTime, token }) 
     return { distance: GPSDistance, duration: minutes };
   } catch (err) {
     console.error("calculateDistance error:", err);
-    return { distance: -1, duration: -1 };
+    return { distance: 0, duration: 0 };
   }
 }

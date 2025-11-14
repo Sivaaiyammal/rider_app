@@ -49,9 +49,11 @@ const RideDetailScreen = ({ TripData }) => {
       const endStop = stops.length > 0 ? stops[stops.length - 1] : undefined;
       const pickupCoords = startStop?.location; // expected [lon, lat]
       const dropCoords = endStop?.location; // expected [lon, lat]
-      const distanceKm = typeof rideData?.finalDistance === 'number' ? String(rideData.finalDistance) : '';
-      const tripId = rideData?.rideId;
+      const distanceKm = typeof rideData?.finalDistance === 'number' ? String(rideData.finalDistance) : rideData?.estimatedDistance;
+      const tripId = rideData?._id;
       const estimatedFare = rideData?.fareDetails?.fare || rideData?.estimatedFare;
+
+    
 
       openFeedback({
         screenName: 'RideStatus',
@@ -134,13 +136,15 @@ const RideDetailScreen = ({ TripData }) => {
 
   const BreakdownFare = isFareCalculated ? rideData?.customerInvoice? utils.getInvoiceFormat(rideData?.customerInvoice) : utils.getFareBreakdown(rideData?.fareDetails) : null
 
+  const distance = rideData.finalDistance && rideData?.status != "Failed" ? rideData.finalDistance : rideData.estimatedDistance
+  const duration = rideData.finalDuration && rideData?.status != "Failed" ? rideData.finalDuration : rideData.estimatedDuration
   return (
     <View style={styles.container}>
       <NavBar withBg onBackPress={handleBackPress} title={t('ride_details')} />
       
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {
-           <FareHeader fare={rideData.fareDetails?.fare || rideData.estimatedFare || 0} RideStatus={utils.getRideStatus(rideData?.status)}/>
+           <FareHeader fare={rideData.fareDetails?.fare || rideData.estimatedFare || 0} RideStatus={utils.getRideStatus(rideData?.status)}  hideFare={rideData?.status != "COMPLETED" && rideData?.status != "DIVERGED"} />
         }
         
         <TripMetaInfo 
@@ -164,8 +168,8 @@ const RideDetailScreen = ({ TripData }) => {
         
         <TripStats 
           isNotCompleted={rideData?.status != "COMPLETED" && rideData?.status != "DIVERGED"}
-          totalDistance={rideData.finalDistance } 
-          totalDuration={rideData.finalDuration } 
+          totalDistance={distance} 
+          totalDuration={duration} 
           totalFare={rideData.fareDetails?.fare} 
         />
         

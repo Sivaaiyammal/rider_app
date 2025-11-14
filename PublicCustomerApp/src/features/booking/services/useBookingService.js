@@ -10,6 +10,7 @@ import useUserInfoStore from '../../../store/useUserInfoStore';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
 import { TripStatus } from '../../rideStatus/types/TripStatus';
 import { utils } from '../../../utils/Utils';
+import { DataStore } from '../../../controllers/DataStore';
 /**
  * Hook to handle trip booking with API integration
  * @param {Object} options - Configuration options
@@ -52,6 +53,44 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
    * Prepare booking payload with dummy values for testing
    * @returns {Object} Formatted payload for booking API
    */
+
+
+  const storeInRecentTrips = async (item) => {
+    
+        try {
+
+          item["name"]=item?.placeName
+          item["address"]=utils.formatArrayAddress(item?.address)
+
+          console.log("Storing in recent trips:", item);
+          const recentSearches = await DataStore.loadData('recentSearches');
+          let updatedSearches = [];
+          console.log("Loaded recent searches:", recentSearches);
+    
+          if (recentSearches && recentSearches.data) {
+            // Check if item already exists
+            const exists = recentSearches.data.some(search => search.name === item.name);
+            
+            if (!exists) {
+              // Add new item to start of array, limit to 5 items
+              updatedSearches = [item, ...recentSearches.data].slice(0, 5);
+            } else {
+              // Move existing item to start
+              updatedSearches = [
+                item,
+                ...recentSearches.data.filter(search => search.name !== item.name)
+              ].slice(0, 5);
+            }
+          } else {
+            updatedSearches = [item];
+          }
+    
+          await DataStore.storeData('recentSearches', updatedSearches);
+       
+        } catch (error) {
+          console.error("Error storing recent search:", error);
+        }
+      }
   const prepareBookingPayload = () => {
     // Validate required data
     if (!rideStartLocation || !rideEndLocation) {
@@ -96,6 +135,10 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       waitingTime: 0,
       isReached:false
     });
+
+    //  storeInRecentTrips(rideEndLocation);
+
+
 
     
 

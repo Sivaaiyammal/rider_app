@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, View, StyleSheet, Vibration } from 'react-native';
 import React, { useState, useContext, useEffect } from 'react';
 import { languages } from '../../constants/JsonData';
 import { colors } from '../../constants/constants';
@@ -15,6 +15,7 @@ import NavBar from '../../components/NavBar';
 const LanguageScreen = ({fromDrawer}) => {
   const navigation = useNavigation();
   const {goBack} = useStackScreenStore();
+  const [InsideAppLanguageChange, setInsideAppLanguageChange] = useState(false);
   const { t } = useTranslation();
   const { 
     theme, 
@@ -45,15 +46,22 @@ const LanguageScreen = ({fromDrawer}) => {
 
   const onNextPress = async () => {
     // Save the selected language to AsyncStorage
+    Vibration.vibrate(100);
     await DataStore.storeData('language', selected.code);
     
     if(fromDrawer){
+      i18n.changeLanguage(InsideAppLanguageChange.code);
       goBack();
     }
     else{
       navigation.navigate('OnBoarding');
     }
   };
+
+  const handleLanguageChangeInSideApp = (language) => {
+     changeLanguage(language);
+    setInsideAppLanguageChange(language);
+  }
 
   return (
    
@@ -69,7 +77,7 @@ const LanguageScreen = ({fromDrawer}) => {
         {languages.map((item) => (
           <View key={item.id} style={styles.langItemWrapper}>
             <TouchableOpacity
-              onPress={() => handleLanguageChange(item)}
+              onPress={() => fromDrawer?handleLanguageChangeInSideApp(item):handleLanguageChange(item)}
               style={[
                 styles.langBtn,
                 {

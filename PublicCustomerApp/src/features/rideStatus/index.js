@@ -5,8 +5,8 @@ import DriverSearchScreen from './screens/DriverSearchScreen';
 import CompletedRideScreen from './screens/RideCompletedScreen';
 import { TripStatus } from './types/TripStatus';
 import useCurrentRideInfoStore from './store/useCurrentRideInfoStore';
-import NavBar from '../../components/NavBar';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import NavBar from '../../components/NavBar';   
+import { View, StyleSheet, TouchableOpacity, Vibration } from 'react-native';
 import { Fonts } from '../../constants/constants';
 import { colors } from '../../constants/constants';
 import MapIcon from '../../components/Map/MapIcon';
@@ -74,6 +74,7 @@ const RideStatus = () => {
     const response = await cancelRide(payload);
     console.log('response',response)
     if (response.success) {
+      Vibration.vibrate();
         showNotification('Ride cancelled successfully');
        
         setShowBookingCancelModel(false);
@@ -139,7 +140,7 @@ const RideStatus = () => {
 
       if(data){
 
-      GPSdistance = data?.distance ? data.distance : null;
+      GPSdistance = data?.distance ? data.distance : 0;
       GPSduration = data?.duration ? Math.round(data.duration) : null;
 
       console.log("GPSdistance,GPSduration",GPSdistance,GPSduration)

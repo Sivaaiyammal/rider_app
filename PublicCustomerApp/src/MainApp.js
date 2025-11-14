@@ -1,4 +1,4 @@
-import {useColorScheme ,StatusBar} from 'react-native';
+import {useColorScheme ,StatusBar,Vibration} from 'react-native';
 import React, { useCallback, useEffect } from 'react';
 import firebase from '@react-native-firebase/app';
 import Navigation from './navigation/Navigation';
@@ -21,6 +21,7 @@ import { useStackScreenStore } from './store/useStackScreenStore';
 import FeedbackBottomSheet from './components/FeedbackBottomSheet';
 import tripAlert from './controllers/TripAlert';
 import { log } from '@react-native-firebase/crashlytics';
+
 
 
 if (!firebase.apps.length) {
@@ -74,6 +75,7 @@ const MainAppContent = () => {
       if (clearedtxt == 'driver assigned') {
         console.log('Playing trip alert sound');
         tripAlert.playAlertSound()
+        Vibration.vibrate();
       }
       PushNotifications.sendNotification(body, title, data);
     }); 
@@ -103,6 +105,7 @@ const MainAppContent = () => {
       if (clearedtxt == 'driver assigned') {
         console.log('Playing trip alert sound');
         tripAlert.playAlertSound()
+        Vibration.vibrate();
       }
     })
 

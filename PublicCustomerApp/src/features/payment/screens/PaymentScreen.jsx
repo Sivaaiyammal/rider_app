@@ -16,6 +16,7 @@ import { DataStore } from '../../../controllers/DataStore';
 import PREF from '../../../storage/PREF';
 import { getTripDetails } from '../../../API/EndPoints/EndPoints';
 import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import usePaymentStore from '../store/usePaymentStore';
 import ScrollHintChevron from '../../../components/Common/ScrollHintChevron';
@@ -28,6 +29,7 @@ import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import  useUserInfoStore  from '../../../store/useUserInfoStore';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import useConfigStore from '../../../store/useConfigStore'; 
+import { openFeedback } from '../../../utils/feedback';
 
 const PaymentScreen = () => {
 
@@ -92,6 +94,34 @@ const PaymentScreen = () => {
       console.log(driverDetails,"driverDetails")
     }
   },[driverDetails])
+
+  const onFeedbackPress = () => {
+      try {
+        const stops = Array.isArray(tripStops) ? tripStops : [];
+        const startStop = stops.length > 0 ? stops[0] : undefined;
+        const endStop = stops.length > 0 ? stops[stops.length - 1] : undefined;
+        const pickupCoords = startStop?.location; // expected [lon, lat]
+        const dropCoords = endStop?.location; // expected [lon, lat]
+        const distanceKm = typeof tripDistance === 'number' ? String(tripDistance) : tripDistance;
+        const tripId = currentTripId;
+        const estimatedFare = tripFare;
+  
+        openFeedback({
+          screenName: 'RideStatus',
+          initialValues: {
+            tripId,
+            tripStartName: startStop?.address || '',
+            tripEndName: endStop?.address || '',
+            tripDistanceKm: 1,
+            pickupCoords,
+            dropCoords,
+            estimatedFare: estimatedFare || '',
+          },
+        });
+      } catch (e) {
+        // silent fail
+      }
+    };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -268,6 +298,12 @@ const PaymentScreen = () => {
         <View style={{marginVertical:15}}> 
         <TripStats totalDistance={tripDistance} totalDuration={tripDuration} totalFare={tripFare} />
         </View>
+
+
+         <TouchableOpacity style={styles.feedbackButton} onPress={onFeedbackPress}>
+            <MaterialIcons name="feedback" size={20} color={colors.white} />
+            <Text style={styles.feedbackButtonText}>{t('give_feedback')}</Text>
+          </TouchableOpacity>
         <View style={styles.paymentMethodContainer}>
           <AdaptiveText style={styles.paymentMethodLabel}>{t('Pay_trip_fare_to_driver')}</AdaptiveText>
           <View style={styles.paymentMethodKeyContainer}>
@@ -463,6 +499,26 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 14,
     color: colors.grey_xxdark,
+  },
+  feedbackButton: {
+    backgroundColor: colors.blue,
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    marginVertical: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 10,
+    shadowColor: colors.black,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  feedbackButtonText: {
+    fontFamily: Fonts.medium,
+    fontSize: 16,
+    color: colors.white,
   },
   bottomBar: {
     position: 'absolute',

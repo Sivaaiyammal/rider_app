@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import {  Vibration } from 'react-native';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import useBookingService from '../services/useBookingService';
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
@@ -46,6 +47,8 @@ const useBookTrip = () => {
     onError: handleBookingError
   });
 
+  
+
   /**
    * Book trip with current booking data
    * @param {Object} customData - Optional custom data to override defaults
@@ -53,6 +56,7 @@ const useBookTrip = () => {
   const handleBookTrip = useCallback(async (customData = null) => {
     try {
       setLoading(true);
+      Vibration.vibrate();
     
       const result = await bookingService.bookTrip(customData);
       
@@ -75,6 +79,7 @@ const useBookTrip = () => {
         }
         try {
           await DataStore.storeData(PREF.CURRENT_TRIP, result.trip?._id);
+         
           setCurrentRideInfo(result.trip);
           // Ensure ride-matching socket is connected before proceeding
           let connected = rideMatchingSocketService.isConnected();
@@ -85,7 +90,7 @@ const useBookTrip = () => {
             showNotification(t('network_error'), t('please_try_again'), 'danger');
             return result;
           }
-
+        
           setStackScreen('RideStatus', {
           });
           // showNotification(t('booking_successful'), t('your_ride_has_been_booked_successfully'), 'success'); 

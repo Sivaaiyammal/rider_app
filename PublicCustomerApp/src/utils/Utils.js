@@ -29,7 +29,7 @@ export const utils = {
    * @param {number} offsetMinutes - grace period in minutes (default 10)
    * @returns {boolean}
    */
-  isTripOverEstimatedDuration(bookingTime, pickupArrivalTime, finalArrivalTime, offsetMinutes = 10) {
+  isTripOverEstimatedDuration(bookingTime, pickupArrivalTime, finalArrivalTime, offsetMinutes = 60) {
     /**
      * Normalize a value into a moment instance when possible.
      * Handles Date, moment, ISO strings, milliseconds and seconds.

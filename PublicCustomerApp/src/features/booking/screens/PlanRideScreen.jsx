@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler} from 'react-native';
+import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler, Vibration} from 'react-native';
 import React, {useCallback, useState,useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
 import NavBar from '../../../components/NavBar';
@@ -315,7 +315,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
           />
          {
           isContinueButtonVisible && (
-            <TouchableOpacity style={[styles.continueButton, isContinuing && styles.continueButtonDisabled]} onPress={()=>{ setIsContinuing(true); setStackScreen("BookRideScreen",{}); }} disabled={isContinuing}>
+            <TouchableOpacity style={[styles.continueButton, isContinuing && styles.continueButtonDisabled]} onPress={()=>{ setIsContinuing(true); setStackScreen("BookRideScreen",{});Vibration.vibrate(100); }} disabled={isContinuing}>
               {isContinuing ? (
                 <ActivityIndicator color="#fff" />
               ) : (

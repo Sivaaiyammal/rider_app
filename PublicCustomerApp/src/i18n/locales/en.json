@@ -604,7 +604,7 @@
     "please_verify_OTP":"Please verify OTP",
     "enter_otp_sent_to_mobile":"Enter the OTP sent to your mobile number",
     "failed":"Failed",
-    "one_time_password_otp": "One Time\\nPassword(OTP)",
+    "one_time_password_otp": "One Time Password(OTP)",
     "resend_otp": "Resend OTP",
     "in": "in",
     "verify_otp": "Verify OTP",

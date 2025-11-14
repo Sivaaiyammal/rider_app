@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, ActivityIndicator, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, ActivityIndicator, Platform, Vibration } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
 import BottomSheetWrapper from './BottomSheetWrapper';
@@ -131,6 +131,7 @@ const FeedbackBottomSheet = () => {
   }, [isVisible, fields]);
 
   const onSubmitPress = async () => {
+    Vibration.vibrate(100);
     const visibleFields = fields.filter(f => {
       if (f.name === 'issueMessage') {
         return showGenericIssue;

@@ -22,7 +22,7 @@ class PushNotifications {
         channelId: 'TrackerApp',
         channelName: 'My channel',
         channelDescription: 'A channel to categorise your notifications',
-        playSound: false,
+        playSound: true,
         soundName: 'default',
         vibrate: true,
       },

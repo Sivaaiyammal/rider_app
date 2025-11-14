@@ -6,7 +6,8 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
-  Alert
+  Alert,
+  Vibration,
 } from 'react-native';
 import {useStackScreenStore} from '../store/useStackScreenStore';
 import NavBar from '../components/NavBar';
@@ -310,6 +311,8 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           ]}
           onPress={async () => {
             if (isAddressLoading || isConfirming || !pickedLocation?.placeName) return;
+
+            Vibration.vibrate(100);
             setIsConfirming(true);
             try {
 

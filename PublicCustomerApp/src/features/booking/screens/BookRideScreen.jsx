@@ -549,7 +549,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
                   <View style={styles.BookingButtonSection}>
                       <TouchableOpacity
-                          style={[styles.BookingButton, isBookingLoading || availableVehicles?.length === 0 && styles.BookingButtonDisabled]}
+                          style={[styles.BookingButton, availableVehicles?.length === 0 && styles.BookingButtonDisabled,isBookingLoading && {backgroundColor:colors.orange}]}
                           onPress={availableVehicles?.length === 0 ? null : handleConfirmRide}
                           disabled={isBookingLoading}
                       >
