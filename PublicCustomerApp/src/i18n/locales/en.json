@@ -497,12 +497,12 @@
         "description": "Issues related to trip pricing, billing, and payment"
       },
       "driver_app_issues": {
-        "name": "Customer App Issues",
-        "description": "Technical problems with the customer mobile application"
+        "name": "Driver App Issues",
+        "description": "Technical problems with the driver mobile application"
       },
       "lost_item_report": {
         "name": "Lost Item Report",
-        "description": "I left my belongings in the vehicle and needs assistance recovering them"
+        "description": "I left my belongings in the vehicle and need assistance recovering them"
       },
       "vehicle_not_as_expected": {
         "name": "Vehicle Not As Expected",
@@ -516,33 +516,32 @@
         "name": "Driver Late Arrival",
         "description": "Driver arrived much later than estimated pickup time causing passenger inconvenience"
       }
-  ,
-  "support_create_form": {
-    "title": "Create New Ticket",
-    "subtitle": "Describe your issue and we'll help you resolve it",
-    "ticket_type": "Ticket Type",
-    "app_related": "App Related",
-    "trip_related": "Trip Related",
-    "select_trip_label": "Select Trip",
-    "select_trip_placeholder": "Select a trip from your ride history",
-    "trip_details": "Trip Details",
-    "from": "From",
-    "to": "To",
-    "date": "Date",
-    "fare": "Fare",
-    "distance": "Distance",
-    "driver": "Driver",
-    "status": "Status",
-    "category_label": "Category",
-    "loading_categories": "Loading categories...",
-    "no_categories": "No categories available for this ticket type",
-    "description_label": "Description",
-    "description_placeholder": "Please provide detailed information about your issue...",
-    "error_subject_required": "Subject is required",
-    "error_description_required": "Description is required",
-    "error_category_required": "Please select a category",
-    "error_select_trip": "Please select a trip"
-  }
+    },
+    "support_create_form": {
+      "title": "Create New Ticket",
+      "subtitle": "Describe your issue and we'll help you resolve it",
+      "ticket_type": "Ticket Type",
+      "app_related": "App Related",
+      "trip_related": "Trip Related",
+      "select_trip_label": "Select Trip",
+      "select_trip_placeholder": "Select a trip from your ride history",
+      "trip_details": "Trip Details",
+      "from": "From",
+      "to": "To",
+      "date": "Date",
+      "fare": "Fare",
+      "distance": "Distance",
+      "driver": "Driver",
+      "status": "Status",
+      "category_label": "Category",
+      "loading_categories": "Loading categories...",
+      "no_categories": "No categories available for this ticket type",
+      "description_label": "Description",
+      "description_placeholder": "Please provide detailed information about your issue...",
+      "error_subject_required": "Subject is required",
+      "error_description_required": "Description is required",
+      "error_category_required": "Please select a category",
+      "error_select_trip": "Please select a trip"
     },
     "network_error": "Network Error",
     "overdue": {

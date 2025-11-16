@@ -37,7 +37,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
   const [descriptionFocused, setDescriptionFocused] = useState(false);
   const scrollViewRef = useRef(null);
   const { t } = useTranslation();
-  
+
   // Animation values
   const tripSelectionOpacity = useRef(new Animated.Value(0)).current;
   const tripSelectionHeight = useRef(new Animated.Value(0)).current;
@@ -91,7 +91,6 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
 
   // Reset form data when ticket type changes
   useEffect(() => {
-    // Reset all form fields when ticket type changes
     setFormData(prev => ({
       ...prev,
       subject: '',
@@ -99,8 +98,6 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
       category: '',
       selectedTrip: null,
     }));
-    
-    // Clear any errors
     setErrors({});
   }, [formData.ticketType]);
 
@@ -122,7 +119,6 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
   // Animate trip selection when ticket type changes
   useEffect(() => {
     if (formData.ticketType === 'trip') {
-      // Animate in
       Animated.parallel([
         Animated.timing(tripSelectionOpacity, {
           toValue: 1,
@@ -136,7 +132,6 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
         }),
       ]).start();
     } else {
-      // Animate out
       Animated.parallel([
         Animated.timing(tripSelectionOpacity, {
           toValue: 0,
@@ -150,7 +145,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
         }),
       ]).start();
     }
-  }, [formData.ticketType]);
+  }, [formData.ticketType, tripSelectionHeight, tripSelectionOpacity]);
 
   // Animate trip details when trip is selected
   useEffect(() => {
@@ -181,7 +176,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
         }),
       ]).start();
     }
-  }, [formData.selectedTrip]);
+  }, [formData.selectedTrip, tripDetailsHeight, tripDetailsOpacity]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -198,7 +193,6 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
       newErrors.category = 'category_required';
     }
 
-    // Validate trip selection if ticket type is trip
     if (formData.ticketType === 'trip' && !formData.selectedTrip) {
       newErrors.selectedTrip = 'select_trip_required';
     }
@@ -226,25 +220,19 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
   };
 
   const handleCategorySelect = (categoryId) => {
-    // Find the selected category
     const selectedCategory = categories.find(cat => cat._id === categoryId);
-  
-    
-    // Update category
+
     updateFormData('category', categoryId);
-    
-    // Only auto-fill description if user hasn't typed anything yet
+
     if (!userEditedDescription) {
-      // Clear description first, then set new one if available
       updateFormData('description', '');
       if (selectedCategory && selectedCategory.description) {
-        // Use setTimeout to ensure the clear happens first
         setTimeout(() => {
           updateFormData('description', translateCategoryDescription(selectedCategory.name));
         }, 100);
       }
     }
-    // Always set subject based on category selection
+
     if (selectedCategory?.name) {
       setTimeout(() => {
         updateFormData('subject', translateCategoryName(selectedCategory.name));
@@ -252,30 +240,29 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
     }
   };
 
-
   const translateCategoryName = (name) => {
     if (name) {
       const keys = name.replaceAll(' ', '_').toLowerCase();
-      return t('support_categories.'+keys+'.name');
+      return t('support_categories.' + keys + '.name');
     }
     return name;
   };
+
   const translateCategoryDescription = (description) => {
     if (description) {
       const keys = description.replaceAll(' ', '_').toLowerCase();
-      return t('support_categories.'+keys+'.description');
+      return t('support_categories.' + keys + '.description');
     }
     return description;
   };
 
-  // Default select first category (index 0) when categories are loaded or ticket type changes
+  // Default select first category when categories are loaded or ticket type changes
   useEffect(() => {
     if (loadingCategories) return;
-    if (formData.category) return; // do not override user selection
+    if (formData.category) return;
 
     const firstCategory = filteredCategories[0];
     if (firstCategory) {
-      // Set category and auto-fill description/subject similar to handleCategorySelect
       updateFormData('category', firstCategory._id);
       if (!userEditedDescription) {
         updateFormData('description', '');
@@ -292,7 +279,13 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
         }, 100);
       }
     }
-  }, [loadingCategories, filteredCategories, formData.category, categories, userEditedDescription]);
+  }, [
+    loadingCategories,
+    filteredCategories,
+    formData.category,
+    categories,
+    userEditedDescription,
+  ]);
 
   const formatTripDisplay = (trip) => {
     const date = new Date(trip.bookingTime);
@@ -301,7 +294,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
 
     const MAX_ADDRESS_LENGTH = 32;
@@ -323,42 +316,48 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
     const date = new Date(timestamp);
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear().toString().slice(-2); // Get last 2 digits
+    const year = date.getFullYear().toString().slice(-2);
     const hours = date.getHours();
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const ampm = hours >= 12 ? 'PM' : 'AM';
     const displayHours = hours % 12 || 12;
-    
+
     return `${month}/${day}/${year} - ${displayHours}:${minutes} ${ampm}`;
   };
 
-     return (
-     <KeyboardAvoidingView 
-       style={styles.container}
-       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-     >
-       {/* Fixed Header */}
-       <View style={styles.fixedHeader}>
-         <View style={styles.headerTop}>
-           <TouchableOpacity
-             style={styles.backButton}
-             onPress={onCancel}
-           >
-             <Ionicons name="chevron-back" size={24} color="#000000" />
-           </TouchableOpacity>
+  return (
+    /**
+     * IMPORTANT (Android):
+     * Make sure your Activity has:
+     * android:windowSoftInputMode="adjustResize"
+     * in AndroidManifest, so KeyboardAvoidingView can work correctly.
+     */
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior="padding" // use padding for BOTH platforms so the bottom bar moves up
+      keyboardVerticalOffset={0}
+    >
+      {/* Fixed Header */}
+      <View style={styles.fixedHeader}>
+        <View style={styles.headerTop}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={onCancel}
+          >
+            <Ionicons name="chevron-back" size={24} color="#000000" />
+          </TouchableOpacity>
           <Text style={styles.title}>{t('support_create_form.title')}</Text>
-         </View>
+        </View>
         <Text style={styles.subtitle}>{t('support_create_form.subtitle')}</Text>
-       </View>
+      </View>
 
       {/* Scrollable Form Content */}
-      <ScrollView 
-        style={styles.scrollableContent} 
+      <ScrollView
+        style={styles.scrollableContent}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.scrollContentContainer,
-          keyboardVisible && styles.scrollContentContainerKeyboard
+          keyboardVisible && styles.scrollContentContainerKeyboard,
         ]}
         keyboardShouldPersistTaps="handled"
         ref={scrollViewRef}
@@ -380,10 +379,10 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
                 ]}
                 onPress={() => updateFormData('ticketType', 'app')}
               >
-                <Ionicons 
-                  name="phone-portrait" 
-                  size={16} 
-                  color={formData.ticketType === 'app' ? '#FFFFFF' : '#6B7280'} 
+                <Ionicons
+                  name="phone-portrait"
+                  size={16}
+                  color={formData.ticketType === 'app' ? '#FFFFFF' : '#6B7280'}
                 />
                 <Text
                   style={[
@@ -401,10 +400,10 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
                 ]}
                 onPress={() => updateFormData('ticketType', 'trip')}
               >
-                <Ionicons 
-                  name="car" 
-                  size={16} 
-                  color={formData.ticketType === 'trip' ? '#FFFFFF' : '#6B7280'} 
+                <Ionicons
+                  name="car"
+                  size={16}
+                  color={formData.ticketType === 'trip' ? '#FFFFFF' : '#6B7280'}
                 />
                 <Text
                   style={[
@@ -418,8 +417,8 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
             </View>
           </View>
 
-          {/* Trip Selection Dropdown - Only show when ticket type is trip */}
-          <Animated.View 
+          {/* Trip Selection Dropdown - Only when ticket type is trip */}
+          <Animated.View
             style={[
               styles.inputGroup,
               {
@@ -429,32 +428,36 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
                   outputRange: [0, 300],
                 }),
                 overflow: 'hidden',
-              }
+              },
             ]}
           >
             <Text style={styles.label}>{t('support_create_form.select_trip_label')} *</Text>
             <TouchableOpacity
               style={[styles.dropdownButton, errors.selectedTrip && styles.inputError]}
               onPress={() => {
-                // Show trip selection screen as overlay
                 setShowTripSelection(true);
               }}
             >
-              <Text style={[ 
-                styles.dropdownButtonText,
-                !formData.selectedTrip && styles.placeholderText
-              ]}>
-                {formData.selectedTrip 
+              <Text
+                style={[
+                  styles.dropdownButtonText,
+                  !formData.selectedTrip && styles.placeholderText,
+                ]}
+              >
+                {formData.selectedTrip
                   ? formatTripDisplay(formData.selectedTrip)
-                  : t('support_create_form.select_trip_placeholder')
-                }
+                  : t('support_create_form.select_trip_placeholder')}
               </Text>
               <Ionicons name="chevron-down" size={16} color="#6B7280" />
             </TouchableOpacity>
-            {errors.selectedTrip && <Text style={styles.errorText}>{t('support_create_form.error_select_trip')}</Text>}
-            
-            {/* Show selected trip details with animation */}
-            <Animated.View 
+            {errors.selectedTrip && (
+              <Text style={styles.errorText}>
+                {t('support_create_form.error_select_trip')}
+              </Text>
+            )}
+
+            {/* Selected trip details */}
+            <Animated.View
               style={[
                 styles.tripDetailsContainer,
                 {
@@ -464,117 +467,121 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
                     outputRange: [0, 200],
                   }),
                   overflow: 'hidden',
-                }
+                },
               ]}
             >
-              <Text style={styles.tripDetailsTitle}>{t('support_create_form.trip_details')}:</Text>
+              <Text style={styles.tripDetailsTitle}>
+                {t('support_create_form.trip_details')}:
+              </Text>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t('support_create_form.from')}:</Text>
-                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.stops?.[0]?.address || 'Unknown location'}</Text>
+                <Text style={styles.tripDetailLabel}>
+                  {t('support_create_form.from')}:
+                </Text>
+                <Text style={styles.tripDetailValue}>
+                  {formData.selectedTrip?.stops?.[0]?.address || 'Unknown location'}
+                </Text>
               </View>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t('support_create_form.to')}:</Text>
-                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.stops?.[formData.selectedTrip?.stops?.length - 1]?.address || 'Unknown location'}</Text>
+                <Text style={styles.tripDetailLabel}>
+                  {t('support_create_form.to')}:
+                </Text>
+                <Text style={styles.tripDetailValue}>
+                  {formData.selectedTrip?.stops?.[formData.selectedTrip?.stops?.length - 1]?.address ||
+                    'Unknown location'}
+                </Text>
               </View>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t('support_create_form.date')}:</Text>
-                <Text style={styles.tripDetailValue}>{formData.selectedTrip ? formatDate(formData.selectedTrip.bookingTime) : ''}</Text>
+                <Text style={styles.tripDetailLabel}>
+                  {t('support_create_form.date')}:
+                </Text>
+                <Text style={styles.tripDetailValue}>
+                  {formData.selectedTrip ? formatDate(formData.selectedTrip.bookingTime) : ''}
+                </Text>
               </View>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t('support_create_form.fare')}:</Text>
-                <Text style={styles.tripDetailValue}>₹{formData.selectedTrip?.estimatedFare || formData.selectedTrip?.minFare || 0}</Text>
+                <Text style={styles.tripDetailLabel}>
+                  {t('support_create_form.fare')}:
+                </Text>
+                <Text style={styles.tripDetailValue}>
+                  ₹{formData.selectedTrip?.estimatedFare ||
+                    formData.selectedTrip?.minFare ||
+                    0}
+                </Text>
               </View>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t('support_create_form.distance')}:</Text>
-                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.estimatedDistance || 0} km</Text>
+                <Text style={styles.tripDetailLabel}>
+                  {t('support_create_form.distance')}:
+                </Text>
+                <Text style={styles.tripDetailValue}>
+                  {formData.selectedTrip?.estimatedDistance || 0} km
+                </Text>
               </View>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t('support_create_form.driver')}:</Text>
-                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.driverInfo?.driverName || 'No driver assigned'}</Text>
+                <Text style={styles.tripDetailLabel}>
+                  {t('support_create_form.driver')}:
+                </Text>
+                <Text style={styles.tripDetailValue}>
+                  {formData.selectedTrip?.driverInfo?.driverName || 'No driver assigned'}
+                </Text>
               </View>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t('support_create_form.status')}:</Text>
-                <Text style={styles.tripDetailValue}>{formData.selectedTrip?.status || 'Unknown'}</Text>
+                <Text style={styles.tripDetailLabel}>
+                  {t('support_create_form.status')}:
+                </Text>
+                <Text style={styles.tripDetailValue}>
+                  {formData.selectedTrip?.status || 'Unknown'}
+                </Text>
               </View>
             </Animated.View>
           </Animated.View>
-
-         
 
           {/* Category */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>{t('support_create_form.category_label')} *</Text>
             {loadingCategories ? (
               <View style={styles.loadingContainer}>
-                <Text style={styles.loadingText}>{t('support_create_form.loading_categories')}</Text>
+                <Text style={styles.loadingText}>
+                  {t('support_create_form.loading_categories')}
+                </Text>
               </View>
             ) : filteredCategories.length > 0 ? (
               <View style={styles.categoryContainer}>
-                {filteredCategories.map((category) => (
-                                     <TouchableOpacity
-                     key={category._id}
-                     style={[
-                       styles.categoryButton,
-                       formData.category === category._id && styles.categoryButtonActive,
-                     ]}
-                     onPress={() => handleCategorySelect(category._id)}
-                   >
+                {filteredCategories.map(category => (
+                  <TouchableOpacity
+                    key={category._id}
+                    style={[
+                      styles.categoryButton,
+                      formData.category === category._id && styles.categoryButtonActive,
+                    ]}
+                    onPress={() => handleCategorySelect(category._id)}
+                  >
                     <View style={styles.categoryContent}>
                       <Text
                         style={[
                           styles.categoryButtonText,
-                          formData.category === category._id && styles.categoryButtonTextActive,
+                          formData.category === category._id &&
+                            styles.categoryButtonTextActive,
                         ]}
                       >
                         {translateCategoryName(category.name)}
                       </Text>
-                     
                     </View>
                   </TouchableOpacity>
                 ))}
               </View>
             ) : (
               <View style={styles.noCategoriesContainer}>
-                <Text style={styles.noCategoriesText}>{t('support_create_form.no_categories')}</Text>
+                <Text style={styles.noCategoriesText}>
+                  {t('support_create_form.no_categories')}
+                </Text>
               </View>
             )}
-            {errors.category && <Text style={styles.errorText}>{t('support_create_form.error_category_required')}</Text>}
+            {errors.category && (
+              <Text style={styles.errorText}>
+                {t('support_create_form.error_category_required')}
+              </Text>
+            )}
           </View>
-
-          {/* Priority */}
-          {/* {showPriority && (
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Priority</Text>
-              <View style={styles.priorityContainer}>
-                {priorities.map((priority) => (
-                  <TouchableOpacity
-                    key={priority.id}
-                    style={[
-                      styles.priorityButton,
-                      formData.priority === priority.id && styles.priorityButtonActive,
-                      { borderColor: priority.color },
-                    ]}
-                    onPress={() => updateFormData('priority', priority.id)}
-                  >
-                    <View
-                      style={[
-                        styles.priorityIndicator,
-                        { backgroundColor: priority.color },
-                      ]}
-                    />
-                    <Text
-                      style={[
-                        styles.priorityButtonText,
-                        formData.priority === priority.id && styles.priorityButtonTextActive,
-                      ]}
-                    >
-                      {priority.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          )} */}
 
           {/* Description */}
           <View style={styles.inputGroup}>
@@ -585,24 +592,34 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               value={formData.description}
               onFocus={() => {
                 setDescriptionFocused(true);
-                setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 0);
+                setTimeout(
+                  () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+                  0,
+                );
               }}
               onBlur={() => setDescriptionFocused(false)}
-              onChangeText={(text) => {
+              onChangeText={text => {
                 if (!userEditedDescription) setUserEditedDescription(true);
                 updateFormData('description', text);
-                setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 0);
+                setTimeout(
+                  () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+                  0,
+                );
               }}
               multiline
               numberOfLines={6}
               textAlignVertical="top"
             />
-            {errors.description && <Text style={styles.errorText}>{t('support_create_form.error_description_required')}</Text>}
+            {errors.description && (
+              <Text style={styles.errorText}>
+                {t('support_create_form.error_description_required')}
+              </Text>
+            )}
           </View>
         </View>
       </ScrollView>
 
-      {/* Fixed Bottom Action Buttons */}
+      {/* Fixed Bottom Action Buttons (moves up with keyboard now) */}
       <View style={styles.fixedBottom}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
@@ -619,7 +636,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
       {showTripSelection && (
         <View style={styles.modalOverlay}>
           <TripSelectionScreen
-            onTripSelect={(trip) => {
+            onTripSelect={trip => {
               updateFormData('selectedTrip', trip);
               setShowTripSelection(false);
             }}
@@ -675,7 +692,7 @@ const styles = StyleSheet.create({
     paddingBottom: 120, // Space for fixed bottom buttons
   },
   scrollContentContainerKeyboard: {
-    paddingBottom: 200, // Adjust for keyboard
+    paddingBottom: 200, // Extra space when keyboard is open
   },
   form: {
     padding: 20,
@@ -811,10 +828,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
-     categoryButtonActive: {
-     backgroundColor: '#000000',
-     borderColor: '#000000',
-   },
+  categoryButtonActive: {
+    backgroundColor: '#000000',
+    borderColor: '#000000',
+  },
   categoryButtonText: {
     fontSize: 12,
     fontFamily: Fonts.medium,
@@ -836,39 +853,6 @@ const styles = StyleSheet.create({
   categoryDescriptionActive: {
     color: '#E5E7EB',
   },
-  priorityContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  priorityButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  priorityButtonActive: {
-    backgroundColor: '#FEF3C7',
-    borderColor: '#F59E0B',
-  },
-  priorityIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  priorityButtonText: {
-    fontSize: 12,
-    fontFamily: Fonts.medium,
-    color: '#6B7280',
-  },
-  priorityButtonTextActive: {
-    color: '#92400E',
-    fontFamily: Fonts.medium,
-  },
   fixedBottom: {
     position: 'absolute',
     bottom: 0,
@@ -882,7 +866,6 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    
     gap: 12,
   },
   cancelButton: {
@@ -897,40 +880,20 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.semi_bold,
     color: '#6B7280',
   },
-     submitButton: {
-     flex: 2,
-     backgroundColor: '#000000',
-     paddingVertical: 12,
-     borderRadius: 8,
-     alignItems: 'center',
-     flexDirection: 'row',
-     justifyContent: 'center',
-   },
+  submitButton: {
+    flex: 2,
+    backgroundColor: '#000000',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
   submitButtonText: {
     fontSize: 14,
     fontFamily: Fonts.semi_bold,
     color: '#FFFFFF',
     marginLeft: 6,
-  },
-  noTripsContainer: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  noTripsText: {
-    fontSize: 16,
-    fontFamily: Fonts.medium,
-    color: '#374151',
-    marginTop: 10,
-  },
-  noTripsSubtext: {
-    fontSize: 12,
-    fontFamily: Fonts.regular,
-    color: '#6B7280',
-    marginTop: 4,
   },
   modalOverlay: {
     position: 'absolute',
@@ -967,8 +930,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateTicketForm; 
 CreateTicketForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
 };
+
+export default CreateTicketForm;

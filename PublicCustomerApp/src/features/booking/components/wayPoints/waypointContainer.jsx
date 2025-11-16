@@ -227,6 +227,11 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
     const indexToReplace = index>lastAddStopIndex?index-1:index;
     updatedWaypoints[indexToReplace] = item;
     setReOrderWaypoints(updatedWaypoints);
+     if(index != 0 && index != finalData.length-1){
+    setCurrentEditWaitWaypoint({index:index,item:item})
+    setIsEditwaitingTime(true)
+     }
+    
   }
 
   const onSearchReplaceWaypointCallback = (item,searchType,index) => {

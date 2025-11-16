@@ -14,7 +14,7 @@ export async function findRoute(points) {
     
 
     const jsonObject = {
-        costing: 'taxi',
+        costing: 'motorcycle',
         costing_options: {},
         language: 'en',
         locations: latlngs,

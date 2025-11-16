@@ -67,6 +67,10 @@ class Marker {
         this.animate = animate
     }
 
+    setAnimationTime(animationTime){
+        this.animationTime = animationTime
+    }
+
     setShowToolTip(showToolTip){
         this.showToolTip = showToolTip
     }

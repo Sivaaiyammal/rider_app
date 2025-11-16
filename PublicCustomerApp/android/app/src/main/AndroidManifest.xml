@@ -70,5 +70,10 @@
         <receiver
             android:name=".tracking.StopTrackingReceiver"
             android:exported="false" />
+
+          <receiver
+            android:name="com.virtualmaze.bundle_downloader.receiver.AppUpdateReceiver"
+            tools:node="remove" />
+
     </application>
 </manifest>

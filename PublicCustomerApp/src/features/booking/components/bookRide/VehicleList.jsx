@@ -177,10 +177,10 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError }) => {
                     {/* <Text style={[styles.dot]}>·</Text>
                     <Text style={[styles.dropTime]}>{vehicle.dropat}</Text> */}
                   </View>
-                  <View style={styles.passengerRow}>
+                  {/* <View style={styles.passengerRow}>
                     <MaterialCommunityIcons name="account" size={16} color={ "#757575"} />
                     <AdaptiveText style={[styles.passengerText]}>{vehicle.capacity}</AdaptiveText>
-                  </View>
+                  </View> */}
                 </View>
               </View>
             </LinearGradient>

@@ -60,7 +60,7 @@ const CancelComponent = ({ onClose, onCancel, loading,cancelLoading,rideStatus }
           }
           await onCancel(otherReason);
         } else {
-          await onCancel(selected);
+          await onCancel(t(selected));
         }
       } catch (error) {
           console.error(t('error'), error);

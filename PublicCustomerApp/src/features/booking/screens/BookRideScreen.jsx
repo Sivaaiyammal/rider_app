@@ -104,7 +104,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const {setAvailableVehicles,availableVehicles,setSelectedVehicle} = useRideVehicleStore()
     const [showPreference,setShowPreference] = useState(false)
     const [,setScrolledUntillBottom] = useState(false)
-    const [bottomSheetHeight,setBottomSheetHeight] = useState(350)
+    const [bottomSheetHeight,setBottomSheetHeight] = useState(370)
     const [isEstimationError, setIsEstimationError] = useState(false)
     
     // Use the direction load hook to transform ride locations to direction points
@@ -236,7 +236,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
  
         // Debug earlier to verify transform time
         console.log("vehicleList")
-        setBottomSheetHeight(height*0.4 + vehicleList.length * 10)
+        // setBottomSheetHeight(height*0.4 + vehicleList.length * 10)
         // Set store state in one pass to minimize renders
         useRideVehicleStore.setState({
             availableVehicles: vehicleList,
@@ -267,7 +267,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         } else {
             showNotification(t('ride_estimation_title'), data?.message || t('failed_to_get_fare_estimation'), 'danger');
             setIsEstimationError(true)
-            setBottomSheetHeight(350)
+            // setBottomSheetHeight(350)
             useRideVehicleStore.setState({
                 availableVehicles: [],
                 selectedVehicle: null,
@@ -297,7 +297,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
                 'danger'
             );
             setIsEstimationError(true)
-            setBottomSheetHeight(350)
+            // setBottomSheetHeight(350)
             useRideVehicleStore.setState({
                 availableVehicles: [],
                 selectedVehicle: null,
@@ -363,7 +363,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             console.log("isRideLocationsReadyStarted",isRideLocationsReady())
             const result = transformRideLocationsToDirectionPoints({
                 clearMarkers: true,
-                vehicleType: 'car',
+                vehicleType: 'motorcycle',
                 padding:  [50, 50, 50, height*0.5]
             });
             console.log("directionEnded")

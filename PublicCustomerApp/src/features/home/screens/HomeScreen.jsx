@@ -74,32 +74,32 @@ const MapScreen = () => {
   const {setMapMarkers,setMapBounds} = useMapStore();
   const { scheduledTrips } = useScheduleTripStore();
   
-  useEffect(()=>{
+  // useEffect(()=>{
 
   
-    if(drivers?.length > 0 && AppConfig.SHOW_NEARBY_DRIVER){
-      const markers = drivers.map((driver)=>{
+  //   if(drivers?.length > 0 && AppConfig.SHOW_NEARBY_DRIVER){
+  //     const markers = drivers.map((driver)=>{
 
-        const marker = new Marker(
-          driver.id || 'driver-marker',
-          driver.vehicleType || 'Driver',
-          driver.lon,
-          driver.lat,
-          driver.vehicleType.toLowerCase(),
-          48,
-          false,
-          driver.bearing || 0
-        );
-        return marker
-      })
-      setMapMarkers(markers)
+  //       const marker = new Marker(
+  //         driver.id || 'driver-marker',
+  //         driver.vehicleType || 'Driver',
+  //         driver.lon,
+  //         driver.lat,
+  //         driver.vehicleType.toLowerCase(),
+  //         48,
+  //         false,
+  //         driver.bearing || 0
+  //       );
+  //       return marker
+  //     })
+  //     setMapMarkers(markers)
       
-    }
+  //   }
 
-    return ()=>{
-      setMapMarkers([])
-    }
-  },[drivers])
+  //   return ()=>{
+  //     setMapMarkers([])
+  //   }
+  // },[drivers])
 
 
   useEffect(()=>{
@@ -196,10 +196,31 @@ const MapScreen = () => {
     })();
   }, []);
 
+  
+  const setHomeMapMarker = () => {
+    if(location && location.length > 0){
+      const randomId = `home-marker-${Math.random().toString(36).substr(2, 9)}`;
+      const homeMarker = new Marker(  
+        randomId,
+        randomId,
+        location[0],  
+        location[1],
+        'home',
+        48,
+        true,  
+        0
+      );
+      homeMarker.setAnimate(true);
+      homeMarker.setAnimationTime(10000);
+      setMapMarkers([homeMarker]);
+    }   
+  };
 
   useEffect(()=>{
     if(location && location.length > 0){
+      setHomeMapMarker()
       const bounds = utils.getBoundingBox([[location[0],location[1]]])
+     
       const margin = [50, 100, 50, height*0.4]
       const finalBounds = [bounds, margin]
       setTimeout(() => {
@@ -357,7 +378,7 @@ const MapScreen = () => {
          height: 4,
        }}>
        
-            <View style={{marginTop:50}}>
+            <View style={{marginTop:60}}>
               {/* {<ScheduledTripBanner/>} */}
               <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
               <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false} />

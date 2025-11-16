@@ -651,8 +651,10 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             case "stop_6": return R.drawable.stop_6;
             case "drop_point": return R.drawable.drop_point;
             case "pickup_point": return R.drawable.pickup_point;
+            case "bearing": return R.drawable.bearing;
+            case "home": return R.drawable.home;
          
-            default: return R.drawable.marker_stop_grey;
+            default: return R.drawable.home;
         }
     }
     
@@ -1289,6 +1291,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 profile = DirectionsCriteria.PROFILE_BICYCLE;
             } else if (type.equals("train")) {
                 profile = DirectionsCriteria.PROFILE_PEDESTRIAN;
+            } else if (type.equals("motorcycle")) {
+                profile = DirectionsCriteria.PROFILE_MOTORCYCLE;
             }
 
             VHRoutingRequest.CostingOptions costingOptions = VHRoutingRequest.CostingOptions
