@@ -361,11 +361,6 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
         ]}
         keyboardShouldPersistTaps="handled"
         ref={scrollViewRef}
-        onContentSizeChange={() => {
-          if (descriptionFocused || keyboardVisible) {
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-          }
-        }}
       >
         <View style={styles.form}>
           {/* Ticket Type Selection */}
@@ -592,19 +587,11 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               value={formData.description}
               onFocus={() => {
                 setDescriptionFocused(true);
-                setTimeout(
-                  () => scrollViewRef.current?.scrollToEnd({ animated: true }),
-                  0,
-                );
               }}
               onBlur={() => setDescriptionFocused(false)}
               onChangeText={text => {
                 if (!userEditedDescription) setUserEditedDescription(true);
                 updateFormData('description', text);
-                setTimeout(
-                  () => scrollViewRef.current?.scrollToEnd({ animated: true }),
-                  0,
-                );
               }}
               multiline
               numberOfLines={6}
