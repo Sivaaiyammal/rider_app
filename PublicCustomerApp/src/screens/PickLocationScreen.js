@@ -22,6 +22,7 @@ import useLocationStore from '../store/useLocationStore';
 import useMapStyleStore from '../store/useMapStyleStore';
 import CurrentLocationIcon from '../assets/icons/CurrentLocationIcon.svg';
 import { openFeedback } from '../utils/feedback';
+import  Circle from '../controllers/NEMap/Circle';
 
 // import locationTask from "../controllers/GetCurrentLocation";
 import usePropsStore from '../store/usePropsStore';
@@ -34,9 +35,9 @@ import { findRoute } from '../controllers/NEMap/findRoute';
 import polyline from '@mapbox/polyline';
 import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore';
 
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false}) => {
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=2}) => {
   const {goBack} = useStackScreenStore();
-  const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation} = useMapStore();
+  const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation,setGeometries } = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const {currentLocationName,location} = useLocationStore();
   const {setIsMapButtonVisible} = useMapStyleStore();
@@ -154,10 +155,11 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     const hasExistingPick = !!(
       pickedLocation &&
       pickedLocation.latitude != null &&
-      pickedLocation.longitude != null
+      pickedLocation.longitude != null && defaultLocation==null
     );
 
     if (hasExistingPick) {
+      
       setIsMapButtonVisible(false);
       setMapMarkers([]);
       setTimeout(() => {
@@ -168,6 +170,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         });
       }, 100);
     } else if (defaultLocation){
+      
       if(!defaultLocation.location) return;
       setPickedLocation({
         latitude:defaultLocation.location[1],
@@ -182,8 +185,28 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         lng: defaultLocation.location[0],
         zoom: 25,
       });
+
+      if(limitRadius && limitRadius>0){
+        const circle = new Circle(
+      'circle1',
+      'Circle 1',
+      defaultLocation.location[1],
+      defaultLocation.location[0],
+      limitRadius * 1000, // radius in meters
+      "#1A7d5fff",
+      "#7d5fff", 
+      "medium",
+      );
+      console.log('circle',circle);
+      setGeometries([circle]);
+         // Convert km to meters
+      }
+
+      
     } else {
+     
       if(!location) return;
+      console.log('location',location);
       setPickedLocation({
         latitude:location[1], 
         longitude: location[0],
@@ -304,6 +327,12 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           </View>
 
         </View>
+        {limitRadius && limitRadius>0 &&
+        <View style={{alignSelf:'center', backgroundColor:colors.yellow+'50',paddingHorizontal:10,paddingVertical:5,marginTop:5,width:"90%",borderRadius:5}}>
+      
+          <AdaptiveText style={{alignSelf:'center', fontSize:12, color:colors.grey_xxdark}}>{t('location_within_radius', { radius: limitRadius })}</AdaptiveText>
+        </View>
+        }
         <TouchableOpacity
           style={[
             styles.bottomContainerButton,
@@ -316,12 +345,31 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
             setIsConfirming(true);
             try {
 
-              console.log('pickedLocation----------------------',pickedLocation);
+             
+
+               if(limitRadius){
+                const fromLat = defaultLocation?.location[1];
+                const fromLon = defaultLocation?.location[0];
+
+                const toLat = pickedLocation?.latitude;
+                const toLon = pickedLocation?.longitude;
+                const distanceFromCenter = utils.calculateDistanceInMeters(fromLat, fromLon, toLat, toLon);
+
+                if(distanceFromCenter > limitRadius * 1000){
+
+                const title = t('location_outside_radius_title', { defaultValue: 'Location outside allowed radius' });
+                const message = t('location_outside_radius_message', { defaultValue: `You must select a location within a ${limitRadius} km radius.` });
+                Alert.alert(title, message);
+                return;
+                }
+              }
 
               if(!isFromRidePointsSelection){
                 onPickLocationResultCallback(pickedLocation, locationType);
                 return;
               }
+
+              
         
               let fromLat = null;
               let fromLon = null;
@@ -345,17 +393,9 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                 onPickLocationResultCallback(pickedLocation, locationType);
                 return;
               }
-              const toRadians = (degrees) => (degrees * Math.PI) / 180;
-              const R = 6371000; // meters
-              const dLat = toRadians(toLat - fromLat);
-              const dLon = toRadians(toLon - fromLon);
-              const lat1Rad = toRadians(fromLat);
-              const lat2Rad = toRadians(toLat);
-              const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                        Math.cos(lat1Rad) * Math.cos(lat2Rad) *
-                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-              const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-              const distanceMeters = R * c;
+              const distanceMeters = utils.calculateDistanceInMeters(fromLat, fromLon, toLat, toLon);
+
+             
               const isSameLocation = distanceMeters < 30; // treat <30m as same location
               if (isSameLocation) {
                 const title = t('same_location_title', { defaultValue: 'Locations too close' });

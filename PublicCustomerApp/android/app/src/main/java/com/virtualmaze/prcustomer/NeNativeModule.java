@@ -27,6 +27,7 @@ import com.dot.nenativemap.search.UnifiedSearchData;
 import com.facebook.react.bridge.Promise;
 
 import com.dot.nenativemap.MapChangeListener;
+import com.dot.nenativemap.annotations.CircleOptions;
 import com.dot.nenativemap.TouchInput;
 import com.dot.nenativemap.annotations.PolylineOptions;
 import com.dot.nenativemap.directions.RouteElementInstructionsDisplay;
@@ -1046,58 +1047,58 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     }
 
     public void renderCircle(ReadableMap circle){
-        // if(mapController==null){
-        //     return;
-        // }
-        // double lat = circle.getDouble("lat");
-        // double lng = circle.getDouble("lng");
-        // double radius = circle.getDouble("radius");
-        // boolean focus = circle.getBoolean("focus");
-        // ReadableArray margin = circle.getArray("padding");
-        // String fillColor = circle.getString("fillColor");
-        // String strokeColor = circle.getString("strokeColor");
-        // String strokeWidth  = circle.getString("strokeWidth");
+        if(mapController==null){
+            return;
+        }
+        double lat = circle.getDouble("lat");
+        double lng = circle.getDouble("lng");
+        double radius = circle.getDouble("radius");
+        boolean focus = circle.getBoolean("focus");
+        ReadableArray margin = circle.getArray("padding");
+        String fillColor = circle.getString("fillColor");
+        String strokeColor = circle.getString("strokeColor");
+        String strokeWidth  = circle.getString("strokeWidth");
 
-        // LngLat center = new LngLat(lng,lat );
-        // CircleOptions circleOptions = new CircleOptions();
+        LngLat center = new LngLat(lng,lat );
+        CircleOptions circleOptions = new CircleOptions();
 
-        // CircleOptions.StrokeWidth circleStrokeWidth = CircleOptions.StrokeWidth.SMALL;
-        // if(strokeWidth.equals("medium")){
-        //     circleStrokeWidth = CircleOptions.StrokeWidth.REGULAR;
-        // }
-        // if(strokeWidth.equals("large")){
-        //     circleStrokeWidth = CircleOptions.StrokeWidth.LARGE;
-        // }
+        CircleOptions.StrokeWidth circleStrokeWidth = CircleOptions.StrokeWidth.SMALL;
+        if(strokeWidth.equals("medium")){
+            circleStrokeWidth = CircleOptions.StrokeWidth.REGULAR;
+        }
+        if(strokeWidth.equals("large")){
+            circleStrokeWidth = CircleOptions.StrokeWidth.LARGE;
+        }
 
-        // Log.d("AJIN", strokeColor);
-        // Log.d("AJIN", fillColor);
+        Log.d("AJIN", strokeColor);
+        Log.d("AJIN", fillColor);
 
-        // circleOptions
-        //         .radius(radius)
-        //         .center(center)
-        //         .strokeColor(strokeColor)
-        //         .strokeWidth(circleStrokeWidth)
-        //         .fillColor(fillColor);
-        // List<LngLat> points = circleOptions.getPoints();
-        // double minLat = Double.MAX_VALUE;
-        // double maxLat = Double.MIN_VALUE;
-        // double minLon = Double.MAX_VALUE;
-        // double maxLon = Double.MIN_VALUE;
-        // for (int j = 0; j < points.size(); j++) {
-        //     LngLat coordinate = points.get(j);
-        //     double latitude = coordinate.latitude;
-        //     double longitude = coordinate.longitude;
-        //     if (latitude < minLat) minLat = latitude;
-        //     if (latitude > maxLat) maxLat = latitude;
-        //     if (longitude < minLon) minLon = longitude;
-        //     if (longitude > maxLon) maxLon = longitude;
-        // }
-        // if(focus){
-        //     mapController.updateCameraPosition(
-        //             CameraUpdateFactory.newLngLatBounds(new LngLat(minLon, minLat), new LngLat(maxLon, maxLat),
-        //                     new Rect(margin.getInt(0), margin.getInt(1), margin.getInt(2), margin.getInt(3))),500);
-        // }
-        // mapController.drawCircle(circleOptions);
+        circleOptions
+                .radius(radius)
+                .center(center)
+                .strokeColor(strokeColor)
+                .strokeWidth(circleStrokeWidth)
+                .fillColor(fillColor);
+        List<LngLat> points = circleOptions.getPoints();
+        double minLat = Double.MAX_VALUE;
+        double maxLat = Double.MIN_VALUE;
+        double minLon = Double.MAX_VALUE;
+        double maxLon = Double.MIN_VALUE;
+        for (int j = 0; j < points.size(); j++) {
+            LngLat coordinate = points.get(j);
+            double latitude = coordinate.latitude;
+            double longitude = coordinate.longitude;
+            if (latitude < minLat) minLat = latitude;
+            if (latitude > maxLat) maxLat = latitude;
+            if (longitude < minLon) minLon = longitude;
+            if (longitude > maxLon) maxLon = longitude;
+        }
+        if(focus){
+            mapController.updateCameraPosition(
+                    CameraUpdateFactory.newLngLatBounds(new LngLat(minLon, minLat), new LngLat(maxLon, maxLat),
+                            new Rect(margin.getInt(0), margin.getInt(1), margin.getInt(2), margin.getInt(3))),500);
+        }
+        mapController.drawCircle(circleOptions);
     }
 
 

@@ -11,11 +11,11 @@ const FallbackComponent = ({ error, resetError }) => {
         <Text style={styles.title}>Something went wrong</Text>
         <Text style={styles.subtitle}>An unexpected error occurred.</Text>
 
-        {/* <ScrollView style={styles.errorContainer} contentContainerStyle={styles.errorContent}>
+        <ScrollView style={styles.errorContainer} contentContainerStyle={styles.errorContent}>
           <Text selectable style={styles.errorText}>
             {errorMessage}
           </Text>
-        </ScrollView> */}
+        </ScrollView>
 
         <TouchableOpacity accessibilityRole="button" onPress={resetError} style={styles.button}>
           <Text style={styles.buttonText}>Try again</Text>

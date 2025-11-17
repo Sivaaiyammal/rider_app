@@ -618,5 +618,8 @@
   ,
   "same_location_title": "Locations too close",
   "same_location_message": "Pickup and drop-off locations are very close. Please choose a farther location.",
-  "make_online_payment_failed": "Failed to make online payment."
+  "make_online_payment_failed": "Failed to make online payment.",
+  "location_within_radius": "You must select a location within a {radius} km radius.",
+  "location_outside_radius_title": "Location outside allowed radius",
+  "location_outside_radius_message": "The selected location is outside pickup area. Please choose within the allowed radius."
 }

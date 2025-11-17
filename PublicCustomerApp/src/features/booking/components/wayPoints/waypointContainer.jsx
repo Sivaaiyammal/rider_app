@@ -19,10 +19,14 @@ import { Fonts } from '../../../../constants/constants';
 import  FontAwesome  from 'react-native-vector-icons/FontAwesome5';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTranslation } from 'react-i18next';
+import  useConfigStore  from '../../../../store/useConfigStore';
 const ITEM_HEIGHT = 50;
 
 const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
   const { t } = useTranslation();
+  const { appConfig } = useConfigStore();
+
+  console.log("appConfig.TOTAL_STOPS_ALLOWED",appConfig.TOTAL_STOPS_ALLOWED+2)
   
 
   // const [data, setData] = useState([]);
@@ -78,7 +82,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
     
     const addStopItem = { type: 'add-stop', key: 'add-stop', id: 'add-stop' };
   
-    if (reOrderWaypoints.length < 6) {
+    if (reOrderWaypoints.length < appConfig.TOTAL_STOPS_ALLOWED+2) {
       const newData = [...reOrderWaypoints];
       if (!newData.find(d => d.id === 'add-stop')) {
         newData.splice(lastAddStopIndex, 0, addStopItem);
@@ -120,7 +124,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
     const currentData = [...reOrderWaypoints];
     const currentFinalData = [...currentData];
     
-    if (currentData.length < 6) {
+    if (currentData.length < appConfig.TOTAL_STOPS_ALLOWED+2) {
       const addStopItem = { type: 'add-stop', key: 'add-stop', id: 'add-stop' };
       if (!currentFinalData.find(d => d.id === 'add-stop')) {
         currentFinalData.splice(lastAddStopIndex, 0, addStopItem);

@@ -609,5 +609,9 @@
   "give_feedback": "फीडबैक दें",
   "same_location_title": "स्थान बहुत पास हैं",
   "same_location_message": "पिकअप और ड्रॉप-ऑफ स्थान बहुत पास हैं। कृपया दूर का स्थान चुनें।",
-  "make_online_payment_failed": "ऑनलाइन भुगतान करने में विफल। कृपया पुनः प्रयास करें।"
+  "make_online_payment_failed": "ऑनलाइन भुगतान करने में विफल। कृपया पुनः प्रयास करें।",
+  "location_within_radius": "आपको {radius} किमी के दायरे में एक स्थान चुनना होगा।",
+  "select_different_location": "कृपया एक अलग स्थान चुनें।",
+  "location_outside_radius_title": "अनुमत दायरे के बाहर स्थान",
+  "location_outside_radius_message": "चयनित स्थान हमारे सेवा क्षेत्र के बाहर है। कृपया अनुमत दायरे के भीतर स्थान चुनें।"
 }

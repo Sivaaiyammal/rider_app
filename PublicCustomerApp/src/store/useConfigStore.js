@@ -17,6 +17,7 @@ const defaultConfig = {
   PAYMENT_METHODS: 'PG',
   SHOW_NEARBY_DRIVER: false,
   DRIVER_LOCATION_UPDATE_INTERVAL: 10,
+  TOTAL_STOPS_ALLOWED: 2
 };
 
 const useConfigStore = create((set, get) => ({

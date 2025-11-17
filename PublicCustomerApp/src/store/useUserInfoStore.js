@@ -27,8 +27,10 @@ const useUserInfoStore = create(set => ({
   userFavPlaces:[],
   setUserFavPlaces: userFavPlaces => set({ userFavPlaces }),
 
-  
-
+  totalSpend: 0,
+  totalTrips: 0,
+  cancelledTrips: 0,
+  completedTrips: 0,
   
   setTotalSpend: totalSpend => set({ totalSpend }),
   setTotalTrips: totalTrips => set({ totalTrips }),

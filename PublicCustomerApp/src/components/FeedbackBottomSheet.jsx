@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, ActivityIndicator, Platform, Vibration } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, ActivityIndicator, Platform, Vibration, BackHandler } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
 import BottomSheetWrapper from './BottomSheetWrapper';
@@ -99,6 +99,23 @@ const FeedbackBottomSheet = () => {
   useEffect(() => {
     setSheetIndex(isVisible ? 1 : -1);
   }, [isVisible]);
+
+  useEffect(() => {
+    const backAction = () => {
+      if (isVisible) {
+        sheetRef.current?.close();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, [isVisible, close]);
 
   const snapPoints = useMemo(() => ['40%', '100%'], []);
 

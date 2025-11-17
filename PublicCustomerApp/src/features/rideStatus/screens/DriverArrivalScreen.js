@@ -64,7 +64,8 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
       defaultLocation:item,
       label:t('edit_pickup_location'),
       isFromRidePointsSelection:false,
-      loading:loading
+      loading:loading,
+      limitRadius:1
     })
   }
 
