@@ -58,9 +58,24 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
   const storeInRecentTrips = async (item) => {
     
         try {
+          if(!item) return;
 
-          item["name"]=item?.placeName
+          console.log("Item to store in recent trips:", item);
+
+          if( (item?.name && item?.name == "Unnamed Location") || (item?.placeName && item?.placeName == "Unnamed Location") ) {
+           
+            return;
+           
+          }
+
+          if( item?.placeName  ) {
+          item["name"]=item?.placeName 
+          }
+
+          if( item?.address  ) {
           item["address"]=utils.formatArrayAddress(item?.address)
+
+          }
 
           console.log("Storing in recent trips:", item);
           const recentSearches = await DataStore.loadData('recentSearches');
@@ -136,7 +151,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       isReached:false
     });
 
-    //  storeInRecentTrips(rideEndLocation);
+    storeInRecentTrips(rideEndLocation);
 
 
 

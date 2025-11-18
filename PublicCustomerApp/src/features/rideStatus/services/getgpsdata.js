@@ -43,7 +43,7 @@ export default async function getGpsData({ tripId, startTime, endTime, token }) 
 
     
 
-    const GPSDistance = processed?.data?.sessions!=0 ? processed?.data?.sessions?.reduce((acc, session) => acc + (session[5] || 0), 0) : [];
+    const GPSDistance = processed?.data?.sessions!=0 ? processed?.data?.sessions?.reduce((acc, session) => acc + (session[5] || 0), 0) : 0;
     const times = processed?.data?.times || [];
     const totalDuration = times.length > 1 ? times[times.length - 1] - times[0] : 0;
     const minutes = Math.floor(totalDuration / 60000);

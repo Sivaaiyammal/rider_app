@@ -181,11 +181,13 @@ const RideStatus = () => {
       // distance = routeData.trip.summary.length; 
       //  }
       // }
+      console.log("FinalDuration",FinalDuration)
+      console.log("GPSdistance",GPSdistance)
       
       const payload = {
         tripId,
         reason: cancelReason,
-        totalDistance: GPSdistance?.toFixed(2),
+        totalDistance: GPSdistance?.toFixed(1) || 0.0,
         totalDuration: Math.round(FinalDuration)
       };
 
