@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useCallback,useState } from 'react';
+import React, { useEffect, useMemo, useCallback,useState, act } from 'react';
 import {
   View,
   Text,
@@ -85,7 +85,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
     
     const addStopItem = { type: 'add-stop', key: 'add-stop', id: 'add-stop' };
   
-    if (reOrderWaypoints.length < appConfig.TOTAL_STOPS_ALLOWED+2) {
+    if (reOrderWaypoints.length+reachedStops.length < appConfig.TOTAL_STOPS_ALLOWED+2) {
       const newData = [...reOrderWaypoints];
       if (!newData.find(d => d.id === 'add-stop')) {
         newData.splice(lastAddStopIndex, 0, addStopItem);
@@ -151,7 +151,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
       type: index === 0 ? LocationTypes.START_LOCATION :LocationTypes.WAYPOINT_LOCATION
     }));
 
-    if(waypointIndex != 0 && waypointIndex != finalData.length-1){
+    if((waypointIndex != 0 || ( reachedStops.length > 0 && waypointIndex == 0 ))  && waypointIndex != finalData.length-1){
    
       setCurrentEditWaitWaypoint({index:waypointIndex,item:transformedData[waypointIndex]})
       setIsEditwaitingTime(true)
@@ -188,10 +188,15 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
 
   const onClickAddWayPoint=(index)=>{
     const actualindex = index + reachedStops.length 
-    let finalindex = finalData.length 
-    if(lastAddStopIndex < index){
+    let finalindex = finalData.length-1
+    if(lastAddStopIndex <= index){
       finalindex = finalindex+reachedStops.length
     }
+
+    console.log("index",index)
+    console.log("lastAddStopIndex",lastAddStopIndex)
+    console.log("actualindex",actualindex)
+    console.log("finalindex",finalindex)
     
     let label = actualindex == 0 ? t('locate_pickup_location') :actualindex == finalindex ? t('locate_drop_location') : t('locate_stop',{stop:actualindex})
     if(!reachedStops?.length && reOrderWaypoints.length == 1){
@@ -248,7 +253,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
     const indexToReplace = index>lastAddStopIndex?index-1:index;
     updatedWaypoints[indexToReplace] = item;
     setReOrderWaypoints(updatedWaypoints);
-     if(index != 0 && index != finalData.length-1){
+     if((index != 0 || ( reachedStops.length > 0 && index == 0 ))  && index != finalData.length-1){
     setCurrentEditWaitWaypoint({index:index,item:item})
     setIsEditwaitingTime(true)
      }
@@ -266,12 +271,22 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
   const handleWaypointPress = (index) => {
     let dataIndex = index
     const actualindex = index + reachedStops.length
-    let finalindex = finalData.length-1
-    if(lastAddStopIndex < index){
-      finalindex = finalindex+reachedStops.length
-      dataIndex = index -1
-    }
-    let label = actualindex == 0 ? t('locate_pickup_location') :actualindex == finalindex ? t('locate_drop_location') : t('locate_stop',{stop:actualindex})
+    // let finalindex = finalData.length-2
+    // if(lastAddStopIndex < index){
+    //   finalindex = reachedStops.length-1
+    // }
+
+    const totalIndex = finalData.length + reachedStops.length - 1
+    
+    const currentItemTotalIndex = finalData.length - 1 
+
+    const isLastPoint = index == currentItemTotalIndex
+    
+   
+
+   
+    
+    let label = actualindex == 0 ? t('locate_pickup_location') : isLastPoint ? t('locate_drop_location') : t('locate_stop',{stop:actualindex})
    
     // setStackScreen("SearchScreen",{
     //   onSearchClick:onSearchReplaceWaypointCallback,
@@ -289,7 +304,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
       onPickLocationResultCallback:onSearchReplaceWaypointCallback,
       index:index,
       locationType:LocationTypes.WAYPOINT_LOCATION,
-      // label:label,
+      label:label,
       searchBar:true,
      
     }
