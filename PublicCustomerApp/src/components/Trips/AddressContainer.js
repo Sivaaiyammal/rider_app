@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import  useWayPointReorderStore from '../../features/booking/store/useWayPointReorderStore';
 import {utils} from '../../utils/Utils';
 import AdaptiveText from '../Common/AdaptiveText';
-const AddressContainer = ({ directions,edit=false ,live=false,completed=false , bg=null}) => {
+const AddressContainer = ({ directions,edit=false ,live=false,completed=false , bg=null, fromDriverArrival=false}) => {
 
 
   const getLocationIcon = (item,index,length,isReached) => {
@@ -44,7 +44,8 @@ const AddressContainer = ({ directions,edit=false ,live=false,completed=false , 
     console.log("beforeEditStops",stops)
     setOnGoingRideStops(stops)
     setStackScreen('WaypointScreen',{
-      tripId:tripId
+      tripId:tripId,
+      fromDriverArrival:fromDriverArrival
     })
   }
   

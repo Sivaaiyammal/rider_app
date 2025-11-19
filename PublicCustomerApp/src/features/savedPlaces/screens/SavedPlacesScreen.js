@@ -48,11 +48,20 @@ const SavedPlacesScreen = () => {
   }
 
   const handleAddPlace = () => {
-    setStackScreen('SearchScreen',{
-      onSearchClick: handleSearchCallback,
-      searchType:'savedPlaces',
-      label:t('locate_places_to_save')
-    });
+    // setStackScreen('SearchScreen',{
+    //   onSearchClick: handleSearchCallback,
+    //   searchType:'savedPlaces',
+    //   label:t('locate_places_to_save')
+    // });
+
+    const props = {
+      onPickLocationResultCallback:handleSearchCallback,
+      locationType:'savedPlaces',
+      label: t('locate_places_to_save'),
+    
+      searchBar:true
+    }
+    setStackScreen('PickLocationScreen', props);
   };
 
   const handlePlacePress = (place) => {

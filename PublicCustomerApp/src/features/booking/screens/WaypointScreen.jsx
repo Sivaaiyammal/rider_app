@@ -27,7 +27,7 @@ import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoSt
 import { height } from '../../../utils/Utils';
 import {utils} from '../../../utils/Utils';
 
-const WaypointScreen = () => {
+const WaypointScreen = ({ fromDriverArrival = false }) => {
   const {tripId}=useCurrentRideInfoStore()
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = React.useState(false);
@@ -410,7 +410,7 @@ useEffect(() => {
     <>
       <View style={styles.topContainer}>
       <NavBar onBackPress={onBackPress} title={t('add_stops')} />
-          <WaypointContainer  setEnableConfirmButton={setEnableConfirmButton} editedRoutecheckText={editedRoutecheckText} />
+          <WaypointContainer  setEnableConfirmButton={setEnableConfirmButton} editedRoutecheckText={editedRoutecheckText} fromDriverArrival={fromDriverArrival}/>
       </View>
       <View style={styles.footer}>
         <TouchableOpacity

@@ -621,5 +621,9 @@
   "make_online_payment_failed": "Failed to make online payment.",
   "location_within_radius": "You must select a location within a {radius} km radius.",
   "location_outside_radius_title": "Location outside allowed radius",
-  "location_outside_radius_message": "The selected location is outside pickup area. Please choose within the allowed radius."
+  "location_outside_radius_message": "The selected location is outside pickup area. Please choose within the allowed radius.",
+  "warning": "Warning",
+  "cannot_change_pickup_location_driver_assigned": "You cannot edit the pickup location after a driver has been assigned."
+
+
 }

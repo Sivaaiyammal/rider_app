@@ -201,9 +201,10 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
   }
 
   const handleLocationClick=(type)=>{
+    console.log("handleLocationClick",type)
     
-
-    onSearchClick(type)
+    handlePickLocation(type)
+    // onSearchClick(type)
   }
 
   // Debounced pick location callback
@@ -220,14 +221,24 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
     
   }
 
-  const handlePickLocation = () =>{
-    
-    setStackScreen('PickLocationScreen',{
+  const handlePickLocation = (type=null) =>{
+
+    const props ={
       onPickLocationResultCallback:onPickLocationResultCallback,
-      locationType:LocationTypes.DESTINATION_LOCATION,
-      label:t('locate_drop_location'),
-      isFromRidePointsSelection:true
-    })
+      locationType:type?type:LocationTypes.DESTINATION_LOCATION,
+      label: type === LocationTypes.DESTINATION_LOCATION ? t('locate_drop_location') : type === LocationTypes.WAYPOINT_LOCATION ? t('locate_stop') : t('locate_pickup_location'),
+      isFromRidePointsSelection:true,
+      searchBar:true
+    }
+
+    if(type === LocationTypes.START_LOCATION && rideStartLocation){
+      props.defaultLocation = rideStartLocation
+    }
+    if(type === LocationTypes.DESTINATION_LOCATION && rideEndLocation){
+      props.defaultLocation = rideEndLocation
+    }
+    
+    setStackScreen('PickLocationScreen', props)
   }
 
   // Debounced history location callback
@@ -309,10 +320,10 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
         </ScrollView>
 
         <View style={styles.pickLocationContainer}> 
-          <PickLocationButton
+          {/* <PickLocationButton
           onPress={handlePickLocation}
        
-          />
+          /> */}
          {
           isContinueButtonVisible && (
             <TouchableOpacity style={[styles.continueButton, isContinuing && styles.continueButtonDisabled]} onPress={()=>{ setIsContinuing(true); setStackScreen("BookRideScreen",{});Vibration.vibrate(100); }} disabled={isContinuing}>

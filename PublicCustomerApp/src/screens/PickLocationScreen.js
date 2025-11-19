@@ -2,6 +2,7 @@ import React, {useState, useEffect, useCallback, useRef} from 'react';
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   Image,
   TouchableOpacity,
@@ -23,6 +24,8 @@ import useMapStyleStore from '../store/useMapStyleStore';
 import CurrentLocationIcon from '../assets/icons/CurrentLocationIcon.svg';
 import { openFeedback } from '../utils/feedback';
 import  Circle from '../controllers/NEMap/Circle';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 // import locationTask from "../controllers/GetCurrentLocation";
 import usePropsStore from '../store/usePropsStore';
@@ -34,14 +37,22 @@ import AdaptiveText from '../components/Common/AdaptiveText';
 import { findRoute } from '../controllers/NEMap/findRoute';
 import polyline from '@mapbox/polyline';
 import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore';
+import SearchScreen from '../features/search/screens/SearchScreen.jsx';
+import { search } from 'react-native-country-picker-modal/lib/CountryService';
 
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null}) => {
+
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation,setGeometries } = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
+  const {setStackScreen} = useStackScreenStore();
+  const [searchTxt, setSearchTxt] = useState(null);
   const {currentLocationName,location} = useLocationStore();
   const {setIsMapButtonVisible} = useMapStyleStore();
   const {pickedLocation,setPickedLocation} = usePropsStore();
+  const [showSearch,setShowSearch] = useState(false);
+  // Ref to suppress handling of the next map center change when it is programmatic
+  const suppressCenterChangeRef = useRef(false);
   const [mapMoving,setMapMoving] = useState(false)
   const { t } = useTranslation();
   const [isConfirming, setIsConfirming] = useState(false);
@@ -110,16 +121,23 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     if(response.address){
       item.address = response.address;
     }
+    setSearchTxt(null);
     setPickedLocation(item);
     setIsAddressLoading(false);
   }, 500);
 
   const onmapCenterChanged = async (data)=>{
+    // Ignore the next center change if we flagged it as programmatic
+    if (suppressCenterChangeRef.current) {
+      suppressCenterChangeRef.current = false;
+      setMapLocation(false)
+      return;
+    }
     setMapMoving(false);
-    setPickedLocation(null)
+    // Start loading a new address only after user interaction
     setIsAddressLoading(true);
     debouncedMapCenterChange(data);
-  }
+  };
 
   const onMapRotationChangedCallback = async ()=>{
     setMapMoving(true);
@@ -162,6 +180,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       
       setIsMapButtonVisible(false);
       setMapMarkers([]);
+      suppressCenterChangeRef.current = true;
       setTimeout(() => {
         setMapLocation({
           lat: pickedLocation.latitude,
@@ -169,20 +188,39 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           zoom: 18,
         });
       }, 100);
+      setTimeout(()=>{
+        setMapMoving(false);
+      },500)
+
     } else if (defaultLocation){
+
+      console.log('defaultLocation',defaultLocation);
       
-      if(!defaultLocation.location) return;
+      if(!defaultLocation.location && ( !defaultLocation.latitude && !defaultLocation.longitude)) return;
+
+      const lat = defaultLocation?.location?.[1] || defaultLocation.latitude;
+      const lon = defaultLocation?.location?.[0] || defaultLocation.longitude;
+
+      console.log({
+        latitude:lat,
+        longitude:lon,
+        placeName:defaultLocation.placeName || defaultLocation,
+        address:defaultLocation.address,
+        type:locationType,
+        locationFrom:"MAP"
+      })
       setPickedLocation({
-        latitude:defaultLocation.location[1],
-        longitude:defaultLocation.location[0],
-        placeName:defaultLocation.placeName,
+        latitude:lat,
+        longitude:lon,
+        placeName:defaultLocation.placeName || defaultLocation?.name,
         address:defaultLocation.address,
         type:locationType,
         locationFrom:"MAP"
       });
+      suppressCenterChangeRef.current = true;
       setMapLocation({
-        lat: defaultLocation.location[1],
-        lng: defaultLocation.location[0],
+        lat: defaultLocation?.location?.[1] || defaultLocation.latitude,
+        lng: defaultLocation?.location?.[0] || defaultLocation.longitude,
         zoom: 25,
       });
 
@@ -201,6 +239,10 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       setGeometries([circle]);
          // Convert km to meters
       }
+       setTimeout(()=>{
+        setMapMoving(false);
+      },500)
+      setIsAddressLoading(false);
 
       
     } else {
@@ -217,6 +259,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       });
       setIsMapButtonVisible(false);
       setMapMarkers([]); 
+      suppressCenterChangeRef.current = true;
       setTimeout(()=>{
         setMapLocation({
           lat: location[1],
@@ -224,8 +267,12 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           zoom: 18,
         });
       },100);
-    }
+       setTimeout(()=>{
+        setMapMoving(false);
+      },500)
 
+    }
+    
     return ()=>{
       setOnMapCenterChanged(null);
       setIsMapButtonVisible(true);
@@ -249,15 +296,8 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     };
   }, []);
 
-  // removed unused handleCurrentLocation to satisfy linter
-
-  return (
-    <>
-      <NavBar
-        title={ t('locate_on_map')}
-        onBackPress={() => goBack()}
-        feedbackIcon={true}
-        onrightIconPress={() => {
+  const handleFeedback = () => {
+    console.log("handleFeedback pickedLocation",pickedLocation)
           const lat = pickedLocation?.latitude.toFixed(6);
           const lon = pickedLocation?.longitude.toFixed(6);
           const coordStr = (lat != null && lon != null) ? `${lat} , ${lon}` : '';
@@ -265,8 +305,83 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
             screenName: 'PickLocationScreen',
             initialValues: { coords: coordStr },
           });
-        }}
-      />
+        };
+
+  const handleBack = () => {
+    // Clear transient picked location only when user explicitly backs out.
+    setPickedLocation(null);
+    setGeometries([]);
+    goBack();
+  };
+
+  const onSearchClickResultCallback = (result,type) => {
+    if(!result) return;
+    // Cancel any pending reverse geocode from map center change to avoid overwriting
+    if (debouncedMapCenterChange && debouncedMapCenterChange.cancel) {
+      debouncedMapCenterChange.cancel();
+    }
+
+    // Suppress the center change event triggered by programmatic map update
+    suppressCenterChangeRef.current = true;
+    const updated = {
+      latitude: result.latitude,
+      longitude: result.longitude,
+      placeName: result.placeName || result.name || '',
+      address: result.address,
+      type: locationType ?? type,
+      locationFrom: 'MAP'
+    };
+    setPickedLocation(updated);
+    setSearchTxt(updated.placeName || updated.address || '');
+    // Ensure UI stops showing skeleton loader
+    setIsAddressLoading(false);
+    setMapLocation({
+      lat: updated.latitude,
+      lng: updated.longitude,
+      zoom: 18,
+    });
+    console.log('onSearchClickResultCallback', updated);
+    setShowSearch(false);
+   
+  };
+
+  const handleSearch = () => {
+    setShowSearch(true);
+  }
+
+  // removed unused handleCurrentLocation to satisfy linter
+
+  return (
+    <>
+      
+      {searchBar ? (
+        <View style={styles.searchBarContainer}>
+          <View style={styles.searchBar}>
+            <TouchableOpacity
+              style={styles.searchBarIconButton}
+              onPress={handleBack}
+              accessibilityRole="button"
+              accessibilityLabel={t('back', { defaultValue: 'Back' })}
+            >
+              <Icon name="arrow-back" size={22} color={colors.black} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.searchBarInputContainer} onPress={handleSearch}>
+              <Icon name="search" size={20} color={colors.grey_dark} />
+              <Text
+                style={[styles.searchBarInput,{color: searchTxt?colors.black: colors.grey_dark}]}
+              
+              >{searchTxt?searchTxt:t('search_cities_areas_streets')}</Text>
+            </TouchableOpacity>
+        
+          </View>
+        </View>
+      ):
+      <NavBar
+        title={ t('locate_on_map')}
+        onBackPress={handleBack}
+        feedbackIcon={true}
+        onrightIconPress={handleFeedback}
+      />}
       <View style={[styles.container]}>
         <View style={[mapMoving && { marginBottom: 7 },{ alignSelf: 'center', alignItems: 'center' }]}>
           <Image source={PickIcon} style={styles.pickIcon} />
@@ -280,10 +395,20 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       <View style={styles.bottomContainer}>
         <View style={styles.mapIconContainer}>
           <MapIcon />
+          
         </View>
+        <View>
         <TouchableOpacity style={styles.currentLocationIconContainer} onPress={centerMap}>
           <CurrentLocationIcon width={25} height={25} />
-        </TouchableOpacity>
+          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.feedbackIcon, { backgroundColor: colors.black,}]}
+              onPress={handleFeedback}
+            >
+               <Ionicons name={"chatbubble-ellipses-outline"} size={25} color={colors.white} />
+            </TouchableOpacity>
+        </View>
+        
         <LinearGradient
           colors={['transparent','#303030',]}
           start={{ x: 1, y: 0 }}
@@ -298,10 +423,18 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                   </View> */}
           <View style={styles.AddressContainerMain}>
               <AdaptiveText style={styles.AddressContainerTextTitle} color={colors.grey_xxdark}>📍 {t('address')}</AdaptiveText>
-             {!isAddressLoading && pickedLocation?.placeName && <Text style={styles.AddressContainerPlaceName} color={colors.black}>{utils.capitalizeFirstLetter(pickedLocation?.placeName)}</Text>}
-            {(!isAddressLoading && pickedLocation?.address && pickedLocation?.placeName) &&
-              <Text style={styles.AddressContainerTextAddress} color={colors.grey_xxdark}>{utils.formatArrayAddress(pickedLocation.address)}</Text>
-            }
+             {!isAddressLoading && pickedLocation?.placeName && (
+               <Text style={styles.AddressContainerPlaceName} color={colors.black}>
+                 {utils.capitalizeFirstLetter(pickedLocation?.placeName)}
+               </Text>
+             )}
+            {!isAddressLoading && pickedLocation?.address && pickedLocation?.placeName && (
+              <Text style={styles.AddressContainerTextAddress} color={colors.grey_xxdark}>
+                {Array.isArray(pickedLocation.address)
+                  ? utils.formatArrayAddress(pickedLocation.address)
+                  : pickedLocation.address}
+              </Text>
+            )}
 
             {(isAddressLoading || !pickedLocation?.placeName)  &&
               <View style={styles.AddressContainerSkeleton}>
@@ -345,6 +478,8 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
             setIsConfirming(true);
             try {
 
+               setGeometries([]);
+
              
 
                if(limitRadius){
@@ -365,7 +500,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
               }
 
               if(!isFromRidePointsSelection){
-                onPickLocationResultCallback(pickedLocation, locationType);
+                onPickLocationResultCallback(pickedLocation, locationType,index);
                 return;
               }
 
@@ -390,7 +525,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
               const toLat = pickedLocation?.latitude;
               const toLon = pickedLocation?.longitude;
               if (fromLat == null || fromLon == null ) {
-                onPickLocationResultCallback(pickedLocation, locationType);
+                onPickLocationResultCallback(pickedLocation, locationType,index);
                 return;
               }
               const distanceMeters = utils.calculateDistanceInMeters(fromLat, fromLon, toLat, toLon);
@@ -408,6 +543,8 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                 { lat: toLat, lon: toLon }
               ];
 
+              console.log('points',points);
+
               const routeData = await findRoute(points);
               const summary = await extractRouteSummary(routeData);
               const lastLatLng = await getLastLatLngfromPolyLine(routeData);
@@ -421,7 +558,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                   pickedLocation.latitude = lastLatLng[0];
                   pickedLocation.longitude = lastLatLng[1];
                 }
-                onPickLocationResultCallback(pickedLocation, locationType);
+                onPickLocationResultCallback(pickedLocation, locationType,index);
               } else if (distanceKm == null ) {
                 Alert.alert('No route found', 'No route is available to the selected location.');
                
@@ -451,6 +588,16 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
 
       </View>
+      {showSearch && (
+        <View style={styles.searchOverlay}>
+          <SearchScreen
+            onSearchClick={onSearchClickResultCallback}
+            searchType={locationType}
+            onClose={() => setShowSearch(false)}
+            hidePickLocation={true}
+          />
+        </View>
+      )}
     </>
   );
 };
@@ -460,7 +607,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 100,
+    marginBottom: 30,
   },
   pickIcon: {
     width: 25,
@@ -517,6 +664,56 @@ const styles = StyleSheet.create({
     
    
   },
+  searchBarContainer:{
+    position:'absolute',
+    top:5,
+    left:10,
+    right:10,
+    zIndex:1000,
+    alignItems:'center',
+  },
+  searchBar:{
+    flexDirection:'row',
+    alignItems:'center',
+    gap:7,
+    paddingHorizontal:12,
+    paddingVertical:10,
+  
+    borderRadius:12,
+    width:"100%",
+    boxShadow: '0px 0px 10px 0px rgba(0, 0, 0, 0.1)',
+  
+  },
+  searchBarIconButton:{
+    backgroundColor: colors.white,
+    borderRadius: 999,
+    padding: 6,
+    borderWidth: 1,
+    borderColor: colors.grey_light,
+    elevation: 10,
+  },
+  searchBarInputContainer:{
+    flex:1,
+    flexDirection:'row',
+  
+    alignItems:'center',
+    backgroundColor:colors.white,
+    borderRadius:30,
+    paddingHorizontal:10,
+    paddingVertical:10,
+    gap:8,
+    borderWidth:1,
+    borderColor:colors.grey_light,
+   
+  },
+  searchBarInput:{
+    flex:1,
+    fontSize:16,
+    fontFamily: Fonts.regular,
+    color: colors.black,
+    padding:0,
+    textTransform:'capitalize'
+  },
   AddressContainerIcon: {
     backgroundColor:  '#fff79e',
     padding: 10,
@@ -532,7 +729,21 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontFamily: Fonts.regular,
   
-  },    
+  },   
+  feedbackIcon: {
+    position: 'absolute',
+    top: -height * 0.15,
+    right: 10,
+    zIndex: 1000,
+    backgroundColor: colors.black,
+    padding: 10,
+    borderRadius: 30,
+    boxShadow: '0px 0px 10px 0px rgba(0, 0, 0, 0.1)',
+    elevation: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+   
   AddressContainerPlaceName: {
     fontSize: 16,
     color: colors.black,
@@ -609,6 +820,16 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     transform: [{ scaleX: 2 }],
   },
+  searchOverlay:{
+    position:'absolute',
+    top:0,
+    left:0,
+    right:0,
+    bottom:0,
+    backgroundColor: 'white',
+    zIndex:2000,
+    elevation:20,
+  }
 });
 
 PickLocationScreen.propTypes = {

@@ -37,7 +37,7 @@ import PropTypes from 'prop-types';
 
 const searchCache = new Map();
 
-const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwaitingTime=false,title=null,index=null,label=null}) => {
+const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwaitingTime=false,title=null,index=null,label=null,onClose=null,hidePickLocation=false }) => {
   const [searchTxt,setSearchTxt] = useState("");
   const {goBack,setStackScreen} = useStackScreenStore();
   const [isLoading,setIsLoading] = useState(false);
@@ -321,8 +321,12 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   }
 
   const onGoBack = () => {
-    goBack();
-    setSelectedInput(null); // to disable locate on map when goBack
+    if (onClose) {
+      onClose();
+    } else {
+      goBack();
+    }
+    setSelectedInput(null); // to disable locate on map when goBack or close
   }
 
   const onFeedbackPress = () => {
@@ -340,6 +344,10 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   }
 
   const handleLocateOnMap = () => {
+    if(onClose){
+      onClose();
+      return;
+    }
     goBack();
     setStackScreen('PickLocationScreen', {
       onPickLocationResultCallback: handleLocateOnMapCallback,
@@ -522,7 +530,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
           </>
         )}
         
-       { !(searchTxt.trim() == '' || stateVector ) && ( <TouchableOpacity style={styles.bottomBtn} onPress={()=>handleLocateOnMap()}>
+       { (!hidePickLocation && !(searchTxt.trim() == '' || stateVector )) && ( <TouchableOpacity style={styles.bottomBtn} onPress={()=>handleLocateOnMap()}>
           <Entypo name="location" size={18} color={colors.white} />
           <Text style={styles.bottomBtnTxt}>{t('locate_on_map')}</Text>
         </TouchableOpacity>
@@ -585,6 +593,7 @@ SearchScreen.propTypes = {
   title: PropTypes.any,
   index: PropTypes.any,
   label: PropTypes.any,
+  onClose: PropTypes.func,
 };
 
 export default SearchScreen;

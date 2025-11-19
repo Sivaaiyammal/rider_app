@@ -83,7 +83,7 @@ const TripDetailsModal = ({
         )}
         
         {/* Address Container */}
-        <AddressContainer directions={stops} edit={waitingForDriverApproval === "PENDING" ? false : true} live={true} />
+        <AddressContainer directions={stops} edit={waitingForDriverApproval === "PENDING" ? false : true} live={true} fromDriverArrival={true}/>
         {/* <TouchableOpacity style={styles.paymentRow} onPress={onPaymentMethodChange}>
           <Text style={styles.paymentLabel}>{t('change_payment_method_label')}</Text>
           <View style={styles.paymentValueWrap}>

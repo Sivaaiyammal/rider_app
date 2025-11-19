@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import DraggableFlatList from 'react-native-draggable-flatlist';
 import PropTypes from 'prop-types';
@@ -20,11 +21,13 @@ import  FontAwesome  from 'react-native-vector-icons/FontAwesome5';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useTranslation } from 'react-i18next';
 import  useConfigStore  from '../../../../store/useConfigStore';
+import useCurrentRideInfoStore from '../../../rideStatus/store/useCurrentRideInfoStore';
 const ITEM_HEIGHT = 50;
 
-const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
+const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriverArrival=false}) => {
   const { t } = useTranslation();
   const { appConfig } = useConfigStore();
+    const {tripStatus} = useCurrentRideInfoStore();
 
   console.log("appConfig.TOTAL_STOPS_ALLOWED",appConfig.TOTAL_STOPS_ALLOWED+2)
   
@@ -194,15 +197,29 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
     if(!reachedStops?.length && reOrderWaypoints.length == 1){
       label=t('locate_drop_location')
     }
-      setStackScreen("SearchScreen",{
-        onSearchClick:onSearchClickResultCallback,
-        index:index,
-        searchType:LocationTypes.WAYPOINT_LOCATION,
-        fromaddWayPoint:index != 0 && index != finalData.length-1 ? true : false,
-        getwaitingTime:index !== 0 && index !== finalData.length-1 ? true : false,
-        label:label,
+      // setStackScreen("SearchScreen",{
+      //   onSearchClick:onSearchClickResultCallback,
+      //   index:index,
+      //   searchType:LocationTypes.WAYPOINT_LOCATION,
+      //   fromaddWayPoint:index != 0 && index != finalData.length-1 ? true : false,
+      //   getwaitingTime:index !== 0 && index !== finalData.length-1 ? true : false,
+      //   label:label,
         
-      })
+      // })
+
+      const props ={
+      onPickLocationResultCallback:onSearchClickResultCallback,
+      index:index,
+      locationType:LocationTypes.WAYPOINT_LOCATION,
+      label:label,
+      isFromRidePointsSelection:true,
+      searchBar:true
+    }
+
+
+    setStackScreen('PickLocationScreen', props)
+
+      
     }
     
 
@@ -247,19 +264,42 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText}) => {
   }
 
   const handleWaypointPress = (index) => {
+    let dataIndex = index
     const actualindex = index + reachedStops.length
     let finalindex = finalData.length-1
     if(lastAddStopIndex < index){
       finalindex = finalindex+reachedStops.length
+      dataIndex = index -1
     }
     let label = actualindex == 0 ? t('locate_pickup_location') :actualindex == finalindex ? t('locate_drop_location') : t('locate_stop',{stop:actualindex})
    
-    setStackScreen("SearchScreen",{
-      onSearchClick:onSearchReplaceWaypointCallback,
+    // setStackScreen("SearchScreen",{
+    //   onSearchClick:onSearchReplaceWaypointCallback,
+    //   index:index,
+    //   searchType:LocationTypes.WAYPOINT_LOCATION,
+    //   label:label
+    // })
+     if(dataIndex == 0 && tripStatus == "ACCEPTED"){
+     Alert.alert(t('warning'), t('cannot_change_pickup_location_driver_assigned'));
+     return
+   }
+
+    console.log(label,'label')
+    const props ={
+      onPickLocationResultCallback:onSearchReplaceWaypointCallback,
       index:index,
-      searchType:LocationTypes.WAYPOINT_LOCATION,
-      label:label
-    })
+      locationType:LocationTypes.WAYPOINT_LOCATION,
+      // label:label,
+      searchBar:true,
+     
+    }
+   if(dataIndex == 0 && tripStatus == "ACCEPTED"){
+     props.limitRadius=1
+   }
+    if(reOrderWaypoints[dataIndex]){
+      props.defaultLocation = reOrderWaypoints[dataIndex]
+    }
+    setStackScreen('PickLocationScreen', props)
   }
 
   const renderItem = useCallback(({ item, drag, isActive ,isReached}) => {
