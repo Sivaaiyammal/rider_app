@@ -623,7 +623,11 @@
   "location_outside_radius_title": "Location outside allowed radius",
   "location_outside_radius_message": "The selected location is outside pickup area. Please choose within the allowed radius.",
   "warning": "Warning",
-  "cannot_change_pickup_location_driver_assigned": "You cannot edit the pickup location after a driver has been assigned."
+  "cannot_change_pickup_location_driver_assigned": "You cannot edit the pickup location after a driver has been assigned.",
+  "button_locate_drop_location": "Confirm Drop Location",
+  "button_locate_pickup_location": "Confirm Pickup Location",
+  "button_locate_stop": "Confirm Stop {stop}"
+  
 
 
 }

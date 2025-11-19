@@ -33,7 +33,7 @@ import { Fonts } from '../../../constants/constants';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { openFeedback } from '../../../utils/feedback';
 
-const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
+const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces}) => {
   const { t } = useTranslation();
   const {userdetails,userFavPlaces} = useUserInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
@@ -70,6 +70,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
     goBack();
   };
 
+
+ 
   const onFeedbackPress = () => {
     const startName = (rideStartLocation && (rideStartLocation.name || rideStartLocation.address)) || '';
     const endName = (rideEndLocation && (rideEndLocation.name || rideEndLocation.address)) || '';
@@ -95,18 +97,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
     
   }, []);
 
-  useEffect(() => {
-    if (userdetails){
-      if(!rideBookMode){
-        setRideBookMode('MYSELF')
-        setPassangerDetails({name:userdetails.name,phone:userdetails.phone})
-      }
-    }
-    
-    if(showScheduleTime){
-      setShowScheduleContainer(true)
-    }
-  }, []);
+ 
 
   useEffect(() => {
     return () => {
@@ -209,16 +200,40 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
 
   // Debounced pick location callback
   const debouncedPickLocationCallback = (item, type) => {
-    goBack()
-    HandsetRideLocation(item,type)
-    if(type !== LocationTypes.START_LOCATION){
-      setStackScreen('BookRideScreen',{})
+    // First update the store with the selected location
+    HandsetRideLocation(item, type);
+
+    const isStart = type === LocationTypes.START_LOCATION;
+    // Derive what start/end will be after this selection to avoid using stale values
+    const nextStartLocation = isStart ? item : rideStartLocation;
+    const nextEndLocation = isStart ? rideEndLocation : item; // if selecting destination/waypoint, item is the end/waypoint
+    console.log("nextStartLocation,nextEndLocation",nextStartLocation,nextEndLocation)
+    // // If we have both start & end after this selection and it's not a start selection, go straight to booking
+    if ( nextStartLocation && nextEndLocation && !nextStartLocation?.currentLocation) {
+      goBack()
+      setStackScreen('BookRideScreen', {});
+      return; // Skip going back, we are moving forward
     }
+
+    // Otherwise just go back to the previous screen
+    goBack();
   };
 
   const onPickLocationResultCallback = (item,type) =>{
     debouncedPickLocationCallback(item,type)
     
+  }
+   const confirmPickUpCurrentLocation = () => {
+    console.log("confirmPickUpCurrentLocation",fromSavedPlaces)
+    const props ={
+      onPickLocationResultCallback:onPickLocationResultCallback,
+      locationType:LocationTypes.START_LOCATION,
+      label:t('locate_pickup_location'),
+      buttonLabel:t('button_locate_pickup_location'),
+      isFromRidePointsSelection:true,
+      searchBar:true
+    }
+    setStackScreen('PickLocationScreen', props);
   }
 
   const handlePickLocation = (type=null) =>{
@@ -227,6 +242,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
       onPickLocationResultCallback:onPickLocationResultCallback,
       locationType:type?type:LocationTypes.DESTINATION_LOCATION,
       label: type === LocationTypes.DESTINATION_LOCATION ? t('locate_drop_location') : type === LocationTypes.WAYPOINT_LOCATION ? t('locate_stop') : t('locate_pickup_location'),
+      buttonLabel: type === LocationTypes.DESTINATION_LOCATION ? t('button_locate_drop_location') : type === LocationTypes.WAYPOINT_LOCATION ? t('button_locate_stop') : t('button_locate_pickup_location'),
       isFromRidePointsSelection:true,
       searchBar:true
     }
@@ -254,6 +270,43 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime}) => {
 
   }
 
+   useEffect(() => {
+    if (userdetails){
+      if(!rideBookMode){
+        setRideBookMode('MYSELF')
+        setPassangerDetails({name:userdetails.name,phone:userdetails.phone})
+      }
+    }
+    
+    if( rideEndLocation && !rideStartLocation && fromSavedPlaces ){
+      confirmPickUpCurrentLocation()
+    }
+    
+    if(showScheduleTime){
+      setShowScheduleContainer(true)
+    }
+  }, [fromSavedPlaces, rideEndLocation, rideStartLocation, showScheduleTime, userdetails, rideBookMode, scheduleDateTime]);
+ 
+
+  const handleContinue = () => {  
+     setIsContinuing(true); 
+     if(rideStartLocation?.currentLocation){
+      const props={
+        onPickLocationResultCallback:onPickLocationResultCallback,
+        locationType:LocationTypes.START_LOCATION,
+        label:t('locate_pickup_location'),
+        buttonLabel:t('button_locate_pickup_location'),
+        isFromRidePointsSelection:true,
+        searchBar:true,
+        currentLocation:true,
+        defaultLocation:rideStartLocation
+      }
+      setStackScreen('PickLocationScreen', props);
+      return;
+     }
+     setStackScreen("BookRideScreen",{});
+     Vibration.vibrate(100);
+  }
 
 
 
@@ -326,7 +379,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
           /> */}
          {
           isContinueButtonVisible && (
-            <TouchableOpacity style={[styles.continueButton, isContinuing && styles.continueButtonDisabled]} onPress={()=>{ setIsContinuing(true); setStackScreen("BookRideScreen",{});Vibration.vibrate(100); }} disabled={isContinuing}>
+            <TouchableOpacity style={[styles.continueButton, isContinuing && styles.continueButtonDisabled]} onPress={()=>{  handleContinue()}} disabled={isContinuing}>
               {isContinuing ? (
                 <ActivityIndicator color="#fff" />
               ) : (

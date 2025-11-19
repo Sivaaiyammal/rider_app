@@ -274,7 +274,8 @@ const MapScreen = () => {
         address:currentLocationName.address,
         placeName:currentLocationName.placeName,
         type:LocationTypes.START_LOCATION,
-        locationFrom:"MAP"
+        locationFrom:"MAP",
+        currentLocation:true
       }
      
       setRideStartLocation(locationData)
@@ -320,7 +321,9 @@ const MapScreen = () => {
         address:currentLocationName.address,
         placeName:currentLocationName.placeName,
         type:LocationTypes.START_LOCATION,
-        locationFrom:"MAP"
+        locationFrom:"MAP",
+        currentLocation:true
+
       }
       setRideStartLocation(locationData)
       setRideEndLocation(labelLocation)
@@ -345,7 +348,8 @@ const MapScreen = () => {
       address:currentLocationName.address,
       placeName:currentLocationName.placeName,
       type:LocationTypes.START_LOCATION,
-      locationFrom:"MAP"
+      locationFrom:"MAP",
+      currentLocation:true
     }
     setRideStartLocation(locationData)
   

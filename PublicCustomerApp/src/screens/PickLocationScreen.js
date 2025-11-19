@@ -41,7 +41,7 @@ import SearchScreen from '../features/search/screens/SearchScreen.jsx';
 import { search } from 'react-native-country-picker-modal/lib/CountryService';
 
 
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null}) => {
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null,buttonLabel=null}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation,setGeometries } = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -477,11 +477,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
             Vibration.vibrate(100);
             setIsConfirming(true);
             try {
-
                setGeometries([]);
-
-             
-
                if(limitRadius){
                 const fromLat = defaultLocation?.location[1];
                 const fromLon = defaultLocation?.location[0];
@@ -582,7 +578,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
             <AdaptiveText style={[
             styles.bottomContainerButtonText,
             (isAddressLoading || isConfirming || !pickedLocation?.placeName) && styles.bottomContainerButtonTextDisabled
-            ]} color={colors.white}>{t('confirm_location')}</AdaptiveText>
+            ]} color={colors.white}>{buttonLabel || t('confirm_location')}</AdaptiveText>
           )}
         </TouchableOpacity>
 

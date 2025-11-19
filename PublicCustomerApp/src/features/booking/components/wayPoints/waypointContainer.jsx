@@ -198,9 +198,11 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
     console.log("actualindex",actualindex)
     console.log("finalindex",finalindex)
     
+      let buttonLabel = actualindex == 0 ? t('button_locate_pickup_location') : actualindex == finalindex ? t('button_locate_drop_location') : t('button_locate_stop',{stop:actualindex})
     let label = actualindex == 0 ? t('locate_pickup_location') :actualindex == finalindex ? t('locate_drop_location') : t('locate_stop',{stop:actualindex})
     if(!reachedStops?.length && reOrderWaypoints.length == 1){
       label=t('locate_drop_location')
+      buttonLabel = t('button_locate_drop_location')
     }
       // setStackScreen("SearchScreen",{
       //   onSearchClick:onSearchClickResultCallback,
@@ -218,7 +220,8 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
       locationType:LocationTypes.WAYPOINT_LOCATION,
       label:label,
       isFromRidePointsSelection:true,
-      searchBar:true
+      searchBar:true,
+      buttonLabel: buttonLabel,
     }
 
 
@@ -287,7 +290,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
    
     
     let label = actualindex == 0 ? t('locate_pickup_location') : isLastPoint ? t('locate_drop_location') : t('locate_stop',{stop:actualindex})
-   
+    let buttonLabel = actualindex == 0 ? t('button_locate_pickup_location') : isLastPoint ? t('button_locate_drop_location') : t('button_locate_stop',{stop:actualindex})
     // setStackScreen("SearchScreen",{
     //   onSearchClick:onSearchReplaceWaypointCallback,
     //   index:index,
@@ -305,6 +308,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
       index:index,
       locationType:LocationTypes.WAYPOINT_LOCATION,
       label:label,
+      buttonLabel: buttonLabel,
       searchBar:true,
      
     }

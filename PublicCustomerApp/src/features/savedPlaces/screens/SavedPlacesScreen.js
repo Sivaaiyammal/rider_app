@@ -9,6 +9,7 @@ import useUserInfoStore from '../../../store/useUserInfoStore';
 import { utils } from '../../../utils/Utils';
 import { Fonts } from '../../../constants/constants';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
+import { from } from '@apollo/client';
 
 const SavedPlacesScreen = () => {
   const { t } = useTranslation();
@@ -82,7 +83,8 @@ const SavedPlacesScreen = () => {
     console.log("destinationData",destinationData)
     
     setStackScreen('PlanRideScreen', {
-      selectedDestination: destinationData
+      selectedDestination: destinationData,
+      fromSavedPlaces: true
     });
   };
 
