@@ -294,7 +294,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces}) 
       const props={
         onPickLocationResultCallback:onPickLocationResultCallback,
         locationType:LocationTypes.START_LOCATION,
-        label:t('locate_pickup_location'),
+        label:t('button_locate_pickup_location'),
         buttonLabel:t('button_locate_pickup_location'),
         isFromRidePointsSelection:true,
         searchBar:true,

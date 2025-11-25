@@ -301,7 +301,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
      Alert.alert(t('warning'), t('cannot_change_pickup_location_driver_assigned'));
      return
    }
-
+    console.log(dataIndex,'dataIndex')
     console.log(label,'label')
     const props ={
       onPickLocationResultCallback:onSearchReplaceWaypointCallback,
@@ -315,8 +315,9 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
    if(dataIndex == 0 && tripStatus == "ACCEPTED"){
      props.limitRadius=1
    }
-    if(reOrderWaypoints[dataIndex]){
-      props.defaultLocation = reOrderWaypoints[dataIndex]
+    if(finalData[dataIndex]){
+      
+      props.defaultLocation = finalData[dataIndex]
     }
     setStackScreen('PickLocationScreen', props)
   }

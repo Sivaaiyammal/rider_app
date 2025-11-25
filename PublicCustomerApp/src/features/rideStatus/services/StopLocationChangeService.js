@@ -1,13 +1,14 @@
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 import { updateTripStops } from '../../../API/EndPoints/EndPoints';
 import  LocationTypes  from '../../booking/types/LocationTypes.json';
+import { use } from 'react';
 
 /**
  * Calls the API to update trip stops for the current ride.
  * @param {Object} stopData - The new stop data to update.
  * @returns {Promise<Object>} - The API response.
  */
-export const changeStopLocation = async (updatedStop) => {
+export const changeStopLocation = async (updatedStop,totalDistance,totalDuration) => {
   // Get current ride info (e.g., tripId)
   const { tripId,stops } = useCurrentRideInfoStore.getState();
   
@@ -29,15 +30,20 @@ export const changeStopLocation = async (updatedStop) => {
   const payload = {
     tripId,
     stops:upadtedstops,
+    estimatedDistance:totalDistance?.toFixed(2),
+    estimatedDuration:totalDuration,
   };
 
   console.log('payload',payload);
 
   // Call the API to update trip stops
   const response = await updateTripStops(payload);
+  console.log('updateTripStops response',response);
   if (response.success) {
     
     useCurrentRideInfoStore.setState({ stops: upadtedstops });
+    useCurrentRideInfoStore.setState({totalDistance:totalDistance?.toFixed(2)});
+    useCurrentRideInfoStore.setState({duration:totalDuration});
     useCurrentRideInfoStore.setState({ rideStartLocation: upadtedstops[0]?.location });
     useCurrentRideInfoStore.setState({ rideEndLocation: upadtedstops[stops.length - 1]?.location });
   }

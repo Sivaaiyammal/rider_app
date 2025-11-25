@@ -156,7 +156,10 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
   };
 
   const formatDistance = (km) => {
-    return `${km} Km`;
+    if (km === null || km === undefined) return '-- Km';
+    const num = typeof km === 'string' ? parseFloat(km) : km;
+    if (isNaN(num)) return '-- Km';
+    return `${Number(num).toFixed(1)} Km`;
   };
 
   const content = (

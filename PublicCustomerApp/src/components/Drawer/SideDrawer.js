@@ -150,6 +150,12 @@ const SideDrawerV2 = ({ handleMenu }) => {
       icon: <Ionicons name="document-text" size={20} color="black" />,
     },
     // {
+    //   id: 'contribution',
+    //   name: t('contribution', 'Contribution'),
+    //   screen: 'ContributionScreen',
+    //   icon: <Ionicons name="add-circle-outline" size={20} color="black" />,
+    // },
+    // {
     //   id: 'tracking-test',
     //   name: 'Tracking Test',
     //   screen: 'TrackingTestScreen',

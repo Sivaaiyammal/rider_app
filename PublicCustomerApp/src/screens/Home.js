@@ -62,6 +62,7 @@ import { checkUpdateStatus } from '../components/UpdateChecker';
 import UpdateOverlay from '../components/UpdateOverlay';
 import OverdueTripModal from '../components/OverdueTripModal';
 import { log } from '@react-native-firebase/crashlytics';
+import ContributionScreen from '../features/contribution/screens/ContributionScreen.jsx';
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -668,6 +669,8 @@ const Home = () => {
         return <TrackingTestScreen {...params} />;
       case 'ScheduleScreen':
         return <ScheduleScreen {...params} />;
+      case 'ContributionScreen':
+        return <ContributionScreen {...params} />;
      
       default:
         return null;

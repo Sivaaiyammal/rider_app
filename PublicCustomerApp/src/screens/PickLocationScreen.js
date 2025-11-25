@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback, useRef} from 'react';
+import React, {useState, useEffect, useCallback, useRef, use} from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Alert,
   Vibration,
+  Animated,
+  Easing,
 } from 'react-native';
 import {useStackScreenStore} from '../store/useStackScreenStore';
 import NavBar from '../components/NavBar';
@@ -26,6 +28,8 @@ import { openFeedback } from '../utils/feedback';
 import  Circle from '../controllers/NEMap/Circle';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import  Polyline  from '../controllers/NEMap/Polyline';
+import  Marker  from '../controllers/NEMap/Marker';
 
 // import locationTask from "../controllers/GetCurrentLocation";
 import usePropsStore from '../store/usePropsStore';
@@ -41,7 +45,7 @@ import SearchScreen from '../features/search/screens/SearchScreen.jsx';
 import { search } from 'react-native-country-picker-modal/lib/CountryService';
 
 
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null,buttonLabel=null}) => {
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null,buttonLabel=null,isFromContribution=false}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation,setGeometries } = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -51,6 +55,9 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   const {setIsMapButtonVisible} = useMapStyleStore();
   const {pickedLocation,setPickedLocation} = usePropsStore();
   const [showSearch,setShowSearch] = useState(false);
+  const [isError,setIsError] = useState(false);
+  // Store error message as a single string instead of an object
+  const [isErrorMessage,setIsErrorMessage] = useState('');
   // Ref to suppress handling of the next map center change when it is programmatic
   const suppressCenterChangeRef = useRef(false);
   const [mapMoving,setMapMoving] = useState(false)
@@ -73,6 +80,57 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     console.log("coordinates",coordinates)
     return coordinates[coordinates.length - 1];
   }, []);
+
+  // --- Attention animation values for search bar ---
+  const searchBarScale = useRef(new Animated.Value(0.9)).current;
+  const searchBarOpacity = useRef(new Animated.Value(0)).current;
+  // Removed search icon animation (static icon)
+  const searchTextOpacity = useRef(new Animated.Value(1)).current;
+  const searchBarTranslateY = useRef(new Animated.Value(-40)).current; // slide from top
+  // Bottom container slide-up animation values
+  // (Removed bottom container animation)
+
+  useEffect(() => {
+    // Run only on initial mount
+    Animated.parallel([
+      Animated.timing(searchBarScale, {
+        toValue: 1,
+        duration: 500,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(searchBarOpacity, {
+        toValue: 1,
+        duration: 450,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(searchBarTranslateY, {
+        toValue: 0,
+        duration: 600,
+        easing: Easing.out(Easing.back(1.2)),
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Subtle breathing for placeholder / search text
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(searchTextOpacity, {
+          toValue: 0.6,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(searchTextOpacity, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    // Bottom container animation removed
+  }, []);
   const extractRouteSummary = useCallback((routeData) => {
         if (!routeData?.trip?.legs || routeData.trip.legs.length === 0) {
           return null;
@@ -89,8 +147,9 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           return { time: totalTime, length: totalLength };
         }
         const leg = routeData.trip.legs[0];
+        
         if (leg.summary) {
-          return leg.summary;
+          return { summary: leg.summary, shape: leg.shape };
         }
         return null;
       }, []);
@@ -109,6 +168,12 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
  
   const debouncedMapCenterChange = useDebouncedAPICall(async (data) => {
     setIsAddressLoading(true);
+    setIsError(false);
+    setIsErrorMessage('');
+    if(!limitRadius){
+    setGeometries([]);
+    setMapMarkers([]);
+    }
     const response = await fetchAddressName(data.longitude, data.latitude);
     
     let item = {
@@ -122,6 +187,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       item.address = response.address;
     }
     setSearchTxt(null);
+    setHomeMapMarker([pickedLocation?.longitude, pickedLocation?.latitude],'home',48);
     setPickedLocation(item);
     setIsAddressLoading(false);
   }, 500);
@@ -141,8 +207,29 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
   const onMapRotationChangedCallback = async ()=>{
     setMapMoving(true);
+    
   }
 
+   const setHomeMapMarker = (locationdata, type='home',size=48) => {
+    if(locationdata && locationdata.length > 0){
+      console.log('setting home marker at', locationdata);
+      const randomId = `home-marker-${Math.random().toString(36).substr(2, 9)}`;
+      const homeMarker = new Marker(  
+        randomId,
+        randomId,
+        locationdata[0],  
+        locationdata[1],
+        type,
+        size,
+        true,  
+        0
+      );
+      homeMarker.setAnimate(true);
+      homeMarker.setAnimationTime(10000);
+      console.log('homeMarker', homeMarker);
+      setMapMarkers([homeMarker]);
+    }   
+  };
 
 
   const centerMap = async ()=>{
@@ -257,6 +344,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         type:locationType,
         locationFrom:"MAP"
       });
+
       setIsMapButtonVisible(false);
       setMapMarkers([]); 
       suppressCenterChangeRef.current = true;
@@ -270,7 +358,6 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
        setTimeout(()=>{
         setMapMoving(false);
       },500)
-
     }
     
     return ()=>{
@@ -349,6 +436,27 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     setShowSearch(true);
   }
 
+  const showroute = async(shape)=>{
+    if(!shape) return;
+
+    console.log("shape",shape)
+    const coordinates = await polyline.decode(shape, 6)?.map((latlng)=> [latlng[1], latlng[0]]);
+    console.log("coordinates",coordinates)
+    
+ 
+    const polylineGeo = new Polyline(
+            'driver-to-start',
+            'Driver to Pickup',
+            coordinates,
+            '#0000FF',
+            'medium' );   
+    polylineGeo.setFocus(false)
+    polylineGeo.setPattern('dashed')
+    console.log("polylineGeo",polylineGeo)
+    setGeometries([polylineGeo]);
+    
+  }
+
   // removed unused handleCurrentLocation to satisfy linter
 
   return (
@@ -365,13 +473,30 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
             >
               <Icon name="arrow-back" size={22} color={colors.black} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.searchBarInputContainer} onPress={handleSearch}>
-              <Icon name="search" size={20} color={colors.grey_dark} />
-              <Text
-                style={[styles.searchBarInput,{color: searchTxt?colors.black: colors.grey_dark}]}
-              
-              >{searchTxt?searchTxt:t('search_cities_areas_streets')}</Text>
-            </TouchableOpacity>
+            <Animated.View
+              style={{
+                flex: 1,
+                transform: [
+                  { translateY: searchBarTranslateY },
+                  { scale: searchBarScale }
+                ],
+                opacity: searchBarOpacity,
+              }}
+            >
+              <TouchableOpacity style={[styles.searchBarInputContainer,{elevation:10}]} onPress={handleSearch}>
+                <View>
+                  <Icon name="search" size={24} color={colors.blue} />
+                </View>
+                <Animated.Text
+                  style={[
+                    styles.searchBarInput,
+                    { color: searchTxt ? colors.black : colors.grey_dark, opacity: searchTxt ? 1 : searchTextOpacity },
+                  ]}
+                >
+                  {searchTxt ? searchTxt : t('search_cities_areas_streets')}
+                </Animated.Text>
+              </TouchableOpacity>
+            </Animated.View>
         
           </View>
         </View>
@@ -393,22 +518,63 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         </View>
       </View>
       <View style={styles.bottomContainer}>
+
         <View style={styles.mapIconContainer}>
           <MapIcon />
           
         </View>
         <View>
+      
         <TouchableOpacity style={styles.currentLocationIconContainer} onPress={centerMap}>
           <CurrentLocationIcon width={25} height={25} />
           </TouchableOpacity>
-            <TouchableOpacity
+          {!isFromContribution && <TouchableOpacity
               style={[styles.feedbackIcon, { backgroundColor: colors.black,}]}
               onPress={handleFeedback}
             >
                <Ionicons name={"chatbubble-ellipses-outline"} size={25} color={colors.white} />
             </TouchableOpacity>
+}
         </View>
-        
+          {isError ? (
+            <View style={styles.errorContainer}>
+              <View style={styles.errorHeader}>
+                <Ionicons name="alert-circle" size={42} color={colors.red} style={styles.errorIcon} />
+                <View style={styles.errorTextWrapper}>
+                  {(isErrorMessage || t('unable_to_fetch_location'))
+                    .split('\n')
+                    .map((line, idx) => (
+                      <AdaptiveText
+                        key={idx}
+                        style={idx === 0 ? styles.errorTitle : styles.errorMessage}
+                        color={colors.red}
+                      >
+                        {line}
+                      </AdaptiveText>
+                    ))}
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.errorActionButton}
+                onPress={() => {
+                  setIsError(false);
+                  setIsErrorMessage('');
+                  setGeometries([]);
+                  setMapMarkers([]);
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={t('pick_different_place', { defaultValue: 'Pick a different place' })}
+              >
+                <Ionicons name="location-outline" size={18} color={colors.white} style={styles.errorActionButtonIcon} />
+                <AdaptiveText
+                  style={styles.errorActionButtonText}
+                  color={colors.white}
+                >
+                  {t('pick_different_place', { defaultValue: 'Pick a different place' })}
+                </AdaptiveText>
+              </TouchableOpacity>
+            </View>
+          ) : ( <>
         <LinearGradient
           colors={['transparent','#303030',]}
           start={{ x: 1, y: 0 }}
@@ -422,12 +588,17 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                     <Icon name="location-on" size={30} color="#ffd11a"/>
                   </View> */}
           <View style={styles.AddressContainerMain}>
-              <AdaptiveText style={styles.AddressContainerTextTitle} color={colors.grey_xxdark}>📍 {t('address')}</AdaptiveText>
-             {!isAddressLoading && pickedLocation?.placeName && (
+              <AdaptiveText style={styles.AddressContainerTextTitle} color={colors.grey_xxdark}>📍 {isFromContribution?t('coordinates'):t('address')}</AdaptiveText>
+          { isFromContribution && !isAddressLoading ?
+           <Text style={styles.AddressContainerPlaceName} color={colors.black}>
+                {`Lat: ${pickedLocation?.latitude?.toFixed(6) || ''} , Lon: ${pickedLocation?.longitude?.toFixed(6) || ''}`}
+               </Text>
+          
+          :!isAddressLoading && pickedLocation?.placeName && (
                <Text style={styles.AddressContainerPlaceName} color={colors.black}>
                  {utils.capitalizeFirstLetter(pickedLocation?.placeName)}
                </Text>
-             )}
+             )} 
             {!isAddressLoading && pickedLocation?.address && pickedLocation?.placeName && (
               <Text style={styles.AddressContainerTextAddress} color={colors.grey_xxdark}>
                 {Array.isArray(pickedLocation.address)
@@ -473,30 +644,43 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           ]}
           onPress={async () => {
             if (isAddressLoading || isConfirming || !pickedLocation?.placeName) return;
-
+            if(isFromContribution){
+              
+              onPickLocationResultCallback(pickedLocation, locationType,index);
+              setPickedLocation(null);
+              return;
+            }
             Vibration.vibrate(100);
             setIsConfirming(true);
             try {
-               setGeometries([]);
+              
                if(limitRadius){
                 const fromLat = defaultLocation?.location[1];
                 const fromLon = defaultLocation?.location[0];
 
                 const toLat = pickedLocation?.latitude;
                 const toLon = pickedLocation?.longitude;
+                console.log('fromLat',fromLat,'fromLon',fromLon,'toLat',toLat,'toLon',toLon);
                 const distanceFromCenter = utils.calculateDistanceInMeters(fromLat, fromLon, toLat, toLon);
-
+                console.log('distanceFromCenter',distanceFromCenter);
                 if(distanceFromCenter > limitRadius * 1000){
 
                 const title = t('location_outside_radius_title', { defaultValue: 'Location outside allowed radius' });
                 const message = t('location_outside_radius_message', { defaultValue: `You must select a location within a ${limitRadius} km radius.` });
+                setIsError(true);
+                setIsErrorMessage(`${title}\n${message}`);
                 Alert.alert(title, message);
+                 setIsConfirming(false);
+                
                 return;
                 }
+              }else{
+                setGeometries([]);
               }
 
               if(!isFromRidePointsSelection){
                 onPickLocationResultCallback(pickedLocation, locationType,index);
+                setPickedLocation(null);
                 return;
               }
 
@@ -504,65 +688,94 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         
               let fromLat = null;
               let fromLon = null;
+              let toLat = null
+              let toLon = null;
 
-              console.log('rideStartLocation,rideEndLocation,rideWayPoints',rideStartLocation,rideEndLocation,rideWayPoints);
+           
               
               if(rideStartLocation){
-                console.log('rideStartLocation',rideStartLocation);
                  fromLat = rideStartLocation?.latitude;
                  fromLon = rideStartLocation?.longitude;
               }
-              if(rideEndLocation && locationType==="END_LOCATION"){
-                console.log('rideEndLocation',rideEndLocation);
-                 fromLat = rideEndLocation?.latitude;
-                 fromLon = rideEndLocation?.longitude;
+              if(rideEndLocation){
+                 toLat = rideEndLocation?.latitude;
+                 toLon = rideEndLocation?.longitude;
               }
-           
-              const toLat = pickedLocation?.latitude;
-              const toLon = pickedLocation?.longitude;
-              if (fromLat == null || fromLon == null ) {
+
+              if(locationType == 'START_LOCATION'){
+                 fromLat = pickedLocation?.latitude;
+                 fromLon = pickedLocation?.longitude;
+              }
+              if(locationType == 'DESTINATION_LOCATION'){
+                  toLat = pickedLocation?.latitude; 
+                  toLon = pickedLocation?.longitude;
+              }
+
+              console.log(locationType, fromLat, fromLon, toLat, toLon);
+             
+             
+              if (fromLat == null || fromLon == null || toLat == null || toLon == null) {
                 onPickLocationResultCallback(pickedLocation, locationType,index);
+                setPickedLocation(null);
                 return;
               }
               const distanceMeters = utils.calculateDistanceInMeters(fromLat, fromLon, toLat, toLon);
+              console.log('Calculated distance (meters):', distanceMeters);
 
              
-              const isSameLocation = distanceMeters < 30; // treat <30m as same location
+              const isSameLocation = distanceMeters < 100; // treat <30m as same location
               if (isSameLocation) {
                 const title = t('same_location_title', { defaultValue: 'Locations too close' });
                 const message = t('same_location_message', { defaultValue: 'Pickup and drop-off locations are very close. Please choose a farther location.' });
-                Alert.alert(title, message);
+                setIsError(true);
+                setIsErrorMessage(`${title}\n${message}`);
+                
                 return;
               }
+
+
               const points = [
                 { lat: fromLat, lon: fromLon },
                 { lat: toLat, lon: toLon }
               ];
 
-              console.log('points',points);
+            
 
               const routeData = await findRoute(points);
-              const summary = await extractRouteSummary(routeData);
+              const {summary, shape} = await extractRouteSummary(routeData);
               const lastLatLng = await getLastLatLngfromPolyLine(routeData);
-             
-              
-           
+    
               const distanceKm = summary?.length || null;
             
-              if (distanceKm >= 0.2) {
-                if(lastLatLng){
+              if (distanceKm >= 0) {
+              
+                if(lastLatLng && locationType == 'DESTINATION_LOCATION'){
                   pickedLocation.latitude = lastLatLng[0];
                   pickedLocation.longitude = lastLatLng[1];
                 }
                 onPickLocationResultCallback(pickedLocation, locationType,index);
-              } else if (distanceKm == null ) {
-                Alert.alert('No route found', 'No route is available to the selected location.');
-               
+                setPickedLocation(null);
               } else {
-                const title = t('min_distance_title', { defaultValue: 'Distance too short' });
-                const message = t('min_distance_message', { defaultValue: 'Ride distance must be at least 200 m' });
-                Alert.alert(title, message);
-              }
+                Alert.alert('No route found', 'No route is available to the selected location.');
+                setIsError(true);
+                setIsErrorMessage(t('no_route_found_message', { defaultValue: 'No route is available to the selected location.' }));
+               
+              } 
+              // else {
+              //   const title = t('min_distance_title', { defaultValue: 'Distance too short' });
+              //   const message = t('min_distance_message', { defaultValue: 'Ride distance must be at least 200 m' });
+              //   setIsError(true);
+              //   setIsErrorMessage(`${title}\n${message}`);
+              //   if(locationType == 'START_LOCATION'){
+              //       setHomeMapMarker([toLon,toLat],'drop_point',64);
+              //   }
+              //   if(locationType == 'END_LOCATION'){ 
+              //       setHomeMapMarker(location);
+              //   }
+              
+              //   showroute(shape)
+                
+              // }
             } catch (e) {
               console.error('Route check failed', e);
               Alert.alert('Error', 'Failed to find a route. Please try again.');
@@ -582,7 +795,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           )}
         </TouchableOpacity>
 
-
+       </>)}
       </View>
       {showSearch && (
         <View style={styles.searchOverlay}>
@@ -603,7 +816,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 40,
   },
   pickIcon: {
     width: 25,
@@ -691,7 +904,6 @@ const styles = StyleSheet.create({
   searchBarInputContainer:{
     flex:1,
     flexDirection:'row',
-  
     alignItems:'center',
     backgroundColor:colors.white,
     borderRadius:30,
@@ -699,7 +911,8 @@ const styles = StyleSheet.create({
     paddingVertical:10,
     gap:8,
     borderWidth:1,
-    borderColor:colors.grey_light,
+    borderColor:colors.grey_xlight,
+    elevation:15,
    
   },
   searchBarInput:{
@@ -825,6 +1038,54 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     zIndex:2000,
     elevation:20,
+  }
+  ,errorContainer:{
+    minHeight:200,
+    width:'100%',
+    alignSelf:'center',
+    backgroundColor: colors.red + '10',
+    borderRadius:18,
+    padding:18,
+    borderWidth:1,
+    borderColor: colors.red,
+    justifyContent:'center'
+  },
+  errorHeader:{
+    flexDirection:'row',
+    alignItems:'flex-start'
+  },
+  errorIcon:{
+    marginRight:14,
+    marginTop:2
+  },
+  errorTextWrapper:{
+    flex:1
+  },
+  errorTitle:{
+    fontSize:16,
+    fontFamily: Fonts.medium
+  },
+  errorMessage:{
+    fontSize:14,
+    marginTop:6,
+    fontFamily: Fonts.regular
+  },
+  errorActionButton:{
+    marginTop:20,
+    flexDirection:'row',
+    alignItems:'center',
+    justifyContent:'center',
+    backgroundColor: colors.black,
+    paddingVertical:14,
+    paddingHorizontal:20,
+    borderRadius:30
+  },
+  errorActionButtonIcon:{
+    marginRight:8
+  },
+  errorActionButtonText:{
+    fontSize:14,
+    fontFamily: Fonts.medium
   }
 });
 

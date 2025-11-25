@@ -22,6 +22,7 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import { makeMaskedCallToDriver } from '../../../API/EndPoints/EndPoints';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
+import { getTotalDistanceAndTime } from '../services/getTotalDistanceandTime';
 
   const DriverArrivalScreen = ({onCancel,handleOverlay}) => {
   // Dummy data
@@ -45,8 +46,16 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
       goBack()
       const formatedAddress=utils.formatAddressName(item)
       item.address=formatedAddress
+
+      console.log('item',item);
+    
+      const {totalDistance,totalDuration} = await getTotalDistanceAndTime(stops,true);
+
+      console.log('totalDistance,totalDuration',totalDistance,totalDuration);
+    
+
       try {
-        const res =  await changeStopLocation(item)
+        const res =  await changeStopLocation(item,totalDistance,totalDuration);
         if (res.success) {
           showNotification(t('pickup_location'), t('updated_successfully'), 'success');
          
@@ -58,6 +67,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
     }
 
   const handleChangeLocation = (item) => {
+    console.log('handleChangeLocation item',item);
     setStackScreen('PickLocationScreen',{
       onPickLocationResultCallback:handlePickLocation,
       locationType:LocationTypes.START_LOCATION,

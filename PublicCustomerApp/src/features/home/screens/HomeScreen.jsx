@@ -227,6 +227,9 @@ const MapScreen = () => {
         setMapBounds(finalBounds);
       }, 2000);
     }
+    return () => {
+      setMapMarkers([])
+    } 
   },[location])
 
   const handleMenu = useCallback(() => {
@@ -382,7 +385,7 @@ const MapScreen = () => {
          height: 4,
        }}>
        
-            <View style={{marginTop:50}}>
+            <View style={{marginTop:60}}>
               {/* {<ScheduledTripBanner/>} */}
               <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
               <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false} />

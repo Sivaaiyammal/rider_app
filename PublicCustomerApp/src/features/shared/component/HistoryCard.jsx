@@ -86,7 +86,7 @@ HistoryCard.propTypes = {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 15,
+    marginTop: 0,
     marginHorizontal: 15,
  
   },

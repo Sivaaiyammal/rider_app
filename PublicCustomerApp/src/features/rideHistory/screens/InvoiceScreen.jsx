@@ -442,7 +442,7 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
             {/* Coupon Discount */}
             <View style={styles.breakdownRow}>
               <Text style={styles.breakdownLabel}>{t('coupon_discount')}</Text>
-              <Text style={styles.breakdownValue}>-{formatCurrency(couponDiscount).replace('₹', '')}</Text>
+              <Text style={styles.breakdownValue}>{formatCurrency(couponDiscount).replace('₹', '')}</Text>
             </View>
 
             {/* Subtotal */}

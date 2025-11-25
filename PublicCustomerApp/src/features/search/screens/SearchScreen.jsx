@@ -523,7 +523,7 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
               </TouchableOpacity> */}
           <ScrollView style={{paddingHorizontal:5, flex: 1}} contentContainerStyle={{paddingBottom: height*0.2}}>
              
-            <FavLabelItems style={{marginBottom:10}} onLabelPress={handleFavouriteLocationPress} enableAdd={false} onLocationAdd={handleLocateOnMap} />
+            <FavLabelItems style={{marginBottom:10}} onLabelPress={handleFavouriteLocationPress} enableAdd={false}  />
             <HistoryCard style={{marginBottom:10}} selectCallback={onLocationNamePress}/>
 
           </ScrollView>

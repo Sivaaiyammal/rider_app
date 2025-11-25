@@ -30,6 +30,9 @@ const useDirectionLoad = () => {
     
     // Collect all valid locations in order: start -> waypoints -> end
     const allLocations = [];
+
+
+    console.log(rideEndLocation,rideStartLocation,"ejfieofefoefof");
     
     // Add start location if available
     if (rideStartLocation && rideStartLocation.latitude && rideStartLocation.longitude) {
@@ -85,7 +88,7 @@ const useDirectionLoad = () => {
       if (Array.isArray(padding) && padding.length === 4) {
         directionPoints.padding = padding.map(v => parseInt(v, 10));
       }
-
+      console.log('Direction Points:', directionPoints);
       setDirectionPoints(directionPoints);
       
       return {

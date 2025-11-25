@@ -184,11 +184,11 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         // Extract distance and duration from direction data
         if (data?.distance && data?.duration) {
             const distance = data.distance/1000; // Distance in meters
-            const duration = data.duration/60; 
+            const duration = data.duration/60;
             // Duration in seconds
             updateBookingInfo({
                 rideDistance: distance != null ? distance.toFixed(1) : null,
-                estimatedDuration: Math.round(duration)
+                estimatedDuration: Math.round(duration) || 1
             });
             console.log("distance Got from direction data",distance)
             
@@ -201,7 +201,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         if(DurationFromAddStopsScreen && DistanceFromAddStopsScreen){
             updateBookingInfo({
                 rideDistance: DistanceFromAddStopsScreen,
-                estimatedDuration: DurationFromAddStopsScreen
+                estimatedDuration: DurationFromAddStopsScreen || 1
             });
         }
         setSelectedVehicle(null)
@@ -248,6 +248,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     // Ride estimation mutation
     const onEstimationSuccess = (data) => {
+        console.log('Ride estimation data received:', data);
        
         if (data?.result?.success) {
             setIsEstimationError(false)
@@ -346,6 +347,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     };
     // Add effect to trigger estimation when direction data is available
     useEffect(() => {
+        console.log("rideDistance, estimatedDuration",rideDistance, estimatedDuration)
         if (rideDistance && estimatedDuration ) {
             getEstimatedFare();
         }
