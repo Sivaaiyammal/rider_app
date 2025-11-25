@@ -48,6 +48,8 @@ const styles = StyleSheet.create({
     width: "90%",
     alignSelf: "center",
     marginBottom: 10,
+    backgroundColor:'transparent',
+    paddingTop:10,
 
     
   },

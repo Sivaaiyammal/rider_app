@@ -176,13 +176,15 @@ SearchResultContainer.defaultProps = {
 const styles = StyleSheet.create({
   listContent: {
     backgroundColor: colors.white,
-    paddingBottom:height*0.3
+    paddingBottom:height*0.3,
+    borderRadius:10,
   },
   sectionHeader: {
     paddingVertical: 5,
     paddingHorizontal: 15,
     backgroundColor: colors.grey_xlight,
-    
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
   },
   sectionHeaderText: {
     fontSize: 18,

@@ -11,6 +11,9 @@ import {
   Vibration,
   Animated,
   Easing,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from 'react-native';
 import {useStackScreenStore} from '../store/useStackScreenStore';
 import NavBar from '../components/NavBar';
@@ -41,7 +44,7 @@ import AdaptiveText from '../components/Common/AdaptiveText';
 import { findRoute } from '../controllers/NEMap/findRoute';
 import polyline from '@mapbox/polyline';
 import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore';
-import SearchScreen from '../features/search/screens/SearchScreen.jsx';
+import SearchScreenWrapper from '../features/search/screens/SearchWrapper.jsx';
 import { search } from 'react-native-country-picker-modal/lib/CountryService';
 
 
@@ -63,7 +66,9 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   const [mapMoving,setMapMoving] = useState(false)
   const { t } = useTranslation();
   const [isConfirming, setIsConfirming] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false); // track keyboard visibility
   const searchRef = useRef(new SearchAPI());
+  const searchInputRef = useRef(null); // ref to control focus/blur of search TextInput
   const { 
     rideStartLocation, 
     rideEndLocation, 
@@ -131,6 +136,21 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
     // Bottom container animation removed
   }, []);
+
+  // Delayed focus of search input when screen mounts (only if searchBar is shown)
+  useEffect(() => {
+    if (!searchBar) return;
+    const focusTimeout = setTimeout(() => {
+      if (searchInputRef.current) {
+        try {
+          searchInputRef.current.focus();
+        } catch (e) {
+          // silently ignore focus errors
+        }
+      }
+    }, 600); // delay in ms
+    return () => clearTimeout(focusTimeout);
+  }, [searchBar]);
   const extractRouteSummary = useCallback((routeData) => {
         if (!routeData?.trip?.legs || routeData.trip.legs.length === 0) {
           return null;
@@ -372,6 +392,16 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     };
   }, []);
 
+  // Listen for keyboard show/hide to toggle bottomContainer visibility
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   useEffect(() => {
     return () => {
       if (debouncedMapCenterChange && debouncedMapCenterChange.cancel) {
@@ -403,6 +433,10 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
   const onSearchClickResultCallback = (result,type) => {
     if(!result) return;
+     if (searchInputRef.current) {
+      searchInputRef.current.blur();
+    }
+    Keyboard.dismiss();
     // Cancel any pending reverse geocode from map center change to avoid overwriting
     if (debouncedMapCenterChange && debouncedMapCenterChange.cancel) {
       debouncedMapCenterChange.cancel();
@@ -429,6 +463,9 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     });
     console.log('onSearchClickResultCallback', updated);
     setShowSearch(false);
+    // Blur / dismiss keyboard after selection
+   
+    
    
   };
 
@@ -463,7 +500,11 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     <>
       
       {searchBar ? (
-        <View style={styles.searchBarContainer}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+          style={styles.searchBarContainer}
+        >
           <View style={styles.searchBar}>
             <TouchableOpacity
               style={styles.searchBarIconButton}
@@ -483,23 +524,52 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                 opacity: searchBarOpacity,
               }}
             >
-              <TouchableOpacity style={[styles.searchBarInputContainer,{elevation:10}]} onPress={handleSearch}>
+              <View style={[styles.searchBarInputContainer,{elevation:10}]}> 
                 <View>
                   <Icon name="search" size={24} color={colors.blue} />
                 </View>
-                <Animated.Text
-                  style={[
-                    styles.searchBarInput,
-                    { color: searchTxt ? colors.black : colors.grey_dark, opacity: searchTxt ? 1 : searchTextOpacity },
-                  ]}
-                >
-                  {searchTxt ? searchTxt : t('search_cities_areas_streets')}
-                </Animated.Text>
-              </TouchableOpacity>
+                <Animated.View style={{flex:1, opacity: searchTxt ? 1 : searchTextOpacity}}>
+                  <TextInput
+                    ref={searchInputRef}
+                    style={styles.searchBarInput}
+                    value={searchTxt || ''}
+                    onChangeText={(text)=>{
+                      setSearchTxt(text);
+                      // Show search overlay only when length > 1, hide otherwise
+                      setShowSearch(text && text.length > 1);
+                    }}
+                    placeholder={t('search_cities_areas_streets')}
+                    placeholderTextColor={colors.grey_dark}
+                    autoCorrect={false}
+                    autoCapitalize="none"
+                   
+                    accessibilityLabel={t('search_cities_areas_streets')}
+                  />
+                </Animated.View>
+                { (searchTxt && searchTxt.length > 0) && (
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel={t('clear_search', { defaultValue: 'Clear search' })}
+                    onPress={() => {
+                      setSearchTxt('');
+                      setShowSearch(false);
+                      
+                      Keyboard.dismiss();
+                      if (searchInputRef.current) {
+                        try { searchInputRef.current.focus(); } catch(e) {}
+                        
+                      }
+                      Keyboard.dismiss();
+                    }}
+                    style={styles.clearSearchBtn}
+                  >
+                    <Icon name="close" size={18} color={colors.grey_dark} />
+                  </TouchableOpacity>
+                )}
+              </View>
             </Animated.View>
-        
           </View>
-        </View>
+        </KeyboardAvoidingView>
       ):
       <NavBar
         title={ t('locate_on_map')}
@@ -517,6 +587,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           </View>
         </View>
       </View>
+      {!keyboardVisible && (
       <View style={styles.bottomContainer}>
 
         <View style={styles.mapIconContainer}>
@@ -795,17 +866,24 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           )}
         </TouchableOpacity>
 
-       </>)}
-      </View>
+      </>)}
+          </View>
+          )}
       {showSearch && (
-        <View style={styles.searchOverlay}>
-          <SearchScreen
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+          style={styles.searchOverlay}
+        >
+          <SearchScreenWrapper
             onSearchClick={onSearchClickResultCallback}
             searchType={locationType}
             onClose={() => setShowSearch(false)}
             hidePickLocation={true}
+            searchPlaceholder={t('search_cities_areas_streets')}
+            searchString={searchTxt || ''}
           />
-        </View>
+        </KeyboardAvoidingView>
       )}
     </>
   );
@@ -879,6 +957,7 @@ const styles = StyleSheet.create({
     left:10,
     right:10,
     zIndex:1000,
+  
     alignItems:'center',
   },
   searchBar:{
@@ -914,6 +993,13 @@ const styles = StyleSheet.create({
     borderColor:colors.grey_xlight,
     elevation:15,
    
+  },
+  clearSearchBtn:{
+    padding:6,
+    borderRadius:20,
+    backgroundColor: colors.grey_xlight,
+    alignItems:'center',
+    justifyContent:'center'
   },
   searchBarInput:{
     flex:1,
@@ -1031,13 +1117,14 @@ const styles = StyleSheet.create({
   },
   searchOverlay:{
     position:'absolute',
-    top:0,
-    left:0,
-    right:0,
-    bottom:0,
+    top:80,
+    left:20,
+    right:20,
+    bottom:20,
     backgroundColor: 'white',
     zIndex:2000,
     elevation:20,
+    borderRadius:10,
   }
   ,errorContainer:{
     minHeight:200,
