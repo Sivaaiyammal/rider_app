@@ -262,6 +262,11 @@ class NEMap extends Component {
               ? this.props.findRoute
               : null
           }
+          vehicleMarkers={
+            this.state.mapLoaded && this.props.vehicleMarkers?.length !== 0
+              ? this.props.vehicleMarkers
+              : null
+          }
           navigation={this.props.navigation}
           {...(this.state.mapLoaded ? { bounds: this.props.bounds } : {})}
         />
@@ -290,6 +295,7 @@ NEMap.propTypes = {
   onNavigationEnd: PropTypes.func,
   mapStyle: PropTypes.object,
   markers: PropTypes.array,
+  vehicleMarkers: PropTypes.array,
   homeLocation: PropTypes.object,
   autoPOISearch: PropTypes.bool,
   mode: PropTypes.string,

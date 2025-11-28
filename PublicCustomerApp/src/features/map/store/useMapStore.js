@@ -86,6 +86,9 @@ const useMapStore = create((set) => ({
     stateVector: null,
     setStateVector: (newState) => set({ stateVector: newState }),
 
+    vehicleMarkers: [],
+    setVehicleMarkers: (vehicleMarkers) => set({ vehicleMarkers }),
+
     mode: 'light',
     setMode: mode => {
         set({ mode })

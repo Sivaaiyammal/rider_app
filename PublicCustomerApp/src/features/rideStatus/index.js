@@ -143,8 +143,6 @@ const RideStatus = () => {
       GPSdistance = data?.distance ? data.distance : 0;
       GPSduration = data?.duration ? Math.round(data.duration) : null;
 
-      console.log("GPSdistance,GPSduration",GPSdistance,GPSduration)
-
       setIsCalculateDistance(true);
 
       let FinalDuration = 0;

@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, Linking, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, Linking, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import { DataStore } from '../controllers/DataStore';
 import { Platform } from 'react-native';
 import useConfigStore from '../store/useConfigStore';
+import AppUpdate from "../assets/image/app_update.webp"
+import { colors, Fonts } from '../constants/constants';
+import { useTranslation } from 'react-i18next';
 export default function UpdateOverlay({ visible, mode, onClose }) {
   if (!visible) return null;
   const { appConfig } = useConfigStore();
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleUpdate = async () => {
     try {
@@ -42,13 +46,14 @@ export default function UpdateOverlay({ visible, mode, onClose }) {
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
       <View style={styles.overlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.title}>App Update Available</Text>
+          <Image source={AppUpdate} style={styles.image} />
+          <Text style={styles.title}>{t('update.title', { defaultValue: 'App Update Available' })}</Text>
           <Text style={styles.message}>
-            A newer version of the app is available. Please update for the best experience.
-            {mode === 'force' && '\n\nThis update is required to continue using the app.'}
+            {t('update.message', { defaultValue: 'A newer version of the app is available. Please update for the best experience.' })}
+            {mode === 'force' && `\n\n${t('update.required', { defaultValue: 'This update is required to continue using the app.' })}`}
           </Text>
 
           <TouchableOpacity 
@@ -59,19 +64,19 @@ export default function UpdateOverlay({ visible, mode, onClose }) {
             {isLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.updateButtonText}>Update Now</Text>
+              <Text style={styles.updateButtonText}>{t('update.update_now', { defaultValue: 'Update Now' })}</Text>
             )}
           </TouchableOpacity>
 
-          {mode === 'optional' && (
+          {/* {mode === 'optional' && (
             <TouchableOpacity 
               onPress={handleSkip} 
               style={[styles.skipButton, isLoading && styles.buttonDisabled]}
               disabled={isLoading}
             >
-              <Text style={styles.skipButtonText}>Skip for now</Text>
+              <Text style={styles.skipButtonText}>{t('skip_for_now', { defaultValue: 'Skip for now' })}</Text>
             </TouchableOpacity>
-          )}
+          )} */}
         </View>
       </View>
     </Modal>
@@ -80,25 +85,27 @@ export default function UpdateOverlay({ visible, mode, onClose }) {
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
   buttonDisabled: {
     opacity: 0.6,
   },
   modalContent: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 24,
-    width: '90%',
+    borderRadius: 0,
+    paddingHorizontal: 24,
+    paddingVertical: 32,
+    width: '100%',
+    minHeight: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily:Fonts.medium,
     marginBottom: 12,
     color: '#000',
   },
@@ -106,10 +113,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333',
     marginBottom: 20,
+    fontSize: 14,
+    fontFamily:Fonts.regular,
     lineHeight: 20,
   },
   updateButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.black,
     padding: 12,
     borderRadius: 8,
     width: '100%',
@@ -117,7 +126,7 @@ const styles = StyleSheet.create({
   },
   updateButtonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontFamily:Fonts.bold,
     fontSize: 16,
   },
   skipButton: {
@@ -127,5 +136,13 @@ const styles = StyleSheet.create({
   skipButtonText: {
     color: '#999',
     fontSize: 14,
+  },
+  image: {
+    width: 300,
+    height: 300,
+    resizeMode: 'contain',
+    marginBottom: 16,
+    alignSelf: 'center',
+    marginBottom: 30,
   },
 });

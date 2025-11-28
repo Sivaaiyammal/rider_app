@@ -44,6 +44,7 @@ const MapContainer = ({ mapStyle }) => {
     setDisduration,
     setSearchPOIError,
     loading,
+    vehicleMarkers,
   
    
   } = useMapStore();
@@ -104,6 +105,7 @@ const MapContainer = ({ mapStyle }) => {
         onUserLocationChange={userLocation}
         distanceListner={setDisduration}
         onSearchPOIError={setSearchPOIError}
+        vehicleMarkers={vehicleMarkers}
         onNavigationEnd={(e) => console.log('hari--->>navigationEnd-->>', e)}
       />
 

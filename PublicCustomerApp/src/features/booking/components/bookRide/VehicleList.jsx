@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Animated, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -22,12 +22,26 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AdaptiveText from '../../../../components/Common/AdaptiveText';
 import VehicleSearchIcon from '../../../../assets/image/svgIcons/vehicleSearch.svg'
+import useMapStore from '../../../map/store/useMapStore';
+import Marker from '../../../../controllers/NEMap/Marker';
+import { getNearByDrivers } from '../../../../API/EndPoints/EndPoints';
+import useRideBookingLocationStore from '../../store/useRideBookingLocationStore';
+import {
+  Grayscale,
+  
+} from 'react-native-color-matrix-image-filters'
+
 
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
 
-const VehicleList = ({ availableVehicles, isLoading, isEstimationError }) => {
+const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance }) => {
   const { t } = useTranslation();
   const {selectedVehicle,setSelectedVehicle} = useRideVehicleStore()
+  const [showMaxDistanceModal, setShowMaxDistanceModal] = useState(false);
+  const {rideStartLocation} = useRideBookingLocationStore()
+  const [maxDistanceMessage, setMaxDistanceMessage] = useState('');
+  const { setVehicleMarkers,vehicleMarkers } = useMapStore();
+  const [modalVehicle, setModalVehicle] = useState(null);
   const [slideAnim] = useState(new Animated.Value(0));
   const firstRenderStartRef = useRef(null);
 
@@ -39,6 +53,37 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError }) => {
     }
   }, []);
 
+
+  const addVehicleMarkers  = () => {
+        const marker = new Marker(  
+            'vehicle-marker',
+            'vehicle-marker',
+           77.040033,
+           11.040498,
+            'electric_auto',
+            48,
+            false,
+            0
+        );    
+        marker.setAnimate(true);
+        marker.setAnimationTime(2000);
+        marker.setFocus(true);
+        marker.setTitle('Vehicle Marker');
+        marker.setSnippet('This is a vehicle on the map');  
+        console.log('Adding vehicle marker:', marker);
+        
+        setVehicleMarkers([marker])
+  }
+
+
+  const syncDriverMarkersWithVehicles = async()=>{
+    console.log('Syncing driver markers with vehicles');
+    if(availableVehicles && availableVehicles.length>0){
+       const NearByDrivers = await getNearByDrivers(rideStartLocation.latitude,rideStartLocation.longitude,10000,availableVehicles.map(v=>v.type));
+       console.log('Nearby drivers fetched for markers:', NearByDrivers);
+    }
+  }
+
   useEffect(() => {
     // Animate the component in only when vehicles are loaded
     if (availableVehicles && availableVehicles.length > 0) {
@@ -48,15 +93,42 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError }) => {
         useNativeDriver: true,
       }).start();
     }
+
+    syncDriverMarkersWithVehicles();
+   
   }, [availableVehicles]);
+
+
+  
 
   
 
   // Removed redundant vehicle selection - handled by parent component
 
-  const handleVehicleSelect = useCallback((vehicle) => {
+  const handleVehicleSelect = (vehicle) => {
+    if (vehicle?.isExceedingMaxDistance) {
+      const vehicleName = VEHICLE_LABELS[vehicle.type] || vehicle.name || 'Selected vehicle';
+      const maxKm = vehicle?.maxDistanceLimit != null ? vehicle.maxDistanceLimit : undefined;
+      const message = maxKm != null
+        ? t('trip_distance_exceeded_with_limit', { vehicleName, maxKm })
+        : t('trip_distance_exceeded_generic', { vehicleName });
+      setMaxDistanceMessage(message);
+      setModalVehicle(vehicle);
+      setShowMaxDistanceModal(true);
+     
+      return;
+    }
+    if(vehicleMarkers.length>0){
+      setVehicleMarkers([]);
+    }else{
+      addVehicleMarkers();
+    }
+    
+ 
+   
+    
     setSelectedVehicle(vehicle);
-  }, [setSelectedVehicle]);
+  };
 
 
 
@@ -122,11 +194,42 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError }) => {
 
 
 
+
+
   return (
     <View 
       style={styles.container}
       
     >
+      <Modal
+        visible={showMaxDistanceModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={() => setShowMaxDistanceModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <MaterialCommunityIcons name="alert" size={20} color="#c10000ff" />
+              <Text style={styles.modalTitle}>{t('trip_distance_exceeded_title')}</Text>
+            </View>
+            {modalVehicle && (
+              <View style={styles.modalImageContainer}>
+                <Image
+                  source={getVehicleImage(modalVehicle.type)}
+                  style={styles.modalVehicleImage}
+                  resizeMode="contain"
+                />
+              </View>
+            )}
+            <Text style={styles.modalMessage}>{maxDistanceMessage}</Text>
+            <TouchableOpacity style={styles.modalButton} onPress={() => setShowMaxDistanceModal(false)}>
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       
       
       {availableVehicles?.map((vehicle) => {
@@ -144,30 +247,47 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError }) => {
               style={[styles.vehicleCard, isSelected ? styles.selectedVehicleCard : {backgroundColor:colors.grey_xxlight}]}
             >
               <View style={styles.vehicleImageContainer}>
+              {vehicle.isExceedingMaxDistance ? (
+                <Grayscale>
                 <Image
                   source={getVehicleImage(vehicle.type)}
                   style={styles.vehicleImage}
                   resizeMode="contain"
                 />
+                </Grayscale>
+              ) : (
+                <Image
+                  source={getVehicleImage(vehicle.type)}
+                  style={styles.vehicleImage}
+                  resizeMode="contain"
+                />
+              )}
               </View>
               <View style={styles.vehicleInfoContainer}>
                 <View style={styles.rowBetween}>
                   <View style={styles.vehicleNameContainer}>
                 
                   <Text style={[styles.vehicleName]}>{VEHICLE_LABELS[vehicle.type] || vehicle.name}</Text>
-                  {isEv(vehicle.type) && <View style={styles.evContainer}>
+                  {isEv(vehicle.type) && <View style={[styles.evContainer, vehicle.isExceedingMaxDistance ? {backgroundColor: '#979797ff'} : {}]}>
                     <Text style={[styles.evText]}>EV</Text>
                     <Icon name="bolt" size={12} color="white"/>
                   </View>
                   }
                   </View>
-                  <Text style={[styles.price]}>
+                 {!vehicle?.isExceedingMaxDistance ? <Text style={[styles.price]}>
                     {vehicle.minFare != null && vehicle.maxFare != null
                       ? `₹${vehicle.minFare.toFixed(0)} - ₹${vehicle.maxFare.toFixed(0)}`
                       : t && typeof t === 'function'
                         ? "--"// fallback if translation function exists
                         : '--'}
                   </Text>
+                  :  
+                    <View style={styles.warningRow}>
+                      <MaterialCommunityIcons name="alert" size={14} color="#c10000ff" />
+                      <Text style={styles.warningText}>Max {vehicle.maxDistanceLimit} km</Text>
+                    </View>
+                
+                }
                  
                 </View>
                 <View style={styles.rowBetween}>
@@ -181,6 +301,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError }) => {
                     <MaterialCommunityIcons name="account" size={16} color={ "#757575"} />
                     <AdaptiveText style={[styles.passengerText]}>{vehicle.capacity}</AdaptiveText>
                   </View> */}
+                
                 </View>
               </View>
             </LinearGradient>
@@ -355,6 +476,85 @@ const styles = StyleSheet.create({
     color: '#757575',
     fontFamily: Fonts.regular,
     textAlign: 'center',
+  },
+  warningRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ffe5e5ff',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    gap: 10,
+  },
+  warningText: {
+    fontSize: 12,
+    color: '#000000ff',
+    fontFamily: Fonts.regular,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  modalCard: {
+    width: '100%',
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontFamily: Fonts.medium,
+    color: colors.black,
+  },
+  modalMessage: {
+    width: '80%',
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#333',
+    marginBottom: 12,
+    justifyContent: 'center',
+    alignSelf: 'center',
+    textAlign: 'center',
+  },
+  modalImageContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 30,
+  },
+  modalVehicleImage: {
+    width: 100,
+    height: 100,
+  },
+  modalButton: {
+    width: '80%',
+    alignSelf: 'center',
+    backgroundColor: '#0f223c',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  modalButtonText: {
+    color: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    textAlign: 'center',
+    fontSize: 14,
+    fontFamily: Fonts.medium,
   },
 });
 

@@ -17,11 +17,13 @@ const defaultConfig = {
   PAYMENT_METHODS: 'PG',
   SHOW_NEARBY_DRIVER: false,
   DRIVER_LOCATION_UPDATE_INTERVAL: 10,
-  TOTAL_STOPS_ALLOWED: 2
+  TOTAL_STOPS_ALLOWED: 2,
+
 };
 
 const useConfigStore = create((set, get) => ({
   appConfig: { ...defaultConfig },
+  updateAvailable: false,
 
   setConfig: (newConfig) => set({ appConfig: { ...defaultConfig, ...newConfig } }),
 
@@ -31,6 +33,7 @@ const useConfigStore = create((set, get) => ({
     })),
 
   resetConfig: () => set({ appConfig: { ...defaultConfig } }),
+  setUpdateAvailable: (isAvailable) => set({ updateAvailable: isAvailable }),
 }));
 
 export default useConfigStore;

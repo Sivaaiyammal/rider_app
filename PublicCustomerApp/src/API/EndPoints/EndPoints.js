@@ -98,8 +98,8 @@ export const updatePaymentInServer = async (payload) => {
 }
 
 // get nearby drivers
-export const getNearByDrivers = async (lat,lon) => {
-  const { data } = await apiClient.get(`/publicrides/customer/getNearByDrivers?latitude=${lat}&longitude=${lon}&radius=5000`)
+export const getNearByDrivers = async (lat,lon,radius,vehicleTypes) => {
+  const { data } = await apiClient.get(`/publicrides/customer/getNearByDrivers?latitude=${lat}&longitude=${lon}&radius=${radius}&vehicleTypes=${vehicleTypes.join(',')}`)
   return data
 }
 

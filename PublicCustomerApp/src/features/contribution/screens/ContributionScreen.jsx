@@ -41,6 +41,7 @@ const ContributionScreen = () => {
       buttonLabel:t('button_locate_pickup_location'),
       isFromContribution:true,
       searchBar:true,
+      focusSearchOnMount:true,
     });
   }
 

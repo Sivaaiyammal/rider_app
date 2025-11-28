@@ -9,12 +9,13 @@ const roundCoord = (value) => {
 };
 
 const serializePoint = (point) => {
+
   if (!point || typeof point !== 'object') return '';
-  const { longitude, latitude, lon, lat } = point;
-  const finalLon = longitude ?? lon;
-  const finalLat = latitude ?? lat;
+  const { longitude, latitude} = point;
+  const finalLon = longitude;
+  const finalLat = latitude;
   if (finalLon == null || finalLat == null) return '';
-  return `${roundCoord(finalLon)},${roundCoord(finalLat)}`;
+  return `${finalLon},${finalLat}`;
 };
 
 const serializeWaypoints = (waypoints) => {

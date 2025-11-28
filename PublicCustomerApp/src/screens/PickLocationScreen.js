@@ -48,7 +48,7 @@ import SearchScreenWrapper from '../features/search/screens/SearchWrapper.jsx';
 import { search } from 'react-native-country-picker-modal/lib/CountryService';
 
 
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null,buttonLabel=null,isFromContribution=false}) => {
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null,buttonLabel=null,isFromContribution=false, focusSearchOnMount=true,isConfirmLocation=false}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation,setGeometries } = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -74,6 +74,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     rideEndLocation, 
     rideWayPoints 
   } = useRideBookingLocationStore();
+  const linearGradientColors =  ['transparent','#303030',];
   const getLastLatLngfromPolyLine = useCallback(async (polylineData) => {
     console.log("polylineData",polylineData)
     const encodedPolyline = polylineData.trip.legs?.[0].shape || null;
@@ -137,9 +138,9 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     // Bottom container animation removed
   }, []);
 
-  // Delayed focus of search input when screen mounts (only if searchBar is shown)
+  // Delayed focus of search input when screen mounts (only if searchBar + focusSearchOnMount)
   useEffect(() => {
-    if (!searchBar) return;
+    if (!searchBar || !focusSearchOnMount || defaultLocation) return;
     const focusTimeout = setTimeout(() => {
       if (searchInputRef.current) {
         try {
@@ -148,9 +149,14 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           // silently ignore focus errors
         }
       }
-    }, 600); // delay in ms
+    },500);
+
+
+    setKeyboardVisible(true);
+     // delay in ms
     return () => clearTimeout(focusTimeout);
   }, [searchBar]);
+  
   const extractRouteSummary = useCallback((routeData) => {
         if (!routeData?.trip?.legs || routeData.trip.legs.length === 0) {
           return null;
@@ -207,7 +213,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       item.address = response.address;
     }
     setSearchTxt(null);
-    setHomeMapMarker([pickedLocation?.longitude, pickedLocation?.latitude],'home',48);
+    // setHomeMapMarker([pickedLocation?.longitude, pickedLocation?.latitude],'home',48);
     setPickedLocation(item);
     setIsAddressLoading(false);
   }, 500);
@@ -227,6 +233,11 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
   const onMapRotationChangedCallback = async ()=>{
     setMapMoving(true);
+    Keyboard.dismiss();
+    if (searchInputRef.current) {
+      searchInputRef.current.blur();
+    }
+
     
   }
 
@@ -463,6 +474,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     });
     console.log('onSearchClickResultCallback', updated);
     setShowSearch(false);
+    setMapMoving(false);
     // Blur / dismiss keyboard after selection
    
     
@@ -576,7 +588,8 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         onBackPress={handleBack}
         feedbackIcon={true}
         onrightIconPress={handleFeedback}
-      />}
+      />
+      }
       <View style={[styles.container]}>
         <View style={[mapMoving && { marginBottom: 7 },{ alignSelf: 'center', alignItems: 'center' }]}>
           <Image source={PickIcon} style={styles.pickIcon} />
@@ -587,7 +600,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           </View>
         </View>
       </View>
-      {!keyboardVisible && (
+      
       <View style={styles.bottomContainer}>
 
         <View style={styles.mapIconContainer}>
@@ -599,7 +612,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         <TouchableOpacity style={styles.currentLocationIconContainer} onPress={centerMap}>
           <CurrentLocationIcon width={25} height={25} />
           </TouchableOpacity>
-          {!isFromContribution && <TouchableOpacity
+          {(!isFromContribution  )&& <TouchableOpacity
               style={[styles.feedbackIcon, { backgroundColor: colors.black,}]}
               onPress={handleFeedback}
             >
@@ -647,7 +660,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
             </View>
           ) : ( <>
         <LinearGradient
-          colors={['transparent','#303030',]}
+          colors={linearGradientColors}
           start={{ x: 1, y: 0 }}
           end={{ x: 0, y: 0 }}
           style={styles.bottomContainerWarrapper}
@@ -711,7 +724,8 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         <TouchableOpacity
           style={[
             styles.bottomContainerButton,
-            (isAddressLoading || isConfirming || !pickedLocation?.placeName) && styles.bottomContainerButtonDisabled
+            (isAddressLoading || isConfirming || !pickedLocation?.placeName) && styles.bottomContainerButtonDisabled,
+            
           ]}
           onPress={async () => {
             if (isAddressLoading || isConfirming || !pickedLocation?.placeName) return;
@@ -862,13 +876,14 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
             <AdaptiveText style={[
             styles.bottomContainerButtonText,
             (isAddressLoading || isConfirming || !pickedLocation?.placeName) && styles.bottomContainerButtonTextDisabled
+         
             ]} color={colors.white}>{buttonLabel || t('confirm_location')}</AdaptiveText>
           )}
         </TouchableOpacity>
 
       </>)}
           </View>
-          )}
+          
       {showSearch && (
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -1056,7 +1071,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 0.5,
+    
     
     borderRadius: 16,
     backgroundColor: '#212121',
@@ -1186,6 +1201,7 @@ PickLocationScreen.propTypes = {
   }),
   label: PropTypes.string,
   isFromRidePointsSelection: PropTypes.bool,
+  focusSearchOnMount: PropTypes.bool,
 };
 
 export default PickLocationScreen;

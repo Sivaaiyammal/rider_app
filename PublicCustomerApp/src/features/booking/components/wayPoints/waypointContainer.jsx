@@ -222,10 +222,11 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
       isFromRidePointsSelection:true,
       searchBar:true,
       buttonLabel: buttonLabel,
+      focusSearchOnMount:true,
     }
 
 
-    setStackScreen('PickLocationScreen', props)
+     setStackScreen('PickLocationScreen', props)
 
       
     }
@@ -310,7 +311,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
       label:label,
       buttonLabel: buttonLabel,
       searchBar:true,
-     
+      focusSearchOnMount:true,  
     }
    if(dataIndex == 0 && tripStatus == "ACCEPTED"){
      props.limitRadius=1

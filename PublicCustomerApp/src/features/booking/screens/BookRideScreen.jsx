@@ -27,6 +27,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Schdule from '../../../assets/image/svgIcons/schdule.svg';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
+import Marker from '../../../controllers/NEMap/Marker';
 
 
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
@@ -137,6 +138,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const [showCoupon,setShowCoupon] = useState(false)
     const [isEstimationLoading, setIsEstimationLoading] = useState(false)
     const [showDriverNotFoundModal, setShowDriverNotFoundModal] = useState(!!RideMatchDriverNotFound)
+    const [showMaxDistanceExceededModal, setShowMaxDistanceExceededModal] = useState(false)
 
 
 
@@ -177,7 +179,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     //   },[drivers])
 
   
-
+    
 
     const handleDirectionReady = (data) => {
        // handleCurrentLocation()
@@ -193,7 +195,6 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             console.log("distance Got from direction data",distance)
             
         }
-        
     }
 
     useEffect(() => {
@@ -205,6 +206,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             });
         }
         setSelectedVehicle(null)
+   
         return ()=>{
             setAvailableVehicles([])
         }
@@ -216,7 +218,13 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         }
     }, [RideMatchDriverNotFound])
 
-    const transformEstimateDatStore=(data)=>{
+
+    
+
+
+    const transformEstimateDatStore=(data,rideDistances)=>{
+        const distanceNum = rideDistances != null ? Number(rideDistances) : null;
+        console.log(distanceNum,"wediw")
         const vehicleList = vehicleType.reduce((acc, spec, index) => {
             const rideTypeData = data?.[spec.type];
             if (!rideTypeData) return acc;
@@ -230,17 +238,29 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
                 maxFare: Number.isFinite(maxFareNumber) ? maxFareNumber : null,
                 currency: rideTypeData.currency,
                 estimatedDuration: rideTypeData.estimatedDuration ?? spec.estimatedDuration,
+                maxDistanceLimit: rideTypeData.maxDistanceLimit ?? null,
+                isExceedingMaxDistance: distanceNum != null && rideTypeData.maxDistanceLimit ? rideTypeData.maxDistanceLimit < distanceNum : false,
             });
             return acc;
         }, [])
- 
-        // Debug earlier to verify transform time
-        console.log("vehicleList")
-        // setBottomSheetHeight(height*0.4 + vehicleList.length * 10)
-        // Set store state in one pass to minimize renders
+
+        const withinLimit = vehicleList.filter(v => !v.isExceedingMaxDistance);
+        const exceedingLimit = vehicleList.filter(v => v.isExceedingMaxDistance);
+        const sortedVehicleList = [...withinLimit, ...exceedingLimit];
+
+
+   
+
+        // Show modal if all vehicles exceed max distance (only when distance is known)
+        if (distanceNum != null && withinLimit.length === 0 && exceedingLimit.length > 0) {
+            setShowMaxDistanceExceededModal(true)
+        } else {
+            setShowMaxDistanceExceededModal(false)
+        }
+
         useRideVehicleStore.setState({
-            availableVehicles: vehicleList,
-            selectedVehicle: vehicleList[0] || null,
+            availableVehicles: sortedVehicleList,
+            selectedVehicle: sortedVehicleList[0] || null,
         })
     }
 
@@ -259,11 +279,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             if(data?.regionOfficeId){
                 setRegionOfficeId(data?.regionOfficeId)
             }
-
-
-       
-         
-            transformEstimateDatStore(data?.result?.data?.fareRanges)
+            transformEstimateDatStore(data?.result?.data?.fareRanges, data?.result?.data?.distance);
                    
         } else {
             showNotification(t('ride_estimation_title'), data?.message || t('failed_to_get_fare_estimation'), 'danger');
@@ -331,7 +347,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         pruneEstimationCache();
         const cached = getEstimationFromCache(cacheKey);
         if (cached) {
-            console.log('Cached estimation found', cached);
+            console.log('Cached estimation found', cached,cacheKey);
             onEstimationSuccess(cached);
             return;
         }
@@ -339,8 +355,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         const payload = {
             distance: rideDistance,
             duration: estimatedDuration,
-            coordinates: [rideStartLocation.longitude, rideStartLocation.latitude],
-            
+            coordinates: [rideStartLocation.longitude, rideStartLocation.latitude],    
         };
         
         debouncedGetRideEstimation(payload,cacheKey);
@@ -512,7 +527,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
       
     
    
-      <VehicleList  availableVehicles={availableVehicles} isLoading={isEstimationLoading} isEstimationError={isEstimationError} setScrolledUntillBottom={setScrolledUntillBottom}/>
+      <VehicleList  availableVehicles={availableVehicles} isLoading={isEstimationLoading} isEstimationError={isEstimationError} setScrolledUntillBottom={setScrolledUntillBottom} distance={rideDistance}/>
       <View style={{height:100}}/>
            
 
@@ -600,12 +615,63 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                         <AdaptiveText style={styles.modalTitle}>{t('driver_not_found')}</AdaptiveText>
                         <AdaptiveText style={styles.modalMessage}>{t('unable_to_find_driver')}</AdaptiveText>
                         <TouchableOpacity
-                            style={styles.modalButton}
+                            style={[styles.modalButton, styles.primaryActionButton,{justifyContent: 'center', textAlign: 'center',alignItems: 'center'}]}
                             onPress={() => setShowDriverNotFoundModal(false)}
                             activeOpacity={0.8}
                         >
-                            <AdaptiveText style={styles.modalButtonText}>{t('ok', 'OK')}</AdaptiveText>
+                            <AdaptiveText style={[{fontFamily:Fonts.regular,fontSize:16,color: colors.white,justifyContent: 'center', textAlign: 'center',alignItems: 'center'}]}>{t('ok', 'OK')}</AdaptiveText>
                         </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+        )}
+        { showMaxDistanceExceededModal && (
+            <Modal
+                animationType="fade"
+                transparent
+                visible
+                onRequestClose={() => setShowMaxDistanceExceededModal(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={[styles.modalView, styles.modernModalView]}>
+                        <View style={styles.modalIconContainer}>
+                            <Icon name="warning" size={28} color={colors.orange} />
+                        </View>
+                        <AdaptiveText style={[styles.modalTitle, styles.modalTitleModern]}>
+                            {t('distance_exceeded_title', 'Trip Distance Too Long')}
+                        </AdaptiveText>
+                        <AdaptiveText style={[styles.modalMessage, styles.modalMessageModern]}>
+                            {t('distance_exceeded_message', 'All available vehicles exceed their maximum trip distance for this route. Please choose different pickup and drop locations.')}
+                        </AdaptiveText>
+                        <View style={styles.modalActions}>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.primaryActionButton]}
+                                onPress={() => {
+                                    setShowMaxDistanceExceededModal(false);
+                                    try {
+                                        goBackToScreen('PlanRideScreen', { focusEditPlaces: true });
+                                    } catch (e) {
+                                        goBack();
+                                    }
+                                }}
+                                activeOpacity={0.85}
+                            >
+                                <Icon name="edit" size={18} color={colors.white} />
+                                <AdaptiveText style={[styles.modalButtonText, styles.primaryActionText]}>
+                                    {t('edit_places_button', 'Edit Places')}
+                                </AdaptiveText>
+                            </TouchableOpacity>
+                            {/* <TouchableOpacity
+                                style={[styles.modalButton, styles.secondaryActionButton]}
+                                onPress={() => setShowMaxDistanceExceededModal(false)}
+                                activeOpacity={0.85}
+                            >
+                                <Icon name="close" size={18} color={colors.black} />
+                                <AdaptiveText style={[styles.modalButtonText, styles.secondaryActionText]}>
+                                    {t('dismiss', 'Dismiss')}
+                                </AdaptiveText>
+                            </TouchableOpacity> */}
+                        </View>
                     </View>
                 </View>
             </Modal>
@@ -880,6 +946,20 @@ const styles = StyleSheet.create({
         alignItems:'center',
         elevation:5
     },
+    modernModalView:{
+        paddingTop:20,
+        paddingBottom:24,
+    },
+    modalIconContainer:{
+        width:48,
+        height:48,
+        borderRadius:24,
+        backgroundColor:'#FFF3E0',
+        alignItems:'center',
+        justifyContent:'center',
+        marginTop:10,
+        marginBottom:12,
+    },
     modalImage:{
         width: '90%',
         height: 250,
@@ -892,6 +972,9 @@ const styles = StyleSheet.create({
         marginBottom:8,
         textAlign:'center'
     },
+    modalTitleModern:{
+        fontSize:20,
+    },
     modalMessage:{
         fontFamily:Fonts.regular,
         fontSize:14,
@@ -899,19 +982,46 @@ const styles = StyleSheet.create({
         textAlign:'center',
         marginBottom:16
     },
+    modalMessageModern:{
+        fontSize:15,
+        color:'#4A4A4A',
+        marginHorizontal:6,
+    },
     modalButton:{
-        backgroundColor:colors.black,
+        flexDirection:'row',
+        alignItems:'center',
+        gap:8,
         borderRadius:10,
         paddingVertical:12,
-        paddingHorizontal:28,
-        minWidth:160,
+        paddingHorizontal:16,
+        minWidth:140,
         alignSelf:'center'
     },
+    primaryActionButton:{
+        backgroundColor:colors.black,
+    },
+    secondaryActionButton:{
+        backgroundColor:'#F2F2F2',
+        borderWidth:1,
+        borderColor:'#E6E6E6',
+    },
+    modalActions:{
+        width:'100%',
+        flexDirection:'row',
+        justifyContent:'center',
+        gap:12,
+        marginTop:4,
+    },
     modalButtonText:{
-        color:colors.white,
         fontFamily:Fonts.semi_bold,
         fontSize:14,
         textAlign:'center'
+    },
+    primaryActionText:{
+        color:colors.white,
+    },
+    secondaryActionText:{
+        color:colors.black,
     },
     vehicleCard: {
         flexDirection: 'row',

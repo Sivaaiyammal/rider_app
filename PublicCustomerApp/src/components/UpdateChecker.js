@@ -2,10 +2,14 @@ import DeviceInfo from 'react-native-device-info';
 import dayjs from 'dayjs';
 import { Platform } from 'react-native';
 import { DataStore } from '../controllers/DataStore';
+import SpInAppUpdates, {
+  IAUUpdateKind,
+  StatusUpdateEvent,
+} from 'sp-react-native-in-app-updates';
 
-// "Today optional, next day force"
+// Show force update immediately; optional remains same-day
 const OPTIONAL_UPDATE_DAYS = 0; // same day
-const FORCE_UPDATE_DAYS = 1;    // next day
+const FORCE_UPDATE_DAYS = 0;    // force today (no skip)
 
 /** Normalize to comparable integer.
  * "1.2.3" -> 1_002_003 ; "120" -> 120 ; 120 -> 120
@@ -24,29 +28,45 @@ function normalizeVersion(input) {
 
 export async function checkUpdateStatus(versions) {
   try {
-    // Use build numbers (versionCode) if you can. If you pass "1.2.3", normalizeVersion handles it.
-    const latestRaw = Platform.select({ android: versions?.android, ios: versions?.ios });
-    const currentRaw = DeviceInfo.getBuildNumber(); // e.g. "120" (Android versionCode)
+    
+    // Latest values from server payload (both Build Number and Version)
+    const latestVersionRaw = Platform.select({ android: versions?.ANDROID?.VERSION, ios: versions?.IOS?.VERSION });
+    const latestBuildRaw = Platform.select({ android: versions?.ANDROID?.BUILD_NUMBER, ios: versions?.IOS?.BUILD_NUMBER });
 
-    const latest = normalizeVersion(latestRaw);
-    const current = normalizeVersion(currentRaw);
+    // Current app values
+    const currentVersionRaw = DeviceInfo.getVersion(); // e.g. "2.1.0.7"
+    const currentBuildRaw = DeviceInfo.getBuildNumber(); // e.g. "120" (Android versionCode)
 
-    if (!Number.isFinite(latest)) {
-      console.warn('[UpdateCheck] Invalid latest version:', latestRaw);
+    // Normalize for comparison
+    const latestVersion = normalizeVersion(latestVersionRaw);
+    const latestBuild = normalizeVersion(latestBuildRaw);
+    const currentVersion = normalizeVersion(currentVersionRaw);
+    const currentBuild = normalizeVersion(currentBuildRaw);
+
+    console.log('checkUpdateStatus currentVersion:', currentVersionRaw, 'normalized:', currentVersion);
+    console.log('checkUpdateStatus latestVersion:', latestVersionRaw, 'normalized:', latestVersion);
+    console.log('checkUpdateStatus currentBuild:', currentBuildRaw, 'normalized:', currentBuild);
+    console.log('checkUpdateStatus latestBuild:', latestBuildRaw, 'normalized:', latestBuild);
+
+    // Validate inputs: at least one of version/build must be valid to deem outdated
+    const hasValidLatestVersion = Number.isFinite(latestVersion);
+    const hasValidLatestBuild = Number.isFinite(latestBuild);
+    if (!hasValidLatestVersion && !hasValidLatestBuild) {
+      console.warn('[UpdateCheck] Invalid latest payload:', versions);
       return 'none';
     }
 
-    // If up-to-date (or newer), clear state and exit
-    if (Number.isFinite(current) && current >= latest) {
+    // Determine outdated states per dimension
+    const versionOutdated = hasValidLatestVersion && Number.isFinite(currentVersion) && currentVersion < latestVersion;
+    const buildOutdated = hasValidLatestBuild && Number.isFinite(currentBuild) && currentBuild < latestBuild;
+
+    // If neither is outdated, clear state and exit
+    if (!versionOutdated && !buildOutdated) {
       await DataStore.storeData('firstOutdatedDate', null);
-      // Optional: await DataStore.storeData('updateSkipDate', null);
       return 'none';
     }
 
     // Outdated: get persisted state
-    const skipDateResponse = await DataStore.loadData('updateSkipDate', null);
-    const skipDate = skipDateResponse?.data;
-    
     const firstOutdatedResponse = await DataStore.loadData('firstOutdatedDate', null);
     let firstOutdatedDate = firstOutdatedResponse?.data;
 
@@ -63,17 +83,29 @@ export async function checkUpdateStatus(versions) {
 
     console.log("daysSinceOutdated",daysSinceOutdated)
 
-    // Optional should be skippable only for the current day
-    const skippedToday = !!(
-      skipDate && dayjs(skipDate).isSame(dayjs(), 'day')
-    );
-
-    console.log("skipDate", skipDate);
+    // Skip functionality removed: optional updates are no longer skippable
     console.log("firstOutdatedDate value", firstOutdatedDate);
 
-    // Force ignores skip
-    if (daysSinceOutdated >= FORCE_UPDATE_DAYS) return 'force';
-    if (daysSinceOutdated >= OPTIONAL_UPDATE_DAYS && !skippedToday) return 'optional';
+    // With zero-day thresholds, any outdated state results in force update
+    if (versionOutdated || buildOutdated) {
+         const isDebug = false;
+       const inAppUpdates = new SpInAppUpdates(isDebug);
+       try{
+       const result = await inAppUpdates.checkNeedsUpdate();
+
+
+       const updateAvailability = result?.other?.updateAvailability || 1;
+       if (updateAvailability === 1){
+         return 'force';
+
+       }
+      }catch(e){
+        console.log("InAppUpdates Error",e);
+       
+        return 'none';
+      }
+     
+    }
     return 'none';
   } catch (e) {
     console.log('checkUpdateStatus error:', e);

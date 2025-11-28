@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { use, useCallback, useEffect, useRef, useState } from 'react';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import Homescreen from '../features/home/screens/HomeScreen.jsx'
 import MapContainer from '../features/map/components/MapContainer.js';
@@ -6,7 +6,7 @@ import { RequestAllPermissions } from '../controllers/PermissionHandler';
 import locationTask from '../controllers/GetCurrentLocation';
 import SearchScreen from '../features/search/screens/SearchScreen';
 import WaypointScreen from '../features/booking/screens/WaypointScreen';
-import { StatusBar, View, StyleSheet, AppState, Alert } from 'react-native';
+import { StatusBar, View, StyleSheet, AppState, Alert,Platform } from 'react-native';
 import LottieView from 'lottie-react-native';
 import useUserInfoStore from '../store/useUserInfoStore';
 import { getStoredLocation, getPreferenceShowRideStatus} from '../storage/userLocalStorage';
@@ -63,6 +63,7 @@ import UpdateOverlay from '../components/UpdateOverlay';
 import OverdueTripModal from '../components/OverdueTripModal';
 import { log } from '@react-native-firebase/crashlytics';
 import ContributionScreen from '../features/contribution/screens/ContributionScreen.jsx';
+
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -133,6 +134,7 @@ const Home = () => {
   const [bootLoading, setBootLoading] = useState(true);
   const [, setConfigError] = useState(false);
   const [hasLocationPermission, setHasLocationPermission] = useState(null);
+  const { appConfig ,updateAvailable} = useConfigStore();
   
   const { setHomelocation, setWorklocation, setIsPreferenceShow} = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
@@ -360,10 +362,11 @@ const Home = () => {
 
         if(Response?.appConfig){
           setConfig(Response?.appConfig);
-          console.log("App Config Set in Home Screen:", Response?.appConfig);
-          if(Response?.appConfig?.APP_BUILD_NUMBER && !currentTripId){
-
-            checkForUpdates(Response?.appConfig?.APP_BUILD_NUMBER);
+         
+          if(Response?.appConfig?.FORCE_UPDATE && !currentTripId){
+  
+          
+            checkForUpdates(Response?.appConfig?.FORCE_UPDATE);
             
           }
 
@@ -459,6 +462,8 @@ const Home = () => {
   }
 
 
+
+
   const checkPreferenceShowRideStatus = async () => {
     const preferenceShowRideStatus = await getPreferenceShowRideStatus();
     if(preferenceShowRideStatus == "true"){
@@ -466,11 +471,13 @@ const Home = () => {
     }
   }
 
- const checkForUpdates = async (buildNumber) => {
-        const mode = await checkUpdateStatus(buildNumber);
-        console.log("update mode",mode)
-        setUpdateMode(mode);
-      };
+ const checkForUpdates = async (forceUpdateConfig) => {
+   const mode = await checkUpdateStatus(forceUpdateConfig);
+   const isForce = mode === 'force';
+   const isAndroidForce = Platform.OS === 'android' && isForce;
+   const isIOSForce = Platform.OS === 'ios' && isForce;
+   if (isAndroidForce || isIOSForce) setUpdateMode(mode);
+ };
 
 
 

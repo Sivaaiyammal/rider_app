@@ -116,7 +116,7 @@ const MainAppContent = () => {
 
     return unsubscribe;
   }, []);
-  useNearbyDrivers();
+
   
   
 

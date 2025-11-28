@@ -231,7 +231,9 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces}) 
       label:t('locate_pickup_location'),
       buttonLabel:t('button_locate_pickup_location'),
       isFromRidePointsSelection:true,
-      searchBar:true
+      searchBar:true,
+      currentLocation:true,
+      focusSearchOnMount:false,
     }
     setStackScreen('PickLocationScreen', props);
   }
@@ -244,7 +246,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces}) 
       label: type === LocationTypes.DESTINATION_LOCATION ? t('locate_drop_location') : type === LocationTypes.WAYPOINT_LOCATION ? t('locate_stop') : t('locate_pickup_location'),
       buttonLabel: type === LocationTypes.DESTINATION_LOCATION ? t('button_locate_drop_location') : type === LocationTypes.WAYPOINT_LOCATION ? t('button_locate_stop') : t('button_locate_pickup_location'),
       isFromRidePointsSelection:true,
-      searchBar:true
+      searchBar:true,
+      focusSearchOnMount:true,
     }
 
     if(type === LocationTypes.START_LOCATION && rideStartLocation){
@@ -299,7 +302,9 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces}) 
         isFromRidePointsSelection:true,
         searchBar:true,
         currentLocation:true,
-        defaultLocation:rideStartLocation
+        defaultLocation:rideStartLocation,
+        focusSearchOnMount:false,
+        isConfirmLocation:true,
       }
       setStackScreen('PickLocationScreen', props);
       return;

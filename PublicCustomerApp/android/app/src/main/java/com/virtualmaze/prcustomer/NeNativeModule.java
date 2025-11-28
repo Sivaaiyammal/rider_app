@@ -138,6 +138,10 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     private Set<Marker> addedMarkers = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private HashMap<String, String> markerTextures = new HashMap<>();
+    // Dedicated collections for vehicle markers so updates/removals don't affect other markers
+    private Set<Marker> vehicleMarkers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private HashMap<String, String> vehicleMarkerTextures = new HashMap<>();
+    private Set<String> vehicleMarkersInCreation = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     private int[] routeMargins = new int[]{50, 50, 50, 700};
 
@@ -881,6 +885,217 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         } catch (Exception e) {
             Log.e("MARKER_ERROR", "Error in setMarkers: " + e.getMessage());
         }
+    }
+
+    // New: handle vehicle markers independently without clearing non-vehicle markers
+    @ReactProp(name = "vehicleMarkers")
+    public synchronized void setVehicleMarkers(MapView mapView, ReadableArray markers) {
+        try {
+            if (mapController == null) {
+                vehicleMarkerTextures.clear();
+                vehicleMarkers.clear();
+                vehicleMarkersInCreation.clear();
+                return;
+            }
+            if (markers == null || markers.size() == 0) {
+                // Remove only vehicle markers
+                synchronized (vehicleMarkers) {
+                    for (Marker m : vehicleMarkers) {
+                        try { mapController.removeMarker(m.getMarkerId()); } catch (Throwable t) { Log.e("MARKER_ERROR", "Error removing vehicle marker: " + t.getMessage()); }
+                    }
+                    vehicleMarkers.clear();
+                    vehicleMarkerTextures.clear();
+                    vehicleMarkersInCreation.clear();
+                }
+                return;
+            }
+            HashSet<Marker> currentVehicleMarkers = new HashSet<>();
+            HashSet<Marker> vehicleMarkersToRemove = new HashSet<>(vehicleMarkers);
+            for (int i = 0; i < markers.size(); i++) {
+                try {
+                    ReadableMap markerData = markers.getMap(i);
+                    double latitude = markerData.getDouble("lat");
+                    double longitude = markerData.getDouble("lng");
+                    String markerId = markerData.getString("id");
+                    String markerType = markerData.getString("type");
+                    int markerSize = markerData.getInt("size");
+                    boolean isMarkerSelected = markerData.getBoolean("selected");
+                    boolean focus = markerData.getBoolean("focus");
+                    boolean animate = markerData.getBoolean("animate");
+                    int animationTime = markerData.getInt("animationTime");
+                    boolean showToolTip = markerData.getBoolean("showToolTip");
+                    boolean doRotation = markerData.getBoolean("doRotation");
+
+                    String title = markerData.getString("title");
+                    String snippet = markerData.getString("snippet");
+                    int angle = markerData.getInt("angle");
+                    Marker marker = findVehicleMarkerWithId(markerId);
+                    MarkerOptions markerOptions = new MarkerOptions()
+                            .name(markerId)
+                            .position(new LngLat(longitude, latitude))
+                            .size(markerSize)
+                            .interactive(true)
+                            .flat(true)
+                            .style(StyleType.ROTATABLE_MARKER);
+                    if(!doRotation){
+                        markerOptions.flat(false);
+                    }
+                    Integer markerDrawable = getMarkerDrawable(markerType);
+                    if(showToolTip==true){
+                        markerOptions.title(title).snippet(snippet);
+                    }
+                    if(doRotation){
+                        markerOptions.rotation(0);
+                    }
+                    if(marker!=null){
+                        try {
+                            Long prevMarkerId = marker.getMarkerId();
+                            if (prevMarkerId == null) {
+                                Log.d("AJIN", "prevMarkerId is null");
+                                marker = null;
+                            }
+                        } catch (Exception e) {
+                            Log.e("MARKER_ERROR", "Error getting marker ID: " + e.getMessage());
+                            marker = null;
+                        }
+                    }
+
+                    if(marker==null){
+                        if(vehicleMarkersInCreation.contains(markerId)){
+                            continue;
+                        }
+                        vehicleMarkersInCreation.add(markerId);
+                        OnMarkerCreateListener onMarkerCreateListener = new OnMarkerCreateListener() {
+                            @Override
+                            public synchronized void onMarkerCreated(Marker marker) {
+                                try {
+                                    if(mapController==null){
+                                        Log.d("AJIN", "MAP ctrl not");
+                                        return;
+                                    }
+                                    vehicleMarkersInCreation.remove(markerId);
+                                    MarkerData userData = new MarkerData();
+                                    userData.setId(markerId);
+                                    marker.setUserData(userData);
+                                    marker.setDrawable(markerDrawable);
+                                    if(doRotation==true){
+                                        mapController.NEMarkerSetAngle(marker, angle);
+                                    }
+                                    synchronized (vehicleMarkers) {
+                                        vehicleMarkers.add(marker);
+                                    }
+                                    vehicleMarkerTextures.put(markerId,markerType);
+                                    if (isMarkerSelected) {
+                                        mapController.selectMarker(marker);
+                                    }else{
+                                        mapController.deselectMarker(marker);
+                                    }
+                                    synchronized (currentVehicleMarkers) {
+                                        currentVehicleMarkers.add(marker);
+                                    }
+                                } catch (Exception e) {
+                                    Log.e("MARKER_ERROR", "Error in onVehicleMarkerCreated: " + e.getMessage());
+                                }
+                            }
+
+                            @Override
+                            public void onFailed(String name) {
+                                Log.d("AJIN", "Failed vehicle marker " + name);
+                                vehicleMarkersInCreation.remove(markerId);
+                            }
+                        };
+                        try {
+                            mapController.NEMarkerAdd(markerOptions, onMarkerCreateListener);
+                        } catch (Exception e) {
+                            Log.e("MARKER_ERROR", "Error adding vehicle marker: " + e.getMessage());
+                            vehicleMarkersInCreation.remove(markerId);
+                        }
+                    }else{
+                        try {
+                            LngLat oldpos = marker.getPosition();
+                            oldpos.longitude = longitude;
+                            oldpos.latitude = latitude;
+                            if(animate){
+                                marker.setPointEased(oldpos,animationTime, MapController.EaseType.LINEAR);
+                            }else{
+                                marker.setPoint(new LngLat(longitude,latitude));
+                            }
+                            if(focus){
+                                CameraPosition cameraPosition = mapController.getCameraPosition();
+                                float zoom = 14;
+                                float cameraZoom = cameraPosition.getZoom();
+                                if(cameraZoom>14.0){
+                                    zoom = cameraZoom;
+                                }
+                                mapController.updateCameraPosition(CameraUpdateFactory.newLngLatZoom(new LngLat(longitude,latitude), zoom),100);
+                            }
+                            if (isMarkerSelected) {
+                                mapController.selectMarker(marker);
+                            }else{
+                                mapController.deselectMarker(marker);
+                            }
+                            String prevString = vehicleMarkerTextures.get(markerId);
+                            if (prevString!= null && !markerType.equals(prevString)) {
+                                marker.setVisible(false);
+                                marker.setDrawable(markerDrawable);
+                                vehicleMarkerTextures.put(markerId, markerType);
+                                marker.setVisible(true);
+                           }
+                            if(prevString==null){
+                                marker.setVisible(false);
+                                mapController.NEMarkerSetStyle(marker, markerOptions);
+                                marker.setDrawable(markerDrawable);
+                                vehicleMarkerTextures.put(markerId, markerType);
+                                marker.setVisible(true);
+                           }
+                            if(doRotation){
+                                mapController.NEMarkerSetAngle(marker, angle);
+                            }
+                            vehicleMarkersToRemove.remove(marker);
+                            synchronized (currentVehicleMarkers) {
+                                currentVehicleMarkers.add(marker);
+                            }
+                        } catch (Exception e) {
+                            Log.e("MARKER_ERROR", "Error updating existing vehicle marker: " + e.getMessage());
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e("MARKER_ERROR", "Error processing vehicle marker at index " + i + ": " + e.getMessage());
+                }
+            }
+
+            synchronized (vehicleMarkers) {
+                vehicleMarkers.clear();
+                vehicleMarkers.addAll(currentVehicleMarkers);
+            }
+
+            try {
+                for(Marker marker : vehicleMarkersToRemove){
+                    mapController.removeMarker(marker.getMarkerId());
+                }
+            } catch (Exception e) {
+                Log.e("MARKER_ERROR", "Error removing stale vehicle markers: " + e.getMessage());
+            }
+
+            vehicleMarkersToRemove.clear();
+        } catch (Exception e) {
+            Log.e("MARKER_ERROR", "Error in setVehicleMarkers: " + e.getMessage());
+        }
+    }
+
+    // Helper: find from vehicle marker set only
+    private synchronized Marker findVehicleMarkerWithId(String id) {
+        synchronized (vehicleMarkers) {
+            for (Marker marker : vehicleMarkers) {
+                MarkerData userData = (MarkerData) marker.getUserData();
+                if(marker==null) continue;
+                if(userData==null) continue;
+                if (userData.getId().equals(id)) {
+                    return marker;
+                }
+            }
+        }
+        return null;
     }
 
     private synchronized Marker findMarkerWithId(String id) {

@@ -60,7 +60,8 @@ const SavedPlacesScreen = () => {
       locationType:'savedPlaces',
       label: t('locate_places_to_save'),
     
-      searchBar:true
+      searchBar:true,
+      focusSearchOnMount:true,
     }
     setStackScreen('PickLocationScreen', props);
   };

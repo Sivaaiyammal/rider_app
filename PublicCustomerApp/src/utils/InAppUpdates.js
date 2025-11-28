@@ -4,6 +4,7 @@ import SpInAppUpdates, {
 } from 'sp-react-native-in-app-updates';
 import { Platform, Alert } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import useConfigStore from '../store/useConfigStore';
 
 class InAppUpdates {
   constructor() {
@@ -14,6 +15,7 @@ class InAppUpdates {
     this.failedCallback = null;
     this.cancelledCallback = null;
     this.currentInAppUpdates = null;
+    this.config = useConfigStore.getState().appConfig;
   }
 
   /**
@@ -227,6 +229,9 @@ class InAppUpdates {
         if (verifyErrorMsg.includes('not owned') || verifyErrorMsg.includes('Install Error(-10)')) {
           console.error('[InAppUpdates] ❌ CRITICAL: App is NOT installed from Google Play Store');
           console.error('[InAppUpdates] ❌ In-app updates will NOT work until app is installed from Play Store');
+          // Ensure UI does not show update overlay when Play Store is not available
+          useConfigStore.getState().setUpdateAvailable(true);
+          console.error('[InAppUpdates] Please install the app from Google Play Store to enable in-app updates');
           // Don't show alert for this in production - it's a development issue
           // if (__DEV__) {
           //   Alert.alert(
@@ -290,6 +295,8 @@ class InAppUpdates {
             return;
           } else if (updateAvailability === 2) {
             // Update is in progress - start immediate update
+            // setUpdateAvailable is a store action, not on appConfig; call via store
+            useConfigStore.getState().setUpdateAvailable(true);
             console.log('[InAppUpdates] Update is in progress - starting immediate update');
             this.startDownload(inAppUpdates);
             return;
