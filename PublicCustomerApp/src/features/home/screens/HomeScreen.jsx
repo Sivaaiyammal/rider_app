@@ -27,7 +27,6 @@ import useRideBookingLocationStore from '../../booking/store/useRideBookingLocat
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { height, utils, width } from '../../../utils/Utils';
 import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
-import { useNearbyDriversStore } from '../../../store/useNearByDrivers';
 import Marker from '../../../controllers/NEMap/Marker';
 import useMapStore from '../../../features/map/store/useMapStore';
 import  AppConfig  from '../../../Config/AppConfig';
@@ -70,7 +69,7 @@ const MapScreen = () => {
   const {setStackScreen} = useStackScreenStore();
   const {location,currentLocationName} = useLocationStore();
   const {setRideStartLocation,setRideEndLocation,resetRideBookingLocation } = useRideBookingLocationStore()
-  const { drivers } = useNearbyDriversStore();
+ 
   const {setMapMarkers,setMapBounds} = useMapStore();
   const { scheduledTrips } = useScheduleTripStore();
   
@@ -363,10 +362,7 @@ const MapScreen = () => {
     <>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
-      <LinearGradient
-        colors={['#FFFFFF', '#FFFFFF', 'rgba(255,255,255,0)']}
-        style={styles.gradientOverlay}
-      />
+      
 
       <Animated.View style={styles.headerContainer}>
             <LocationHeader toggleMenu={toggleMenu} showMenu={showMenu} />
