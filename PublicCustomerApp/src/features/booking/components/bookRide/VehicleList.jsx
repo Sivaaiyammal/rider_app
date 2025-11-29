@@ -26,10 +26,13 @@ import useMapStore from '../../../map/store/useMapStore';
 import Marker from '../../../../controllers/NEMap/Marker';
 import { getNearByDrivers } from '../../../../API/EndPoints/EndPoints';
 import useRideBookingLocationStore from '../../store/useRideBookingLocationStore';
+import useNearbyDrivers
+ from '../../../../store/useNearByDrivers';
 import {
   Grayscale,
   
 } from 'react-native-color-matrix-image-filters'
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
@@ -43,6 +46,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
   const { setVehicleMarkers,vehicleMarkers } = useMapStore();
   const [modalVehicle, setModalVehicle] = useState(null);
   const [slideAnim] = useState(new Animated.Value(0));
+  const { setDrivers, getDriversByType } = useNearbyDrivers();
   const firstRenderStartRef = useRef(null);
 
   useEffect(() => {
@@ -54,33 +58,53 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
   }, []);
 
 
-  const addVehicleMarkers  = () => {
-        const marker = new Marker(  
-            'vehicle-marker',
-            'vehicle-marker',
-           77.040033,
-           11.040498,
-            'electric_auto',
-            48,
-            false,
-            0
-        );    
-        marker.setAnimate(true);
-        marker.setAnimationTime(2000);
-        marker.setFocus(true);
-        marker.setTitle('Vehicle Marker');
-        marker.setSnippet('This is a vehicle on the map');  
-        console.log('Adding vehicle marker:', marker);
-        
-        setVehicleMarkers([marker])
-  }
+  const updateMarkersWithDrivers = (vehicleTypeOverride = null) => {
+    // Clear existing vehicle markers before updating
+    setVehicleMarkers([]);
+    const type = vehicleTypeOverride || (selectedVehicle && selectedVehicle.type);
+    if (!type) {
+      return;
+    }
+    console.log('Selected vehicle type for driver filtering:', type);
+    const CurrentSelectedVehicleDrivers = getDriversByType(type);
+    console.log('Current selected vehicle drivers:', CurrentSelectedVehicleDrivers);
+
+    const markerList = [];
+    CurrentSelectedVehicleDrivers.forEach((driver) => {
+      const coords = driver?.location?.coordinates;
+      if (Array.isArray(coords) && coords.length >= 2) {
+        const marker = new Marker(
+          driver._id ?? driver.id,
+          `driver_${driver._id ?? driver.id}`,
+          coords[0],
+          coords[1],
+          String(type).toLowerCase(),
+          36,
+          false,
+        );
+        marker.setAngle(driver?.location?.heading ?? 0);
+        markerList.push(marker);
+      }
+    });
+    console.log('Updating vehicle markers on map:', markerList);
+    setVehicleMarkers(markerList);
+  };
+
 
 
   const syncDriverMarkersWithVehicles = async()=>{
     console.log('Syncing driver markers with vehicles');
     if(availableVehicles && availableVehicles.length>0){
        const NearByDrivers = await getNearByDrivers(rideStartLocation.latitude,rideStartLocation.longitude,10000,availableVehicles.map(v=>v.type));
-       console.log('Nearby drivers fetched for markers:', NearByDrivers);
+       console.log('Nearby drivers fetched:', NearByDrivers);
+       if(NearByDrivers && NearByDrivers?.drivers && NearByDrivers.drivers.length>0){
+           try{
+           setDrivers(NearByDrivers?.drivers);
+           }catch(e){
+            console.log('Error setting drivers in store:', e);
+           }
+           updateMarkersWithDrivers();
+       }
     }
   }
 
@@ -97,6 +121,16 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
     syncDriverMarkersWithVehicles();
    
   }, [availableVehicles]);
+
+  // Update vehicle markers whenever the selected vehicle changes
+  useEffect(() => {
+    if (selectedVehicle && selectedVehicle.type) {
+      updateMarkersWithDrivers();
+    } else {
+      // If no vehicle selected, clear vehicle markers
+      setVehicleMarkers([]);
+    }
+  }, [selectedVehicle]);
 
 
   
@@ -115,14 +149,12 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
       setMaxDistanceMessage(message);
       setModalVehicle(vehicle);
       setShowMaxDistanceModal(true);
+      // Reflect markers for the tapped vehicle type even if selection is blocked
+      updateMarkersWithDrivers(vehicle.type);
      
       return;
     }
-    if(vehicleMarkers.length>0){
-      setVehicleMarkers([]);
-    }else{
-      addVehicleMarkers();
-    }
+    
     
  
    

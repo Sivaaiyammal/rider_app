@@ -41,7 +41,7 @@ const HistoryCard = React.memo(({ selectCallback, header = true, bottomborder = 
         historyItems.map((item, index) => (
           <View key={index}>
             <TouchableOpacity
-              onPress={() => { Vibration.vibrate(100); selectCallback(item); }}
+              onPress={() => {selectCallback(item); }}
               onLongPress={() => setShowDeleteIndex(index)}
               delayLongPress={400}
             >

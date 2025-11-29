@@ -46,7 +46,7 @@ const LanguageScreen = ({fromDrawer}) => {
 
   const onNextPress = async () => {
     // Save the selected language to AsyncStorage
-    Vibration.vibrate(100);
+    // Vibration.vibrate(100);
     await DataStore.storeData('language', selected.code);
     
     if(fromDrawer){

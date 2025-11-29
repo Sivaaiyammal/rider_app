@@ -18,12 +18,11 @@ const PaymentType = ({ onSelect, initialValue }) => {
 
   const handleSelect = (key) => {
     setSelected(key);
+    onSelect && onSelect(key);
     
   };
 
-  const handlePaymentMethodConfirm=()=>{
-    if(onSelect) onSelect(selected)
-  }
+
 
   return (
     <View style={styles.container}>
@@ -42,9 +41,7 @@ const PaymentType = ({ onSelect, initialValue }) => {
           </View>
         </TouchableOpacity>
       ))}
-      <TouchableOpacity style={styles.PaymentTypeConfirmButton} onPress={handlePaymentMethodConfirm}>
-        <Text style={styles.PaymentTypeConfirmButtonText}>{t('confirm_payment_method')}</Text>
-      </TouchableOpacity>
+    
     </View>
   );
 };

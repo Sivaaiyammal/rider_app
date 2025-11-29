@@ -169,8 +169,6 @@ const Home = () => {
 
   processLocationRef.current = async (lng, lat) => {
     try {
-     
-
       const key = `${lng},${lat}`;
       const cachedAddress = geocodeCache.current.get(key);
       if (cachedAddress) {

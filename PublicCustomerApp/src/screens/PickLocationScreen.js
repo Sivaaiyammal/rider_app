@@ -74,7 +74,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     rideEndLocation, 
     rideWayPoints 
   } = useRideBookingLocationStore();
-  const linearGradientColors =  ['transparent','#303030',];
+  const linearGradientColors = isConfirmLocation?['transparent','#00aa41ff'] : ['transparent','#303030',];
   const getLastLatLngfromPolyLine = useCallback(async (polylineData) => {
     console.log("polylineData",polylineData)
     const encodedPolyline = polylineData.trip.legs?.[0].shape || null;
@@ -299,13 +299,14 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       setIsMapButtonVisible(false);
       setMapMarkers([]);
       suppressCenterChangeRef.current = true;
-      setTimeout(() => {
-        setMapLocation({
-          lat: pickedLocation.latitude,
-          lng: pickedLocation.longitude,
-          zoom: 18,
-        });
-      }, 100);
+      // setTimeout(() => {
+      //   setMapLocation({
+      //     lat: pickedLocation.latitude,
+      //     lng: pickedLocation.longitude,
+      //     zoom: 18,
+      //   });
+      // }, 100);
+      centerMap();
       setTimeout(()=>{
         setMapMoving(false);
       },500)
@@ -379,13 +380,14 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       setIsMapButtonVisible(false);
       setMapMarkers([]); 
       suppressCenterChangeRef.current = true;
-      setTimeout(()=>{
-        setMapLocation({
-          lat: location[1],
-          lng: location[0],
-          zoom: 18,
-        });
-      },100);
+      // setTimeout(()=>{
+      //   setMapLocation({
+      //     lat: location[1],
+      //     lng: location[0],
+      //     zoom: 18,
+      //   });
+      // },200);
+      centerMap();
        setTimeout(()=>{
         setMapMoving(false);
       },500)
@@ -592,7 +594,9 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       }
       <View style={[styles.container]}>
         <View style={[mapMoving && { marginBottom: 7 },{ alignSelf: 'center', alignItems: 'center' }]}>
-          <Image source={PickIcon} style={styles.pickIcon} />
+         {isConfirmLocation ? <View style={styles.pickIconContainer}>
+          <Text style={styles.pickIconText}>{t('pickup')}</Text>
+         </View> : <Image source={PickIcon} style={styles.pickIcon} />}
           <View style={styles.pickIconVerticalLine}></View>
         </View>
         <View style={[styles.shadowContainer]}>
@@ -612,13 +616,12 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
         <TouchableOpacity style={styles.currentLocationIconContainer} onPress={centerMap}>
           <CurrentLocationIcon width={25} height={25} />
           </TouchableOpacity>
-          {(!isFromContribution  )&& <TouchableOpacity
+         {(!isFromContribution )&& <TouchableOpacity
               style={[styles.feedbackIcon, { backgroundColor: colors.black,}]}
               onPress={handleFeedback}
             >
                <Ionicons name={"chatbubble-ellipses-outline"} size={25} color={colors.white} />
-            </TouchableOpacity>
-}
+            </TouchableOpacity>}
         </View>
           {isError ? (
             <View style={styles.errorContainer}>
@@ -659,14 +662,14 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
               </TouchableOpacity>
             </View>
           ) : ( <>
-        <LinearGradient
+        { !isConfirmLocation && <LinearGradient
           colors={linearGradientColors}
           start={{ x: 1, y: 0 }}
           end={{ x: 0, y: 0 }}
           style={styles.bottomContainerWarrapper}
         >
           <AdaptiveText style={styles.bottomContainerText} color={colors.white}> {label ? label : t('pick_location')}</AdaptiveText>
-        </LinearGradient>
+        </LinearGradient>}
         <View style={styles.AddressContainer}>
           {/* <View style={styles.AddressContainerIcon}>
                     <Icon name="location-on" size={30} color="#ffd11a"/>
@@ -735,7 +738,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
               setPickedLocation(null);
               return;
             }
-            Vibration.vibrate(100);
+            // Vibration.vibrate(100);
             setIsConfirming(true);
             try {
               
@@ -1116,6 +1119,20 @@ const styles = StyleSheet.create({
    margin:5,
    borderTopLeftRadius:13,
    width:"70%"
+  },
+  pickIconContainer:{
+    alignItems:'center',
+    justifyContent:'center',
+    backgroundColor: colors.black,
+    paddingHorizontal:10,
+    paddingVertical:5,
+    borderRadius:20,
+  },
+  pickIconText:{  
+    color: colors.white,
+
+    fontSize:12,
+    fontFamily: Fonts.medium,
   },
   shadowContainer: {
    

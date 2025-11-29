@@ -310,7 +310,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces}) 
       return;
      }
      setStackScreen("BookRideScreen",{});
-     Vibration.vibrate(100);
+    //  Vibration.vibrate(100);
   }
 
 

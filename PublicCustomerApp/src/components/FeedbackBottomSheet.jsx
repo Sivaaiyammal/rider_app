@@ -148,7 +148,7 @@ const FeedbackBottomSheet = () => {
   }, [isVisible, fields]);
 
   const onSubmitPress = async () => {
-    Vibration.vibrate(100);
+    // Vibration.vibrate(100);
     const visibleFields = fields.filter(f => {
       if (f.name === 'issueMessage') {
         return showGenericIssue;

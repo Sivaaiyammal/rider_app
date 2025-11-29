@@ -163,7 +163,7 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
 
   const submit = useCallback(async () => {
     try {
-      Vibration.vibrate(100);
+      // Vibration.vibrate(100);
       setSubmitting(true);
 
       const normalize = (p: string) => (p || '').replace(/\s+/g, '');

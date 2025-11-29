@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
       },
       FavouriteAddressContainer:{
         gap: 20,
-        marginTop: 10,
+        marginVertical: 10,
         paddingHorizontal: 10,
       
       },
