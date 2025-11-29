@@ -219,12 +219,11 @@ const MapScreen = () => {
     if(location && location.length > 0){
       setHomeMapMarker()
       const bounds = utils.getBoundingBox([[location[0],location[1]]])
-     
       const margin = [50, 100, 50, height*0.4]
       const finalBounds = [bounds, margin]
       setTimeout(() => {
         setMapBounds(finalBounds);
-      }, 2000);
+      }, 1000);
     }
     return () => {
       setMapMarkers([])
