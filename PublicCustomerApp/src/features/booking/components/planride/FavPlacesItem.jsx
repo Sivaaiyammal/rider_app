@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import PropTypes from 'prop-types';
 import { Fonts } from '../../../../constants/constants';
+import { from } from '@apollo/client';
 
 const ICONS = {
   home: {
@@ -32,14 +33,19 @@ const getIcon = (label,type) => {
   }
 }
 
-    const FavPlacesItem = ({ data, onPress,type,selected }) => {
+  const FavPlacesItem = ({ data, onPress,type,selected ,fromPickScreen=false}) => {
   const { t } = useTranslation();
+  const randomColors = ['#ffffffff'];
+  const isPickedSelected = fromPickScreen && selected;
+  const bgColor = isPickedSelected ? '#000' : (fromPickScreen ? randomColors[Math.floor(Math.random()*randomColors.length)] : '#fff');
+  const fgColor = isPickedSelected ? '#fff' : '#121212';
+  const iconColor = isPickedSelected ? '#fff' : (selected ? '#fff' : '#757575');
   
   return (
-    <TouchableOpacity style={[styles.container,selected && {backgroundColor:'grey',borderWidth:1}]} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={[styles.container, {backgroundColor:bgColor}, selected && !fromPickScreen && {backgroundColor:'grey',borderWidth:1}, fromPickScreen && {paddingVertical:7}]} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.iconLabelRow}>
-        <MaterialIcons name={getIcon(data?.label,type)} size={20} color={selected ? '#fff' : '#757575'} style={styles.icon} />
-        <Text style={[styles.label,selected && {color:'#fff'}]}>{t(data?.label?.toLowerCase() || 'star')}</Text>
+        <MaterialIcons name={getIcon(data?.label,type)} size={20} color={iconColor} style={styles.icon} />
+        <Text style={[styles.label,{color: fgColor}, selected && !fromPickScreen && {color:'#fff'}]}>{t(data?.label?.toLowerCase() || 'star')}</Text>
       </View>
     </TouchableOpacity>
   );

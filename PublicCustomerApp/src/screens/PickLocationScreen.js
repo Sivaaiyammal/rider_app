@@ -46,6 +46,9 @@ import polyline from '@mapbox/polyline';
 import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore';
 import SearchScreenWrapper from '../features/search/screens/SearchWrapper.jsx';
 import { search } from 'react-native-country-picker-modal/lib/CountryService';
+import FavPlacesItem from '../features/booking/components/planride/FavPlacesItem';
+import useUserInfoStore from '../store/useUserInfoStore';
+import { ScrollView } from 'react-native';
 
 
 const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null,buttonLabel=null,isFromContribution=false, focusSearchOnMount=true,isConfirmLocation=false}) => {
@@ -74,6 +77,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     rideEndLocation, 
     rideWayPoints 
   } = useRideBookingLocationStore();
+  const { userFavPlaces } = useUserInfoStore();
   const linearGradientColors = isConfirmLocation?['transparent','#00aa41ff'] : ['transparent','#303030',];
   const getLastLatLngfromPolyLine = useCallback(async (polylineData) => {
     console.log("polylineData",polylineData)
@@ -583,6 +587,55 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
               </View>
             </Animated.View>
           </View>
+          {!!userFavPlaces && userFavPlaces.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.favPlacesContainer}
+              style={styles.favPlacesScrollView}
+            >
+              {userFavPlaces.map((item, index) => (
+                <FavPlacesItem
+                  key={index}
+                  data={item}
+                  fromPickScreen={true}
+                  selected={
+                    !!(
+                      pickedLocation &&
+                      (
+                        (item?.label && pickedLocation?.placeName && item.label.toLowerCase() === pickedLocation.placeName.toLowerCase()) ||
+                        (item?.locationData && pickedLocation?.latitude != null && pickedLocation?.longitude != null &&
+                          (
+                            (item.locationData.latitude != null && item.locationData.longitude != null &&
+                              item.locationData.latitude === pickedLocation.latitude &&
+                              item.locationData.longitude === pickedLocation.longitude)
+                          )
+                        )
+                      )
+                    )
+                  }
+                  onPress={() => {
+                    const loc = item?.locationData;
+                    if (!loc) return;
+                    // Use existing search result handler to center map and set picked location
+                    onSearchClickResultCallback({
+                      latitude: loc.latitude ?? loc?.location?.[1],
+                      longitude: loc.longitude ?? loc?.location?.[0],
+                      placeName: loc.placeName || loc.name || item.label || '',
+                      address: loc.address,
+                    }, locationType);
+                  }}
+                />
+              ))}
+              {/* <FavPlacesItem
+                data={{ label: t('add_favorite_places') }}
+                onPress={() => {
+                  setStackScreen('SavedPlacesScreen', {});
+                }}
+                type="add"
+              /> */}
+            </ScrollView>
+          )}
         </KeyboardAvoidingView>
       ):
       <NavBar
@@ -1205,6 +1258,15 @@ const styles = StyleSheet.create({
   errorActionButtonText:{
     fontSize:14,
     fontFamily: Fonts.medium
+  }
+  ,favPlacesContainer: {
+    flexDirection: 'row',
+    paddingVertical:0,
+    gap:10,
+    paddingHorizontal:5
+  },
+  favPlacesScrollView: {
+    flexGrow: 0,
   }
 });
 
