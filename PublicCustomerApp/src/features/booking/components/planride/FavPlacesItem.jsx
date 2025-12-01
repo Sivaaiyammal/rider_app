@@ -33,16 +33,22 @@ const getIcon = (label,type) => {
   }
 }
 
-  const FavPlacesItem = ({ data, onPress,type,selected ,fromPickScreen=false}) => {
+  const FavPlacesItem = ({ data, onPress,type,selected ,fromPickScreen=false, dimmed=false}) => {
   const { t } = useTranslation();
   const randomColors = ['#ffffffff'];
   const isPickedSelected = fromPickScreen && selected;
-  const bgColor = isPickedSelected ? '#000' : (fromPickScreen ? randomColors[Math.floor(Math.random()*randomColors.length)] : '#fff');
-  const fgColor = isPickedSelected ? '#fff' : '#121212';
-  const iconColor = isPickedSelected ? '#fff' : (selected ? '#fff' : '#757575');
+  const bgColor = dimmed
+    ? '#424242ff'
+    : (isPickedSelected ? '#000' : (fromPickScreen ? randomColors[Math.floor(Math.random()*randomColors.length)] : '#fff'));
+  const fgColor = dimmed
+    ? '#0a0a0aff'
+    : (isPickedSelected ? '#fff' : '#121212');
+  const iconColor = dimmed
+    ? '#000000ff'
+    : (isPickedSelected ? '#fff' : (selected ? '#fff' : '#757575'));
   
   return (
-    <TouchableOpacity style={[styles.container, {backgroundColor:bgColor}, selected && !fromPickScreen && {backgroundColor:'grey',borderWidth:1}, fromPickScreen && {paddingVertical:7}]} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={[styles.container, {backgroundColor:bgColor}, selected && !fromPickScreen && {backgroundColor:'grey',borderWidth:1}, fromPickScreen && {paddingVertical:7},dimmed && {borderWidth:0}]} onPress={onPress} activeOpacity={0.7}>
       <View style={styles.iconLabelRow}>
         <MaterialIcons name={getIcon(data?.label,type)} size={20} color={iconColor} style={styles.icon} />
         <Text style={[styles.label,{color: fgColor}, selected && !fromPickScreen && {color:'#fff'}]}>{t(data?.label?.toLowerCase() || 'star')}</Text>

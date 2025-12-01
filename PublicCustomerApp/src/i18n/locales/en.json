@@ -635,5 +635,6 @@
   "payment_gateway_gst": "Payment gateway GST",
   "confirm_payment": "Confirm Payment",
   "you_are_paying_via_razorpay": "You are paying via Razorpay",
-  "total_payable": "Total Payable"
+  "total_payable": "Total Payable",
+  "move_map_to_select_location": "Move map to mark location on map"
 }

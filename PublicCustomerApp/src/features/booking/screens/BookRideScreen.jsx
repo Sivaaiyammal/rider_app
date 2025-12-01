@@ -137,6 +137,8 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     const [showCoupon,setShowCoupon] = useState(false)
     const [isEstimationLoading, setIsEstimationLoading] = useState(false)
+    const [isLongLoad, setIsLongLoad] = useState(false)
+    const longLoadTimerRef = useRef(null)
     const [showDriverNotFoundModal, setShowDriverNotFoundModal] = useState(!!RideMatchDriverNotFound)
     const [showMaxDistanceExceededModal, setShowMaxDistanceExceededModal] = useState(false)
 
@@ -300,6 +302,14 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         try {
             setIsEstimationLoading(true)
             setIsEstimationError(false)
+            // start long-load timer (e.g., 12s)
+            if (longLoadTimerRef.current) {
+                clearTimeout(longLoadTimerRef.current)
+            }
+            longLoadTimerRef.current = setTimeout(() => {
+                // if still loading with no vehicles, mark as long load
+                setIsLongLoad(true)
+            }, 12000)
             const data = await getRideEstimation(payload);
             
             // Save to cache on success
@@ -322,6 +332,10 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         } finally {
             estimationInFlightRef.current = false;
             setIsEstimationLoading(false)
+            if (longLoadTimerRef.current) {
+                clearTimeout(longLoadTimerRef.current)
+                longLoadTimerRef.current = null
+            }
         }
     }, []);
 
@@ -358,6 +372,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             coordinates: [rideStartLocation.longitude, rideStartLocation.latitude],    
         };
         
+        setIsLongLoad(false)
         debouncedGetRideEstimation(payload,cacheKey);
     };
     // Add effect to trigger estimation when direction data is available
@@ -367,6 +382,30 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             getEstimatedFare();
         }
     }, [rideDistance, estimatedDuration]);
+
+    // Retry and reinitialize logic
+    const handleRetryInitialize = () => {
+        try {
+            setIsLongLoad(false)
+            setIsEstimationError(false)
+            setAvailableVehicles([])
+            setSelectedVehicle(null)
+            // re-transform direction points to ensure map/distance refresh
+            if (isRideLocationsReady()) {
+                transformRideLocationsToDirectionPoints({
+                    clearMarkers: true,
+                    vehicleType: 'motorcycle',
+                    padding: [50, 50, 50, height*0.5]
+                })
+            }
+            // re-trigger estimation if we have distance/duration
+            if (rideDistance && estimatedDuration) {
+                getEstimatedFare()
+            }
+        } catch(e) {
+            // no-op
+        }
+    }
 
 
     
@@ -528,6 +567,26 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
     
    
       <VehicleList  availableVehicles={availableVehicles} isLoading={isEstimationLoading} isEstimationError={isEstimationError} setScrolledUntillBottom={setScrolledUntillBottom} distance={rideDistance}/>
+      { (isLongLoad || (isEstimationError && availableVehicles?.length === 0)) && (
+        <View style={{paddingHorizontal:16}}>
+            <View style={{
+                borderWidth:1,
+                borderColor:'#E0E0E0',
+                backgroundColor:'#FFF',
+                borderRadius:12,
+                padding:12,
+                alignItems:'center',
+                justifyContent:'center'
+            }}>
+                <AdaptiveText style={{fontFamily:Fonts.regular, fontSize:14, color:colors.black, textAlign:'center'}}>
+                    {isLongLoad ? t('taking_long_time','It’s taking longer than expected to load fares.') : t('failed_to_get_fare_estimation','Failed to get fare estimation.')}
+                </AdaptiveText>
+                <TouchableOpacity onPress={handleRetryInitialize} activeOpacity={0.85} style={{marginTop:10, backgroundColor:colors.black, borderRadius:8, paddingVertical:10, paddingHorizontal:16}}>
+                    <AdaptiveText style={{fontFamily:Fonts.semi_bold, fontSize:14, color:colors.white}}>{t('retry','Retry')}</AdaptiveText>
+                </TouchableOpacity>
+            </View>
+        </View>
+      )}
       <View style={{height:100}}/>
            
 

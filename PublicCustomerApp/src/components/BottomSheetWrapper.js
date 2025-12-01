@@ -16,23 +16,34 @@ const BottomSheetWrapper = forwardRef(({
   backdropComponent,
   backdrop = false,
   style,
-  // setBottomSheetScrollToBottom,
- 
   isLoading = false,
   ...props
 }, ref) => {
-  // variables
   const snapPointsArray = useMemo(() => snapPoints, [snapPoints]);
 
-  // Don't render scroll view until content is ready
+  // Clamp the provided index into the valid range [-1, snapPointsArray.length - 1]
+  const clampedIndex = useMemo(() => {
+    const maxIndex = snapPointsArray.length - 1;
+    if (typeof index !== 'number' || Number.isNaN(index)) return 0;
+    if (snapPointsArray.length === 0) return -1; // nothing to show
+    if (index < -1) return -1;
+    if (index > maxIndex) {
+      if (__DEV__) {
+        // Warn in development to surface misconfiguration early
+        // eslint-disable-next-line no-console
+        console.warn(`BottomSheetWrapper: index ${index} > max allowed ${maxIndex}. Clamping to ${maxIndex}. (snapPoints length=${snapPointsArray.length})`);
+      }
+      return maxIndex;
+    }
+    return index;
+  }, [index, snapPointsArray]);
+
   const shouldRenderScrollView = enableScroll && !isLoading && children;
 
   return (
     <BottomSheet
       ref={ref}
-      index={index}
-    
-     
+      index={clampedIndex}
       snapPoints={snapPointsArray}
       enablePanDownToClose={enablePanDownToClose}
       enableOverDrag={enableOverDrag}
@@ -53,7 +64,7 @@ const BottomSheetWrapper = forwardRef(({
       {...props}
     >
       {shouldRenderScrollView ? (
-        <BottomSheetScrollView 
+        <BottomSheetScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >

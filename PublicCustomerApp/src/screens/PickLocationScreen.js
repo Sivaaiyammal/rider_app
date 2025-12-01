@@ -49,6 +49,7 @@ import { search } from 'react-native-country-picker-modal/lib/CountryService';
 import FavPlacesItem from '../features/booking/components/planride/FavPlacesItem';
 import useUserInfoStore from '../store/useUserInfoStore';
 import { ScrollView } from 'react-native';
+import MapMove from '../assets/image/MapMove.webp';
 
 
 const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null,buttonLabel=null,isFromContribution=false, focusSearchOnMount=true,isConfirmLocation=false}) => {
@@ -70,8 +71,12 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   const { t } = useTranslation();
   const [isConfirming, setIsConfirming] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false); // track keyboard visibility
+  const [searchBarBottom, setSearchBarBottom] = useState(80); // dynamic overlay top (fallback)
+  const [holeRect, setHoleRect] = useState(null); // union rect to keep visible
   const searchRef = useRef(new SearchAPI());
   const searchInputRef = useRef(null); // ref to control focus/blur of search TextInput
+  const iconButtonRef = useRef(null);
+  const inputContainerRef = useRef(null);
   const { 
     rideStartLocation, 
     rideEndLocation, 
@@ -411,7 +416,42 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
   // Listen for keyboard show/hide to toggle bottomContainer visibility
   useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', () => setKeyboardVisible(true));
+    const showSub = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+      // Measure positions of the two visible containers to compute hole rect
+      setTimeout(() => {
+        try {
+          let a = null, b = null;
+          if (iconButtonRef.current && iconButtonRef.current.measureInWindow) {
+            iconButtonRef.current.measureInWindow((x, y, width, height) => {
+              a = { x, y, width, height };
+              if (b) {
+                const x1 = Math.min(a.x, b.x);
+                const y1 = Math.min(a.y, b.y);
+                const x2 = Math.max(a.x + a.width, b.x + b.width);
+                const y2 = Math.max(a.y + a.height, b.y + b.height);
+                setHoleRect({ x: x1, y: y1, width: x2 - x1, height: y2 - y1 });
+              }
+            });
+          }
+          if (inputContainerRef.current && inputContainerRef.current.measureInWindow) {
+            inputContainerRef.current.measureInWindow((x, y, width, height) => {
+              b = { x, y, width, height };
+              if (a) {
+                const x1 = Math.min(a.x, b.x);
+                const y1 = Math.min(a.y, b.y);
+                const x2 = Math.max(a.x + a.width, b.x + b.width);
+                const y2 = Math.max(a.y + a.height, b.y + b.height);
+                setHoleRect({ x: x1, y: y1, width: x2 - x1, height: y2 - y1 });
+              }
+            });
+          }
+        } catch (e) {
+          // Fallback: keep previous behavior using searchBarBottom
+          setHoleRect(null);
+        }
+      }, 100);
+    });
     const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboardVisible(false));
     return () => {
       showSub.remove();
@@ -523,8 +563,16 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
           style={styles.searchBarContainer}
         >
-          <View style={styles.searchBar}>
+          <View
+            style={styles.searchBar}
+            onLayout={(e)=>{
+              const { y, height } = e.nativeEvent.layout;
+              // searchBarContainer has top:5; overlay should begin below this view
+              setSearchBarBottom(y + height + 10);
+            }}
+          >
             <TouchableOpacity
+              ref={iconButtonRef}
               style={styles.searchBarIconButton}
               onPress={handleBack}
               accessibilityRole="button"
@@ -542,7 +590,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                 opacity: searchBarOpacity,
               }}
             >
-              <View style={[styles.searchBarInputContainer,{elevation:10}]}> 
+              <View ref={inputContainerRef} style={[styles.searchBarInputContainer,{elevation:10}]}> 
                 <View>
                   <Icon name="search" size={24} color={colors.blue} />
                 </View>
@@ -587,10 +635,11 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
               </View>
             </Animated.View>
           </View>
-          {!!userFavPlaces && userFavPlaces.length > 0 && (
+          {!!userFavPlaces && !showSearch && userFavPlaces.length > 0 && (
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
+              scrollEnabled={!(keyboardVisible && !showSearch)}
               contentContainerStyle={styles.favPlacesContainer}
               style={styles.favPlacesScrollView}
             >
@@ -599,6 +648,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                   key={index}
                   data={item}
                   fromPickScreen={true}
+                  dimmed={keyboardVisible && !showSearch}
                   selected={
                     !!(
                       pickedLocation &&
@@ -940,6 +990,24 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       </>)}
           </View>
           
+          {/* Black overlay when keyboard is visible, excluding icon + input containers */}
+          {keyboardVisible && !showSearch && (
+            <>
+              {/* Single full-screen overlay; two containers are raised above via zIndex */}
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  if (searchInputRef.current) { try { searchInputRef.current.blur(); } catch(e) {} }
+                }}
+                style={[styles.keyboardOverlay, { top: 0 }]}
+              >
+                <Image source={MapMove} style={styles.mapMoveImage} />
+                <Text style={styles.mapMoveText}>{t('move_map_to_select_location')}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
       {showSearch && (
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -1027,7 +1095,7 @@ const styles = StyleSheet.create({
     top:5,
     left:10,
     right:10,
-    zIndex:1000,
+    zIndex:3000,
   
     alignItems:'center',
   },
@@ -1049,7 +1117,8 @@ const styles = StyleSheet.create({
     padding: 6,
     borderWidth: 1,
     borderColor: colors.grey_light,
-    elevation: 10,
+    elevation: 20,
+    zIndex: 4000,
   },
   searchBarInputContainer:{
     flex:1,
@@ -1062,7 +1131,8 @@ const styles = StyleSheet.create({
     gap:8,
     borderWidth:1,
     borderColor:colors.grey_xlight,
-    elevation:15,
+    elevation:25,
+    zIndex: 4000,
    
   },
   clearSearchBtn:{
@@ -1211,6 +1281,18 @@ const styles = StyleSheet.create({
     elevation:20,
     borderRadius:10,
   }
+  ,keyboardOverlay:{
+    position:'absolute',
+    left:0,
+    right:0,
+    bottom:0,
+    backgroundColor: 'black',
+    opacity: 0.8,
+    zIndex:2000,
+    justifyContent:'center',
+    alignItems:'center',
+   
+  }
   ,errorContainer:{
     minHeight:200,
     width:'100%',
@@ -1267,7 +1349,21 @@ const styles = StyleSheet.create({
   },
   favPlacesScrollView: {
     flexGrow: 0,
-  }
+    zIndex: 3000,
+  },
+  mapMoveImage: {
+    width: 150,
+    height: 150,
+    alignSelf: 'center',
+    marginTop: height * 0.2,
+  },
+  mapMoveText: {
+    color: colors.white,
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
+    fontFamily: Fonts.medium,
+  },
 });
 
 PickLocationScreen.propTypes = {

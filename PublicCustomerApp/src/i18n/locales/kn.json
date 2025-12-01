@@ -617,5 +617,6 @@
     "make_online_payment_failed": "ಆನ್ಲೈನ್ ಪಾವತಿ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ.",
     "location_within_radius": "ನೀವು {radius} ಕಿಮೀ ತ್ರಿಜ್ಯದೊಳಗೆ ಒಂದು ಸ್ಥಳವನ್ನು ಆಯ್ಕೆ ಮಾಡಬೇಕು.",
      "location_outside_radius_title": "ಆಯ್ದ ಸ್ಥಳ ಪಿಕಪ್ ಪ್ರದೇಶದ ಹೊರಗಿದೆ",
-  "location_outside_radius_message": "ಆಯ್ದ ಸ್ಥಳ ಪಿಕಪ್ ಪ್ರದೇಶದ ಹೊರಗಿದೆ. ದಯವಿಟ್ಟು ಅನುಮತಿತ ತ್ರಿಜ್ಯದೊಳಗೆ ಆಯ್ಕೆಮಾಡಿ."
+  "location_outside_radius_message": "ಆಯ್ದ ಸ್ಥಳ ಪಿಕಪ್ ಪ್ರದೇಶದ ಹೊರಗಿದೆ. ದಯವಿಟ್ಟು ಅನುಮತಿತ ತ್ರಿಜ್ಯದೊಳಗೆ ಆಯ್ಕೆಮಾಡಿ.",
+  "move_map_to_select_location": "ನಕ್ಷೆಯಲ್ಲಿ ಸ್ಥಳವನ್ನು ಗುರುತಿಸಲು ನಕ್ಷೆಯನ್ನು ಸರಿಸಿ"
 }

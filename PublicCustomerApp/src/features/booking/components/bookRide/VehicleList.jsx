@@ -212,11 +212,12 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
       return renderSkeletonLoader();
     }
     return (
-      <View style={[styles.container, { alignItems: 'center', justifyContent: 'center', paddingVertical: 24 }]}> 
-        <View style={styles.emptyWrapper}>
+      
+      <View style={[ {  paddingVertical: 5 }]}> 
+        {/* <View style={styles.emptyWrapper}>
           <VehicleSearchIcon width={80} height={80} />
           <AdaptiveText style={styles.emptyText}>{t('no_vehicles_available')}</AdaptiveText>
-        </View>
+        </View> */}
       </View>
     );
   }
