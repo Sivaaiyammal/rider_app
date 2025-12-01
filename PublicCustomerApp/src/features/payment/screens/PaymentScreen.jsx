@@ -41,8 +41,13 @@ const PaymentScreen = () => {
   const [svHeight, setSvHeight] = useState(0);
   const [contentHeight, setContentHeight] = useState(0);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [showPGConfirm, setShowPGConfirm] = useState(false);
   const { appConfig } = useConfigStore();
   const isPaymentGateway = appConfig?.PAYMENT_METHODS === "PG" && razorPayAccountId;
+  // Toggle to show the pre-payment confirmation modal
+  const showModel = true; // set to false to skip confirmation
+  // Config: control whether gateway fee is added to shown fare before clicking PAY
+  const showGateFeeAddedFare = false;
   const {setStackScreen} = useStackScreenStore();
   const { incrementTotalSpend,incrementCompletedTrips } = useUserInfoStore();
   const animateIn = () => {
@@ -195,10 +200,35 @@ const PaymentScreen = () => {
     return utils.formatDateAndTime(timestamp);
   };
 
+  // Derived fare calculations for online payment method
+  const baseFare = Number(tripFare) || 0;
+  const isOnlinePayment = paymentMethod?.toLowerCase?.() === 'online';
+  // Dynamic percentages from appConfig (fallback to 18% fee, 4% GST)
+  const gatewayFeePercent = Number(appConfig?.GATEWAY_FEE_PERCENT) || 18;
+  const gatewayFeeGSTPercent = Number(appConfig?.GATEWAY_FEE_GST_PERCENT) || 4;
+  const gatewayFeeRate = gatewayFeePercent / 100;
+  const gstRateOnGateway = gatewayFeeGSTPercent / 100; // GST applied on gateway fee
+  // Gateway fee calculated on base fare, GST calculated on gateway fee
+  const gatewayFee = isOnlinePayment ? +(baseFare * gatewayFeeRate).toFixed(2) : 0;
+  const gstAmount = isOnlinePayment ? +(gatewayFee * gstRateOnGateway).toFixed(2) : 0;
+  const totalPayable = isOnlinePayment ? +(baseFare + gatewayFee + gstAmount).toFixed(2) : baseFare;
+  // The fare shown on UI prior to payment depends on config
+  const displayedFare = isOnlinePayment && showGateFeeAddedFare ? totalPayable : baseFare;
+
   const shouldShowScrollHint = contentHeight > svHeight + 20 ;
 
-  const handlePayNow = async () => {
+  const handlePayNow = () => {
     if (isProcessingPayment) return; // Prevent double tap
+    // Show confirmation modal before proceeding to order and Razorpay, based on flag
+    if (showModel && isOnlinePayment) {
+      setShowPGConfirm(true);
+    } else {
+      proceedPaymentWithPG();
+    }
+  }
+
+  const proceedPaymentWithPG = async () => {
+    if (isProcessingPayment) return;
     setIsProcessingPayment(true);
 
     try {
@@ -222,7 +252,7 @@ const PaymentScreen = () => {
         },
       ]
       const response = await createOrder({
-        amount: tripFare,
+        amount: totalPayable,
         currency: 'INR',
         receiptId: receiptId,
         transferList:transfer,
@@ -254,22 +284,25 @@ const PaymentScreen = () => {
           RazorpayCheckout.open(options)
             .then((data) => {
               console.log(JSON.stringify(data,null,2),"data")
-              incrementTotalSpend(tripFare)
+              incrementTotalSpend(totalPayable)
               incrementCompletedTrips()
               setStackScreen('TripFeedbackScreen',{});
               // handle success
               showNotification(t('payment_successful'),"","success");
               setIsProcessingPayment(false);
+              setShowPGConfirm(false);
             })
             .catch((error) => {
               // handle failure
               showNotification(t('payment_failed'),error?.message || t('something_went_wrong'),"error");
               setIsProcessingPayment(false);
+              setShowPGConfirm(false);
             });
         } 
         catch (error) {
           showNotification(t('payment_failed'),t('something_went_wrong'),"error");
           setIsProcessingPayment(false);
+          setShowPGConfirm(false);
         } 
       } else {
         setIsProcessingPayment(false);
@@ -279,6 +312,7 @@ const PaymentScreen = () => {
         showNotification(t('make_online_payment_failed'), t('please_try_again'),"error");
     
       setIsProcessingPayment(false);
+      setShowPGConfirm(false);
     }
   }
 
@@ -290,13 +324,13 @@ const PaymentScreen = () => {
         onLayout={(e) => setSvHeight(e.nativeEvent.layout.height)}
         onContentSizeChange={(w, h) => setContentHeight(h)}
       >
-        <FareHeader fare={tripFare}  RideStatus={tripStatus == "CANCELLED" ? t('ride_was_cancelled_midway') : t('destination_reached')}  />
+        <FareHeader fare={displayedFare}  RideStatus={tripStatus == "CANCELLED" ? t('ride_was_cancelled_midway') : t('destination_reached')}  />
        
         <TripMetaInfo date={formatDate(bookingTime)} tripId={rideId} />
         <AddressContainer directions={tripStops}  completed={true}/>
         <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={driverDetails?.vehicleType} vehicleBrand={driverDetails?.vehicleBrand} vehicleModel={driverDetails?.vehicleModel} vehicleNumber={driverDetails?.vehicleNumber} />
         <View style={{marginVertical:15}}> 
-        <TripStats totalDistance={tripDistance} totalDuration={tripDuration} totalFare={tripFare} />
+        <TripStats totalDistance={tripDistance} totalDuration={tripDuration} totalFare={displayedFare} />
         </View>
 
 
@@ -307,12 +341,28 @@ const PaymentScreen = () => {
         <View style={styles.paymentMethodContainer}>
           <AdaptiveText style={styles.paymentMethodLabel}>{t('Pay_trip_fare_to_driver')}</AdaptiveText>
           <View style={styles.paymentMethodKeyContainer}>
-            <Text style={styles.paymentMethodKey}>{t('trip_fare')}</Text>
-            <Text style={styles.paymentMethodValue}> ₹ {tripFare}</Text>
+            <Text style={styles.paymentMethodKey}>{t('base_fare')}</Text>
+            <Text style={styles.paymentMethodValue}>₹ {baseFare.toFixed(2)}</Text>
           </View>
+          {isOnlinePayment && showGateFeeAddedFare && (
+            <>
+              <View style={styles.paymentMethodKeyContainer}>
+                <Text style={styles.paymentMethodKey}>{t('payment_gateway_fee_plus_gst')}</Text>
+                <Text style={styles.paymentMethodValue}>₹ {(gatewayFee + gstAmount).toFixed(2)}</Text>
+              </View>
+              {/* <View style={styles.paymentMethodKeyContainer}>
+                <Text style={styles.paymentMethodKey}>{t('payment_gateway_gst')} (SGST 2% + CGST 2%)</Text>
+                <Text style={styles.paymentMethodValue}>₹ {gstAmount.toFixed(2)}</Text>
+              </View> */}
+            </>
+          )}
           <View style={styles.paymentMethodKeyContainer}>
             <Text style={styles.paymentMethodKey}>{t('payment_method')}</Text>
             <Text style={styles.paymentMethodValue}>{paymentMethod}</Text>
+          </View>
+          <View style={[styles.paymentMethodKeyContainer,{marginTop:4}]}> 
+            <Text style={[styles.paymentMethodKey,{fontFamily:Fonts.semi_bold}]}>{t('total_payable')}</Text>
+            <Text style={[styles.paymentMethodValue,{fontFamily:Fonts.semi_bold}]}>₹ {displayedFare.toFixed(2)}</Text>
           </View>
         </View>
         {/* <SupportSection onPress={handleSupportPress} /> */}
@@ -370,6 +420,46 @@ const PaymentScreen = () => {
             rideStatus={tripStatus}
           />
         </Animated.View>
+      )}
+      {showModel && showPGConfirm && (
+        <View style={styles.pgConfirmOverlay}>
+          <View style={styles.pgConfirmCard}>
+            <AdaptiveText style={styles.pgConfirmTitle}>{t('confirm_payment')}</AdaptiveText>
+            <AdaptiveText style={styles.pgConfirmDesc}>
+              {t('you_are_paying_via_razorpay')}
+            </AdaptiveText>
+            <View style={{ height: 8 }} />
+            <View style={styles.paymentMethodKeyContainer}>
+              <Text style={styles.paymentMethodKey}>{t('base_fare')}</Text>
+              <Text style={styles.paymentMethodValue}>₹ {baseFare.toFixed(2)}</Text>
+            </View>
+            <View style={styles.paymentMethodKeyContainer}>
+              <Text style={styles.paymentMethodKey}>{t('payment_gateway_fee')} ({gatewayFeePercent}%)</Text>
+              <Text style={styles.paymentMethodValue}>₹ {gatewayFee.toFixed(2)}</Text>
+            </View>
+            <View style={styles.paymentMethodKeyContainer}>
+              <Text style={styles.paymentMethodKey}>{t('payment_gateway_gst')} ({gatewayFeeGSTPercent}%)</Text>
+              <Text style={styles.paymentMethodValue}>₹ {gstAmount.toFixed(2)}</Text>
+            </View>
+            <View style={[styles.paymentMethodKeyContainer,{marginTop:4}]}> 
+              <Text style={[styles.paymentMethodKey,{fontFamily:Fonts.semi_bold}]}>{t('total_payable')}</Text>
+              <Text style={[styles.paymentMethodValue,{fontFamily:Fonts.semi_bold}]}>₹ {totalPayable.toFixed(2)}</Text>
+            </View>
+            <View style={{ height: 12 }} />
+            <View style={styles.pgConfirmActions}>
+              <TouchableOpacity style={[styles.pgConfirmButton, styles.pgCancel]} onPress={() => setShowPGConfirm(false)}>
+                <AdaptiveText style={styles.pgConfirmButtonText}>{t('cancel')}</AdaptiveText>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.pgConfirmButton, styles.pgConfirm]} onPress={proceedPaymentWithPG} disabled={isProcessingPayment}>
+                {isProcessingPayment ? (
+                  <ActivityIndicator color={colors.white} size="small" />
+                ) : (
+                  <AdaptiveText style={styles.pgConfirmButtonText}>{t('confirm')}</AdaptiveText>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
       )}
       {/* <PayButton amount={finalFare} onPress={handlePayNow} paymentMethod={paymentMethod} /> */}
     </View>
@@ -555,6 +645,58 @@ const styles = StyleSheet.create({
     zIndex: 9999,
     elevation: 12,
   },
+  pgConfirmOverlay:{
+    position:'absolute',
+    left:0,
+    right:0,
+    top:0,
+    bottom:0,
+    backgroundColor:'rgba(0,0,0,0.35)',
+    zIndex:9999,
+    justifyContent:'center',
+    alignItems:'center'
+  },
+  pgConfirmCard:{
+    width:'90%',
+    backgroundColor:colors.white,
+    borderRadius:12,
+    padding:16,
+    elevation:6
+  },
+  pgConfirmTitle:{
+    fontFamily: Fonts.semi_bold,
+    fontSize: 16,
+    color: colors.black,
+    marginBottom:4
+  },
+  pgConfirmDesc:{
+    fontFamily: Fonts.medium,
+    fontSize: 13,
+    color: colors.grey_xdark
+  },
+  pgConfirmActions:{
+    flexDirection:'row',
+    gap:10,
+    marginTop:12
+  },
+  pgConfirmButton:{
+    flex:1,
+    borderRadius:10,
+    paddingVertical:12,
+    alignItems:'center',
+    justifyContent:'center'
+  },
+  pgCancel:{
+    backgroundColor: colors.grey_xdark
+  },
+  pgConfirm:{
+    backgroundColor: colors.green
+  },
+  pgConfirmButtonText:{
+    fontFamily: Fonts.medium,
+    fontSize: 15,
+    color: colors.white
+  }
 });
 
 export default PaymentScreen;

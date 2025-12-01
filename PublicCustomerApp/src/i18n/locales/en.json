@@ -629,9 +629,11 @@
   "cannot_change_pickup_location_driver_assigned": "You cannot edit the pickup location after a driver has been assigned.",
   "button_locate_drop_location": "Confirm Drop Location",
   "button_locate_pickup_location": "Confirm Pickup Location",
-  "button_locate_stop": "Confirm Stop {stop}"
-
-  
-
-
+  "button_locate_stop": "Confirm Stop {stop}",
+  "payment_gateway_fee_plus_gst": "Payment gateway fee + GST",
+  "payment_gateway_fee": "Payment gateway fee",
+  "payment_gateway_gst": "Payment gateway GST",
+  "confirm_payment": "Confirm Payment",
+  "you_are_paying_via_razorpay": "You are paying via Razorpay",
+  "total_payable": "Total Payable"
 }
