@@ -71,6 +71,7 @@ const RideStatus = () => {
 
   const CancelRide = async (payload) => {
     try{
+      console.log("payl;oad",payload)
     const response = await cancelRide(payload);
     console.log('response',response)
     if (response.success) {
@@ -195,7 +196,6 @@ const RideStatus = () => {
         setWaitingForDriverApproval(null);
         setShowBottomSheet(false);
         setCancelLoading(false);
-       
       }
       else{
         showNotification('Failed to cancel ride. Please try again.');

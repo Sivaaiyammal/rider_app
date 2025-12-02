@@ -500,7 +500,7 @@
         "description": "Issues related to trip pricing, billing, and payment"
       },
       "driver_app_issues": {
-        "name": "Driver App Issues",
+        "name": "Customer App Issues",
         "description": "Technical problems with the driver mobile application"
       },
       "lost_item_report": {
@@ -637,4 +637,8 @@
   "you_are_paying_via_razorpay": "You are paying via Razorpay",
   "total_payable": "Total Payable",
   "move_map_to_select_location": "Move map to mark location on map"
+  ,
+  "max_vehicle_distance_limit_exceeded": "Selected vehicle exceeds its maximum distance limit. Please choose a different vehicle or reduce the trip distance.",
+  "distance_limit_exceeded": "Distance Limit Exceeded",
+  "edited_route_exceeds_max_distance": "The edited route exceeds the maximum allowed distance of {maxDistance} km. Please adjust your stops."
 }

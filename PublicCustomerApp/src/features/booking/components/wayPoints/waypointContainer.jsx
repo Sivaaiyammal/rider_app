@@ -576,6 +576,8 @@ const styles = StyleSheet.create({
     
     flexDirection: 'row',
     marginVertical: 0,
+ 
+   
   
     
   },

@@ -8,6 +8,13 @@ import { Fonts, colors } from '../../../constants/constants';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import PDFCreator from '../../../utils/PDFCreator';
 import { utils } from '../../../utils/Utils';
+let FileViewer;
+try {
+  // Use dynamic require to avoid bundling issues if not installed
+  FileViewer = require('react-native-file-viewer');
+} catch (e) {
+  FileViewer = null;
+}
 
 const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails,paymentMethod,paymentStatus,recipientDetails,adminInfo,visible, onClose, mode = 'modal', showHeader, rideStatus }) => {
   const { t } = useTranslation();
@@ -120,6 +127,20 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
         clearTimeout(toastTimerRef.current);
       }
       toastTimerRef.current = setTimeout(() => setShowToast(false), 2000);
+      try {
+              if (FileViewer && FileViewer.open) {
+                await FileViewer.open(pdfPath, { showOpenWithDialog: true });
+              } else {
+                // Fallback: Linking (may fail on Android N+ without FileProvider)
+                const uri = Platform.OS === 'android' ? `file://${pdfPath}` : pdfPath;
+                const canOpen = await Linking.canOpenURL(uri);
+                if (canOpen) {
+                  await Linking.openURL(uri);
+                }
+              }
+            } catch (openErr) {
+              console.warn('Failed to open PDF automatically:', openErr);
+            }
     } catch (error) {
       console.error('Multi-sheet PDF error:', error);
       Alert.alert('Error', 'Failed to create multi-sheet PDF: ' + error.message, [{ text: 'OK' }]);

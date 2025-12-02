@@ -141,6 +141,10 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const longLoadTimerRef = useRef(null)
     const [showDriverNotFoundModal, setShowDriverNotFoundModal] = useState(!!RideMatchDriverNotFound)
     const [showMaxDistanceExceededModal, setShowMaxDistanceExceededModal] = useState(false)
+    // Booking info retry/error modal state
+    const [showBookingInfoErrorModal, setShowBookingInfoErrorModal] = useState(false)
+    const bookingInfoAttemptsRef = useRef(0)
+    const bookingInfoTimerRef = useRef(null)
 
 
 
@@ -219,6 +223,57 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             setShowDriverNotFoundModal(true)
         }
     }, [RideMatchDriverNotFound])
+
+    // Retry logic if booking info (distance/duration) not updated within 6s; try 3 times then show error modal
+    useEffect(() => {
+        // If already have booking info, clear any existing timer and reset attempts
+        if (rideDistance && estimatedDuration) {
+            if (bookingInfoTimerRef.current) {
+                clearTimeout(bookingInfoTimerRef.current)
+                bookingInfoTimerRef.current = null
+            }
+            return; // no need to start/restart timer when data is present
+        }
+
+        // Prevent starting new timer if error modal is shown
+        if (showBookingInfoErrorModal) return;
+
+        // Start / restart timer waiting for booking info
+        if (bookingInfoTimerRef.current) {
+            clearTimeout(bookingInfoTimerRef.current)
+        }
+        bookingInfoTimerRef.current = setTimeout(() => {
+            // After 6 seconds, check again
+            if (!(rideDistance && estimatedDuration)) {
+                if (bookingInfoAttemptsRef.current < 3) {
+                    bookingInfoAttemptsRef.current += 1;
+                    // Trigger a re-computation of direction points to attempt population
+                    try {
+                        if (isRideLocationsReady()) {
+                            transformRideLocationsToDirectionPoints({
+                                clearMarkers: true,
+                                vehicleType: 'motorcycle',
+                                padding: [50, 50, 50, height*0.5]
+                            })
+                        }
+                    } catch (e) {
+                        // no-op; retry attempts continue
+                    }
+                    // Schedule next check by invoking effect again naturally via state dependencies
+                } else {
+                    // Exceeded attempts, show error modal
+                    setShowBookingInfoErrorModal(true)
+                }
+            }
+        }, 6000)
+
+        return () => {
+            if (bookingInfoTimerRef.current) {
+                clearTimeout(bookingInfoTimerRef.current)
+                bookingInfoTimerRef.current = null
+            }
+        }
+    }, [rideDistance, estimatedDuration, showBookingInfoErrorModal, isRideLocationsReady, transformRideLocationsToDirectionPoints])
 
 
     
@@ -730,6 +785,63 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                                     {t('dismiss', 'Dismiss')}
                                 </AdaptiveText>
                             </TouchableOpacity> */}
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+        )}
+        { showBookingInfoErrorModal && (
+            <Modal
+                animationType="fade"
+                transparent
+                visible
+                onRequestClose={() => setShowBookingInfoErrorModal(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={[styles.modalView, styles.modernModalView]}>
+                        <View style={styles.modalIconContainer}>
+                            <Icon name="error-outline" size={28} color={colors.orange} />
+                        </View>
+                        <AdaptiveText style={[styles.modalTitle, styles.modalTitleModern]}>
+                            {t('booking_info_load_failed_title', 'Failed to Load Ride Info')}
+                        </AdaptiveText>
+                        <AdaptiveText style={[styles.modalMessage, styles.modalMessageModern]}>
+                            {t('booking_info_load_failed_message', 'We could not load distance and duration after multiple attempts. Please retry or adjust locations.')}
+                        </AdaptiveText>
+                        <View style={styles.modalActions}>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.primaryActionButton]}
+                                onPress={() => {
+                                    setShowBookingInfoErrorModal(false)
+                                    bookingInfoAttemptsRef.current = 0
+                                    // Force another attempt immediately
+                                    try {
+                                        if (isRideLocationsReady()) {
+                                            transformRideLocationsToDirectionPoints({
+                                                clearMarkers: true,
+                                                vehicleType: 'motorcycle',
+                                                padding: [50, 50, 50, height*0.5]
+                                            })
+                                        }
+                                    } catch (e) {}
+                                }}
+                                activeOpacity={0.85}
+                            >
+                                <Icon name="refresh" size={18} color={colors.white} />
+                                <AdaptiveText style={[styles.modalButtonText, styles.primaryActionText]}>
+                                    {t('retry', 'Retry')}
+                                </AdaptiveText>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.secondaryActionButton]}
+                                onPress={() => setShowBookingInfoErrorModal(false)}
+                                activeOpacity={0.85}
+                            >
+                                <Icon name="close" size={18} color={colors.black} />
+                                <AdaptiveText style={[styles.modalButtonText, styles.secondaryActionText]}>
+                                    {t('dismiss', 'Dismiss')}
+                                </AdaptiveText>
+                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>

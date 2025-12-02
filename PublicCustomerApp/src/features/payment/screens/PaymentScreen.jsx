@@ -47,7 +47,7 @@ const PaymentScreen = () => {
   // Toggle to show the pre-payment confirmation modal
   const showModel = true; // set to false to skip confirmation
   // Config: control whether gateway fee is added to shown fare before clicking PAY
-  const showGateFeeAddedFare = false;
+  const showGateFeeAddedFare = paymentMethod?.toLowerCase() === 'online' ? true : false;
   const {setStackScreen} = useStackScreenStore();
   const { incrementTotalSpend,incrementCompletedTrips } = useUserInfoStore();
   const animateIn = () => {
@@ -202,10 +202,10 @@ const PaymentScreen = () => {
 
   // Derived fare calculations for online payment method
   const baseFare = Number(tripFare) || 0;
-  const isOnlinePayment = paymentMethod?.toLowerCase?.() === 'online';
+  const isOnlinePayment = true;
   // Dynamic percentages from appConfig (fallback to 18% fee, 4% GST)
-  const gatewayFeePercent = Number(appConfig?.GATEWAY_FEE_PERCENT) || 18;
-  const gatewayFeeGSTPercent = Number(appConfig?.GATEWAY_FEE_GST_PERCENT) || 4;
+  const gatewayFeePercent = Number(appConfig?.GATEWAY_FEE_PERCENT) || 2;
+  const gatewayFeeGSTPercent = Number(appConfig?.GATEWAY_FEE_GST_PERCENT) || 18;
   const gatewayFeeRate = gatewayFeePercent / 100;
   const gstRateOnGateway = gatewayFeeGSTPercent / 100; // GST applied on gateway fee
   // Gateway fee calculated on base fare, GST calculated on gateway fee
@@ -338,33 +338,33 @@ const PaymentScreen = () => {
             <MaterialIcons name="feedback" size={20} color={colors.white} />
             <Text style={styles.feedbackButtonText}>{t('give_feedback')}</Text>
           </TouchableOpacity>
-        <View style={styles.paymentMethodContainer}>
-          <AdaptiveText style={styles.paymentMethodLabel}>{t('Pay_trip_fare_to_driver')}</AdaptiveText>
+        {/* <View style={styles.paymentMethodContainer}> */}
+          {/* <AdaptiveText style={styles.paymentMethodLabel}>{t('Pay_trip_fare_to_driver')}</AdaptiveText>
           <View style={styles.paymentMethodKeyContainer}>
             <Text style={styles.paymentMethodKey}>{t('base_fare')}</Text>
             <Text style={styles.paymentMethodValue}>₹ {baseFare.toFixed(2)}</Text>
-          </View>
+          </View> */}
           {isOnlinePayment && showGateFeeAddedFare && (
             <>
-              <View style={styles.paymentMethodKeyContainer}>
+              {/* <View style={styles.paymentMethodKeyContainer}>
                 <Text style={styles.paymentMethodKey}>{t('payment_gateway_fee_plus_gst')}</Text>
                 <Text style={styles.paymentMethodValue}>₹ {(gatewayFee + gstAmount).toFixed(2)}</Text>
-              </View>
+              </View> */}
               {/* <View style={styles.paymentMethodKeyContainer}>
                 <Text style={styles.paymentMethodKey}>{t('payment_gateway_gst')} (SGST 2% + CGST 2%)</Text>
                 <Text style={styles.paymentMethodValue}>₹ {gstAmount.toFixed(2)}</Text>
               </View> */}
             </>
           )}
-          <View style={styles.paymentMethodKeyContainer}>
+          {/* <View style={styles.paymentMethodKeyContainer}>
             <Text style={styles.paymentMethodKey}>{t('payment_method')}</Text>
             <Text style={styles.paymentMethodValue}>{paymentMethod}</Text>
           </View>
           <View style={[styles.paymentMethodKeyContainer,{marginTop:4}]}> 
             <Text style={[styles.paymentMethodKey,{fontFamily:Fonts.semi_bold}]}>{t('total_payable')}</Text>
             <Text style={[styles.paymentMethodValue,{fontFamily:Fonts.semi_bold}]}>₹ {displayedFare.toFixed(2)}</Text>
-          </View>
-        </View>
+          </View> */}
+        {/* </View> */}
         {/* <SupportSection onPress={handleSupportPress} /> */}
         {/* Receipt Button */}
         <View style={styles.actionButtonsContainer}>
@@ -429,22 +429,17 @@ const PaymentScreen = () => {
               {t('you_are_paying_via_razorpay')}
             </AdaptiveText>
             <View style={{ height: 8 }} />
-            <View style={styles.paymentMethodKeyContainer}>
-              <Text style={styles.paymentMethodKey}>{t('base_fare')}</Text>
-              <Text style={styles.paymentMethodValue}>₹ {baseFare.toFixed(2)}</Text>
-            </View>
-            <View style={styles.paymentMethodKeyContainer}>
-              <Text style={styles.paymentMethodKey}>{t('payment_gateway_fee')} ({gatewayFeePercent}%)</Text>
-              <Text style={styles.paymentMethodValue}>₹ {gatewayFee.toFixed(2)}</Text>
-            </View>
-            <View style={styles.paymentMethodKeyContainer}>
-              <Text style={styles.paymentMethodKey}>{t('payment_gateway_gst')} ({gatewayFeeGSTPercent}%)</Text>
-              <Text style={styles.paymentMethodValue}>₹ {gstAmount.toFixed(2)}</Text>
-            </View>
+            {/* <View style={styles.paymentMethodKeyContainer}>
+              <Text style={styles.paymentMethodKey}>{t('payment_method')}</Text>
+              <Text style={styles.paymentMethodValue}>{paymentMethod}</Text>
+            </View> */}
             <View style={[styles.paymentMethodKeyContainer,{marginTop:4}]}> 
               <Text style={[styles.paymentMethodKey,{fontFamily:Fonts.semi_bold}]}>{t('total_payable')}</Text>
-              <Text style={[styles.paymentMethodValue,{fontFamily:Fonts.semi_bold}]}>₹ {totalPayable.toFixed(2)}</Text>
+              <Text style={[styles.paymentMethodValue,{fontFamily:Fonts.bold}]}>₹ {totalPayable.toFixed(2)}</Text>
             </View>
+            <AdaptiveText style={styles.pgConfirmNote}>
+              {t('payment_gateway_fee_plus_gst')} {t('applied').toLowerCase()}
+            </AdaptiveText>
             <View style={{ height: 12 }} />
             <View style={styles.pgConfirmActions}>
               <TouchableOpacity style={[styles.pgConfirmButton, styles.pgCancel]} onPress={() => setShowPGConfirm(false)}>
@@ -513,7 +508,7 @@ const styles = StyleSheet.create({
   },
   paymentMethodValue: {
     fontFamily: Fonts.medium,
-    fontSize: 14,
+    fontSize: 28,
     color: colors.black,
   },
   paymentStatusContainer: {
@@ -579,9 +574,9 @@ const styles = StyleSheet.create({
     gap:10
   },
   paymentMethodKeyContainer:{
-    flexDirection:"row",
+    flexDirection:"column",
     alignItems:"center",
-    justifyContent:"space-between",
+    justifyContent:"",
     gap:10,
     marginBottom:10
   },
@@ -673,6 +668,12 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 13,
     color: colors.grey_xdark
+  },
+  pgConfirmNote:{
+    fontFamily: Fonts.medium,
+    fontSize: 12,
+    color: colors.grey_xxdark,
+    textAlign:'center',
   },
   pgConfirmActions:{
     flexDirection:'row',

@@ -42,17 +42,43 @@ export default function TripFeedbackScreen() {
       return () => clearTimeout(timer);
     }, []);
 
+
+    const OnClose = async () => {
+    await DataStore.clearData(PREF.CURRENT_TRIP)
+    reset()
+  }
+
     const fetchTripDetails = async () => {
-     
-      const currentTripId = await DataStore.loadData(PREF.CURRENT_TRIP);
-  
-      const tripDetails = await getTripDetails(currentTripId?.data);
-    
+      const storedTripId = await DataStore.loadData(PREF.CURRENT_TRIP);
+      if(!storedTripId?.data){
+        OnClose();
+        return;
+      }
+
+      const attemptFetch = async () => {
+        try {
+          return await getTripDetails(storedTripId.data);
+        } catch (e) {
+          return { success: false, error: e };
+        }
+      };
+
+      // First attempt
+      let tripDetails = await attemptFetch();
+
+      if(!tripDetails?.success){
+        // Delay then one retry
+        await new Promise(r => setTimeout(r, 1500));
+        tripDetails = await attemptFetch();
+      }
+
       if(tripDetails?.success){
         setTripDetails(tripDetails);
         setIsLoading(false);
+      } else {
+        OnClose();
       }
-    }
+    };
   
     useEffect(()=>{
       fetchTripDetails();
@@ -76,10 +102,7 @@ export default function TripFeedbackScreen() {
   }, []);
 
 
-  const OnClose = async () => {
-    await DataStore.clearData(PREF.CURRENT_TRIP)
-    reset()
-  }
+  
 
   const handleSubmit = async (ratingData) => {
     ratingData.tripId = currentTripId

@@ -54,10 +54,12 @@ const buildFields = (t, screenName) => ([
   { name: 'consentEmail', label: t('feedback.consent_text'), type: 'toggle', defaultValue: false },
 ]);
 
-const SectionTitle = ({ icon, text }) => (
+const SectionTitle = ({ icon, text, required }) => (
   <View style={styles.sectionTitle}>
-   
-    <Text style={styles.sectionText}>{text}</Text>
+    <Text style={styles.sectionText}>
+      {text}
+      {required ? <Text style={styles.required}>*</Text> : null}
+    </Text>
     <Ionicons name={icon} size={16} color={colors.blue} />
   </View>
 );
@@ -78,6 +80,7 @@ Checkbox.propTypes = {
 SectionTitle.propTypes = {
   icon: PropTypes.string,
   text: PropTypes.string,
+  required: PropTypes.bool,
 };
 
 const FeedbackBottomSheet = () => {
@@ -477,7 +480,7 @@ const FeedbackBottomSheet = () => {
         <View style={styles.fieldsWrap}>
           {screenName && String(screenName).toLowerCase().includes('search') && (
             <>
-              <SectionTitle icon={'search-outline'} text={t('feedback.search_issue_title')} />
+              <SectionTitle icon={'search-outline'} text={t('feedback.search_issue_title')} required />
             {!!values.searchQuery && (
               <Text style={styles.coordsText}>{t('feedback.search_query_label', { query: values.searchQuery })}</Text>
             )}
@@ -486,7 +489,7 @@ const FeedbackBottomSheet = () => {
           )}
           {screenName && String(screenName).toLowerCase().includes('picklocation') && (
             <>
-              <SectionTitle icon={'location-outline'} text={t('feedback.pick_location_issue_title')} />
+              <SectionTitle icon={'location-outline'} text={t('feedback.pick_location_issue_title')} required />
               {!!values.coords && (
                 <Text style={styles.coordsText}>{t('feedback.selected_coords')}: {values.coords}</Text>
               )}
@@ -498,7 +501,7 @@ const FeedbackBottomSheet = () => {
             (String(screenName).toLowerCase().includes('planride') && !!values.tripStartName && !!values.tripEndName && !!values.tripDistanceKm)
           ) && (
             <>
-              <SectionTitle icon={'flag-outline'} text={t('feedback.trip_issue_title')} />
+              <SectionTitle icon={'flag-outline'} text={t('feedback.trip_issue_title')} required />
               <Text style={styles.coordsText}>{t('feedback.pickup_label')}: {utils.formatAddressName(values.tripStartName) || '-'}</Text>
               <Text style={styles.coordsText}>{t('feedback.drop_label')}: {utils.formatAddressName(values.tripEndName) || '-'}</Text>
               {!!values.tripDistanceKm && (
@@ -509,7 +512,7 @@ const FeedbackBottomSheet = () => {
           )}
           {screenName && String(screenName).toLowerCase().includes('ridestatus') && (
             <>
-              <SectionTitle icon={'flag-outline'} text={t('feedback.trip_issue_title')} />
+              <SectionTitle icon={'flag-outline'} text={t('feedback.trip_issue_title')} required />
               <Text style={styles.coordsText}>{t('feedback.pickup_label')}: {utils.formatAddressName(values.tripStartName) || '-'}</Text>
               <Text style={styles.coordsText}>{t('feedback.drop_label')}: {utils.formatAddressName(values.tripEndName) || '-'}</Text>
               {!!values.tripDistanceKm && (
@@ -521,21 +524,21 @@ const FeedbackBottomSheet = () => {
               {fields.filter(f => f.name === 'tripIssue').map(renderField)}
             </>
           )}
-          <SectionTitle icon={'happy-outline'} text={t('feedback.good_things_title')} />
+          <SectionTitle icon={'happy-outline'} text={t('feedback.good_things_title')} required />
           {fields.filter(f => f.name === 'goodThings').map(renderField)}
 
         
-          <SectionTitle icon={'alert-circle-outline'} text={t('feedback.bad_things_title')} />
+          <SectionTitle icon={'alert-circle-outline'} text={t('feedback.bad_things_title')} required />
           {fields.filter(f => f.name === 'badThings').map(renderField)}
 
         
-          <SectionTitle icon={'trending-up-outline'} text={t('feedback.improvements_title')} />
+          <SectionTitle icon={'trending-up-outline'} text={t('feedback.improvements_title')} required />
           {fields.filter(f => f.name === 'improvements').map(renderField)}
 
         
           {showGenericIssue && (
             <>
-              <SectionTitle icon={'bug-outline'} text={t('feedback.issue_title')} />
+              <SectionTitle icon={'bug-outline'} text={t('feedback.issue_title')} required />
               {fields.filter(f => f.name === 'issueMessage').map(renderField)}
             </>
           )}

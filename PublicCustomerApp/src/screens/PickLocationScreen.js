@@ -50,6 +50,7 @@ import FavPlacesItem from '../features/booking/components/planride/FavPlacesItem
 import useUserInfoStore from '../store/useUserInfoStore';
 import { ScrollView } from 'react-native';
 import MapMove from '../assets/image/MapMove.webp';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null,buttonLabel=null,isFromContribution=false, focusSearchOnMount=true,isConfirmLocation=false}) => {
@@ -73,6 +74,8 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
   const [keyboardVisible, setKeyboardVisible] = useState(false); // track keyboard visibility
   const [searchBarBottom, setSearchBarBottom] = useState(80); // dynamic overlay top (fallback)
   const [holeRect, setHoleRect] = useState(null); // union rect to keep visible
+  // One-time hint state
+  const [hasSeenMapMoveHint, setHasSeenMapMoveHint] = useState(true); // default true until storage check
   const searchRef = useRef(new SearchAPI());
   const searchInputRef = useRef(null); // ref to control focus/blur of search TextInput
   const iconButtonRef = useRef(null);
@@ -146,6 +149,24 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
     // Bottom container animation removed
   }, []);
+
+  // Load one-time overlay flag
+  useEffect(() => {
+    (async () => {
+      try {
+        const val = await AsyncStorage.getItem('@hasSeenMapMoveHint');
+        if (!val) {
+          // Not stored yet -> show hint once
+          setHasSeenMapMoveHint(false);
+          AsyncStorage.setItem('@hasSeenMapMoveHint', 'true').catch(() => {});
+        }
+      } catch (e) {
+        // silently ignore
+        setHasSeenMapMoveHint(false);
+      }
+    })();
+  }, []);
+
 
   // Delayed focus of search input when screen mounts (only if searchBar + focusSearchOnMount)
   useEffect(() => {
@@ -273,6 +294,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
 
   const centerMap = async ()=>{
+    console.log('centerMap called with location:', location);
     if(!location) return;
     setPickedLocation({
       latitude:location[1], 
@@ -648,7 +670,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                   key={index}
                   data={item}
                   fromPickScreen={true}
-                  dimmed={keyboardVisible && !showSearch}
+                
                   selected={
                     !!(
                       pickedLocation &&
@@ -991,7 +1013,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
           </View>
           
           {/* Black overlay when keyboard is visible, excluding icon + input containers */}
-          {keyboardVisible && !showSearch && (
+          {keyboardVisible && !showSearch && !hasSeenMapMoveHint && (
             <>
               {/* Single full-screen overlay; two containers are raised above via zIndex */}
               <TouchableOpacity
@@ -1352,10 +1374,11 @@ const styles = StyleSheet.create({
     zIndex: 3000,
   },
   mapMoveImage: {
-    width: 150,
-    height: 150,
+    width: 100,
+    height: 100,
     alignSelf: 'center',
-    marginTop: height * 0.2,
+   marginTop:height * 0.2,
+    opacity: 0.4,
   },
   mapMoveText: {
     color: colors.white,
@@ -1363,6 +1386,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 20,
     fontFamily: Fonts.medium,
+    opacity: 0.8,
   },
 });
 

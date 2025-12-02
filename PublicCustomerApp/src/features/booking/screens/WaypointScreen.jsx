@@ -26,9 +26,11 @@ import { getPreFinalFare,passangerStopChangeRequest } from '../../../API/EndPoin
 import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoStore';
 import { height } from '../../../utils/Utils';
 import {utils} from '../../../utils/Utils';
+import useRideVehicleStore from '../store/useRideVehicleStore';
+import { from } from '@apollo/client';
 
 const WaypointScreen = ({ fromDriverArrival = false }) => {
-  const {tripId}=useCurrentRideInfoStore()
+  const {tripId,maxDistanceLimit,tripStatus}=useCurrentRideInfoStore()
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = React.useState(false);
   const [showFareModal, setShowFareModal] = React.useState(false);
@@ -40,6 +42,8 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
   const [duration,setDuration] = React.useState(0)
   const { goBack,setStackScreen,goBackToScreen } = useStackScreenStore();
   const [enableConfirmButton,setEnableConfirmButton] = React.useState(false)
+  const {availableVehicles} = useRideVehicleStore()
+  const [maxVehicleDistanceLimit,setMaxVehicleDistanceLimit] = React.useState(false)
   
 
  
@@ -158,20 +162,42 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
 
 
   const handleDirectionReady = (data) => {
-   
+    setMaxVehicleDistanceLimit(false)
     // Extract distance and duration from direction data
     if(data?.duration){
       setDuration(Math.round(data?.duration/60))
     }
     if(data?.distance){
       setDistance(data?.distance != null ? (data.distance / 1000).toFixed(1) : null)
+
     }
+
+    console.log("driverArrival maxDistanceLimit",maxDistanceLimit,fromDriverArrival)
+    
+    if (tripStatus=='ACCEPTED' || reachedStops.length > 0) {
+
+      console.log("data distance",data?.distance)
+      if(maxDistanceLimit && data?.distance){
+        // Check if the new distance exceeds the max distance limit
+        const distanceInKm = data.distance / 1000;
+        if (distanceInKm > maxDistanceLimit) {
+          Alert.alert(
+            t('distance_limit_exceeded') || 'Distance Limit Exceeded',
+            t('edited_route_exceeds_max_distance', { maxDistance: maxDistanceLimit }) || `The edited route exceeds the maximum allowed distance of ${maxDistanceLimit} km. Please adjust your stops.`
+          );
+          setMaxVehicleDistanceLimit(true)
+          setEnableConfirmButton(false);
+          return;
+        }
+      }
+    }
+
+    
 }
 
-useEffect(() => {
+  useEffect(() => {
   setDirectionReady(handleDirectionReady)
-}, [])
-
+  }, [])
 
   const hasNearbyDuplicateStops = (points, thresholdMeters = 100) => {
     const coords = (points || [])
@@ -252,10 +278,6 @@ useEffect(() => {
       DistanceFromAddStopsScreen:distance,
     })
   }
-
-
-  
-
 
 
   const getFare =async()=>{
@@ -409,9 +431,15 @@ useEffect(() => {
   return (
     <>
       <View style={styles.topContainer}>
+        
+      {distance ? <Text style={styles.distanceText}>{distance} Km</Text> : null}
       <NavBar onBackPress={onBackPress} title={t('add_stops')} />
           <WaypointContainer  setEnableConfirmButton={setEnableConfirmButton} editedRoutecheckText={editedRoutecheckText} fromDriverArrival={fromDriverArrival}/>
+        
+          { maxVehicleDistanceLimit && <Text style={{color: 'red',padding: 10,textAlign: 'center'}}>{t('max_vehicle_distance_limit_exceeded')}</Text> }
+          
       </View>
+        
       <View style={styles.footer}>
         <TouchableOpacity
           style={[styles.confirmButton, isLoading && styles.confirmButtonDisabled,!enableConfirmButton && styles.confirmButtonDisabled]}
@@ -471,6 +499,15 @@ const styles = StyleSheet.create({
     borderBottomRightRadius:20,
     elevation:5,
    
+  },
+  distanceText: {
+    position: 'absolute',
+    top: 15,
+    right: 30,
+    fontSize: 14,
+    fontWeight: 'medium',
+    paddingRight: 10,
+    color: '#0f223c'
   },
   content: {
     flex: 1,

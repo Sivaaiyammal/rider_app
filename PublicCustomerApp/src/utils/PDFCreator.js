@@ -195,7 +195,7 @@ class PDFCreator {
                     // Write the file to the target directory
                     await RNFS.writeFile(downloadPath, fileData, 'base64');
 
-                    showNotification('PDF Created', `PDF file created at: ${downloadPath}`, "success");
+                    // showNotification('PDF Created', `PDF file created at: ${downloadPath}`, "success");
                     this.setNotification(fileName);
 
                     return downloadPath;
@@ -206,7 +206,7 @@ class PDFCreator {
                 }
             } else {
                 // iOS: Return the file path directly
-                showNotification('PDF Created', `PDF file created successfully`, "success");
+                // showNotification('PDF Created', `PDF file created successfully`, "success");
                 this.setNotification(`${name}.pdf`);
                 return file.filePath;
             }

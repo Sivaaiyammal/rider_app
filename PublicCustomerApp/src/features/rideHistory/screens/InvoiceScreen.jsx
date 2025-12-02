@@ -1,5 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ScrollView, View, StyleSheet, Text, TouchableOpacity, Alert, Modal, BackHandler } from 'react-native';
+import { ScrollView, View, StyleSheet, Text, TouchableOpacity, Alert, Modal, BackHandler, Linking, Platform } from 'react-native';
+let FileViewer;
+try {
+  // Use dynamic require to avoid bundling issues if not installed
+  FileViewer = require('react-native-file-viewer');
+} catch (e) {
+  FileViewer = null;
+}
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -286,6 +293,22 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
         clearTimeout(toastTimerRef.current);
       }
       toastTimerRef.current = setTimeout(() => setShowToast(false), 2000);
+
+      // Try opening the PDF automatically using FileViewer (handles FileProvider)
+      try {
+        if (FileViewer && FileViewer.open) {
+          await FileViewer.open(pdfPath, { showOpenWithDialog: true });
+        } else {
+          // Fallback: Linking (may fail on Android N+ without FileProvider)
+          const uri = Platform.OS === 'android' ? `file://${pdfPath}` : pdfPath;
+          const canOpen = await Linking.canOpenURL(uri);
+          if (canOpen) {
+            await Linking.openURL(uri);
+          }
+        }
+      } catch (openErr) {
+        console.warn('Failed to open PDF automatically:', openErr);
+      }
     } catch (error) {
       console.error('Multi-sheet PDF error:', error);
       Alert.alert('Error', 'Failed to create multi-sheet PDF: ' + error.message, [{ text: 'OK' }]);

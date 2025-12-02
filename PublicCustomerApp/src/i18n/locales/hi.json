@@ -614,5 +614,9 @@
   "select_different_location": "कृपया एक अलग स्थान चुनें।",
   "location_outside_radius_title": "अनुमत दायरे के बाहर स्थान",
   "location_outside_radius_message": "चयनित स्थान हमारे सेवा क्षेत्र के बाहर है। कृपया अनुमत दायरे के भीतर स्थान चुनें।",
-  "move_map_to_select_location": "मानचित्र को स्थान पर ले जाकर मानचित्र पर स्थान चुनें"
+  "move_map_to_select_location": "मानचित्र को स्थान पर ले जाकर मानचित्र पर स्थान चुनें",
+  "max_vehicle_distance_limit_exceeded": "चयनित वाहन अपनी अधिकतम दूरी सीमा से अधिक है। कृपया कोई अलग वाहन चुनें या यात्रा की दूरी कम करें।"
+  ,
+  "distance_limit_exceeded": "दूरी सीमा पार हो गई",
+  "edited_route_exceeds_max_distance": "संपादित मार्ग अधिकतम अनुमत दूरी {maxDistance} किमी से अधिक है। कृपया अपने स्टॉप समायोजित करें।"
 }

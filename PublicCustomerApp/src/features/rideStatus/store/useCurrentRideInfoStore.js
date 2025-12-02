@@ -30,10 +30,7 @@ const useCurrentRideInfoStore = create((set) => ({
   estimatedPickuoMins:null,
   estimatedArrivalMins:null,
   showBookingCancelModel:false,
-
-
-
-
+  maxDistanceLimit:null,
   finalFare:"",
   breakdownFare:[],
   finalDuration:"",
@@ -59,7 +56,6 @@ const useCurrentRideInfoStore = create((set) => ({
   setBreakdownFare: (breakdownFare) => set({ breakdownFare }),
   setShowBookingCancelModel: (showBookingCancelModel) => set({ showBookingCancelModel }),
   setEstimatedFare: (estimatedFare) => set({ estimatedFare }),
-
   setFinalFare: (finalFare) => {
     set({finalFare})
   },
@@ -79,8 +75,6 @@ const useCurrentRideInfoStore = create((set) => ({
       set({ finalFare: fareData.fareDetails.fare });
     }
 
-   
-  
     const BreakdownFare = fareData?.customerInvoice ? utils.getInvoiceFormat(fareData?.customerInvoice) : utils.getFareBreakdown(fareData?.fareDetails)
 
     set({ breakdownFare: BreakdownFare });
@@ -126,6 +120,7 @@ const useCurrentRideInfoStore = create((set) => ({
     finalDuration: info.finalDuration || null,
     estimatedFare:info.estimatedFare || null,
     onGoingTripCancelled:info.onGoingTripCancelled || null,
+    maxDistanceLimit: info.maxDistanceLimit || null,
    
   }),
 
@@ -156,7 +151,7 @@ const useCurrentRideInfoStore = create((set) => ({
     estimatedPickuoMins:null,
     estimatedArrivalMins:null,
     onGoingTripCancelled:null,
-
+    maxDistanceLimit:null,
   }),
 }));
 
