@@ -107,6 +107,12 @@ const YourRidesScreen = () => {
             } else {
                 setIsLoadMore(true);
             }
+           
+
+            if(payload?.status && !isCustomDateRangeSelected){
+                delete payload?.startTime;
+                delete payload?.endTime;
+            }
             
             const data = await getCustomerTrips(payload);
             

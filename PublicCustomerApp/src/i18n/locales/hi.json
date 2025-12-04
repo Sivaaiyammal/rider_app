@@ -12,6 +12,13 @@
     "enable_location_to_continue": "जारी रखने के लिए कृपया स्थान की अनुमति सक्षम करें।",
     "enable_permission": "अनुमति सक्षम करें",
     "open_settings": "सेटिंग्स खोलें",
+    "welcome": {
+      "title": "नम्मा ऊरु टैक्सी में आपका स्वागत है",
+      "subtitle": "कृपया आगे कैसे बढ़ना चाहेंगे, चुनें।",
+      "continue_as": "इस रूप में जारी रखें",
+      "customer": "ग्राहक",
+      "driver": "ड्राइवर"
+    },
     "choose_language": "अपनी भाषा चुनें",
     "next": "अगला",
     "get_started": "शुरू हो जाओ",
@@ -619,4 +626,26 @@
   ,
   "distance_limit_exceeded": "दूरी सीमा पार हो गई",
   "edited_route_exceeds_max_distance": "संपादित मार्ग अधिकतम अनुमत दूरी {maxDistance} किमी से अधिक है। कृपया अपने स्टॉप समायोजित करें।"
+  ,
+  "driver_access": {
+    "banner_title": "VMtracker के साथ ड्राइव करें",
+    "banner_subtitle": "VMtracker ड्राइवर ऐप डाउनलोड करें, Namma Ooru Taxi राइड्स पाएं और पैसे कमाएँ। ड्राइवर के रूप में रजिस्ट्रेशन पूरा करें और आज ही कमाना शुरू करें।",
+    "open_play_store": "Play Store में खोलें",
+    "download_driver_app": "VMtracker Driver ऐप डाउनलोड करें",
+    "how_to_become_driver": "ड्राइवर कैसे बनें",
+    "steps": {
+      "signup_title": "साइन अप",
+      "signup_desc": "VM Tracker ऐप डाउनलोड करें और बुनियादी जानकारी के साथ अपना ड्राइवर प्रोफाइल बनाएँ।",
+      "documents_title": "दस्तावेज़ अपलोड करें",
+      "documents_desc": "लाइसेंस, वाहन कागज़ात और आईडी प्रूफ जमा करें।",
+      "verification_title": "वेरिफिकेशन",
+      "verification_desc": "हम आपके विवरण की समीक्षा कर खाते को सत्यापित करते हैं।",
+      "start_earning_title": "कमाना शुरू करें",
+      "start_earning_desc": "ऑनलाइन जाएँ और राइड रिक्वेस्ट स्वीकार कर कमाएँ।"
+    },
+    "why_drivers_choose_us": "ड्राइवर हमें क्यों चुनते हैं",
+    "help_title": "कोई सवाल या समस्या?",
+    "help_subtitle": "हम मदद के लिए हमेशा उपलब्ध हैं।",
+    "go_to_contact_us": "Contact Us पर जाएँ"
+  }
 }

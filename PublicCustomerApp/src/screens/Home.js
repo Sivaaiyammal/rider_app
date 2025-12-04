@@ -63,6 +63,7 @@ import UpdateOverlay from '../components/UpdateOverlay';
 import OverdueTripModal from '../components/OverdueTripModal';
 import { log } from '@react-native-firebase/crashlytics';
 import ContributionScreen from '../features/contribution/screens/ContributionScreen.jsx';
+import DriverAccessScreen from './Driver/DriverAccessScreen.jsx';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -471,6 +472,7 @@ const Home = () => {
 
  const checkForUpdates = async (forceUpdateConfig) => {
    const mode = await checkUpdateStatus(forceUpdateConfig);
+   console.log("Update Mode",mode)
    const isForce = mode === 'force';
    const isAndroidForce = Platform.OS === 'android' && isForce;
    const isIOSForce = Platform.OS === 'ios' && isForce;
@@ -676,7 +678,8 @@ const Home = () => {
         return <ScheduleScreen {...params} />;
       case 'ContributionScreen':
         return <ContributionScreen {...params} />;
-     
+      case 'DriverAccessScreen':
+        return <DriverAccessScreen {...params} />;
       default:
         return null;
     }

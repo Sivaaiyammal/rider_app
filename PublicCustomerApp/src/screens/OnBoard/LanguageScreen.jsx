@@ -54,7 +54,8 @@ const LanguageScreen = ({fromDrawer}) => {
       goBack();
     }
     else{
-      navigation.navigate('OnBoarding');
+      // navigation.navigate('OnBoarding');
+      navigation.navigate('WelcomeScreen');
     }
   };
 

@@ -101,16 +101,16 @@ const MapScreen = () => {
   // },[drivers])
 
 
-  useEffect(()=>{
-    if(location && location.length > 0){
-      const bounds = utils.getBoundingBox([[location[0],location[1]]])
-      const margin = [50, 100, 50, height*0.4]
-      const finalBounds = [bounds, margin]
-      setTimeout(() => {  
-        setMapBounds(finalBounds);
-      }, 2000);
-    }
-  },[location])
+  // useEffect(()=>{
+  //   if(location && location.length > 0){
+  //     const bounds = utils.getBoundingBox([[location[0],location[1]]])
+  //     const margin = [50, 100, 50, height*0.4]
+  //     const finalBounds = [bounds, margin]
+  //     setTimeout(() => {  
+  //       setMapBounds(finalBounds);
+  //     }, 2000);
+  //   }
+  // },[location])
 
 
 
@@ -211,6 +211,8 @@ const MapScreen = () => {
       );
       homeMarker.setAnimate(true);
       homeMarker.setAnimationTime(10000);
+      homeMarker.setFocus(false)
+      homeMarker.setDoRotation(false)
       setMapMarkers([homeMarker]);
     }   
   };
@@ -381,7 +383,7 @@ const MapScreen = () => {
        }}>
        
             <View style={{marginTop:60}}>
-              {/* {<ScheduledTripBanner/>} */}
+              {<ScheduledTripBanner/>}
               <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
               <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false} />
             </View>
@@ -509,7 +511,7 @@ const styles = StyleSheet.create({
     alignSelf:"center",
     alignItems:"left",
     position:"absolute",    
-    width:width,
+    width:"100%",
     flex:1,
     gap:5,
     top:-45,

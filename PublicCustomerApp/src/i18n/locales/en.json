@@ -12,6 +12,13 @@
     "enable_location_to_continue": "Please enable location permission to continue.",
     "enable_permission": "Enable permission",
     "open_settings": "Open settings",
+    "welcome": {
+      "title": "Welcome to Namma Ooru Taxi",
+      "subtitle": "Choose how you would like to continue.",
+      "continue_as": "Continue as",
+      "customer": "Customer",
+      "driver": "Driver"
+    },
     "choose_language": "Choose \n Your Language",
     "next": "Next",
     "clear": "Clear",
@@ -641,4 +648,26 @@
   "max_vehicle_distance_limit_exceeded": "Selected vehicle exceeds its maximum distance limit. Please choose a different vehicle or reduce the trip distance.",
   "distance_limit_exceeded": "Distance Limit Exceeded",
   "edited_route_exceeds_max_distance": "The edited route exceeds the maximum allowed distance of {maxDistance} km. Please adjust your stops."
+  ,
+  "driver_access": {
+    "banner_title": "Drive With VMtracker",
+    "banner_subtitle": "Download the VMtracker Driver app to get Namma Ooru Taxi rides and earn money. Complete your registration as a driver and start earning today.",
+    "open_play_store": "Open in Play Store",
+    "download_driver_app": "Download VMtracker Driver App",
+    "how_to_become_driver": "How To Become A Driver",
+    "steps": {
+      "signup_title": "Sign Up",
+      "signup_desc": "Download VM Tracker App and Create your driver profile with basic information.",
+      "documents_title": "Upload Documents",
+      "documents_desc": "Submit license, vehicle papers, and identity proof.",
+      "verification_title": "Get Verified",
+      "verification_desc": "We review your details and verify your account.",
+      "start_earning_title": "Start Earning",
+      "start_earning_desc": "Go online and accept ride requests to earn."
+    },
+    "why_drivers_choose_us": "Why Drivers Choose Us",
+    "help_title": "Any doubts or issues?",
+    "help_subtitle": "We’re here to help. Contact us anytime.",
+    "go_to_contact_us": "Go to Contact Us"
+  }
 }

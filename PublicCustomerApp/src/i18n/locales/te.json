@@ -12,6 +12,13 @@
     "enable_location_to_continue": "కొనసాగించడానికి దయచేసి లొకేషన్ అనుమతిని ఎనేబుల్ చేయండి.",
     "enable_permission": "అనుమతిని ఎనేబుల్ చేయండి",
     "open_settings": "సెట్టింగ్‌లను తెరవండి",
+    "welcome": {
+      "title": "నమ్మ ఊరు టాక్సీకి స్వాగతం",
+      "subtitle": "దయచేసి మీరు ఎలా కొనసాగాలనుకుంటున్నారో ఎంచుకోండి.",
+      "continue_as": "ఇలా కొనసాగండి",
+      "customer": "కస్టమర్",
+      "driver": "డ్రైవర్"
+    },
     "choose_language": "ఎంచుకోండి \n మీ భాష",
     "next": "తదుపరి",
     "get_started": "ప్రారంభించండి",
@@ -614,4 +621,26 @@
    "location_outside_radius_title": "స్థానం రేడియస్ వెలుపల ఉంది",
   "location_outside_radius_message": "ఎంచుకున్న స్థానం పికప్ ప్రాంతం వెలుపల ఉంది. దయచేసి అనుమతించబడిన రేడియస్‌లో ఎంచుకోండి.",
   "move_map_to_select_location": "మ్యాప్‌పై స్థానాన్ని గుర్తించడానికి మ్యాప్‌ను కదిపండి"
+  ,
+  "driver_access": {
+    "banner_title": "VMtracker తో డ్రైవ్ చేయండి",
+    "banner_subtitle": "VMtracker Driver యాప్‌ని డౌన్‌లోడ్ చేసి Namma Ooru Taxi రైడ్‌లు పొందండి మరియు డబ్బు సంపాదించండి. డ్రైవర్‌గా రిజిస్ట్రేషన్ పూర్తి చేసి ఇవాళనే ప్రారంభించండి.",
+    "open_play_store": "Play Store లో తెరవండి",
+    "download_driver_app": "VMtracker Driver యాప్‌ని డౌన్‌లోడ్ చేయండి",
+    "how_to_become_driver": "డ్రైవర్ ఎలా కావాలి",
+    "steps": {
+      "signup_title": "సైన్ అప్",
+      "signup_desc": "VM Tracker యాప్‌ని డౌన్‌లోడ్ చేసి ప్రాథమిక సమాచారంతో మీ డ్రైవర్ ప్రొఫైల్‌ని సృష్టించండి.",
+      "documents_title": "పత్రాలు అప్‌లోడ్ చేయండి",
+      "documents_desc": "లైసెన్స్, వాహన పత్రాలు మరియు ఐడి ప్రూఫ్ సమర్పించండి.",
+      "verification_title": "వెరిఫికేషన్",
+      "verification_desc": "మీ వివరాలను మేము పరిశీలించి మీ ఖాతాను వెరిఫై చేస్తాము.",
+      "start_earning_title": "సంపాదన ప్రారంభించండి",
+      "start_earning_desc": "ఆన్‌లైన్‌కు వెళ్లి రైడ్ అభ్యర్థనలను స్వీకరించి సంపాదించండి."
+    },
+    "why_drivers_choose_us": "డ్రైవర్లు మమ్మల్ని ఎందుకు ఎంచుకుంటారు",
+    "help_title": "ఏదైనా సందేహం లేదా సమస్యా?",
+    "help_subtitle": "మేము ఎల్లప్పుడూ సహాయం కోసం అందుబాటులో ఉన్నాము. ఎప్పుడైనా సంప్రదించండి.",
+    "go_to_contact_us": "Contact Us కు వెళ్లండి"
+  }
 }

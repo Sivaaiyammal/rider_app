@@ -89,16 +89,12 @@ export async function checkUpdateStatus(versions) {
     // With zero-day thresholds, any outdated state results in force update
     if (versionOutdated || buildOutdated) {
          const isDebug = false;
-       const inAppUpdates = new SpInAppUpdates(isDebug);
+     
        try{
-       const result = await inAppUpdates.checkNeedsUpdate();
-
-
-       const updateAvailability = result?.other?.updateAvailability || 1;
-       if (updateAvailability === 1){
+  
+      
          return 'force';
-
-       }
+       
       }catch(e){
         console.log("InAppUpdates Error",e);
        

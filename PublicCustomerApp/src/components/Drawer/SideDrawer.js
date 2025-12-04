@@ -119,6 +119,12 @@ const SideDrawerV2 = ({ handleMenu }) => {
       icon: <Ionicons name="help-circle" size={20} color="black" />,
     },
     {
+      id: 'driver-access',
+      name: t('driver_access_menu', 'Drive with VMtracker'),
+      screen: 'DriverAccessScreen',
+      icon: <Ionicons name="car-outline" size={20} color="black" />,
+    },
+    {
       id: 'feedback',
       name: t('feedback_menu', 'Feedback'),
       icon: <Ionicons name="chatbubbles-outline" size={20} color="black" />,

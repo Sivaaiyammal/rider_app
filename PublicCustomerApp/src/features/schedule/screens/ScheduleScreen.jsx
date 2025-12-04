@@ -93,7 +93,7 @@ const ScheduleScreen = ({ trip, fromBookScreen=false }) => {
 			const response = await cancelRide(payload);
 			
 			if (response.success) {
-				showNotification(t('ride_cancelled_successfully') || 'Ride cancelled successfully');
+				showNotification(t('ride_cancelled') || 'Ride cancelled successfully');
 				// Remove from scheduled trips store
 				removeScheduledTrip( schedule._id);
 				setShowCancelBottomSheet(false);
@@ -107,6 +107,7 @@ const ScheduleScreen = ({ trip, fromBookScreen=false }) => {
 		} finally {
 			setCancelLoading(false);
 		}
+		
 	};
 
 	const vehicleType = schedule?.vehicleType || 'AUTO';

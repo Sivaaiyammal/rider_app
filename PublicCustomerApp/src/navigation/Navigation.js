@@ -2,6 +2,7 @@ import React, { useState, useCallback, useContext, useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { DataStore } from '../controllers/DataStore';
 import SplashScreen from '../screens/SplashScreen';
+import WelcomeScreen from '../screens/OnBoard/WelcomeScreen.jsx';
 import LanguageScreen from '../screens/OnBoard/LanguageScreen.jsx';
 import OnBoarding from '../screens/OnBoard/OnBoarding.jsx';
 import Home from '../screens/Home';
@@ -10,6 +11,7 @@ import LocationPermissionScreen from '../screens/LocationPermissionScreen';
 import LoginScreen from '../screens/authentication/LoginScreen';
 import RegisterationScreen from '../screens/authentication/RegisterationScreen';
 import OTPScreen from '../screens/authentication/OTPScreen';
+import DriverAccessScreen from '../screens/Driver/DriverAccessScreen.jsx';
 import useUserInfoStore from '../store/useUserInfoStore';
 import { GlobalContext } from '../context/GlobalContext';
 import PropTypes from 'prop-types';
@@ -22,6 +24,7 @@ import InAppUpdates from '../utils/InAppUpdates';
 // import MyAccountScreen from '../screens/Profile/MyAccountScreen';
 // import NotificationScreen from '../screens/NotificationScreen';
 // import ContactScreen from '../screens/ContactScreen';
+import ContactScreen from '../features/about/screens/ContactScreen';
 // import SavedPlacesScreen from '../screens/SavedPlacesScreen';
 // import PreferencesScreen from '../screens/PreferencesScreen';
 // import ReceiptsScreen from '../screens/ReceiptsScreen';
@@ -51,11 +54,12 @@ const Navigation = ({ onSplashComplete }) => {
       setLanguage(language.data);
       try { i18n.changeLanguage(language.data); } catch (e) { console.warn('i18n changeLanguage failed', e); }
       
-      if (onBoarding.data === 'onBoardingDone') {
-        setInitialRoute('LoginScreen');
-      } else {
-        setInitialRoute('OnBoarding');
-      }
+      // if (onBoarding.data === 'onBoardingDone') {
+      //   setInitialRoute('LoginScreen');
+      // } else {
+      //   setInitialRoute('OnBoarding');
+      // }
+       setInitialRoute('LoginScreen');
     } else {
       setInitialRoute('LanguageScreen');
     }
@@ -94,6 +98,7 @@ const Navigation = ({ onSplashComplete }) => {
       screenOptions={{ headerShown: false }}>
       
       <Stack.Screen name="LanguageScreen" component={LanguageScreen} />
+      <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
       <Stack.Screen name="OnBoarding" component={OnBoarding} />
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="RegisterationScreen" component={RegisterationScreen} />
@@ -101,6 +106,8 @@ const Navigation = ({ onSplashComplete }) => {
       <Stack.Screen name="HomeScreen" component={Home} />
       <Stack.Screen name="TrackingTestScreen" component={TrackingTestScreen} />
       <Stack.Screen name="LocationPermission" component={LocationPermissionScreen} />
+      <Stack.Screen name="DriverAccessScreen" component={DriverAccessScreen} />
+      <Stack.Screen name="ContactScreen" component={ContactScreen} />
     
     </Stack.Navigator>
   );

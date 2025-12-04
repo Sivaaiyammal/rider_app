@@ -12,6 +12,13 @@
     "enable_location_to_continue": "ಮುಂದುವರಿಯಲು ದಯವಿಟ್ಟು ಸ್ಥಳ ಅನುಮತಿಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.",
     "enable_permission": "ಅನುಮತಿಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ",
     "open_settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ",
+    "welcome": {
+      "title": "ನಮ್ಮ ಊರು ಟ್ಯಾಕ್ಸಿಗೆ ಸ್ವಾಗತ",
+      "subtitle": "ದಯವಿಟ್ಟು ಮುಂದೆ ಹೇಗೆ ಮುಂದುವರಿಯಲು ಬಯಸುತ್ತೀರಿ ಎಂದು ಆರಿಸಿ.",
+      "continue_as": "ಇದಾಗಿ ಮುಂದುವರಿಯಿರಿ",
+      "customer": "ಗ್ರಾಹಕ",
+      "driver": "ಚಾಲಕ"
+    },
     "choose_language": "ಆಯ್ಕೆ ಮಾಡಿ \n ನಿಮ್ಮ ಭಾಷೆ",
     "next": "ಮುಂದೆ",
     "get_started": "ಪ್ರಾರಂಭಿಸಿ",
@@ -623,4 +630,26 @@
   ,
   "distance_limit_exceeded": "ದೂರ ಮಿತಿ ಮೀರಿದೆ",
   "edited_route_exceeds_max_distance": "ಸಂಪಾದಿತ ಮಾರ್ಗವು ಗರಿಷ್ಠ ಅನುಮತಿತ ದೂರ {maxDistance} ಕಿ.ಮೀ ಮೀರಿದೆ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ನಿಲ್ದಾಣಗಳನ್ನು ಸರಿಪಡಿಸಿ."
+  ,
+  "driver_access": {
+    "banner_title": "VMtracker ಜೊತೆಗೆ ಚಾಲನೆ ಮಾಡಿ",
+    "banner_subtitle": "VMtracker Driver ಆಪ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ, Namma Ooru Taxi ರೈಡ್‌ಗಳನ್ನು ಪಡೆಯಿರಿ ಮತ್ತು ಹಣ ಸಂಪಾದಿಸಿ. ಚಾಲಕರಾಗಿ ನೋಂದಣಿ ಪೂರ್ಣಗೊಳಿಸಿ ಇಂದು ಆರಂಭಿಸಿ.",
+    "open_play_store": "Play Store ನಲ್ಲಿ ತೆರೆಯಿರಿ",
+    "download_driver_app": "VMtracker Driver ಆಪ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
+    "how_to_become_driver": "ಚಾಲಕರಾಗುವುದು ಹೇಗೆ",
+    "steps": {
+      "signup_title": "ಸೈನ್ ಅಪ್",
+      "signup_desc": "VM Tracker ಆಪ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ ಮತ್ತು ಮೂಲ ಮಾಹಿತಿಯೊಂದಿಗೆ ನಿಮ್ಮ ಚಾಲಕ ಪ್ರೊಫೈಲ್ ರಚಿಸಿ.",
+      "documents_title": "ದಾಖಲೆಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
+      "documents_desc": "ಲೈಸೆನ್ಸ್, ವಾಹನ ದಾಖಲೆಗಳು ಮತ್ತು ಗುರುತು ಪುರಾವೆ ಸಲ್ಲಿಸಿ.",
+      "verification_title": "ಪರಿಶೀಲನೆ",
+      "verification_desc": "ನಾವು ನಿಮ್ಮ ವಿವರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಖಾತೆಯನ್ನು ದೃಢೀಕರಿಸುತ್ತೇವೆ.",
+      "start_earning_title": "ಸಂಪಾದನೆ ಆರಂಭಿಸಿ",
+      "start_earning_desc": "ಆನ್‌ಲೈನ್‌ಗೆ ಹೋಗಿ ರೈಡ್ ವಿನಂತಿಗಳನ್ನು ಸ್ವೀಕರಿಸಿ ಮತ್ತು ಸಂಪಾದಿಸಿ."
+    },
+    "why_drivers_choose_us": "ಚಾಲಕರು ನಮ್ಮನ್ನು ಏಕೆ ಆಯ್ಕೆಮಾಡುತ್ತಾರೆ",
+    "help_title": "ಯಾವುದೇ ಸಂದೇಹ ಅಥವಾ ಸಮಸ್ಯೆಯೆ?",
+    "help_subtitle": "ನಾವು ಸಹಾಯ ಮಾಡಲು ಸದಾ ಸಿದ್ಧ. ಯಾವಾಗ ಬೇಕಾದರೂ ಸಂಪರ್ಕಿಸಿ.",
+    "go_to_contact_us": "Contact Usಗೆ ಹೋಗಿ"
+  }
 }

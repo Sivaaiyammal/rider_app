@@ -72,8 +72,8 @@ const OTPScreen = ({route}) => {
   const handleVerificationSuccess = async data => {
     try {
       if (data.success) {
+        console.log('Verification data', data);
        
-        
         let { user, isNewUser } = data;
         
         setID(user._id);
