@@ -9,7 +9,7 @@ const driverImage = require('../../assets/image/ContinueAsDriver.webp');
 
 const WelcomeScreen = ({ navigation }) => {
   const { width: screenWidth } = useWindowDimensions();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const contentWidth = Math.max(screenWidth - 96, 0);
   const mediaWidth = contentWidth > 0 ? contentWidth * 0.5 : screenWidth * 0.5;
   // Keep illustration offset proportional while splitting space evenly with copy.
@@ -61,12 +61,26 @@ const WelcomeScreen = ({ navigation }) => {
                 { width: mediaWidth },
               ]}
             >
-              <AdaptiveText style={[styles.cardLabel, styles.cardLabelPassenger]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-                {t('welcome.continue_as')}
-              </AdaptiveText>
-              <AdaptiveText style={[styles.cardTitle, styles.cardTitlePassenger]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
-                {t('welcome.customer')}
-              </AdaptiveText>
+              {i18n.language?.startsWith('ta') ? (
+                // Tamil-specific sentence formation: "Customer continue as"
+                <AdaptiveText
+                   style={[styles.cardTitlePassenger,{fontSize:20,lineHeight:30,textAlign:'center'}]}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.7}
+                >
+                  {`${t('welcome.customer')} ${t('welcome.continue_as')}`}
+                </AdaptiveText>
+              ) : (
+                <>
+                  <AdaptiveText style={[styles.cardLabel, styles.cardLabelPassenger]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+                    {t('welcome.continue_as')}
+                  </AdaptiveText>
+                  <AdaptiveText style={[styles.cardTitle, styles.cardTitlePassenger]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
+                    {t('welcome.customer')}
+                  </AdaptiveText>
+                </>
+              )}
             </View>
           </View>
         </TouchableOpacity>
@@ -99,15 +113,34 @@ const WelcomeScreen = ({ navigation }) => {
               style={[
                 styles.cardBody,
                 styles.cardBodyDriver,
+                {paddingBottom:15},
                 { width: mediaWidth },
               ]}
             >
-              <AdaptiveText style={[styles.cardLabel, styles.cardLabelDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-                {t('welcome.continue_as')}
-              </AdaptiveText>
-              <AdaptiveText style={[styles.cardTitle, styles.cardTitleDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} color={'white'}>
-                {t('welcome.driver')}
-              </AdaptiveText>
+              {i18n.language?.startsWith('ta') ? (
+                <AdaptiveText
+                  style={[styles.cardTitleDriver,{fontSize:20,lineHeight:30,textAlign:'center'}]}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.7}
+                  color={'white'}
+                  fontSize={18}
+                >
+                  {t('welcome.driver_ta_full')}
+                </AdaptiveText>
+              ) : (
+                <>
+                  <AdaptiveText style={[styles.cardLabel, styles.cardLabelDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+                    {t('welcome.become_a')}
+                  </AdaptiveText>
+                  <AdaptiveText style={[styles.cardTitle, styles.cardTitleDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} color={'white'}>
+                    {t('welcome.driver')}
+                  </AdaptiveText>
+                  <AdaptiveText style={[styles.cardLabel, styles.cardLabelDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+                    {t('welcome.and_earn_money')}
+                  </AdaptiveText>
+                </>
+              )}
             </View>
           </View>
         </TouchableOpacity>
@@ -230,8 +263,6 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontFamily: Fonts.semi_bold,
     fontSize: 25,
-   
-    marginBottom: 4,
   },
   cardTitleDriver: {
     color: colors.white,
@@ -239,8 +270,6 @@ const styles = StyleSheet.create({
   cardLabel: {
     fontFamily: Fonts.regular,
     fontSize: 14,
- 
-
   },
   cardLabelPassenger: {
     textAlign: 'right',

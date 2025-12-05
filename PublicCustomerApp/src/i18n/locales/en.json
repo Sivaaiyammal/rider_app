@@ -17,7 +17,10 @@
       "subtitle": "Choose how you would like to continue.",
       "continue_as": "Continue as",
       "customer": "Customer",
-      "driver": "Driver"
+      "driver": "Driver",
+      "became_a_driver": "Become a",
+      "become_a": "Become a",
+      "and_earn_money": "& earn money"
     },
     "choose_language": "Choose \n Your Language",
     "next": "Next",
@@ -668,6 +671,8 @@
     "why_drivers_choose_us": "Why Drivers Choose Us",
     "help_title": "Any doubts or issues?",
     "help_subtitle": "We’re here to help. Contact us anytime.",
-    "go_to_contact_us": "Go to Contact Us"
-  }
+    "go_to_contact_us": "Go to Contact Us",
+    
+  },
+  "become_a_driver": "Become a Driver"
 }

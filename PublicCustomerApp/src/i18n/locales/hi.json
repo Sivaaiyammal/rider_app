@@ -17,7 +17,10 @@
       "subtitle": "कृपया आगे कैसे बढ़ना चाहेंगे, चुनें।",
       "continue_as": "इस रूप में जारी रखें",
       "customer": "ग्राहक",
-      "driver": "ड्राइवर"
+      "driver": "ड्राइवर",
+      "became_a_driver": "ड्राइवर बन गए",
+      "become_a": "एक बनें",
+      "and_earn_money": "& पैसे कमाएं"
     },
     "choose_language": "अपनी भाषा चुनें",
     "next": "अगला",
@@ -647,5 +650,6 @@
     "help_title": "कोई सवाल या समस्या?",
     "help_subtitle": "हम मदद के लिए हमेशा उपलब्ध हैं।",
     "go_to_contact_us": "Contact Us पर जाएँ"
-  }
+  },
+  "become_a_driver": "ड्राइवर बनें"
 }

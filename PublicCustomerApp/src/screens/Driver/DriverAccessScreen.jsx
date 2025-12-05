@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   contentContainer: {
-    paddingVertical: 24,
+    paddingBottom: 24,
     gap: 20,
   },
   section: {

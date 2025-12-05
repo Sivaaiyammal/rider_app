@@ -120,7 +120,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
     },
     {
       id: 'driver-access',
-      name: t('driver_access_menu', 'Drive with VMtracker'),
+      name: t('become_a_driver', 'Become a Driver'),
       screen: 'DriverAccessScreen',
       icon: <Ionicons name="car-outline" size={20} color="black" />,
     },
