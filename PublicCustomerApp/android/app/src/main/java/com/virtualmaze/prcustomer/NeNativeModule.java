@@ -3,6 +3,8 @@ package com.virtualmaze.prcustomer;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.PointF;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -22,6 +24,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.regex.Pattern;
 
 import com.dot.nenativemap.search.UnifiedSearchData;
 import com.facebook.react.bridge.Promise;
@@ -66,6 +70,8 @@ import com.dot.nenativemap.directions.VHRoutingRequest;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
+import com.facebook.react.bridge.ReactApplicationContext;
+import java.io.IOException;
 // import com.nenative.services.android.navigation.ui.v5.navigationEndView.NavigationTripData;
 import com.virtualmaze.bundle_downloader.NENativeMap;
 import com.virtualmaze.bundle_downloader.listener.NENativeDownloadListener;
@@ -110,6 +116,7 @@ import com.dot.nenativemap.search.SearchData;
 
 public class NeNativeModule extends ViewGroupManager<MapView> implements LifecycleEventListener {
     public static final String REACT_CLASS = "NeNativeModule";
+    private final ReactApplicationContext reactApplicationContext;
     private int mapLoaded = 0;
     private MapView mapView;
     private String navMode = "realtime";
@@ -156,6 +163,10 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     private ReadableMap pendingRoute = null;
     // Stores a requested homeLocation until the map scene is ready
     private ReadableArray pendingHomeLocation = null;
+
+    public NeNativeModule(ReactApplicationContext reactApplicationContext) {
+        this.reactApplicationContext = reactApplicationContext;
+    }
 
     private TouchInput.TapResponder tapResponder = new TouchInput.TapResponder() {
         @Override
@@ -2107,6 +2118,117 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             }
         }
     }
+
+    @ReactMethod
+    public void reverseGeocode(double latitude, double longitude, Promise promise) {
+        Context context = reactNativeContext != null ? reactNativeContext : reactApplicationContext;
+        if (context == null && mapView != null) {
+            context = mapView.getContext();
+        }
+        if (context == null) {
+            promise.reject("NO_CONTEXT", "Context is not available for reverse geocoding");
+            return;
+        }
+
+        if (!Geocoder.isPresent()) {
+            promise.reject("GEOCODER_UNAVAILABLE", "Geocoder service is not available on this device");
+            return;
+        }
+
+        final Context geocoderContext = context;
+
+        new Thread(() -> {
+            try {
+                Geocoder geocoder = new Geocoder(geocoderContext, Locale.getDefault());
+                List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 5);
+
+                WritableMap result = Arguments.createMap();
+                WritableArray addressArray = Arguments.createArray();
+                boolean hasAddressLines = false;
+                boolean addressLineAdded = false;
+                List<String> collectedLines = new ArrayList<>();
+                String placeName = "Unnamed Location";
+
+                if (addresses != null && !addresses.isEmpty()) {
+                    Address address = addresses.get(0);
+
+                    int maxIndex = address.getMaxAddressLineIndex();
+                    for (int i = 0; i <= maxIndex; i++) {
+                        String line = address.getAddressLine(i);
+                        if (line != null) {
+                            String trimmed = line.trim();
+                            if (!trimmed.isEmpty()) {
+                                collectedLines.add(trimmed);
+                            }
+                        }
+                    }
+
+                    String[] candidates = new String[] {
+                            sanitizePlaceName(address.getFeatureName()),
+                            sanitizePlaceName(address.getSubThoroughfare()),
+                            sanitizePlaceName(address.getThoroughfare()),
+                            sanitizePlaceName(address.getSubLocality()),
+                            sanitizePlaceName(address.getLocality()),
+                            sanitizePlaceName(address.getAdminArea())
+                    };
+
+                    for (String candidate : candidates) {
+                        if (candidate != null && !candidate.isEmpty()) {
+                            placeName = candidate;
+                            break;
+                        }
+                    }
+                }
+
+                String placePattern = placeName != null ? "(?i)^" + Pattern.quote(placeName) + "\\s*,?\\s*" : null;
+
+                for (String line : collectedLines) {
+                    if (placeName.equalsIgnoreCase(line)) {
+                        continue;
+                    }
+
+                    String cleanLine = line;
+                    if (placePattern != null) {
+                        cleanLine = cleanLine.replaceFirst(placePattern, "");
+                    }
+
+                    cleanLine = cleanLine.trim();
+                    if (cleanLine.isEmpty() || placeName.equalsIgnoreCase(cleanLine)) {
+                        continue;
+                    }
+
+                    addressLineAdded = true;
+                    addressArray.pushString(cleanLine);
+                }
+
+                hasAddressLines = addressLineAdded;
+
+                if (hasAddressLines) {
+                    result.putArray("address", addressArray);
+                } else {
+                    result.putNull("address");
+                }
+
+                result.putString("placeName", placeName);
+                promise.resolve(result);
+            } catch (IOException ioException) {
+                promise.reject("GEOCODER_IO", ioException);
+            } catch (IllegalArgumentException illegalArgumentException) {
+                promise.reject("INVALID_COORDINATES", illegalArgumentException);
+            } catch (Exception exception) {
+                promise.reject("GEOCODER_ERROR", exception);
+            }
+        }).start();
+    }
+
+    private String sanitizePlaceName(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
     @ReactMethod
     public void search(
             double CURRENT_LATITUDE,

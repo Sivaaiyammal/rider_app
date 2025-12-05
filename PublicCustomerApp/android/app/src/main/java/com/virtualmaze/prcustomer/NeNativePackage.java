@@ -10,31 +10,30 @@ import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.uimanager.ViewManager;
 
 public class NeNativePackage implements ReactPackage {
-    // Remove the reactContext field since it's not used
-    // private ReactApplicationContext reactContext;
+    private NeNativeModule sharedModule;
 
     public NeNativePackage() {
         // No context needed in constructor
     }
 
-    // Implement the methods required by the ReactPackage interface
-    // You can leave them empty if they are not needed for your use case
+    private NeNativeModule getOrCreateModule(ReactApplicationContext reactContext) {
+        if (sharedModule == null) {
+            sharedModule = new NeNativeModule(reactContext);
+        }
+        return sharedModule;
+    }
 
     @Override
-        public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
+    public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
-        modules.add(new NeNativeModule());
-        // Add other native modules here if needed
+        modules.add(getOrCreateModule(reactContext));
         return modules;
-
-//            return Collections.emptyList();
     }
 
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-        List<ViewManager> viewManagers = new ArrayList<>(); // Use ArrayList to store ViewManagers
-        viewManagers.add(new NeNativeModule());
-        // viewManagers.add(new NeNativeNavigation()); // Add your NeNativeNavigation ViewManager here
+        List<ViewManager> viewManagers = new ArrayList<>();
+        viewManagers.add(getOrCreateModule(reactContext));
         return viewManagers;
     }
 }

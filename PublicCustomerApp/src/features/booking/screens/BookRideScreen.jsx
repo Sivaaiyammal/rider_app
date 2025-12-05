@@ -224,58 +224,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         }
     }, [RideMatchDriverNotFound])
 
-    // Retry logic if booking info (distance/duration) not updated within 6s; try 3 times then show error modal
-    useEffect(() => {
-        // If already have booking info, clear any existing timer and reset attempts
-        if (rideDistance && estimatedDuration) {
-            if (bookingInfoTimerRef.current) {
-                clearTimeout(bookingInfoTimerRef.current)
-                bookingInfoTimerRef.current = null
-            }
-            return; // no need to start/restart timer when data is present
-        }
-
-        // Prevent starting new timer if error modal is shown
-        if (showBookingInfoErrorModal) return;
-
-        // Start / restart timer waiting for booking info
-        if (bookingInfoTimerRef.current) {
-            clearTimeout(bookingInfoTimerRef.current)
-        }
-        bookingInfoTimerRef.current = setTimeout(() => {
-            // After 6 seconds, check again
-            if (!(rideDistance && estimatedDuration)) {
-                if (bookingInfoAttemptsRef.current < 3) {
-                    bookingInfoAttemptsRef.current += 1;
-                    // Trigger a re-computation of direction points to attempt population
-                    try {
-                        if (isRideLocationsReady()) {
-                            transformRideLocationsToDirectionPoints({
-                                clearMarkers: true,
-                                vehicleType: 'motorcycle',
-                                padding: [50, 50, 50, height*0.5]
-                            })
-                        }
-                    } catch (e) {
-                        // no-op; retry attempts continue
-                    }
-                    // Schedule next check by invoking effect again naturally via state dependencies
-                } else {
-                    // Exceeded attempts, show error modal
-                    setShowBookingInfoErrorModal(true)
-                }
-            }
-        }, 6000)
-
-        return () => {
-            if (bookingInfoTimerRef.current) {
-                clearTimeout(bookingInfoTimerRef.current)
-                bookingInfoTimerRef.current = null
-            }
-        }
-    }, [rideDistance, estimatedDuration, showBookingInfoErrorModal, isRideLocationsReady, transformRideLocationsToDirectionPoints])
-
-
+    
     
 
 
