@@ -18,7 +18,7 @@ class currentLocation {
       
       const bounds = utils.getBoundingBoxFromLocation(location, 200)
     
-      const margin = [50, 100, 50, height*0.4]
+      const margin = [200, 200, 200, 200+height*0.4]  
       const finalBounds = [bounds, margin]
       
       setMapBounds(finalBounds);
