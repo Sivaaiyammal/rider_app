@@ -33,7 +33,7 @@ import { Fonts } from '../../../constants/constants';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { openFeedback } from '../../../utils/feedback';
 
-const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces}) => {
+const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mode}) => {
   const { t } = useTranslation();
   const {userdetails,userFavPlaces} = useUserInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
@@ -41,7 +41,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces}) 
 
   const {selectedRide, setSelectedRide } =
     useRideSelectionStore();
-  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime} = useRideBookingInfo()
+  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,femaleDriverOnly,setFemaleDriverOnly,safeNightRides,setSafeNightRides} = useRideBookingInfo()
 
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showTripFor, setShowTripFor] = useState(false);
@@ -67,6 +67,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces}) 
     setScheduleDateTime(null)
     setSelectedRide(rideType[0])
     setIsScheduledTrip(false)
+    setFemaleDriverOnly(false)
+    setSafeNightRides(false)
     goBack();
   };
 
@@ -100,6 +102,14 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces}) 
  
 
   useEffect(() => {
+    if(mode == 'SCHEDULE_TRIP'){
+      console.log("Schedule ride mode detected");
+      setShowScheduleContainer(true)
+    }
+    if(mode == 'FEMALE_DRIVER'){
+      setFemaleDriverOnly(true)
+      
+    }
     return () => {
       setIsContinuing(false);
     };

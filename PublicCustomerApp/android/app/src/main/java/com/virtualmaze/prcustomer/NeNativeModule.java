@@ -1378,6 +1378,13 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 Log.e("routeLOG", "Invalid padding, using default: " + e.getMessage());
             }
 
+
+            WritableNativeMap loadingEventData = new WritableNativeMap();
+            loadingEventData.putBoolean("loading", true);
+            loadingEventData.putString("message", "Route calculation started");
+            reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit("route-loading", loadingEventData);
+
             if (routeInstructionsDisplay != null && mapView != null) {
                 try {
                     mapView.getMapController().removeAll();
@@ -1596,6 +1603,13 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             List<RouteElementInstructionsDisplay> routeInstructions = routeInstructionsDisplay
                     .getRouteElementInstructions();
 
+            // Emit loading false on success
+            WritableNativeMap loadingEventData = new WritableNativeMap();
+            loadingEventData.putBoolean("loading", false);
+            loadingEventData.putString("message", "Route calculation completed successfully");
+            reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit("route-loading", loadingEventData);
+
             WritableNativeMap eventData = new WritableNativeMap();
             eventData.putString("message", "success");
             eventData.putInt("selectedRouteIndex", index);
@@ -1621,6 +1635,13 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
         @Override
         public void onFailure(RouteResponse routeResponse) {
+
+             // Emit loading false on failure
+            WritableNativeMap loadingEventData = new WritableNativeMap();
+            loadingEventData.putBoolean("loading", false);
+            loadingEventData.putString("message", "Route calculation failed");
+            reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit("route-loading", loadingEventData);
             WritableNativeMap eventData = new WritableNativeMap();
             eventData.putString("message", "success");
             reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)

@@ -9,6 +9,8 @@
     "choose_always_or_while_using": "Choose \"Always\" or \"While Using App\"",
     "enable_location": "Enable Location permission",
     "location_permission_required": "Location permission required",
+    "location_services_disabled": "Location services disabled",
+    "enable_system_location_to_continue": "Please enable Location services on your device to continue.",
     "enable_location_to_continue": "Please enable location permission to continue.",
     "enable_permission": "Enable permission",
     "open_settings": "Open settings",
@@ -16,7 +18,7 @@
       "title": "Welcome to Namma Ooru Taxi",
       "subtitle": "Choose how you would like to continue.",
       "continue_as": "Continue as",
-      "customer": "Customer",
+      "customer": "Passengers",
       "driver": "Driver",
       "became_a_driver": "Become a",
       "become_a": "Become a",
@@ -560,7 +562,13 @@
     "overdue": {
       "title": "Trip duration exceeded the estimate",
       "message": "May I know your trip status? Please select one option below.",
-      "cancelled_midway": "Cancelled midway"
+      "cancelled_midway": "Cancelled midway",
+      "no_im_on_ride": "No, I'm on ride",
+      "end_trip": "End Trip",
+      "cancellation_note_placeholder": "Tell us why you are ending the trip",
+      "cancellation_note_helper": "We will share this note with support.",
+      "send_cancellation": "Send & Cancel Trip",
+      "image_alt": "Trip overdue illustration"
     }
   ,
   "feedback": {
@@ -671,8 +679,12 @@
     "why_drivers_choose_us": "Why Drivers Choose Us",
     "help_title": "Any doubts or issues?",
     "help_subtitle": "We’re here to help. Contact us anytime.",
-    "go_to_contact_us": "Go to Contact Us",
+    "go_to_contact_us": "Go to Contact Us"
     
   },
-  "become_a_driver": "Become a Driver"
+  "become_a_driver": "Become a Driver",
+  "not_serving_area_message": "We're sorry, but we are not currently serving your area.",
+  "not_serving_area_title": "Service Unavailable",
+  "no_drivers_available_for_vehicle": "No drivers are currently available for the selected vehicle type. Please try again later or choose a different vehicle.",
+  "no_drivers_available_title": "No Drivers Available"
 }

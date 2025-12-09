@@ -58,6 +58,9 @@ const useMapStore = create((set) => ({
     mapReady: false,
     setMapReady: mapReady => set({ mapReady }),
 
+    routeLoading: false,
+    setRouteLoading: routeLoading => set({ routeLoading }),
+
     mapBounds: [],
     boundKey: 0,
     setMapBounds: (bounds) => set(state => {

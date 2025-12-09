@@ -5,7 +5,8 @@ import i18n from '../../i18n';
 import { colors, Fonts } from '../../constants/constants';
 import { GlobalContext } from '../../context/GlobalContext';
 
-const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.vmtrackers&pcampaignid=web_share';
+const PLAY_STORE_PACKAGE_NAME = 'com.vmtrackers';
+const PLAY_STORE_WEB_URL = `https://play.google.com/store/apps/details?id=${PLAY_STORE_PACKAGE_NAME}`;
 const DRIVER_APP_LOGO = require('../../assets/image/driverLogo.webp');
 const DRIVER_BANNER = require('../../assets/image/driverBanner.webp');
 
@@ -101,14 +102,23 @@ const DriverAccessScreen = ({ navigation }) => {
   };
 
   const handleOpenPlayStore = async () => {
-    try {
-      const supported = await Linking.canOpenURL(PLAY_STORE_URL);
+    const marketUrl = `market://details?id=${PLAY_STORE_PACKAGE_NAME}`;
 
-      if (supported) {
-        await Linking.openURL(PLAY_STORE_URL);
+    try {
+      const canOpenMarketUrl = await Linking.canOpenURL(marketUrl);
+
+      if (canOpenMarketUrl) {
+        await Linking.openURL(marketUrl);
+        return;
       }
     } catch (error) {
-      console.warn('Failed to open Play Store link', error);
+      console.warn('Failed to open Play Store app link', error);
+    }
+
+    try {
+      await Linking.openURL(PLAY_STORE_WEB_URL);
+    } catch (error) {
+      console.warn('Failed to open Play Store web link', error);
     }
   };
 

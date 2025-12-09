@@ -346,6 +346,14 @@ export const utils = {
 
     return new Date(date);
   },
+
+  isEmptyObject(obj) {
+  // First, ensure the input is a non-null object
+  if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) {
+    return false; // Not a plain object or is null/array
+  }
+  return Object.keys(obj).length === 0;
+},
   formateDateLabel: (ms, format = 'local') => {
     // format: 'local' (default) or 'utc'
     let date;

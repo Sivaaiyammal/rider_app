@@ -9,9 +9,10 @@ import {
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import PermissionImage from '../assets/image/permissionImage.svg';
+import { Fonts } from '../constants/constants';
 // import { height, width } from '../utils/Utils';
 
-const LocationPermissionOverlay = ({ onEnable }) => {
+const LocationPermissionOverlay = ({ onEnable, title, description, primaryButtonLabel }) => {
   const { t } = useTranslation();
 
   const openSettings = async () => {
@@ -26,19 +27,20 @@ const LocationPermissionOverlay = ({ onEnable }) => {
         </View>
 
         <Text style={styles.title}>
-          {t('location_permission_required', 'Location permission required')}
+          {title || t('location_permission_required', 'Location permission required')}
         </Text>
 
         <Text style={styles.description}>
-          {t(
-            'enable_location_to_continue',
-            'Please enable location permission to continue.'
-          )}
+          {description ||
+            t(
+              'enable_location_to_continue',
+              'Please enable location permission to continue.'
+            )}
         </Text>
 
         <TouchableOpacity style={styles.primaryButton} onPress={onEnable}>
           <Text style={styles.primaryButtonText}>
-            {t('enable_permission', 'Enable permission')}
+            {primaryButtonLabel || t('enable_permission', 'Enable permission')}
           </Text>
         </TouchableOpacity>
 
@@ -54,6 +56,15 @@ const LocationPermissionOverlay = ({ onEnable }) => {
 
 LocationPermissionOverlay.propTypes = {
   onEnable: PropTypes.func.isRequired,
+  title: PropTypes.string,
+  description: PropTypes.string,
+  primaryButtonLabel: PropTypes.string,
+};
+
+LocationPermissionOverlay.defaultProps = {
+  title: undefined,
+  description: undefined,
+  primaryButtonLabel: undefined,
 };
 
 const styles = StyleSheet.create({
@@ -82,11 +93,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: 'bold',
+  
     color: '#333333',
     textAlign: 'center',
     marginBottom: 10,
-    fontFamily: 'Outfit-Bold',
+    fontFamily: Fonts.bold,
   },
   description: {
     fontSize: 16,

@@ -24,7 +24,6 @@ import AdaptiveText from '../../../../components/Common/AdaptiveText';
 import VehicleSearchIcon from '../../../../assets/image/svgIcons/vehicleSearch.svg'
 import useMapStore from '../../../map/store/useMapStore';
 import Marker from '../../../../controllers/NEMap/Marker';
-import { getNearByDrivers } from '../../../../API/EndPoints/EndPoints';
 import useRideBookingLocationStore from '../../store/useRideBookingLocationStore';
 import useNearbyDrivers
  from '../../../../store/useNearByDrivers';
@@ -33,80 +32,162 @@ import {
   
 } from 'react-native-color-matrix-image-filters'
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+import DriverNotFoundModal from './DriverNotFoundModal';
+import { useStackScreenStore } from '../../../../store/useStackScreenStore';
 
 
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
 
 const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance }) => {
   const { t } = useTranslation();
+  const editPlacesFallbackLabel = t('edit_places_button', 'Edit Places');
   const {selectedVehicle,setSelectedVehicle} = useRideVehicleStore()
+  const { goBack, goBackToScreen } = useStackScreenStore();
   const [showMaxDistanceModal, setShowMaxDistanceModal] = useState(false);
   const {rideStartLocation} = useRideBookingLocationStore()
   const [maxDistanceMessage, setMaxDistanceMessage] = useState('');
-  const { setVehicleMarkers,vehicleMarkers } = useMapStore();
+  const { setVehicleMarkers } = useMapStore();
   const [modalVehicle, setModalVehicle] = useState(null);
   const [slideAnim] = useState(new Animated.Value(0));
-  const { setDrivers, getDriversByType } = useNearbyDrivers();
+  const { fetchLatestDrivers, clearDrivers, getDriversByType } = useNearbyDrivers();
+  const [modalTitle, setModalTitle] = useState('');
   const firstRenderStartRef = useRef(null);
+  const selectedVehicleType = selectedVehicle?.type;
+  const startLatitude = rideStartLocation?.latitude;
+  const startLongitude = rideStartLocation?.longitude;
+  const [showNoDriversModal, setShowNoDriversModal] = useState(false);
+  const [noDriversMessage, setNoDriversMessage] = useState('');
+  const [noDriversCtaLabel, setNoDriversCtaLabel] = useState(editPlacesFallbackLabel);
+  const noDriversActionRef = useRef(null);
+
+  const handleNavigateToEditPlaces = useCallback(() => {
+    if (typeof goBackToScreen === 'function') {
+      goBackToScreen('PlanRideScreen', { focusEditPlaces: true });
+      return;
+    }
+    if (typeof goBack === 'function') {
+      goBack();
+    }
+  }, [goBack, goBackToScreen]);
+
+  const clearNoDriversModalState = useCallback(() => {
+    setShowNoDriversModal(false);
+    setNoDriversMessage('');
+    setNoDriversCtaLabel(editPlacesFallbackLabel);
+    noDriversActionRef.current = null;
+  }, [editPlacesFallbackLabel]);
+
+  const handleNoDriversPrimaryAction = useCallback(() => {
+    const action = noDriversActionRef.current;
+    clearNoDriversModalState();
+    if (typeof action === 'function') {
+      action();
+    }
+  }, [clearNoDriversModalState]);
+
+  const openNoDriversModal = useCallback(
+    (messageValue = '', action = null, label = null) => {
+      const fallbackMessage = t(
+        'no_drivers_available_generic',
+        'No drivers are available nearby. Please edit pickup and drop locations.'
+      );
+      setNoDriversMessage(messageValue || fallbackMessage);
+      setNoDriversCtaLabel(label || editPlacesFallbackLabel);
+      noDriversActionRef.current = action || handleNavigateToEditPlaces;
+      setShowNoDriversModal(true);
+    },
+    [editPlacesFallbackLabel, handleNavigateToEditPlaces, t]
+  );
 
   useEffect(() => {
+    console.log(selectedVehicle?"Selected vehicle changed: "+JSON.stringify(selectedVehicle):"No vehicle selected");
     if (typeof console.time === 'function') {
       console.time('availableVehicles->firstRender');
     } else {
       firstRenderStartRef.current = Date.now();
     }
   }, []);
-
-
-  const updateMarkersWithDrivers = (vehicleTypeOverride = null) => {
-    // Clear existing vehicle markers before updating
-    setVehicleMarkers([]);
-    const type = vehicleTypeOverride || (selectedVehicle && selectedVehicle.type);
-    if (!type) {
-      return;
-    }
-    console.log('Selected vehicle type for driver filtering:', type);
-    const CurrentSelectedVehicleDrivers = getDriversByType(type);
-    console.log('Current selected vehicle drivers:', CurrentSelectedVehicleDrivers);
-
-    const markerList = [];
-    CurrentSelectedVehicleDrivers.forEach((driver) => {
-      const coords = driver?.location?.coordinates;
-      if (Array.isArray(coords) && coords.length >= 2) {
-        const marker = new Marker(
-          driver._id ?? driver.id,
-          `driver_${driver._id ?? driver.id}`,
-          coords[0],
-          coords[1],
-          String(type).toLowerCase(),
-          36,
-          false,
-        );
-        marker.setAngle(driver?.location?.heading ?? 0);
-        markerList.push(marker);
+  const updateMarkersWithDrivers = useCallback(
+    (vehicleTypeOverride = null) => {
+      const type = vehicleTypeOverride || selectedVehicleType;
+      if (!type) {
+        setVehicleMarkers([]);
+        return;
       }
-    });
-    console.log('Updating vehicle markers on map:', markerList);
-    setVehicleMarkers(markerList);
-  };
+      console.log('Selected vehicle type for driver filtering:', type);
+      const currentSelectedVehicleDrivers = getDriversByType(type);
+      console.log('Current selected vehicle drivers:', currentSelectedVehicleDrivers);
 
+      const markerList = [];
+      currentSelectedVehicleDrivers.forEach((driver) => {
+        const coords = driver?.location?.coordinates;
+        if (Array.isArray(coords) && coords.length >= 2) {
+          const marker = new Marker(
+            driver._id ?? driver.id,
+            `driver_${driver._id ?? driver.id}`,
+            coords[0],
+            coords[1],
+            String(type).toLowerCase(),
+            36,
+            false,
+          );
+          marker.setAngle(driver?.location?.heading ?? 0);
+          markerList.push(marker);
+        }
+      });
+      console.log('Updating vehicle markers on map:', markerList);
+      setVehicleMarkers(markerList);
+    },
+    [getDriversByType, selectedVehicleType, setVehicleMarkers]
+  );
 
+  const syncDriverMarkersWithVehicles = useCallback(
+    async (vehicleTypeOverride = null) => {
+      console.log('Syncing driver markers with vehicles');
+      const baseVehicleTypes = (availableVehicles || [])
+        .map((v) => v.type)
+        .filter(Boolean);
+      const vehicleTypesToFetch = vehicleTypeOverride
+        ? Array.from(new Set([...baseVehicleTypes, vehicleTypeOverride]))
+        : baseVehicleTypes;
 
-  const syncDriverMarkersWithVehicles = async()=>{
-    console.log('Syncing driver markers with vehicles');
-    if(availableVehicles && availableVehicles.length>0){
-       const NearByDrivers = await getNearByDrivers(rideStartLocation.latitude,rideStartLocation.longitude,10000,availableVehicles.map(v=>v.type));
-       console.log('Nearby drivers fetched:', NearByDrivers);
-       if(NearByDrivers && NearByDrivers?.drivers && NearByDrivers.drivers.length>0){
-           try{
-           setDrivers(NearByDrivers?.drivers);
-           }catch(e){
-            console.log('Error setting drivers in store:', e);
-           }
-           updateMarkersWithDrivers();
-       }
-    }
-  }
+      if (startLatitude == null || startLongitude == null || vehicleTypesToFetch.length === 0) {
+        clearDrivers();
+        setVehicleMarkers([]);
+        return;
+      }
+
+      try {
+        const drivers = await fetchLatestDrivers({
+          latitude: startLatitude,
+          longitude: startLongitude,
+          radius: 10000,
+          vehicleTypes: vehicleTypesToFetch,
+        });
+
+        if (!drivers.length) {
+          setVehicleMarkers([]);
+          clearDrivers();
+          openNoDriversModal();
+          return;
+        }
+
+        updateMarkersWithDrivers(vehicleTypeOverride);
+      } catch (error) {
+        console.log('Error fetching nearby drivers:', error);
+      }
+    },
+    [
+      availableVehicles,
+      clearDrivers,
+      fetchLatestDrivers,
+      openNoDriversModal,
+      setVehicleMarkers,
+      startLatitude,
+      startLongitude,
+      updateMarkersWithDrivers,
+    ]
+  );
 
   useEffect(() => {
     // Animate the component in only when vehicles are loaded
@@ -119,18 +200,19 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
     }
 
     syncDriverMarkersWithVehicles();
-   
-  }, [availableVehicles]);
+  
+  }, [availableVehicles, slideAnim, syncDriverMarkersWithVehicles]);
 
   // Update vehicle markers whenever the selected vehicle changes
   useEffect(() => {
-    if (selectedVehicle && selectedVehicle.type) {
+    if (selectedVehicleType) {
+      console.log('Selected vehicle changed, updating markers for type..........................:', selectedVehicleType);
       updateMarkersWithDrivers();
     } else {
       // If no vehicle selected, clear vehicle markers
       setVehicleMarkers([]);
     }
-  }, [selectedVehicle]);
+  }, [selectedVehicleType, setVehicleMarkers, updateMarkersWithDrivers]);
 
 
   
@@ -139,26 +221,37 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
 
   // Removed redundant vehicle selection - handled by parent component
 
-  const handleVehicleSelect = (vehicle) => {
-    if (vehicle?.isExceedingMaxDistance) {
+  const handleVehicleSelect = (vehicle, currentDrivers) => {
+    if (vehicle?.isExceedingMaxDistance ) {
       const vehicleName = VEHICLE_LABELS[vehicle.type] || vehicle.name || 'Selected vehicle';
       const maxKm = vehicle?.maxDistanceLimit != null ? vehicle.maxDistanceLimit : undefined;
       const message = maxKm != null
         ? t('trip_distance_exceeded_with_limit', { vehicleName, maxKm })
         : t('trip_distance_exceeded_generic', { vehicleName });
+      setModalTitle(t('trip_distance_exceeded_title'));
       setMaxDistanceMessage(message);
       setModalVehicle(vehicle);
       setShowMaxDistanceModal(true);
       // Reflect markers for the tapped vehicle type even if selection is blocked
-      updateMarkersWithDrivers(vehicle.type);
+      // syncDriverMarkersWithVehicles(vehicle.type);
+      // updateMarkersWithDrivers(vehicle.type);
      
+      return;
+    }
+
+    if (currentDrivers.length === 0) {
+      // No drivers available for this vehicle type
+      const vehicleName = VEHICLE_LABELS[vehicle.type] || vehicle.name || 'Selected vehicle';
+      const message = t('no_drivers_available_for_vehicle', { vehicleName });
+      openNoDriversModal(message);
       return;
     }
     
     
  
    
-    
+    console.log('Vehicle selected:eeeeeeeeeeeeeeeee', vehicle);
+    syncDriverMarkersWithVehicles(vehicle.type);
     setSelectedVehicle(vehicle);
   };
 
@@ -245,7 +338,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
           <View style={styles.modalCard}>
             <View style={styles.modalHeader}>
               <MaterialCommunityIcons name="alert" size={20} color="#c10000ff" />
-              <Text style={styles.modalTitle}>{t('trip_distance_exceeded_title')}</Text>
+              <Text style={styles.modalTitle}>{modalTitle}</Text>
             </View>
             {modalVehicle && (
               <View style={styles.modalImageContainer}>
@@ -266,11 +359,12 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
       
       
       {availableVehicles?.map((vehicle) => {
-        const isSelected = selectedVehicle?.id === vehicle.id;
+        const isSelected = selectedVehicle?.type === vehicle.type;
+        const currentDrivers = getDriversByType(vehicle.type);
         return (
           <TouchableOpacity
             key={vehicle.id}
-            onPress={() => handleVehicleSelect(vehicle)}
+            onPress={() => handleVehicleSelect(vehicle, currentDrivers)}
             activeOpacity={0.8}
           >
             <LinearGradient
@@ -280,7 +374,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
               style={[styles.vehicleCard, isSelected ? styles.selectedVehicleCard : {backgroundColor:colors.grey_xxlight}]}
             >
               <View style={styles.vehicleImageContainer}>
-              {vehicle.isExceedingMaxDistance ? (
+              {vehicle.isExceedingMaxDistance || currentDrivers.length === 0 ? (
                 <Grayscale>
                 <Image
                   source={getVehicleImage(vehicle.type)}
@@ -307,13 +401,18 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
                   </View>
                   }
                   </View>
-                 {!vehicle?.isExceedingMaxDistance ? <Text style={[styles.price]}>
+                 {!vehicle?.isExceedingMaxDistance && currentDrivers.length > 0 ? <Text style={[styles.price]}>
                     {vehicle.minFare != null && vehicle.maxFare != null
                       ? `₹${vehicle.minFare.toFixed(0)} - ₹${vehicle.maxFare.toFixed(0)}`
                       : t && typeof t === 'function'
                         ? "--"// fallback if translation function exists
                         : '--'}
                   </Text>
+                  : currentDrivers.length === 0 ?
+                    <View style={styles.warningRow}>
+         
+                      <Text style={[styles.warningText,{color: '#c10000ff'}]}>No Nearby Drivers</Text>
+                    </View>
                   :  
                     <View style={styles.warningRow}>
                       <MaterialCommunityIcons name="alert" size={14} color="#c10000ff" />
@@ -341,6 +440,14 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
           </TouchableOpacity>
         );
       })}
+
+      <DriverNotFoundModal
+        visible={showNoDriversModal}
+        onClose={clearNoDriversModalState}
+        onPrimaryAction={handleNoDriversPrimaryAction}
+        message={noDriversMessage}
+        ctaLabel={noDriversCtaLabel}
+      />
       
    
     </View>
@@ -518,6 +625,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
     gap: 10,
+    top: "90%",
   },
   warningText: {
     fontSize: 12,

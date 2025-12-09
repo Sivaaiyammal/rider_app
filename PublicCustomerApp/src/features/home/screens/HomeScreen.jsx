@@ -24,6 +24,8 @@ import FavLabelItems from '../components/FavLabelItems';
 import useLocationStore from '../../../store/useLocationStore';
 import  LocationTypes  from '../../booking/types/LocationTypes.json';  
 import useRideBookingLocationStore from '../../booking/store/useRideBookingLocationStore'
+import useRideVehicleStore from '../../booking/store/useRideVehicleStore';
+import { VEHICLE_LABELS } from '../../../constants/VehicleLabels';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { height, utils, width } from '../../../utils/Utils';
 import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
@@ -35,20 +37,25 @@ import PropTypes from 'prop-types';
 import { checkNotificationPermissions, RequestNotificationPermission } from '../../../controllers/PermissionHandler';
 import useScheduleTripStore from '../../../store/useScheduleTripStore';
 import ScheduledTripBanner from '../components/ScheduledTripBanner';
+import DynamicSection from '../components/DynamicSection';
+import useNearbyDrivers from '../../../store/useNearByDrivers';
+import useConfigStore from '../../../store/useConfigStore';
 
-
-const BottomSheetHeader = ({makeRidePlan}) => {
+const BottomSheetHeader = ({ makeRidePlan, style }) => {
   const { t } = useTranslation();
+  const handlePress = useCallback(() => {
+    makeRidePlan();
+  }, [makeRidePlan]);
   
   return (
-    <View style={styles.bottomSheetHeader}>
+    <View style={[styles.bottomSheetHeader, style]}>
       <View style={styles.bottomSheetHeaderIconContainer}>
     <MapIcon />
     </View>
     <View style={styles.bottomSheetHeaderContainer}>
     <TouchableOpacity
           style={styles.searchContainer}
-          onPress={makeRidePlan}
+          onPress={handlePress}
           
         >
           <SearchIcon />
@@ -63,15 +70,18 @@ const BottomSheetHeader = ({makeRidePlan}) => {
 
 const MapScreen = () => {
   const { t } = useTranslation();
-  const { start,stop } = useNearbyPollingControl();
+
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState(null);
   const {setStackScreen} = useStackScreenStore();
   const {location,currentLocationName} = useLocationStore();
   const {setRideStartLocation,setRideEndLocation,resetRideBookingLocation } = useRideBookingLocationStore()
+  const { setSelectedVehicle } = useRideVehicleStore();
+  const { fetchLatestDrivers, driversAll } = useNearbyDrivers();
  
-  const {setMapMarkers,setMapBounds} = useMapStore();
+  const {setMapMarkers,setMapBounds,setVehicleMarkers} = useMapStore();
   const { scheduledTrips } = useScheduleTripStore();
+  const { appConfig } = useConfigStore();
   
   // useEffect(()=>{
 
@@ -171,17 +181,109 @@ const MapScreen = () => {
   
   }, [showMenu]);
 
+  const normalizeVehicleType = useCallback((type) => {
+    if (!type) {
+      return 'driver';
+    }
+    return type.toLowerCase().replace(/\s+/g, '_');
+  }, []);
+
+  const updateMarkersWithDrivers = useCallback((driverList = null, vehicleTypeOverride = null) => {
+    try {
+      const drivers = Array.isArray(driverList) ? driverList : driversAll;
+      console.log('Updating markers with drivers:', drivers);
+      if (!Array.isArray(drivers) || drivers.length === 0) {
+        setVehicleMarkers([]);
+        return;
+      }
+      const markers = drivers
+        .map((driver) => {
+          if (!driver) {
+            return null;
+          }
+
+          const vehicleType = normalizeVehicleType(vehicleTypeOverride || driver.vehicleType);
+          const coords = driver?.location?.coordinates;
+          const longitude = Array.isArray(coords) && coords.length > 0 ? coords[0] : driver?.lon;
+          const latitude = Array.isArray(coords) && coords.length > 1 ? coords[1] : driver?.lat;
+          if (longitude == null || latitude == null) {
+            return null;
+          }
+          const marker = new Marker(
+            driver.id || `driver-marker-${Math.random().toString(36).substr(2, 9)}`,
+            driver.vehicleType || 'Driver',
+            longitude,
+            latitude,
+            vehicleType,
+            36,
+            false,
+            driver.bearing || 0
+          );
+          return marker;
+        })
+        .filter(Boolean);
+      console.log('Generated markers for drivers:', markers);
+      setVehicleMarkers(markers);
+    } catch (error) {
+      console.log('Error updating markers with drivers:', error);
+    } 
+  }, [driversAll, normalizeVehicleType, setVehicleMarkers]);  
+
+  const updateVehicleMarkersWithDrivers = useCallback( async () => {
+    try {
+      if (!appConfig.SHOW_NEARBY_DRIVER) {
+        return;
+      }
+      if (!Array.isArray(location) || location.length < 2) {
+        console.warn('Location is not available for fetching drivers');
+        return;
+      }
+      const drivers = await fetchLatestDrivers({
+          latitude:  location[1],  
+          longitude: location[0],
+          radius: 10000
+        });
+        console.log('Fetched drivers for vehicle markers update:', drivers);
+        if (!Array.isArray(drivers) || drivers.length === 0) {
+          setVehicleMarkers([]);
+          return;
+        }
+        updateMarkersWithDrivers(drivers);
+    } catch (error) {
+      console.log('Error updating vehicle markers with drivers:', error);
+    }
+  }, [appConfig.SHOW_NEARBY_DRIVER, fetchLatestDrivers, location, setVehicleMarkers, updateMarkersWithDrivers]);
+
   useEffect(()=>{
     resetRideBookingLocation();
-    if(AppConfig.SHOW_NEARBY_DRIVER){
-      start();
-    }
-    return ()=>{
-      stop();
-    }
-  },[])
+    console.log('HomeScreen mounted, ride booking location reset',appConfig.SHOW_NEARBY_DRIVER);
+    if(appConfig.SHOW_NEARBY_DRIVER){
+      console.log('Fetching and updating vehicle markers with drivers on HomeScreen mount');
+      updateVehicleMarkersWithDrivers();
 
-  // Request notification permission on HomeScreen mount
+      
+      
+    }
+  },[appConfig.SHOW_NEARBY_DRIVER, resetRideBookingLocation, updateVehicleMarkersWithDrivers])
+
+  useEffect(() => {
+    if (!appConfig.SHOW_NEARBY_DRIVER) {
+      return;
+    }
+    if (!Array.isArray(location) || location.length < 2) {
+      return;
+    }
+    updateVehicleMarkersWithDrivers();
+  }, [appConfig.SHOW_NEARBY_DRIVER, location, updateVehicleMarkersWithDrivers]);
+
+  useEffect(() => {
+    if (!appConfig.SHOW_NEARBY_DRIVER) {
+      return;
+    }
+    updateMarkersWithDrivers(driversAll);
+  }, [appConfig.SHOW_NEARBY_DRIVER, driversAll, updateMarkersWithDrivers]);
+
+ 
   useEffect(() => {
     (async () => {
       try {
@@ -337,10 +439,10 @@ const MapScreen = () => {
     
   }, [location, currentLocationName, setRideStartLocation, setRideEndLocation, setStackScreen, t]);
 
-  const makeRidePlan=()=>{
+  const makeRidePlan = useCallback((screenParams = {}) => {
 
     if(!location || !currentLocationName || !location.length){
-      setStackScreen("PlanRideScreen",{})
+      setStackScreen("PlanRideScreen", screenParams)
       return;
     }
 
@@ -356,8 +458,44 @@ const MapScreen = () => {
     }
     setRideStartLocation(locationData)
   
-    setStackScreen("PlanRideScreen",{})
-  }
+    setStackScreen("PlanRideScreen", screenParams)
+  }, [location, currentLocationName, setRideStartLocation, setStackScreen])
+
+    const handleServiceVehicleSelect = useCallback((item) => {
+      if(!item || !item.key){
+        return;
+      }
+
+      if(!item.label){
+        return;
+      }
+
+      const vehicleLabel = item.label || VEHICLE_LABELS[item.key] || item.key;
+
+
+      if(item.key == "schedule_trip"){
+        makeRidePlan({ mode: "SCHEDULE_TRIP" });
+        return;
+      }
+      if(item.key == "female_driver"){
+        makeRidePlan({mode: "FEMALE_DRIVER"});
+        return;
+      }
+
+      setSelectedVehicle({
+        id: item.key,
+        type: item.key.toUpperCase(),
+        vehicleType: item.key.toUpperCase(),
+        label: vehicleLabel,
+        source: "home_services",
+      });
+
+      makeRidePlan({ preselectedVehicleType: item.key });
+    }, [setSelectedVehicle, makeRidePlan])
+
+    const renderBottomSheetHandle = useCallback((handleProps) => (
+      <BottomSheetHeader {...handleProps} makeRidePlan={makeRidePlan} />
+    ), [makeRidePlan]);
 
   return (
     <>
@@ -375,18 +513,19 @@ const MapScreen = () => {
        enablePanDownToClose={false}
        enableOverDrag={true}
        enableScroll={true}
-       handleComponent={()=>BottomSheetHeader({makeRidePlan})}
+       handleComponent={renderBottomSheetHandle}
        handleIndicatorStyle={{
          backgroundColor: '#DEDEDE',
          width: 50,
          height: 4,
        }}>
        
-            <View style={{marginTop:60}}>
-              {<ScheduledTripBanner/>}
-              <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
-              <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false} />
-            </View>
+        <View style={{marginTop:60}}>
+          {<ScheduledTripBanner/>}
+          <DynamicSection onSelect={handleServiceVehicleSelect}/>
+          <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
+          <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false} />
+        </View>
         
         
       </BottomSheetWrapper>
@@ -401,6 +540,7 @@ export default MapScreen;
 
 BottomSheetHeader.propTypes = {
   makeRidePlan: PropTypes.func,
+  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
 };
 
 const styles = StyleSheet.create({

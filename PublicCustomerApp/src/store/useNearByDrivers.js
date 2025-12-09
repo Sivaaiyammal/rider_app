@@ -1,6 +1,9 @@
 import { create } from 'zustand';
+import { getNearByDrivers } from '../API/EndPoints/EndPoints';
 
-const normalizeType = (type) => (type || '').toLowerCase().replace(/\s+/g, '_');
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+const normalizeType = (type) => (type || 'driver').toLowerCase().replace(/\s+/g, '_');
 const getId = (d) => d?.id ?? d?._id;
 
 const buildByType = (driversArray) => {
@@ -16,6 +19,8 @@ const buildByType = (driversArray) => {
 const useNearbyDrivers = create((set, get) => ({
     driversAll: [],
     driversByType: {},
+    lastFetchTimestamp: 0,
+    lastFetchParams: null,
     setDrivers: (newDrivers = []) =>
         set(() => {
             const unique = [];
@@ -64,7 +69,73 @@ const useNearbyDrivers = create((set, get) => ({
                 driversByType: buildByType(driversAll),
             };
         }),
-    getDriversByType: (type) => {
+    clearDrivers: () =>
+        set(() => ({
+            driversAll: [],
+            driversByType: {},
+            lastFetchTimestamp: 0,
+            lastFetchParams: null,
+        })),
+    fetchLatestDrivers: async ({
+        latitude,
+        longitude,
+        radius = 10000,
+        vehicleTypes = [],
+    } = {}) => {
+        if (latitude == null || longitude == null) {
+            console.warn('fetchLatestDrivers requires latitude and longitude');
+            return [];
+        }
+
+        let uniqueTypes = [...new Set(vehicleTypes.filter(Boolean))];
+        if (uniqueTypes.length === 0) {
+            uniqueTypes = ['AUTO', 'ELECTRIC_AUTO', 'SUV', 'ELECTRIC_SUV', 'ELECTRIC_BIKE', 'SEDAN', 'ELECTRIC_SEDAN', 'BIKE', 'HATCHBACK', 'ELECTRIC_HATCHBACK'];
+        }
+
+        const sortedTypes = [...uniqueTypes].sort();
+        const cacheKey = JSON.stringify({ latitude, longitude, radius, vehicleTypes: sortedTypes });
+
+        const { lastFetchTimestamp, lastFetchParams, driversAll } = get();
+        const now = Date.now();
+        if (
+            typeof lastFetchTimestamp === 'number' &&
+            lastFetchTimestamp > 0 &&
+            now - lastFetchTimestamp < CACHE_TTL_MS &&
+            lastFetchParams === cacheKey
+        ) {
+            console.log('Returning cached nearby drivers');
+            return driversAll;
+        }
+
+        console.log('Fetching nearby drivers with params:', {
+            latitude,
+            longitude,
+            radius,
+            vehicleTypes: uniqueTypes,
+        });
+
+        try {
+            const response = await getNearByDrivers(
+                latitude,
+                longitude,
+                radius,
+                uniqueTypes
+            );
+            console.log('Fetched nearby drivers:', response);
+            const drivers = Array.isArray(response?.drivers) ? response.drivers : [];
+            get().setDrivers(drivers);
+            set(() => ({
+                lastFetchTimestamp: now,
+                lastFetchParams: cacheKey,
+            }));
+            return drivers;
+        } catch (error) {
+            console.log('Error fetching nearby drivers:', error);
+            throw error;
+        }
+    },
+    getDriversByType: (type=null) => {
+        if (!type) return get().driversAll;
         const key = normalizeType(type);
         return get().driversByType[key] || [];
     },
@@ -81,3 +152,4 @@ const useNearbyDrivers = create((set, get) => ({
 }));
 
 export default useNearbyDrivers;
+export { useNearbyDrivers as useNearbyDriversStore };

@@ -9,6 +9,8 @@
     "choose_always_or_while_using": "\"हमेशा\" या \"ऐप उपयोग करते समय\" चुनें",
     "enable_location": "स्थान अनुमति सक्षम करें",
     "location_permission_required": "स्थान की अनुमति आवश्यक है",
+    "location_services_disabled": "लोकेशन सेवाएँ बंद हैं",
+    "enable_system_location_to_continue": "कृपया आगे बढ़ने के लिए अपने डिवाइस पर लोकेशन सेवाएँ चालू करें।",
     "enable_location_to_continue": "जारी रखने के लिए कृपया स्थान की अनुमति सक्षम करें।",
     "enable_permission": "अनुमति सक्षम करें",
     "open_settings": "सेटिंग्स खोलें",
@@ -549,7 +551,13 @@
     "overdue": {
       "title": "यात्रा की अवधि अनुमान से अधिक हो गई है",
       "message": "क्या आप अपनी यात्रा की स्थिति बता सकते हैं? कृपया नीचे एक विकल्प चुनें।",
-      "cancelled_midway": "बीच में रद्द"
+      "cancelled_midway": "बीच में रद्द",
+      "no_im_on_ride": "नहीं, मैं यात्रा पर हूँ",
+      "end_trip": "यात्रा समाप्त करें",
+      "cancellation_note_placeholder": "कृपया बताएं कि आप यात्रा क्यों समाप्त कर रहे हैं",
+      "cancellation_note_helper": "हम इस नोट को समर्थन टीम के साथ साझा करेंगे।",
+      "send_cancellation": "संदेश भेजें और यात्रा रद्द करें",
+      "image_alt": "यात्रा विलंब का चित्र"
     }
     ,
     "feedback": {
@@ -651,5 +659,7 @@
     "help_subtitle": "हम मदद के लिए हमेशा उपलब्ध हैं।",
     "go_to_contact_us": "Contact Us पर जाएँ"
   },
-  "become_a_driver": "ड्राइवर बनें"
+  "become_a_driver": "ड्राइवर बनें",
+  "not_serving_area_message": "क्षमा करें, हम इस समय आपके क्षेत्र में सेवा नहीं दे रहे हैं।",
+  "not_serving_area_title": "सेवा उपलब्ध नहीं"
 }

@@ -6,7 +6,7 @@ import { RequestAllPermissions } from '../controllers/PermissionHandler';
 import locationTask from '../controllers/GetCurrentLocation';
 import SearchScreen from '../features/search/screens/SearchScreen';
 import WaypointScreen from '../features/booking/screens/WaypointScreen';
-import { StatusBar, View, StyleSheet, AppState, Alert,Platform } from 'react-native';
+import { StatusBar, View, StyleSheet, AppState, Platform } from 'react-native';
 import LottieView from 'lottie-react-native';
 import useUserInfoStore from '../store/useUserInfoStore';
 import { getStoredLocation, getPreferenceShowRideStatus} from '../storage/userLocalStorage';
@@ -61,6 +61,7 @@ import EmergencyContactScreenOverlay from './OnBoard/EmergencyContactScreen.jsx'
 import { checkUpdateStatus } from '../components/UpdateChecker';
 import UpdateOverlay from '../components/UpdateOverlay';
 import OverdueTripModal from '../components/OverdueTripModal';
+import LocationPermissionOverlay from '../components/LocationPermissionOverlay';
 import { log } from '@react-native-firebase/crashlytics';
 import ContributionScreen from '../features/contribution/screens/ContributionScreen.jsx';
 import DriverAccessScreen from './Driver/DriverAccessScreen.jsx';
@@ -135,6 +136,8 @@ const Home = () => {
   const [bootLoading, setBootLoading] = useState(true);
   const [, setConfigError] = useState(false);
   const [hasLocationPermission, setHasLocationPermission] = useState(null);
+  const [locationCheckComplete, setLocationCheckComplete] = useState(false);
+  const [locationBlockReason, setLocationBlockReason] = useState(null);
   const { appConfig ,updateAvailable} = useConfigStore();
   
   const { setHomelocation, setWorklocation, setIsPreferenceShow} = useUserInfoStore();
@@ -187,13 +190,26 @@ const Home = () => {
   
   const checkAllPermissions = async () => {
     if (permissionsRequested.current) return;
-    
+
     permissionsRequested.current = true;
-    const permissions = await RequestAllPermissions();
-    
-    if (permissions.location) {
-      await locationTask.getCurrentLocation();
+    try {
+      const permissions = await RequestAllPermissions();
+      const hasFullAccess = await navigateToPermissionIfNeeded();
+
+      if (!hasFullAccess) {
+        permissionsRequested.current = false;
+        return;
+      }
+
+      if (permissions.location) {
+        await locationTask.getCurrentLocation();
+      }
+    } catch (error) {
+      permissionsRequested.current = false;
+      console.error('Failed to request app permissions', error);
     }
+
+
     
   };
 
@@ -279,6 +295,20 @@ const Home = () => {
   useEffect(() => {
     setUserLocation(handleUserLocatioChange);
   }, [handleUserLocatioChange, setUserLocation]);
+
+  useEffect(() => {
+    if (!hasLocationPermission) {
+      return;
+    }
+
+    (async () => {
+      try {
+        await locationTask.getCurrentLocation();
+      } catch (error) {
+        console.log('Failed to fetch current location', error);
+      }
+    })();
+  }, [hasLocationPermission]);
 
   const logout = async () => {
 
@@ -433,19 +463,22 @@ const Home = () => {
         }
         setStackScreen('RideStatus', { });
         // Check if trip has exceeded estimated duration by 10 minutes from pickup context
+        if(Response?.trip?.status !== "ACCEPTED"){
         const pickupArrivalTime = Response?.trip?.stops?.[0]?.arrivalTime || null;
         try{
           const isOverdue = utils.isTripOverEstimatedDuration(
             Response?.userStats?.bookingTime || Response?.trip?.bookingTime,
             pickupArrivalTime,
             Response?.trip?.estimatedDuration,
-            10
+            1
           );
           if(isOverdue){
             setShowOverdueModal(true);
+
           }
         } catch (e) {
           // no-op
+        }
         }
       }
       
@@ -515,48 +548,49 @@ const Home = () => {
   }, []);
 
   const navigateToPermissionIfNeeded = useCallback(async () => {
-    console.log("navigateToPermissionIfNeeded")
     try {
       const [granted, systemEnabled] = await Promise.all([
         checkFineLocationPermissions(),
         isSystemLocationEnabled(),
       ]);
-      console.log("granted", granted, "systemEnabled", systemEnabled)
-      setHasLocationPermission(!!granted && !!systemEnabled);
+      const hasFullAccess = !!granted && !!systemEnabled;
+
+      setHasLocationPermission(hasFullAccess);
+
       if (!granted) {
-        console.log("navigate to location permission")
+        setLocationBlockReason('permission');
+        permissionsRequested.current = false;
         navigation.navigate('LocationPermission');
-        return;
+        return false;
       }
-      if (granted && !systemEnabled) {
-        Alert.alert(
-          'Location is turned off',
-          'Please enable system Location services to continue.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            {
-              text: 'Enable',
-              onPress: async () => {
-                try {
-                  const enabled = await isSystemLocationEnabled();
-                  if (!enabled) {
-                    await openSystemLocationSettings();
-                    return;
-                  }
-                } catch (e) {
-                  // no-op
-                }
-              },
-            },
-          ],
-        );
-        return;
+
+      if (!systemEnabled) {
+        setLocationBlockReason('services');
+        permissionsRequested.current = false;
+        return false;
       }
-    } catch (e) {
-      console.log("error",e)
+
+      setLocationBlockReason(null);
+      return true;
+    } catch (error) {
+      console.log('error', error);
       setHasLocationPermission(false);
+      setLocationBlockReason('permission');
+      permissionsRequested.current = false;
+      return false;
+    } finally {
+      setLocationCheckComplete(true);
     }
   }, [navigation]);
+
+  const handleLocationOverlayAction = useCallback(async () => {
+    if (locationBlockReason === 'services') {
+      await openSystemLocationSettings();
+      return;
+    }
+
+    navigation.navigate('LocationPermission');
+  }, [locationBlockReason, navigation]);
 
   useEffect(() => {
     (async () => {
@@ -587,6 +621,14 @@ const Home = () => {
     };
     handleReconnect();
   }, [isConnected, id, initializeSocket, resetSocket]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      navigateToPermissionIfNeeded();
+    });
+
+    return unsubscribe;
+  }, [navigation, navigateToPermissionIfNeeded]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', async nextState => {
@@ -709,12 +751,18 @@ const Home = () => {
   }
 
   const handleOverdueTripSelect = (status,TripId) => {
-    console.log("handleOverdueTripSelect",status)
+    if(status === 'ONGOING'){
+      setShowOverdueModal(false);
+      return;
+    }
  
     if(TripId){
       updateTripStatusApi(TripId,status);
     }
   }
+
+  const showLocationOverlay = locationCheckComplete && hasLocationPermission === false;
+  const showAppContent = locationCheckComplete && hasLocationPermission === true;
 
   
 
@@ -742,13 +790,39 @@ const Home = () => {
         />
       )}
      <StatusBar barStyle="dark-content" backgroundColor={"white"} />
-      {renderContent()}
-     {hasLocationPermission && (
+      {showAppContent && renderContent()}
+     {showAppContent && (
        <MapContainer
          mapReady={mapShown}
          setMapReady={setMapShown}
        />
      )}
+     {showLocationOverlay && (
+         <LocationPermissionOverlay
+           onEnable={handleLocationOverlayAction}
+           title={
+             locationBlockReason === 'services'
+               ? t('location_services_disabled', 'Location services disabled')
+               : t('location_permission_required', 'Location permission required')
+           }
+           description={
+             locationBlockReason === 'services'
+               ? t(
+                   'enable_system_location_to_continue',
+                   'Please enable Location services on your device to continue.'
+                 )
+               : t(
+                   'enable_location_to_continue',
+                   'Please enable location permission to continue.'
+                 )
+           }
+           primaryButtonLabel={
+             locationBlockReason === 'services'
+               ? t('open_settings', 'Open settings')
+               : t('enable_permission', 'Enable permission')
+           }
+         />
+       )}
      
       {/* {configError && (
         <UnableToConnectOverlay onRetry={retryLoadAppConfig} />

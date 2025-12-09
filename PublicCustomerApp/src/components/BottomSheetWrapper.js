@@ -114,7 +114,7 @@ BottomSheetWrapper.propTypes = {
   enableScroll: PropTypes.bool,
   enableDynamicSizing: PropTypes.bool,
   handleIndicatorStyle: PropTypes.object,
-  handleComponent: PropTypes.element,
+  handleComponent: PropTypes.oneOfType([PropTypes.element, PropTypes.func]),
   style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   setBottomSheetScrollToBottom: PropTypes.func,
   isLoading: PropTypes.bool,

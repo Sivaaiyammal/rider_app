@@ -9,6 +9,8 @@
     "choose_always_or_while_using": "\"ಯಾವಾಗಲೂ\" ಅಥವಾ \"ಅಪ್ಲಿಕೇಶನ್ ಬಳಸುವಾಗ\" ಆಯ್ಕೆಮಾಡಿ",
     "enable_location": "ಸ್ಥಳ ಅನುಮತಿಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ",
     "location_permission_required": "ಸ್ಥಳ ಅನುಮತಿ ಅಗತ್ಯವಿದೆ",
+    "location_services_disabled": "ಸ್ಥಳ ಸೇವೆಗಳು ನಿಷ್ಕ್ರಿಯಗೊಂಡಿವೆ",
+    "enable_system_location_to_continue": "ಮುಂದುವರಿಯಲು ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಸ್ಥಳ ಸೇವೆಗಳು ಸಕ್ರಿಯಗೊಳಿಸಿ.",
     "enable_location_to_continue": "ಮುಂದುವರಿಯಲು ದಯವಿಟ್ಟು ಸ್ಥಳ ಅನುಮತಿಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.",
     "enable_permission": "ಅನುಮತಿಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ",
     "open_settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ",
@@ -554,7 +556,13 @@
     "overdue": {
       "title": "ಪ್ರಯಾಣದ ಅವಧಿ ಅಂದಾಜಿಗಿಂತ ಹೆಚ್ಚಾಗಿದೆ",
       "message": "ನಿಮ್ಮ ಪ್ರಯಾಣದ ಸ್ಥಿತಿಯನ್ನು ತಿಳಿಸಬಹುದೇ? ದಯವಿಟ್ಟು ಕೆಳಗಿನ ಆಯ್ಕೆಯಿಂದ ಆಯ್ಕೆಮಾಡಿ.",
-      "cancelled_midway": "ಮಧ್ಯದಲ್ಲಿ ರದ್ದು"
+      "cancelled_midway": "ಮಧ್ಯದಲ್ಲಿ ರದ್ದು",
+      "no_im_on_ride": "ಇಲ್ಲ, ನಾನು ಇನ್ನೂ ಪ್ರಯಾಣದಲ್ಲಿದ್ದೇನೆ",
+      "end_trip": "ಪ್ರಯಾಣವನ್ನು ಮುಗಿಸಿ",
+      "cancellation_note_placeholder": "ನೀವು ಪ್ರಯಾಣವನ್ನು ಏಕೆ ಮುಗಿಸುತ್ತಿದ್ದೀರಿ ಎಂದು ತಿಳಿಸಿ",
+      "cancellation_note_helper": "ಈ ಸೂಚನೆಯನ್ನು ಬೆಂಬಲ ತಂಡದೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳುತ್ತೇವೆ",
+      "send_cancellation": "ಸಂದೇಶ ಕಳುಹಿಸಿ ಮತ್ತು ಪ್ರಯಾಣ ರದ್ದುಮಾಡಿ",
+      "image_alt": "ಪ್ರಯಾಣ ಮೀರಿದ ಚಿತ್ರಣ"
     }
     ,
     "feedback": {
@@ -656,5 +664,7 @@
     "help_subtitle": "ನಾವು ಸಹಾಯ ಮಾಡಲು ಸದಾ ಸಿದ್ಧ. ಯಾವಾಗ ಬೇಕಾದರೂ ಸಂಪರ್ಕಿಸಿ.",
     "go_to_contact_us": "Contact Usಗೆ ಹೋಗಿ"
   },
-  "become_a_driver": "ಚಾಲಕರಾಗಿರಿ"
+  "become_a_driver": "ಚಾಲಕರಾಗಿರಿ",
+  "not_serving_area_message": "ಕ್ಷಮಿಸಿ, ನಾವು ಪ್ರಸ್ತುತ ನಿಮ್ಮ ಪ್ರದೇಶದಲ್ಲಿ ಸೇವೆ ನೀಡುತ್ತಿಲ್ಲ.",
+  "not_serving_area_title": "ಸೇವೆ ಲಭ್ಯವಿಲ್ಲ"
 }

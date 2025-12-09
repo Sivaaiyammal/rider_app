@@ -45,6 +45,7 @@ const MapContainer = ({ mapStyle }) => {
     setSearchPOIError,
     loading,
     vehicleMarkers,
+    setRouteLoading,
   
    
   } = useMapStore();
@@ -106,6 +107,7 @@ const MapContainer = ({ mapStyle }) => {
         distanceListner={setDisduration}
         onSearchPOIError={setSearchPOIError}
         vehicleMarkers={vehicleMarkers}
+        onRouteLoading={setRouteLoading}
         onNavigationEnd={(e) => console.log('hari--->>navigationEnd-->>', e)}
       />
 

@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, use } from 'react';
 import {
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Modal,
-  Image,
+    View,
+    StyleSheet,
+    TouchableOpacity,
+    Modal,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import NavBar from '../../../components/NavBar';
@@ -28,18 +27,19 @@ import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Schdule from '../../../assets/image/svgIcons/schdule.svg';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import Marker from '../../../controllers/NEMap/Marker';
+import { utils } from '../../../utils/Utils';
 
 
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
 import PaymentType from '../components/bookRide/PaymentType';
 import VehicleList from '../components/bookRide/VehicleList';
+import DriverNotFoundModal from '../components/bookRide/DriverNotFoundModal';
 import useRideVehicleStore from '../store/useRideVehicleStore'; 
 import vehicleType from '../types/vehicleType.json'
 import RidePreference from '../components/bookRide/RidePreference';
 import CouponContainer from '../components/bookRide/CouponConatiner';
 import useUserInfoStore from '../../../store/useUserInfoStore';
 import { preferenceShowRideStatus } from '../../../storage/userLocalStorage';
-import { utils } from '../../../utils/Utils';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import ScrollHintChevron from '../../../components/Common/ScrollHintChevron';
 import { useDebouncedAPICall } from '../../../hooks/useDebounce';
@@ -48,8 +48,6 @@ import PropTypes from 'prop-types';
 import { buildKey as buildEstimationCacheKey, getFromCache as getEstimationFromCache, setInCache as setEstimationInCache, prune as pruneEstimationCache } from '../store/useEstimationCacheStore';
 import { showNotification } from '../../../components/NotificationManger';
 import { openFeedback } from '../../../utils/feedback';
-
-const DriverNotFoundImage = require('../../../assets/image/Driver_Not_Found.webp')
 
 const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => {
     const {setStackScreen} = useStackScreenStore()
@@ -102,7 +100,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         const {paymentType,setPaymentType, rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode, updateBookingInfo,scheduleDateTime} = useRideBookingInfo()
     const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false)
     const {isPreferenceShow,setIsPreferenceShow} = useUserInfoStore()
-    const {setAvailableVehicles,availableVehicles,setSelectedVehicle} = useRideVehicleStore()
+    const {setAvailableVehicles,availableVehicles,setSelectedVehicle,selectedVehicle} = useRideVehicleStore()
     const [showPreference,setShowPreference] = useState(false)
     const [,setScrolledUntillBottom] = useState(false)
     const [bottomSheetHeight,setBottomSheetHeight] = useState(370)
@@ -119,7 +117,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     
 
-    const { setDirectionReady} = useMapStore()     
+    const { setDirectionReady,routeLoading } = useMapStore()     
 
 
     // Use the booking hook for trip booking
@@ -141,10 +139,16 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const longLoadTimerRef = useRef(null)
     const [showDriverNotFoundModal, setShowDriverNotFoundModal] = useState(!!RideMatchDriverNotFound)
     const [showMaxDistanceExceededModal, setShowMaxDistanceExceededModal] = useState(false)
+    const [isNotServingArea, setIsNotServingArea] = useState(false)
     // Booking info retry/error modal state
     const [showBookingInfoErrorModal, setShowBookingInfoErrorModal] = useState(false)
     const bookingInfoAttemptsRef = useRef(0)
     const bookingInfoTimerRef = useRef(null)
+
+
+    useEffect(() => {   
+        console.log("routeLoadingInMapContainer",routeLoading)
+    }, [routeLoading]);
 
 
 
@@ -211,7 +215,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
                 estimatedDuration: DurationFromAddStopsScreen || 1
             });
         }
-        setSelectedVehicle(null)
+   
    
         return ()=>{
             setAvailableVehicles([])
@@ -224,13 +228,24 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         }
     }, [RideMatchDriverNotFound])
 
-    
-    
 
 
+
+    
+    
     const transformEstimateDatStore=(data,rideDistances)=>{
         const distanceNum = rideDistances != null ? Number(rideDistances) : null;
         console.log(distanceNum,"wediw")
+
+        if(utils.isEmptyObject(data)){
+            setIsNotServingArea(true)
+            setAvailableVehicles([])
+            setIsEstimationLoading(false)
+            setIsEstimationError(true)
+            
+            return;
+        }
+        
         const vehicleList = vehicleType.reduce((acc, spec, index) => {
             const rideTypeData = data?.[spec.type];
             if (!rideTypeData) return acc;
@@ -266,8 +281,11 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
         useRideVehicleStore.setState({
             availableVehicles: sortedVehicleList,
-            selectedVehicle: sortedVehicleList[0] || null,
+           
         })
+        if(selectedVehicle === null){
+            setSelectedVehicle(sortedVehicleList[0])
+        }
     }
 
 
@@ -393,7 +411,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             setIsLongLoad(false)
             setIsEstimationError(false)
             setAvailableVehicles([])
-            setSelectedVehicle(null)
+          
             // re-transform direction points to ensure map/distance refresh
             if (isRideLocationsReady()) {
                 transformRideLocationsToDirectionPoints({
@@ -486,7 +504,9 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
    
 
 const handleBackPress = () => {
-    
+    setIsNotServingArea(false)
+    setShowDriverNotFoundModal(false)
+    setShowMaxDistanceExceededModal(false)
     updateBookingInfo({ rideDistance: null, estimatedDuration: null })
     goBack()
 }
@@ -627,7 +647,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                       </View>
                   </TouchableOpacity>
 
-                  <View style={styles.BookingButtonSection}>
+                    <View style={styles.BookingButtonSection}>
                       <TouchableOpacity
                           style={[styles.BookingButton, availableVehicles?.length === 0 && styles.BookingButtonDisabled,isBookingLoading && {backgroundColor:colors.orange}]}
                           onPress={availableVehicles?.length === 0 ? null : handleConfirmRide}
@@ -637,8 +657,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                               {isBookingLoading ? t('booking') : t('confirm_ride')}
                           </AdaptiveText>
                       </TouchableOpacity>
-                  </View>
-
+                    </View>
               </View>
           </View>
 
@@ -665,30 +684,11 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
             )
         }
 
-        { showDriverNotFoundModal && (
-            <Modal
-                animationType="fade"
-                transparent
-                visible
-                onRequestClose={() => setShowDriverNotFoundModal(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.modalView}>
-                        <Image source={DriverNotFoundImage} style={styles.modalImage} resizeMode="contain" />
-                        <AdaptiveText style={styles.modalTitle}>{t('driver_not_found')}</AdaptiveText>
-                        <AdaptiveText style={styles.modalMessage}>{t('unable_to_find_driver')}</AdaptiveText>
-                        <TouchableOpacity
-                            style={[styles.modalButton, styles.primaryActionButton,{justifyContent: 'center', textAlign: 'center',alignItems: 'center'}]}
-                            onPress={() => setShowDriverNotFoundModal(false)}
-                            activeOpacity={0.8}
-                        >
-                            <AdaptiveText style={[{fontFamily:Fonts.regular,fontSize:16,color: colors.white,justifyContent: 'center', textAlign: 'center',alignItems: 'center'}]}>{t('ok', 'OK')}</AdaptiveText>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-        )}
-        { showMaxDistanceExceededModal && (
+        <DriverNotFoundModal
+            visible={showDriverNotFoundModal}
+            onClose={() => setShowDriverNotFoundModal(false)}
+        />
+        { (showMaxDistanceExceededModal || isNotServingArea) && (
             <Modal
                 animationType="fade"
                 transparent
@@ -701,10 +701,10 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                             <Icon name="warning" size={28} color={colors.orange} />
                         </View>
                         <AdaptiveText style={[styles.modalTitle, styles.modalTitleModern]}>
-                            {t('distance_exceeded_title', 'Trip Distance Too Long')}
+                           {isNotServingArea ? t('not_serving_area_title', 'Service Not Available in This Area') : t('distance_exceeded_title', 'Trip Distance Too Long')}
                         </AdaptiveText>
                         <AdaptiveText style={[styles.modalMessage, styles.modalMessageModern]}>
-                            {t('distance_exceeded_message', 'All available vehicles exceed their maximum trip distance for this route. Please choose different pickup and drop locations.')}
+                            {isNotServingArea ? t('not_serving_area_message', 'We are currently not serving this area. Please choose a different location.') : t('distance_exceeded_message', 'All available vehicles exceed their maximum trip distance for this route. Please choose different pickup and drop locations.')}
                         </AdaptiveText>
                         <View style={styles.modalActions}>
                             <TouchableOpacity
@@ -1079,11 +1079,6 @@ const styles = StyleSheet.create({
         justifyContent:'center',
         marginTop:10,
         marginBottom:12,
-    },
-    modalImage:{
-        width: '90%',
-        height: 250,
-        marginBottom: 10,
     },
     modalTitle:{
         fontFamily:Fonts.semi_bold,

@@ -26,6 +26,26 @@ class NEMap extends Component {
       resizeDone: false // Whether resize animation is complete
     };
     this.getmapReady = this.getmapReady.bind(this);
+     this.invokeIfFunc = this.invokeIfFunc.bind(this);
+  }
+
+
+
+  invokeIfFunc(propName, data) {
+    const candidate = this.props[propName];
+    if (typeof candidate === 'function') {
+      try {
+        candidate(data);
+      } catch (err) {
+        if (__DEV__) {
+          console.warn(`NEMap: error invoking ${propName}:`, err);
+        }
+      }
+    } else if (__DEV__ && candidate !== undefined) {
+      console.warn(
+        `NEMap: '${propName}' prop expected a function but received ${typeof candidate}. Event ignored.`,
+      );
+    }
   }
   
   // Trigger map resize after short delay
@@ -99,6 +119,14 @@ class NEMap extends Component {
       'onUserLocationChange',
       (data) => {
         this.props.onUserLocationChange?.(data);
+      },
+    );
+
+    this.routeLoadingListener = DeviceEventEmitter.addListener(
+      'route-loading',
+      data => {
+        // Guard against non-function prop (error reported earlier)
+        this.invokeIfFunc('onRouteLoading', data);
       },
     );
 
@@ -204,6 +232,7 @@ class NEMap extends Component {
     this.mapReadyListener.remove();
     this.mapClickListener.remove();
     this.userLocationChangeListener.remove();
+     this.routeLoadingListener && this.routeLoadingListener.remove();
     this.directionReadyListener.remove();
     this.directionInitListener.remove();
     this.markerClickListener.remove();
@@ -303,6 +332,7 @@ NEMap.propTypes = {
   searchUnit: PropTypes.string,
   geometries: PropTypes.array,
   findRoute: PropTypes.array,
+  onRouteLoading: PropTypes.func,
   navigation: PropTypes.object,
   bounds: PropTypes.array,
 };

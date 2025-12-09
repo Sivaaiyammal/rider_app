@@ -1,23 +1,69 @@
-import React, { useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, Image } from 'react-native';
 import AdaptiveText from './Common/AdaptiveText';
 import { Fonts } from '../constants/constants';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 
-const OverdueTripModal = ({ visible, onClose, onSelect ,TripId }) => {
+const OverdueTripModal = ({ visible, onClose, onSelect, TripId }) => {
   const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
+  const [showMessageInput, setShowMessageInput] = useState(false);
+  const [message, setMessage] = useState('');
 
-  const handlePress = (nextStatus) => {
+  useEffect(() => {
+    if (!visible) {
+      setShowMessageInput(false);
+      setMessage('');
+      setSubmitting(false);
+    }
+  }, [visible]);
+
+  const handlePress = (nextStatus, note) => {
     if (submitting) return;
     setSubmitting(true);
-    onSelect && onSelect(nextStatus, TripId);
+    onSelect && onSelect(nextStatus, TripId, note);
+  };
+
+  const handleClose = () => {
+    if (submitting) return;
+    setShowMessageInput(false);
+    setMessage('');
+    onClose && onClose();
+  };
+
+  const handleStayOnTrip = () => {
+    handlePress('ONGOING');
+  };
+
+  const handleEndTripPress = () => {
+    if (submitting) return;
+    setShowMessageInput(true);
+  };
+
+  const handleBackToOptions = () => {
+    if (submitting) return;
+    setShowMessageInput(false);
+    setMessage('');
+  };
+
+  const handleSubmitCancellation = () => {
+    const trimmedMessage = message.trim();
+    if (!trimmedMessage || submitting) return;
+    handlePress('CANCELLED', trimmedMessage);
   };
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={submitting ? undefined : onClose}>
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={submitting ? undefined : handleClose}>
       <View style={styles.backdrop}>
         <View style={styles.container}>
+          <Image
+            source={require('../assets/image/distanceExceededTrip.webp')}
+            style={styles.headerImage}
+            resizeMode="contain"
+            accessible
+            accessibilityLabel={t('overdue.image_alt', 'Trip overdue illustration')}
+          />
+         
           <AdaptiveText style={styles.title}>
             {t('overdue.title')}
           </AdaptiveText>
@@ -30,23 +76,48 @@ const OverdueTripModal = ({ visible, onClose, onSelect ,TripId }) => {
               <Text style={styles.loaderText}>{t('loading') || 'Loading...'}</Text>
             </View>
           )}
-          <View style={styles.buttons}>
-            <TouchableOpacity style={[styles.btn, submitting && styles.btnDisabled]} disabled={submitting} onPress={() => handlePress('DIVERGED')}>
-              <AdaptiveText style={styles.btnText}>{t('overdue.cancelled_midway')}</AdaptiveText>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.btn, submitting && styles.btnDisabled]} disabled={submitting} onPress={() => handlePress('CANCELLED')}>
-              <AdaptiveText style={styles.btnText}>{t('cancelled')}</AdaptiveText>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.btn, submitting && styles.btnDisabled]} disabled={submitting} onPress={() => handlePress('COMPLETED')}>
-              <AdaptiveText style={styles.btnText}>{t('completed')}</AdaptiveText>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.btn, submitting && styles.btnDisabled]} disabled={submitting} onPress={() => handlePress('ONGOING')}>
-              <AdaptiveText style={styles.btnText}>{t('ongoing')}</AdaptiveText>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity style={styles.close} onPress={submitting ? undefined : onClose} disabled={submitting}>
-            <AdaptiveText style={styles.closeText}>{t('dismiss')}</AdaptiveText>
-          </TouchableOpacity>
+          {showMessageInput ? (
+            <>
+              <TextInput
+                style={styles.input}
+                multiline
+                editable={!submitting}
+                placeholder={t('overdue.cancellation_note_placeholder', 'Tell us why you are ending the trip')}
+                placeholderTextColor="#999"
+                value={message}
+                onChangeText={setMessage}
+                maxLength={250}
+              />
+              <Text style={styles.helperText}>
+                {t('overdue.cancellation_note_helper', 'We will share this note with support.')}
+              </Text>
+              <View style={styles.buttons}>
+                <TouchableOpacity
+                  style={[styles.btn, submitting && styles.btnDisabled]}
+                  onPress={handleBackToOptions}
+                  disabled={submitting}
+                >
+                  <AdaptiveText style={styles.btnText}>{t('common.back', 'Back')}</AdaptiveText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.primaryBtn, (submitting || !message.trim()) && styles.btnDisabled]}
+                  onPress={handleSubmitCancellation}
+                  disabled={submitting || !message.trim()}
+                >
+                  <AdaptiveText style={styles.primaryBtnText}>{t('overdue.send_cancellation', 'Send & Cancel Trip')}</AdaptiveText>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            <View style={styles.buttons}>
+              <TouchableOpacity style={[styles.btn, submitting && styles.btnDisabled]} disabled={submitting} onPress={handleStayOnTrip}>
+                <AdaptiveText style={styles.btnText}>{t('overdue.no_im_on_ride', "No, I'm on ride")}</AdaptiveText>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.primaryBtn, submitting && styles.btnDisabled]} disabled={submitting} onPress={handleEndTripPress}>
+                <AdaptiveText style={styles.primaryBtnText}>{t('overdue.end_trip', 'End Trip')}</AdaptiveText>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       </View>
     </Modal>
@@ -66,9 +137,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
   },
+  headerImage: {
+    alignSelf: 'center',
+    width: 200,
+    height: 200,
+  
+  },
   title: {
     fontFamily: Fonts.semi_bold,
-    fontSize: 16,
+    fontSize: 18,
     color: 'black',
     textAlign: 'center',
     marginBottom: 8,
@@ -90,12 +167,13 @@ const styles = StyleSheet.create({
     color: '#007AFF',
   },
   buttons: {
-    gap: 8,
+    gap: 10,
+    marginTop: 12,
   },
   btn: {
     backgroundColor: '#f0f0f0',
     borderRadius: 8,
-    paddingVertical: 10,
+    paddingVertical: 15,
     paddingHorizontal: 12,
     alignItems: 'center',
   },
@@ -104,17 +182,47 @@ const styles = StyleSheet.create({
   },
   btnText: {
     fontFamily: Fonts.medium,
-    fontSize: 14,
+    fontSize: 16,
     color: 'black',
   },
-  close: {
-    marginTop: 12,
+  primaryBtn: {
+    backgroundColor: '#000000ff',
+    borderRadius: 8,
+    paddingVertical: 15,
+    paddingHorizontal: 12,
     alignItems: 'center',
+  },
+  primaryBtnText: {
+    fontFamily: Fonts.medium,
+    fontSize: 16,
+    color: 'white',
+  },
+  close: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    padding: 6,
   },
   closeText: {
     fontFamily: Fonts.medium,
     fontSize: 14,
-    color: '#007AFF',
+    color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#d0d0d0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    minHeight: 80,
+    textAlignVertical: 'top',
+    color: '#000',
+  },
+  helperText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
   },
 });
 
