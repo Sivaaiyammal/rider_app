@@ -342,6 +342,8 @@ const Home = () => {
     return false;
   } 
 
+  
+
 
 
 
@@ -470,7 +472,7 @@ const Home = () => {
             Response?.userStats?.bookingTime || Response?.trip?.bookingTime,
             pickupArrivalTime,
             Response?.trip?.estimatedDuration,
-            1
+            60
           );
           if(isOverdue){
             setShowOverdueModal(true);
@@ -727,9 +729,9 @@ const Home = () => {
     }
   };
 
-  const updateTripStatusApi = async (tripId, status) => {
+  const updateTripStatusApi = async (tripId, status,note) => {
     try {
-      const resp = await confirmTripStatus({ tripId, tripStatus: status });
+      const resp = await confirmTripStatus({ tripId, tripStatus: status, passengerFeedBack: note });
       console.log("resp",resp)
       if (resp?.success) {
         showNotification(t('success'), resp?.message || t('updated_successfully'), 'success');
@@ -750,14 +752,14 @@ const Home = () => {
     }
   }
 
-  const handleOverdueTripSelect = (status,TripId) => {
+  const handleOverdueTripSelect = (status,TripId,note) => {
     if(status === 'ONGOING'){
       setShowOverdueModal(false);
       return;
     }
  
     if(TripId){
-      updateTripStatusApi(TripId,status);
+      updateTripStatusApi(TripId,status.note);
     }
   }
 

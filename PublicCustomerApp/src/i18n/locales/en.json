@@ -567,7 +567,7 @@
       "end_trip": "End Trip",
       "cancellation_note_placeholder": "Tell us why you are ending the trip",
       "cancellation_note_helper": "We will share this note with support.",
-      "send_cancellation": "Send & Cancel Trip",
+      "send_cancellation": "Send & End Trip",
       "image_alt": "Trip overdue illustration"
     }
   ,

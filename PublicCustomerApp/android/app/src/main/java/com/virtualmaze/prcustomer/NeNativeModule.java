@@ -737,18 +737,24 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     String snippet = markerData.getString("snippet");
                     int angle = markerData.getInt("angle");
                     Marker marker = findMarkerWithId(markerId);
+                    Integer markerDrawable = getMarkerDrawable(markerType);
+
+                    System.out.println("AJIN MARKER TYPE------------------------ " + markerType + " DRAWABLE " + markerDrawable);
                     MarkerOptions markerOptions = new MarkerOptions()
                             .name(markerId)
                             .position(new LngLat(longitude, latitude))
                             .size(markerSize)
                             .interactive(true)
                             .flat(true)
+                            .resource(markerDrawable)
+                            .texture(markerType)
                             .style(StyleType.ROTATABLE_MARKER);
+
                     if(!doRotation){
                         markerOptions.flat(false);
                     }
     //                    .texture(markerType);
-                    Integer markerDrawable = getMarkerDrawable(markerType);
+
                     if(showToolTip==true){
                         markerOptions.title(title).snippet(snippet);
                     }

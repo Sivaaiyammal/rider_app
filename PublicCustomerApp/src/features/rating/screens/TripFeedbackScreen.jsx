@@ -24,6 +24,7 @@ import useRatingStore from '../Store/useRatingStore';
 import LottieView from 'lottie-react-native';
 import { height ,width } from '../../../utils/Utils';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
+import triggerInAppReview from '../../../utils/inAppReview/triggerInAppReview';
 export default function TripFeedbackScreen() {
   
     
@@ -106,6 +107,12 @@ export default function TripFeedbackScreen() {
 
   const handleSubmit = async (ratingData) => {
     ratingData.tripId = currentTripId
+
+    if(ratingData.rating >=4){
+      await triggerInAppReview();
+    }
+
+
     
     
     const feedback = await submitTripFeedback(ratingData)
@@ -114,6 +121,7 @@ export default function TripFeedbackScreen() {
    
     if(feedback.success){
       showNotification(t('success'),t('feedback_submitted_successfully'),"success")
+
       await DataStore.clearData(PREF.CURRENT_TRIP)
       reset()
       

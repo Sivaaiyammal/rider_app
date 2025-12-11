@@ -17,6 +17,7 @@ import {colors, Fonts} from '../../../constants/constants';
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import LocationHeader from '../components/LocationHeader';
 import HistoryCard from '../../shared/component/HistoryCard';
+import { useBottomSheetSpringConfigs } from "@gorhom/bottom-sheet";
 import LinearGradient from 'react-native-linear-gradient';
 import SearchIcon from '../../../assets/icons/SearchIcon.svg';
 import MapIcon from '../../../components/Map/MapIcon';
@@ -39,7 +40,8 @@ import useScheduleTripStore from '../../../store/useScheduleTripStore';
 import ScheduledTripBanner from '../components/ScheduledTripBanner';
 import DynamicSection from '../components/DynamicSection';
 import useNearbyDrivers from '../../../store/useNearByDrivers';
-import useConfigStore from '../../../store/useConfigStore';
+import useConfigStore from '../../../store/useConfigStore'; 
+
 
 const BottomSheetHeader = ({ makeRidePlan, style }) => {
   const { t } = useTranslation();
@@ -210,7 +212,7 @@ const MapScreen = () => {
             return null;
           }
           const marker = new Marker(
-            driver.id || `driver-marker-${Math.random().toString(36).substr(2, 9)}`,
+            driver._id,
             driver.vehicleType || 'Driver',
             longitude,
             latitude,
@@ -222,7 +224,7 @@ const MapScreen = () => {
           return marker;
         })
         .filter(Boolean);
-      console.log('Generated markers for drivers:', markers);
+      console.log('Generated vehicle markers:', markers);
       setVehicleMarkers(markers);
     } catch (error) {
       console.log('Error updating markers with drivers:', error);
@@ -287,7 +289,7 @@ const MapScreen = () => {
   useEffect(() => {
     (async () => {
       try {
-        const notifGranted = await checkNotificationPermissions();
+       const notifGranted = await checkNotificationPermissions();
         if (!notifGranted) {
           await RequestNotificationPermission();
         }
@@ -296,6 +298,9 @@ const MapScreen = () => {
       }
     })();
   }, []);
+
+
+  
 
   
   const setHomeMapMarker = () => {
@@ -341,6 +346,14 @@ const MapScreen = () => {
       console.log(error, 'handleMenu');
     }
   }, [showMenu]);
+  const animationConfigs = useBottomSheetSpringConfigs({
+    damping: 50,
+    stiffness: 500,
+    mass: 1,
+    overshootClamping: false,
+    restDisplacementThreshold: 0.1,
+    restSpeedThreshold: 0.1,
+  });
 
   
   // useEffect(() => {
@@ -439,14 +452,11 @@ const MapScreen = () => {
     
   }, [location, currentLocationName, setRideStartLocation, setRideEndLocation, setStackScreen, t]);
 
-  const makeRidePlan = useCallback((screenParams = {}) => {
-
+  const setCurrentLoactionPickupLocation = useCallback(() => {
     if(!location || !currentLocationName || !location.length){
-      setStackScreen("PlanRideScreen", screenParams)
       return;
     }
-
-    const locationData ={
+     const locationData ={
       name:"Current Location",
       latitude:location[1],
       longitude:location[0],
@@ -457,22 +467,30 @@ const MapScreen = () => {
       currentLocation:true
     }
     setRideStartLocation(locationData)
+  }, [location, currentLocationName]);
+  const makeRidePlan = useCallback((screenParams = {}) => {
+
+    if(!location || !currentLocationName || !location.length){
+      setStackScreen("PlanRideScreen", screenParams)
+      return;
+    }
+
+    setCurrentLoactionPickupLocation();
   
     setStackScreen("PlanRideScreen", screenParams)
   }, [location, currentLocationName, setRideStartLocation, setStackScreen])
 
     const handleServiceVehicleSelect = useCallback((item) => {
+      console.log("Service vehicle selected:", item);
       if(!item || !item.key){
         return;
       }
 
-      if(!item.label){
-        return;
-      }
+      
 
       const vehicleLabel = item.label || VEHICLE_LABELS[item.key] || item.key;
 
-
+     
       if(item.key == "schedule_trip"){
         makeRidePlan({ mode: "SCHEDULE_TRIP" });
         return;
@@ -482,6 +500,29 @@ const MapScreen = () => {
         return;
       }
 
+      if(item.key == "night_trip"){
+        makeRidePlan({mode: "NIGHT_TRIP"});
+        return;
+      }
+
+
+      if(item.key == "bannerStops"){
+        setCurrentLoactionPickupLocation();
+        setStackScreen("PlanRideScreen",{});
+        setStackScreen('WaypointScreen',{fromPlanScreen:true});
+        return;
+      }
+
+      if(item.key == "bannerFamily"){
+        makeRidePlan({mode: "FAMILY_RIDE"});
+        return;
+      }
+      if(item.key == "bannerAuto"){
+        makeRidePlan({mode: "FEMALE_DRIVER"});
+        return;
+      }
+
+      
       setSelectedVehicle({
         id: item.key,
         type: item.key.toUpperCase(),
@@ -491,6 +532,7 @@ const MapScreen = () => {
       });
 
       makeRidePlan({ preselectedVehicleType: item.key });
+      
     }, [setSelectedVehicle, makeRidePlan])
 
     const renderBottomSheetHandle = useCallback((handleProps) => (
@@ -513,6 +555,11 @@ const MapScreen = () => {
        enablePanDownToClose={false}
        enableOverDrag={true}
        enableScroll={true}
+        enableHandlePanningGesture={false}
+        activeOffsetY={[-25, 25]}
+        overdragResistanceFactor={6}
+        animationConfigs={animationConfigs}
+      
        handleComponent={renderBottomSheetHandle}
        handleIndicatorStyle={{
          backgroundColor: '#DEDEDE',

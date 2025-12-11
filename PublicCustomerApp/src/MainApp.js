@@ -1,4 +1,4 @@
-import {useColorScheme ,StatusBar,Vibration} from 'react-native';
+import {useColorScheme ,StatusBar,Vibration,Linking} from 'react-native';
 import React, { useCallback, useEffect } from 'react';
 import firebase from '@react-native-firebase/app';
 import Navigation from './navigation/Navigation';
@@ -21,6 +21,7 @@ import { useStackScreenStore } from './store/useStackScreenStore';
 import FeedbackBottomSheet from './components/FeedbackBottomSheet';
 import tripAlert from './controllers/TripAlert';
 import { log } from '@react-native-firebase/crashlytics';
+import { parseDeepLink } from './utils/DeepLink';
 
 
 
@@ -115,6 +116,82 @@ const MainAppContent = () => {
       
 
     return unsubscribe;
+  }, []);
+
+  function handleDeepLink(url) {
+
+    console.log('Handling deep link URL:', url);
+    if (!url) return;
+
+    const parsed = parseDeepLink(url);
+    if (!parsed) {
+      console.warn('[DeepLink] Skipping deep link handling, parsing failed');
+      return;
+    }
+
+    console.log('Parsed URL:', parsed);
+
+    // parsed looks like:
+    // {
+    //   scheme: 'https',
+    //   hostname: 'staging.vmmaps.com',
+    //   path: 'trackingengine/customer',
+    //   queryParams: { screen: 'login', rideId: '123' }
+    // }
+
+    const { hostname, path, queryParams } = parsed;
+    const screen = queryParams?.screen;
+ 
+
+    console.log('hostname:', hostname);
+    console.log('path:', path);
+    console.log('screen:', screen);
+   
+}
+
+
+
+  useEffect(() => {
+    try {
+      // App opened from a deep link
+      Linking.getInitialURL()
+        .then((url) => {
+          try {
+            if (url) {
+              console.log('[DeepLink] Initial URL:', url);
+              handleDeepLink(url);
+            } else {
+              console.log('[DeepLink] No initial URL');
+            }
+          } catch (err) {
+            console.error('[DeepLink] Error handling initial URL:', err);
+          }
+        })
+        .catch((err) => {
+          console.error('[DeepLink] getInitialURL failed:', err);
+        });
+
+      // App already running and receives a new link
+      const sub = Linking.addEventListener('url', ({ url }) => {
+        try {
+          console.log('[DeepLink] Received URL event:', url);
+          handleDeepLink(url);
+        } catch (err) {
+          console.error('[DeepLink] Error handling URL event:', err);
+        }
+      });
+
+      return () => {
+        try {
+          sub?.remove();
+        } catch (err) {
+          console.error('[DeepLink] Error removing URL listener:', err);
+        }
+      };
+    } catch (err) {
+      console.error('[DeepLink] useEffect error:', err);
+      return () => {};
+    }
   }, []);
 
   

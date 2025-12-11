@@ -96,7 +96,6 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
       setSelectedFavPlace(location)
       setRideEndLocation(location.locationData)
     }
-    
   }, []);
 
  
@@ -108,6 +107,16 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     }
     if(mode == 'FEMALE_DRIVER'){
       setFemaleDriverOnly(true)
+    }
+    if(mode == 'NIGHT_TRIP'){
+      setSafeNightRides(true)
+    }
+    if(mode == 'MULTI_STOP'){
+      onAddWaypoint()
+      
+    }
+    if(mode == 'FAMILY_RIDE'){
+      onTripForPress()
       
     }
     return () => {

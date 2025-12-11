@@ -172,6 +172,8 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
           return;
         }
 
+        console.log('set')
+
         updateMarkersWithDrivers(vehicleTypeOverride);
       } catch (error) {
         console.log('Error fetching nearby drivers:', error);
@@ -243,7 +245,10 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
       // No drivers available for this vehicle type
       const vehicleName = VEHICLE_LABELS[vehicle.type] || vehicle.name || 'Selected vehicle';
       const message = t('no_drivers_available_for_vehicle', { vehicleName });
-      openNoDriversModal(message);
+      setMaxDistanceMessage(message);
+      setModalTitle(t('no_drivers_available_title'));
+      setModalVehicle(vehicle);
+      setShowMaxDistanceModal(true);
       return;
     }
     
@@ -411,7 +416,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
                   : currentDrivers.length === 0 ?
                     <View style={styles.warningRow}>
          
-                      <Text style={[styles.warningText,{color: '#c10000ff'}]}>No Nearby Drivers</Text>
+                      <Text style={[styles.warningText,{color: '#c10000ff'}]}>No Drivers Available</Text>
                     </View>
                   :  
                     <View style={styles.warningRow}>

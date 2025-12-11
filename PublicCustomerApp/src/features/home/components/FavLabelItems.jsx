@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
       FavouriteAddressContainer:{
         gap: 20,
         marginVertical: 10,
-        paddingHorizontal: 10,
+        paddingHorizontal: 5,
       
       },
 
@@ -165,10 +165,16 @@ const styles = StyleSheet.create({
       },
       FavouriteAddressContainerTitle: {
         
-          fontSize: 16,
-          fontFamily: Fonts.medium,
-          color: colors.black,
-          paddingLeft:10
+          // fontSize: 16,
+          // fontFamily: Fonts.medium,
+          // color: colors.black,
+          // paddingLeft:10
+        marginTop: 10,
+        marginBottom: 5,
+        marginLeft: 5,
+        fontSize: 18,
+        fontFamily: Fonts.medium,
+        color: "#969696ff",
         
       },
 });
