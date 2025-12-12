@@ -19,9 +19,7 @@ const useWaypointDirectionLoad = () => {
    */
   const transformWaypointsToDirectionPoints = useCallback((options = {}) => {
     const { clearMarkers = true, vehicleType = 'car',padding } = options;
-    const updatedReOrderWaypoints = [...reachedStops,...reOrderWaypoints]
-
-   
+    const updatedReOrderWaypoints = [...reachedStops,...reOrderWaypoints];
     // Filter out valid waypoints with coordinates
     const validWaypoints = updatedReOrderWaypoints.filter(waypoint => 
       waypoint.latitude && 
@@ -51,7 +49,7 @@ const useWaypointDirectionLoad = () => {
         directionPoints.padding = padding.map(v => parseInt(v, 10));
       }
       
-      console.log('Waypoint direction points:', directionPoints);
+      console.log('Waypoint direction points-------------------------------:', directionPoints);
       setDirectionPoints(directionPoints);
       
       return {

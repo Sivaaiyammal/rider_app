@@ -20,6 +20,7 @@ import { isSystemLocationEnabled, openSystemLocationSettings } from '../../../co
 import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
 import PropTypes from 'prop-types';
 import useUserInfoStore from '../../../store/useUserInfoStore';
+import TextTicker from 'react-native-text-ticker'
   
   const LocationHeader = React.memo((props) => {
     const { t } = useTranslation();
@@ -64,30 +65,45 @@ import useUserInfoStore from '../../../store/useUserInfoStore';
 
     return (
       <View style={styles.headerWrapper}>
-        <View style={styles.addressContainer}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 5,
-            }}>
-            <TouchableOpacity style={styles.homeMenuIcon} onPress={() => toggleMenu()}>
-              <HomeMenuIcon width={20} height={20} />
-            </TouchableOpacity>
-            <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
-             {userdetails?.gender === 'female' ? <FemaleAvatar width={40} height={40} /> : <ProfileImage width={40} height={40} />}
-            </TouchableOpacity>
-          </View>
-          <View style={{marginLeft: 10}}>
-            <Text style={styles.title}>{t('your_location')}</Text>
-            <Text style={[styles.address, {maxWidth: responsiveMaxWidth-10}]} numberOfLines={1} ellipsizeMode="tail">
-              {currentLocationName? utils.formatAddressName(currentLocationName) : <SkeletonLoader  height={20} width={responsiveMaxWidth-50} backgroundColor={colors.grey_xlight} />}
-            </Text>
-          </View>
-        </View>
-        <TouchableOpacity style={styles.currentLocationIconContainer} onPress={handleCurrentLocation}>
-          <CurrentLocationIcon width={25} height={25} />
+      <View style={styles.addressContainer}>
+        <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 5,
+        }}>
+        <TouchableOpacity style={styles.homeMenuIcon} onPress={() => toggleMenu()}>
+          <HomeMenuIcon width={20} height={20} />
         </TouchableOpacity>
+        <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}>
+         {userdetails?.gender === 'female' ? <FemaleAvatar width={40} height={40} /> : <ProfileImage width={40} height={40} />}
+        </TouchableOpacity>
+        </View>
+        <View style={{marginLeft: 10}}>
+        <Text style={styles.title}>{t('your_location')}</Text>
+        {currentLocationName ? (
+          <TextTicker
+          style={[styles.address]}
+          duration={30000}
+          scroll={true}
+          repeatSpacer={150}
+          marqueeDelay={1500}
+          bounce={false}
+          >
+          {utils.formatAddressName(currentLocationName)}
+          </TextTicker>
+        ) : (
+          <SkeletonLoader
+          height={20}
+          width={responsiveMaxWidth - 50}
+          backgroundColor={colors.grey_xlight}
+          />
+        )}
+        </View>
+      </View>
+      <TouchableOpacity style={styles.currentLocationIconContainer} onPress={handleCurrentLocation}>
+        <CurrentLocationIcon width={25} height={25} />
+      </TouchableOpacity>
       </View>
     );
   });

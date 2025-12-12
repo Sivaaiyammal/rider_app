@@ -8,6 +8,7 @@ import BannerAuto from '../../../assets/image/banners/bannerAuto.webp';
 import BannerStops from '../../../assets/image/banners/bannerStops.webp'; 
 import { useTranslation } from "react-i18next";
 import BannerFamily from '../../../assets/image/banners/bannerFamily.webp';
+import AdaptiveText from "../../../components/Common/AdaptiveText";
 
 /* ------------------------------------------------------------------
    ASSET MAP: Service images keyed by item key
@@ -119,6 +120,7 @@ const getLocalizedValue = (item, field, language) => {
             return item[localizedKey];
         }
     }
+    console.log("Returning default for", field, ":", item[field],item);
     return item[field] ?? null;
 };
 
@@ -510,19 +512,19 @@ const DynamicSection = ({ title = "Dynamic Section", onSelect = () => {} }) => {
                         >
                             <View style={[styles.horizontalCardTextContainer, textContainerAlignment]}>
                                 {(localizedTitle || bannerData?.name) ? (
-                                    <Text
+                                    <AdaptiveText
                                         style={[styles.horizontalCardTitle, horizontalTextAlignment, titleWidthStyle]}
                                        
                                     >
                                         {localizedTitle || bannerData.name}
-                                    </Text>
+                                    </AdaptiveText>
                                 ) : null}
                                 {(localizedDescription || bannerData?.area) ? (
-                                    <Text
+                                    <AdaptiveText
                                         style={[styles.horizontalCardDescription, horizontalTextAlignment]}
                                     >
                                         {localizedDescription || bannerData.area}
-                                    </Text>
+                                    </AdaptiveText>
                                 ) : null}
                                 {localizedButtonText ? (
                                     <TouchableOpacity
@@ -530,13 +532,13 @@ const DynamicSection = ({ title = "Dynamic Section", onSelect = () => {} }) => {
                                         activeOpacity={0.85}
                                         onPress={() => handleHorizontalBannerButtonPress(section, bannerData)}
                                     >
-                                        <Text style={styles.horizontalCardButtonText}>{localizedButtonText}</Text>
+                                        <AdaptiveText style={styles.horizontalCardButtonText}>{localizedButtonText}</AdaptiveText>
                                     </TouchableOpacity>
                                 ) : null}
                             </View>
                             {distanceLabel ? (
                                 <View style={styles.horizontalCardDistanceChip}>
-                                    <Text style={styles.horizontalCardDistanceText}>{distanceLabel}</Text>
+                                    <AdaptiveText style={styles.horizontalCardDistanceText}>{distanceLabel}</AdaptiveText>
                                 </View>
                             ) : null}
                         </LinearGradient>
@@ -545,10 +547,12 @@ const DynamicSection = ({ title = "Dynamic Section", onSelect = () => {} }) => {
             );
         };
 
+        const localizedSectionTitle = getLocalizedValue(section, "sectionTitle", i18n.language)
+            || getLocalizedValue(section, "title", i18n.language);
         return (
             <View key={section.key} style={styles.horizontalSection}>
-                {(section.showSectionTitle !== false) && (section.sectionTitle || section.title) ? (
-                    <Text style={styles.title}>{section.sectionTitle || section.title}</Text>
+                {(section.showSectionTitle !== false) && (localizedSectionTitle || section.sectionTitle || section.title) ? (
+                    <AdaptiveText style={styles.title}>{localizedSectionTitle || section.sectionTitle || section.title}</AdaptiveText>
                 ) : null}
                 <FlatList
                     data={effectiveData}
@@ -585,9 +589,13 @@ const DynamicSection = ({ title = "Dynamic Section", onSelect = () => {} }) => {
 
     const renderServices = (section) => (
         <View key={section.key} style={styles.section}>
-            {(section.showSectionTitle !== false) ? (
-                <Text style={styles.title}>{section.sectionTitle || title}</Text>
-            ) : null}
+            {(() => {
+                const localizedSectionTitle = getLocalizedValue(section, "sectionTitle", i18n.language)
+                    || getLocalizedValue(section, "title", i18n.language);
+                return (section.showSectionTitle !== false)
+                    ? (<Text style={styles.title}>{localizedSectionTitle || section.sectionTitle || title}</Text>)
+                    : null;
+            })()}
             <FlatList
                 data={section.items}
                 keyExtractor={(item) => item.key}
@@ -605,8 +613,9 @@ const DynamicSection = ({ title = "Dynamic Section", onSelect = () => {} }) => {
                     >
                         <View style={[
                             {
-                                backgroundColor: item.bgColor || "#fff",
-                                borderColor: item.borderColor || "#eee",
+                                backgroundColor:   "#f3f3f3ff",
+                                // borderColor: item.borderColor || "#eee",
+                                // backgroundColor: "#f0e5ffff",
                                 paddingHorizontal: 5,
                                 paddingTop: 5,
                                 borderRadius: 8,
@@ -639,9 +648,13 @@ const DynamicSection = ({ title = "Dynamic Section", onSelect = () => {} }) => {
     const renderBanner = (section) => (
         section?.bannerURI ? (
             <View key={section.key} style={styles.bannerSection}>
-                {(section.showSectionTitle !== false) && (section.sectionTitle || section.title) ? (
-                    <Text style={styles.title}>{section.sectionTitle || section.title}</Text>
-                ) : null}
+                {(() => {
+                    const localizedSectionTitle = getLocalizedValue(section, "sectionTitle", i18n.language)
+                        || getLocalizedValue(section, "title", i18n.language);
+                    return (section.showSectionTitle !== false) && (localizedSectionTitle || section.sectionTitle || section.title)
+                        ? (<Text style={styles.title}>{localizedSectionTitle || section.sectionTitle || section.title}</Text>)
+                        : null;
+                })()}
                 <TouchableOpacity style={styles.bannerContainer} activeOpacity={0.85} onPress={() => handleBannerPress(section)}>
                     <Image
                         source={createRemoteSource(section.bannerURI) || SERVICE_IMAGES.default}

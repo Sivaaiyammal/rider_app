@@ -28,6 +28,7 @@ import { height } from '../../../utils/Utils';
 import {utils} from '../../../utils/Utils';
 import useRideVehicleStore from '../store/useRideVehicleStore';
 import { from } from '@apollo/client';
+import RouteStatusOverlay from '../../../components/Loaders/RouteStatusOverlay';
 
 const WaypointScreen = ({ fromDriverArrival = false }) => {
   const {tripId,maxDistanceLimit,tripStatus}=useCurrentRideInfoStore()
@@ -44,6 +45,7 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
   const [enableConfirmButton,setEnableConfirmButton] = React.useState(false)
   const {availableVehicles} = useRideVehicleStore()
   const [maxVehicleDistanceLimit,setMaxVehicleDistanceLimit] = React.useState(false)
+
   
 
  
@@ -57,7 +59,7 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
     isWaypointsReady 
   } = useWaypointDirectionLoad();
   
-  const { setDirectionPoints,setDirectionReady } = useMapStore();
+  const { setDirectionPoints,setDirectionReady, routeLoading } = useMapStore();
 
  
  
@@ -216,10 +218,8 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
     return false;
   };
 
-
-  // Transform waypoints to direction points when waypoints are ready
-  useEffect(() => {
-    if (isWaypointsReady()) {
+  const waypointRoute =()=>{
+      if (isWaypointsReady()) {
       const result = transformWaypointsToDirectionPoints({
         clearMarkers: true,
         vehicleType: 'motorcycle',
@@ -232,7 +232,13 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
         console.log('Failed to set waypoint direction points:', result.error);
       }
     }
-    
+  }
+
+
+  // Transform waypoints to direction points when waypoints are ready
+  useEffect(() => {
+  
+    waypointRoute();
     // Cleanup: set direction points and reorder waypoints to null when component unmounts
     return () => {
       setDirectionPoints(null);
@@ -278,6 +284,16 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
       DistanceFromAddStopsScreen:distance,
     })
   }
+
+  const onRetryFetchRoute = () => {
+    try {
+       setDirectionPoints(null);
+       waypointRoute();
+      
+    } catch (e) {
+      // swallow; RouteStatusOverlay will keep showing error until next attempt
+    }
+  };
 
 
   const getFare =async()=>{
@@ -439,11 +455,22 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
           { maxVehicleDistanceLimit && <Text style={{color: 'red',padding: 10,textAlign: 'center'}}>{t('max_vehicle_distance_limit_exceeded')}</Text> }
           
       </View>
+      {/* Route status overlay positioned below topContainer */}
+      <RouteStatusOverlay
+        loading={!!routeLoading?.loading}
+        error={routeLoading?.error}
+        onRetry={onRetryFetchRoute}
+        top={height * 0.75} // Adjust top position based on NavBar height
+        left={10}
+        right={10}
+        bottom={0}
+      />
+      
         
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.confirmButton, isLoading && styles.confirmButtonDisabled,!enableConfirmButton && styles.confirmButtonDisabled]}
-          disabled={isLoading || !enableConfirmButton}
+          style={[styles.confirmButton, isLoading && styles.confirmButtonDisabled,!enableConfirmButton && styles.confirmButtonDisabled, routeLoading?.loading && styles.confirmButtonDisabled]}
+          disabled={isLoading || !enableConfirmButton || routeLoading?.loading}
           onPress={async () => {
             // Validate that no stops are within 100m of each other
             // Vibration.vibrate(100);

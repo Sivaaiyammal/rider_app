@@ -649,9 +649,9 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
                     <View style={styles.BookingButtonSection}>
                       <TouchableOpacity
-                          style={[styles.BookingButton, availableVehicles?.length === 0 && styles.BookingButtonDisabled,isBookingLoading && {backgroundColor:colors.orange}]}
+                          style={[styles.BookingButton, availableVehicles?.length === 0 || routeLoading?.loading && styles.BookingButtonDisabled,isBookingLoading && {backgroundColor:colors.orange}]}
                           onPress={availableVehicles?.length === 0 ? null : handleConfirmRide}
-                          disabled={isBookingLoading}
+                          disabled={isBookingLoading || availableVehicles?.length === 0 || routeLoading?.loading}
                       >
                           <AdaptiveText style={styles.BookingButtonText}>
                               {isBookingLoading ? t('booking') : t('confirm_ride')}
