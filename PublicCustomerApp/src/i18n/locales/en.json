@@ -686,5 +686,13 @@
   "not_serving_area_message": "We're sorry, but we are not currently serving your area.",
   "not_serving_area_title": "Service Unavailable",
   "no_drivers_available_for_vehicle": "No drivers are currently available for the selected vehicle type. Please try again later or choose a different vehicle.",
-  "no_drivers_available_title": "No Drivers Available"
+  "no_drivers_available_title": "No Drivers Available",
+  "routeStatus": {
+    "fetching": "Fetching route",
+    "errorTitle": "Failed to fetch route",
+    "errorDescription": "Please check your connection.",
+    "helper": "Ensure your internet is stable and try again.",
+    "retry": "Try Again",
+    "back": "Back"
+  }
 }

@@ -120,7 +120,7 @@ const getLocalizedValue = (item, field, language) => {
             return item[localizedKey];
         }
     }
-    console.log("Returning default for", field, ":", item[field],item);
+   
     return item[field] ?? null;
 };
 
@@ -447,7 +447,6 @@ const DynamicSection = ({ title = "Dynamic Section", onSelect = () => {} }) => {
 
     const handleHorizontalBannerPress = (section, item) => {
    
-        console.log("Horizontal banner pressed:", item);
         item['key'] = item?.id
         onSelect(item);
     };

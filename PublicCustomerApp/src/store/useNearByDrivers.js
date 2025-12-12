@@ -103,7 +103,7 @@ const useNearbyDrivers = create((set, get) => ({
             now - lastFetchTimestamp < CACHE_TTL_MS &&
             lastFetchParams === cacheKey
         ) {
-            console.log('Returning cached nearby drivers');
+           
             return driversAll;
         }
 

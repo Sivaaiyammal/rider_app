@@ -342,14 +342,8 @@ const Home = () => {
     return false;
   } 
 
-  
-
-
-
-
   const checkOnGoingRideAndLog = async () => {
     const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
-    
     const currentTripId=currentTrip?.data || null
     try {
       setConfigError(false);
@@ -472,7 +466,7 @@ const Home = () => {
             Response?.userStats?.bookingTime || Response?.trip?.bookingTime,
             pickupArrivalTime,
             Response?.trip?.estimatedDuration,
-            60
+            90
           );
           if(isOverdue){
             setShowOverdueModal(true);

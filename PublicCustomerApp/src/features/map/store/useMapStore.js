@@ -47,7 +47,17 @@ const useMapStore = create((set) => ({
     setDirectionReady: (callback) => set({ directionReady: callback }),
 
     directionPoints: null,
-    setDirectionPoints: (directionPoints) => set({ directionPoints }),
+    directionKey: 0,
+    setDirectionPoints: (directionPoints) => set(state => {
+        if (directionPoints === null) {
+            return { directionPoints: null };
+        }
+        const newDirectionKey = state.directionKey + 1;
+        const payloadArray = Array.isArray(directionPoints)
+            ? directionPoints
+            : [directionPoints];
+        return { directionPoints: [...payloadArray, newDirectionKey], directionKey: newDirectionKey };
+    }),
 
     geoFenceMeters: 100,
     setGeoFenceMeters: geoFenceMeters => set({ geoFenceMeters }),

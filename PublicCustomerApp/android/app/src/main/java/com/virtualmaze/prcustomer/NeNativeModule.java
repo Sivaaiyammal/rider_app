@@ -159,8 +159,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     private String pendingMode = null;
     // Stores a requested bounds until the map scene is ready
     private ReadableArray pendingBounds = null;
-    // Stores a requested route until the map scene is ready
-    private ReadableMap pendingRoute = null;
+    // Stores a requested route (array: [payloadMap, directionKey]) until the map scene is ready
+    private ReadableArray pendingRoute = null;
     // Stores a requested homeLocation until the map scene is ready
     private ReadableArray pendingHomeLocation = null;
 
@@ -1356,21 +1356,33 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     }
 
     @ReactProp(name = "findRoute")
-    public void findRoute(MapView mapView, ReadableMap routeData) {
+    public void findRoute(MapView mapView, ReadableArray routeDataArray) {
         // Defer until controller and scene ready
-        if (routeData != null && (mapController == null || mapLoaded == 0)) {
-            pendingRoute = routeData;
+        if (routeDataArray != null && routeDataArray.size() > 0 && (mapController == null || mapLoaded == 0)) {
+            // store entire array (payload + directionKey) for later
+            pendingRoute = routeDataArray;
             return;
         }
-        if (mapView != null && routeData != null && mapController != null) {
+        if (mapView != null && routeDataArray != null && routeDataArray.size() > 0 && mapController != null) {
             try {
+            // Last element is a numeric directionKey to force updates; first element is the payload
+            int lastIndex = routeDataArray.size() - 1;
+            if (routeDataArray.getType(lastIndex) == ReadableType.Number) {
+                double directionKey = routeDataArray.getDouble(lastIndex);
+                Log.d("NeNative", "findRoute update key=" + directionKey);
+            }
+            if (routeDataArray.getType(0) != ReadableType.Map) {
+                Log.e("NeNative", "findRoute: first element must be a Map");
+                return;
+            }
+            ReadableMap routeData = routeDataArray.getMap(0);
             ReadableArray locationArray = routeData.getArray("locations");
             String type = routeData.getString("type");
 
             // Optional: read dynamic padding from React and store for later zoom
             try {
-                if (routeData.hasKey("padding")) {
-                    ReadableArray padding = routeData.getArray("padding");
+                    if (routeData.hasKey("padding")) {
+                        ReadableArray padding = routeData.getArray("padding");
                     if (padding != null && padding.size() == 4) {
                         routeMargins = new int[]{
                                 padding.getInt(0),
@@ -1379,7 +1391,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                                 padding.getInt(3)
                         };
                     }
-                }
+                    }
             } catch (Exception e) {
                 Log.e("routeLOG", "Invalid padding, using default: " + e.getMessage());
             }
@@ -1554,7 +1566,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             directions.getInstance().getRouteAsync(reactNativeContext, request, currBearingInDegrees);
             } catch (Throwable t) {
                 Log.e("NeNativeModule", "findRoute failed; deferring", t);
-                pendingRoute = routeData;
+                // defer entire array so key is preserved
+                pendingRoute = routeDataArray;
                 return;
             }
         } else {
@@ -1571,7 +1584,10 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             }
         }
 
-        if (routeData == null && mapController != null) {
+        // When payload is null, re-enable current location
+        ReadableMap payload = (routeDataArray != null && routeDataArray.size() > 0 && routeDataArray.getType(0) == ReadableType.Map)
+                ? routeDataArray.getMap(0) : null;
+        if (payload == null && mapController != null) {
             mapController.setCurrentLocationEnabled(true);
         }
     }

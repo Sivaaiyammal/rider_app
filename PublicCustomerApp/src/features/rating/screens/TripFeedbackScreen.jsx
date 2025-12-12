@@ -24,7 +24,8 @@ import useRatingStore from '../Store/useRatingStore';
 import LottieView from 'lottie-react-native';
 import { height ,width } from '../../../utils/Utils';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
-import triggerInAppReview from '../../../utils/inAppReview/triggerInAppReview';
+// import triggerInAppReview from '../../../utils/inAppReview/triggerInAppReview';
+import InAppReview from 'react-native-in-app-review';
 export default function TripFeedbackScreen() {
   
     
@@ -48,6 +49,23 @@ export default function TripFeedbackScreen() {
     await DataStore.clearData(PREF.CURRENT_TRIP)
     reset()
   }
+
+  const triggerInAppReview = async () => {
+    if (InAppReview.isAvailable()) {
+      console.log('In-App Review is available on this device',InAppReview.isAvailable());
+      try { 
+        const hasFlowFinishedSuccessfully = await InAppReview.RequestInAppReview();
+        console.log('In-App Review flow finished successfully:', hasFlowFinishedSuccessfully);
+        return !!hasFlowFinishedSuccessfully;
+      } catch (error) {
+        console.log('Error during In-App Review process:', error?.message || error);
+        return false;
+      }
+    } else {
+      console.log('In-App Review not available on this device');
+      return false;
+    }
+  };
 
     const fetchTripDetails = async () => {
       const storedTripId = await DataStore.loadData(PREF.CURRENT_TRIP);
@@ -108,12 +126,12 @@ export default function TripFeedbackScreen() {
   const handleSubmit = async (ratingData) => {
     ratingData.tripId = currentTripId
 
-    if(ratingData.rating >=4){
-      await triggerInAppReview();
-    }
-
+    console.log("ratingData before submit",ratingData)
 
     
+
+
+    console.log("ratingData",ratingData)
     
     const feedback = await submitTripFeedback(ratingData)
 
@@ -121,9 +139,12 @@ export default function TripFeedbackScreen() {
    
     if(feedback.success){
       showNotification(t('success'),t('feedback_submitted_successfully'),"success")
-
+       if(ratingData.rating >=4){
+       triggerInAppReview();
+    }
       await DataStore.clearData(PREF.CURRENT_TRIP)
       reset()
+     
       
     }else{
       showNotification(t('error'),t('something_went_wrong'),"error")

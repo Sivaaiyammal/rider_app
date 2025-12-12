@@ -1,38 +1,80 @@
 import React from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 
 const RouteStatusOverlay = ({
   loading = false,
   error = null,
   onRetry,
+  onBack,
+  errorTitle = 'Failed to fetch route',
+  errorDescription = '',
+  renderIcon, // optional custom icon render function
+  iconName = 'alert-circle-outline',
+  iconColor = '#b00020',
+  extraContent, // optional node to render additional info
   top = 0,
   left = 0,
   right = 0,
   bottom = 0,
 }) => {
+  const { t } = useTranslation();
   if (!loading && !error) return null;
 
   return (
-    <View style={[styles.container, { top, left, right, bottom }]}> 
-      {loading && (
-        <View style={styles.contentRow}>
-          <ActivityIndicator size="small" color="#0f223c" />
-          <Text style={styles.message}>Fetching route…</Text>
+    <>
+      <Modal
+        visible={!!error}
+        transparent
+        animationType="none"
+        statusBarTranslucent
+      >
+        <View style={styles.fullscreenOverlay} pointerEvents="auto">
+          <View style={styles.errorBox}>
+            <View style={styles.iconWrapper}>
+              {renderIcon ? (
+                renderIcon()
+              ) : (
+                <MaterialCommunityIcons name={iconName} size={44} color={iconColor} />
+              )}
+            </View>
+            <Text style={styles.errorText} numberOfLines={2}>
+              {t('routeStatus.errorTitle', { defaultValue: errorTitle })}
+            </Text>
+            {!!errorDescription && (
+              <Text style={styles.errorDesc} numberOfLines={3}>
+                {t('routeStatus.errorDescription', { defaultValue: errorDescription })}
+              </Text>
+            )}
+            <Text style={styles.helperText}>
+              {t('routeStatus.helper', { defaultValue: 'Ensure your internet is stable and try again.' })}
+            </Text>
+            {extraContent}
+            {onRetry && (
+              <TouchableOpacity style={styles.retryBtn} onPress={onRetry}>
+                <Text style={styles.retryText}>{t('routeStatus.retry', { defaultValue: 'Try Again' })}</Text>
+              </TouchableOpacity>
+            )}
+            {onBack && (
+              <TouchableOpacity style={styles.backBtn} onPress={onBack}>
+                <Text style={styles.backText}>{t('routeStatus.back', { defaultValue: 'Back' })}</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-      )}
-      {!!error && (
-        <View style={styles.errorBox}>
-          <Text style={styles.errorText} numberOfLines={2}>
-            {typeof error === 'string' ? error : 'Failed to fetch route.'}
-          </Text>
-          {onRetry && (
-            <TouchableOpacity style={styles.retryBtn} onPress={onRetry}>
-              <Text style={styles.retryText}>Try Again</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
-    </View>
+      </Modal>
+      <View style={[styles.container, { top, left, right, bottom }]}> 
+        {loading && (
+          <View style={styles.contentRow}>
+              <View style={styles.content}>
+            <ActivityIndicator size="small" color="#0f223c" />
+            <Text style={styles.message}>{t('routeStatus.fetching', { defaultValue: 'Fetching route' })}</Text>
+            </View>
+          </View>
+        )}
+      </View>
+    </>
   );
 };
 
@@ -43,12 +85,27 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     paddingHorizontal: 12,
   },
+  fullscreenOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+  },
   contentRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: 'white',
+    width: 'auto',
+   
+  },
+  content:{
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+     backgroundColor: 'white',
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 12,
@@ -61,19 +118,36 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   errorBox: {
-    width: '100%',
-    marginTop: 8,
+    width: '75%',
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
+    alignSelf: 'center',
     borderRadius: 10,
     paddingVertical: 10,
     paddingHorizontal: 12,
     elevation: 4,
   },
+  iconWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
   errorText: {
     color: '#b00020',
     fontSize: 14,
+    marginBottom: 8,
+  },
+  errorDesc: {
+    color: '#495057',
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  helperText: {
+    color: '#6c757d',
+    fontSize: 12,
+    textAlign: 'center',
     marginBottom: 8,
   },
   retryBtn: {
@@ -85,6 +159,20 @@ const styles = StyleSheet.create({
   },
   retryText: {
     color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  backBtn: {
+    marginTop: 8,
+    backgroundColor: 'transparent',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#0f223c',
+  },
+  backText: {
+    color: '#0f223c',
     fontSize: 14,
     fontWeight: '600',
   },

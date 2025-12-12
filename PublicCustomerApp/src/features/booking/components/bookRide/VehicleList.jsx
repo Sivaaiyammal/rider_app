@@ -71,10 +71,12 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
   }, [goBack, goBackToScreen]);
 
   const clearNoDriversModalState = useCallback(() => {
+    goBack();
     setShowNoDriversModal(false);
     setNoDriversMessage('');
     setNoDriversCtaLabel(editPlacesFallbackLabel);
     noDriversActionRef.current = null;
+    setSelectedVehicle(null);
   }, [editPlacesFallbackLabel]);
 
   const handleNoDriversPrimaryAction = useCallback(() => {
@@ -169,6 +171,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
           setVehicleMarkers([]);
           clearDrivers();
           openNoDriversModal();
+          setSelectedVehicle(null);
           return;
         }
 

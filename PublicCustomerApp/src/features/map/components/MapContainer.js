@@ -46,6 +46,7 @@ const MapContainer = ({ mapStyle }) => {
     loading,
     vehicleMarkers,
     setRouteLoading,
+    routeLoading,
   
    
   } = useMapStore();
@@ -111,6 +112,7 @@ const MapContainer = ({ mapStyle }) => {
         onNavigationEnd={(e) => console.log('hari--->>navigationEnd-->>', e)}
       />
 
+     
 
     </Animated.View>
     

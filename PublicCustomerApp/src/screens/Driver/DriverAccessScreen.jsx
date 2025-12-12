@@ -142,12 +142,14 @@ const DriverAccessScreen = ({ navigation }) => {
          
           <TouchableOpacity
             style={[styles.linkButton, { backgroundColor:  colors.blue_xxdark }] }
-            onPress={handleOpenPlayStore}
+             onPress={() => Linking.openURL(PLAY_STORE_WEB_URL)}
           >
             <Text style={[styles.linkButtonText, { color: theme?.primary ?? colors.blue_xxdark }] }>
               {i18n.t('driver_access.download_driver_app')}
             </Text>
           </TouchableOpacity>
+
+          
         </View>
 
         {/* Steps to become a driver (zigzag, image/text alternating) */}

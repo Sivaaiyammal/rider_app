@@ -43,6 +43,7 @@ import { preferenceShowRideStatus } from '../../../storage/userLocalStorage';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import ScrollHintChevron from '../../../components/Common/ScrollHintChevron';
 import { useDebouncedAPICall } from '../../../hooks/useDebounce';
+import RouteStatusOverlay from '../../../components/Loaders/RouteStatusOverlay';
 // import useRideSelectionStore from '../../../store/useRideSelectionStore';
 import PropTypes from 'prop-types';
 import { buildKey as buildEstimationCacheKey, getFromCache as getEstimationFromCache, setInCache as setEstimationInCache, prune as pruneEstimationCache } from '../store/useEstimationCacheStore';
@@ -149,6 +150,12 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     useEffect(() => {   
         console.log("routeLoadingInMapContainer",routeLoading)
     }, [routeLoading]);
+
+
+    const onRetryFetchRoute = () => {  
+        DirectionRoute(); 
+        
+    }
 
 
 
@@ -268,6 +275,24 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         const withinLimit = vehicleList.filter(v => !v.isExceedingMaxDistance);
         const exceedingLimit = vehicleList.filter(v => v.isExceedingMaxDistance);
         const sortedVehicleList = [...withinLimit, ...exceedingLimit];
+         console.log("sortedVehicleList",sortedVehicleList)
+        if (selectedVehicle && selectedVehicle?.vehicleType) {
+            console.log("selectedVehicle",vehicleList)
+
+            const currentlyselected = vehicleList.find(v => v.type === selectedVehicle.vehicleType);
+            console.log("currentlyselected",currentlyselected)
+            if (currentlyselected) {
+                const selected = selectedVehicle;
+                selected['minFare'] = currentlyselected?.minFare || null;
+                selected['maxFare'] = currentlyselected?.maxFare || null;
+                setSelectedVehicle(selected);
+                console.log("currentlyselected;;;;;;;;;;;;;;;;;;;;;;;;;;;;;",selectedVehicle)
+            }
+            console.log("currentlyselected",selectedVehicle)
+            
+
+
+        }
 
 
    
@@ -435,9 +460,8 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
   
     const { setDirectionPoints } = useMapStore();
 
-    
-    useEffect(() => {
-        if (isRideLocationsReady()) {
+    const DirectionRoute = () =>{
+         if (isRideLocationsReady()) {
             console.log("isRideLocationsReadyStarted",isRideLocationsReady())
             const result = transformRideLocationsToDirectionPoints({
                 clearMarkers: true,
@@ -451,6 +475,11 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
                 console.log('Failed to set direction points:', result.error);
             }
         }
+    }
+
+    
+    useEffect(() => {
+       DirectionRoute();
     }, [rideStartLocation, rideEndLocation, rideWayPoints, isRideLocationsReady, transformRideLocationsToDirectionPoints]);
 
     // Cleanup effect to clear direction points when component unmounts
@@ -521,6 +550,15 @@ const handleChangeScheduleTime=()=>{
     goBackToScreen('PlanRideScreen',{showScheduleTime:true})
 
 
+}
+
+const handleServiceAreaModalClose = () => {
+     setShowMaxDistanceExceededModal(false);
+                                    try {
+                                        goBackToScreen('PlanRideScreen', { focusEditPlaces: true });
+                                    } catch (e) {
+                                        goBack();
+                                    }
 }
 
 
@@ -649,9 +687,9 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
                     <View style={styles.BookingButtonSection}>
                       <TouchableOpacity
-                          style={[styles.BookingButton, availableVehicles?.length === 0 || routeLoading?.loading && styles.BookingButtonDisabled,isBookingLoading && {backgroundColor:colors.orange}]}
+                          style={[styles.BookingButton, availableVehicles?.length === 0 && styles.BookingButtonDisabled,selectedVehicle == null && styles.BookingButtonDisabled, routeLoading?.loading && styles.BookingButtonDisabled,isBookingLoading && {backgroundColor:colors.orange}]}
                           onPress={availableVehicles?.length === 0 ? null : handleConfirmRide}
-                          disabled={isBookingLoading || availableVehicles?.length === 0 || routeLoading?.loading}
+                          disabled={isBookingLoading || availableVehicles?.length === 0 || routeLoading?.loading || selectedVehicle == null }
                       >
                           <AdaptiveText style={styles.BookingButtonText}>
                               {isBookingLoading ? t('booking') : t('confirm_ride')}
@@ -660,6 +698,14 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                     </View>
               </View>
           </View>
+
+          <RouteStatusOverlay
+        loading={!!routeLoading?.loading}
+        error={routeLoading?.error}
+        onRetry={onRetryFetchRoute}
+        top={height * 0.25} // Adjust top position based on NavBar height
+    
+      />
 
         { isPaymentTypeOpen  && (
           <AnimatedBottomSheetWrapper onClose={()=>setIsPaymentTypeOpen(false)} zIndex={100000}>
@@ -693,7 +739,8 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                 animationType="fade"
                 transparent
                 visible
-                onRequestClose={() => setShowMaxDistanceExceededModal(false)}
+                statusBarTranslucent={true}
+                onRequestClose={handleServiceAreaModalClose}
             >
                 <View style={styles.modalContainer}>
                     <View style={[styles.modalView, styles.modernModalView]}>
@@ -744,6 +791,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                 animationType="fade"
                 transparent
                 visible
+                statusBarTranslucent={true}
                 onRequestClose={() => setShowBookingInfoErrorModal(false)}
             >
                 <View style={styles.modalContainer}>

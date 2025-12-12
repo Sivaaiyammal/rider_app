@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import DeviceInfo from 'react-native-device-info';
 import { useTranslation } from 'react-i18next';
 import { bookRide } from '../../../API/EndPoints/EndPoints';
 import { showNotification } from '../../../components/NotificationManger';
@@ -154,9 +155,12 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     storeInRecentTrips(rideEndLocation);
 
 
+      
+
+
 
     
-
+    console.log(selectedVehicle,"selectedVehicle in prepareBookingPayload")
     
 
     // Build payload with dummy values for testing
@@ -187,6 +191,8 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       femaleOnly:femaleDriverOnly,
       regionalOffice: regionOfficeId || null,
       regionCode: regionOfficeCode || 'default',
+      appVersion: (DeviceInfo.getVersion?.() || ''),
+      buildNumber: (DeviceInfo.getBuildNumber?.() || ''),
      
       
     };
@@ -261,7 +267,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       } else {
         showNotification(
           t('booking_failed'),
-          response?.message || t('failed_to_book_ride'),
+          t('failed_to_book_ride'),
           'danger'
         );
         if (onError) {

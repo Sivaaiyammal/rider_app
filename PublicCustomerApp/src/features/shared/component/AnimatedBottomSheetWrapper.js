@@ -6,6 +6,7 @@ import {
   Dimensions,
   TouchableOpacity,
   Pressable,
+  Modal,
 } from 'react-native';
 import Icons from 'react-native-vector-icons/MaterialIcons';
 import PropTypes from 'prop-types';
@@ -13,7 +14,7 @@ import { colors } from '../../../constants/constants';
 
 const { height } = Dimensions.get('window');
 
-export default function AnimatedBottomSheetWrapper({ children, onClose,zIndex=false }) {
+export default function AnimatedBottomSheetWrapper({ children, onClose, zIndex = false, visible = true }) {
     const bounceValue = useRef(new Animated.Value(height)).current;
     const overlayOpacity = useRef(new Animated.Value(0)).current;
   
@@ -50,7 +51,14 @@ export default function AnimatedBottomSheetWrapper({ children, onClose,zIndex=fa
     };
   
     return (
-      <View style={[styles.wrapper,{zIndex:zIndex ? zIndex : 9998}]}>
+      <Modal
+        visible={visible}
+        transparent
+        animationType="none"
+        statusBarTranslucent
+        onRequestClose={handleClose}
+      >
+      <View style={[styles.wrapper,{zIndex:zIndex ? zIndex : 9998}]}> 
         <Animated.View
           style={[
             styles.overlay,
@@ -85,6 +93,7 @@ export default function AnimatedBottomSheetWrapper({ children, onClose,zIndex=fa
 
         </Animated.View>
       </View>
+      </Modal>
     );
   }
 
@@ -94,15 +103,13 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     zIndex: 9998,
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    ...StyleSheet.absoluteFillObject,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    zIndex: 9999
+    zIndex: 9999,
+    pointerEvents: 'auto',
   },
   bottomSheetWrapper: {
     position: 'absolute',
@@ -148,4 +155,5 @@ AnimatedBottomSheetWrapper.propTypes = {
   children: PropTypes.node,
   onClose: PropTypes.func,
   zIndex: PropTypes.number,
+  visible: PropTypes.bool,
 };

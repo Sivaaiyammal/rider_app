@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View, Platform} from 'react-native';
 import React, {useState, useEffect, useRef, useContext} from 'react';
 import {useTranslation} from 'react-i18next';
 
@@ -136,10 +136,31 @@ const OTPScreen = ({route}) => {
         token: fcmToken,
         deviceImei: deviceImei,
       };
+      let deviceMeta = {
+        os: '',
+        osVersion: '',
+        appVersion: '',
+        buildNumber: '',
+        brand: '',
+        model: '',
+      };
+      try {
+        deviceMeta = {
+          os: Platform?.OS || '',
+          osVersion: DeviceInfo.getSystemVersion?.() || '',
+          appVersion: DeviceInfo.getVersion?.() || '',
+          buildNumber: DeviceInfo.getBuildNumber?.() || '',
+          brand: DeviceInfo.getBrand?.() || '',
+          model: DeviceInfo.getModel?.() || '',
+        };
+      } catch (e) {
+        console.log('Error building device meta: ', e);
+      }
       const payload = {
         otp: otpInput,
         phone: `+${countryCode}${loginPhoneNumber}`,
         fcmToken: tokenCred,
+        deviceMeta: deviceMeta,
       };
       
       verifyOTPMutate(payload);

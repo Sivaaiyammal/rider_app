@@ -456,15 +456,7 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
           
       </View>
       {/* Route status overlay positioned below topContainer */}
-      <RouteStatusOverlay
-        loading={!!routeLoading?.loading}
-        error={routeLoading?.error}
-        onRetry={onRetryFetchRoute}
-        top={height * 0.75} // Adjust top position based on NavBar height
-        left={10}
-        right={10}
-        bottom={0}
-      />
+     
       
         
       <View style={styles.footer}>
@@ -509,6 +501,17 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
         driverWaitingApproval={waitingForDriverApproval}
         loading={isLoading}
       />
+       <RouteStatusOverlay
+        loading={!!routeLoading?.loading}
+        error={routeLoading?.error}
+        onRetry={onRetryFetchRoute}
+        top={height * 0.55} // Adjust top position based on NavBar height
+        left={10}
+        right={10}
+        bottom={0}
+        onBack={onBackPress}
+      />
+
     </>
   );
 };

@@ -26,6 +26,7 @@ const DriverNotFoundModal = ({ visible, onClose, title, message, ctaLabel, onPri
       animationType="fade"
       transparent
       visible={visible}
+      statusBarTranslucent
       onRequestClose={onClose}
     >
       <View style={styles.modalContainer}>
