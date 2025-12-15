@@ -313,13 +313,6 @@ const FeedbackBottomSheet = () => {
 
       console.log('payload', payload);
       const response = await submitAppFeedback(payload);
-      showNotification(
-        t('success'),
-        response?.message || t('feedback_submitted_successfully'),
-        'success',
-        3000,
-        'toast'
-      );
       sheetRef.current?.close();
     } catch (e) {
       // eslint-disable-next-line no-alert

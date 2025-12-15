@@ -138,7 +138,7 @@ export default function TripFeedbackScreen() {
     
    
     if(feedback.success){
-      showNotification(t('success'),t('feedback_submitted_successfully'),"success")
+      // showNotification(t('success'),t('feedback_submitted_successfully'),"success")
        if(ratingData.rating >=4){
        triggerInAppReview();
     }

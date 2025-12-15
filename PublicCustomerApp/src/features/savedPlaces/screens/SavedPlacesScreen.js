@@ -29,7 +29,7 @@ const SavedPlacesScreen = () => {
       
       setUserFavPlaces(response?.favPlaces);
       
-      showNotification(t('success'),response.message);
+      // showNotification(t('success'),response.message);
       goBack();
     }else{
       showNotification(t('error'),response.error);
@@ -115,7 +115,7 @@ const SavedPlacesScreen = () => {
               if (response.success && response?.favPlaces) {
                
                 setUserFavPlaces(response?.favPlaces);
-                showNotification(t('success'), t('place_deleted_successfully'));
+                // showNotification(t('success'), t('place_deleted_successfully'));
               } else {
                 showNotification(t('error'), response.error || t('failed_to_delete_place'));
               }
@@ -158,7 +158,7 @@ const SavedPlacesScreen = () => {
           // Update local state using favPlaceId
           
           setUserFavPlaces(addResponse?.favPlaces);
-          showNotification(t('success'), t('place_updated_successfully'));
+          // showNotification(t('success'), t('place_updated_successfully'));
           goBack();
         } else {
           showNotification(t('error'), addResponse.error || t('failed_to_update_place'));

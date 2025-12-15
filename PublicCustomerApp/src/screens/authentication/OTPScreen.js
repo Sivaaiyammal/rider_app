@@ -96,7 +96,7 @@ const OTPScreen = ({route}) => {
             routes: [{ name: 'HomeScreen' }],
           });
         }
-        showNotification(t('otp_verified'), t('otp_verified_successfully'), 'success');
+        // showNotification(t('otp_verified'), t('otp_verified_successfully'), 'success');
       } else {
         if(data?.message.typeof === 'string'){  
           showNotification(t('failed'), t('invalid_otp'), 'danger');

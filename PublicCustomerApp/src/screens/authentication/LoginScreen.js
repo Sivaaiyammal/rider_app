@@ -33,7 +33,7 @@ const LoginScreen = () => {
 
   const handleLoginSuccess = (data) => {
     if (data) {
-      showNotification(t('otp_sent'), t('otp_sent_to_mobile'), 'success');
+      // showNotification(t('otp_sent'), t('otp_sent_to_mobile'), 'success');
       console.log('Login data', data);
       navigation.dispatch(
         CommonActions.navigate({

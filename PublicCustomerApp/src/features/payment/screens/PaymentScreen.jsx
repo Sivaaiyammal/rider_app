@@ -288,7 +288,7 @@ const PaymentScreen = () => {
               incrementCompletedTrips()
               setStackScreen('TripFeedbackScreen',{});
               // handle success
-              showNotification(t('payment_successful'),"","success");
+              // showNotification(t('payment_successful'),"","success");
               setIsProcessingPayment(false);
               setShowPGConfirm(false);
             })

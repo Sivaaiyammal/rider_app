@@ -728,7 +728,7 @@ const Home = () => {
       const resp = await confirmTripStatus({ tripId, tripStatus: status, passengerFeedBack: note });
       console.log("resp",resp)
       if (resp?.success) {
-        showNotification(t('success'), resp?.message || t('updated_successfully'), 'success');
+        // showNotification(t('success'), resp?.message || t('updated_successfully'), 'success');
         await DataStore.clearData(PREF.CURRENT_TRIP)
         resetCurrentRideInfo();
         clearDriverInfo();

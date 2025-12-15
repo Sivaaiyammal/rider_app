@@ -57,7 +57,7 @@ import { getTotalDistanceAndTime } from '../services/getTotalDistanceandTime';
       try {
         const res =  await changeStopLocation(item,totalDistance,totalDuration);
         if (res.success) {
-          showNotification(t('pickup_location'), t('updated_successfully'), 'success');
+          // showNotification(t('pickup_location'), t('updated_successfully'), 'success');
          
         }
       } catch (error) {

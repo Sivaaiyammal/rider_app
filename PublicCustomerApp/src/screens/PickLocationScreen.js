@@ -969,7 +969,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                 onPickLocationResultCallback(pickedLocation, locationType,index);
                 setPickedLocation(null);
               } else {
-                Alert.alert('No route found', 'No route is available to the selected location.');
+                // Alert.alert('No route found', 'No route is available to the selected location.');
                 setIsError(true);
                 setIsErrorMessage(t('no_route_found_message', { defaultValue: 'No route is available to the selected location.' }));
                

@@ -35,7 +35,7 @@ const LoginScreen = () => {
   const {setUserdetails} = useUserInfoStore();
   const handleLoginSuccess = (data) => {
     if (data) {
-      showNotification('Logged In', 'Logged in Successfully', 'success');
+      // showNotification('Logged In', 'Logged in Successfully', 'success');
       
       let {token} = data.user || {};
      

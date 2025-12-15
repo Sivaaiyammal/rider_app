@@ -59,7 +59,7 @@ const RegisterationScreen = () => {
 
     if (data.success) {
 
-      showNotification('Registeration Completed Successfully', 'Registeration Completed Successfully', 'success');
+      // showNotification('Registeration Completed Successfully', 'Registeration Completed Successfully', 'success');
 
       let _userDetails = { ...userdetails }
 
