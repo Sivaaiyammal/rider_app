@@ -1,108 +1,88 @@
-import DeviceInfo from 'react-native-device-info';
-import dayjs from 'dayjs';
 import { Platform } from 'react-native';
-import { DataStore } from '../controllers/DataStore';
-import SpInAppUpdates, {
-  IAUUpdateKind,
-  StatusUpdateEvent,
-} from 'sp-react-native-in-app-updates';
+import DeviceInfo from 'react-native-device-info';
 
-// Show force update immediately; optional remains same-day
-const OPTIONAL_UPDATE_DAYS = 0; // same day
-const FORCE_UPDATE_DAYS = 0;    // force today (no skip)
-
-/** Normalize to comparable integer.
- * "1.2.3" -> 1_002_003 ; "120" -> 120 ; 120 -> 120
+/**
+ * Compare build number or version (x.x.x.x).
+ * Ignores all characters and special characters except '.' in VERSION strings.
+ * Payload example:
+ * versions: {
+ *   ANDROID: { BUILD_NUMBER: 120, VERSION: "1.2.3.4" },
+ *   IOS: { BUILD_NUMBER: 120, VERSION: "1.2.3.4" }
+ * }
  */
-function normalizeVersion(input) {
-  if (input == null) return NaN;
-  const s = String(input).trim();
-  if (s.includes('.')) {
-    const [maj='0', min='0', pat='0'] = s.split('.');
-    return (parseInt(maj,10)||0)*1_000_000
-         + (parseInt(min,10)||0)*1_000
-         + (parseInt(pat,10)||0);
-  }
-  return parseInt(s, 10);
-}
-
 export async function checkUpdateStatus(versions) {
   try {
-    
-    // Latest values from server payload (both Build Number and Version)
-    const latestVersionRaw = Platform.select({ android: versions?.ANDROID?.VERSION, ios: versions?.IOS?.VERSION });
-    const latestBuildRaw = Platform.select({ android: versions?.ANDROID?.BUILD_NUMBER, ios: versions?.IOS?.BUILD_NUMBER });
+    const latest = Platform.select({
+      android: versions?.ANDROID,
+      ios: versions?.IOS,
+    }) || {};
 
-    // Current app values
-    const currentVersionRaw = DeviceInfo.getVersion(); // e.g. "2.1.0.7"
-    const currentBuildRaw = DeviceInfo.getBuildNumber(); // e.g. "120" (Android versionCode)
+    const currentBuildRaw = DeviceInfo.getBuildNumber(); // e.g. "120"
+    const currentVersionRaw = DeviceInfo.getVersion();   // e.g. "1.2.3" or "1.2.3.4"
 
-    // Normalize for comparison
-    const latestVersion = normalizeVersion(latestVersionRaw);
-    const latestBuild = normalizeVersion(latestBuildRaw);
-    const currentVersion = normalizeVersion(currentVersionRaw);
-    const currentBuild = normalizeVersion(currentBuildRaw);
+    const stripNonDigits = (v) => String(v ?? '').replace(/[^0-9]/g, '');
+    const sanitizeVersion = (v) => {
+      // keep only digits and dots, collapse multiple dots, trim leading/trailing dots
+      const s = String(v ?? '').replace(/[^0-9.]/g, '').replace(/\.+/g, '.').replace(/^\.|\.$/g, '');
+      return s;
+    };
 
-    console.log('checkUpdateStatus currentVersion:', currentVersionRaw, 'normalized:', currentVersion);
-    console.log('checkUpdateStatus latestVersion:', latestVersionRaw, 'normalized:', latestVersion);
-    console.log('checkUpdateStatus currentBuild:', currentBuildRaw, 'normalized:', currentBuild);
-    console.log('checkUpdateStatus latestBuild:', latestBuildRaw, 'normalized:', latestBuild);
+    const normalizeInt = (v) => {
+      const cleaned = stripNonDigits(v);
+      if (!cleaned) return NaN;
+      const n = parseInt(cleaned, 10);
+      return Number.isNaN(n) ? NaN : n;
+    };
 
-    // Validate inputs: at least one of version/build must be valid to deem outdated
-    const hasValidLatestVersion = Number.isFinite(latestVersion);
-    const hasValidLatestBuild = Number.isFinite(latestBuild);
-    if (!hasValidLatestVersion && !hasValidLatestBuild) {
+    const compareVersion = (a, b) => {
+      // tolerant: pads/truncates to 4 parts, ignores non-digit chars except '.'
+      const toParts = (v) => {
+        const s = sanitizeVersion(v);
+        const parts = s.split('.').slice(0, 4);
+        const nums = parts.map(x => {
+          const n = normalizeInt(x);
+          return Number.isFinite(n) ? n : NaN;
+        });
+        // pad to 4
+        while (nums.length < 4) nums.push(0);
+        return nums.slice(0, 4);
+      };
+
+      const A = toParts(a);
+      const B = toParts(b);
+
+      // if latest version is absent or invalid, return null to fall back
+      if (!b || B.every(x => x === 0) || B.some(x => !Number.isFinite(x))) return null;
+
+      // treat invalid current parts as 0
+      for (let i = 0; i < 4; i++) {
+        if (!Number.isFinite(A[i])) A[i] = 0;
+        if (A[i] < B[i]) return -1;
+        if (A[i] > B[i]) return 1;
+      }
+      return 0;
+    };
+
+    const latestBuild = normalizeInt(latest?.BUILD_NUMBER);
+    const currentBuild = normalizeInt(currentBuildRaw);
+
+    const latestVersion = latest?.VERSION;
+    const currentVersion = currentVersionRaw;
+
+    // Prefer VERSION comparison when latest VERSION is provided and valid
+    const versionCmp = compareVersion(currentVersion, latestVersion);
+    if (versionCmp !== null) {
+      return versionCmp < 0 ? 'force' : 'none';
+    }
+
+    // Fallback to BUILD_NUMBER comparison
+    if (!Number.isFinite(latestBuild)) {
       console.warn('[UpdateCheck] Invalid latest payload:', versions);
       return 'none';
     }
 
-    // Determine outdated states per dimension
-    const versionOutdated = hasValidLatestVersion && Number.isFinite(currentVersion) && currentVersion < latestVersion;
-    const buildOutdated = hasValidLatestBuild && Number.isFinite(currentBuild) && currentBuild < latestBuild;
-
-    // If neither is outdated, clear state and exit
-    if (!versionOutdated && !buildOutdated) {
-      await DataStore.storeData('firstOutdatedDate', null);
-      return 'none';
-    }
-
-    // Outdated: get persisted state
-    const firstOutdatedResponse = await DataStore.loadData('firstOutdatedDate', null);
-    let firstOutdatedDate = firstOutdatedResponse?.data;
-
-    console.log("firstOutdatedDate", firstOutdatedResponse);
-
-    // First time we noticed the app is outdated
-    if (!firstOutdatedDate) {
-      firstOutdatedDate = new Date().toISOString();
-      await DataStore.storeData('firstOutdatedDate', firstOutdatedDate);
-    }
-
-    // Whole-day granularity: 0 today, 1 tomorrow, etc.
-    const daysSinceOutdated = dayjs().diff(dayjs(firstOutdatedDate), 'day');
-
-    console.log("daysSinceOutdated",daysSinceOutdated)
-
-    // Skip functionality removed: optional updates are no longer skippable
-    console.log("firstOutdatedDate value", firstOutdatedDate);
-
-    // With zero-day thresholds, any outdated state results in force update
-    if (versionOutdated || buildOutdated) {
-         const isDebug = false;
-     
-       try{
-  
-      
-         return 'force';
-       
-      }catch(e){
-        console.log("InAppUpdates Error",e);
-       
-        return 'none';
-      }
-     
-    }
-    return 'none';
+    const buildOutdated = Number.isFinite(currentBuild) && currentBuild < latestBuild;
+    return buildOutdated ? 'force' : 'none';
   } catch (e) {
     console.log('checkUpdateStatus error:', e);
     return 'none';

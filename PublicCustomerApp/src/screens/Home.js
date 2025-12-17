@@ -385,14 +385,11 @@ const Home = () => {
           setScheduledTrips(Response?.scheduleTrips);
         }
 
-        if(Response?.appConfig){
-          setConfig(Response?.appConfig);
-         
-          if(Response?.appConfig?.FORCE_UPDATE && !currentTripId){
-  
-          
-            checkForUpdates(Response?.appConfig?.FORCE_UPDATE);
-            
+        if (Response?.appConfig) {
+          Response.appConfig['SHOW_NEARBY_DRIVER'] = true;
+          setConfig(Response.appConfig);
+          if (Response.appConfig?.FORCE_UPDATE && !currentTripId) {
+            checkForUpdates(Response.appConfig.FORCE_UPDATE);
           }
 
         } else {
@@ -501,7 +498,7 @@ const Home = () => {
 
  const checkForUpdates = async (forceUpdateConfig) => {
    const mode = await checkUpdateStatus(forceUpdateConfig);
-   console.log("Update Mode",mode)
+   console.log("Update Mode_____________________________________________",mode)
    const isForce = mode === 'force';
    const isAndroidForce = Platform.OS === 'android' && isForce;
    const isIOSForce = Platform.OS === 'ios' && isForce;

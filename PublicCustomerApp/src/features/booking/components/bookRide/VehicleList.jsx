@@ -33,7 +33,9 @@ import {
 } from 'react-native-color-matrix-image-filters'
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import DriverNotFoundModal from './DriverNotFoundModal';
+import PreferenceDriverModal from './PreferenceDriverModal';
 import { useStackScreenStore } from '../../../../store/useStackScreenStore';
+import useRideBookingInfo from '../../store/useRideBookingInfo';
 
 
 const VEHICLE_IMAGES = { AUTO, BIKE, HATCHBACK, SEDAN, SUV, ELECTRIC_AUTO, ELECTRIC_HATCHBACK, ELECTRIC_SEDAN, ELECTRIC_SUV,ELECTRIC_BIKE };
@@ -49,7 +51,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
   const { setVehicleMarkers } = useMapStore();
   const [modalVehicle, setModalVehicle] = useState(null);
   const [slideAnim] = useState(new Animated.Value(0));
-  const { fetchLatestDrivers, clearDrivers, getDriversByType } = useNearbyDrivers();
+  const { fetchLatestDrivers, clearDrivers, getDriversByType,isFemaleDriverAvailable, isTrustedDriverAvailable } = useNearbyDrivers();
   const [modalTitle, setModalTitle] = useState('');
   const firstRenderStartRef = useRef(null);
   const selectedVehicleType = selectedVehicle?.type;
@@ -59,8 +61,13 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
   const [noDriversMessage, setNoDriversMessage] = useState('');
   const [noDriversCtaLabel, setNoDriversCtaLabel] = useState(editPlacesFallbackLabel);
   const noDriversActionRef = useRef(null);
+  const {femaleDriverOnly,safeNightRides,setFemaleDriverOnly,setSafeNightRides} = useRideBookingInfo()
+  const [isNoFemaleDriverModalVisible, setIsNoFemaleDriverModalVisible] = useState(false);
+  const [isNoTrustedDriverModalVisible, setIsNoTrustedDriverModalVisible] = useState(false);
+  const [isFetchDriverLoading, setIsFetchDriverLoading] = useState(false);
 
   const handleNavigateToEditPlaces = useCallback(() => {
+    console.log('Navigating back to PlanRideScreen to edit placesrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr');
     if (typeof goBackToScreen === 'function') {
       goBackToScreen('PlanRideScreen', { focusEditPlaces: true });
       return;
@@ -71,13 +78,25 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
   }, [goBack, goBackToScreen]);
 
   const clearNoDriversModalState = useCallback(() => {
+
+  
     goBack();
+    setSelectedVehicle(null);
+    noDriversActionRef.current = null;
     setShowNoDriversModal(false);
     setNoDriversMessage('');
     setNoDriversCtaLabel(editPlacesFallbackLabel);
-    noDriversActionRef.current = null;
-    setSelectedVehicle(null);
-  }, [editPlacesFallbackLabel]);
+  }, [
+    editPlacesFallbackLabel,
+    isNoFemaleDriverModalVisible,
+    isNoTrustedDriverModalVisible,
+    setFemaleDriverOnly,
+    setIsNoFemaleDriverModalVisible,
+    setSafeNightRides,
+    setIsNoTrustedDriverModalVisible,
+    goBack,
+    setSelectedVehicle,
+  ]);
 
   const handleNoDriversPrimaryAction = useCallback(() => {
     const action = noDriversActionRef.current;
@@ -102,6 +121,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
   );
 
   useEffect(() => {
+    setIsFetchDriverLoading(true);
     console.log(selectedVehicle?"Selected vehicle changed: "+JSON.stringify(selectedVehicle):"No vehicle selected");
     if (typeof console.time === 'function') {
       console.time('availableVehicles->firstRender');
@@ -118,6 +138,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
       }
       console.log('Selected vehicle type for driver filtering:', type);
       const currentSelectedVehicleDrivers = getDriversByType(type);
+    
       console.log('Current selected vehicle drivers:', currentSelectedVehicleDrivers);
 
       const markerList = [];
@@ -160,22 +181,42 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
       }
 
       try {
+        
         const drivers = await fetchLatestDrivers({
           latitude: startLatitude,
           longitude: startLongitude,
           radius: 10000,
           vehicleTypes: vehicleTypesToFetch,
         });
+        setIsFetchDriverLoading(false);
 
         if (!drivers.length) {
           setVehicleMarkers([]);
           clearDrivers();
           openNoDriversModal();
           setSelectedVehicle(null);
+          goBack();
           return;
         }
 
-        console.log('set')
+        if( femaleDriverOnly ){
+          const isFemaleAvailable = isFemaleDriverAvailable();
+          console.log('Is female driver available:', isFemaleAvailable);
+          if(!isFemaleAvailable){
+            setIsNoFemaleDriverModalVisible(true);
+            return;
+          }
+        }
+
+        if( safeNightRides ){
+          const isTrustedAvailable = isTrustedDriverAvailable();  
+          if(!isTrustedAvailable){
+            setIsNoTrustedDriverModalVisible(true);
+            return;
+          }
+        }
+
+        
 
         updateMarkersWithDrivers(vehicleTypeOverride);
       } catch (error) {
@@ -271,6 +312,20 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
     return VEHICLE_IMAGES[type] || ExSEDAN;
   }, []);
 
+  const  handleCloseModel = () => {
+    if(femaleDriverOnly){
+      setFemaleDriverOnly(false);
+      setIsNoFemaleDriverModalVisible(false);
+    }
+    console.log("safeNightRides value:", safeNightRides);
+    if(safeNightRides){ 
+        setSafeNightRides(false);
+        setIsNoTrustedDriverModalVisible(false);
+    }
+
+  
+    
+  }
   // Memoize filtered vehicles to prevent unnecessary re-renders
   
 
@@ -308,7 +363,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
     );
   };
 
-  if (availableVehicles?.length === 0 || availableVehicles == null) {
+  if (availableVehicles?.length === 0 || availableVehicles == null || isFetchDriverLoading) {
     if (isLoading || !isEstimationError) {
       return renderSkeletonLoader();
     }
@@ -455,6 +510,22 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
         onPrimaryAction={handleNoDriversPrimaryAction}
         message={noDriversMessage}
         ctaLabel={noDriversCtaLabel}
+      />
+
+      <PreferenceDriverModal
+        visible={isNoFemaleDriverModalVisible}
+        onClose={handleCloseModel}
+        variant="female"
+        vehicleType={selectedVehicle?.type}
+        ctaLabel="Search all drivers"
+      />
+
+      <PreferenceDriverModal
+        visible={isNoTrustedDriverModalVisible}
+        onClose={handleCloseModel}
+        variant="trusted"
+        vehicleType={selectedVehicle?.type}
+        ctaLabel="Search all drivers"
       />
       
    

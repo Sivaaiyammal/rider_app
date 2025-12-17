@@ -193,6 +193,10 @@ const SearchScreenWrapper = ({onSearchClick=null,searchType,fromaddWayPoint=fals
         setIsLoading(true);
 
         const searchResults = await performSearch(searchParams);
+
+        console.log("Search Results:", searchResults);
+
+        // Process results
        
         if (searchResults?.unifiedSearchData && searchResults?.unifiedSearchData?.length > 0) {
           const searchDataArray = {

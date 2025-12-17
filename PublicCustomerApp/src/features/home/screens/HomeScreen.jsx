@@ -262,30 +262,9 @@ const MapScreen = () => {
     if(appConfig.SHOW_NEARBY_DRIVER){
       console.log('Fetching and updating vehicle markers with drivers on HomeScreen mount');
       updateVehicleMarkersWithDrivers();
-
-      
-      
     }
   },[appConfig.SHOW_NEARBY_DRIVER, resetRideBookingLocation, updateVehicleMarkersWithDrivers])
 
-  useEffect(() => {
-    if (!appConfig.SHOW_NEARBY_DRIVER) {
-      return;
-    }
-    if (!Array.isArray(location) || location.length < 2) {
-      return;
-    }
-    updateVehicleMarkersWithDrivers();
-  }, [appConfig.SHOW_NEARBY_DRIVER, location, updateVehicleMarkersWithDrivers]);
-
-  useEffect(() => {
-    if (!appConfig.SHOW_NEARBY_DRIVER) {
-      return;
-    }
-    updateMarkersWithDrivers(driversAll);
-  }, [appConfig.SHOW_NEARBY_DRIVER, driversAll, updateMarkersWithDrivers]);
-
- 
   useEffect(() => {
     (async () => {
       try {
@@ -303,14 +282,14 @@ const MapScreen = () => {
   
 
   
-  const setHomeMapMarker = () => {
-    if(location && location.length > 0){
-      const randomId = `home-marker-${Math.random().toString(36).substr(2, 9)}`;
+  const setHomeMapMarker = (locationData) => {
+   
+      const randomId = `home-marker`;
       const homeMarker = new Marker(  
         randomId,
         randomId,
-        location[0],  
-        location[1],
+        locationData[0],  
+        locationData[1],
         'home',
         48,
         true,  
@@ -321,21 +300,23 @@ const MapScreen = () => {
       homeMarker.setFocus(false)
       homeMarker.setDoRotation(false)
       setMapMarkers([homeMarker]);
-    }   
+    
   };
 
   useEffect(()=>{
     if(location && location.length > 0){
-      setHomeMapMarker()
+     
       const bounds = utils.getBoundingBox([[location[0],location[1]]])
       const margin = [200, 200, 200, 200+height*0.4]
       const finalBounds = [bounds, margin]
       setTimeout(() => {
         setMapBounds(finalBounds);
-      }, 1000);
+        setHomeMapMarker(location)
+      }, 100);
     }
     return () => {
       setMapMarkers([])
+      setVehicleMarkers([])
     } 
   },[location])
 

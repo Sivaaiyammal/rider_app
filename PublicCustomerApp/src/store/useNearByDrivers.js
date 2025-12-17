@@ -149,6 +149,14 @@ const useNearbyDrivers = create((set, get) => ({
     getBikeDrivers: () => get().getDriversByType('BIKE'),
     getHatchbackDrivers: () => get().getDriversByType('HATCHBACK'),
     getElectricHatchbackDrivers: () => get().getDriversByType('ELECTRIC_HATCHBACK'),
+    isFemaleDriverAvailable: () => {
+        const list = get().driversAll || [];
+        return list.some((d) => (d?.gender || '').toLowerCase() === 'female');
+    },
+    isTrustedDriverAvailable: () => {
+        const list = get().driversAll || [];
+        return list.some((d) => Boolean(d?.isTrusted));
+    },
 }));
 
 export default useNearbyDrivers;

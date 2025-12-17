@@ -139,6 +139,7 @@ import TextTicker from 'react-native-text-ticker'
       boxShadow: '0 3px 6px 0 rgba(0, 0, 0, 0.05)',
       border: 'solid 0.5px #e0e0e0',
       backgroundColor: '#fff',
+      marginRight: 10,
     },
     homeMenuIcon: {
       paddingLeft: 10,
@@ -157,6 +158,7 @@ import TextTicker from 'react-native-text-ticker'
       fontFamily: Fonts.regular,
       fontSize: 12,
       color: '#757575',
+      maxWidth: '95%',
     },
     address: {
       color: '#212121',

@@ -746,7 +746,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                             .size(markerSize)
                             .interactive(true)
                             .flat(true)
-                            .resource(markerDrawable)
+                            // .resource(markerDrawable)
                             .texture(markerType)
                             .style(StyleType.ROTATABLE_MARKER);
 
@@ -795,7 +795,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                                     MarkerData userData = new MarkerData();
                                     userData.setId(markerId);
                                     marker.setUserData(userData);
-                                    marker.setDrawable(markerDrawable);
+                                    // marker.setDrawable(markerDrawable);
                                     Log.d("AJIN", markerId + " Set usedata");
                                     if(doRotation==true){
                                         mapController.NEMarkerSetAngle(marker, angle);
@@ -803,7 +803,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                                     synchronized (addedMarkers) {
                                         addedMarkers.add(marker);
                                     }
-                                    markerTextures.put(markerId,markerType);
+                                    // markerTextures.put(markerId,markerType);
                                     if (isMarkerSelected) {
                                         mapController.selectMarker(marker);
                                     }else{
@@ -854,19 +854,19 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                                 mapController.deselectMarker(marker);
                             }
                             String prevString = markerTextures.get(markerId);
-    //
+
                             if (prevString!= null && !markerType.equals(prevString)) {
                                 marker.setVisible(false);
-    //                    mapController.NEMarkerSetStyle(marker, markerOptions);
-                                marker.setDrawable(markerDrawable);
-                                markerTextures.put(markerId, markerType);
+                                // mapController.NEMarkerSetStyle(marker, markerOptions);
+                                // marker.setDrawable(markerDrawable);
+                                // markerTextures.put(markerId, markerType);
                                 marker.setVisible(true);
                            }
                             if(prevString==null){
                                 marker.setVisible(false);
                                 mapController.NEMarkerSetStyle(marker, markerOptions);
-                                marker.setDrawable(markerDrawable);
-                                markerTextures.put(markerId, markerType);
+                                // marker.setDrawable(markerDrawable);
+                                // markerTextures.put(markerId, markerType);
                                 marker.setVisible(true);
                            }
                             if(doRotation){
@@ -907,6 +907,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     // New: handle vehicle markers independently without clearing non-vehicle markers
     @ReactProp(name = "vehicleMarkers")
     public synchronized void setVehicleMarkers(MapView mapView, ReadableArray markers) {
+        System.out.println("AJIN setVehicleMarkers called with markers: " + markers);
         try {
             if (mapController == null) {
                 vehicleMarkerTextures.clear();
@@ -947,17 +948,19 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     String snippet = markerData.getString("snippet");
                     int angle = markerData.getInt("angle");
                     Marker marker = findVehicleMarkerWithId(markerId);
+                    Integer markerDrawable = getMarkerDrawable(markerType);
                     MarkerOptions markerOptions = new MarkerOptions()
                             .name(markerId)
                             .position(new LngLat(longitude, latitude))
                             .size(markerSize)
                             .interactive(true)
                             .flat(true)
-                            .style(StyleType.ROTATABLE_MARKER);
+                            .resource(markerDrawable)
+                            .style(StyleType.MARKER);
                     if(!doRotation){
                         markerOptions.flat(false);
                     }
-                    Integer markerDrawable = getMarkerDrawable(markerType);
+                    
                     if(showToolTip==true){
                         markerOptions.title(title).snippet(snippet);
                     }
@@ -994,7 +997,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                                     MarkerData userData = new MarkerData();
                                     userData.setId(markerId);
                                     marker.setUserData(userData);
-                                    marker.setDrawable(markerDrawable);
+                                    // marker.setDrawable(markerDrawable);
                                     if(doRotation==true){
                                         mapController.NEMarkerSetAngle(marker, angle);
                                     }
@@ -1054,15 +1057,15 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                             String prevString = vehicleMarkerTextures.get(markerId);
                             if (prevString!= null && !markerType.equals(prevString)) {
                                 marker.setVisible(false);
-                                marker.setDrawable(markerDrawable);
-                                vehicleMarkerTextures.put(markerId, markerType);
+                                // marker.setDrawable(markerDrawable);
+                                // vehicleMarkerTextures.put(markerId, markerType);
                                 marker.setVisible(true);
                            }
                             if(prevString==null){
                                 marker.setVisible(false);
                                 mapController.NEMarkerSetStyle(marker, markerOptions);
-                                marker.setDrawable(markerDrawable);
-                                vehicleMarkerTextures.put(markerId, markerType);
+                                // marker.setDrawable(markerDrawable);
+                                // vehicleMarkerTextures.put(markerId, markerType);
                                 marker.setVisible(true);
                            }
                             if(doRotation){

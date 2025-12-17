@@ -94,6 +94,8 @@ const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => 
         </View>
     )
 }
+
+
 const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsScreen = null,RideMatchDriverNotFound=false}) => {
     const { t } = useTranslation();
     

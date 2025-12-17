@@ -985,13 +985,11 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
               //   if(locationType == 'END_LOCATION'){ 
               //       setHomeMapMarker(location);
               //   }
-              
               //   showroute(shape)
-                
               // }
             } catch (e) {
               console.error('Route check failed', e);
-              Alert.alert('Error', 'Failed to find a route. Please try again.');
+              // Alert.alert('Error', 'Failed to find a route. Please try again.');
             } finally {
               setIsConfirming(false);
             }
