@@ -11,7 +11,7 @@ import BIKE from "../../../../assets/vehicle/BIKE.webp"
 import HATCHBACK from "../../../../assets/vehicle/HATCHBACK.webp"
 import SEDAN from "../../../../assets/vehicle/SEDAN.webp"
 import SUV from "../../../../assets/vehicle/SUV.webp"
-import ELECTRIC_AUTO from "../../../../assets/vehicle/AUTO.webp"
+import ELECTRIC_AUTO from "../../../../assets/vehicle/ELECTRIC_AUTO.webp"
 import ELECTRIC_BIKE from "../../../../assets/vehicle/BIKE.webp"
 import ELECTRIC_HATCHBACK from "../../../../assets/vehicle/HATCHBACK.webp"
 import ELECTRIC_SEDAN from "../../../../assets/vehicle/SEDAN.webp"
@@ -65,6 +65,8 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
   const [isNoFemaleDriverModalVisible, setIsNoFemaleDriverModalVisible] = useState(false);
   const [isNoTrustedDriverModalVisible, setIsNoTrustedDriverModalVisible] = useState(false);
   const [isFetchDriverLoading, setIsFetchDriverLoading] = useState(false);
+  const [selectedTypeVehicleNotFound, setSelectedTypeVehicleNotFound] = useState(false);
+  const [notFoundVehicleType, setNotFoundVehicleType] = useState(null);
 
   const handleNavigateToEditPlaces = useCallback(() => {
     console.log('Navigating back to PlanRideScreen to edit placesrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr');
@@ -195,7 +197,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
           clearDrivers();
           openNoDriversModal();
           setSelectedVehicle(null);
-          goBack();
+      
           return;
         }
 
@@ -204,7 +206,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
           console.log('Is female driver available:', isFemaleAvailable);
           if(!isFemaleAvailable){
             setIsNoFemaleDriverModalVisible(true);
-            return;
+           
           }
         }
 
@@ -212,11 +214,45 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
           const isTrustedAvailable = isTrustedDriverAvailable();  
           if(!isTrustedAvailable){
             setIsNoTrustedDriverModalVisible(true);
-            return;
+           
           }
         }
 
+        // If override is provided but has no drivers, skip marker update
+        if (vehicleTypeOverride) {
+          const overrideDrivers = getDriversByType(vehicleTypeOverride) || [];
+          if (overrideDrivers.length === 0) {
+            console.log('Override type has no drivers. Skipping marker update.');
+            return;
+          }
+        }
+         const sortedVehiclesLocal = (availableVehicles || []).slice().sort((a, b) => {
+              const hasA = (getDriversByType(a.type) || []).length > 0;
+              const hasB = (getDriversByType(b.type) || []).length > 0;
+              if (hasA === hasB) return 0;
+              return hasA ? -1 : 1;
+            });
+
+     
+        if (selectedVehicle?.type) {
+          console.log('Verifying selected vehicle drivers for type:', selectedVehicle.type);
+          const currentDriversForSelected = getDriversByType(selectedVehicle.type) || [];
+          console.log('Current drivers for selected vehicle type:', currentDriversForSelected);
+          if (currentDriversForSelected.length === 0) {
+            // Recompute a local sorted list (drivers-first) to pick a valid fallback
+           
+            const firstWithDrivers = sortedVehiclesLocal.find(v => (getDriversByType(v.type) || []).length > 0) || null;
+            console.log('No drivers for selected type. Fallback vehicle:', firstWithDrivers);
+            setNotFoundVehicleType(selectedVehicle.type);
+            setSelectedTypeVehicleNotFound(true);
+            setSelectedVehicle(firstWithDrivers);
+          }
+        }else{
+          if(sortedVehiclesLocal.length > 0){
+          setSelectedVehicle(sortedVehiclesLocal[0])
+          }
         
+        }
 
         updateMarkersWithDrivers(vehicleTypeOverride);
       } catch (error) {
@@ -232,6 +268,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
       startLatitude,
       startLongitude,
       updateMarkersWithDrivers,
+      getDriversByType,
     ]
   );
 
@@ -289,6 +326,8 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
       // No drivers available for this vehicle type
       const vehicleName = VEHICLE_LABELS[vehicle.type] || vehicle.name || 'Selected vehicle';
       const message = t('no_drivers_available_for_vehicle', { vehicleName });
+      // Clear selection to avoid auto-selecting unavailable vehicles
+      
       setMaxDistanceMessage(message);
       setModalTitle(t('no_drivers_available_title'));
       setModalVehicle(vehicle);
@@ -299,7 +338,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
     
  
    
-    console.log('Vehicle selected:eeeeeeeeeeeeeeeee', vehicle);
+    
     syncDriverMarkersWithVehicles(vehicle.type);
     setSelectedVehicle(vehicle);
   };
@@ -325,6 +364,10 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
 
   
     
+  }
+  const handleCloseSelectedTypeNotFound = () => {
+    setSelectedTypeVehicleNotFound(false);
+    setNotFoundVehicleType(null);
   }
   // Memoize filtered vehicles to prevent unnecessary re-renders
   
@@ -381,6 +424,15 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
     return typeof vehicleType === 'string' && vehicleType.includes("ELECTRIC");
   };
 
+  // Sort vehicles so those with available drivers appear first
+  const sortedVehicles = Array.isArray(availableVehicles)
+    ? [...availableVehicles].sort((a, b) => {
+        const hasDriverA = (getDriversByType(a.type) || []).length > 0;
+        const hasDriverB = (getDriversByType(b.type) || []).length > 0;
+        if (hasDriverA === hasDriverB) return 0;
+        return hasDriverA ? -1 : 1;
+      })
+    : [];
 
 
 
@@ -421,7 +473,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
       </Modal>
       
       
-      {availableVehicles?.map((vehicle) => {
+      {sortedVehicles.map((vehicle) => {
         const isSelected = selectedVehicle?.type === vehicle.type;
         const currentDrivers = getDriversByType(vehicle.type);
         return (
@@ -517,7 +569,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
         onClose={handleCloseModel}
         variant="female"
         vehicleType={selectedVehicle?.type}
-        ctaLabel="Search all drivers"
+        ctaLabel="See all drivers"
       />
 
       <PreferenceDriverModal
@@ -525,7 +577,17 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
         onClose={handleCloseModel}
         variant="trusted"
         vehicleType={selectedVehicle?.type}
-        ctaLabel="Search all drivers"
+        ctaLabel="See all drivers"
+      />
+
+      <PreferenceDriverModal
+        visible={selectedTypeVehicleNotFound}
+        onClose={handleCloseSelectedTypeNotFound}
+        variant="trusted"
+        vehicleType={notFoundVehicleType}
+        title={`No drivers for ${VEHICLE_LABELS[notFoundVehicleType] || notFoundVehicleType || 'selected vehicle'}`}
+        message={`Your selected ${VEHICLE_LABELS[notFoundVehicleType] || notFoundVehicleType || 'vehicle'} has no drivers nearby. We picked another vehicle with available drivers.`}
+        ctaLabel="See all drivers"
       />
       
    

@@ -645,19 +645,10 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     }
     public Integer getMarkerDrawable(String type) {
         switch (type) {
-            case "suv": return R.drawable.suv;
+           
             case "marker_start": return R.drawable.vehicle_start;
             case "marker_end": return R.drawable.vehicle_end;
             case "marker_waypoint": return R.drawable.marker_stop_grey;
-            case "bike": return R.drawable.bike;
-            case "hatchback": return R.drawable.hatchback;
-            case "auto": return R.drawable.auto;
-            case "sedan": return R.drawable.sedan;
-            case "electric_bike": return R.drawable.bike;
-            case "electric_hatchback": return R.drawable.hatchback;
-            case "electric_sedan": return R.drawable.sedan;
-            case "electric_suv": return R.drawable.suv;
-            case "electric_auto": return R.drawable.electric_auto;
             case "location_pin": return R.drawable.marker_stop_grey;
             case "stop_1": return R.drawable.stop_1;
             case "stop_2": return R.drawable.stop_2;
@@ -668,9 +659,37 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             case "drop_point": return R.drawable.drop_point;
             case "pickup_point": return R.drawable.pickup_point;
             case "bearing": return R.drawable.bearing;
-            case "home": return R.drawable.home;
          
-            default: return R.drawable.home;
+            default: return null;
+        }
+    }
+
+    private String getTextures(String markerType) {
+        switch (markerType) {
+            case "suv":
+                return "not_suv";
+            case "hatchback":
+                return "not_hatch";
+            case "sedan":
+                return "not_sedan";
+            case "bike":
+                return "not_bike";
+            case "auto":
+                return "not_auto";
+            case "electric_suv":
+                return "not_electric_suv";
+            case "electric_hatchback":
+                return "not_electric_hatch";
+            case "electric_sedan":
+                return "not_electric_sedan";
+            case "electric_bike":
+                return "not_electric_bike";
+            case "electric_auto":
+                return "not_electric_auto";
+            case "home":
+                return "not_home";
+            default:
+                return null;
         }
     }
     
@@ -732,7 +751,6 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     int animationTime = markerData.getInt("animationTime");
                     boolean showToolTip = markerData.getBoolean("showToolTip");
                     boolean doRotation = markerData.getBoolean("doRotation");
-
                     String title = markerData.getString("title");
                     String snippet = markerData.getString("snippet");
                     int angle = markerData.getInt("angle");
@@ -746,9 +764,18 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                             .size(markerSize)
                             .interactive(true)
                             .flat(true)
-                            // .resource(markerDrawable)
-                            .texture(markerType)
                             .style(StyleType.ROTATABLE_MARKER);
+
+                    if(markerDrawable==null){
+                        String textureStr = getTextures(markerType);
+                        if(textureStr!=null){   
+                        markerOptions.texture(textureStr);
+                        }else{
+                            markerOptions.texture(markerType);
+                        }
+                    }else{
+                        markerOptions.resource(markerDrawable);
+                    }
 
                     if(!doRotation){
                         markerOptions.flat(false);
@@ -955,8 +982,18 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                             .size(markerSize)
                             .interactive(true)
                             .flat(true)
-                            .resource(markerDrawable)
                             .style(StyleType.MARKER);
+
+                    if (markerDrawable != null) {
+                        markerOptions.resource(markerDrawable);
+                    } else {
+                        String textureStr = getTextures(markerType);
+                        if(textureStr!=null){   
+                        markerOptions.texture(textureStr);
+                        }else{
+                            markerOptions.texture(markerType);
+                        }
+                    }
                     if(!doRotation){
                         markerOptions.flat(false);
                     }

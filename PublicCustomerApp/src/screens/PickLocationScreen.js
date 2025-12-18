@@ -628,10 +628,6 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                     }}
                     placeholder={t('search_cities_areas_streets')}
                     placeholderTextColor={colors.grey_dark}
-                    autoCorrect={false}
-                    autoCapitalize="none"
-                   
-                    accessibilityLabel={t('search_cities_areas_streets')}
                   />
                 </Animated.View>
                 { (searchTxt && searchTxt.length > 0) && (

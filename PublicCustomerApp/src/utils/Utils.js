@@ -9,14 +9,14 @@ export const { width } = Dimensions.get('window');
 export const { height } = Dimensions.get('window');
 
 export const utils = {
-  getVehicleTypeImage: (type) => {
-    if (type == '1') return require('../assets/image/vehicle/auto_left.png')
-    else if (type == '2') return require('../assets/image/vehicle/bike_left.png')
-    else if (type == '3') return require('../assets/image/vehicle/hatchback.png')
-    else if (type == '4') return require('../assets/image/vehicle/sedan.png')
-    else if (type == '5' || type == 'car') return require('../assets/image/vehicle/suv_left.png')
-    else if (type == '6') return require('../assets/image/vehicle/luxsedan_left.png')
-  },
+  // getVehicleTypeImage: (type) => {
+  //   if (type == '1') return require('../assets/image/vehicle/auto_left.png')
+  //   else if (type == '2') return require('../assets/image/vehicle/bike_left.png')
+  //   else if (type == '3') return require('../assets/image/vehicle/hatchback.png')
+  //   else if (type == '4') return require('../assets/image/vehicle/sedan.png')
+  //   else if (type == '5' || type == 'car') return require('../assets/image/vehicle/suv_left.png')
+  //   else if (type == '6') return require('../assets/image/vehicle/luxsedan_left.png')
+  // },
 
   /**
    * Check if a trip has exceeded its estimated final arrival time with an offset.
@@ -153,7 +153,9 @@ export const utils = {
     else if (status == 'CANCELLED') return 'ride_cancelled'
     else if (status == 'failed') return 'ride_failed'
     else if (status == 'PENDING') return 'ride_cancelled'
-    
+    else if (status == 'MATCHED') return 'ride_failed'
+    else if (status == 'ACCEPTED') return 'ride_failed'
+    else if (status == 'PICKEDUP') return 'ride_failed'
   },
   getShortRideStatus: (status) => {
     if (status == 'COMPLETED') return 'COMPLETED'
@@ -162,6 +164,9 @@ export const utils = {
     else if (status == 'CANCELLED') return 'CANCELLED'
     else if (status == 'failed') return 'DRIVER NOT FOUND'
     else if (status == 'PENDING') return 'DRIVER NOT FOUND'
+    else if (status == 'MATCHED') return 'MATCHED'
+    else if (status == 'ACCEPTED') return 'ACCEPTED'
+    else if (status == 'PICKEDUP') return 'PICKED UP'
   },
   metersToKilometers(meters) {
     return meters / 1000;

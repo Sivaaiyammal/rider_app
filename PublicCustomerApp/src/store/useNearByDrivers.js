@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { getNearByDrivers } from '../API/EndPoints/EndPoints';
+import useConfigStore from '../store/useConfigStore'; 
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -113,12 +114,15 @@ const useNearbyDrivers = create((set, get) => ({
             radius,
             vehicleTypes: uniqueTypes,
         });
-
+        console.log('Using radius from config store:');
+        const appConfigRadius = useConfigStore.getState().appConfig?.SHOW_NEARBY_DRIVER_RADIUS;
+        console.log('App Config Radius:', appConfigRadius);
+        const radiusToUse =  appConfigRadius || radius;
         try {
             const response = await getNearByDrivers(
                 latitude,
                 longitude,
-                radius,
+                radiusToUse,
                 uniqueTypes
             );
             console.log('Fetched nearby drivers:', response);

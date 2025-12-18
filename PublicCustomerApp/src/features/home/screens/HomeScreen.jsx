@@ -290,8 +290,8 @@ const MapScreen = () => {
         randomId,
         locationData[0],  
         locationData[1],
-        'home',
-        48,
+        'pin_inactive',
+        36,
         true,  
         0
       );

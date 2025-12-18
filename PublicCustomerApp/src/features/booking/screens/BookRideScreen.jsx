@@ -288,7 +288,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
                 selected['minFare'] = currentlyselected?.minFare || null;
                 selected['maxFare'] = currentlyselected?.maxFare || null;
                 setSelectedVehicle(selected);
-                console.log("currentlyselected;;;;;;;;;;;;;;;;;;;;;;;;;;;;;",selectedVehicle)
+               
             }
             console.log("currentlyselected",selectedVehicle)
             
@@ -310,9 +310,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             availableVehicles: sortedVehicleList,
            
         })
-        if(selectedVehicle === null){
-            setSelectedVehicle(sortedVehicleList[0])
-        }
+        
     }
 
 
@@ -570,7 +568,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
   return (
     <>
    <View>
-    <NavBar onBackPress={handleBackPress} feedbackIcon={true} onrightIconPress={() => {
+    <NavBar elevation={true} onBackPress={handleBackPress} feedbackIcon={true} onrightIconPress={() => {
       try {
         const startName = rideStartLocation;
         const endName = rideEndLocation ;

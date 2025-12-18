@@ -18,7 +18,7 @@ import ELECTRIC_SEDAN from '../../../../assets/vehicle/SEDAN.webp';
 import ELECTRIC_SUV from '../../../../assets/vehicle/SUV.webp';
 import ExSEDAN from '../../../../assets/vehicle/ExSEDAN.webp';
 
-import FemaleAvatar from '../../../../assets/image/femaleAvatar.svg';
+import FemaleAvatar from '../../../../assets/vehicle/FEMALE_DRIVER.webp';
 
 const VEHICLE_IMAGES = {
   AUTO,
@@ -72,13 +72,9 @@ const PreferenceDriverModal = ({
         <View style={styles.modalView}>
           <View style={styles.compositeImageWrapper}>
             <Image source={vehicleImage} style={styles.vehicleImage} resizeMode="contain" />
-            <View style={styles.badgeWrapper}>
-              {variant === 'female' ? (
-                <FemaleAvatar width={26} height={26} />
-              ) : (
-                <MaterialCommunityIcons name="shield-check" size={24} color={colors.white} />
-              )}
-            </View>
+             {variant === 'female' && ( <View style={styles.badgeWrapper}>
+                <Image source={FemaleAvatar} style={{ width: 50, height: 50 }} />
+            </View>  ) }
           </View>
           <AdaptiveText style={styles.modalTitle}>{resolvedTitle}</AdaptiveText>
           <AdaptiveText style={styles.modalMessage}>{resolvedMessage}</AdaptiveText>
@@ -118,24 +114,24 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   compositeImageWrapper: {
-    width: '90%',
+    width: '60%',
     height: 180,
     marginBottom: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   vehicleImage: {
-    width: '85%',
+    width: '65%',
     height: '100%',
   },
   badgeWrapper: {
     position: 'absolute',
-    bottom: 6,
-    right: '12%',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.black,
+    bottom: 20,
+    left: '12%',
+    width: 70,
+    height: 70,
+    borderRadius: 50,
+    backgroundColor: colors.grey_xlight,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,

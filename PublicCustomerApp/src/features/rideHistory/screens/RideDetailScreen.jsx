@@ -138,6 +138,10 @@ const RideDetailScreen = ({ TripData }) => {
 
   const distance = rideData.finalDistance && rideData?.status != "Failed" ? rideData.finalDistance : rideData.estimatedDistance
   const duration = rideData.finalDuration && rideData?.status != "Failed" ? rideData.finalDuration : rideData.estimatedDuration
+
+  console.log("rideData",rideData)
+  console.log("rideFareDetails",rideData?.status)
+  console.log(utils.getRideStatus(rideData?.status),"keb")
   return (
     <View style={styles.container}>
       <NavBar withBg onBackPress={handleBackPress} title={t('ride_details')} />

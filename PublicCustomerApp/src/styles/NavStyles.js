@@ -19,17 +19,19 @@ export const navStyles = StyleSheet.create({
     position:"absolute",
     justifyContent:"center",
     alignItems:"center",
-    zIndex:5
+    zIndex:5,
+    
 
     
     
   },
   leftBtn: {
- elevation:5,
-    paddingRight:40,
-    paddingLeft:10,
+    padding:5,
+    marginLeft:20,
   
-    alignItems:'center'
+    alignItems:'center',
+    backgroundColor:'white',
+    borderRadius:50,
     
     
     

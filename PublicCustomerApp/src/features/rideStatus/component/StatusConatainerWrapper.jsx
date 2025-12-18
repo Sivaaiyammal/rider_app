@@ -1,9 +1,11 @@
 import React from "react";
-import { View, TouchableOpacity, Text } from "react-native";
+import { View, TouchableOpacity, Text,Image } from "react-native";
 import MapIcon from "../../../components/Map/MapIcon";
 import { StyleSheet } from "react-native";
 import { Fonts ,colors} from "../../../constants/constants";
 import CurrentLocationIcon from "../../../assets/icons/CurrentLocationIcon.svg";
+import SOS from '../../../assets/image/sos.svg';
+
 
 const StatusConatainerWrapper = ({ children,backgroundColor ,onMapIconPress ,onSOSClick = null}) => {
     return (
@@ -15,8 +17,8 @@ const StatusConatainerWrapper = ({ children,backgroundColor ,onMapIconPress ,onS
                     <TouchableOpacity onPress={onMapIconPress} style={styles.currentLocationIcon}  >
                         <CurrentLocationIcon />
                     </TouchableOpacity>
-                    {onSOSClick && <TouchableOpacity onPress={onSOSClick} style={[styles.currentLocationIcon, styles.sOSIcon]}  >
-                        <Text style={styles.sOSIconText}>SOS</Text>
+                    {onSOSClick && <TouchableOpacity onPress={onSOSClick}  >
+                        <SOS width={80} height={80}  style={[ styles.sOSIcon]}/>
                     </TouchableOpacity>}
                     </View>
                 </View>
@@ -92,13 +94,8 @@ const styles = StyleSheet.create({
     
       },
       sOSIcon: {
-        backgroundColor: 'red',
-        borderRadius: 60,
-        borderWidth: 1,
-        borderColor: 'red',
-        elevation: 10,
-        padding:15,
-        top:-10,
+        elevation: 3,
+        top:20,
         alignItems: 'center',
         justifyContent: 'center',
        

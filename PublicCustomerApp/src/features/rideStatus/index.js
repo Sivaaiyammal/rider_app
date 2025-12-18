@@ -34,6 +34,7 @@ import useAssignedDriverInfoStore from './store/useAssignedDriverInfoStore';
 import useMapStore from '../map/store/useMapStore';
 import useWayPointReorderStore from '../booking/store/useWayPointReorderStore';
 import { openFeedback } from '../../utils/feedback';
+import {getCurrentDeviceLocation} from '../../utils/location'
 
 const RideStatus = () => {
   const { userdetails } = useUserInfoStore();
@@ -93,11 +94,16 @@ const RideStatus = () => {
           goBack();
         } 
       }
+
+      setCancelLoading(false);
+      
       
     }
     catch (error) {
+      setCancelLoading(false);
       console.error("Error cancelling ride:", error);
       showNotification('Failed to cancel ride. Please try again.');
+      
     }
   }
   const handleCancel = async (reason) => {
@@ -183,12 +189,21 @@ const RideStatus = () => {
       console.log("FinalDuration",FinalDuration)
       console.log("GPSdistance",GPSdistance)
       
+     
+      
       const payload = {
         tripId,
         reason: cancelReason,
-        totalDistance: GPSdistance?.toFixed(1) || 0.0,
-        totalDuration: Math.round(FinalDuration)
+        totalDistance: parseFloat((GPSdistance)?.toFixed(1)) || 0.0,
+        totalDuration: Math.round(FinalDuration),
       };
+       const location = await getCurrentDeviceLocation();
+      if(location && location.latitude && location.longitude){
+        payload.droppedAtLoc = {
+          lat: location.latitude,
+          lon: location.longitude
+        }
+      }
 
       console.log("payload",payload)
       const response = await CancelRide(payload);
@@ -199,6 +214,7 @@ const RideStatus = () => {
       }
       else{
         showNotification('Failed to cancel ride. Please try again.');
+        setCancelLoading(false);
       }
       
     
