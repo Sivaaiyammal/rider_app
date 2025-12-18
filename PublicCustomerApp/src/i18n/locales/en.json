@@ -685,6 +685,7 @@
   "become_a_driver": "Become a Driver",
   "not_serving_area_message": "We're sorry, but we are not currently serving your area.",
   "not_serving_area_title": "Service Unavailable",
+  "no_drivers_available_generic": "No drivers are available nearby. Please edit pickup and drop locations.",
   "no_drivers_available_for_vehicle": "No drivers are currently available for the selected vehicle type. Please try again later or choose a different vehicle.",
   "no_drivers_available_title": "No Drivers Available",
   "routeStatus": {
@@ -694,5 +695,14 @@
     "helper": "Ensure your internet is stable and try again.",
     "retry": "Try Again",
     "back": "Back"
-  }
+  },
+  "no_female_drivers_available": "No female drivers available",
+  "no_trusted_drivers_available": "No Night drivers available",
+  "no_female_drivers_hint": "No female drivers are nearby right now. You can search all drivers instead.",
+  "no_trusted_drivers_hint": "No Night drivers are nearby right now. You can search all drivers instead.",
+  "search_all_drivers": "Search all drivers",
+  "see_all_drivers": "See all drivers",
+  "no_drivers_for_vehicle": "No drivers for {{vehicle}}",
+  "no_drivers_for_vehicle_body": "Your selected {{vehicle}} has no drivers nearby. We picked another vehicle with available drivers.",
+  "edit_places_button": "Edit Places"
 }

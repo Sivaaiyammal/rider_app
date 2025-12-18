@@ -569,7 +569,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
         onClose={handleCloseModel}
         variant="female"
         vehicleType={selectedVehicle?.type}
-        ctaLabel="See all drivers"
+        ctaLabel={t('see_all_drivers')}
       />
 
       <PreferenceDriverModal
@@ -577,7 +577,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
         onClose={handleCloseModel}
         variant="trusted"
         vehicleType={selectedVehicle?.type}
-        ctaLabel="See all drivers"
+        ctaLabel={t('see_all_drivers')}
       />
 
       <PreferenceDriverModal
@@ -585,9 +585,9 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
         onClose={handleCloseSelectedTypeNotFound}
         variant="trusted"
         vehicleType={notFoundVehicleType}
-        title={`No drivers for ${VEHICLE_LABELS[notFoundVehicleType] || notFoundVehicleType || 'selected vehicle'}`}
-        message={`Your selected ${VEHICLE_LABELS[notFoundVehicleType] || notFoundVehicleType || 'vehicle'} has no drivers nearby. We picked another vehicle with available drivers.`}
-        ctaLabel="See all drivers"
+        title={t('no_drivers_for_vehicle', { vehicle: VEHICLE_LABELS[notFoundVehicleType] || notFoundVehicleType || 'selected vehicle' })}
+        message={t('no_drivers_for_vehicle_body', { vehicle: VEHICLE_LABELS[notFoundVehicleType] || notFoundVehicleType || 'vehicle' })}
+        ctaLabel={t('see_all_drivers')}
       />
       
    

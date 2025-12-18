@@ -33,7 +33,7 @@ const NavBar = props => {
 
      {onBackPress && ( <TouchableOpacity style={navStyles.leftIcon} onPress={onBackPress}>
        
-          <View style={[navStyles.leftBtn, { elevation: elevation ? 5 : 0 }]}>
+          <View style={[navStyles.leftBtn, { elevation: elevation ? 5 : 0 },elevation && { marginLeft:20,padding:6}]}>
             <Ionicons name="chevron-back" size={25} color={colors.black} />
           </View>
        

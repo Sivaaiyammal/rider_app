@@ -27,8 +27,7 @@ export const navStyles = StyleSheet.create({
   },
   leftBtn: {
     padding:5,
-    marginLeft:20,
-  
+    marginLeft:10,
     alignItems:'center',
     backgroundColor:'white',
     borderRadius:50,
