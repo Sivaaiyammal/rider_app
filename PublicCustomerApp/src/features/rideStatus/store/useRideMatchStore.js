@@ -19,6 +19,9 @@ const useRideMatchStore = create(set => ({
   message: null,
   setMessage: (message) => set({ message }),
 
+  driverMatched: false,
+  setDriverMatched: (matched) => set({ driverMatched: matched }),
+
   setRideMatchStatus: (data) => {
     // Update status and message
     set({

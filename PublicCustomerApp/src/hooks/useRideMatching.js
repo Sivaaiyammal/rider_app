@@ -22,7 +22,8 @@ const useRideMatching = () => {
     setMessage,
     setDriverName,
     setCurrentDriverLatitude,
-    setCurrentDriverLongitude
+    setCurrentDriverLongitude,
+    setDriverMatched
   } = useRideMatchStore();
   
   const { id: userId } = useUserInfoStore();
@@ -58,6 +59,11 @@ const useRideMatching = () => {
         rideMatchingSocketService.onMatchingUpdate((matchingData) => {
           console.log('📡 Received matching update:', matchingData);
           setRideMatchStatus(matchingData);
+          if(matchingData?.status === 'MATCHED'){
+            setTimeout(() => {
+              setDriverMatched(true);
+            }, 10000);
+          }
           if(matchingData?.status === 'error'){
             resetSocket();
             setTripStatus(null);

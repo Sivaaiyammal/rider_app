@@ -65,6 +65,7 @@ import LocationPermissionOverlay from '../components/LocationPermissionOverlay';
 import { log } from '@react-native-firebase/crashlytics';
 import ContributionScreen from '../features/contribution/screens/ContributionScreen.jsx';
 import DriverAccessScreen from './Driver/DriverAccessScreen.jsx';
+import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore.js';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -139,6 +140,7 @@ const Home = () => {
   const [locationCheckComplete, setLocationCheckComplete] = useState(false);
   const [locationBlockReason, setLocationBlockReason] = useState(null);
   const { appConfig ,updateAvailable} = useConfigStore();
+  const { driverMatched, setDriverMatched } = useRideMatchStore();
   
   const { setHomelocation, setWorklocation, setIsPreferenceShow} = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
@@ -254,6 +256,18 @@ const Home = () => {
       }
     }
   }, [setLocation, setCurrentLocationName, debouncedProcessLocation]);
+
+
+
+  useEffect(() => { 
+    if (driverMatched) {  
+      console.log('Driver matched, stopping nearby driver polling');
+      checkOnGoingRideAndLog(); 
+      setDriverMatched(false);
+      
+    }
+
+  }, [driverMatched]);
 
 
 
