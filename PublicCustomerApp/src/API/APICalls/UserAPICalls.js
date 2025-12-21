@@ -7,6 +7,7 @@ import {
   testlogin,
   verifyOTP,
   deleteAccount,
+  getPassengerTripStats,
 } from '../EndPoints/EndPoints';
 import {showNotification} from '../../components/NotificationManger';
 import { t } from 'i18next';
@@ -149,5 +150,23 @@ export const deleteAccountMutation = onSuccessCallback => {
         'danger',
       );
     },
+  });
+};
+
+// fetch passenger trip stats
+export const fetchPassengerTripStats = (onSuccessCallback) => {
+  return useQuery(['passengerTripStats'], getPassengerTripStats, {
+    onSuccess: data => {
+      if (onSuccessCallback) {
+        onSuccessCallback(data);
+      }
+    },
+    onError: error => {
+      showNotification(`${error.status}`, error.message, 'danger');
+    },
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: 5 * 60 * 1000,
   });
 };

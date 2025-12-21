@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity, View, Platform} from 'react-native';
+import {Text, TouchableOpacity, View, Platform, ActivityIndicator} from 'react-native';
 import React, {useState, useEffect, useRef, useContext} from 'react';
 import {useTranslation} from 'react-i18next';
 
@@ -42,6 +42,7 @@ const OTPScreen = ({route}) => {
     route.params.countryCode,
   );
   const [otpInput, setOtpInput] = useState('');
+  const [otpError, setOtpError] = useState('');
 
   const [timer, setTimer] = useState(120);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
@@ -73,6 +74,7 @@ const OTPScreen = ({route}) => {
     try {
       if (data.success) {
         console.log('Verification data', data);
+        setOtpError(''); // Clear error on success
        
         let { user, isNewUser } = data;
         
@@ -98,7 +100,8 @@ const OTPScreen = ({route}) => {
         }
         // showNotification(t('otp_verified'), t('otp_verified_successfully'), 'success');
       } else {
-        if(data?.message.typeof === 'string'){  
+        setOtpError(t('invalid_otp'));
+        if(typeof data?.message === 'string'){  
           showNotification(t('failed'), t('invalid_otp'), 'danger');
         }else{
           showNotification(t('failed'), t('something_went_wrong'), 'danger');
@@ -176,6 +179,9 @@ const OTPScreen = ({route}) => {
 
  
   const onOtpChange = (text) => {
+    if (otpError) {
+      setOtpError('');
+    }
     const digitsOnly = (text || '').replace(/[^0-9]/g, '');
     const code = digitsOnly.slice(0, 6);
     setOtpInput(code);
@@ -208,7 +214,7 @@ const OTPScreen = ({route}) => {
 
   return (
     <View style={loginStyles.screen}>
-      {isLoading && <FullScreenLoader />}
+    
       
       {/* Header with back button */}
       <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 20}}>
@@ -265,11 +271,19 @@ const OTPScreen = ({route}) => {
           }}
       />
       </View>
+      {otpError ? <Text style={{color: 'red', textAlign: 'center', marginTop: 10}}>{otpError}</Text> : null}
       <TouchableOpacity disabled={isButtonDisabled} onPress={()=> isButtonDisabled ? null : resendOTP()}>
       <Text style={loginStyles.resendOTP}>{t('resend_otp')} {isButtonDisabled ? `${t('in')} ${formatTime(timer)}` : null}</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={loginStyles.otpBtn} onPress={() => verifyOtp()}>
-        <Text style={loginStyles.otptxt}>{t('verify_otp')}</Text>
+      <TouchableOpacity
+        style={loginStyles.otpBtn}
+        onPress={() => verifyOtp()}
+        disabled={isLoading}>
+        {isLoading ? (
+          <ActivityIndicator color={colors.white} />
+        ) : (
+          <Text style={loginStyles.otptxt}>{t('verify_otp')}</Text>
+        )}
       </TouchableOpacity>
     </View>
   );

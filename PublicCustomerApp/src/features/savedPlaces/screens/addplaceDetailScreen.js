@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -50,6 +51,7 @@ const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existi
   const [nickname, setNickname] = useState(
     edit && existingLabel !== 'home' && existingLabel !== 'work' ? stripEmojis(existingLabel) : ''
   );
+  const [loading, setLoading] = useState(false);
   const {setMapStyle} = useMapStyleStore();
 
   // Get location data from route params
@@ -133,17 +135,23 @@ const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existi
     );
   };
 
-  const handlePlaceSave = () => {
+  const handlePlaceSave = async () => {
+    setLoading(true);
     const label = selectedOption === 'nickname' ? nickname : selectedOption;
-    if(edit){
-      handleSavePlace(locationData, label,placeData.favPlaceId);
-    }else{
-      handleSavePlace(locationData, label);
+    try {
+      if (edit) {
+        await handleSavePlace(locationData, label, placeData.favPlaceId);
+      } else {
+        await handleSavePlace(locationData, label);
+      }
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   // Check if save button should be disabled
-  const isSaveDisabled = selectedOption === 'nickname' && !nickname.trim();
+  const isSaveDisabled =
+    (selectedOption === 'nickname' && !nickname.trim()) || loading;
 
   return (
     <>
@@ -194,17 +202,24 @@ const AddPlaceDetailScreen = ({ placeData, handleSavePlace, edit = false, existi
         <TouchableOpacity
           style={[
             styles.saveButton,
-            isSaveDisabled && styles.saveButtonDisabled
+            isSaveDisabled && styles.saveButtonDisabled,
           ]}
           onPress={handlePlaceSave}
           disabled={isSaveDisabled}
         >
-          <AdaptiveText style={[
-            styles.saveButtonText,
-            isSaveDisabled && styles.saveButtonTextDisabled
-          ]}
-          color={isSaveDisabled ? '#999' : '#fff'}
-          >{edit ? t('update_place') : t('save_place')}</AdaptiveText>
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <AdaptiveText
+              style={[
+                styles.saveButtonText,
+                isSaveDisabled && styles.saveButtonTextDisabled,
+              ]}
+              color={isSaveDisabled ? '#999' : '#fff'}
+            >
+              {edit ? t('update_place') : t('save_place')}
+            </AdaptiveText>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </View>

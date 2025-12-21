@@ -339,7 +339,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
  
    
     
-    syncDriverMarkersWithVehicles(vehicle.type);
+    // syncDriverMarkersWithVehicles(vehicle.type);
     setSelectedVehicle(vehicle);
   };
 

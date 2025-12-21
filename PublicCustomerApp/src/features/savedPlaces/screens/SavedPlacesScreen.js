@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
@@ -15,6 +15,7 @@ const SavedPlacesScreen = () => {
   const { t } = useTranslation();
   const {goBack,setStackScreen} = useStackScreenStore();
   const {userFavPlaces, setUserFavPlaces} = useUserInfoStore();
+  const [deletingId, setDeletingId] = useState(null);
 
   
   const handleSavePlace = async (placeData,label) => {
@@ -103,6 +104,7 @@ const SavedPlacesScreen = () => {
           text: t('delete_place'),
           style: 'destructive',
           onPress: async () => {
+            setDeletingId(placeToDelete.favPlaceId);
             try {
               const payload = {
                 favPlaceId: placeToDelete.favPlaceId, // Use favPlaceId for deletion
@@ -122,6 +124,8 @@ const SavedPlacesScreen = () => {
             } catch (error) {
               console.error('Error deleting place:', error);
               showNotification(t('error'), t('failed_to_delete_place_try_again'));
+            } finally {
+              setDeletingId(null);
             }
           },
         },
@@ -209,18 +213,17 @@ const SavedPlacesScreen = () => {
           </Text>
         </View>
         <View style={styles.actionButtons}>
-          {/* <TouchableOpacity 
-            style={styles.editButton}
-            onPress={() => handleEditPlace(place)}
-          >
-            <Ionicons name="create-outline" size={20} color="#007AFF" />
-          </TouchableOpacity> */}
-          <TouchableOpacity 
-            style={styles.deleteButton}
-            onPress={() => handleDeletePlace(place)}
-          >
-            <Ionicons name="trash-outline" size={20} color="#ff4444" />
-          </TouchableOpacity>
+          {deletingId === place.favPlaceId ? (
+            <ActivityIndicator size="small" color="#ff4444" />
+          ) : (
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeletePlace(place)}
+              disabled={deletingId !== null}
+            >
+              <Ionicons name="trash-outline" size={20} color="#ff4444" />
+            </TouchableOpacity>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -405,4 +408,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SavedPlacesScreen; 
+export default SavedPlacesScreen;

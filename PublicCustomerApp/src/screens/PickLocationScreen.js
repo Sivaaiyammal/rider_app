@@ -628,6 +628,9 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
                     }}
                     placeholder={t('search_cities_areas_streets')}
                     placeholderTextColor={colors.grey_dark}
+                    autoCorrect={false} // Primary prop to disable auto-correction
+                    spellCheck={false} // Disables the red underlines for misspelled words
+                    autoComplete="off" // Disables autofill suggestions
                   />
                 </Animated.View>
                 { (searchTxt && searchTxt.length > 0) && (
@@ -1164,7 +1167,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: colors.black,
     padding:0,
-    textTransform:'capitalize'
+    // textTransform:'capitalize'
   },
   AddressContainerIcon: {
     backgroundColor:  '#fff79e',

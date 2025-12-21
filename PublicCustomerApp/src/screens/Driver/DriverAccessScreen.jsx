@@ -1,10 +1,13 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, ScrollView, Dimensions, Linking, Image } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
 import AdaptiveText from '../../components/Common/AdaptiveText';
 import i18n from '../../i18n';
 import { colors, Fonts } from '../../constants/constants';
 import { GlobalContext } from '../../context/GlobalContext';
-
+import { useStackScreenStore } from '../../store/useStackScreenStore';
+import { goBack } from '../../navigation/RootNavigation';
 const PLAY_STORE_PACKAGE_NAME = 'com.vmtrackers';
 const PLAY_STORE_WEB_URL = `https://play.google.com/store/apps/details?id=${PLAY_STORE_PACKAGE_NAME}`;
 const DRIVER_APP_LOGO = require('../../assets/image/driverLogo.webp');
@@ -57,7 +60,8 @@ const DRIVER_STEPS = [
   },
 ];
 
-const DriverAccessScreen = ({ navigation }) => {
+const DriverAccessScreen = ({fromHome=false}) => {
+  const navigation = useNavigation();
   const { theme } = useContext(GlobalContext);
   const scrollRef = useRef(null);
   const currentIndexRef = useRef(0);
@@ -68,6 +72,7 @@ const DriverAccessScreen = ({ navigation }) => {
   const cardBackgroundColor = colors.blue_xxdark;
   const cardTitleColor = colors.white;
   const cardDescriptionColor = 'rgba(255, 255, 255, 0.72)';
+  const { setStackScreen , goBack} = useStackScreenStore();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -88,11 +93,31 @@ const DriverAccessScreen = ({ navigation }) => {
   };
 
   const handleGoBack = () => {
-    navigation.goBack();
-  };
+    console.log('handleGoBack ..............................',fromHome);
+      if (fromHome == true) {
+        console.log('fromHome ..............................');
+        goBack();
+      } else {
+        try{
+          navigation.goBack();
+
+        }catch(err){
+          console.warn('Error going back:', err);
+        }
+      
+      }
+  }
+
+  
 
   const handleContactUs = () => {
-    navigation.navigate('ContactScreen');
+    if (fromHome) {
+      setStackScreen('ContactScreen');
+    }else{
+      navigation.navigate('ContactScreen');
+
+    }
+
   };
 
   const handleMomentumScrollEnd = (event) => {
@@ -124,6 +149,12 @@ const DriverAccessScreen = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { backgroundColor:  '#F5F5F5',}] }>
+      {/* Back Button */}
+      <TouchableOpacity style={styles.backButton} onPress={handleGoBack} activeOpacity={0.7}>
+        <View style={styles.backButtonInner}>
+          <Ionicons name="chevron-back" size={25} color={colors.black} />
+        </View>
+      </TouchableOpacity>
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
         <View style={[styles.bannerWrapper, { width: bannerSize, height: bannerSize }] }>
           <Image source={DRIVER_BANNER} style={styles.banner} resizeMode="cover" />
@@ -144,7 +175,7 @@ const DriverAccessScreen = ({ navigation }) => {
             style={[styles.linkButton, { backgroundColor:  colors.blue_xxdark }] }
              onPress={() => Linking.openURL(PLAY_STORE_WEB_URL)}
           >
-            <Text style={[styles.linkButtonText, { color: theme?.primary ?? colors.blue_xxdark }] }>
+            <Text style={[styles.linkButtonText, { color: colors.yellow}] }>
               {i18n.t('driver_access.download_driver_app')}
             </Text>
           </TouchableOpacity>
@@ -267,9 +298,41 @@ const DriverAccessScreen = ({ navigation }) => {
   );
 };
 
+
+
 export default DriverAccessScreen;
 
 const styles = StyleSheet.create({
+    backButton: {
+      position: 'absolute',
+      top: 32,
+      left: 20,
+      zIndex: 10,
+      borderRadius: 24,
+      backgroundColor: '#fff',
+      shadowColor: '#000',
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 5,
+      width: 44,
+      height: 44,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    backButtonInner: {
+      borderRadius: 22,
+      width: 40,
+      height: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    backIcon: {
+      width: 22,
+      height: 22,
+      resizeMode: 'contain',
+      tintColor: '#222',
+    },
   container: {
     flex: 1,
  

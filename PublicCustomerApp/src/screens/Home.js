@@ -268,12 +268,7 @@ const Home = () => {
     }
 
   }, [driverMatched]);
-
-
-
   
-
-
   const handleUserLocatioChange = useCallback(currentLocation => {
     const lng = currentLocation?.longitude;
     const lat = currentLocation?.latitude;
@@ -413,24 +408,24 @@ const Home = () => {
         if(Response?.userStats?.favPlaces?.length > 0){
           setUserFavPlaces(Response?.userStats?.favPlaces);
         }
-        if(Response?.userStats?.stats){
+        // if(Response?.userStats?.stats){
            
-           const stats = Response?.userStats?.stats;
+        //    const stats = Response?.userStats?.stats;
      
            
               
-            setTotalSpend(stats?.totalSpends || 0);
+        //     setTotalSpend(stats?.totalSpends || 0);
           
          
-            setCancelledTrips(stats?.cancelledTrips || 0);
+        //     setCancelledTrips(stats?.cancelledTrips || 0);
           
   
-            setCompletedTrips(stats?.completedTrips || 0);
+        //     setCompletedTrips(stats?.completedTrips || 0);
           
           
-            setTotalTrips(stats?.totalTrips || 0);
+        //     setTotalTrips(stats?.totalTrips || 0);
           
-        }
+        // }
         if(Response?.userStats?.rating){
           setRatingData(Response?.userStats?.rating);
         }

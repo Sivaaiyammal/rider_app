@@ -47,7 +47,7 @@ android {
         applicationId "com.virtualmaze.prcustomer"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 23
+        versionCode 24
         versionName "2.2.0.1"
         missingDimensionStrategy 'react-native-camera', 'general' // <-- insert this line
         missingDimensionStrategy 'store', 'play'
@@ -137,7 +137,6 @@ dependencies {
     implementation name: "services_core", ext: 'aar'
     implementation name: "geoJson", ext: 'aar'
     implementation name: "geocoding", ext: 'aar'
-    implementation name: "speech", ext: 'aar'
     implementation name: "models", ext: 'aar'
     // The version of react-native is set by the React Native Gradle Plugin
     implementation 'com.squareup.retrofit2:retrofit:2.5.0'

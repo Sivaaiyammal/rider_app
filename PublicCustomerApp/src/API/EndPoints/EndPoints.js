@@ -177,6 +177,12 @@ export const deleteAccount = async (payload) => {
     return data
   }
 
+  // get passenger trip stats (totals, spend, etc.)
+  export const getPassengerTripStats = async () => {
+    const { data } = await apiClient.get('/publicrides/customer/getPassengerTripStats')
+    return data
+  }
+
 
 
 

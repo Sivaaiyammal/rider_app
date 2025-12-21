@@ -47,7 +47,7 @@ const PaymentScreen = () => {
   // Toggle to show the pre-payment confirmation modal
   const showModel = true; // set to false to skip confirmation
   // Config: control whether gateway fee is added to shown fare before clicking PAY
-  const showGateFeeAddedFare = paymentMethod?.toLowerCase() === 'online' ? true : false;
+  const showGateFeeAddedFare = false;
   const {setStackScreen} = useStackScreenStore();
   const { incrementTotalSpend,incrementCompletedTrips } = useUserInfoStore();
   const animateIn = () => {

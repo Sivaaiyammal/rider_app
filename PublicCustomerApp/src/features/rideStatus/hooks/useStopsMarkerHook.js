@@ -13,7 +13,7 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
             // Remove any existing driver marker
             const filtered = prevMarkers.filter(marker => marker.id !== 'driver');
             if (!driverLatitude || !driverLongitude) return filtered;
-            const driverMarker = new Marker(`marker-driver-${markerType}`,'driver', driverLongitude, driverLatitude, vehicleType?.toLowerCase(), 48);
+            const driverMarker = new Marker(`marker-driver-${markerType}`,'driver', driverLongitude, driverLatitude, vehicleType?.toLowerCase(), 36);
             console.log("driverMarker",driverMarker)
             if(driverAngle){
                 driverMarker.setAngle(driverAngle);

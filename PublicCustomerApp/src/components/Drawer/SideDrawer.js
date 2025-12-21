@@ -183,6 +183,10 @@ const SideDrawerV2 = ({ handleMenu }) => {
       if (menu.screen === 'LanguageScreen'){
         setStackScreen(menu.screen,{fromDrawer:true});
       }
+      
+      else if (menu.screen === 'DriverAccessScreen'){ 
+         setStackScreen(menu.screen,{fromHome:true});
+      }        
       else{
         
         setStackScreen(menu.screen);

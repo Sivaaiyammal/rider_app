@@ -4,14 +4,14 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useNavigation } from '@react-navigation/native';
 import { DataStore } from '../../controllers/DataStore';
 import useUserInfoStore from '../../store/useUserInfoStore';
 import { utils } from '../../utils/Utils';
-import { deleteAccountMutation } from '../../API/APICalls/UserAPICalls';
+import { deleteAccountMutation, fetchPassengerTripStats } from '../../API/APICalls/UserAPICalls';
 import { showNotification } from '../../components/NotificationManger';
 import DeleteAccountModal from '../../components/DeleteAccountModal';
 
@@ -33,7 +33,7 @@ const MyAccountScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const { goBack,reset } = useStackScreenStore();
-  const { userdetails ,ratingData  ,totalSpend,cancelledTrips,completedTrips,totalTrips,resetUserInfo} = useUserInfoStore();
+  const { userdetails ,ratingData  ,totalSpend,cancelledTrips,completedTrips,totalTrips,resetUserInfo, setTotalSpend, setTotalTrips, setCancelledTrips, setCompletedTrips } = useUserInfoStore();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { removeListener } = useContext(GlobalContext);
 
@@ -99,6 +99,18 @@ const MyAccountScreen = () => {
   const deleteAccount = deleteAccountMutation(async () => {
     showNotification(t('account_deletion_requested'), t('account_deletion_message'), 'success');
     await Logout();
+  });
+
+  // Fetch passenger trip stats on mount (single call, no refetch)
+  const tripStatsQuery = fetchPassengerTripStats((resp) => {
+    const payload = resp?.data ?? resp;
+    console.log('tripStatsQuery data:', payload);
+    if (!payload) return;
+    const spend = typeof payload.totalSpends !== 'undefined' ? payload.totalSpends : payload.totalSpend;
+    if (typeof spend !== 'undefined') setTotalSpend(spend);
+    if (typeof payload.totalTrips !== 'undefined') setTotalTrips(payload.totalTrips);
+    if (typeof payload.cancelledTrips !== 'undefined') setCancelledTrips(payload.cancelledTrips);
+    if (typeof payload.completedTrips !== 'undefined') setCompletedTrips(payload.completedTrips);
   });
 
   const handleDeleteAccount = () => {
