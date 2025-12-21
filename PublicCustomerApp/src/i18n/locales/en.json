@@ -702,7 +702,7 @@
   "no_trusted_drivers_hint": "No Night drivers are nearby right now. You can search all drivers instead.",
   "search_all_drivers": "Search all drivers",
   "see_all_drivers": "See all drivers",
-  "no_drivers_for_vehicle": "No drivers for {{vehicle}}",
-  "no_drivers_for_vehicle_body": "Your selected {{vehicle}} has no drivers nearby. We picked another vehicle with available drivers.",
+  "no_drivers_for_vehicle": "No drivers for {vehicle}",
+  "no_drivers_for_vehicle_body": "Your selected {vehicle} has no drivers nearby. We picked another vehicle with available drivers.",
   "edit_places_button": "Edit Places"
 }

@@ -283,6 +283,10 @@ const RideStatus = () => {
 
   },[tripStatus])
 
+  const handleClose = () => {
+    setCancelLoading(false);
+  }
+
  
 
  
@@ -351,7 +355,7 @@ const RideStatus = () => {
 
         {
       showBottomSheet &&
-      <AnimatedBottomSheetWrapper onClose={()=>{setShowBottomSheet(false)}}>
+      <AnimatedBottomSheetWrapper onClose={()=>{handleClose();setShowBottomSheet(false)}}>
         <CancelComponent onClose={()=>{setShowBottomSheet(false)}} onCancel={handleCancel}  loading={loading} cancelLoading={cancelLoading} rideStatus={tripStatus} />
       </AnimatedBottomSheetWrapper>
       

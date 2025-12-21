@@ -678,7 +678,7 @@
   "no_trusted_drivers_hint": "अभी पास में कोई विश्वसनीय ड्राइवर नहीं है। आप सभी ड्राइवरों को खोज सकते हैं।",
   "search_all_drivers": "सभी ड्राइवर खोजें",
   "see_all_drivers": "सभी ड्राइवर देखें",
-  "no_drivers_for_vehicle": "{{vehicle}} के लिए कोई ड्राइवर नहीं",
-  "no_drivers_for_vehicle_body": "आपके चुने हुए {{vehicle}} के पास कोई ड्राइवर नहीं है। हमने उपलब्ध ड्राइवरों के साथ दूसरा वाहन चुना है।",
+  "no_drivers_for_vehicle": "{vehicle} के लिए कोई ड्राइवर नहीं",
+  "no_drivers_for_vehicle_body": "आपके चुने हुए {vehicle} के पास कोई ड्राइवर नहीं है। हमने उपलब्ध ड्राइवरों के साथ दूसरा वाहन चुना है।",
   "edit_places_button": "स्थान संपादित करें"
 }

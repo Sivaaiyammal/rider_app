@@ -1,5 +1,5 @@
 export const VEHICLE_LABELS = {
-    AUTO:"Auto Xpress",
+    AUTO:"Auto",
     BIKE:"Bike Hop",
     HATCHBACK:"Hatch Go",
     SEDAN:"Urban Sedan",
