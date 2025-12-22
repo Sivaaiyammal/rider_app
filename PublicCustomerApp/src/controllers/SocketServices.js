@@ -5,6 +5,7 @@ import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRide
 import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore';
 import useAssignedDriverInfoStore from '../features/rideStatus/store/useAssignedDriverInfoStore';
 import useWayPointReorderStore from '../features/booking/store/useWayPointReorderStore';
+import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore';
  
 import { usePaymentStore } from '../features/payment/store/usePaymentStore';
 import { DataStore } from './DataStore';
@@ -34,6 +35,7 @@ class WSService {
     this.useStackScreenStore = useStackScreenStore
     this.useCurrentRideInfoStore = useCurrentRideInfoStore
     this.useAssignedDriverInfoStore = useAssignedDriverInfoStore
+    this.useRideBookingLocationStore = useRideBookingLocationStore
     this.useRideMatchStore = useRideMatchStore  
     this.usePaymentStore = usePaymentStore
     this.useUserInfoStore = useUserInfoStore
@@ -87,8 +89,16 @@ class WSService {
             this.useRideMatchStore.getState().resetRideMatchStatus();
             this.useCurrentRideInfoStore.getState().setTripStatus(null);
             this.useWayPointReorderStore.getState().setWaitingForDriverApproval(null);
-            this.useStackScreenStore.getState().goBackToScreen('BookRideScreen',{});
             await this.DataStore.clearData(PREF.CURRENT_TRIP);
+            const directIonsData = this.useRideBookingLocationStore.getState().rideStartLocation && this.useRideBookingLocationStore.getState().rideEndLocation 
+            
+            if(directIonsData){
+               this.useStackScreenStore.getState().goBackToScreen('BookRideScreen',{});
+            }else{
+              this.useStackScreenStore.getState().reset();
+            }
+           
+            
           }
           
         } catch (error) {
