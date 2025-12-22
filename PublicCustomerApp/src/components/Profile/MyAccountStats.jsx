@@ -6,8 +6,9 @@ import PropTypes from 'prop-types';
 
 import { Fonts, colors } from '../../constants/constants';
 import { useTranslation } from 'react-i18next';
+import SkeletonLoader from '../Loaders/SkeletonLoader';
 
-const StatCard = ({ iconName, iconLib = 'Ionicons', label, value, bgColor, iconColor }) => {
+const StatCard = ({ iconName, iconLib = 'Ionicons', label, value, bgColor, iconColor, loading }) => {
  
   const Icon = iconLib === 'Material' ? MaterialCommunityIcons : Ionicons;
   return (
@@ -15,7 +16,11 @@ const StatCard = ({ iconName, iconLib = 'Ionicons', label, value, bgColor, iconC
       <View style={[styles.iconWrap,{backgroundColor:iconColor+20}]}>
         <Icon name={iconName} size={30} color={iconColor} />
       </View>
-      <Text style={styles.valueText}>{value}</Text>
+      {loading ? (
+        <SkeletonLoader style={{ width: '50%', height: 20, borderRadius: 5, marginTop: 5 }} />
+      ) : (
+        <Text style={styles.valueText}>{value}</Text>
+      )}
       <Text style={styles.labelText}>{label}</Text>
     </View>
   );
@@ -28,9 +33,10 @@ StatCard.propTypes = {
   value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   bgColor: PropTypes.string.isRequired,
   iconColor: PropTypes.string.isRequired,
+  loading: PropTypes.bool,
 };
 
-const MyAccountStats = ({ stats }) => {
+const MyAccountStats = ({ stats, loading }) => {
   console.log("stats",JSON.stringify(stats));
   const { totalSpend = 0, cancelledTrips = 0, completedTrips = 0, totalTrips = 0 } = stats || {};
   const { t } = useTranslation();
@@ -86,6 +92,7 @@ const MyAccountStats = ({ stats }) => {
           value={item.value || "0"}
           bgColor={item.bgColor}
           iconColor={item.iconColor}
+          loading={loading}
         />
       ))}
     </View>
@@ -99,6 +106,7 @@ MyAccountStats.propTypes = {
     completedTrips: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     totalTrips: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   }),
+  loading: PropTypes.bool,
 };
 
 const styles = StyleSheet.create({
@@ -140,4 +148,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MyAccountStats; 
+export default MyAccountStats;

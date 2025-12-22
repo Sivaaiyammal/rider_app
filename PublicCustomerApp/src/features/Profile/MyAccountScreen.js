@@ -113,6 +113,8 @@ const MyAccountScreen = () => {
     if (typeof payload.completedTrips !== 'undefined') setCompletedTrips(payload.completedTrips);
   });
 
+  const { isLoading: isTripStatsLoading } = tripStatsQuery;
+
   const handleDeleteAccount = () => {
     setShowDeleteModal(true);
   };
@@ -158,7 +160,7 @@ const MyAccountScreen = () => {
           ratingData={ratingData}
         />
         <MyAccountInfo infos={Info_Items} />
-        <MyAccountStats stats={{totalSpend,cancelledTrips,completedTrips,totalTrips}} />
+        <MyAccountStats stats={{totalSpend,cancelledTrips,completedTrips,totalTrips}} loading={tripStatsQuery.isFetching} />
         <View style={{alignContent:'center',justifyContent:'center',marginTop:30,marginBottom:30}}>
           <SwipeBtn name={t('swipe_to_logout')} onHandleSwipeEnd={Logout} />
         </View>
