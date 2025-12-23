@@ -716,7 +716,7 @@ export const utils = {
     }
   },
   // Expects location as [lon, lat]
-  getBoundingBoxFromLocation(location, bufferMeters = 200) {
+  getBoundingBoxFromLocation(location, bufferMeters = 2000) {
     if (
       !Array.isArray(location) ||
       location.length !== 2 ||

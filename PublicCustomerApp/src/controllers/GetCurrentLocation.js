@@ -16,9 +16,9 @@ class currentLocation {
     setLoading(true); // Set loading to true before starting the geolocation process
     if(location){
       
-      const bounds = utils.getBoundingBoxFromLocation(location, 200)
+      const bounds = utils.getBoundingBoxFromLocation(location, 500)
     
-      const margin = [200, 200, 200, 200+height*0.4]  
+      const margin = [10, 10, 10, height*0.4]  
       const finalBounds = [bounds, margin]
       
       setMapBounds(finalBounds);

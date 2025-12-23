@@ -306,8 +306,8 @@ const MapScreen = () => {
   useEffect(()=>{
     if(location && location.length > 0){
      
-      const bounds = utils.getBoundingBox([[location[0],location[1]]])
-      const margin = [200, 200, 200, 200+height*0.4]
+      const bounds = utils.getBoundingBox([[location[0],location[1]]],1000)
+      const margin = [10, 10, 10, 10+height*0.4]
       const finalBounds = [bounds, margin]
       setTimeout(() => {
         setMapBounds(finalBounds);

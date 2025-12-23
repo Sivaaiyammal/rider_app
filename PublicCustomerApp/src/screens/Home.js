@@ -49,6 +49,7 @@ import EmergencyHomeScreen from '../features/emergencyContact/screens/EmergencyH
 import { CommonActions } from '@react-navigation/native';
 import useRideMatching from '../hooks/useRideMatching';
 import TrackingTestScreen from './TrackingTestScreen';
+import TestScreen from './TestScreen';
 import { useNetwork } from '../context/NetworkContext';
 import DeviceInfo from 'react-native-device-info';
 import { showNotification } from '../components/NotificationManger';
@@ -718,6 +719,8 @@ const Home = () => {
         return <EmergencyHomeScreen {...params} />;
       case 'TrackingTestScreen':
         return <TrackingTestScreen {...params} />;
+      case 'TestScreen':
+        return <TestScreen {...params} />;
       case 'ScheduleScreen':
         return <ScheduleScreen {...params} />;
       case 'ContributionScreen':
