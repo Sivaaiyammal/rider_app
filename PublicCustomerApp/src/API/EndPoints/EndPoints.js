@@ -164,6 +164,13 @@ export const deleteAccount = async (payload) => {
     return data
   }
 
+  // report passenger payment issues
+  export const passengerPaymentIssues = async (payload) => {
+    // expects { tripId, passengerIssues }
+    const { data } = await apiClient.post('/publicrides/customer/passengerPaymentIssues', payload)
+    return data
+  }
+
   // Trigger SOS
   export const triggerSOS = async (payload) => {
     const { data } = await apiClient.post('/publicrides/customer/sosTriggered', payload)

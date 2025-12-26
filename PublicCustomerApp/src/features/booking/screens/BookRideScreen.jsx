@@ -244,7 +244,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     
     const transformEstimateDatStore=(data,rideDistances)=>{
         const distanceNum = rideDistances != null ? Number(rideDistances) : null;
-        console.log(distanceNum,"wediw")
+        console.log(data,"wediw")
 
         if(utils.isEmptyObject(data)){
             setIsNotServingArea(true)
@@ -362,6 +362,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             // Save to cache on success
             if (cacheKey && data?.result?.success) {
                 setEstimationInCache(cacheKey, data);
+
             }
             onEstimationSuccess(data);
         } catch (error) {
@@ -398,6 +399,8 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     const getEstimatedFare = async () => {
         // Build a cache key from route coordinates (start, end, waypoints)
+        console.log("rideStartLocation",rideStartLocation)
+        console.log("rideEndLocation",rideEndLocation)
         const cacheKey = buildEstimationCacheKey({
             start: rideStartLocation,
             end: rideEndLocation,
@@ -413,11 +416,32 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             return;
         }
 
+    //     const payload = {
+    //         distance: rideDistance,
+    //         duration: estimatedDuration,
+    //        coordinates: [
+    //     parseFloat(rideStartLocation.longitude.toFixed(5)), 
+    //     parseFloat(rideStartLocation.latitude.toFixed(5))
+    // ],
+    //     };
         const payload = {
             distance: rideDistance,
             duration: estimatedDuration,
-            coordinates: [rideStartLocation.longitude, rideStartLocation.latitude],    
+           coordinates: [
+        rideStartLocation.longitude, 
+        rideStartLocation.latitude
+    ],
         };
+//       const payload = {
+//     "distance": "4.9",
+//     "duration": 12,
+//     "coordinates": [
+//         77.0449,
+//         11.03244
+//     ]
+// }
+
+        console.log("payload",payload)
         
         setIsLongLoad(false)
         debouncedGetRideEstimation(payload,cacheKey);

@@ -110,6 +110,54 @@ export const utils = {
     return string.charAt(0).toUpperCase() + string.slice(1);
   },
 
+  /**
+   * Returns true if the current time is beyond the feedback window
+   * that starts at `droppedAt` and lasts `offset` minutes.
+   * In other words: now > droppedAt + offsetMinutes → true.
+   * Accepts Date | ISO/string | number (ms or seconds) | moment.
+   * Invalid or missing inputs return false.
+   * @param {Date|string|number|import('moment').Moment|null} droppedAt
+   * @param {number} offset - minutes (default 20)
+   * @returns {boolean}
+   */
+  isTripDroppedBeyondFeedbackWindow: (droppedAt, offset = 20) => {
+    if (droppedAt === null || droppedAt === undefined || droppedAt === '') return false;
+
+    const toMoment = (input) => {
+      if (input === null || input === undefined || input === '') return null;
+      if (moment.isMoment(input)) return input.clone();
+      if (input instanceof Date) return moment(input);
+      if (typeof input === 'number' && Number.isFinite(input)) {
+        if (input >= 1e12) return moment(input);        // ms
+        if (input >= 1e9) return moment(input * 1000);  // seconds
+        return null;
+      }
+      if (typeof input === 'string') {
+        const trimmed = input.trim();
+        if (trimmed === '') return null;
+        const asNumber = Number(trimmed);
+        if (Number.isFinite(asNumber)) {
+          if (asNumber >= 1e12) return moment(asNumber);
+          if (asNumber >= 1e9) return moment(asNumber * 1000);
+          return null;
+        }
+        const parsed = moment(trimmed);
+        return parsed.isValid() ? parsed : null;
+      }
+      const parsed = moment(input);
+      return parsed.isValid() ? parsed : null;
+    };
+
+    const dropped = toMoment(droppedAt);
+    if (!dropped || !dropped.isValid()) return false;
+
+    const minutes = Number(offset);
+    const safeOffset = Number.isFinite(minutes) && minutes >= 0 ? minutes : 20;
+    const threshold = dropped.clone().add(safeOffset, 'minutes');
+
+    return moment().isAfter(threshold);
+  },
+
 
   formatArrayAddress: (array) => {
     if (typeof array === 'string') {

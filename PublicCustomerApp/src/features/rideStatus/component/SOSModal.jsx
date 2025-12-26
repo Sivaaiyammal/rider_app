@@ -141,7 +141,7 @@ const SOSModal = ({ onClose, presetTriggered = false }) => {
   };
 
   const handleCallEmergency = async () => {
-    try { await Linking.openURL('tel:122'); } catch (e) {
+    try { await Linking.openURL('tel:112'); } catch (e) {
       // ignore
     }
   };

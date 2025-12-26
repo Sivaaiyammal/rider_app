@@ -8,6 +8,14 @@ const BottomSheet = React.memo(({ children, minHeight, maxHeight, panGestureEnab
   const modalizeRef = reference || useRef(null);
   const screenHeight = Dimensions.get('window').height;
 
+  const renderContent = (content) => {
+    if (content === null || content === undefined) return null;
+    if (typeof content === 'string' || typeof content === 'number') {
+      return <Text>{content}</Text>;
+    }
+    return content;
+  };
+
   return (
   
       <Modalize
@@ -22,10 +30,10 @@ const BottomSheet = React.memo(({ children, minHeight, maxHeight, panGestureEnab
         panGestureEnabled={panGestureEnabled}
         withHandle={panGestureEnabled}
         disableScrollIfPossible={true}
-        HeaderComponent={<View style={styles.headerContainer}>{HeaderComponent}</View>}
+        HeaderComponent={<View style={styles.headerContainer}>{renderContent(HeaderComponent)}</View>}
       >
         <KeyboardAvoidingView behavior={null}>
-          <View style={{ paddingTop: 20 }}>{children}</View>
+          <View style={{ paddingTop: 20 }}>{renderContent(children)}</View>
         </KeyboardAvoidingView>
       </Modalize>
   

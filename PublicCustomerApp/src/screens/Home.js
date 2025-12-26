@@ -67,6 +67,7 @@ import { log } from '@react-native-firebase/crashlytics';
 import ContributionScreen from '../features/contribution/screens/ContributionScreen.jsx';
 import DriverAccessScreen from './Driver/DriverAccessScreen.jsx';
 import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore.js';
+import usePaymentStore from '../features/payment/store/usePaymentStore.js';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -142,6 +143,7 @@ const Home = () => {
   const [locationBlockReason, setLocationBlockReason] = useState(null);
   const { appConfig ,updateAvailable} = useConfigStore();
   const { driverMatched, setDriverMatched } = useRideMatchStore();
+  const {currentTripId,setCurrentTripId } = usePaymentStore();
   
   const { setHomelocation, setWorklocation, setIsPreferenceShow} = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
@@ -158,6 +160,7 @@ const Home = () => {
   const [showemergencyOverlay, setShowEmergencyOverlay] = useState(false);
   const [updateMode, setUpdateMode] = useState('none');
   const [showOverdueModal, setShowOverdueModal] = useState(false);
+  // Removed modal flow; PaymentScreen will display details
 
   const hasInitialLocationProcessed = useRef(false);
   const lastProcessedKey = useRef(null);
@@ -355,6 +358,7 @@ const Home = () => {
   const checkOnGoingRideAndLog = async () => {
     const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
     const currentTripId=currentTrip?.data || null
+    console.log("currentTripId",currentTripId)
     try {
       setConfigError(false);
       const Response = await getUserStats(currentTripId);
@@ -434,10 +438,13 @@ const Home = () => {
 
 
         if(Response?.trip?.status == "DROPPED" || ( Response?.trip?.status == "CANCELLED" && Response?.trip?.fareDetails)){
-          setStackScreen('PaymentScreen', { });
+          if(Response?.trip?._id){
+          setStackScreen('PaymentScreen', { lastTripId:Response?.trip?._id});
+          }
           return;
+          
         }
-        if((Response?.trip?.status == "COMPLETED" || Response?.trip?.status == "DIVERGED") && currentTrip ){
+        if((Response?.trip?.status == "COMPLETED" || Response?.trip?.status == "DIVERGED") && currentTripId ){
           setStackScreen('TripFeedbackScreen', { });
           return;
         }
@@ -445,7 +452,7 @@ const Home = () => {
       if(Response?.trip){
 
 
-        if (Response?.trip?.status == "CANCELLED" || Response?.trip?.status == "PENDING"){
+        if (Response?.trip?.status == "CANCELLED" || Response?.trip?.status == "PENDING" || Response?.trip?.status == "COMPLETED" || Response?.trip?.status == "DIVERGED") {
           await DataStore.clearData(PREF.CURRENT_TRIP)
           setStackScreen('Home', {});
           return;
@@ -475,9 +482,9 @@ const Home = () => {
             Response?.trip?.estimatedDuration,
             90
           );
+          console.log("isOverdue________________________",isOverdue)
           if(isOverdue){
             setShowOverdueModal(true);
-
           }
         } catch (e) {
           // no-op

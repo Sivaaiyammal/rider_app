@@ -180,10 +180,17 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             LngLat tappedPoint = mapController.screenPositionToLngLat(new PointF(x, y));
             double longitude = tappedPoint.longitude;
             double latitude = tappedPoint.latitude;
+            // Guard against invalid coordinates (NaN/Infinity) which break RN JSON serialization
+            if (Double.isNaN(longitude) || Double.isNaN(latitude) ||
+                    Double.isInfinite(longitude) || Double.isInfinite(latitude)) {
+                Log.w("NeNativeModule", "Tap produced invalid coords; skipping emit. lon=" + longitude + ", lat=" + latitude);
+                return true;
+            }
             WritableNativeMap eventData = new WritableNativeMap();
             eventData.putDouble("longitude", longitude);
             eventData.putDouble("latitude", latitude);
-            Log.e("onMapClick", "message" + eventData);
+            // Avoid eventData.toString() as it can throw when containing special doubles
+            Log.d("onMapClick", "lon=" + longitude + ", lat=" + latitude);
             reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                     .emit("onMapClick", eventData);
             return true;
@@ -390,6 +397,13 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                                 double latitude = mapCenter.latitude;
                                 double longitude = mapCenter.longitude;
 
+                                // Guard invalid values before emitting
+                                if (Double.isNaN(longitude) || Double.isNaN(latitude) ||
+                                        Double.isInfinite(longitude) || Double.isInfinite(latitude)) {
+                                    Log.w("NeNativeModule", "Center change invalid coords; lon=" + longitude + ", lat=" + latitude);
+                                    return;
+                                }
+
                                 WritableMap eventData = Arguments.createMap();
                                 eventData.putDouble("latitude", latitude);
                                 eventData.putDouble("longitude", longitude);
@@ -473,6 +487,11 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                                 // Log.e("My Location",""+location);
                                 double longitude = location.getLongitude();
                                 double latitude = location.getLatitude();
+                                if (Double.isNaN(longitude) || Double.isNaN(latitude) ||
+                                        Double.isInfinite(longitude) || Double.isInfinite(latitude)) {
+                                    Log.w("NeNativeModule", "Location invalid coords; lon=" + longitude + ", lat=" + latitude);
+                                    return;
+                                }
                                 WritableNativeMap eventData = new WritableNativeMap();
                                 eventData.putDouble("longitude", longitude);
                                 eventData.putDouble("latitude", latitude);
@@ -1688,9 +1707,14 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             eventData.putArray("routeInstructions", routeInstructionsArray);
 
             // You might want to add more route information to the eventData here
-            // For example:
-             eventData.putDouble("distance" , routeResponse.getRouteInstructions().getTotalDistance());
-             eventData.putDouble("duration", routeResponse.getRouteInstructions().getTotalDuration());
+            // Prefer the already validated routeInstructionsDisplay to avoid null access
+            if (routeInstructionsDisplay != null) {
+                eventData.putDouble("distance", routeInstructionsDisplay.getTotalDistance());
+                eventData.putDouble("duration", routeInstructionsDisplay.getTotalDuration());
+            } else if (routeResponse != null && routeResponse.getRouteInstructions() != null) {
+                eventData.putDouble("distance", routeResponse.getRouteInstructions().getTotalDistance());
+                eventData.putDouble("duration", routeResponse.getRouteInstructions().getTotalDuration());
+            }
 
             reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                     .emit("direction-ready", eventData);

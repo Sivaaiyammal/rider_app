@@ -30,8 +30,9 @@ import  useUserInfoStore  from '../../../store/useUserInfoStore';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import useConfigStore from '../../../store/useConfigStore'; 
 import { openFeedback } from '../../../utils/feedback';
+import DroppedButPaymentPendingLongtime from '../../../components/DroppedButPaymentPendingLongtime';
 
-const PaymentScreen = () => {
+const PaymentScreen = ({lastTripId=null}) => {
 
   const {t} = useTranslation();
   const {currentTripId,tripStatus,rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,paymentMethod,isLoading,setTripDetails,tripStops,fareDetails,bookingTime,supplierDetails,recipientDetails,adminDetails,paymentStatus,invoiceId, razorPayAccountId } = usePaymentStore();
@@ -42,6 +43,7 @@ const PaymentScreen = () => {
   const [contentHeight, setContentHeight] = useState(0);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showPGConfirm, setShowPGConfirm] = useState(false);
+  const [showDroppedPaymentPending, setShowDroppedPaymentPending] = useState(false);
   const { appConfig } = useConfigStore();
   const isPaymentGateway = appConfig?.PAYMENT_METHODS === "PG" && razorPayAccountId;
   // Toggle to show the pre-payment confirmation modal
@@ -83,7 +85,12 @@ const PaymentScreen = () => {
 
   const fetchTripDetails = async () => {
     const currentTripId = await DataStore.loadData(PREF.CURRENT_TRIP);
-    const tripDetails = await getTripDetails(currentTripId?.data);
+
+    const id = lastTripId || currentTripId?.data;
+    if(!id){
+      return;
+    }
+    const tripDetails = await getTripDetails(id);
     
     if(tripDetails?.success){
       setTripDetails(tripDetails);
@@ -92,7 +99,6 @@ const PaymentScreen = () => {
 
   useEffect(()=>{
     fetchTripDetails();
-    
   },[])
   useEffect(()=>{
     if(driverDetails){
@@ -149,53 +155,6 @@ const PaymentScreen = () => {
     }, [showInvoice, handleInvoiceClose]),
   );
 
-  if(isLoading){
-    return (
-      <View style={styles.container}>
-        <ScrollView contentContainerStyle={[styles.scrollContent,{gap:20}]} showsVerticalScrollIndicator={false}>
-          <SkeletonLoader height={80} borderRadius={10} />
-          <View style={{ height: 16 ,justifyContent:"center",alignItems:"center",marginVertical:10}} >
-
-          <SkeletonLoader height={18} width={'60%'} borderRadius={6} />
-          <View style={{ height: 10 }} />
-          <SkeletonLoader height={14} width={'40%'} borderRadius={6} />
-          </View>
-
-          <View style={{ height: 16 }} />
-          <SkeletonLoader height={200} borderRadius={10} />
-
-          <View style={{ height: 16 }} />
-          <View style={{ flexDirection: 'row', gap: 10 }}>
-            <SkeletonLoader height={100} width={'32%'} borderRadius={10} />
-            <SkeletonLoader height={100} width={'32%'} borderRadius={10} />
-            <SkeletonLoader height={100} width={'32%'} borderRadius={10} />
-          </View>
-
-          <View style={{ height: 16 }} />
-          <View style={styles.paymentMethodContainer}>
-            <SkeletonLoader height={18} width={'50%'} borderRadius={6} />
-            <View style={{ height: 12 }} />
-            <View style={styles.paymentMethodKeyContainer}>
-              <SkeletonLoader height={14} width={'30%'} borderRadius={6} />
-              <SkeletonLoader height={14} width={'30%'} borderRadius={6} />
-            </View>
-            <View style={styles.paymentMethodKeyContainer}>
-              <SkeletonLoader height={14} width={'30%'} borderRadius={6} />
-              <SkeletonLoader height={14} width={'30%'} borderRadius={6} />
-            </View>
-          </View>
-
-          <View style={{ height: 8 }} />
-          <View style={styles.actionButtonsContainer}>
-            <View style={{ flex: 1 }}>
-              <SkeletonLoader height={52} borderRadius={10} />
-            </View>
-          </View>
-        </ScrollView>
-      </View>
-    )
-  }
-
   const formatDate = (timestamp) => {
     return utils.formatDateAndTime(timestamp);
   };
@@ -216,6 +175,32 @@ const PaymentScreen = () => {
   const displayedFare = isOnlinePayment && showGateFeeAddedFare ? totalPayable : baseFare;
 
   const shouldShowScrollHint = contentHeight > svHeight + 20 ;
+
+  // Decide whether to show the "Dropped but payment pending" modal
+  useEffect(() => {
+    try {
+      const lastStop = Array.isArray(tripStops) && tripStops.length ? tripStops[tripStops.length - 1] : null;
+      const droppedAt = lastStop?.updatedAt || null;
+      const eligibleStatus = tripStatus === 'DROPPED' || (tripStatus === 'CANCELLED' && !!fareDetails);
+      if (eligibleStatus && droppedAt) {
+        const longAgo = utils.isTripDroppedBeyondFeedbackWindow(droppedAt,2);
+        setShowDroppedPaymentPending(!!longAgo);
+      } else {
+        setShowDroppedPaymentPending(false);
+      }
+    } catch (e) {
+      setShowDroppedPaymentPending(false);
+    }
+  }, [tripStops, tripStatus, fareDetails]);
+
+  const modalTripBundle = React.useMemo(() => ({
+    _id: currentTripId,
+    stops: tripStops,
+    fareDetails: fareDetails,
+    finalDistance: tripDistance,
+    finalDuration: tripDuration,
+    bookingTime: bookingTime,
+  }), [currentTripId, tripStops, fareDetails, tripDistance, tripDuration, bookingTime]);
 
   const handlePayNow = () => {
     if (isProcessingPayment) return; // Prevent double tap
@@ -318,65 +303,80 @@ const PaymentScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        onLayout={(e) => setSvHeight(e.nativeEvent.layout.height)}
-        onContentSizeChange={(w, h) => setContentHeight(h)}
-      >
-        <FareHeader fare={displayedFare}  RideStatus={tripStatus == "CANCELLED" ? t('ride_was_cancelled_midway') : t('destination_reached')}  />
-       
-        <TripMetaInfo date={formatDate(bookingTime)} tripId={rideId} />
-        <AddressContainer directions={tripStops}  completed={true}/>
-        <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={driverDetails?.vehicleType} vehicleBrand={driverDetails?.vehicleBrand} vehicleModel={driverDetails?.vehicleModel} vehicleNumber={driverDetails?.vehicleNumber} />
-        <View style={{marginVertical:15}}> 
-        <TripStats totalDistance={tripDistance} totalDuration={tripDuration} totalFare={displayedFare} />
-        </View>
+      {isLoading ? (
+        <ScrollView contentContainerStyle={[styles.scrollContent,{gap:20}]} showsVerticalScrollIndicator={false}>
+          <SkeletonLoader height={80} borderRadius={10} />
+          <View style={{ height: 16 ,justifyContent:"center",alignItems:"center",marginVertical:10}} >
+            <SkeletonLoader height={18} width={'60%'} borderRadius={6} />
+            <View style={{ height: 10 }} />
+            <SkeletonLoader height={14} width={'40%'} borderRadius={6} />
+          </View>
 
+          <View style={{ height: 16 }} />
+          <SkeletonLoader height={200} borderRadius={10} />
 
-         <TouchableOpacity style={styles.feedbackButton} onPress={onFeedbackPress}>
+          <View style={{ height: 16 }} />
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <SkeletonLoader height={100} width={'32%'} borderRadius={10} />
+            <SkeletonLoader height={100} width={'32%'} borderRadius={10} />
+            <SkeletonLoader height={100} width={'32%'} borderRadius={10} />
+          </View>
+
+          <View style={{ height: 16 }} />
+          <View style={styles.paymentMethodContainer}>
+            <SkeletonLoader height={18} width={'50%'} borderRadius={6} />
+            <View style={{ height: 12 }} />
+            <View style={styles.paymentMethodKeyContainer}>
+              <SkeletonLoader height={14} width={'30%'} borderRadius={6} />
+              <SkeletonLoader height={14} width={'30%'} borderRadius={6} />
+            </View>
+            <View style={styles.paymentMethodKeyContainer}>
+              <SkeletonLoader height={14} width={'30%'} borderRadius={6} />
+              <SkeletonLoader height={14} width={'30%'} borderRadius={6} />
+            </View>
+          </View>
+
+          <View style={{ height: 8 }} />
+          <View style={styles.actionButtonsContainer}>
+            <View style={{ flex: 1 }}>
+              <SkeletonLoader height={52} borderRadius={10} />
+            </View>
+          </View>
+        </ScrollView>
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          onLayout={(e) => setSvHeight(e.nativeEvent.layout.height)}
+          onContentSizeChange={(w, h) => setContentHeight(h)}
+        >
+          <FareHeader fare={displayedFare}  RideStatus={tripStatus == "CANCELLED" ? t('ride_was_cancelled_midway') : t('destination_reached')}  />
+         
+          <TripMetaInfo date={formatDate(bookingTime)} tripId={rideId} />
+          <AddressContainer directions={tripStops}  completed={true}/>
+          <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={driverDetails?.vehicleType} vehicleBrand={driverDetails?.vehicleBrand} vehicleModel={driverDetails?.vehicleModel} vehicleNumber={driverDetails?.vehicleNumber} />
+          <View style={{marginVertical:15}}> 
+            <TripStats totalDistance={tripDistance} totalDuration={tripDuration} totalFare={displayedFare} />
+          </View>
+
+          <TouchableOpacity style={styles.feedbackButton} onPress={onFeedbackPress}>
             <MaterialIcons name="feedback" size={20} color={colors.white} />
             <Text style={styles.feedbackButtonText}>{t('give_feedback')}</Text>
           </TouchableOpacity>
-        {/* <View style={styles.paymentMethodContainer}> */}
-          {/* <AdaptiveText style={styles.paymentMethodLabel}>{t('Pay_trip_fare_to_driver')}</AdaptiveText>
-          <View style={styles.paymentMethodKeyContainer}>
-            <Text style={styles.paymentMethodKey}>{t('base_fare')}</Text>
-            <Text style={styles.paymentMethodValue}>₹ {baseFare.toFixed(2)}</Text>
-          </View> */}
           {isOnlinePayment && showGateFeeAddedFare && (
             <>
-              {/* <View style={styles.paymentMethodKeyContainer}>
-                <Text style={styles.paymentMethodKey}>{t('payment_gateway_fee_plus_gst')}</Text>
-                <Text style={styles.paymentMethodValue}>₹ {(gatewayFee + gstAmount).toFixed(2)}</Text>
-              </View> */}
-              {/* <View style={styles.paymentMethodKeyContainer}>
-                <Text style={styles.paymentMethodKey}>{t('payment_gateway_gst')} (SGST 2% + CGST 2%)</Text>
-                <Text style={styles.paymentMethodValue}>₹ {gstAmount.toFixed(2)}</Text>
-              </View> */}
             </>
           )}
-          {/* <View style={styles.paymentMethodKeyContainer}>
-            <Text style={styles.paymentMethodKey}>{t('payment_method')}</Text>
-            <Text style={styles.paymentMethodValue}>{paymentMethod}</Text>
+          <View style={styles.actionButtonsContainer}>
+            <TouchableOpacity style={styles.invoiceButton} onPress={handleInvoicePress}>
+              <FontAwesome5 name="file-invoice" size={20} color={colors.black} />
+              <AdaptiveText style={styles.invoiceButtonText}>{t('show_invoice')}</AdaptiveText>
+            </TouchableOpacity>
           </View>
-          <View style={[styles.paymentMethodKeyContainer,{marginTop:4}]}> 
-            <Text style={[styles.paymentMethodKey,{fontFamily:Fonts.semi_bold}]}>{t('total_payable')}</Text>
-            <Text style={[styles.paymentMethodValue,{fontFamily:Fonts.semi_bold}]}>₹ {displayedFare.toFixed(2)}</Text>
-          </View> */}
-        {/* </View> */}
-        {/* <SupportSection onPress={handleSupportPress} /> */}
-        {/* Receipt Button */}
-        <View style={styles.actionButtonsContainer}>
-          {/* Invoice Button */}
-          <TouchableOpacity style={styles.invoiceButton} onPress={handleInvoicePress}>
-            <FontAwesome5 name="file-invoice" size={20} color={colors.black} />
-            <AdaptiveText style={styles.invoiceButtonText}>{t('show_invoice')}</AdaptiveText>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      )}
 
-      {isPaymentGateway && (
+      {isPaymentGateway && !isLoading && (
         <View style={styles.bottomBar}>
           {shouldShowScrollHint && (
             <ScrollHintChevron direction='down' style={{ top: -30, alignSelf: 'center' }} />
@@ -455,6 +455,16 @@ const PaymentScreen = () => {
             </View>
           </View>
         </View>
+      )}
+      {showDroppedPaymentPending && (
+        <DroppedButPaymentPendingLongtime
+          visible={showDroppedPaymentPending}
+          trip={modalTripBundle}
+          driver={driverDetails}
+          vehicle={vehicleDetails}
+          onClose={() => setShowDroppedPaymentPending(false)}
+          onSubmit={() => setShowDroppedPaymentPending(false)}
+        />
       )}
       {/* <PayButton amount={finalFare} onPress={handlePayNow} paymentMethod={paymentMethod} /> */}
     </View>
