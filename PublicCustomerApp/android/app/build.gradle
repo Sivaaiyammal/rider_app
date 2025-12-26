@@ -43,6 +43,20 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.virtualmaze.prcustomer"
+    packaging {
+    jniLibs {
+      useLegacyPackaging = false
+      // Only if you truly hit duplicate-file errors; otherwise omit.
+      pickFirsts += [
+        '**/libreactnative.so',
+        '**/libturbomodulejsijni.so',
+        '**/libhermes.so',
+        '**/libhermes-executor-debug.so',
+        '**/libreact_featureflagsjni.so',
+        '**/libc++_shared.so'
+      ]
+    }
+  }
     defaultConfig {
         applicationId "com.virtualmaze.prcustomer"
         minSdkVersion rootProject.ext.minSdkVersion
