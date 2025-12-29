@@ -68,6 +68,7 @@ import ContributionScreen from '../features/contribution/screens/ContributionScr
 import DriverAccessScreen from './Driver/DriverAccessScreen.jsx';
 import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore.js';
 import usePaymentStore from '../features/payment/store/usePaymentStore.js';
+import { consumeUserStatsPrefetch } from '../controllers/UserStatsPrefetch';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -361,7 +362,11 @@ const Home = () => {
     console.log("currentTripId",currentTripId)
     try {
       setConfigError(false);
-      const Response = await getUserStats(currentTripId);
+      // Prefer prefetched response if available; fallback to live call
+      let Response = await consumeUserStatsPrefetch();
+      if (!Response) {
+        Response = await getUserStats(currentTripId);
+      }
       console.log("Response------------------",JSON.stringify(Response))
 
       if(Response?.success ){
