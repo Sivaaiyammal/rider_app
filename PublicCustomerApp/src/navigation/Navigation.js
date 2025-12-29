@@ -18,6 +18,8 @@ import PropTypes from 'prop-types';
 import i18n from '../i18n';
 import useRideMatching from '../hooks/useRideMatching'; 
 import InAppUpdates from '../utils/InAppUpdates';
+import { prefetchUserStats } from '../controllers/UserStatsPrefetch';
+
 
 // import YourRidesScreen from '../screens/Rides/YourRidesScreen';
 // import YourRideDetailsScreen from '../screens/Rides/YourRideDetailsScreen';
@@ -49,6 +51,8 @@ const Navigation = ({ onSplashComplete }) => {
     if (access_token.data) {
       setInitialRoute('HomeScreen');
       addListener(access_token.data);
+      try { await prefetchUserStats(); } catch (e) { console.warn('User stats prefetch failed', e); }
+      
     } else if (language.data && language.data !== 'languageDone') {
       // If language is stored as a language code (en, ta, hi, etc.)
       setLanguage(language.data);

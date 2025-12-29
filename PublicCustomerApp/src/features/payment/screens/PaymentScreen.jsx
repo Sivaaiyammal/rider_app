@@ -183,7 +183,7 @@ const PaymentScreen = ({lastTripId=null}) => {
       const droppedAt = lastStop?.updatedAt || null;
       const eligibleStatus = tripStatus === 'DROPPED' || (tripStatus === 'CANCELLED' && !!fareDetails);
       if (eligibleStatus && droppedAt) {
-        const longAgo = utils.isTripDroppedBeyondFeedbackWindow(droppedAt,2);
+        const longAgo = utils.isTripDroppedBeyondFeedbackWindow(droppedAt,30);
         setShowDroppedPaymentPending(!!longAgo);
       } else {
         setShowDroppedPaymentPending(false);

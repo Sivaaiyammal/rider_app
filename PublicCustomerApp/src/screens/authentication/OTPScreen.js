@@ -19,6 +19,7 @@ import { GlobalContext } from '../../context/GlobalContext';
 import useRideMatching from '../../hooks/useRideMatching';
 import OTPInput from '../../components/Common/OTPInput';
 import AdaptiveText from '../../components/Common/AdaptiveText';
+import { prefetchUserStats } from '../../controllers/UserStatsPrefetch';
 // Utility function to mask phone number
 const maskPhoneNumber = (phoneNumber) => {
   if (!phoneNumber || phoneNumber.length < 5) return phoneNumber;
@@ -84,6 +85,8 @@ const OTPScreen = ({route}) => {
         await DataStore.storeData('access_token', user?.token);
         addListener(user?.token);
         await DataStore.storeData('userdetails', user);
+        // Prefetch user stats after successful login
+        try { prefetchUserStats(); } catch (e) {}
       
         
         if (isNewUser) {

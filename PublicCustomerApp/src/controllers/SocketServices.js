@@ -45,7 +45,7 @@ class WSService {
 
   async driverAllocated(data){
     if(data?.driver && data?.otp){
-      console.log("driverAllocated",JSON.stringify(data))
+      console.log("driverAllocateddddddddddddddddddddddddddddddd",JSON.stringify(data))
       if(data?.tripData){
         this.useCurrentRideInfoStore.getState().setCurrentRideInfo(data?.tripData);
       }
@@ -269,7 +269,7 @@ class WSService {
           timeout: 10000,
         });
         this.socket.on('connect', () => {
-          console.log("socket connected", this.socket.id)
+          console.log("socket connected...............................................", this.socket.id)
           resolve(true);
         });
 

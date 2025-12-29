@@ -12,7 +12,7 @@ import {utils} from '../../../utils/Utils';
 
 
 
-const HistoryCard = React.memo(({ selectCallback, header = true, bottomborder = true, fromSearchScreen = false }) => {
+const HistoryCard = React.memo(({ selectCallback, header = true, bottomborder = true, fromSearchScreen = false ,fromHomeScreen = false}) => {
   const [historyItems, setHistoryItems] = useState([]);
   const [showDeleteIndex, setShowDeleteIndex] = useState(null);
   const { t } = useTranslation();
@@ -35,8 +35,8 @@ const HistoryCard = React.memo(({ selectCallback, header = true, bottomborder = 
   };
 
   return (
-    <View style={styles.container}>
-      {(historyItems?.length > 0 && header) && <AdaptiveText style={styles.title}> {t('recent')}</AdaptiveText>}
+    <View style={[styles.container, fromHomeScreen && styles.containerInHome]}>
+      {(historyItems?.length > 0 && header) && <AdaptiveText style={fromHomeScreen?styles.titleInHome : styles.title}> {t('recent')}</AdaptiveText>}
       {historyItems?.length > 0 ? (
         historyItems.map((item, index) => (
           <View key={index}>
@@ -86,9 +86,22 @@ HistoryCard.propTypes = {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 0,
+    marginTop: 5,
     marginHorizontal: 15,
  
+  },
+  titleInHome:{
+          // paddingLeft:10
+        marginTop: 10,
+        marginBottom: 5,
+      
+        fontSize: 18,
+        fontFamily: Fonts.medium,
+        color: "#969696ff",
+  },
+  containerInHome:{
+    marginTop: 10,
+    marginHorizontal: 7,
   },
   historyItem: {
     flexDirection: 'row',

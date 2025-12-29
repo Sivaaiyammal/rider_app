@@ -552,7 +552,7 @@ const MapScreen = () => {
           {<ScheduledTripBanner/>}
           <DynamicSection onSelect={handleServiceVehicleSelect}/>
           <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
-          <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false} />
+          <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false}  fromHomeScreen={true}/>
         </View>
         
         

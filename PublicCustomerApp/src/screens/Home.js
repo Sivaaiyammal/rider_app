@@ -747,7 +747,7 @@ const Home = () => {
   const updateTripStatusApi = async (tripId, status,note) => {
     try {
       const resp = await confirmTripStatus({ tripId, tripStatus: status, passengerFeedBack: note });
-      console.log("resp",resp)
+      console.log("updateeeeeeeeeeeeeeeeeeeeeeeeeee",resp)
       if (resp?.success) {
         // showNotification(t('success'), resp?.message || t('updated_successfully'), 'success');
         await DataStore.clearData(PREF.CURRENT_TRIP)
