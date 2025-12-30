@@ -9,7 +9,7 @@ import {CommonActions, useNavigation} from '@react-navigation/native';
 import {showNotification} from '../../components/NotificationManger';
 import {DataStore} from '../../controllers/DataStore';
 import useUserInfoStore from '../../store/useUserInfoStore';
-import {requestOTPMutation, verifyOTPMutation} from '../../API/APICalls/UserAPICalls';
+import {requestOTPMutation, verifyDriverOTPMutation, verifyOTPMutation} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import messaging from '@react-native-firebase/messaging';
@@ -20,6 +20,7 @@ import useRideMatching from '../../hooks/useRideMatching';
 import OTPInput from '../../components/Common/OTPInput';
 import AdaptiveText from '../../components/Common/AdaptiveText';
 import { prefetchUserStats } from '../../controllers/UserStatsPrefetch';
+import useUserStore from '../../common/store/useUserStore';
 // Utility function to mask phone number
 const maskPhoneNumber = (phoneNumber) => {
   if (!phoneNumber || phoneNumber.length < 5) return phoneNumber;
@@ -32,6 +33,7 @@ const maskPhoneNumber = (phoneNumber) => {
 };
 
 const OTPScreen = ({route}) => {
+  const {userRole} = useUserStore();
   const {t} = useTranslation();
   const navigation = useNavigation();
   const {addListener} = useContext(GlobalContext);
@@ -42,6 +44,7 @@ const OTPScreen = ({route}) => {
   const [countryCode] = useState(
     route.params.countryCode,
   );
+  const {navRole} = route.params || userRole;
   const [otpInput, setOtpInput] = useState('');
   const [otpError, setOtpError] = useState('');
 
@@ -116,8 +119,49 @@ const OTPScreen = ({route}) => {
     }
   };
 
+  const handleDriverVerificationSuccess = async (data) => {
+ try {
+      if (data.success) {
+        setOtpError('');
+       
+        let { user } = data;
+          const deviceImei = await DeviceInfo.getUniqueId().catch(error => {
+        console.log('Error getting device IMEI: ', error);
+        });
+        console.log('Driver Verification data', user);
+        setID(user._id);
+        setUserdetails(user);
+
+        await DataStore.storeData('access_token', user?.token);
+        addListener(user?.token);
+        await DataStore.storeData('userdetails', user);
+        await DataStore.storeData("bg_userToken", user?.token)
+        await DataStore.storeData("bg_deviceImei", deviceImei)
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'HomeScreen' }],
+          });
+        // showNotification(t('otp_verified'), t('otp_verified_successfully'), 'success');
+      } else {
+        setOtpError(t('invalid_otp'));
+        if(typeof data?.message === 'string'){  
+          showNotification(t('failed'), t('invalid_otp'), 'danger');
+        }else{
+          showNotification(t('failed'), t('something_went_wrong'), 'danger');
+        }
+      }
+    } catch (error) {
+      console.error('Error in handleVerificationSuccess:', error);
+      showNotification(t('failed'), t('something_went_wrong'), 'danger');
+    }
+  } 
+
   const {mutate: verifyOTPMutate, isLoading: isLoading} = verifyOTPMutation(
     handleVerificationSuccess,
+  );
+
+  const {mutate: verifyDriverOTPMutate, isLoading: isVerifyOTPLoading} = verifyDriverOTPMutation(
+    handleDriverVerificationSuccess,
   );
 
   const getFcmToken = async () => {
@@ -168,8 +212,22 @@ const OTPScreen = ({route}) => {
         fcmToken: tokenCred,
         deviceMeta: deviceMeta,
       };
-      
-      verifyOTPMutate(payload);
+
+      if (navRole === 'customer') {
+        verifyOTPMutate(payload);
+      } else {
+      const sendToServer = {
+      otp: otpInput,
+      phone: `+${countryCode}${loginPhoneNumber}`,
+    };
+    const tokenCred = {
+      token: fcmToken,
+      deviceImei: deviceImei,
+    };
+
+    if (fcmToken) sendToServer.fcmToken = tokenCred;
+        verifyDriverOTPMutate(sendToServer);
+      }      
     }
   };
 
@@ -281,8 +339,8 @@ const OTPScreen = ({route}) => {
       <TouchableOpacity
         style={loginStyles.otpBtn}
         onPress={() => verifyOtp()}
-        disabled={isLoading}>
-        {isLoading ? (
+        disabled={isLoading || isVerifyOTPLoading}>
+        {isLoading || isVerifyOTPLoading ? (
           <ActivityIndicator color={colors.white} />
         ) : (
           <Text style={loginStyles.otptxt}>{t('verify_otp')}</Text>

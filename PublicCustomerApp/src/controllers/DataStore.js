@@ -21,6 +21,13 @@ const ALLOWED_KEYS = [
   'firstOutdatedDate',
   'updateSkipDate',
 
+  // common,
+   'userRole',
+
+   // driverKeys
+  'bg_userToken',
+  'bg_deviceImei',
+ 
 ]
 
 // const KEYS_TO_CLEAR_ON_SESSION_END = [

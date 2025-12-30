@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { use } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, useWindowDimensions } from 'react-native';
 import AdaptiveText from '../../components/Common/AdaptiveText';
 import { colors, Fonts } from '../../constants/constants';
 import { useTranslation } from 'react-i18next';
+import useUserStore from '../../common/store/useUserStore';
+import { DataStore } from '../../controllers/DataStore';
 
 const passengerImage = require('../../assets/image/ContinueAsPassenger.webp');
 const driverImage = require('../../assets/image/ContinueAsDriver.webp');
@@ -12,15 +14,20 @@ const WelcomeScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
   const contentWidth = Math.max(screenWidth - 96, 0);
   const mediaWidth = contentWidth > 0 ? contentWidth * 0.5 : screenWidth * 0.5;
+  const {setUserRole} = useUserStore();
   // Keep illustration offset proportional while splitting space evenly with copy.
   const cardImageMarginTop = -mediaWidth * 0.45;
 
   const handleCustomerContinue = () => {
-    navigation.navigate('LoginScreen');
+    setUserRole('customer');
+    DataStore.storeData('userRole', 'customer');
+    navigation.navigate('LoginScreen', {navRole: 'customer'});
   };
 
   const handleDriverContinue = () => {
-    navigation.navigate('DriverAccessScreen');
+    setUserRole('driver');
+    DataStore.storeData('userRole', 'driver');
+    navigation.navigate('LoginScreen', {navRole: 'driver'});
   };
 
   return (
@@ -32,6 +39,7 @@ const WelcomeScreen = ({ navigation }) => {
         {t('welcome.subtitle')}
       </AdaptiveText>
       <View style={styles.actions}>
+
         <TouchableOpacity
           style={[styles.card, styles.passengerCard]}
           activeOpacity={0.85}

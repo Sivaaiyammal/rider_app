@@ -150,7 +150,11 @@ dependencies {
     implementation name: "bundle_downloader", ext: 'aar'
     implementation name: "services_core", ext: 'aar'
     implementation name: "geoJson", ext: 'aar'
-    implementation name: "geocoding", ext: 'aar'
+    implementation name: "navigation", ext: 'aar'
+    implementation name: "navigation_ui", ext: 'aar'
+    implementation name: "speech", ext: 'aar'
+    implementation name: "telemetry", ext: 'aar'
+    implementation name: "turf", ext: 'aar'
     implementation name: "models", ext: 'aar'
     // The version of react-native is set by the React Native Gradle Plugin
     implementation 'com.squareup.retrofit2:retrofit:2.5.0'

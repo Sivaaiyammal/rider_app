@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import apiClient from "../APIClient";
 import Config from "react-native-config";
 
@@ -11,8 +12,15 @@ export const requestOTP = async (payload) => {
   return data;
 };
 
+export const requestDriverOTP = async (payload) => {
+  const { data } = await apiClient.post(`/publicrides/driver/sendOTP?platform=${Platform.OS}`, payload);
+ return data;
+}
 
-
+export const verifyDriverOTP = async (payload) => {
+  const { data } = await apiClient.post(`/publicrides/driver/verifyOTP?platform=${Platform.OS}`, payload);
+ return data;
+}
 
 // verify OTP
 export const verifyOTP = async (payload) => {

@@ -1,5 +1,5 @@
 import {Text, TextInput, TouchableOpacity, View, Platform} from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 
 
@@ -7,19 +7,15 @@ import {loginStyles} from '../../styles/UserStyles';
 import Logo from '../../assets/image/logo.svg';
 import Phone from '../../assets/image/svgIcons/phone.svg';
 import {CommonActions, useNavigation} from '@react-navigation/native';
-import {showNotification} from '../../components/NotificationManger';
 import {DataStore} from '../../controllers/DataStore';
 
-import {requestDriverOTPMutation, requestOTPMutation} from '../../API/APICalls/UserAPICalls';
+import {requestOTPMutation} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 import { colors } from '../../constants/constants';
 import { showPhoneNumberHint } from '@shayrn/react-native-android-phone-number-hint';
-import useUserStore from '../../common/store/useUserStore';
 
 
-const LoginScreen = ({ route }) => {
-  const {userRole} = useUserStore();
-  const {navRole = userRole} = route.params || {};
+const DriverAuthentication = () => {
   const {t} = useTranslation();
   const navigation = useNavigation();
   const country = {
@@ -34,8 +30,6 @@ const LoginScreen = ({ route }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneNumErr, setPhoneNumErr] = useState('');
 
-  console.log('Login Screen Role:', navRole, userRole);
-
   const handleLoginSuccess = (data) => {
     if (data) {
       // showNotification(t('otp_sent'), t('otp_sent_to_mobile'), 'success');
@@ -46,36 +40,14 @@ const LoginScreen = ({ route }) => {
           params: {
             countryCode: country.callingCode[0],
             phoneNumber: phoneNumber,
-            navRole:'customer'
           },
         }),
       );
     }
   };
 
-  const handleDriverLoginSuccess = (data) => {
-      if (data) {
-      navigation.dispatch(
-        CommonActions.navigate({
-          name: 'OTPScreen',
-          params: {
-            countryCode: country.callingCode[0],
-            phoneNumber: phoneNumber,
-            navRole:'driver'
-          },
-        }),
-      );
-    }
-  }
-
   const {mutate: requestOTPMutate, isLoading: isLoading} = requestOTPMutation(
     handleLoginSuccess,
-  );
-
-  // requestDriverOTPMutate
-
-  const {mutate: requestDriverOTPMutate, isLoading: isOtpLoading} = requestDriverOTPMutation(
-    handleDriverLoginSuccess,
   );
 
   const renderCountryCode = () => (
@@ -96,12 +68,8 @@ const LoginScreen = ({ route }) => {
       phone: `+${country.callingCode[0]}${phoneNumber}`,
      
     };
-    if (navRole === 'customer') {
     DataStore.storeData('login_phoneNumber', phoneNumber);
     requestOTPMutate(payload);
-    } else {
-    requestDriverOTPMutate(payload);
-    }
   };
 
   const handleChange = text => {
@@ -153,12 +121,12 @@ const LoginScreen = ({ route }) => {
 
   return (
     <>
-      {(isLoading || isOtpLoading) && <FullScreenLoader />}
+      {isLoading && <FullScreenLoader />}
       <View style={loginStyles.screen}>
         <View style={loginStyles.header}>
           <Logo />
           <Text style={loginStyles.headerTxt}>
-            Namma Ooru Taxi ® {'\n'} {navRole === 'driver' ? t('driver_login') : t('customer_login')}
+            Namma Ooru Taxi ® {'\n'} for Drivers
           </Text>
         </View>
         <View style={loginStyles.contectContainer}>
@@ -200,4 +168,4 @@ const LoginScreen = ({ route }) => {
   );
 };
 
-export default LoginScreen;
+export default DriverAuthentication;

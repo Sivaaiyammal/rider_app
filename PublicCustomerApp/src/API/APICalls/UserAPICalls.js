@@ -8,6 +8,8 @@ import {
   verifyOTP,
   deleteAccount,
   getPassengerTripStats,
+  requestDriverOTP,
+  verifyDriverOTP,
 } from '../EndPoints/EndPoints';
 import {showNotification} from '../../components/NotificationManger';
 import { t } from 'i18next';
@@ -168,5 +170,51 @@ export const fetchPassengerTripStats = (onSuccessCallback) => {
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     staleTime: 5 * 60 * 1000,
+  });
+};
+
+
+// requestDriverOTPMutation
+export const requestDriverOTPMutation = onSuccessCallback => {
+  return useMutation(['requestDriverOTP'], requestDriverOTP, {
+    onSuccess: data => {
+      if (data.success) {
+        if (onSuccessCallback) {
+          queryClient.invalidateQueries('requestDriverOTP');
+          onSuccessCallback(data);
+        }
+      } else {
+        showNotification(t('login_failed'), t('something_went_wrong'), 'danger');
+      }
+    },
+    onError: error => {
+      showNotification(
+        t(`login_failed`),
+        t('something_went_wrong'),
+        'danger',
+      );
+    },
+  });
+};
+
+export const verifyDriverOTPMutation = onSuccessCallback => {
+  return useMutation(['verifyDriverOTP'], verifyDriverOTP, {
+    onSuccess: data => {
+      if (data.success) {
+        if (onSuccessCallback) {
+          queryClient.invalidateQueries('verifyDriverOTP');
+          onSuccessCallback(data);
+        }
+      } else {
+        showNotification(t('verification_failed'), t('some_error_occurred'), 'danger');
+      }
+    },
+    onError: error => {
+      showNotification(
+        t('verification_failed'),
+        t(`some_error_occurred`),
+        'danger',
+      );
+    },
   });
 };
