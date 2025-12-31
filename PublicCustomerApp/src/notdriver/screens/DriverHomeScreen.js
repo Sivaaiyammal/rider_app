@@ -1,5 +1,5 @@
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useEffect, useState, useCallback } from 'react';
+import React, {useEffect, useState, useCallback, useMemo } from 'react';
 import {useQuery} from 'react-query';
 
 import HomeTab from '../../notdriver/assets/icons/homeTab.svg';
@@ -40,6 +40,9 @@ import DriverMapScreen from './DriverMapScreen';
 import TripHistory from './TripHistory/TripHistory';
 import DriverEarnings from './DriverEarnings';
 import DriverSettingsScreen from './DriverSettingsScreen';
+import FullScreenLoader from '../../common/loaders/FullScreenLoader';
+import DriverLocationHandler from '../components/DriverLocationHandler';
+import PaymentCompletionScreen from './PaymentCompletionScreen';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -569,21 +572,21 @@ const PublicRidesDriverHomeScreen = () => {
     }
   };
 
-  // const memoizedDriverLocationHandler = useMemo(
-  //   () => <DriverLocationHandler />,
-  //   [],
-  // );
+  const memoizedDriverLocationHandler = useMemo(
+    () => <DriverLocationHandler />,
+    [],
+  );
 
   return (
     <View style={{ flex: 1 }}>
-      {/* {isLoading && <FullScreenLoader />} */}
+      {isLoading && <FullScreenLoader />}
       <MapContainer />
       {!hasNotificationPermission && renderNotificationPermission()}
       {!hasLocationPermission && renderLocationPermission()}
       {renderContent()}
-      {/* {approved ? memoizedDriverLocationHandler : null}
+      {approved ? memoizedDriverLocationHandler : null}
       <PaymentCompletionScreen />
-      <AppUpdateChecker /> */}
+      {/* <AppUpdateChecker /> */}
     </View>
   );
 };
