@@ -70,6 +70,7 @@
     "react-native-linear-gradient": "^2.8.3",
     "react-native-modalize": "^2.1.1",
     "react-native-otp-textinput": "^1.1.6",
+    "react-native-permissions": "^5.3.0",
     "react-native-phonepe-pg": "^3.1.0",
     "react-native-push-notification": "^8.1.1",
     "react-native-ratings": "^8.1.0",

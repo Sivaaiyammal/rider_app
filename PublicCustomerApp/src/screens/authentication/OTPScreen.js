@@ -33,7 +33,7 @@ const maskPhoneNumber = (phoneNumber) => {
 };
 
 const OTPScreen = ({route}) => {
-  const {userRole} = useUserStore();
+  const {userRole, setUserInfo} = useUserStore();
   const {t} = useTranslation();
   const navigation = useNavigation();
   const {addListener} = useContext(GlobalContext);
@@ -131,7 +131,6 @@ const OTPScreen = ({route}) => {
         console.log('Driver Verification data', user);
         setID(user._id);
         setUserdetails(user);
-
         await DataStore.storeData('access_token', user?.token);
         addListener(user?.token);
         await DataStore.storeData('userdetails', user);

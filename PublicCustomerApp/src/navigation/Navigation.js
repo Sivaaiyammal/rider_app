@@ -22,23 +22,12 @@ import useUserInfoStore from '../store/useUserInfoStore';
 import {GlobalContext} from '../context/GlobalContext';
 import PropTypes from 'prop-types';
 import i18n from '../i18n';
-import useRideMatching from '../hooks/useRideMatching';
 import InAppUpdates from '../utils/InAppUpdates';
 import {prefetchUserStats} from '../controllers/UserStatsPrefetch';
 
-// import YourRidesScreen from '../screens/Rides/YourRidesScreen';
-// import YourRideDetailsScreen from '../screens/Rides/YourRideDetailsScreen';
-// import MyAccountScreen from '../screens/Profile/MyAccountScreen';
-// import NotificationScreen from '../screens/NotificationScreen';
-// import ContactScreen from '../screens/ContactScreen';
 import ContactScreen from '../features/about/screens/ContactScreen';
 import useUserStore from '../common/store/useUserStore.js';
 import DriverHomeScreen from '../notdriver/screens/DriverHomeScreen.js';
-// import SavedPlacesScreen from '../screens/SavedPlacesScreen';
-// import PreferencesScreen from '../screens/PreferencesScreen';
-// import ReceiptsScreen from '../screens/ReceiptsScreen';
-// import AboutScreen from '../screens/AboutScreen';
-// import LegalScreen from '../screens/LegalScreen';
 
 const Navigation = () => {
   const Stack = createNativeStackNavigator();
@@ -47,7 +36,7 @@ const Navigation = () => {
   const {addListener} = useContext(GlobalContext);
   const {setLanguage} = useUserInfoStore();
 
-  const {userRole, setUserRole} = useUserStore();
+  const {userRole, setUserRole, setUserInfo} = useUserStore();
 
   // useRideMatching();
 
@@ -56,13 +45,15 @@ const Navigation = () => {
     const language = await DataStore.loadData('language');
     // const onBoarding = await DataStore.loadData('onBoarding');
     const access_token = await DataStore.loadData('access_token');
+    const user_details = await DataStore.loadData('userdetails');
     if (userRole?.data) {
       setUserRole(userRole.data);
     }
     if (userRole?.data === 'driver') {
       if (access_token.data) {
         setInitialRoute('HomeScreen');
-        addListener(access_token.data);
+        addListener(access_token?.data);
+        setUserInfo(user_details?.data);
       } else {
         setInitialRoute('LoginScreen');
       }

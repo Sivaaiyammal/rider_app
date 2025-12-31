@@ -151,7 +151,7 @@ dependencies {
     implementation name: "services_core", ext: 'aar'
     implementation name: "geoJson", ext: 'aar'
     implementation name: "navigation", ext: 'aar'
-    implementation name: "navigation_ui", ext: 'aar'
+    // implementation name: "navigation_ui", ext: 'aar'
     implementation name: "speech", ext: 'aar'
     implementation name: "telemetry", ext: 'aar'
     implementation name: "turf", ext: 'aar'
