@@ -31,7 +31,7 @@ const EarningsTab = () => {
 
    const checkandUpdatePaymentStatus = async () => {
      const api = new APIRequest();
-     const response = await api.request(`/publicrides/payments/PhonepayStatusCheck`, 'POST', {}, userInfo.user.token)
+     const response = await api.request(`/publicrides/payments/PhonepayStatusCheck`, 'POST', {}, userInfo?.token)
      console.log('hari-->>response-->>checkandUpdatePaymentStatus', response)
      if(response.success) {
       console.log('hari-->>response-->>checkandUpdatePaymentStatus', response)
@@ -39,7 +39,7 @@ const EarningsTab = () => {
    }
 
   //  const handlePayDue = async () => {
-  //   const response = await payDue(merchantId, userInfo?.user?.token, driverDue.toFixed(2), "M2ZmOThkZDQtZDllZS00ZTIyLWI47474fgfxgxchvVkNDkx", true)
+  //   const response = await payDue(merchantId, userInfo?.token, driverDue.toFixed(2), "M2ZmOThkZDQtZDllZS00ZTIyLWI47474fgfxgxchvVkNDkx", true)
   //   if(response.status === 'COMPLETED') {
   //       showNotification('Payment Successful', 'Payment successful', 'success')
   //       await checkandUpdatePaymentStatus()
@@ -55,7 +55,7 @@ const EarningsTab = () => {
    const fetchDueDate = async () => {
     setLoading(true);
     try {
-      const response = await publicrideDriverApi.getDriverDetails(userInfo?.user?.token)
+      const response = await publicrideDriverApi.getDriverDetails(userInfo?.token)
       if (response.success) {
         setdriverDueDate(response?.driver?.nextDueDate)
         setDriverDue(0);
@@ -76,7 +76,7 @@ const EarningsTab = () => {
         `/publicrides/payments/driver/get-Payments?page=${pageNum}&limit=${0}&tripStatus=${'all'}&startTime=${dueDuration.startTime}&endTime=${dueDuration.endTime}`, 
         'GET', 
         {},
-        userInfo.user.token
+        userInfo?.token
       );
       if (response.success) {
         const newPayments = response?.payments || [];
@@ -97,7 +97,7 @@ const EarningsTab = () => {
     try {
       setWorkingHoursLoading(true);
       const api = new APIRequest();
-      const response = await api.request(`/publicrides/driver/getDriverWrkHistory`, 'GET', {}, userInfo.user.token)
+      const response = await api.request(`/publicrides/driver/getDriverWrkHistory`, 'GET', {}, userInfo?.token)
       if(response.success) {
         const wrkHistory = response?.wrkHistory[0]?.workingHours || []
         const filteredHours = wrkHistory.find((item)=>item.month === DateTimeFormatter.requiredDateFormat(startDate, 'YYYY-MM'))

@@ -666,8 +666,8 @@ export const ContextProvider = ({ children }) => {
         const response = await api.request(
           url,
           'POST',
-          {fcmToken: {deviceImei: userDeviceId, token: userInfo?.user?.token}},
-          userInfo?.user?.token,
+          {fcmToken: {deviceImei: userDeviceId, token: userInfo?.token}},
+          userInfo?.token,
         );
   
         // if (!response.success)

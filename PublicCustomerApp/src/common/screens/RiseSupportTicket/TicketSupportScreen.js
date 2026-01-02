@@ -51,7 +51,7 @@ const TicketSupportScreen = () => {
 
   useEffect(() => {
     loadTickets();
-    fetchTabCounts(userInfo?.user?.token); // Fetch tab counts on mount
+    fetchTabCounts(userInfo?.token); // Fetch tab counts on mount
   }, []);
 
   // Load tickets when activeTab changes
@@ -82,8 +82,8 @@ const TicketSupportScreen = () => {
   const handleRefresh = async () => {
     try {
       resetPagination(); // Reset pagination when refreshing
-      await refreshTickets(userInfo?.user?.token, { status: activeTab });
-      await fetchTabCounts(userInfo?.user?.token); // Refresh tab counts
+      await refreshTickets(userInfo?.token, { status: activeTab });
+      await fetchTabCounts(userInfo?.token); // Refresh tab counts
     } catch (error) {
       console.error('Failed to refresh tickets:', error);
     }
@@ -92,7 +92,7 @@ const TicketSupportScreen = () => {
   const loadTickets = async () => {
     try {
       resetPagination(); // Reset pagination when loading new tickets
-      await fetchTickets(userInfo?.user?.token, activeTab);
+      await fetchTickets(userInfo?.token, activeTab);
     } catch (error) {
       console.error('Failed to load tickets:', error);
     }
@@ -101,7 +101,7 @@ const TicketSupportScreen = () => {
   const handleLoadMore = async () => {
     if (hasMoreTickets && !isLoadingMore) {
       try {
-        await loadMoreTickets(userInfo?.user?.token, activeTab);
+        await loadMoreTickets(userInfo?.token, activeTab);
       } catch (error) {
         console.error('Failed to load more tickets:', error);
       }
@@ -117,11 +117,11 @@ const TicketSupportScreen = () => {
         "tripId": ticketData.selectedTrip?._id
       }
       const api = new APIRequest(Config.SUPPORT_SYSTEM_URL)
-      const response = await api.request('/api/driver-tickets', 'POST', payLoad, userInfo?.user?.token);
+      const response = await api.request('/api/driver-tickets', 'POST', payLoad, userInfo?.token);
       if(response?.success){
         setShowCreateForm(false);
         loadTickets();
-        await fetchTabCounts(userInfo?.user?.token); // Refresh tab counts after creating ticket
+        await fetchTabCounts(userInfo?.token); // Refresh tab counts after creating ticket
       }
     } catch (error) {
       Alert.alert('Error', error.message || 'Failed to create ticket. Please try again.');
@@ -130,7 +130,7 @@ const TicketSupportScreen = () => {
 
   const handleTicketPress = async(ticket) => {
     try {
-      const getTicketDetails = await fetchTicketDetails(ticket.ticketId, userInfo?.user?.token);
+      const getTicketDetails = await fetchTicketDetails(ticket.ticketId, userInfo?.token);
       if(getTicketDetails?.data?.comments){
         const transFormData = getTicketDetails?.data?.comments?.map(item => ({
           "id": item._id,

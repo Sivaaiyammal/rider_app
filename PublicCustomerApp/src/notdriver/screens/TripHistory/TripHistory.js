@@ -35,7 +35,7 @@ const TripHistory = () => {
         `/publicrides/driver/getTrips?page=${pageNum}&limit=${limit}&tripStatus=${tripStatus}&startTime=${startDate}&endTime=${endDate}`, 
         'POST', 
         {}, 
-        userInfo.user.token
+        userInfo?.token
       );
       if (response.success) {
         const newTrips = response.trips || [];

@@ -51,7 +51,7 @@ const ReportTab = () => {
           `/publicrides/payments/driver/get-Payments?page=${page}&limit=${limit}&tripStatus=${'all'}&startTime=${startDate}&endTime=${endDate}`, 
         'GET',
         {},
-        userInfo.user.token
+        userInfo?.token
       );
             
       if (response.success) {

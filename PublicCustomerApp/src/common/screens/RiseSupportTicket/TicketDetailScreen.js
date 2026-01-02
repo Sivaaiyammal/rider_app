@@ -70,7 +70,7 @@ const TicketDetailScreen = () => {
     const api = new APIRequest(Config.SUPPORT_SYSTEM_URL)
     const formData = new FormData();
     formData.append('comment', messageText);
-    const response = await api.request(`/api/driver-tickets/${ticketId}/comments`, 'POST', formData, userInfo.user.token);
+    const response = await api.request(`/api/driver-tickets/${ticketId}/comments`, 'POST', formData, userInfo?.token);
     console.log('response',response);
     if (response?.success) {
       setMessage('');

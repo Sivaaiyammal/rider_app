@@ -26,7 +26,7 @@ const VehicleDetails = () => {
                 url,
                 'POST',
                 {},
-                userInfo?.user?.token,
+                userInfo?.token,
             )
             if (response.success) {
                 showNotification(

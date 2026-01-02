@@ -76,7 +76,7 @@ function DriverLocationHandler() {
        const payload = {
         status: status
        }
-       const response = await apiRequest.request('/publicrides/driver/updatePublicRidesDriverStatus', "POST", payload, userInfo?.user?.token)
+       const response = await apiRequest.request('/publicrides/driver/updatePublicRidesDriverStatus', "POST", payload, userInfo?.token)
        if (response?.success) {
           showNotification(response?.message,'','success')
           const _newUserInfo = userInfo
@@ -157,7 +157,7 @@ function DriverLocationHandler() {
 
     const ensureBgTaskRunning = async () => {
       if (isCancelled) return;
-      if (!userInfo?.user?.token) return;
+      if (!userInfo?.token) return;
 
       const isCurrentlyRunning = await BGLocationTask.isRunning();
       if (isCurrentlyRunning) return;
@@ -192,7 +192,7 @@ function DriverLocationHandler() {
     hasBackgroundLocationPermission,
     hasOverlayPermission,
     userInfo?.user?.driverStatus?.status,
-    userInfo?.user?.token,
+    userInfo?.token,
   ]);
   return <>
 

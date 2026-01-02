@@ -44,7 +44,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
   const tripDetailsOpacity = useRef(new Animated.Value(0)).current;
   const tripDetailsHeight = useRef(new Animated.Value(0)).current;
 
-  console.log('formData',userInfo.user.token);
+  console.log('formData',userInfo?.token);
 
   // Fetch categories from API
   useEffect(() => {
@@ -52,7 +52,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
       try {
         setLoadingCategories(true);
         const api = new APIRequest()
-        const response = await api.request('/publicrides/driver/getTicketCategories', 'GET', {}, userInfo.user.token);
+        const response = await api.request('/publicrides/driver/getTicketCategories', 'GET', {}, userInfo?.token);
         if (response.success && response.categories) {
           setCategories(response.categories);
         }

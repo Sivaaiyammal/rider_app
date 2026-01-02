@@ -51,7 +51,7 @@ const TransactionTab = () => {
           `/publicrides/payments/driver/getTransactionHistory?page=${page}&limit=${limit}&startTime=${startDate}&endTime=${endDate}`, 
         'GET',
         {},
-        userInfo.user.token
+        userInfo?.token
       );
             
       if (response.success) {

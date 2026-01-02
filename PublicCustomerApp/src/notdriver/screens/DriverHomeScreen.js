@@ -1,5 +1,5 @@
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useEffect, useState, useCallback, useMemo } from 'react';
+import React, {useEffect, useState, useCallback, useMemo, use } from 'react';
 import {useQuery} from 'react-query';
 
 import HomeTab from '../../notdriver/assets/icons/homeTab.svg';
@@ -44,6 +44,11 @@ import DriverLocationHandler from '../components/DriverLocationHandler';
 import PaymentCompletionScreen from './PaymentCompletionScreen';
 import AppUpdateChecker from '../../common/components/AppUpdateChecker';
 import DriverEarnings from './DriverEarnings/DriverEarnings';
+import DriverRouteDetailsScreen from './DriverRouteDetailsScreen';
+import DriverPermissionScreen from './DriverPermissionScreen';
+import DriverVehiclesDetails from './DriverVehicleDetails/DriverVehiclesDetails';
+import EditDriverVehicleDetails from './EditDriverVehicleDetails';
+import DriverApprovalScreen from './DriverApprovalScreen';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -144,12 +149,12 @@ const PublicRidesDriverHomeScreen = () => {
       const endTime = nextDueDate ? nextDueDate : new Date().getTime()
       setDueDuration({startTime:startTime, endTime: endTime})
   }
-
+  
   const blockDriver = async () => {
     setIsBlockLoading(true)
     try {
       const api = new APIRequest();
-     const response = await api.request(`/publicrides/driver/blockDriver`, 'POST', {driverId: userInfo?.user?.driverId}, userInfo?.user?.token)
+     const response = await api.request(`/publicrides/driver/blockDriver`, 'POST', {driverId: userInfo?._id}, userInfo?.token)
      if (response?.success) {
       setIsBlocked(true)
       // setStackScreen('DriverApprovalScreen')
@@ -167,7 +172,7 @@ const PublicRidesDriverHomeScreen = () => {
     setIsBlockLoading(true)
     try {
       const api = new APIRequest();
-     const response = await api.request(`/publicrides/driver/updateNextDueDate`, 'POST', {}, userInfo?.user?.token)
+     const response = await api.request(`/publicrides/driver/updateNextDueDate`, 'POST', {}, userInfo?.token)
      if (response?.success) {
        setdriverDueDate(response?.nextDueDate)
      }
@@ -220,7 +225,7 @@ const PublicRidesDriverHomeScreen = () => {
 
   const { data, isLoading, error, refetch, isFetching } = useQuery(
     ['driverDetails'], 
-    () => publicrideDriverApi.getDriverDetails(userInfo?.user?.token),
+    () => publicrideDriverApi.getDriverDetails(userInfo?.token),
     {
       enabled: userRole === 'PublicRideDriver',  // Only fetch when role matches
       refetchOnReconnect: true,
@@ -246,7 +251,7 @@ const PublicRidesDriverHomeScreen = () => {
         const upComingTrips = response?.driver?.upComingTrips || [];
 
         if (lastPaymentID && lastPaymentID !== null) {
-          getLastTransactionDetails(lastPaymentID, userInfo?.user?.token);
+          getLastTransactionDetails(lastPaymentID, userInfo?.token);
         }
         const minDueAmount = response?.driver?.minDueAmount || 1
         setMinDueAmount(minDueAmount)
@@ -499,20 +504,16 @@ const PublicRidesDriverHomeScreen = () => {
             ].filter(item => role === 'salaried' ? item.id !== 2 : true)}
           />
         );
-      // case 'DriverRouteDetailsScreen':
-      //   return <DriverRouteDetailsScreen />;
-      // case 'DriverPermissionScreen':
-      //   return <DriverPermissionScreen />;
-      // case 'RideDetailsList':
-      //   return <RideDetailsList />;
-      // case 'RideDetailsView':
-      //   return <RideDetailsView />
-      // case 'DriverVehicleDetails':
-      //   return <DriverVehicleDetails approved={approved}/>;
-      // case 'EditDriverVehicleDetails':
-      //     return <EditDriverVehicleDetails />;
-      // case 'DriverApprovalScreen':
-      //     return <DriverApprovalScreen />;
+      case 'DriverRouteDetailsScreen':
+        return <DriverRouteDetailsScreen />;
+      case 'DriverPermissionScreen':
+        return <DriverPermissionScreen />;
+      case 'DriverVehicleDetails':
+        return <DriverVehiclesDetails approved={approved}/>;
+      case 'EditDriverVehicleDetails':
+          return <EditDriverVehicleDetails />;
+      case 'DriverApprovalScreen':
+          return <DriverApprovalScreen />;
       // case 'TripAccept':
       //   return <TripAccept />
       // case 'AddDriverLocation':

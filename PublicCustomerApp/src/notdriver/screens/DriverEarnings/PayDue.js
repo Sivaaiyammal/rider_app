@@ -196,7 +196,7 @@ const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo})
         `/publicrides/payments/driver/updateDriverPaymentID`,
         'POST',
         payload,
-        userInfo.user.token,
+        userInfo?.token,
       );
       if (response.success) {
         const driverDetails = response?.driverDetails || {};
@@ -271,7 +271,7 @@ const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo})
         `/publicrides/payments/driver/create-order`,
         'POST',
         payload,
-        userInfo.user.token,
+        userInfo?.token,
       );
       if (response.success) {
         const order = response.order;
@@ -296,7 +296,7 @@ const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo})
         '/publicrides/driver/getDueInvoice',
         'POST',
         payload,
-        userInfo.user.token,
+        userInfo?.token,
       );
       if (response.success && response.data) {
         const data = response.data;

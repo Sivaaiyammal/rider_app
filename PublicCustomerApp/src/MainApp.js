@@ -1,5 +1,5 @@
 import {useColorScheme ,StatusBar,Vibration,Linking} from 'react-native';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import firebase from '@react-native-firebase/app';
 import Navigation from './navigation/Navigation';
 import { navigationRef } from './navigation/RootNavigation';
@@ -22,6 +22,7 @@ import FeedbackBottomSheet from './components/FeedbackBottomSheet';
 import tripAlert from './controllers/TripAlert';
 import { log } from '@react-native-firebase/crashlytics';
 import { parseDeepLink } from './utils/DeepLink';
+import DriverInitializationScreen from './notdriver/components/DriverInitializationScreen';
 
 
 
@@ -194,7 +195,10 @@ const MainAppContent = () => {
     }
   }, []);
 
-  
+    const memoizedDriverInitializationHandler = useMemo(
+    () => <DriverInitializationScreen />,
+    [],
+  );
   
 
   return (
@@ -209,6 +213,7 @@ const MainAppContent = () => {
             {(!isConnected && (
               <NetworkBanner onRetry={checkConnection} />
             ))}
+            {memoizedDriverInitializationHandler}
              {/* {(!isConnected && !screens.includes(currentScreen)) && (
             //   <NoNetworkOverlay onRetry={checkConnection} />
             // )} */}
