@@ -38,11 +38,12 @@ import { DataStore } from '../../common/controllers/DataStore';
 import { checkFineLocationPermissions, RequestFineLocationPermission, RequestNotificationPermission } from '../../common/controllers/PermissionHandler';
 import DriverMapScreen from './DriverMapScreen';
 import TripHistory from './TripHistory/TripHistory';
-import DriverEarnings from './DriverEarnings';
 import DriverSettingsScreen from './DriverSettingsScreen';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 import DriverLocationHandler from '../components/DriverLocationHandler';
 import PaymentCompletionScreen from './PaymentCompletionScreen';
+import AppUpdateChecker from '../../common/components/AppUpdateChecker';
+import DriverEarnings from './DriverEarnings/DriverEarnings';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -73,9 +74,7 @@ const PublicRidesDriverHomeScreen = () => {
     setdriverDueDate,setDriverRatings, 
     setRazorpayLinkedAccountDetails,setMinDueAmount, setDueDuration} = usePublicDriverStore();
   const { stackScreen, setStackScreen } = useStackScreenStore();
-  const {driverConfig} = useTripsStore();
   const {setTimeoutSeconds, setLoading: setTripAcceptLoading} = useTripAcceptStore();
-  const {tripRequestData} = useTripRequestStore();
   const {setDriverStatus, setUpComingTrips} = useDriverStatusStore();
   const {setCurrentScreen} = useCurrentScreenStore()
   const { userRole, userInfo, logout} = useUserStore();
@@ -84,7 +83,6 @@ const PublicRidesDriverHomeScreen = () => {
     setHasNotificationPermission,
     hasLocationPermission,
     setHasLocationPermission,
-    hasBackgroundLocationPermission,
   } = useDeviceTokenStore();
   const t = {};
   const [role, setRole] = useState('dco');
@@ -586,7 +584,7 @@ const PublicRidesDriverHomeScreen = () => {
       {renderContent()}
       {approved ? memoizedDriverLocationHandler : null}
       <PaymentCompletionScreen />
-      {/* <AppUpdateChecker /> */}
+      <AppUpdateChecker />
     </View>
   );
 };

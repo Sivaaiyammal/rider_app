@@ -6,6 +6,7 @@ import ArrowDown from '../../common/assets/icons/arrow_down.svg';
 import TickWhite from '../../common/assets/icons/tickWhite.svg';
 import CurrentLoc from '../../common/assets/icons/currentLoc.svg';
 import FitToMarkers from '../../common/assets/icons/fittomarkers.svg';
+import BackArrow from '../../common/assets/icons/backArrow.svg';
 
 export const Icons = {
   bell: <Bell />,
@@ -13,6 +14,7 @@ export const Icons = {
   tickWhite: <TickWhite/>,
   currentLoc: <CurrentLoc />,
   fitToMarkers:<FitToMarkers />,
+  back_arrow: <BackArrow />,
 };
 
 // export const Images = {

@@ -1,13 +1,17 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
-import useUserStore from '../../../common/store/useUserStore'
-import APIRequest from '../../../common/APIRequest'
 import HistoryHeader from './HistoryHeader'
+import { Colors, Fonts } from '../../../Constants/constants'
+import NavBar from '../../../Components/Common/NavBar'
+import HistoryGraph from './HistoryGraph'
 import TripHistoryList from './TripHistoryList'
-import { Colors, Fonts } from '../../../common/constants/constants'
+import GlobalContext from '../../../Context/GlobalContext'
+import APIRequest from '../../../Controllers/APIRequest'
+import { getRedirection } from 'react-native-translation'
+import TranslationFile from '../../../locales/TranslationFile'
 
 const TripHistory = () => {
-  const t = {}
+  const t = getRedirection(TranslationFile);
   const [tripData, setTripData] = useState([]);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -18,7 +22,7 @@ const TripHistory = () => {
   const [totalTrips, setTotalTrips] = useState(0);
   const [startDate, setStartDate] = useState(new Date().setHours(0, 0, 0, 0));
   const [endDate, setEndDate] = useState(new Date().setHours(23, 59, 59, 999));
-  const {userInfo} = useUserStore();
+  const {userInfo} = useContext(GlobalContext);
 
   const onDateRangeSelect = (dateRange) => {
     if (dateRange && dateRange.dateRange && dateRange.dateRange.length === 2) {
@@ -107,11 +111,11 @@ const TripHistory = () => {
       <View style={styles.headerContainer}>
         <Text style={styles.headerTitle}>{t.trip_history}</Text>
       </View>
-      <HistoryHeader
+      <HistoryHeader 
         onDateRangeSelect={onDateRangeSelect} 
         onTripStatusChange={handleTripStatusChange}
       />
-      <TripHistoryList
+      <TripHistoryList 
         trips={tripData}
         loading={loading}
         refreshing={refreshing}
@@ -137,6 +141,7 @@ const styles = StyleSheet.create({
     justifyContent:'space-between',
     alignItems:'center',
     paddingHorizontal:10,
+    paddingVertical:10,
     borderBottomWidth:1,
     borderBottomColor:Colors.grey,
     width:'90%',
