@@ -40,7 +40,7 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
         `/publicrides/driver/getTrips?page=${page}&limit=${10}&tripStatus=${'ALL'}&startTime=${startDate}&endTime=${endDate}`, 
         'POST', 
         {}, 
-        userInfo.user.token
+        userInfo?.token
       );
       if (response.success) {
         if (isRefresh) {

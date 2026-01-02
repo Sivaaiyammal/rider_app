@@ -14,6 +14,9 @@ import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 import com.virtualmaze.services_core.utils.NEApiServices
 import com.virtualmaze.prcustomer.notificationSound.PlaySoundPackage
+import com.virtualmaze.prcustomer.overlay.OverlayPackage
+import com.virtualmaze.prcustomer.driverTracking.BGLocationServicePackage
+import com.virtualmaze.prcustomer.tripAlert.PlayTripSoundPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -24,6 +27,9 @@ class MainApplication : Application(), ReactApplication {
               add(com.virtualmaze.prcustomer.NeNativePackage())
               add(com.virtualmaze.prcustomer.tracking.LocationTrackingPackage())
               add(PlaySoundPackage());
+              add(PlayTripSoundPackage());
+              add(OverlayPackage());
+              add(BGLocationServicePackage());
             }
 
         override fun getJSMainModuleName(): String = "index"

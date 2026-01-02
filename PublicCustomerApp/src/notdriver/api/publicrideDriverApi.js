@@ -23,7 +23,7 @@ class PublicrideDriverApi {
 
   async updateDriverDetails(payload,token=this.token) {
     try {
-       const api = new APIRequest(Config.DRIVER_ROOT_API_URL)
+       const api = new APIRequest(Config.ROOT_API_URL)
       const response = await api.request(`/publicrides/driver/updateDriverDetails`, 'POST', payload, token);
       return response;
     } catch (error) {
@@ -33,7 +33,7 @@ class PublicrideDriverApi {
     }
   async updateVehicleDetails(payload,token=this.token) {
     try {
-       const api = new APIRequest(Config.DRIVER_ROOT_API_URL)
+       const api = new APIRequest(Config.ROOT_API_URL)
       const response = await api.request(`/publicrides/driver/updateVehicleInformation`, 'POST', payload, token);
       return response;
     } catch (error) {
@@ -43,7 +43,7 @@ class PublicrideDriverApi {
 
   async cancelTrip(tripId,reason,token=this.token) {
     const reasonForCancel = reason? reason : ''
-    const api = new APIRequest(Config.DRIVER_ROOT_API_URL)
+    const api = new APIRequest(Config.ROOT_API_URL)
     try {
       const response = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:tripId, reason: reasonForCancel}, token);
       return response;
@@ -55,7 +55,7 @@ class PublicrideDriverApi {
 
   async updateBankDetails(formData,token=this.token) {
     try {
-       const api = new APIRequest(Config.DRIVER_ROOT_API_URL)
+       const api = new APIRequest(Config.ROOT_API_URL)
       const response = await api.request(`/publicrides/driver/uploadBankDetails`, 'POST', formData, token);
       return response;
     } catch (error) {
@@ -66,7 +66,7 @@ class PublicrideDriverApi {
 
   async uploadDriverDocuments(formData,token=this.token) {
     try {
-      const api = new APIRequest(Config.DRIVER_ROOT_API_URL)
+      const api = new APIRequest(Config.ROOT_API_URL)
       const response = await api.request(`/publicrides/driver/uploadDocs`, 'POST', formData, token);
       return response;
     } catch (error) {
@@ -77,7 +77,7 @@ class PublicrideDriverApi {
   
   async getDriverDetails(token=this.token) {
     try {
-       const api = new APIRequest(Config.DRIVER_ROOT_API_URL)
+       const api = new APIRequest(Config.ROOT_API_URL)
       const response = await api.request(`/publicrides/driver/getDriverDetails`, 'GET', null, token);
       return response;
     } catch (error) {
@@ -88,7 +88,7 @@ class PublicrideDriverApi {
   
   async getTripDetails(tripId,token=this.token) {
     try {
-       const api = new APIRequest(Config.DRIVER_ROOT_API_URL)
+       const api = new APIRequest(Config.ROOT_API_URL)
       const response = await api.request(`/publicrides/driver/getTrip?tripId=${tripId}`, 'GET', null, token);
       return response;
     } catch (error) {
@@ -99,7 +99,7 @@ class PublicrideDriverApi {
 
   async acceptTrip(payload, token=this.token) {
     try {
-      const api = new APIRequest(Config.DRIVER_ROOT_API_URL)
+      const api = new APIRequest(Config.ROOT_API_URL)
       console.log("Accepting trip with payload:",payload)
       const response = await api.request(`/publicrides/driver/acceptRide`, 'POST', payload, token);
       return response;
