@@ -11,6 +11,7 @@ import { Colors } from '../../common/constants/constants';
 import { RouteScreenStyles } from '../styles/RouteScreenStyles';
 import { height } from '../../common/utils/scalingutils';
 import FloatingButton from '../components/FloatingButton';
+import { useTranslation } from 'react-i18next';
 
 const {NeNativeModule} = NativeModules;
 
@@ -19,7 +20,7 @@ const DriverMapScreen = (props) => {
   const {approved, blocked, isBankVerified, refreshStatus, isLoading} = props;
   const {directionPoints, setDirectionPoints} = useMapMarkerStore();
   const [layOutHeight, setLayoutHeight] = useState(null);
-  const t = {} // Placeholder for translations
+  const { t } = useTranslation();
 
   useEffect(()=>{
     NeNativeModule.clearDirectionPoints()

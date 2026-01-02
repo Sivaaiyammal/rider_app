@@ -31,6 +31,7 @@ import { showNotification } from '../../common/components/Alerts/showNotificatio
 import { DataStore } from '../../common/controllers/DataStore';
 import { Colors, Fonts } from '../../common/constants/constants';
 import { height } from '../../common/utils/scalingutils';
+import { useTranslation } from 'react-i18next';
 
 const FloatingButton = ({layOutHeight}) => {
   const {driverStatus, setDriverStatus} = useDriverStatusStore();
@@ -50,7 +51,7 @@ const FloatingButton = ({layOutHeight}) => {
   const translateY2 = useRef(new Animated.Value(50)).current;
   const opacity1 = useRef(new Animated.Value(0)).current;
   const opacity2 = useRef(new Animated.Value(0)).current;
-  const t ={}
+  const { t } = useTranslation();
 
   const {
     hasLocationPermission,
@@ -205,9 +206,9 @@ const FloatingButton = ({layOutHeight}) => {
       onClose={() => {
         setOnlineModal(false);
       }}
-      rightBtnText={t.yes_go_online}
-      leftBtnTxt={t.cancel}
-      successMessage={t.are_you_sure_want_to_go_online_and_ready_to_take_trips}
+      rightBtnText={t('yes_go_online')}
+      leftBtnTxt={t('cancel')}
+      successMessage={t('are_you_sure_want_to_go_online_and_ready_to_take_trips')}
       animationType={'slide'}
       onRightPress={()=>updateStatus('online')}
       status={'Online'}
@@ -224,9 +225,9 @@ const FloatingButton = ({layOutHeight}) => {
       onClose={() => {
         setOfflineModal(false);
       }}
-      rightBtnText={t.yes_go_offline}
-      leftBtnTxt={t.no_be_online}
-      successMessage={t.are_you_sure_want_to_go_offline}
+      rightBtnText={t('yes_go_offline')}
+      leftBtnTxt={t('no_be_online')}
+      successMessage={t('are_you_sure_want_to_go_offline')}
       animationType={'slide'}
       onRightPress={()=>updateStatus('offline')}
       status={'Offline'}
@@ -297,13 +298,13 @@ const FloatingButton = ({layOutHeight}) => {
         <View style={[styles.popUpStatusContainer, {bottom: height * 0.2 + (layOutHeight || 0)}]}>
           <View style={styles.popUpTextConatiner}>
             {driverStatus === 'online' && (
-              <Text style={styles.popUpText}>{t.you_are_online}</Text>
+              <Text style={styles.popUpText}>{t('you_are_online')}</Text>
             )}
             {(driverStatus === 'offline' || !driverStatus) && (
               <Text style={[styles.popUpText, {color: Colors.danger_red}]}>
-                {t.you_are_currently_offline}.{'\n'}
+                {t('you_are_currently_offline')}.{'\n'}
                 <Text style={styles.popUpTextSmall}>
-                  {t.please_go_online_when_you_are_ready_to_take_trips}
+                  {t('please_go_online_when_you_are_ready_to_take_trips')}
                 </Text>
               </Text>
             )}
