@@ -68,6 +68,7 @@ export const drawerStyles = StyleSheet.create({
     width:'100%',
     alignSelf:'center',
     padding:10,
+    paddingBottom:height*0.15,
   },
   drawerBtns:{
     width:'100%',
