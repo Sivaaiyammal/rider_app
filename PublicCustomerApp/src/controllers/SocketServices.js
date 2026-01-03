@@ -62,19 +62,20 @@ class WSService {
   }
   async onRideStatus(data){
     const currentTrip = await this.DataStore.loadData(PREF.CURRENT_TRIP);
-    console.log("currentTrip",currentTrip)
-    // if(currentTrip?.data){
-    //   console.log("currentTrip?.data?._id",currentTrip?.data)
-    //   console.log("data?._id",data?._id)
-    //   if(currentTrip?.data !== data?._id){
-    //     return;
-    //   }
-    // }
+    console.log("currentTripFromSocket",currentTrip)
+    
     
     if(data?.tripStatus){
       if(data?.tripStatus === 'CANCELLED'){
         try {
           if(data?.isOnGoingTrip && data?.fareDetails){
+            if(currentTrip?.data){
+              console.log("currentTrip?.data?._id",currentTrip?.data)
+              console.log("data?._id",data?._id)
+              if(currentTrip?.data !== data?._id){
+                return;
+              }
+            }
             this.useStackScreenStore.getState().setStackScreen('PaymentScreen',{});
             this.useCurrentRideInfoStore.getState().setFareDetails(data?.tripFare);
             this.useCurrentRideInfoStore.getState().setFinalDistance(data?.tripFare?.distance);
@@ -87,18 +88,17 @@ class WSService {
             this.useAssignedDriverInfoStore.getState().setDriverInfo(null);
             this.useCurrentRideInfoStore.getState().setOngoingingTripCancelled(false);
             this.useRideMatchStore.getState().resetRideMatchStatus();
-            this.useCurrentRideInfoStore.getState().setTripStatus(null);
+          
             this.useWayPointReorderStore.getState().setWaitingForDriverApproval(null);
-            await this.DataStore.clearData(PREF.CURRENT_TRIP);
-            const directIonsData = this.useRideBookingLocationStore.getState().rideStartLocation && this.useRideBookingLocationStore.getState().rideEndLocation 
             
+            const directIonsData = this.useRideBookingLocationStore.getState().rideStartLocation && this.useRideBookingLocationStore.getState().rideEndLocation 
             if(directIonsData){
                this.useStackScreenStore.getState().goBackToScreen('BookRideScreen',{});
             }else{
               this.useStackScreenStore.getState().reset();
             }
-           
-            
+            this.useCurrentRideInfoStore.getState().setTripStatus(null);
+            await this.DataStore.clearData(PREF.CURRENT_TRIP);
           }
           
         } catch (error) {
