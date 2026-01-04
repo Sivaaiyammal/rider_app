@@ -443,7 +443,7 @@ public class DriverOverlayController {
             return cachedDriverId;
         }
         try {
-            String rawUserInfo = normalizeUserInfo(AsyncStorageReader.readValueFromAsyncStorage(context, "userInfo"));
+            String rawUserInfo = normalizeUserInfo(AsyncStorageReader.readValueFromAsyncStorage(context, "userdetails"));
             Log.d(TAG, "Loaded userInfo from storage: " + rawUserInfo);
             if (rawUserInfo == null) {
                 return null;

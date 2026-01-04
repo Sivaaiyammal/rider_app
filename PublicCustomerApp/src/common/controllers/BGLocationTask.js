@@ -44,7 +44,7 @@ class LocationBackgroundTask {
   }
   stopBgTask() {
     this.running = false
-    KeyValueStore.clearSession()
+    // KeyValueStore.clearSession()
     return BGLocationServiceModule.stopLocationForegroundService()
   }
 

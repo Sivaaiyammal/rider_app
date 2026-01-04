@@ -23,7 +23,8 @@ import tripAlert from './controllers/TripAlert';
 import { log } from '@react-native-firebase/crashlytics';
 import { parseDeepLink } from './utils/DeepLink';
 import DriverInitializationScreen from './notdriver/components/DriverInitializationScreen';
-
+import DeviceInfo from 'react-native-device-info';
+import useDeviceAPIStore from './common/store/useDeviceAPIStore';
 
 
 if (!firebase.apps.length) {
@@ -34,6 +35,7 @@ const MainAppContent = () => {
   const appearance = useColorScheme();
   const { isConnected, checkConnection } = useNetwork();
   const { getCurrentScreen } = useStackScreenStore();
+  const { setUserDeviceId } = useDeviceAPIStore();
   const currentScreen = typeof getCurrentScreen === 'function' ? getCurrentScreen() : '';
 
   const screens = ['BookRideScreen', 'PlanRideScreen', 'RideStatus','PaymentScreen'];
@@ -195,6 +197,16 @@ const MainAppContent = () => {
     }
   }, []);
 
+    useEffect(() => {
+    DeviceInfo.getUniqueId().then(id => {
+      setUserDeviceId(id)
+    }).catch(err => {
+      console.log(err)
+    })
+    return () => {
+    }
+  }, [])
+
     const memoizedDriverInitializationHandler = useMemo(
     () => <DriverInitializationScreen />,
     [],
@@ -207,13 +219,13 @@ const MainAppContent = () => {
         <AlertNotificationRoot theme="light">
           <>
             <NavigationContainer ref={navigationRef}>
+            {memoizedDriverInitializationHandler}
               <Navigation />
             </NavigationContainer>
             <FeedbackBottomSheet />
             {(!isConnected && (
               <NetworkBanner onRetry={checkConnection} />
             ))}
-            {memoizedDriverInitializationHandler}
              {/* {(!isConnected && !screens.includes(currentScreen)) && (
             //   <NoNetworkOverlay onRetry={checkConnection} />
             // )} */}

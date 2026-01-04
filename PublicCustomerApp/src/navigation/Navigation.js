@@ -33,7 +33,7 @@ const Navigation = () => {
   const Stack = createNativeStackNavigator();
   const [initialRoute, setInitialRoute] = useState('LanguageScreen');
   const [isSplashLoading, setIsSplashLoading] = useState(true);
-  const {addListener} = useContext(GlobalContext);
+  const {addListener, addNOTSocketListener, addRideMatchListener} = useContext(GlobalContext);
   const {setLanguage} = useUserInfoStore();
 
   const {userRole, setUserRole, setUserInfo} = useUserStore();
@@ -46,13 +46,17 @@ const Navigation = () => {
     // const onBoarding = await DataStore.loadData('onBoarding');
     const access_token = await DataStore.loadData('access_token');
     const user_details = await DataStore.loadData('userdetails');
+    // const userInfo = await DataStore.loadData('userdetails');
+    console.log('userInfo:', user_details);
     if (userRole?.data) {
       setUserRole(userRole.data);
     }
     if (userRole?.data === 'driver') {
       if (access_token.data) {
         setInitialRoute('HomeScreen');
-        addListener(access_token?.data);
+        console.log('Driver Access Token:', user_details?.data?._id);
+        addNOTSocketListener(access_token?.data);
+        addRideMatchListener(user_details?.data?._id);
         setUserInfo(user_details?.data);
       } else {
         setInitialRoute('LoginScreen');

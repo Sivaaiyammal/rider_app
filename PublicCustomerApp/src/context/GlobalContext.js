@@ -5,7 +5,11 @@ import {useColorScheme} from 'react-native';
 import { DataStore } from '../controllers/DataStore';
 import wsService from '../controllers/SocketServices';
 import { lightTheme, darkTheme } from '../constants/theme';
-import useRideMatching from '../hooks/useRideMatching';
+import notwsService from '../common/controllers/socketServices/NOTSocketServices';
+import publicrideDriverApi from '../notdriver/api/publicrideDriverApi';
+import RideMatchWSService from '../common/controllers/socketServices/RideMatchSocketService';
+import useUserStore from '../common/store/useUserStore';
+import { showNotification } from '../common/components/Alerts/showNotification';
 
 export const GlobalContext = createContext();
 
@@ -18,6 +22,7 @@ export const ContextProvider = ({children}) => {
   });
   const [themeMode, setThemeMode] = useState('default'); // 'light', 'dark', 'default'
   const [isInitialized, setIsInitialized] = useState(false);
+  const {setUserInfo} = useUserStore()
 
   const themeOperations = useCallback((mode) => {
     let newTheme;
@@ -110,7 +115,22 @@ export const ContextProvider = ({children}) => {
     }
   }, []);
 
+  const addNOTSocketListener = useCallback(async token => {
+    try {
+      await notwsService.initSocket(token); 
+    } catch (error) {
+      console.error('Error initializing main socket:', error);
+    }
+  }, []);
 
+  const addRideMatchListener = useCallback(async(id)=> {
+    RideMatchWSService.initDriverRoomSocket(id).then((res)=>{
+      if (res) {
+        RideMatchWSService.emit('join_driver_room', { driver_id: id })
+      }
+    })
+    await publicrideDriverApi.initToken()
+  },[])
 
   const removeListener = useCallback(async () => {
     try {
@@ -128,6 +148,31 @@ export const ContextProvider = ({children}) => {
       
     }
   }, [systemColorScheme, themeMode, isInitialized]);
+
+    const logout = async () => {
+    try {
+      // setIsLoading(true);
+      setUserInfo(null);
+      DataStore.clearData('userInfo');
+      DataStore.clearData('role')
+      DataStore.clearData('activeTripId')
+      DataStore.clearSession();
+      // navigation.reset({
+      //   index: 0,
+      //   routes: [{ name: 'UserRoleScreen' }],
+      // });
+      // showNotification(
+      //   t.logout_success,
+      //   t.login_to,
+      //   'success',
+      // );
+      // setIsLoading(false);
+    } catch (error) {
+      console.log('API==Err==>logout', error);
+      // showNotification(error?.message ?? t.cant_proceed_now, t.pls_try_later, 'danger');
+      // setIsLoading(false);
+    }
+  };
 
   // Initialize theme on component mount
   useEffect(() => {
@@ -147,7 +192,10 @@ export const ContextProvider = ({children}) => {
         removeListener,
         isDarkMode: themeMode === 'dark' || (themeMode === 'default' && systemColorScheme === 'dark'),
         systemColorScheme,
-        isInitialized
+        isInitialized,
+        addNOTSocketListener,
+        addRideMatchListener,
+        logout
       }}>
       {children}
     </GlobalContext.Provider>

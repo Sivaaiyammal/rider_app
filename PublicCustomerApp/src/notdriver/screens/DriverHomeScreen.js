@@ -82,7 +82,7 @@ const PublicRidesDriverHomeScreen = () => {
   const {setTimeoutSeconds, setLoading: setTripAcceptLoading} = useTripAcceptStore();
   const {setDriverStatus, setUpComingTrips} = useDriverStatusStore();
   const {setCurrentScreen} = useCurrentScreenStore()
-  const { userRole, userInfo, logout} = useUserStore();
+  const {userInfo } = useUserStore();
   const {
     hasNotificationPermission,
     setHasNotificationPermission,
@@ -227,7 +227,6 @@ const PublicRidesDriverHomeScreen = () => {
     ['driverDetails'], 
     () => publicrideDriverApi.getDriverDetails(userInfo?.token),
     {
-      enabled: userRole === 'PublicRideDriver',  // Only fetch when role matches
       refetchOnReconnect: true,
       onSuccess: (response) => {
         if(response?.success){
@@ -342,7 +341,7 @@ const PublicRidesDriverHomeScreen = () => {
       }
       else {
         if (response.error === "SESSION_EXPIRED") {
-          logout('driver');
+          // logout('driver');
           setStackScreen('AuthenticationScreen');
            BGLocationTask.stopDriverBgTask();
           return
@@ -567,7 +566,7 @@ const PublicRidesDriverHomeScreen = () => {
       // case 'PriceChartDetails':
       //         return <PublicRidesPriceChartDetails />;
       default:
-        return 'Home';
+        return <Text>Home</Text>;
     }
   };
 

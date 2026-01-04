@@ -10,8 +10,8 @@ import BGLocationTask from "../../common/controllers/BGLocationTask";
 import APIRequest from "../../common/APIRequest";
 import { showNotification } from "../../common/components/Alerts/showNotification";
 import { DataStore } from "../../common/controllers/DataStore";
-import overlayController from "../Controller/OverlayController";
 import { useTripAcceptStore } from "../store/useTripAcceptStore";
+import overlayController from "../../common/controllers/Overlay";
 
 function DriverLocationHandler() {
 
