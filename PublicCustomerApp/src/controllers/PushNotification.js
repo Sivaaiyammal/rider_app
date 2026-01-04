@@ -71,7 +71,11 @@ class PushNotifications {
 
   
 
-  sendNotification(fileName, title, details = {}) {
+  sendNotification(fileName, title, details = null) {
+    if (!fileName || !title || details===null) {
+      console.log('PushNotifications: Missing fileName or title');
+      return;
+    }
     PushNotification.localNotification({
       channelId: 'TrackerApp',
       title: title, // 'File Downloaded',

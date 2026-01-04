@@ -150,13 +150,35 @@ const RideDetailScreen = ({ TripData }) => {
         {
            <FareHeader fare={rideData.fareDetails?.fare || rideData.estimatedFare || 0} RideStatus={utils.getRideStatus(rideData?.status)}  hideFare={rideData?.status != "COMPLETED" && rideData?.status != "DIVERGED"} />
         }
+          {(rideData?.cancelledBy && rideData?.status == 'CANCELLED' )&&  <Text style={{color:colors.grey_xxdark,fontFamily:Fonts.regular,marginTop:10,alignItems:'center',width:"100%",textAlign:'center'}}>{rideData?.cancelledBy == "DRIVER" ? t('cancelled_by_driver') : t('cancelled_by_you')}</Text> }
         
         <TripMetaInfo 
           date={formatDate(rideData.bookingTime)} 
           tripId={rideData.rideId} 
         />
+      
+       
+        {/* Show OTP if available */}
+       
      
         <AddressContainer directions={transformStops(rideData.stops)} />
+
+         {rideData?.otp ? (
+          <View style={styles.inlinePanel}>
+            <View style={styles.inlineHeader}>
+              <Text style={styles.inlineTitle}>{t('O T P')}</Text>
+            </View>
+            <Text style={{
+              fontFamily: Fonts.semi_bold,
+              fontSize: 24,
+              letterSpacing: 2,
+              color: colors.black,
+              textAlign: 'center',
+            }}>
+              {String(rideData.otp)}
+            </Text>
+          </View>
+        ) : null}
         
         
         <TripPersonVehicle 
@@ -189,7 +211,7 @@ const RideDetailScreen = ({ TripData }) => {
           breakdownFare={BreakdownFare}
           
         />} */}
-        
+       {(rideData?.status =="COMPLETED" || rideData?.status == 'DIVERGED') && (
         <View style={styles.paymentMethodContainer}>
           <Text style={styles.paymentMethodLabel}>{t('payment_details')}</Text>
           <View style={styles.paymentMethodKeyContainer}>
@@ -212,6 +234,7 @@ const RideDetailScreen = ({ TripData }) => {
           </View>}
          
         </View>
+        )}
         
         
         
@@ -414,25 +437,24 @@ const styles = StyleSheet.create({
     color: colors.grey_xxdark,
   },
   inlinePanel:{
-    backgroundColor: colors.white,
+    width: '100%',
+
+    justifyContent: 'center',
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
-    shadowColor: colors.black,
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    
   },
   inlineHeader:{
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+    justifyContent: 'center',
+    marginBottom: 4,
   },
   inlineTitle:{
     fontFamily: Fonts.semi_bold,
     fontSize: 16,
-    color: colors.black,
+    color: colors.grey_xxdark,
   },
   overlayContainer:{
     position:'absolute',

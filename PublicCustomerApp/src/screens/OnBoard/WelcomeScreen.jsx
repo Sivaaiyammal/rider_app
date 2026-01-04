@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   actions: {
     paddingVertical: 30,
     width: '100%',
-    gap:"80%"
+    gap: 10,
   },
   separator: {
     marginBottom: 30,

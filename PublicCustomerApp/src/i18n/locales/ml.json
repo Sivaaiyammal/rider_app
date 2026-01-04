@@ -680,5 +680,12 @@
   "see_all_drivers": "എല്ലാ ഡ്രൈവർമാരെയും കാണുക",
   "no_drivers_for_vehicle": "{vehicle}-ന് ഡ്രൈവർമാരില്ല",
   "no_drivers_for_vehicle_body": "നിങ്ങൾ തിരഞ്ഞെടുത്ത {vehicle}-ന് അടുത്ത് ഡ്രൈവർമാരില്ല. ഞങ്ങൾ ലഭ്യമായ ഡ്രൈവർമാരുള്ള മറ്റൊരു വാഹനം തിരഞ്ഞെടുത്തു.",
-  "edit_places_button": "സ്ഥലങ്ങൾ എഡിറ്റ് ചെയ്യുക"
+  "edit_places_button": "സ്ഥലങ്ങൾ എഡിറ്റ് ചെയ്യുക",
+  "trip_distance_too_short_title": "യാത്ര ദൂരം വളരെ കുറവ്",
+  "trip_distance_too_short": "യാത്രയുടെ ദൂരം വളരെ കുറവാണ്. കുറഞ്ഞത് അനുവദിച്ച ദൂരം {minDistance} മീറ്ററാണ്.",
+  "ride_matched": "റൈഡ് മാച്ചായി",
+  "ride_accepted": "റൈഡ് സ്വീകരിച്ചു",
+  "ride_picked_up": "റൈഡ് പിക്കപ്പ് ചെയ്തു",
+  "cancelled_by_driver": "ഡ്രൈവർ റദ്ദാക്കി",
+  "cancelled_by_you": "നിങ്ങൾ റദ്ദാക്കി"
 }

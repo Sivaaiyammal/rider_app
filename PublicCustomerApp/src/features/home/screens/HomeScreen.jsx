@@ -257,13 +257,13 @@ const MapScreen = () => {
   }, [appConfig.SHOW_NEARBY_DRIVER, fetchLatestDrivers, location, setVehicleMarkers, updateMarkersWithDrivers]);
 
   useEffect(()=>{
-    resetRideBookingLocation();
+    
     console.log('HomeScreen mounted, ride booking location reset',appConfig.SHOW_NEARBY_DRIVER);
     if(appConfig.SHOW_NEARBY_DRIVER){
       console.log('Fetching and updating vehicle markers with drivers on HomeScreen mount');
       updateVehicleMarkersWithDrivers();
     }
-  },[appConfig.SHOW_NEARBY_DRIVER, resetRideBookingLocation, updateVehicleMarkersWithDrivers])
+  },[appConfig.SHOW_NEARBY_DRIVER, updateVehicleMarkersWithDrivers])
 
   useEffect(() => {
     (async () => {

@@ -132,12 +132,14 @@ export default function TripFeedbackScreen() {
 
 
     console.log("ratingData",ratingData)
+    try{
     
     const feedback = await submitTripFeedback(ratingData)
 
     
    
     if(feedback.success){
+
       // showNotification(t('success'),t('feedback_submitted_successfully'),"success")
        if(ratingData.rating >=4){
        triggerInAppReview();
@@ -149,6 +151,9 @@ export default function TripFeedbackScreen() {
     }else{
       showNotification(t('error'),t('something_went_wrong'),"error")
     }
+  }catch(e){
+    console.log("Error submitting feedback",e)
+  }
   }
 
 

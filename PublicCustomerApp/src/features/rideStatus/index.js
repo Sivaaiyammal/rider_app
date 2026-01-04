@@ -6,7 +6,7 @@ import CompletedRideScreen from './screens/RideCompletedScreen';
 import { TripStatus } from './types/TripStatus';
 import useCurrentRideInfoStore from './store/useCurrentRideInfoStore';
 import NavBar from '../../components/NavBar';   
-import { View, StyleSheet, TouchableOpacity, Vibration } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Vibration,Text } from 'react-native';
 import { Fonts } from '../../constants/constants';
 import { colors } from '../../constants/constants';
 import MapIcon from '../../components/Map/MapIcon';
@@ -35,6 +35,7 @@ import useMapStore from '../map/store/useMapStore';
 import useWayPointReorderStore from '../booking/store/useWayPointReorderStore';
 import { openFeedback } from '../../utils/feedback';
 import {getCurrentDeviceLocation} from '../../utils/location'
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const RideStatus = () => {
   const { userdetails } = useUserInfoStore();
@@ -232,6 +233,7 @@ const RideStatus = () => {
         tripId,
         reason
       };
+      console.log("payload",payload)
 
       await CancelRide(payload);
       setWaitingForDriverApproval(null);
@@ -349,6 +351,20 @@ const RideStatus = () => {
   >
     </Overlay>}
         <NavBar title={t(getTitle())} feedbackIcon={true} onrightIconPress={onFeedbackPress} />
+        <TouchableOpacity
+          style={styles.refreshButton}
+          onPress={() => {
+            try {
+              if (global.checkOnGoingRideAndLog) {
+                global.checkOnGoingRideAndLog(true);
+              }
+            } catch (e) {
+              // no-op
+            }
+          }}
+        >
+          <Icon name="refresh" size={24} color="black" />
+        </TouchableOpacity>
         <View style={styles.container}>
             {renderScreen()}
         </View>
@@ -384,6 +400,17 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 20,
   },
+  refreshButton:{
+    position:'absolute',
+    left:20,
+    top:10,
+    backgroundColor:colors.white,
+    padding:6,
+    borderRadius:50,
+    zIndex:10,
+    elevation:5,
+  },
+
   containerTop: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,

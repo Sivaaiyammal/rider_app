@@ -69,6 +69,7 @@ import DriverAccessScreen from './Driver/DriverAccessScreen.jsx';
 import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore.js';
 import usePaymentStore from '../features/payment/store/usePaymentStore.js';
 import { consumeUserStatsPrefetch } from '../controllers/UserStatsPrefetch';
+import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore.js';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -132,7 +133,8 @@ const styles = StyleSheet.create({
 const Home = () => {
   const {location, setCurrentLocationName} = useLocationStore();
   const { setLocation } = useLocationStore.getState();
-  const { stackScreen,reset } = useStackScreenStore();
+  const { stackScreen,reset,goBackToScreen ,getCurrentScreenName} = useStackScreenStore();
+  const { rideStartLocation, rideEndLocation } = useRideBookingLocationStore();
   const { t } = useTranslation();
   const navigation = useNavigation();
   const appState = useRef(AppState.currentState);
@@ -356,17 +358,15 @@ const Home = () => {
     return false;
   } 
 
-  const checkOnGoingRideAndLog = async () => {
+  const checkOnGoingRideAndLog = async (update=false) => {
     const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
     const currentTripId=currentTrip?.data || null
-    console.log("currentTripId",currentTripId)
+    console.log("currentTripId......hhdhd",currentTripId)
     try {
       setConfigError(false);
       // Prefer prefetched response if available; fallback to live call
-      let Response = await consumeUserStatsPrefetch();
-      if (!Response) {
-        Response = await getUserStats(currentTripId);
-      }
+      let Response = await getUserStats(currentTripId);
+      
       console.log("Response------------------",JSON.stringify(Response))
 
       if(Response?.success ){
@@ -456,10 +456,24 @@ const Home = () => {
       
       if(Response?.trip){
 
-
         if (Response?.trip?.status == "CANCELLED" || Response?.trip?.status == "PENDING" || Response?.trip?.status == "COMPLETED" || Response?.trip?.status == "DIVERGED") {
           await DataStore.clearData(PREF.CURRENT_TRIP)
-          setStackScreen('Home', {});
+          resetCurrentRideInfo();
+           console.log(rideEndLocation,rideStartLocation,"rideEndLocationrideEndLocation____________________")
+          const currentScreen = getCurrentScreenName();
+          console.log("currentScreencurrentScreen",currentScreen)
+           // Read latest locations from store to avoid stale values
+           const { rideStartLocation: latestStart, rideEndLocation: latestEnd } = useRideBookingLocationStore.getState();
+           const directionsReady = !!latestStart && !!latestEnd;
+        
+          if (currentScreen == 'RideStatus') {
+             if(directionsReady){
+              goBackToScreen('BookRideScreen',{});
+             }else{
+              reset();
+             }
+          } 
+          
           return;
         }
        
@@ -507,6 +521,15 @@ const Home = () => {
       setBootLoading(false);
     }
   }
+  // Expose refresh handler globally so other screens can trigger it
+  useEffect(() => {
+    global.checkOnGoingRideAndLog = checkOnGoingRideAndLog;
+    return () => {
+      if (global.checkOnGoingRideAndLog === checkOnGoingRideAndLog) {
+        global.checkOnGoingRideAndLog = undefined;
+      }
+    };
+  }, [checkOnGoingRideAndLog]);
 
 
 
@@ -650,6 +673,8 @@ const Home = () => {
       appState.current = nextState;
       console.log("nextState",nextState)
       if (nextState === 'active') {
+        // On returning to foreground, re-check ongoing ride and permissions
+        await checkOnGoingRideAndLog(true);
         console.log("navigate to permission if needed")
         await navigateToPermissionIfNeeded();
       }

@@ -4,6 +4,7 @@ import {
     StyleSheet,
     TouchableOpacity,
     Modal,
+    Alert
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import NavBar from '../../../components/NavBar';
@@ -44,6 +45,7 @@ import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import ScrollHintChevron from '../../../components/Common/ScrollHintChevron';
 import { useDebouncedAPICall } from '../../../hooks/useDebounce';
 import RouteStatusOverlay from '../../../components/Loaders/RouteStatusOverlay';
+import useConfigStore from '../../../store/useConfigStore';
 // import useRideSelectionStore from '../../../store/useRideSelectionStore';
 import PropTypes from 'prop-types';
 import { buildKey as buildEstimationCacheKey, getFromCache as getEstimationFromCache, setInCache as setEstimationInCache, prune as pruneEstimationCache } from '../store/useEstimationCacheStore';
@@ -120,7 +122,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     
 
-    const { setDirectionReady,routeLoading } = useMapStore()     
+    const { setDirectionReady,routeLoading , routeRetryCount, setRouteRetryCount,setRouteLoading} = useMapStore()     
 
 
     // Use the booking hook for trip booking
@@ -141,12 +143,15 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const [isLongLoad, setIsLongLoad] = useState(false)
     const longLoadTimerRef = useRef(null)
     const [showDriverNotFoundModal, setShowDriverNotFoundModal] = useState(!!RideMatchDriverNotFound)
+    const [modalOverrides, setModalOverrides] = useState(null)
     const [showMaxDistanceExceededModal, setShowMaxDistanceExceededModal] = useState(false)
     const [isNotServingArea, setIsNotServingArea] = useState(false)
     // Booking info retry/error modal state
     const [showBookingInfoErrorModal, setShowBookingInfoErrorModal] = useState(false)
     const bookingInfoAttemptsRef = useRef(0)
     const bookingInfoTimerRef = useRef(null)
+    const { appConfig } = useConfigStore();
+
 
 
     useEffect(() => {   
@@ -156,7 +161,6 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     const onRetryFetchRoute = () => {  
         DirectionRoute(); 
-        
     }
 
 
@@ -204,15 +208,32 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
        // handleCurrentLocation()
         // Extract distance and duration from direction data
         if (data?.distance && data?.duration) {
-            const distance = data.distance/1000; // Distance in meters
-            const duration = data.duration/60;
-            // Duration in seconds
+            // Convert raw values to numeric units
+            const distanceKm = Number(data.distance) / 1000; // Distance in kilometers
+            const durationMin = Number(data.duration) / 60;
+
+            console.log("Direction data received:", data);
+            const minDistanceKm = appConfig.MIN_TRIP_DISTANCE_METER ? appConfig.MIN_TRIP_DISTANCE_METER / 1000 : 0;
+            console.log("minDistanceKm", minDistanceKm, distanceKm);
+
+            if (Number.isFinite(distanceKm) && distanceKm <= minDistanceKm) {
+                setModalOverrides({
+                    title: t('trip_distance_too_short_title') || 'Invalid Trip Distance',
+                    message:
+                        t('trip_distance_too_short', { minDistance: appConfig.MIN_TRIP_DISTANCE_METER }) ||
+                        `The trip distance is too short. Minimum allowed distance is ${appConfig.MIN_TRIP_DISTANCE_METER} meters.`,
+                    ctaLabel: t('edit_places_button', 'Edit Places'),
+                    onPrimaryAction: handleBackPress,
+                    type: 'min_distance'
+                })
+                setShowDriverNotFoundModal(true)
+                return;
+            }   
             updateBookingInfo({
-                rideDistance: distance != null ? distance.toFixed(1) : null,
-                estimatedDuration: Math.round(duration) || 1
+                rideDistance: Number.isFinite(distanceKm) ? distanceKm.toFixed(1) : null,
+                estimatedDuration: Number.isFinite(durationMin) ? Math.max(1, Math.round(durationMin)) : 1
             });
-            console.log("distance Got from direction data",distance)
-            
+            console.log("distanceKm from direction data", distanceKm);
         }
     }
 
@@ -756,7 +777,18 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
         <DriverNotFoundModal
             visible={showDriverNotFoundModal}
-            onClose={() => setShowDriverNotFoundModal(false)}
+            onClose={() => {
+                setShowDriverNotFoundModal(false)
+                if (modalOverrides) {
+                    setModalOverrides(null)
+                    handleBackPress()
+                }
+            }}
+            title={modalOverrides?.title}
+            message={modalOverrides?.message}
+            ctaLabel={modalOverrides?.ctaLabel}
+            onPrimaryAction={modalOverrides?.onPrimaryAction}
+            type={modalOverrides?.type|| null}
         />
         { (showMaxDistanceExceededModal || isNotServingArea) && (
             <Modal

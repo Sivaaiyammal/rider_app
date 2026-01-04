@@ -199,11 +199,12 @@ export const utils = {
     if (status == 'PAYMENT_COMPLETED') return 'ride_completed'
     else if (status == 'DIVERGED') return 'ride_diverged'
     else if (status == 'CANCELLED') return 'ride_cancelled'
-    else if (status == 'failed') return 'ride_failed'
+    else if (status == 'failed') return 'ride_cancelled'
     else if (status == 'PENDING') return 'ride_cancelled'
-    else if (status == 'MATCHED') return 'ride_failed'
-    else if (status == 'ACCEPTED') return 'ride_failed'
-    else if (status == 'PICKEDUP') return 'ride_failed'
+    else if (status == 'MATCHED') return 'ride_matched'
+    else if (status == 'ACCEPTED') return 'ride_accepted'
+    else if (status == 'PICKEDUP') return 'ride_picked_up'
+    else ""
   },
   getShortRideStatus: (status) => {
     if (status == 'COMPLETED') return 'COMPLETED'
