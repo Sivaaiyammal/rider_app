@@ -204,7 +204,7 @@ const DriverOnRide = () => {
       } else {
         setLoading(true);
         try {
-          const cancelData = {driver_id:userInfo?.user?._id, trip_id:activeTripData[0]._id, response: 'reject'}
+          const cancelData = {driver_id:userInfo?._id, trip_id:activeTripData[0]._id, response: 'reject'}
           RideMatchWSService.emit('driver_trip_response', cancelData)
           setCancelRideModalVisible(false)
           DataStore.storeData('activeTripId', null);
@@ -274,7 +274,7 @@ const DriverOnRide = () => {
            driverName: driverInfo?.name,
            tripId: activeTripData[0]?._id,
         };
-        const res = await api.request(url, 'POST', payload, userInfo.user.token);
+        const res = await api.request(url, 'POST', payload, userInfo.token);
         if(res.success) {
           showNotification('Alert sent', 'Alert sent', 'success');
           setIsAlertSent(true)
@@ -303,7 +303,7 @@ const DriverOnRide = () => {
         url,
         'POST',
         payload,
-        userInfo?.user?.token,
+        userInfo?.token,
       );
       if (res?.success) {
         if (nonreachedStops[0]?.waitingTime && nonreachedStops[0]?.waitingTime !== 0) {
@@ -348,7 +348,7 @@ const DriverOnRide = () => {
         url,
         'POST',
         payload,
-        userInfo?.user?.token,
+        userInfo?.token,
       );
       if (res?.success) {
         updateStopData(sotp[0].name, true, 'PICKEDUP', finalFinalTime, true)

@@ -18,6 +18,7 @@ import { height } from '../../common/utils/scalingutils';
 import ApprovalIcon from '../../notdriver/assets/icons/Approval_BG.svg';
 import DocWhiteIcon from '../../notdriver/assets/icons/doc_white.svg';
 import { useTranslation } from 'react-i18next';
+import usePublicDriverStore from '../store/usePublicDriverStore';
 
 const DriverApprovalScreen = () => {
   const { userInfo, logout } = useUserStore()

@@ -54,7 +54,7 @@ const StopChangeRequest = () => {
               url,
               'POST',
               payload,
-              userInfo?.user?.token,
+              userInfo?.token,
             );
             if (res.success) {
                 updateNewStopData(newStopData)
@@ -86,7 +86,7 @@ const StopChangeRequest = () => {
               url,
               'POST',
               payload,
-              userInfo?.user?.token,
+              userInfo?.token,
             );
             if (res.success) {
                 setStackScreen('PublicDriverTrackingScreen')

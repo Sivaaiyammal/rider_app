@@ -109,7 +109,7 @@ const UpComingTripsList = () => {
         '/publicrides/driver/getMultipleTripsDetail',
         'POST',
         payload,
-        userInfo.user.token,
+        userInfo.token,
       );
       if (response?.success) {
         setTrips(response.data);

@@ -23,7 +23,7 @@ const DriverAskVehicle = () => {
         const vehicleId = vehicle._id
         setLoading(true)
           try {
-            const response = await api.request(`/publicrides/driver/updateDriverVehicle?vehicleId=${vehicleId}`,"POST", {}, userInfo?.user?.token)
+            const response = await api.request(`/publicrides/driver/updateDriverVehicle?vehicleId=${vehicleId}`,"POST", {}, userInfo?.token)
             if(response.success){
               setVehicleInfo(vehicle);
               setStackScreen('Home')
@@ -42,7 +42,7 @@ const DriverAskVehicle = () => {
         setLoading(true)
         const api = new APIRequest()
         try {
-            const response = await api.request(`/publicrides/driver/getAvailabelVendorVehicle?vendorId=${vendorId}`,"GET", {}, userInfo?.user?.token)
+            const response = await api.request(`/publicrides/driver/getAvailabelVendorVehicle?vendorId=${vendorId}`,"GET", {}, userInfo?.token)
             if(response.success){
                 setVehicleList(response.vehicleList)
             } else {

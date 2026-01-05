@@ -76,7 +76,7 @@ const TicketDetailScreen = () => {
     if (response?.success) {
       setMessage('');
       setIsTyping(false);
-      await addMessageAsync(selectedTicket.ticketId, messageText, userInfo.user._id);
+      await addMessageAsync(selectedTicket.ticketId, messageText, userInfo._id);
     }
   };
 
@@ -178,7 +178,7 @@ const TicketDetailScreen = () => {
     item?.sender == "system" ?
     <SystemMessage message={item} isUser={false} />
     :
-    <ChatMessage message={item} isUser={item?.sender == userInfo?.user?._id} />
+    <ChatMessage message={item} isUser={item?.sender == userInfo?._id} />
   );
 
   const renderTypingIndicator = () => {

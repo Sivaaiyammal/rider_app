@@ -31,11 +31,11 @@ const DriverIDCard = () => {
         const normalizedUrl =
           typeof imageUrl === 'string' ? imageUrl : String(imageUrl);
         const key = normalizedUrl.replace(/^https:\/\/[^/]+\/?/, '');
-        if (!userInfo?.user?.token) {
+        if (!userInfo?.token) {
           setImageFile(normalizedUrl);
           return;
         }
-        const response = await getPresignedImageUrl(key, userInfo.user.token);
+        const response = await getPresignedImageUrl(key, userInfo.token);
         setImageFile(response || normalizedUrl);
       } catch (error) {
         const fallback =
@@ -45,7 +45,7 @@ const DriverIDCard = () => {
         setIsImageLoading(false);
       }
     },
-    [userInfo?.user?.token],
+    [userInfo?.token],
   );
 
   const getImage = React.useCallback(
@@ -76,13 +76,13 @@ const DriverIDCard = () => {
   const driverName = useMemo(() => {
     return (
       driverInfo?.name ||
-      userInfo?.user?.name ||
-      userInfo?.user?.fullName ||
+      userInfo?.name ||
+      userInfo?.fullName ||
       'Driver Name'
     );
-  }, [driverInfo?.name, userInfo?.user?.fullName, userInfo?.user?.name]);
+  }, [driverInfo?.name, userInfo?.fullName, userInfo?.name]);
 
-  const driverId = userInfo?.user?.driverId || 'ID unavailable';
+  const driverId = userInfo?.driverId || 'ID unavailable';
   const issuedDate = useMemo(() => new Date().toLocaleDateString(), []);
 
   return (

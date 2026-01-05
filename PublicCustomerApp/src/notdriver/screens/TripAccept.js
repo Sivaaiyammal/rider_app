@@ -139,7 +139,7 @@ const TripAccept = () => {
       console.log('hari-->>accept-->>err-->>', err);
       setLoading(false);
     }
-  }, [userInfo?.user?._id, tripId, requestId, setLoading, setDirectionPoints, setStackScreen, setActiveTripData, reset]);
+  }, [userInfo?._id, tripId, requestId, setLoading, setDirectionPoints, setStackScreen, setActiveTripData, reset]);
 
   const onTimerComplete = useCallback(() => {
     handleDecline(true);

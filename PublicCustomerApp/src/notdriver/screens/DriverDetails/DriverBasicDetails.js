@@ -41,7 +41,7 @@ const DriverBasicDetails = () => {
         const api = new APIRequest();
         const url = `/publicrides/driver/requestEditDocuments`;
         try {
-            const res = await api.request(url, 'GET', {}, userInfo?.user?.token);
+            const res = await api.request(url, 'GET', {}, userInfo?.token);
             if(res.success){
                 setIsModalVisible(false);
                 setStackScreen('DriverEditInfo');

@@ -125,7 +125,7 @@ const DriverPermissionScreen = () => {
             status: status,
             updatedOn: new Date().getTime()
           }
-          await DataStore.storeData('userInfo', JSON.stringify(_newUserInfo));
+          await DataStore.storeData('userdetails',_newUserInfo);
           setDriverStatus(status)
           if (status === 'online') {
             BGLocationTask.runDriverBgTask();

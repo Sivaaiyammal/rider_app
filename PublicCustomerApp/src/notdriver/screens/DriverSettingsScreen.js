@@ -236,7 +236,7 @@ export default function PublicDriverSettingsScreen() {
           </View>
           <View>
             <Text style={settingsScreen.helloTxt}>{t('hello')} !</Text>
-            <Text style={settingsScreen.nameTxt}>{userInfo?.user?.name || userInfo?.user?.phone}</Text>
+            <Text style={settingsScreen.nameTxt}>{userInfo?.name || userInfo?.phone}</Text>
           </View>
         </View>
         {filteredSettingsData.map(item => {

@@ -38,7 +38,7 @@ const PublicRidesPriceChart = () => {
         '/publicrides/driver/getFareConfigs',
         'GET',
         {},
-        userInfo.user.token,
+        userInfo.token,
       );
       if (response?.success) {
         setFareDetails(response.data);

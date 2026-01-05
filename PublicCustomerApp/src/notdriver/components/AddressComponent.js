@@ -40,7 +40,7 @@ const AddressComponent = props => {
 
   function isMyStop(name) {
     const result = transformedData.find(stop => 
-      stop?.passangers?.some(passenger => passenger?._id === userInfo?.user?._id)
+      stop?.passangers?.some(passenger => passenger?._id === userInfo?._id)
     );
 
     if (result && name === result.name) {

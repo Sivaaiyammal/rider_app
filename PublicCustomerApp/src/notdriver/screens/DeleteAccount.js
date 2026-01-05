@@ -69,7 +69,7 @@ const DeleteAccount = () => {
                 vehicleId:vehicleInfo._id,
         }
         try {
-            const res = await api.request(url, 'POST', payload, userInfo.user.token);
+            const res = await api.request(url, 'POST', payload, userInfo.token);
             console.log('otpverifiedres',res)
             if(res.success){
                 setIsLoading(true);
@@ -119,7 +119,7 @@ const DeleteAccount = () => {
             phone:'+91'+phone,
         }       
         try {
-            const res = await api.request(url, 'POST', payload, userInfo.user.token);
+            const res = await api.request(url, 'POST', payload, userInfo.token);
 
             if(res.success){
                 setShowOtpView(true)
