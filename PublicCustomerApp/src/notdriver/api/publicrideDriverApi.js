@@ -9,11 +9,11 @@ class PublicrideDriverApi {
 
   async initToken() {
     try {
-      const userData = await DataStore.loadData('userInfo');
+      const userData = await DataStore.loadData('userdetails');
       if (userData && userData.status && userData.data) {
-        const parsedData = JSON.parse(userData.data);
-        if (parsedData && parsedData.user && parsedData.user.token) {
-          this.token = parsedData.user.token;
+        const parsedData = userData.data;
+        if (parsedData && parsedData?.token) {
+          this.token = parsedData?.token;
         }
       }
     } catch (error) {
@@ -100,7 +100,6 @@ class PublicrideDriverApi {
   async acceptTrip(payload, token=this.token) {
     try {
       const api = new APIRequest(Config.ROOT_API_URL)
-      console.log("Accepting trip with payload:",payload)
       const response = await api.request(`/publicrides/driver/acceptRide`, 'POST', payload, token);
       return response;
     } catch (error) {

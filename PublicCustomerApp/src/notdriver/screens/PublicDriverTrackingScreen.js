@@ -1,0 +1,213 @@
+/* eslint-disable react/no-children-prop */
+/* eslint-disable react/jsx-no-undef */
+import { Text, TouchableOpacity, View} from 'react-native';
+import React, { useEffect, useState }  from 'react';
+import StarRating from 'react-native-star-rating-widget';
+import useTripsStore from '../store/useTripsStore';
+import { useTripAcceptStore } from '../store/useTripAcceptStore';
+import useUserStore from '../../common/store/useUserStore';
+import { useStackScreenStore } from '../../common/store/useStackScreenStore';
+import useCurrentScreenStore from '../../common/store/useCurrentScreenStore';
+import usePublicDriverStore from '../store/usePublicDriverStore';
+import { useMapMarkerStore } from '../../common/store/useMapMarkerStore';
+import APIRequest from '../../common/APIRequest';
+import { DataStore } from '../../common/controllers/DataStore';
+import { showNotification } from '../../common/components/Alerts/showNotification';
+import AlertModal from '../components/AlertModal';
+import { RouteScreenStyles } from '../styles/RouteScreenStyles';
+import DriverOnRide from './DriverOnRide';
+import { driverDetailStyles } from '../styles/DriverDetailsUpload';
+import { Fonts } from '../../common/constants/constants';
+import PublicDriverTripPaymentScreen from './PublicDriverTripPaymentScreen';
+import FullScreenLoader from '../../common/loaders/FullScreenLoader';
+import InputField from '../../common/components/InputField';
+
+const PublicDriverTrackingScreen = () => {
+  const {activeTripData , setActiveTripData, setFareBreakDown,newStopData} = useTripsStore();
+  const {setHasActiveTrip} = useTripAcceptStore();
+  const [isLoading, setIsLoading] = useState(false)
+  const {userInfo} = useUserStore()
+  const {setStackScreen} = useStackScreenStore()
+  const {setCurrentScreen} = useCurrentScreenStore()
+  const [isRatingLoading, setIsRatingLoading] = useState(false)
+  const [comments, setcomments] = useState('')
+  const [rating, setRating] = useState(5)
+  const {isOnGoing, setIsOnGoing, setIsGetFare} = useTripAcceptStore()
+  const {updateDriverDue, driverRole, setdriverDueDate, setShowRatingModal, showRatingModal} = usePublicDriverStore();
+  const {setDirectionPoints, setDisduration, setStartNavigation} = useMapMarkerStore();
+
+  const tripsStatus = activeTripData && activeTripData[0]?.status ? activeTripData[0]?.status : "";
+
+  const onPaymentReceive = async (fareDetails, paymentMethod) => {
+    
+    setIsLoading(true);
+    try {
+      const api = new APIRequest();
+      const url = `/publicrides/driver/updatePaymentReceive`;
+      const payload = {
+        tripId: activeTripData[0]?._id,
+        fareDetails: fareDetails,
+        status: isOnGoing ? 'DIVERGED' : 'COMPLETED',
+        paymentMethod:paymentMethod,
+        role:driverRole
+      };
+      const res = await api.request(
+        url,
+        'POST',
+        payload,
+        userInfo?.token,
+      );
+      if (res?.success) {
+          const updatedRideGroup = {...activeTripData[0], status: isOnGoing ? 'DIVERGED' : 'COMPLETED'};
+          setActiveTripData([updatedRideGroup]);
+          DataStore.storeData('activeTripId', null)
+          DataStore.storeData('isOngoingTrip', null)
+          if (driverRole === 'dco') {
+            const newDriverDue = fareDetails?.breakdown?.driverDue;
+            updateDriverDue(newDriverDue)
+            setdriverDueDate(res?.nextDueDate)
+          }
+          setFareBreakDown(null)
+          setShowRatingModal(true)
+          setIsGetFare(true)
+          setIsOnGoing(false)
+          setHasActiveTrip(null)
+          setDirectionPoints(null)
+          setDisduration(null)
+          setStartNavigation(false)
+          showNotification(res?.message, res?.message, 'success');
+      } else {
+        showNotification(res?.error, res?.message, 'danger');
+      }
+      setIsLoading(false);
+    } catch (error) {
+      showNotification('Something went wrong', '', 'danger');
+      setIsLoading(false);
+    }
+  }
+
+  const onRatingClose = () => {
+    setShowRatingModal(false)
+    setActiveTripData([])
+    setHasActiveTrip(null)
+    setStackScreen('Home')
+    setCurrentScreen('Map')
+  }
+
+  const updatePassangerRating= async() => {
+    setIsRatingLoading(true);
+    try {
+      const api = new APIRequest();
+      const url = `/publicrides/driver/driverPassengerRating`;
+      const payload = {
+        tripId:activeTripData[0]._id,
+        rating:rating,
+        comment: comments
+    };
+      const res = await api.request(
+        url,
+        'POST',
+        payload,
+        userInfo?.token,
+      );
+      if (res?.success) {
+        showNotification(res?.message, res?.message, 'success');
+        onRatingClose()
+      } else {
+        showNotification(res?.message, res?.message, 'danger');
+      }
+      setIsRatingLoading(false);
+    } catch (error) {
+      showNotification('Something went wrong', '', 'danger');
+      setIsRatingLoading(false);
+    }
+  }
+
+  const renderRatingModal = () => (
+    <AlertModal
+    isVisible={showRatingModal}
+    onClose={() => {
+      onRatingClose()
+    }}
+    isLoading={isRatingLoading}
+    rightBtnText={'Submit'}
+    leftBtnTxt={'Skip'}
+    onRightPress={() => updatePassangerRating()}
+    animationType={'slide'}
+    children={
+      <View>
+        <Text style={{fontFamily:Fonts.semi_bold, fontSize:16, textAlign:'center', marginBottom:10}}>Rate Passanger</Text>
+        <StarRating
+        rating={rating}
+        onChange={setRating}
+      />
+      <InputField
+        style={driverDetailStyles.textField}
+        value={comments}
+        label="Comments"
+        onChangeText={text => {
+          setcomments(text);
+        }}
+        // icon={<License />}
+      />
+      </View>
+    }
+    />
+  )
+
+  useEffect(()=> {
+    const getIsOnGoingTrip = async() => {
+      try {
+        const isOnGoing = await DataStore.loadData('isOngoingTrip')
+        if (isOnGoing?.status) {
+          setIsOnGoing(isOnGoing.data)
+        } else {
+          setIsOnGoing(false)
+        }
+      }
+      catch (e){
+        console.log('hari-->>error-->>isOnGoingTrip-->>', e)
+      }
+    } 
+    getIsOnGoingTrip()
+  },[])
+
+  const renderTripStatusComponent = () => {
+     if (newStopData) {
+      return setStackScreen('StopChangeRequest')
+     }
+     if (tripsStatus === 'ACCEPTED' || tripsStatus === 'PICKEDUP') {
+      return <DriverOnRide />
+     }
+      if (tripsStatus === 'DROPPED' || tripsStatus === 'PAYMENT_COMPLETED' || isOnGoing) {
+      return <PublicDriverTripPaymentScreen onPaymentReceive={(fareDetails, paymentMethod)=>onPaymentReceive(fareDetails, paymentMethod)} tripDetials={activeTripData[0]} isLoading={isLoading}/>
+     }
+  }
+
+  return (
+    <>
+    {(isLoading || isRatingLoading )&&
+    <View style={{position:'absolute', width:'100%', height:'100%', zIndex:99999}}>
+    <FullScreenLoader /> 
+    </View>
+    }
+    <View style={{flex: 1}}>
+      {!activeTripData || activeTripData?.length === 0 ? (
+         <View style={RouteScreenStyles.noActiveRouteContainer}>
+         <Text style={RouteScreenStyles.noActiveRouteTxt}>
+           No Active Route !!
+         </Text>
+         <TouchableOpacity style={RouteScreenStyles.goHomeBtn} onPress={()=>setStackScreen('Home')}> 
+           <Text style={RouteScreenStyles.goHomeBtnTxt}>Go Home</Text>
+         </TouchableOpacity>
+       </View>
+      ) : (
+        renderTripStatusComponent()
+      )}
+      {showRatingModal && renderRatingModal()}
+    </View>
+    </>
+  );
+};
+
+export default PublicDriverTrackingScreen;

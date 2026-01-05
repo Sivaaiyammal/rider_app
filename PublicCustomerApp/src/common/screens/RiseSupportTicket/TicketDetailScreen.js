@@ -11,17 +11,18 @@ import {
   FlatList,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import ChatMessage from '../../Components/ChatMessage';
-import { Fonts } from '../../../Constants/constants';
-import useSupportStore from '../../../Store/useSupportStore';
-import { useStackScreenStore } from '../../../Store/useStackScreenStore';
-import APIRequest from '../../../Controllers/APIRequest';
 import Config from 'react-native-config';
-import GlobalContext from '../../../Context/GlobalContext';
-import UseBackButton from '../../../hooks/useBackButton';
+import useUserStore from '../../store/useUserStore';
+import useSupportStore from '../../store/useSupportStore';
+import { useStackScreenStore } from '../../store/useStackScreenStore';
+import APIRequest from '../../APIRequest';
+import ChatMessage from '../../components/ChatMessage';
+import UseBackButton from '../../hooks/UseBackButton';
+import { Fonts } from '../../constants/constants';
+
 
 const TicketDetailScreen = () => {
-  const {userInfo} = useContext(GlobalContext);
+  const {userInfo} = useUserStore()
   const [message, setMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const flatListRef = useRef(null);

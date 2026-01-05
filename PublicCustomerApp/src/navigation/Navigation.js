@@ -47,7 +47,6 @@ const Navigation = () => {
     const access_token = await DataStore.loadData('access_token');
     const user_details = await DataStore.loadData('userdetails');
     // const userInfo = await DataStore.loadData('userdetails');
-    console.log('userInfo:', user_details);
     if (userRole?.data) {
       setUserRole(userRole.data);
     }

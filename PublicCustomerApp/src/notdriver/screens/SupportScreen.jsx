@@ -10,9 +10,9 @@ import Writereview from '../../notdriver/assets/icons/writereview.svg'
 import Support from '../../notdriver/assets/icons/support.svg'
 import Call from '../../notdriver/assets/icons/call.svg'
 import Mail from '../../notdriver/assets/icons/mail.svg'
-// import WhatsApp from '../../notdriver/assets/icons/whatsapp.svg'
-// import CallWhite from '../../notdriver/assets/icons/callwhite.svg'
-// import MailWhite from '../../notdriver/assets/icons/mailwhite.svg'
+import WhatsApp from '../../notdriver/assets/icons/whatsApp.svg'
+import CallWhite from '../../notdriver/assets/icons/callWhite.svg'
+import MailWhite from '../../notdriver/assets/icons/mailWhite.svg'
 
 const SupportScreen = ({isStackScreen, showBg}) => {
   const t = {}
@@ -100,14 +100,14 @@ const SupportScreen = ({isStackScreen, showBg}) => {
         <TouchableOpacity
           onPress={() => onWhatsAppPress()}
           style={[settingsScreen.actionBtns]}>
-          {/* <WhatsApp /> */}
+          <WhatsApp />
           <Text style={settingsScreen.btnTxt}>{t['whatsapp']}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => onCallPress()}
           style={settingsScreen.actionBtns}>
           <View style={settingsScreen.actionBtnsBg}>
-            {/* <CallWhite /> */}
+            <CallWhite />
           </View>
           <Text style={settingsScreen.btnTxt}>{t['call']}</Text>
         </TouchableOpacity>
@@ -115,7 +115,7 @@ const SupportScreen = ({isStackScreen, showBg}) => {
           onPress={() => onMailPress()}
           style={settingsScreen.actionBtns}>
           <View style={settingsScreen.actionBtnsBg}>
-            {/* <MailWhite /> */}
+            <MailWhite />
           </View>
           <Text style={settingsScreen.btnTxt}>{t['mail']}</Text>
         </TouchableOpacity>

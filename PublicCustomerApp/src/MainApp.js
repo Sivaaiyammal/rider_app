@@ -10,21 +10,18 @@ import { DataStore } from './controllers/DataStore';
 import { ContextProvider } from './context/GlobalContext';
 import firebaseConfig from '../firebaseConfig';
 import messaging from '@react-native-firebase/messaging';
-import PushNotifications from './controllers/PushNotification';
 import { NetworkProvider, useNetwork } from './context/NetworkContext';
-import NoNetworkOverlay from './components/NoNetworkOverlay';
 import NetworkBanner from './components/NetworkBanner';
 import i18n from './i18n';
-import { useNearbyDrivers } from './hooks/useNearbyDrivers';
 import { useStackScreenStore } from './store/useStackScreenStore';
 // import { useNearbyPollingControl } from './store/useNearByDriverPollingControl';
 import FeedbackBottomSheet from './components/FeedbackBottomSheet';
 import tripAlert from './controllers/TripAlert';
-import { log } from '@react-native-firebase/crashlytics';
 import { parseDeepLink } from './utils/DeepLink';
 import DriverInitializationScreen from './notdriver/components/DriverInitializationScreen';
 import DeviceInfo from 'react-native-device-info';
 import useDeviceAPIStore from './common/store/useDeviceAPIStore';
+import PushNotifications from './common/core/PushNotifications';
 
 
 if (!firebase.apps.length) {

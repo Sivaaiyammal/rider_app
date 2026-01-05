@@ -12,6 +12,7 @@ import InputField from '../../../common/components/InputField';
 import CustomDropdown from '../../../common/components/CustomDropdown';
 import { driverDetailStyles } from '../../styles/DriverDetailsUpload';
 import ProfileImagePicker from '../../components/ProfileImagePicker';
+import DocUploadIcon from '../../../notdriver/assets/icons/docUpload.svg';
 
 const styles = StyleSheet.create({
   container: {

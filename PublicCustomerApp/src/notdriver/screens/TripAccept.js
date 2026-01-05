@@ -13,10 +13,8 @@ import usePublicDriverStore from '../store/usePublicDriverStore';
 import useUserStore from '../../common/store/useUserStore';
 import { useStackScreenStore } from '../../common/store/useStackScreenStore';
 import useTripsStore from '../store/useTripsStore';
-import useCurrentScreenStore from '../../common/store/useCurrentScreenStore';
 import { useMapMarkerStore } from '../../common/store/useMapMarkerStore';
 import { showNotification } from '../../common/components/Alerts/showNotification';
-import PushNotifications from '../../utils/PushNotifications';
 import tripAlert from '../../controllers/TripAlert';
 import { DataStore } from '../../common/controllers/DataStore';
 import BGLocationTask from '../../common/controllers/BGLocationTask';
@@ -26,8 +24,10 @@ import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 import { DateTimeFormatter } from '../../common/utils/DateTimeFormatter';
 import { Colors, Fonts } from '../../common/constants/constants';
 import CustomeBottomSheet from '../../common/components/CustomeBottomSheet';
-import Rupee from '../../notdriver/assets/icons/Rupee.svg';
+import Rupee from '../../notdriver/assets/icons/rupee.svg';
 import AddressComponent from '../components/AddressComponent';
+import RideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
+import PushNotifications from '../../common/core/PushNotifications';
 
 
 const {NeNativeModule} = NativeModules;
@@ -58,7 +58,6 @@ const TripAccept = () => {
   const [timeLeft, setTimeLeft] = useState(null);
   const progressAnim = useRef(new Animated.Value(1)).current;
   const animationRef = useRef(null);
-  const wasCleared = useRef(false);
 
 
   const t = {}
@@ -113,13 +112,13 @@ const TripAccept = () => {
     try {
       if (!isTimerEnd) {
       const acceptData = {
-        driver_id: userInfo?.user?._id,
+        driver_id: userInfo?._id,
         trip_id: tripId,
         response: 'reject',
         request_id: requestId,
       };
       setLoading(true);
-      driverWSService.emit('driver_trip_response', acceptData);
+      RideMatchWSService.emit('driver_trip_response', acceptData);
       showNotification('Trip has been Cancelled', '', 'success');
       } else {
         showNotification('Trip Response Timed Out', '', 'success');
@@ -185,34 +184,6 @@ const TripAccept = () => {
     outputRange: ['0%', '100%'],
   });
 
-  const formatDate = timestamp => {
-    const date = new Date(timestamp);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = '2025';
-    return `${day}/${month}/${year}`;
-  };
-
-  const formatTime = timestamp => {
-    if (!timestamp) return '';
-
-    const date = new Date(timestamp);
-    let hours = date.getHours();
-    const minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-
-    hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
-
-    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-
-    return `${hours}:${formattedMinutes} ${ampm}`;
-  };
-
-  const clearTimer = () => {
-    wasCleared.current = true;
-    setTimeLeft(0); // Triggers useEffect, but won't call onTimerComplete
-  };
 
   const handleAccept = async () => {
     setLoading(true);
@@ -222,12 +193,12 @@ const TripAccept = () => {
     BGLocationTask.hideOverlay();
     try {
       const acceptData = {
-        driver_id: userInfo?.user?._id,
+        driver_id: userInfo?._id,
         trip_id: tripId,
         response: 'accept',
         request_id: requestId,
       };
-      driverWSService.emit('driver_trip_response', acceptData);
+      RideMatchWSService.emit('driver_trip_response', acceptData);
       PushNotifications.onClearAllNotifications();
       tripAlert.stopAlertSound();
       setTimeLeft(2);
@@ -258,11 +229,11 @@ const TripAccept = () => {
         }
       })
       const padding = [50, 50, 50, height*0.5]
-      setDirectionPoints({
-        locations: directions,
-        type: 'car',
-        padding: padding.map(v => parseInt(v, 10))
-      });
+      // setDirectionPoints({
+      //   locations: directions,
+      //   type: 'car',
+      //   padding: padding.map(v => parseInt(v, 10))
+      // });
     }
      return () => {
       setDirectionPoints(null);

@@ -16,11 +16,13 @@ import FallbackComponent from './src/components/FallbackComponent';
 
 
 const App = () => {
-
-const grapqlEndPoint = '/publicrides/customer/graphql/location';
+  const { userRole } = useUserStore();
+  const activeI18n = userRole === 'driver' ? commonI18n : customerI18n;
+const grapqlEndPoint = Config.ROOT_API_URL + '/publicrides/customer/graphql/location';
+const driverGraphqlEndPoint = Config.ROOT_API_URL +'/publicrides/driver/graphql/location';
 
 const httpLink = new HttpLink({
-  uri: Config.ROOT_API_URL + grapqlEndPoint,
+  uri: userRole === 'driver' ? driverGraphqlEndPoint : grapqlEndPoint,
 });
 const client = new ApolloClient({
   link: httpLink,
@@ -47,8 +49,7 @@ const client = new ApolloClient({
   };
 
 
-  const { userRole } = useUserStore();
-  const activeI18n = userRole === 'driver' ? commonI18n : customerI18n;
+
 
   return (
     <ErrorBoundary onError={myErrorHandler} FallbackComponent={FallbackComponent}>
