@@ -9,7 +9,7 @@ import useDeviceTokenStore from '../../common/store/useDeviceTokenStore';
 import { useTripAcceptStore } from '../store/useTripAcceptStore';
 import { useStackScreenStore } from '../../common/store/useStackScreenStore';
 import usePublicDriverStore from '../store/usePublicDriverStore';
-import { checkFineLocationPermissions, RequestBackgroundLocationPermission, RequestFineLocationPermission } from '../../common/controllers/PermissionHandler';
+import { checkBackgroundLocationPermissions, checkFineLocationPermissions, RequestBackgroundLocationPermission, RequestFineLocationPermission } from '../../common/controllers/PermissionHandler';
 import locationTask from '../../common/controllers/GetCurrentLocation';
 import BGLocationTask from '../../common/controllers/BGLocationTask';
 import driverWaitingTime from '../Controller/DriverWaitingTime';
@@ -169,17 +169,21 @@ const DriverOnRide = () => {
 
   const handleEndTrip = async (reason) => {
     const haslocationPression = await checkFineLocationPermissions();
+
     const hasbackgroundPression =Platform.OS === 'android' && Platform.Version <= 28 ? true : await checkBackgroundLocationPermissions();
-    if (!hasbackgroundPression || !haslocationPression) {
-      onNavigationClick()
-      return;
-    }
+    console.log('hari-->>haslocationPression-->>', hasbackgroundPression, haslocationPression);
+
+    // if (!hasbackgroundPression || !haslocationPression) {
+    //   onNavigationClick()
+
+    //   return;
+    // }
+
     if (!userLocation) {
       await locationTask.getCurrentLocation();
       showNotification('Fetching Current Location', 'Try Again', 'info');
       return;
     }
-    if (userRole === "PublicRideDriver") {
       setLoading(true);
       if (tripsStatus === 'ACCEPTED') {
         const response = await publicrideDriverApi.cancelTrip(activeTripData[0]._id, reason);
@@ -208,7 +212,6 @@ const DriverOnRide = () => {
           console.log('hari-->>accept-->>err-->>', err)
         }
       }
-    }
   }
 
   const onFairDetails = async (res, encodedPolyline) => {
@@ -379,7 +382,7 @@ const DriverOnRide = () => {
         otp: otp,
         tripId: activeTripData[0]?._id,
       }
-      const res = await api.request(url, 'POST', payload, userInfo?.user?.token);
+      const res = await api.request(url, 'POST', payload, userInfo?.token);
       if(res?.success){
         showNotification(res?.message, res?.message, 'success');
         setModalVisible(!modalVisible);
@@ -424,14 +427,10 @@ const DriverOnRide = () => {
         lon: userLocation[1] || 0,
       });
        const padding = [50, 50, 50, height*0.3]
-      setDirectionPoints({
-        locations: directions,
-        type: 'car',
-        padding: padding.map(v => parseInt(v, 10))
-      });
       // setDirectionPoints({
       //   locations: directions,
       //   type: 'car',
+      //   padding: padding.map(v => parseInt(v, 10))
       // });
     } 
 
@@ -441,11 +440,11 @@ const DriverOnRide = () => {
         lon: userLocation[1] || 0,
       });
        const padding = [50, 50, 50, height*0.3]
-      setDirectionPoints({
-        locations: nonreachedStops,
-        type: 'car',
-        padding: padding.map(v => parseInt(v, 10))
-      });
+      // setDirectionPoints({
+      //   locations: nonreachedStops,
+      //   type: 'car',
+      //   padding: padding.map(v => parseInt(v, 10))
+      // });
     }
   };
 

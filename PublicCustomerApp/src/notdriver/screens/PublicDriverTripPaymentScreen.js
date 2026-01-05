@@ -346,29 +346,14 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
             <Text style={styles.cardLabel}>{t.fare || 'Fare'}</Text>
           </View>
         </View>
-        {/* <TripDetails activeTripData={activeTripData} fareBreakDown={fareBreakDown} isPaymentScreen={true} distance={distance} duration={duration} fare={fare} /> */}
         <Text style={[styles.bookingTime, {marginTop: 10}]}>
           {t.payment_details}
         </Text>
         <View style={styles.dotSeperator} />
         <View style={styles.feesBreakDownContainer}>
+      
         
-          {/* {feesBreakDown?.breakdown ? (
-  Object.entries(feesBreakDown?.breakdown).map(([key, value]) => {
-    return (
-      <View style={styles.feesBreakDown}>
-        <Text style={styles.amountKey}>{key}</Text>
-        <Text style={styles.amountValue}>₹{(value).toFixed(2)}</Text>
-      </View>
-  );
-  })
-          ) : (
-            <View style={styles.feesBreakDown}>
-              <Text style={styles.amountKey}>No fees breakdown</Text>
-            </View>
-          )} */}
-        
-          {couponDiscount && couponDiscount > 0 && (
+          {couponDiscount !== null && couponDiscount > 0 && (
            <View style={styles.feesBreakDown}>
             <Text style={[styles.amountKey, {fontFamily: Fonts.medium, }]}>
             {t.coupon}

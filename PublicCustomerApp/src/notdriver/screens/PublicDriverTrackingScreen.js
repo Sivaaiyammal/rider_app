@@ -19,6 +19,8 @@ import DriverOnRide from './DriverOnRide';
 import { driverDetailStyles } from '../styles/DriverDetailsUpload';
 import { Fonts } from '../../common/constants/constants';
 import PublicDriverTripPaymentScreen from './PublicDriverTripPaymentScreen';
+import FullScreenLoader from '../../common/loaders/FullScreenLoader';
+import InputField from '../../common/components/InputField';
 
 const PublicDriverTrackingScreen = () => {
   const {activeTripData , setActiveTripData, setFareBreakDown,newStopData} = useTripsStore();
@@ -53,7 +55,7 @@ const PublicDriverTrackingScreen = () => {
         url,
         'POST',
         payload,
-        userInfo?.user?.token,
+        userInfo?.token,
       );
       if (res?.success) {
           const updatedRideGroup = {...activeTripData[0], status: isOnGoing ? 'DIVERGED' : 'COMPLETED'};
@@ -106,7 +108,7 @@ const PublicDriverTrackingScreen = () => {
         url,
         'POST',
         payload,
-        userInfo?.user?.token,
+        userInfo?.token,
       );
       if (res?.success) {
         showNotification(res?.message, res?.message, 'success');
@@ -184,11 +186,11 @@ const PublicDriverTrackingScreen = () => {
 
   return (
     <>
-    {/* {(isLoading || isRatingLoading || loading)&&
+    {(isLoading || isRatingLoading )&&
     <View style={{position:'absolute', width:'100%', height:'100%', zIndex:99999}}>
     <FullScreenLoader /> 
     </View>
-    } */}
+    }
     <View style={{flex: 1}}>
       {!activeTripData || activeTripData?.length === 0 ? (
          <View style={RouteScreenStyles.noActiveRouteContainer}>

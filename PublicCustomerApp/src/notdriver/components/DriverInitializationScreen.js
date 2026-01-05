@@ -46,8 +46,6 @@ export default function DriverInitializationScreen() {
     setHasBackgroundLocationPermission,
   } = useDeviceTokenStore()
 
-  const setdriverDueDate = useTripsStore(state => state.setdriverDueDate);
-  const fareBreakDown = useTripsStore(state => state.fareBreakDown);
   const [lastFetchedTime, setLastFetchedTime] = useState(null);
   // Get user token from global context
   const {userInfo, reFetching} = useUserStore();
@@ -83,20 +81,6 @@ export default function DriverInitializationScreen() {
       unsubscribe();
     };
   }, []);
-
-  // Fetch all RideGroup data
-  const fetchTrips = useCallback(async () => {
-    setLastFetchedTime(new Date().getTime());
-    const api = new APIRequest();
-    const url = `/user/trip/driver/getTrips?driverId=${userInfo?.user?._id}`;
-    const res = await api.request(url, 'GET', {}, token);
-    if (res.success) {
-      return res.trips;
-    } else {
-      NetworkAnalytics.triggerNetworkError('network_error','fetch_trips',res?.message);
-      return [];
-    }
-  }, [token, setLastFetchedTime]);
 
   const fetchPublicRideTrips = useCallback(async () => {
     const api = new APIRequest();
@@ -135,7 +119,7 @@ export default function DriverInitializationScreen() {
     isLoading: tripLoading,
     refetch: refetchTrip,
     isFetching: isTripFetching,
-    } = useQuery(['fetchTrips', token], userInfo?.user?.publicRidesDriver ? fetchPublicRideTrips : fetchTrips, {
+    } = useQuery(['fetchTrips', token], fetchPublicRideTrips, {
     enabled: !!token && (isOnline || false) && reFetching,
     // refetchInterval: 300000, // 5 minutes in milliseconds
     refetchOnWindowFocus: true,
@@ -203,36 +187,11 @@ export default function DriverInitializationScreen() {
     const hasBackgroundLocationPermissions = await checkBackgroundLocationPermissions();
     setHasBackgroundLocationPermission(hasBackgroundLocationPermissions);
   }, []);
-
-  const getActiveTrip = (tripData) => {
-    const THIRTY_MINUTES = 60 * 60 * 1000; // 60 minutes in ms
-    const currentTime = new Date().getTime();
-    const filteredTrips = tripData?.filter(group => {
-      const adjustedStartTime = group.startTime - THIRTY_MINUTES;
-      const adjustedEndTime = group.endTime + THIRTY_MINUTES;
-      return currentTime >= adjustedStartTime && currentTime <= adjustedEndTime;
-    });
-    const cleanedTrips = filteredTrips?.map(trip => ({
-      ...trip,
-      stops: trip.stops?.filter(stop => stop.name !== "start-location")
-    }));
-  
-    return cleanedTrips;
-  };
-
-  const filteredTripData = (tripData) => {
-    const cleanedTrips = tripData?.map(trip => ({
-      ...trip,
-      stops: trip.stops?.filter(stop => stop.name !== "start-location")
-    }));
-  
-    return cleanedTrips;
-  }
  
   // Update stores with fetched data
   useEffect(() => {
+    console.log('hari-->>tripData-->>DriverInitializationScreen.js-->>', tripData);
     if (tripData) {
-      if (userInfo?.user?.publicRidesDriver){
         setTripData(tripData);
         if (tripData[0]?.status === "ACCEPTED" || tripData[0]?.status === "PICKEDUP" || tripData[0]?.status === "DROPPED"){
           setActiveTripData(tripData);
@@ -277,16 +236,7 @@ export default function DriverInitializationScreen() {
           setDirectionPoints(null);
           NeNativeModule.endNavigation();
         }
-      }else{
-        const _filteredTripData = filteredTripData(tripData);
-        setTripData(_filteredTripData);
-        const activeTripData = getActiveTrip(_filteredTripData)
-        setActiveTripData(activeTripData);
-        if (activeTripData && activeTripData.length !== 0){
-          const tripId = activeTripData[0]._id;
-          DataStore.storeData('activeTripId',tripId)
-        }
-      }
+      
     }
 
     if (driverConfig) {

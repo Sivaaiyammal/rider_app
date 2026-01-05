@@ -11,7 +11,7 @@ function TripLocationFetch({ startTime, endTime, tripId, setLoading, setError, o
     const { data, loading, error } = useQuery(GetLocations(tripId, false, startTime, endTime), {
         context: {
             headers: {
-                authorization: ("Bearer " + userInfo?.user?.token) || "",
+                authorization: ("Bearer " + userInfo?.token) || "",
             },
         },
         cacheTime:  5000 //180000, // 3 minutes in milliseconds

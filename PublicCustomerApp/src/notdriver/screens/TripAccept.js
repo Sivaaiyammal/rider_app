@@ -112,7 +112,7 @@ const TripAccept = () => {
     try {
       if (!isTimerEnd) {
       const acceptData = {
-        driver_id: userInfo?.user?._id,
+        driver_id: userInfo?._id,
         trip_id: tripId,
         response: 'reject',
         request_id: requestId,
@@ -193,7 +193,7 @@ const TripAccept = () => {
     BGLocationTask.hideOverlay();
     try {
       const acceptData = {
-        driver_id: userInfo?.user?._id,
+        driver_id: userInfo?._id,
         trip_id: tripId,
         response: 'accept',
         request_id: requestId,

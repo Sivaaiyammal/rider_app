@@ -69,7 +69,7 @@ const TripFareCalculator = ({ tripData, onDone, setLoading, setError, isGetFare 
         shape_match: "map_snap",
         costing: "auto"
       };
-      const response = await api.request('', 'POST', jsonObject, userInfo?.user?.token); 
+      const response = await api.request('', 'POST', jsonObject, userInfo?.token); 
       return response?.trip || {};
     } catch (error) {
       console.error('fetchRouteData error:', error);
@@ -89,7 +89,7 @@ const TripFareCalculator = ({ tripData, onDone, setLoading, setError, isGetFare 
         }
       }
       const url = `/publicrides/driver/getTotalFare?tripId=${tripData._id}&distance=${totalDistance}&duration=${totalDuration}`;
-      const res = await api.request(url, 'POST', payload, userInfo?.user?.token);
+      const res = await api.request(url, 'POST', payload, userInfo?.token);
       if (res?.success) {
         return res;
       } else {
@@ -116,7 +116,7 @@ const TripFareCalculator = ({ tripData, onDone, setLoading, setError, isGetFare 
         }
         const api = new APIRequest();
         const url = `/publicrides/driver/cancelTrip`;
-        const res = await api.request(url, 'POST', payload, userInfo?.user?.token);
+        const res = await api.request(url, 'POST', payload, userInfo?.token);
         if (res?.success) {
           return res;
         } else {

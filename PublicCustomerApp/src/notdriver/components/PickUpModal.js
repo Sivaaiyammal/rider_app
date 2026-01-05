@@ -10,6 +10,7 @@ import React, {useRef, useState} from 'react'
 import OTPInput from '../../components/Common/OTPInput';
 import { height, width } from '../../common/utils/scalingutils';
 import { Colors, Fonts } from '../../common/constants/constants';
+import Locgrey from '../../notdriver/assets/icons/loc_grey.svg'
 
 const PickUpModal = ({
   stopsDetails,
@@ -59,7 +60,6 @@ const PickUpModal = ({
         </View>
         <Text style={styles.address}>{isPublicRide ?  stopsDetails?.stops[0]?.address : stopsDetails?.address}</Text>
       </View>
-      {isPublicRide ? (
         <View style={{width: '80%', alignSelf: 'center', marginVertical: 10}}>
           {/* <OTPTextView
             ref={otpRef}
@@ -84,33 +84,7 @@ const PickUpModal = ({
           />
         {(otpCode.length !== 4 && otpError) && <Text style={styles.otpError}>{otpError}</Text>}
         </View>
-      ) : (
-        <>
-          <View style={styles.passangerDetailsContainer}>
-            <View style={styles.passangerDetails}>
-              <PassangerGrey />
-              <Text style={styles.passangerCount}>
-                {stopsDetails?.passengerCount}
-              </Text>
-            </View>
-            <View style={styles.passangerDetails}>
-              <ClockGrey />
-              <Text style={styles.passangerCount}>
-                {stopsDetails?.arrivalTime}
-              </Text>
-            </View>
-          </View>
-          <ScrollView style={{height: height * 0.3}}>
-            {stopsDetails?.passagerDetails?.map((item, index) => (
-              <View key={index} style={styles.passangerContainer}>
-                <Text style={styles.passangerName}>{item?.name}</Text>
-                <Text style={styles.passangerName}>{item?.email}</Text>
-                <Text style={styles.passangerStatus}>{t.yet_to_board}</Text>
-              </View>
-            ))}
-          </ScrollView>
-        </>
-      )}
+    
 
       <TouchableOpacity disabled={otpLoading} style={styles.pickUpBtn} onPress={()=>_onConfirmPress(otpCode)}>
         {otpLoading ? (

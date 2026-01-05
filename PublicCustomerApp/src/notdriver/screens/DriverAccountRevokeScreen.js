@@ -105,7 +105,7 @@ const DriverAccountRevokeScreen = () => {
         setLoading(false)
       }, 1000)
 
-      DataStore.clearSession()
+      // DataStore.clearSession()
     } catch (error) {
       console.log(error, 'Error logging out')
       showNotification(
