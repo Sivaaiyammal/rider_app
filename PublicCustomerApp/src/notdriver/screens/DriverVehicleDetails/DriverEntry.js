@@ -25,9 +25,10 @@ import Phone from '../../../notdriver/assets/icons/phone.svg';
 import Pan from '../../../notdriver/assets/icons/pan.svg';
 import License from '../../../notdriver/assets/icons/license.svg';
 import AlertModal from '../../components/AlertModal';
+import { useTranslation } from 'react-i18next';
 
 const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
-  const t = {};
+  const {t} = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const {userInfo} = useUserStore()
   const {setDriverInfo, driverInfo} = usePublicDriverStore();
@@ -54,7 +55,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
 
   const validateName = () => {
     if (name.length === 0) {
-      setNameErr(t.please_enter_name);
+      setNameErr(t('please_enter_name'));
       return false;
     }
     setNameErr('');
@@ -63,10 +64,10 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
 
   const validatePhone = () => {
     if (phone.length === 0) {
-      setPhoneErr(t.please_enter_phone);
+      setPhoneErr(t('please_enter_phone'));
       return false;
     } else if (!phoneNumberPattern.test(phone)) {
-      setPhoneErr(t.valid_phone +' '+ 'starts with +91');
+      setPhoneErr(t('valid_phone') +' '+ t('starts_with_91'));
       return false;
     }
     setPhoneErr('');
@@ -79,7 +80,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
       return true;
     }
     if (!phoneNumberPattern.test(alternatePhone)) {
-      setAlternatePhoneErr(t.phone_number_must_be_10_digits);
+      setAlternatePhoneErr(t('phone_number_must_be_10_digits'));
       return false;
     }
     setAlternatePhoneErr('');
@@ -92,7 +93,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
       setAadharIdErr('')
       return true;
     } else if (!aadhaarNumberPattern.test(aadharID)) {
-      setAadharIdErr(t.please_enter_a_valid_aadhar_id);
+      setAadharIdErr(t('please_enter_a_valid_aadhar_id'));
       return false;
     }
     setAadharIdErr('');
@@ -101,10 +102,10 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
 
   const validatePan = () => {
     if (panNum.length === 0) {
-      setPanNumErr(t.please_enter_pan_number);
+      setPanNumErr(t('please_enter_pan_number'));
       return false;
     } else if (!panNumberPattern.test(panNum)) {
-      setPanNumErr(t.please_enter_a_valid_pan_number);
+      setPanNumErr(t('please_enter_a_valid_pan_number'));
       return false;
     }
     setPanNumErr('');
@@ -117,7 +118,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
       // setLicenseNumErr(t.please_enter_license_number);
       return true;
     } else if (!licenseNumberPattern.test(licenseNum)) {
-      setLicenseNumErr(t.please_enter_a_valid_license_number_tn01_20110012345);
+      setLicenseNumErr(t('please_enter_a_valid_license_number_tn01_20110012345'));
       return false;
     }
     setLicenseNumErr('');
@@ -126,7 +127,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
 
   const validateGender = () => {
     if (!gender) {
-      setGenderErr(t.please_select_gender ? t.please_select_gender : 'Please select gender');
+      setGenderErr(t('please_select_gender') ? t('please_select_gender') : 'Please select gender');
       return false;
     }
     setGenderErr('');
@@ -135,7 +136,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
 
   const validateDriverLocation = () => {
     if (!driverLocation || driverLocation.addressName === '') {
-      setDriverLocationErr(t.please_enter_driver_location);
+      setDriverLocationErr(t('please_enter_driver_location'));
       return false;
     }
     setDriverLocationErr('');
@@ -199,8 +200,8 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
       const hasLocationpermission = await RequestFineLocationPermission();
       if (!hasLocationpermission) {
         showNotification(
-          t.location_permission_denied,
-          t.grant_location_permission,
+          t('location_permission_denied'),
+          t('grant_location_permission'),
           'danger',
           3000,
         );
@@ -217,9 +218,9 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
       onClose={() => {
         setShowLocationModal(false);
       }}
-      rightBtnText={t.allow}
-      leftBtnTxt={t.cancel}
-      successMessage={t.please_allow_location_access_to_continue_we_need_your_location_to_continue} 
+      rightBtnText={t('allow')}
+      leftBtnTxt={t('cancel')}
+      successMessage={t('please_allow_location_access_to_continue_we_need_your_location_to_continue')} 
       // SubText={'We need your location to continue'}
       onRightPress={() => {
         getCurrentLocation();
@@ -256,7 +257,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
        <InputField
         style={driverDetailStyles.textField}
         value={driverLocation?.addressName}
-        label={t.preferred_work_location}
+        label={t('preferred_work_location')}
         errorText={driverLocationErr}
         onChangeText={text => {
           if (driverLocationErr && text.length > 0) setDriverLocation(driverLocation);
@@ -270,7 +271,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
       <InputField
         style={driverDetailStyles.textField}
         value={name}
-        label={t.full_name}
+        label={t('full_name')}
         errorText={nameErr}
         onChangeText={text => {
           setName(text);
@@ -312,7 +313,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
       <InputField
         style={driverDetailStyles.textField}
         value={phone}
-        label={t.phone_number}
+        label={t('phone_number')}
         errorText={phoneErr}
         onChangeText={text => {
           setPhone(text);
@@ -329,7 +330,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
       <InputField
         style={driverDetailStyles.textField}
         value={alternatePhone}
-        label={t.alternate_phone_number}
+        label={t('alternate_phone_number')}
         errorText={alternatePhoneErr}
         onChangeText={text => {
           let formatted = (text || '').toString();
@@ -358,7 +359,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
       <InputField
         style={driverDetailStyles.textField}
         value={aadharID}
-        label={t.aadhar_id_number}
+        label={t('aadhar_id_number')}
         errorText={aadharIDErr}
         onChangeText={text => {
           setAadharId(text);
@@ -374,7 +375,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
       <InputField
         style={driverDetailStyles.textField}
         value={panNum}
-        label={t.pan_number}
+        label={t('pan_number')}
         errorText={panNumErr}
         onChangeText={text => {
           setPanNum(text);
@@ -390,7 +391,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
       <InputField
         style={driverDetailStyles.textField}
         value={licenseNum}
-        label={t.license_number}
+        label={t('license_number')}
         errorText={licenseNumErr}
         autoCapitalize='characters' 
         onChangeText={text => {
@@ -408,7 +409,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
       <TouchableOpacity
         style={driverDetailStyles.nextBtn}
         onPress={() => onNextPress()}>
-        <Text style={driverDetailStyles.nextTxt}>{t.next}</Text>
+        <Text style={driverDetailStyles.nextTxt}>{t('next')}</Text>
         {isLoading ? <ActivityIndicator size="small" color={Colors.white} /> : <AntDesign name="arrowright" color={Colors.white} size={18} />}
       </TouchableOpacity>
     

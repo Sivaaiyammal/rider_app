@@ -1,13 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React, { use } from 'react'
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore'
 import NavBar from '../../../common/components/NavBar'
 import UseBackButton from '../../../common/hooks/UseBackButton'
 import DocumentsListScreen from '../DriverVehicleDetails/DocumentsListScreen'
 import { Colors } from '../../../common/constants/constants'
+import { useTranslation } from 'react-i18next'
 
 const DriverProofDocuments = () => {
-    const t = {}
+    const {t} = useTranslation()
     const {goBack} = useStackScreenStore()
 
     const onBackPress = () => {
@@ -16,7 +17,7 @@ const DriverProofDocuments = () => {
 
   return (
     <View style={styles.container}>
-        <NavBar title={t.proof_documents} onBackPress={onBackPress}/>
+        <NavBar title={t('proof_documents')} onBackPress={onBackPress}/>
         <UseBackButton onBackPress={onBackPress} />
         <View style={styles.documentsListContainer}>
         <DocumentsListScreen isEdit={true}/>

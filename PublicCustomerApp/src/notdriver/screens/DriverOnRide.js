@@ -37,12 +37,13 @@ import { cancelTrip } from '../components/CancelTripUpdate';
 import RideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
 import CancelRideModal from '../components/CancelModel';
 import TripDetails from '../components/TripDetailCom';
+import { useTranslation } from 'react-i18next';
 
 
 const {NeNativeModule} = NativeModules;
 
 const DriverOnRide = () => {
-  const t = {}
+  const {t} = useTranslation()
   const[cancelRideModalVisible, setCancelRideModalVisible] = useState(false);
   const {userInfo, userRole} = useUserStore();
   const {
@@ -203,7 +204,7 @@ const DriverOnRide = () => {
       } else {
         setLoading(true);
         try {
-          const cancelData = {driver_id:userInfo?.user?._id, trip_id:activeTripData[0]._id, response: 'reject'}
+          const cancelData = {driver_id:userInfo?._id, trip_id:activeTripData[0]._id, response: 'reject'}
           RideMatchWSService.emit('driver_trip_response', cancelData)
           setCancelRideModalVisible(false)
           DataStore.storeData('activeTripId', null);
@@ -273,7 +274,7 @@ const DriverOnRide = () => {
            driverName: driverInfo?.name,
            tripId: activeTripData[0]?._id,
         };
-        const res = await api.request(url, 'POST', payload, userInfo.user.token);
+        const res = await api.request(url, 'POST', payload, userInfo.token);
         if(res.success) {
           showNotification('Alert sent', 'Alert sent', 'success');
           setIsAlertSent(true)
@@ -302,7 +303,7 @@ const DriverOnRide = () => {
         url,
         'POST',
         payload,
-        userInfo?.user?.token,
+        userInfo?.token,
       );
       if (res?.success) {
         if (nonreachedStops[0]?.waitingTime && nonreachedStops[0]?.waitingTime !== 0) {
@@ -347,7 +348,7 @@ const DriverOnRide = () => {
         url,
         'POST',
         payload,
-        userInfo?.user?.token,
+        userInfo?.token,
       );
       if (res?.success) {
         updateStopData(sotp[0].name, true, 'PICKEDUP', finalFinalTime, true)
@@ -427,11 +428,11 @@ const DriverOnRide = () => {
         lon: userLocation[1] || 0,
       });
        const padding = [50, 50, 50, height*0.3]
-      // setDirectionPoints({
-      //   locations: directions,
-      //   type: 'car',
-      //   padding: padding.map(v => parseInt(v, 10))
-      // });
+      setDirectionPoints({
+        locations: directions,
+        type: 'car',
+        padding: padding.map(v => parseInt(v, 10))
+      });
     } 
 
     if (tripsStatus === 'PICKEDUP'){
@@ -440,11 +441,11 @@ const DriverOnRide = () => {
         lon: userLocation[1] || 0,
       });
        const padding = [50, 50, 50, height*0.3]
-      // setDirectionPoints({
-      //   locations: nonreachedStops,
-      //   type: 'car',
-      //   padding: padding.map(v => parseInt(v, 10))
-      // });
+      setDirectionPoints({
+        locations: nonreachedStops,
+        type: 'car',
+        padding: padding.map(v => parseInt(v, 10))
+      });
     }
   };
 
@@ -578,12 +579,12 @@ const DriverOnRide = () => {
         }}>
         <View style={styles.navSheetContainer}>
           <View style={styles.navHeaderRow}>
-            <Text style={[styles.navHeader, {width:'90%'}]}>{t.choose_navigation_mode}</Text>
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t.cancel_trip} onPress={() => setOpenNavChoiceModal(false)} style={styles.navCloseBtn}>
+            <Text style={[styles.navHeader, {width:'90%'}]}>{t('choose_navigation_mode')}</Text>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('cancel_trip')} onPress={() => setOpenNavChoiceModal(false)} style={styles.navCloseBtn}>
               <MaterialCommunityIcons name="close" size={20} color={Colors.grey_dark} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.navSubHeader}>{t.start_navigation} – {t.choose_navigation_mode}</Text>
+          <Text style={styles.navSubHeader}>{t('start_navigation')} – {t('choose_navigation_mode')}</Text>
           <View style={styles.navOptionsRow}>
             <Pressable
               onPress={() => handleNavMode('google')}
@@ -595,8 +596,8 @@ const DriverOnRide = () => {
               {/* <View style={styles.navIconCircle}>
                 <MaterialCommunityIcons name="google-maps" size={24} color={Colors.white} />
               </View> */}
-              <Text style={styles.navOptionLabel}>{t.google}</Text>
-              <Text style={styles.navOptionDesc}>{t.start_navigation}</Text>
+              <Text style={styles.navOptionLabel}>{t('google')}</Text>
+              <Text style={styles.navOptionDesc}>{t('start_navigation')}</Text>
             </Pressable>
             <Pressable
               onPress={() => handleNavMode('vm')}
@@ -608,13 +609,13 @@ const DriverOnRide = () => {
               {/* <View style={[styles.navIconCircle,{backgroundColor:Colors.periwinkle}]}> 
                 <MaterialCommunityIcons name="road-variant" size={24} color={Colors.white} />
               </View> */}
-              <Text style={styles.navOptionLabel}>{t.vm}</Text>
-              <Text style={styles.navOptionDesc}>{t.start_navigation}</Text>
+              <Text style={styles.navOptionLabel}>{t('vm')}</Text>
+              <Text style={styles.navOptionDesc}>{t('start_navigation')}</Text>
             </Pressable>
           </View>
           <View style={styles.navFooterHintWrapper}>
             <MaterialCommunityIcons name="information" size={16} color={Colors.grey_dark} />
-            <Text style={styles.navFooterHint}>{t.press_to_update_status}</Text>
+            <Text style={styles.navFooterHint}>{t('press_to_update_status')}</Text>
           </View>
         </View>
       </BottomSheetPopup>
@@ -734,7 +735,7 @@ const DriverOnRide = () => {
       {!activeTripData || activeTripData?.length === 0 ? (
         <View style={RouteScreenStyles.noActiveRouteContainer}>
           <Text style={RouteScreenStyles.noActiveRouteTxt}>
-            {t.no_active_route} !!
+            {t('no_active_route')} !!
           </Text>
         </View>
       ) : (
@@ -747,7 +748,7 @@ const DriverOnRide = () => {
                   <TouchableOpacity disabled={routeLoading.loading} style={RouteScreenStyles.navigationIconContainer} onPress={() => onStartNavigationPress()}>
                     {routeLoading.loading ? <ActivityIndicator size="small" color={Colors.white} /> : 
                     <>
-                    <Text style={RouteScreenStyles.navigationIconContainerTxt}>{t.start_navigation}</Text>
+                    <Text style={RouteScreenStyles.navigationIconContainerTxt}>{t('start_navigation')}</Text>
                       <MaterialCommunityIcons
                         name="navigation"
                         size={22}
@@ -809,28 +810,28 @@ const DriverOnRide = () => {
                   </TouchableOpacity> */}
           {watingTime > 0 &&
           <View style={RouteScreenStyles.watingTimeContainer}>
-           <Text  style={RouteScreenStyles.watingTimeContainerTitle}> <Text style={{fontFamily:Fonts.light, fontSize:12}}>{t.waiting_time}:{' '}</Text>{DateTimeFormatter.formatSecondsToDuration(watingTime)}</Text>
+           <Text  style={RouteScreenStyles.watingTimeContainerTitle}> <Text style={{fontFamily:Fonts.light, fontSize:12}}>{t('waiting_time')}:{' '}</Text>{DateTimeFormatter.formatSecondsToDuration(watingTime)}</Text>
             <TouchableOpacity style={RouteScreenStyles.StopwatingTimeBtn} onPress={()=>onStopTimer()}>
-             <Text style={RouteScreenStyles.StopwatingTimeBtnText}>{t.stop_timer}</Text>
+             <Text style={RouteScreenStyles.StopwatingTimeBtnText}>{t('stop_timer')}</Text>
             </TouchableOpacity>
           </View>
           }
           {showWaypointReached && watingTime <= 0 &&
           <View>
             <TouchableOpacity style={RouteScreenStyles.reachedWaypointBtn} onPress={()=>onReachedStop()}>
-              <Text style={RouteScreenStyles.reachedWaypointBtnTxt}>{t.reached} {nonreachedStops[0]?.name}{'\n'} {t.press_to_update_status}</Text>
+              <Text style={RouteScreenStyles.reachedWaypointBtnTxt}>{t('reached')} {nonreachedStops[0]?.name}{'\n'} {t('press_to_update_status')}</Text>
             </TouchableOpacity>
             </View>
            }
           {tripsStatus === 'ACCEPTED' && 
           <View style={RouteScreenStyles.pickUpLocationContainer}>
-            <Text style={RouteScreenStyles.pickUpLocationTxt}>{t.arrived_at_pickup_location}</Text>
+            <Text style={RouteScreenStyles.pickUpLocationTxt}>{t('arrived_at_pickup_location')}</Text>
             <View style={RouteScreenStyles.pickUpLocationBtnContainer}>
             <TouchableOpacity disabled={isAlertSent} onPress={() => onReachedPickupAlert()} style={[RouteScreenStyles.acceptBtn,{backgroundColor:isAlertSent ? Colors.grey : Colors.periwinkle}]}>
-              <Text style={[RouteScreenStyles.stopTxt, {maxWidth:130}]} numberOfLines={2}>{t.alert}</Text>
+              <Text style={[RouteScreenStyles.stopTxt, {maxWidth:130}]} numberOfLines={2}>{t('alert')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => onReachedPickup()} style={RouteScreenStyles.acceptBtn}>
-              <Text style={RouteScreenStyles.stopTxt}>{t.enter_otp}</Text>
+              <Text style={RouteScreenStyles.stopTxt}>{t('enter_otp')}</Text>
             </TouchableOpacity>
             </View>
           </View>
@@ -846,14 +847,14 @@ const DriverOnRide = () => {
               <View style={RouteScreenStyles.stopContainer}>
                 <Text
                   style={[RouteScreenStyles.addressTxt, {color: '#ffffff'}]}>
-                  {t.you_have_successfully_reached_your_destination}
+                  {t('you_have_successfully_reached_your_destination')}
                 </Text>
               </View>
             </View>
             <TouchableOpacity
               style={RouteScreenStyles.endTripBtn}
               onPress={() => endTrip()}>
-              <Text style={RouteScreenStyles.endTripTxt}>{t.end_trip}</Text>
+              <Text style={RouteScreenStyles.endTripTxt}>{t('end_trip')}</Text>
             </TouchableOpacity>
           </>
           }
@@ -884,7 +885,7 @@ const DriverOnRide = () => {
                       RouteScreenStyles.stopTxt,
                       {fontSize: 12, color: Colors.black},
                     ]}>
-                    {t.enable_now}
+                    {t('enable_now')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -903,7 +904,7 @@ const DriverOnRide = () => {
                     RouteScreenStyles.stopTxt,
                     {fontSize: 12, width: '60%'},
                   ]}>
-                  {t.location_not_found}
+                  {t('location_not_found')}
                 </Text>
                 <TouchableOpacity
                   onPress={() => onNavigationClick()}
@@ -913,7 +914,7 @@ const DriverOnRide = () => {
                       RouteScreenStyles.stopTxt,
                       {fontSize: 12, color: Colors.black},
                     ]}>
-                    {t.try_again}
+                    {t('try_again')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -950,7 +951,7 @@ const DriverOnRide = () => {
               isPublicRides={true}
             />
             <TouchableOpacity style={styles.cancelTripBtn} onPress={()=>setCancelRideModalVisible(true)}>
-              <Text style={styles.cancelTripBtnTxt}>{activeTripData?.[0]?.status === 'PICKEDUP' ? t.end_trip : t.cancel_trip}</Text>
+              <Text style={styles.cancelTripBtnTxt}>{activeTripData?.[0]?.status === 'PICKEDUP' ? t('end_trip') : t('cancel_trip')}</Text>
             </TouchableOpacity>
         </CustomeBottomSheet>
       )}

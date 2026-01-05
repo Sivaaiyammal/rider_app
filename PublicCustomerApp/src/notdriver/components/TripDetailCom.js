@@ -31,7 +31,7 @@ const TripDetails = ({ activeTripData, setModalVisible, isPaymentScreen, fareBre
     //       to : phoneNumber
     //     };
     //     const url = `/publicrides/driver/inititateMaskedCall`;
-    //     const res = await api.request(url, 'POST', payload, userInfo.user.token);
+    //     const res = await api.request(url, 'POST', payload, userInfo.token);
     //     if(res.success){
     //       showNotification('Call initiated','', 'success')
     //     } else {

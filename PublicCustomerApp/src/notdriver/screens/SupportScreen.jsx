@@ -13,9 +13,10 @@ import Mail from '../../notdriver/assets/icons/mail.svg'
 import WhatsApp from '../../notdriver/assets/icons/whatsApp.svg'
 import CallWhite from '../../notdriver/assets/icons/callWhite.svg'
 import MailWhite from '../../notdriver/assets/icons/mailWhite.svg'
+import { useTranslation } from 'react-i18next';
 
 const SupportScreen = ({isStackScreen, showBg}) => {
-  const t = {}
+  const {t} = useTranslation();
   const {goBack} = useStackScreenStore();
   const {setStackScreen} = useStackScreenStore();
 
@@ -60,11 +61,11 @@ const SupportScreen = ({isStackScreen, showBg}) => {
         <View style={styles.NavButtonContainer}>
         <TouchableOpacity style={styles.writeReviewBtn} onPress={() => setStackScreen('WriteReview')}>
           <Writereview width={35} height={35} />
-          <Text style={styles.writeReviewTxt}>{t['write_feedback']}</Text>
+          <Text style={styles.writeReviewTxt}>{t('write_feedback')}</Text>
         </TouchableOpacity>
           <TouchableOpacity style={styles.writeReviewBtn} onPress={() => setStackScreen('LanguageSelectionScreen')}>
           <Language />
-          <Text style={styles.writeReviewTxt}>Language</Text>
+          <Text style={styles.writeReviewTxt}>{t('language')}</Text>
         </TouchableOpacity>
           </View>
       )
@@ -84,14 +85,14 @@ const SupportScreen = ({isStackScreen, showBg}) => {
         <View style={settingsScreen.infoCard}>
           <Call />
           <View style={{gap: 10}}>
-            <Text style={settingsScreen.infoTitle}>{t['call_support']}</Text>
+            <Text style={settingsScreen.infoTitle}>{t('call_support')}</Text>
             <Text style={settingsScreen.infoTxt}>{contactPhone}</Text>
           </View>
         </View>
         <View style={settingsScreen.infoCard}>
           <Mail />
           <View style={{gap: 10}}>
-            <Text style={settingsScreen.infoTitle}>{t['send_email']}</Text>
+            <Text style={settingsScreen.infoTitle}>{t('send_email')}</Text>
             <Text style={settingsScreen.infoTxt}>{contactMail}</Text>
           </View>
         </View>
@@ -101,7 +102,7 @@ const SupportScreen = ({isStackScreen, showBg}) => {
           onPress={() => onWhatsAppPress()}
           style={[settingsScreen.actionBtns]}>
           <WhatsApp />
-          <Text style={settingsScreen.btnTxt}>{t['whatsapp']}</Text>
+          <Text style={settingsScreen.btnTxt}>{t('whatsapp')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => onCallPress()}
@@ -109,7 +110,7 @@ const SupportScreen = ({isStackScreen, showBg}) => {
           <View style={settingsScreen.actionBtnsBg}>
             <CallWhite />
           </View>
-          <Text style={settingsScreen.btnTxt}>{t['call']}</Text>
+          <Text style={settingsScreen.btnTxt}>{t('call')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => onMailPress()}
@@ -117,7 +118,7 @@ const SupportScreen = ({isStackScreen, showBg}) => {
           <View style={settingsScreen.actionBtnsBg}>
             <MailWhite />
           </View>
-          <Text style={settingsScreen.btnTxt}>{t['mail']}</Text>
+          <Text style={settingsScreen.btnTxt}>{t('mail')}</Text>
         </TouchableOpacity>
       </View>
     </View>

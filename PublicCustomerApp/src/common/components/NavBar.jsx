@@ -4,11 +4,12 @@ import PropTypes from 'prop-types';
 
 import { Icons } from '../constants/constants';
 import { navStyles } from '../styles/NavStyles';
+import { useTranslation } from 'react-i18next';
 
 const NavBar = props => {
   const {title, rightIcon, onBackPress, onrightIconPress, withBg=false, rightBtnStyles} = props;
 
-  const t = {}
+  const {t} = useTranslation()
 
   return (
     <View style={[navStyles.navContainer, {backgroundColor: withBg ? 'white' : 'transparent'}]}>
@@ -16,7 +17,7 @@ const NavBar = props => {
         <View style={navStyles.leftBtn}>{Icons.back_arrow}</View>
       </TouchableOpacity>
       <TouchableOpacity style={navStyles.content}>
-        <Text style={navStyles.contentTxt}>{t[title] ?? title}</Text>
+        <Text style={navStyles.contentTxt}>{t('title') ?? title}</Text>
       </TouchableOpacity>
       <TouchableOpacity style={navStyles.rightIcon} onPress={onrightIconPress}>
         {rightIcon && (

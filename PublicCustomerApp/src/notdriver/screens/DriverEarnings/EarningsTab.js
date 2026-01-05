@@ -9,10 +9,11 @@ import publicrideDriverApi from '../../api/publicrideDriverApi'
 import FullScreenLoader from '../../../common/loaders/FullScreenLoader'
 import PayDue from './PayDue'
 import { Colors, Fonts } from '../../../common/constants/constants'
+import { useTranslation } from 'react-i18next'
 
 
 const EarningsTab = () => {
-  const t = {}
+  const {t} = useTranslation()
     const {userInfo} = useUserStore
    const {driverDue, driverEarnings, driverDueDate, setdriverDueDate, driverInfo, setDriverDue, dueDuration} = usePublicDriverStore()
    const merchantId = 'M2202LBE4KQJX'
@@ -121,7 +122,7 @@ const EarningsTab = () => {
        <PayDue driverDue={driverDue} userInfo={userInfo} driverDueDate={driverDueDate} fetchDueDate={fetchDueDate} driverInfo={driverInfo}/>
       <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.dateRange}>{dueDuration ? DateTimeFormatter.requiredDateFormat(dueDuration?.startTime, 'D MMM,YYYY') + ' - ' + DateTimeFormatter.requiredDateFormat(dueDuration?.endTime, 'D MMM,YYYY') : ''}</Text>
-      <Text style={styles.totalEarningsLabel}>{t.total_earnings}</Text>
+      <Text style={styles.totalEarningsLabel}>{t('total_earnings')}</Text>
       <Text style={styles.totalEarnings}>₹{totalEarnings > 0 ? totalEarnings?.toFixed(2) : 0}</Text>
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
@@ -130,7 +131,7 @@ const EarningsTab = () => {
           ) : (
             <Text style={styles.statValueOrange}>{totalTrips}</Text>
           )}
-          <Text style={styles.statLabel}>{t.total_trips}</Text>
+          <Text style={styles.statLabel}>{t('total_trips')}</Text>
         </View>
         <View style={styles.statItem}>
           {workingHoursLoading ? (
@@ -138,7 +139,7 @@ const EarningsTab = () => {
           ) : (
             <Text style={styles.statValueGray}>{totalOnlineHours?.totalHours ? Math.round(totalOnlineHours?.totalHours) : 0}</Text>
           )}
-          <Text style={styles.statLabel}>{t.total_online_hours}{' '}{DateTimeFormatter.requiredDateFormat(startDate, 'MMM,YYYY')}</Text>
+          <Text style={styles.statLabel}>{t('total_online_hours')}{' '}{DateTimeFormatter.requiredDateFormat(startDate, 'MMM,YYYY')}</Text>
         </View>
         {/* <View style={styles.statItem}>
           <Text style={styles.statValueBlue}>100</Text>
@@ -148,7 +149,7 @@ const EarningsTab = () => {
 
       <View style={styles.amountRow}>
         <View style={styles.amountItem}>
-          <Text style={styles.paidLabel}>{t.paid_amount}</Text>
+          <Text style={styles.paidLabel}>{t('paid_amount')}</Text>
           {paymentsLoading ? (
             <ActivityIndicator size="small" color="#18c1c1" />
           ) : (
@@ -156,7 +157,7 @@ const EarningsTab = () => {
           )}
         </View>
         <View style={styles.amountItem}>
-          <Text style={styles.dueLabel}>{t.due_amount}</Text>
+          <Text style={styles.dueLabel}>{t('due_amount')}</Text>
           {paymentsLoading ? (
             <ActivityIndicator size="small" color="#f44336" />
           ) : (

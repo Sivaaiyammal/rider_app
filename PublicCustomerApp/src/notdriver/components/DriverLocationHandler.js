@@ -80,11 +80,11 @@ function DriverLocationHandler() {
        if (response?.success) {
           showNotification(response?.message,'','success')
           const _newUserInfo = userInfo
-          _newUserInfo.user.driverStatus = {
+          _newUserInfo.driverStatus = {
             status: status,
             updatedOn: new Date().getTime()
           }
-          await DataStore.storeData('userInfo', JSON.stringify(_newUserInfo));
+          await DataStore.storeData('userdetails', _newUserInfo);
           setDriverStatus(status)
           BGLocationTask.stopDriverBgTask();
           overlayController.stopOverlay();
@@ -131,7 +131,7 @@ function DriverLocationHandler() {
   },[])
 
   useEffect(() => {
-    if (userInfo?.user?.driverStatus?.status === 'offline') {
+    if (userInfo?.driverStatus?.status === 'offline') {
       overlayController.stopOverlay().catch(() => {});
       return
     }
@@ -172,7 +172,7 @@ function DriverLocationHandler() {
           hasNotificationPermission &&
           overlayPermissionGranted;
 
-      if (userInfo?.user?.driverStatus?.status === 'online') {
+      if (userInfo?.driverStatus?.status === 'online') {
         if (!hasAllRequiredPermissions) {
           _updateDriverStatus('offline');
         } else {
@@ -191,7 +191,7 @@ function DriverLocationHandler() {
     hasNotificationPermission,
     hasBackgroundLocationPermission,
     hasOverlayPermission,
-    userInfo?.user?.driverStatus?.status,
+    userInfo?.driverStatus?.status,
     userInfo?.token,
   ]);
   return <>

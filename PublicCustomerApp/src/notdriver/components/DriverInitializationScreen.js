@@ -190,7 +190,6 @@ export default function DriverInitializationScreen() {
  
   // Update stores with fetched data
   useEffect(() => {
-    console.log('hari-->>tripData-->>DriverInitializationScreen.js-->>', tripData);
     if (tripData) {
         setTripData(tripData);
         if (tripData[0]?.status === "ACCEPTED" || tripData[0]?.status === "PICKEDUP" || tripData[0]?.status === "DROPPED"){

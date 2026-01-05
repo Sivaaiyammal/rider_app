@@ -129,7 +129,7 @@ const FloatingButton = ({layOutHeight}) => {
             status: status,
             updatedOn: new Date().getTime()
           }
-          await DataStore.storeData('userInfo', JSON.stringify(_newUserInfo));
+          await DataStore.storeData('userdetails', _newUserInfo);
           // BGLocationTask.stopDriverBgTask()
           // console.log("STATUS UPDATE:", status)
            if (status === 'online') {

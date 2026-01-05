@@ -6,9 +6,10 @@ import UseBackButton from '../../common/hooks/UseBackButton';
 import NavBar from '../../common/components/NavBar';
 import { DateTimeFormatter } from '../../common/utils/DateTimeFormatter';
 import { Colors, Fonts } from '../../common/constants/constants';
+import { useTranslation } from 'react-i18next';
 
 const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails, onClose, tripDetials, supplierInfo, recipient }) => {
-  const t = {}
+  const {t} = useTranslation()
   const defaultCompanyInfo = {  
     name: supplierInfo?.name || 'N/A', 
     address: supplierInfo?.address || 'N/A',
@@ -81,13 +82,13 @@ const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,t
   return (
       <View style={styles.container}>
         <UseBackButton onBackPress={handleBackPress}/>
-        <NavBar withBg onBackPress={handleBackPress} title={t.invoice} />
+        <NavBar withBg onBackPress={handleBackPress} title={t('invoice')} />
         
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Invoice Header */}
           <View style={styles.invoiceHeader}>
             <View style={styles.headerLeft}>
-              <Text style={styles.invoiceTitle}>{t.invoice}</Text>
+              <Text style={styles.invoiceTitle}>{t('invoice')}</Text>
               <Text style={styles.invoiceNumber}>#{rideId}</Text>
             <Text style={styles.invoiceDate}>{DateTimeFormatter.formatDateAndTime(bookingTime)}</Text>
             </View>
@@ -99,7 +100,7 @@ const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,t
           {/* Company and Customer Info */}
           <View style={styles.infoSection}>
             <View style={styles.companyInfo}>
-              <Text style={styles.sectionTitle}>{t.supplier_info}</Text>
+              <Text style={styles.sectionTitle}>{t('supplier_info')}</Text>
               <Text style={styles.companyName}>{(mergedRideData.companyInfo && mergedRideData.companyInfo.name) || defaultCompanyInfo.name}</Text>
               <Text style={styles.companyAddress}>{(mergedRideData.companyInfo && mergedRideData.companyInfo.address) || defaultCompanyInfo.address}</Text>
                 <View style={styles.companyContactContainer}>
@@ -125,30 +126,30 @@ const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,t
 
           {/* Trip Details */}
           <View style={styles.tripDetails}>
-            <Text style={styles.sectionTitle}>{t.trip_details}</Text>
+            <Text style={styles.sectionTitle}>{t('trip_details')}</Text>
             
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t.ride_type}</Text>
+              <Text style={styles.detailLabel}>{t('ride_type')}</Text>
               <Text style={styles.detailValue}>{(tripDetials?.vehicleType.split('_').join(' '))}</Text>
             </View>
             
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t.start_location}</Text>
+              <Text style={styles.detailLabel}>{t('start_location')}</Text>
               <Text style={styles.detailValue}>{tripDetials?.stops[0]?.address || 'N/A'}</Text>
             </View> 
             
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t.end_location}</Text>
+              <Text style={styles.detailLabel}>{t('end_location')}</Text>
               <Text style={styles.detailValue}>{tripDetials?.stops[tripDetials?.stops.length - 1]?.address || 'N/A'}</Text>
             </View>
             
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t.distance}</Text>
+              <Text style={styles.detailLabel}>{t('distance')}</Text>
               <Text style={styles.detailValue}>{formatDistance(tripDetials?.finalDistance || distance)}</Text>
             </View>
             
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t.duration}</Text>
+              <Text style={styles.detailLabel}>{t('duration')}</Text>
               <Text style={styles.detailValue}>{formatDuration(tripDetials?.finalDuration || duration)}</Text>
             </View>
             
@@ -165,29 +166,29 @@ const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,t
 
           {/* Invoice Breakdown */}
           <View style={styles.invoiceBreakdown}>
-            <Text style={styles.sectionTitle}>{t.invoice_breakdown}</Text>
+            <Text style={styles.sectionTitle}>{t('invoice_breakdown')}</Text>
 
             {/* Ride Cost */}
             <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>{t.ride_cost}</Text>
+              <Text style={styles.breakdownLabel}>{t('ride_cost')}</Text>
               <Text style={styles.breakdownValue}>{formatCurrency(rideCost)}</Text>
             </View>
 
             {/* Waiting Cost */}
             <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>{t.waiting_cost}</Text>
+              <Text style={styles.breakdownLabel}>{t('waiting_cost')}</Text>
               <Text style={styles.breakdownValue}>{formatCurrency(waitingCost)}</Text>
             </View>
 
             {/* Coupon Discount */}
             <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>{t.coupon_discount}</Text>
+              <Text style={styles.breakdownLabel}>{t('coupon_discount')}</Text>
               <Text style={styles.breakdownValue}>{formatCurrency(couponDiscount, true)}</Text>
             </View>
 
             {/* Subtotal */}
             <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>{t.subtotal}</Text>
+              <Text style={styles.breakdownLabel}>{t('subtotal')}</Text>
               <Text style={styles.breakdownValue}>{formatCurrency(subtotal)}</Text>
             </View>
 
@@ -233,7 +234,7 @@ const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,t
 
             {/* Grand Total */}
             <View style={styles.breakdownRow}>
-              <Text style={styles.breakdownLabel}>{t.total}</Text>
+              <Text style={styles.breakdownLabel}>{t('total')}</Text>
               <Text style={styles.totalValue}>{formatCurrency(mergedRideData.finalFare || 0)}</Text>
             </View>
           </View>

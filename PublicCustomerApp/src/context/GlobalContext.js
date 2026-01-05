@@ -153,7 +153,7 @@ export const ContextProvider = ({children}) => {
     try {
       // setIsLoading(true);
       setUserInfo(null);
-      DataStore.clearData('userInfo');
+      // DataStore.clearData('userInfo');
       DataStore.clearData('role')
       DataStore.clearData('activeTripId')
       DataStore.clearSession();

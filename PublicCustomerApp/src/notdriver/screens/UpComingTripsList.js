@@ -16,6 +16,7 @@ import UseBackButton from '../../common/hooks/UseBackButton';
 import { Colors, Fonts } from '../../common/constants/constants';
 import { DateTimeFormatter } from '../../common/utils/DateTimeFormatter';
 import AddressComponent from '../components/AddressComponent';
+import { useTranslation } from 'react-i18next';
 
 
 
@@ -92,7 +93,7 @@ const UpComingTripsList = () => {
   const {userInfo} = useUserStore();
   const [trips, setTrips] = useState([]);
   const {goBack, setStackScreen} = useStackScreenStore();
-  const t = {}
+  const {t} = useTranslation()
   const {setUpComingTripDetails} = useTripAcceptStore();
   const [loading, setLoading] = useState(false);
   const {setActiveTripData} = useTripsStore();
@@ -108,7 +109,7 @@ const UpComingTripsList = () => {
         '/publicrides/driver/getMultipleTripsDetail',
         'POST',
         payload,
-        userInfo.user.token,
+        userInfo.token,
       );
       if (response?.success) {
         setTrips(response.data);
@@ -245,7 +246,7 @@ const UpComingTripsList = () => {
                           : '0.00 km'}
                       </Text>
                       <Text style={styles.cardLabel}>
-                        {t.distance || 'Distance'}
+                        {t('distance') || 'Distance'}
                       </Text>
                     </View>
 
@@ -259,7 +260,7 @@ const UpComingTripsList = () => {
                           : '0 Mins'}
                       </Text>
                       <Text style={styles.cardLabel}>
-                        {t.duration || 'Duration'}
+                        {t('duration') || 'Duration'}
                       </Text>
                     </View>
 
@@ -273,7 +274,7 @@ const UpComingTripsList = () => {
                           ? parseFloat(trip.minFare).toFixed(2)
                           : '0.00'}
                       </Text>
-                      <Text style={styles.cardLabel}>{t.fare || 'Fare'}</Text>
+                            <Text style={styles.cardLabel}>{t('fare') || 'Fare'}</Text>
                     </View>
                   </View>
 

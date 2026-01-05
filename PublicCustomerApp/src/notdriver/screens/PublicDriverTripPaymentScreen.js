@@ -30,6 +30,7 @@ import AddressComponent from '../components/AddressComponent';
 import Polyline from '../../common/map/Polyline';
 import PaymentMethod from '../../notdriver/assets/icons/paymentMethod.svg'
 import InvoiceScreen from './InvoiceScreen';
+import { useTranslation } from 'react-i18next';
 
 const paymentMethods = [
   {
@@ -69,7 +70,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
   const [paymentTimer, setPaymentTimer] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  const t = {}
+  const {t} = useTranslation()
 
   const fareBreakDown = fareDetails ? fareDetails?.fareDetails : rideFare?.fareDetails;
   const tripId = fareDetails ? fareDetails?.tripId : activeTripData?.[0]?._id;
@@ -123,7 +124,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
 
   const onSubmitPaymentMethod = () => {
     if(selectedPaymentMethod === null) {
-      showNotification(t.please_select_a_payment_method, '', 'danger')
+      showNotification(t('please_select_a_payment_method'), '', 'danger')
       return
     }
     onPaymentReceive(fareBreakDown, selectedPaymentMethod, selectedPaymentMethod)
@@ -149,12 +150,12 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
             <TouchableOpacity 
               style={[styles.button, {backgroundColor: Colors.grey_xdark}]} 
               onPress={() => setPaymentMethodModalVisible(false)}>
-              <Text style={styles.textStyle}>{t.cancel}</Text>
+              <Text style={styles.textStyle}>{t('cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.button, {backgroundColor: Colors.periwinkle}]} 
               onPress={onSubmitPaymentMethod}>
-              <Text style={styles.textStyle}>{t.submit}</Text>
+              <Text style={styles.textStyle}>{t('submit')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -284,7 +285,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
             }}
             resizeMode="cover">
             <View>
-              <Text style={styles.fareTxtTitle}>{t.ride_fare}</Text>
+              <Text style={styles.fareTxtTitle}>{t('ride_fare')}</Text>
               <Text style={styles.fareTxt}>
                 {' '}
                 {'₹'} {fareBreakDown?.fare}.
@@ -303,7 +304,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
                   <Text style={styles.helpText}>HELP</Text>
                 </TouchableOpacity>
         <Text style={[styles.bookingTime, {marginTop: 10}]}>
-          {t.location_details}
+          {t('location_details')}
         </Text>
         <View style={styles.dotSeperator} />
         <AddressComponent
@@ -321,7 +322,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
             <Text style={styles.cardValue}>
               {distance ? formatDistance(distance) : '0.00 km'}
             </Text>
-            <Text style={styles.cardLabel}>{t.distance || 'Distance'}</Text>
+            <Text style={styles.cardLabel}>{t('distance') || 'Distance'}</Text>
           </View>
 
           {/* Duration Card */}
@@ -332,7 +333,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
             <Text style={styles.cardValue}>
               {duration ? formatDuration(duration) : '0 Mins'}
             </Text>
-            <Text style={styles.cardLabel}>{t.duration || 'Duration'}</Text>
+            <Text style={styles.cardLabel}>{t('duration') || 'Duration'}</Text>
           </View>
 
           {/* Fare Card */}
@@ -343,11 +344,11 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
             <Text style={styles.cardValue}>
               ₹{fare ? parseFloat(fare).toFixed(2) : '0.00'}
             </Text>
-            <Text style={styles.cardLabel}>{t.fare || 'Fare'}</Text>
+            <Text style={styles.cardLabel}>{t('fare') || 'Fare'}</Text>
           </View>
         </View>
         <Text style={[styles.bookingTime, {marginTop: 10}]}>
-          {t.payment_details}
+          {t('payment_details')}
         </Text>
         <View style={styles.dotSeperator} />
         <View style={styles.feesBreakDownContainer}>
@@ -356,7 +357,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
           {couponDiscount !== null && couponDiscount > 0 && (
            <View style={styles.feesBreakDown}>
             <Text style={[styles.amountKey, {fontFamily: Fonts.medium, }]}>
-            {t.coupon}
+            {t('coupon')}
             </Text>
             <Text style={[styles.amountValue, {fontFamily: Fonts.medium,}]}>
              - ₹{taxBreakDown?.couponDiscount?.toFixed(2)}
@@ -366,7 +367,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
           
           <View style={styles.feesBreakDown}>
             <Text style={[styles.amountKey, {fontFamily: Fonts.medium,color:Colors.red}]}>
-            {t.due}
+            {t('due')}
             </Text>
             <Text style={[styles.amountValue, {fontFamily: Fonts.medium,color:Colors.red}]}>
               ₹{driverDue?.toFixed(2)}
@@ -374,7 +375,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
           </View>
             <View style={styles.feesBreakDown}>
             <Text style={[styles.amountKey, {fontFamily: Fonts.medium, color:Colors.green}]}>
-            {t.earnings}
+            {t('earnings')}
             </Text>
             <Text style={[styles.amountValue, {fontFamily: Fonts.medium, color:Colors.green}]}>
               ₹{driverEarnings?.toFixed(2)}
@@ -383,7 +384,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
         
           <View style={styles.feesBreakDown}>
             <Text style={[styles.amountKey, {fontFamily: Fonts.medium,color:Colors.black}]}>
-            {t.subtotal}
+            {t('subtotal')}
             </Text>
             <Text style={[styles.amountValue, {fontFamily: Fonts.medium,color:Colors.black}]}>
               ₹{subtotal?.toFixed(2)}
@@ -392,7 +393,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
           <View style={styles.feesBreakDown}>
             <View>
             <Text style={[styles.amountKey, {fontFamily: Fonts.semi_bold, fontSize:16, color:Colors.periwinkle}]}>
-            {t.total}
+            {t('total')}
             </Text>
             <Text style={[styles.amountKey, {fontFamily: Fonts.medium,color:Colors.black}]}>(inclusive of tax)</Text>
             </View>
@@ -403,7 +404,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
           
           </View>
           <TouchableOpacity style={styles.viewDetailedBtn} onPress={()=>{setIsInvoiceModalVisible(true)}}>
-                <Text style={styles.viewDetailedBtnText}>{t.view_detailed}</Text>
+                <Text style={styles.viewDetailedBtnText}>{t('view_detailed')}</Text>
               </TouchableOpacity>
            {!fareDetails && (
             <>
@@ -415,7 +416,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
                   styles.amountValue,
                   {fontFamily: Fonts.regular, bottom: 1},
                 ]}>
-                {t.payment_method}
+                {t('payment_method')}
               </Text>
             </View>
             <Text
@@ -435,7 +436,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
             <Feather name="copy" size={16}/>
           </TouchableOpacity>
           <TouchableOpacity disabled={isLoading} style={styles.receiveBtn} onPress={()=>{driverRole === 'dco' ?onPaymentReceive(fareBreakDown, selectedPaymentMethod, selectedPaymentMethod) : setPaymentMethodModalVisible(true)}}>
-            {isLoading? <ActivityIndicator color={Colors.white}/>: <Text style={styles.receiveBtnTxt}>{t.payment_received}</Text>}
+            {isLoading? <ActivityIndicator color={Colors.white}/>: <Text style={styles.receiveBtnTxt}>{t('payment_received')}</Text>}
           </TouchableOpacity>
             </>
            )  }

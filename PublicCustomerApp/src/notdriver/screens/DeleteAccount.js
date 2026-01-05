@@ -18,6 +18,7 @@ import UseBackButton from '../../common/hooks/UseBackButton';
 import NavBar from '../../common/components/NavBar';
 import { moderateScale } from '../../common/utils/scalingutils';
 import InputWithRightIcon from '../../common/components/InputWithRightIcon';
+import { useTranslation } from 'react-i18next';
 
 const DeleteAccount = () => {
     const {goBack} = useStackScreenStore();
@@ -35,7 +36,7 @@ const DeleteAccount = () => {
     const {logout} = useContext(GlobalContext);
     const {setMapMarkers} = useMapMarkerStore();
     const {driverInfo,vehicleInfo, driverRole } = usePublicDriverStore();
-    const t = {}
+    const {t} = useTranslation()
     const onBackPress = () => {
         goBack()
     }
@@ -68,7 +69,7 @@ const DeleteAccount = () => {
                 vehicleId:vehicleInfo._id,
         }
         try {
-            const res = await api.request(url, 'POST', payload, userInfo.user.token);
+            const res = await api.request(url, 'POST', payload, userInfo.token);
             console.log('otpverifiedres',res)
             if(res.success){
                 setIsLoading(true);
@@ -97,14 +98,14 @@ const DeleteAccount = () => {
 
     const getOtpPress = async () => {
         if (phone.trim().length === 0) {
-            setPhoneErr(t.please_enter_your_phone_number);
+            setPhoneErr(t('please_enter_your_phone_number'));
           } else if (phone.length !== 10) {
-            setPhoneErr(t.please_enter_a_valid_phone_number);
+            setPhoneErr(t('please_enter_a_valid_phone_number'));
           } else if (!isChecked) {
             console.log('getOtpPress')
-            showNotification(t.please_agree_to_the_terms_and_conditions, '', 'danger')
+            showNotification(t('please_agree_to_the_terms_and_conditions'), '', 'danger')
           } else if ('+91'+phone !== driverInfo.phone) {
-            showNotification(t.please_enter_your_registered_phone_number, '', 'danger')
+            showNotification(t('please_enter_your_registered_phone_number'), '', 'danger')
           }else {
             await onGetOtp();
           }
@@ -118,7 +119,7 @@ const DeleteAccount = () => {
             phone:'+91'+phone,
         }       
         try {
-            const res = await api.request(url, 'POST', payload, userInfo.user.token);
+            const res = await api.request(url, 'POST', payload, userInfo.token);
 
             if(res.success){
                 setShowOtpView(true)
@@ -169,16 +170,16 @@ const DeleteAccount = () => {
         />
       </View>
      {timer > 0 ? (
-        <Text style={styles.resendOTP}>{t.resend_otp} {`${formatTime(timer)}`}</Text>
+        <Text style={styles.resendOTP}>{t('resend_otp')} {`${formatTime(timer)}`}</Text>
       ) : (
         <View style={styles.resendOTPContainer}>
           <TouchableOpacity onPress={()=>onGetOtp()}>
-          <Text style={styles.resendOTP}>{t.resend_otp}</Text>
+          <Text style={styles.resendOTP}>{t('resend_otp')}</Text>
         </TouchableOpacity>
       </View>
       )}
       <TouchableOpacity style={styles.otpBtn} onPress={() => verifyDriverOTP()}>
-        <Text style={styles.otptxt}>{t.verify_otp}</Text>
+        <Text style={styles.otptxt}>{t('verify_otp')}</Text>
       </TouchableOpacity>
             </View>
         )
@@ -189,27 +190,27 @@ const DeleteAccount = () => {
      {isLoading && <FullScreenLoader />}
     <ScrollView style={styles.container} contentContainerStyle={{paddingBottom:100}}>
       <UseBackButton onBackPress={onBackPress} />
-      <NavBar title={t.delete_account} onBackPress={onBackPress} /> 
+      <NavBar title={t('delete_account')} onBackPress={onBackPress} /> 
       <View style={styles.pointsContainer}>
         <View style={styles.pointRow}>
           <Text style={styles.bullet}>{'\u2022'}</Text>
-          <Text style={styles.pointText}>{t.your_account_will_be_marked_as_deleted_immediately}</Text>
+          <Text style={styles.pointText}>{t('your_account_will_be_marked_as_deleted_immediately')}</Text>
         </View>
         <View style={styles.pointRow}>
           <Text style={styles.bullet}>{'\u2022'}</Text>
-          <Text style={styles.pointText}>{t.all_related_data_will_be_permanently_deleted_within_30_days}</Text>
+          <Text style={styles.pointText}>{t('all_related_data_will_be_permanently_deleted_within_30_days')}</Text>
         </View>
         <View style={styles.pointRow}>
           <Text style={styles.bullet}>{'\u2022'}</Text>
-          <Text style={styles.pointText}>{t.this_action_cant_be_undone_deleted_data_is_not_recoverable}</Text>
+          <Text style={styles.pointText}>{t('this_action_cant_be_undone_deleted_data_is_not_recoverable')}</Text>
         </View>
         <View style={styles.pointRow}>
           <Text style={styles.bullet}>{'\u2022'}</Text>
-          <Text style={styles.pointText}>{t.you_wont_be_able_to_take_trips_or_access_driver_features_after_this}</Text>
+          <Text style={styles.pointText}>{t('you_wont_be_able_to_take_trips_or_access_driver_features_after_this')}</Text>
         </View>
         <View style={styles.pointRow}>
           <Text style={styles.bullet}>{'\u2022'}</Text>
-          <Text style={styles.pointText}>{t.certain_records_may_be_retained_as_required_by_law}</Text>
+          <Text style={styles.pointText}>{t('certain_records_may_be_retained_as_required_by_law')}</Text>
         </View>
       </View>
       {showOtpView ?  (
@@ -234,11 +235,11 @@ const DeleteAccount = () => {
         </View>
         <TouchableOpacity style={styles.rememberContainer} onPress={()=>setIsChecked(!isChecked)}>
             <Fontisto name={isChecked ? 'checkbox-active' : 'checkbox-passive'} size={20} color={isChecked ? Colors.periwinkle : Colors.black   } />
-        <Text style={styles.rememberTxt}>{t.i_understand_that_my_account_will_be_marked_as_deleted_now_my_data_will_be_permanently_deleted_within_30_days_i_wont_be_able_to_take_trips_and_this_action_cannot_be_undone}</Text>
+        <Text style={styles.rememberTxt}>{t('i_understand_that_my_account_will_be_marked_as_deleted_now_my_data_will_be_permanently_deleted_within_30_days_i_wont_be_able_to_take_trips_and_this_action_cannot_be_undone')}</Text>
 
         </TouchableOpacity>
         <TouchableOpacity style={styles.getOtpBtn} onPress={getOtpPress}>
-            <Text style={styles.getOtpBtnText}>{t.get_otp}</Text>
+            <Text style={styles.getOtpBtnText}>{t('get_otp')}</Text>
         </TouchableOpacity>
         </>
       )}

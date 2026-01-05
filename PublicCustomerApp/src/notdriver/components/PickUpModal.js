@@ -8,9 +8,10 @@ import {
 } from 'react-native';
 import React, {useRef, useState} from 'react'
 import OTPInput from '../../components/Common/OTPInput';
-import { height, width } from '../../common/utils/scalingutils';
+import {  width } from '../../common/utils/scalingutils';
 import { Colors, Fonts } from '../../common/constants/constants';
 import Locgrey from '../../notdriver/assets/icons/loc_grey.svg'
+import { useTranslation } from 'react-i18next';
 
 const PickUpModal = ({
   stopsDetails,
@@ -19,7 +20,7 @@ const PickUpModal = ({
   isPublicRide,
   otpLoading,
 }) => {
-  const t = {}
+  const {t} = useTranslation()
   const [otpCode, setOtpCode] = useState(0);
   const [otpError, setOtpError] = useState('');
 
@@ -33,7 +34,7 @@ const PickUpModal = ({
       return
     }
     if (otp.length !== 4) {
-      setOtpError(t.please_enter_otp);
+      setOtpError(t('please_enter_otp'));
     }
     else{
       setOtpError('');
@@ -46,12 +47,12 @@ const PickUpModal = ({
      
       {isPublicRide ?  
       <>
-      <Text style={styles.title}>{t.you_have_reached_your_pickup_location} </Text>
-      <Text style={[styles.title,{marginVertical:10, fontSize:14}]}>{t.please_enter_the_otp} </Text>
+      <Text style={styles.title}>{t('you_have_reached_your_pickup_location')} </Text>
+      <Text style={[styles.title,{marginVertical:10, fontSize:14}]}>{t('please_enter_the_otp')} </Text>
       </>
       : 
       <Text style={styles.title}>
-      {t.you_have_reached_your_next_stop_location}
+      {t('you_have_reached_your_next_stop_location')}
       </Text>}
       {/* <Text style={styles.stop}>{isPublicRide ? stopsDetails?.bookingForName : stopsDetails?.name}</Text> */}
       <View style={styles.addressContainer}>
@@ -90,7 +91,7 @@ const PickUpModal = ({
         {otpLoading ? (
           <ActivityIndicator size="small" color={Colors.white} />
         ) : (
-          <Text style={styles.pickUpBtnTxt}>{t.confirm}</Text>
+          <Text style={styles.pickUpBtnTxt}>{t('confirm')}</Text>
         )}
       </TouchableOpacity>
     </View>

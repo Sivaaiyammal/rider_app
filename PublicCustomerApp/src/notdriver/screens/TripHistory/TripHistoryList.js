@@ -5,6 +5,7 @@ import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
 import { useSelectedRouteStore } from '../../store/useTripsStore';
 import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter';
 import { Colors, Fonts } from '../../../common/constants/constants';
+import { useTranslation } from 'react-i18next';
 
 const TripHistoryList = ({
   trips,
@@ -14,7 +15,7 @@ const TripHistoryList = ({
   onLoadMore,
   tripStatus,
 }) => {
-  const t = {};
+  const {t} = useTranslation();
   const {setStackScreen} = useStackScreenStore();
   const {setSelectedTrip} = useSelectedRouteStore();
 
@@ -108,7 +109,7 @@ const TripHistoryList = ({
             </View>
           </View>
           <View style={styles.locationTextContainer}>
-            <Text style={styles.locationLabel}>{t.start_location}</Text>
+            <Text style={styles.locationLabel}>{t('start_location')}</Text>
             <Text style={styles.locationAddress} numberOfLines={2}>
               {item?.stops[0]?.address || 'N/A'}
             </Text>
@@ -124,7 +125,7 @@ const TripHistoryList = ({
             <AntDesign name="enviromento" size={20} color={Colors.red} />
           </View>
           <View style={styles.locationTextContainer}>
-            <Text style={styles.locationLabel}>{t.end_location}</Text>
+            <Text style={styles.locationLabel}>{t('end_location')}</Text>
             <Text style={styles.locationAddress} numberOfLines={2}>
               {item.stops[item.stops.length - 1].address || 'N/A'}
             </Text>
@@ -136,7 +137,7 @@ const TripHistoryList = ({
         setStackScreen('TripDetailScreen')
         setSelectedTrip(item)
       }}>
-        <Text style={styles.viewDetailBtnText}>{t.view_details}</Text>
+        <Text style={styles.viewDetailBtnText}>{t('view_details')}</Text>
       </TouchableOpacity>
        ) }
     </View>
@@ -147,17 +148,17 @@ const TripHistoryList = ({
     return (
       <View style={styles.loadingFooter}>
         <ActivityIndicator size="small" color={Colors.periwinkle} />
-        <Text style={styles.loadingText}>{t.loading_more_trips}</Text>
+        <Text style={styles.loadingText}>{t('loading_more_trips')}</Text>
       </View>
     );
   };
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyText}>{t.you_havent_completed_any_trips_yet}</Text>
+      <Text style={styles.emptyText}>{t('you_havent_completed_any_trips_yet')}</Text>
       <Text style={styles.emptySubText}>
         {tripStatus === 'ALL' 
-          ? t.you_havent_completed_any_trips_yet
+          ? t('you_havent_completed_any_trips_yet')
           : `No ${tripStatus} trips found.`
         }
       </Text>

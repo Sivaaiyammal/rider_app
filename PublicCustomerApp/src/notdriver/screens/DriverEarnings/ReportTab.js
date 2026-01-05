@@ -6,10 +6,11 @@ import APIRequest from '../../../common/APIRequest'
 import { Colors, Fonts } from '../../../common/constants/constants'
 import HistoryHeader from '../TripHistory/HistoryHeader'
 import { height } from '../../../common/utils/scalingutils'
+import { useTranslation } from 'react-i18next'
 
 
 const ReportTab = () => {
-  const t = {}
+  const {t} = useTranslation()
   const { userInfo } = useUserStore
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -139,35 +140,35 @@ const ReportTab = () => {
       {/* Payment Details */}
       <View style={styles.paymentDetails}>
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>{t.driver_earnings}</Text>
+          <Text style={styles.detailLabel}>{t('driver_earnings')}</Text>
           <Text style={[styles.detailValue, { color: Colors.green }]}>
             {formatAmount(item.driverEarnings)}
           </Text>
         </View>
         
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>{t.driver_due}</Text>
+          <Text style={styles.detailLabel}>{t('driver_due')}</Text>
           <Text style={[styles.detailValue, { color: Colors.orange }]}>
             {formatAmount(item.driverDue)}
           </Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>{t.vehicle_type}</Text>
+          <Text style={styles.detailLabel}>{t('vehicle_type')}</Text>
           <Text style={styles.detailValue}>
             {item.fareDetails?.vehicleType || 'N/A'}
           </Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>{t.passanger_payment}</Text>
+          <Text style={styles.detailLabel}>{t('passanger_payment')}</Text>
           <Text style={styles.detailValue}>
           {item.passengerPaymentStatus?.toUpperCase()}
           </Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>{t.due_status}</Text>
+          <Text style={styles.detailLabel}>{t('due_status')}</Text>
           <Text style={[styles.detailValue,{color: item.dueStatus === 'CLEARED' ? Colors.green : Colors.red}]}>
             {item.dueStatus || 'PENDING'}
           </Text>
@@ -185,16 +186,16 @@ const ReportTab = () => {
     return (
       <View style={styles.loadingFooter}>
         <ActivityIndicator size="small" color={Colors.periwinkle} />
-        <Text style={styles.loadingText}>{t.loading_more_payments}</Text>
+        <Text style={styles.loadingText}>{t('loading_more_payments')}</Text>
       </View>
     );
   };
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyText}>{t.no_payments_found}</Text>
+      <Text style={styles.emptyText}>{t('no_payments_found')}</Text>
       <Text style={styles.emptySubText}>
-        {t.you_havent_received_any_payments_yet_for_the_selected_date_range}
+        {t('you_havent_received_any_payments_yet_for_the_selected_date_range')}
       </Text>
     </View>
   );
@@ -203,19 +204,19 @@ const ReportTab = () => {
     <View style={styles.summaryContainer}>
       <View style={styles.summaryRow}>
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>{t.total_earnings}</Text>
+          <Text style={styles.summaryLabel}>{t('total_earnings')}</Text>
           <Text style={[styles.summaryValue, { color: Colors.green }]}>
             {formatAmount(totalEarnings)}
           </Text>
         </View>
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>{t.paid_amount}</Text>
+          <Text style={styles.summaryLabel}>{t('paid_amount')}</Text>
           <Text style={[styles.summaryValue, { color: Colors.blue }]}>
             {formatAmount(clearedDue)}
           </Text>
         </View>
         <View style={styles.summaryItem}>
-          <Text style={styles.summaryLabel}>{t.due_amount}</Text>
+          <Text style={styles.summaryLabel}>{t('due_amount')}</Text>
           <Text style={[styles.summaryValue, { color: Colors.orange }]}>
             {formatAmount(pendingDue)}
           </Text>

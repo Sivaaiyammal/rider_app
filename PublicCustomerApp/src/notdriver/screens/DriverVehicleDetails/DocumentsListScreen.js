@@ -22,6 +22,7 @@ import publicrideDriverApi from '../../api/publicrideDriverApi';
 import { getPresignedImageUrl } from '../../../common/utils/getPresignedImageUrl';
 import DocWarning from '../../../notdriver/assets/icons/docWarning.svg';
 import DocUpload from "../../../notdriver/assets/icons/docUpload.svg";
+import { useTranslation } from 'react-i18next';
 
 const styles = StyleSheet.create({
   container: {
@@ -204,7 +205,7 @@ const DocumentsListScreen = ({ onNext, isEdit }) => {
   const [isImageLoading, setIsImageLoading] = useState(false)
   const { setStackScreen } = useStackScreenStore();
   const [imagefile, setImageFile] = useState(null)
-  const t = {}
+  const {t} = useTranslation()
 
   const onBackPress = () => {
     navigation.goBack();
@@ -238,7 +239,7 @@ const DocumentsListScreen = ({ onNext, isEdit }) => {
         const response = await publicrideDriverApi.uploadDriverDocuments(formData, userInfo?.token);
         console.log('hari-->>response-->>', response)
         if (response.success) {
-          showNotification(`${t[documentName]}`, `Uploaded successfully`, 'success');
+          showNotification(`${t(documentName)}`, `Uploaded successfully`, 'success');
           setModalVisible(false);
           updateDocumentStatus(docId, 'uploaded');
           break;
@@ -251,7 +252,7 @@ const DocumentsListScreen = ({ onNext, isEdit }) => {
         
         if (retryCount >= maxRetries) {
           showNotification(
-            `${t[documentName]}`, 
+            `${t(documentName)}`, 
             `Error uploading document: ${error?.message || 'Network request failed'}`, 
             'error'
           );
@@ -351,7 +352,7 @@ const DocumentsListScreen = ({ onNext, isEdit }) => {
                     paddingLeft: 10,
                   }}>
                   <Text style={styles.pointer}>{index + 1}</Text>
-                  <Text style={styles.docName}>{t[item.name] + (item.required ? '*' : '')}</Text>
+                  <Text style={styles.docName}>{t(item.name) + (item.required ? '*' : '')}</Text>
                 </View>
                 {getDocumentById(item.id)?.status === 'uploaded' ? (
                   <MaterialIcons
@@ -383,7 +384,7 @@ const DocumentsListScreen = ({ onNext, isEdit }) => {
           disabled={!isAllDocumentsUploaded()}
           onPress={()=>onNext()}
         >
-          <Text style={styles.nextBtnText}>{t.done}</Text>
+          <Text style={styles.nextBtnText}>{t('done')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -397,7 +398,7 @@ const DocumentsListScreen = ({ onNext, isEdit }) => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t[selectedDoc?.name]}</Text>
+              <Text style={styles.modalTitle}>{t(selectedDoc?.name)}</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
                 <MaterialIcons name="close" size={24} color={Colors.black} />
               </TouchableOpacity>
@@ -405,9 +406,9 @@ const DocumentsListScreen = ({ onNext, isEdit }) => {
             {!isEdit && (
             <View style={styles.modalInfoContainer}>
               <View>
-                <Text style={styles.infoText}>{t.format}: JPG / PNG / PDF</Text>
-                <Text style={styles.infoText}>{t.size_maximum_photo}: </Text>
-                <Text style={styles.infoText}>{t.resolution_maximum_2000px}</Text>
+                <Text style={styles.infoText}>{t('format')}: JPG / PNG / PDF</Text>
+                <Text style={styles.infoText}>{t('size_maximum_photo')}: </Text>
+                <Text style={styles.infoText}>{t('resolution_maximum_2000px')}</Text>
               </View>
               <DocWarning />
             </View>
@@ -424,7 +425,7 @@ const DocumentsListScreen = ({ onNext, isEdit }) => {
 ) : (
   <View style={styles.uploadPlaceholder}>
     <DocUpload />
-    <Text style={styles.uploadText}>{t.upload_document}</Text>
+    <Text style={styles.uploadText}>{t('upload_document')}</Text>
   </View>
 )}
             {!isEdit && (
@@ -433,7 +434,7 @@ const DocumentsListScreen = ({ onNext, isEdit }) => {
                    style={styles.browseBtn}
                    onPress={handleChoosePhoto}>
                    <Text style={styles.browseBtnText}>
-                     {selectedDoc && getDocumentById(selectedDoc.id)?.file ? t.change : t.browse}
+                     {selectedDoc && getDocumentById(selectedDoc.id)?.file ? t('change') : t('browse')}
                    </Text>
                  </TouchableOpacity>
    
@@ -448,7 +449,7 @@ const DocumentsListScreen = ({ onNext, isEdit }) => {
                      {isLoading ? (
                        <ActivityIndicator size="small" color={Colors.white} />
                      ) : (
-                       <Text style={styles.uploadBtnText}>{t.upload}</Text>
+                       <Text style={styles.uploadBtnText}>{t('upload')}</Text>
                      )}
                    </TouchableOpacity>
                  )}

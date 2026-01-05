@@ -371,20 +371,20 @@ class NEMap extends Component {
 
   render() {
 
-    const defaultSettings = {
-      gpsReliability: 'Medium',
-      navAccuracy: 'Medium',
-      mapAppearance: 'Regular',
-      highways: 'Prefer',
-      tolls: 'Prefer',
-      ferry: 'Prefer',
-      livingStreet: 'Prefer',
-      distanceFormate: 'Kilometers(km)/ Meters(m)',
-      enableDarkTheme: false,
-      enableExtrusions: false,
-      enable3D: false,
-      language:'en'
-    };
+    // const defaultSettings = {
+    //   gpsReliability: 'Medium',
+    //   navAccuracy: 'Medium',
+    //   mapAppearance: 'Regular',
+    //   highways: 'Prefer',
+    //   tolls: 'Prefer',
+    //   ferry: 'Prefer',
+    //   livingStreet: 'Prefer',
+    //   distanceFormate: 'Kilometers(km)/ Meters(m)',
+    //   enableDarkTheme: false,
+    //   enableExtrusions: false,
+    //   enable3D: false,
+    //   language:'en'
+    // };
 
     return this.state.loadMap ? (
       <>

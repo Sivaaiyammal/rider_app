@@ -3,6 +3,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Colors, Fonts } from '../../common/constants/constants';
 import { flexStyle } from '../../common/styles/flexStyle';
+import { useTranslation } from 'react-i18next';
 
 
 
@@ -62,7 +63,7 @@ const AlertModal = ({
   additionalRightBtnStyles,
   additionalLeftBtnStyles
 }) => {
-  const t = {};
+  const {t} = useTranslation();
   return (
     <Modal
       transparent
@@ -71,18 +72,18 @@ const AlertModal = ({
       onRequestClose={onClose}>
       <View style={styles.overlay} onPress={onBackDropPress}>
         <View style={[styles.modalContainer, additionalContainerStyles]}>
-          {successMessage && <Text style={styles.title}>{t[successMessage] ??  successMessage}</Text>}
-          {SubText && <Text style={styles.title}>{t.name}: {SubText}</Text>}
+          {successMessage && <Text style={styles.title}>{t(successMessage) ??  successMessage}</Text>}
+          {SubText && <Text style={styles.title}>{t('name')}: {SubText}</Text>}
           <View>{children}</View>
           <View style={[flexStyle.frg10, additionalLeftBtnStyles]}>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>{t[leftBtnTxt] ?? leftBtnTxt}</Text>
+              <Text style={styles.closeButtonText}>{t(leftBtnTxt) ?? leftBtnTxt}</Text>
             </TouchableOpacity>
             {rightBtnText && (
               <TouchableOpacity
                 onPress={onRightPress}
                 style={[styles.closeButton, additionalRightBtnStyles]}>
-                  {isLoading ? <ActivityIndicator /> : <Text style={styles.closeButtonText}>{t[rightBtnText] ?? rightBtnText}</Text>}
+                  {isLoading ? <ActivityIndicator /> : <Text style={styles.closeButtonText}>{t(rightBtnText) ?? rightBtnText}</Text>}
               </TouchableOpacity>
             )}
           </View>

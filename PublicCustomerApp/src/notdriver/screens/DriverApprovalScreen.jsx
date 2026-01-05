@@ -17,6 +17,8 @@ import { settingsScreen } from '../styles/SettingsStyles';
 import { height } from '../../common/utils/scalingutils';
 import ApprovalIcon from '../../notdriver/assets/icons/Approval_BG.svg';
 import DocWhiteIcon from '../../notdriver/assets/icons/doc_white.svg';
+import { useTranslation } from 'react-i18next';
+import usePublicDriverStore from '../store/usePublicDriverStore';
 
 const DriverApprovalScreen = () => {
   const { userInfo, logout } = useUserStore()
@@ -26,7 +28,7 @@ const DriverApprovalScreen = () => {
   const name = driverInfo?.name || 'Driver Name';
   const phone = driverInfo?.phone || '';
   const [loading, setLoading] = useState(false)
-  const t = {};
+  const {t} = useTranslation();
   const {setMapMarkers} = useMapMarkerStore();
   const resetAllStore = useRideSelectionStore();
 
@@ -47,9 +49,9 @@ const DriverApprovalScreen = () => {
       const res = await api.request(url, 'GET', {}, userInfo?.token);
       if(res.success){
         setUnBlockRequestSent(true)
-        showNotification(t.unblock_request_sent,'', 'success')
+        showNotification(t('unblock_request_sent'),'', 'success')
       } else {
-        showNotification(t.something_went_wrong,'', 'error')
+        showNotification(t('something_went_wrong'),'', 'error')
       }
       setLoading(false)
     } catch (error) {
@@ -115,7 +117,7 @@ const DriverApprovalScreen = () => {
       // console.log(error, 'Error logging out');
       showNotification(
         error?.message || 'Network request failed',
-        t.pls_try_later,
+        t('pls_try_later'),
         'danger',
       );
     }
@@ -131,9 +133,9 @@ const DriverApprovalScreen = () => {
         </View>
         {
           isBlocked ? (
-            <Text style={styles.title}>{t.your_account_is_blocked}</Text>
+            <Text style={styles.title}>{t('your_account_is_blocked')}</Text>
           ) :(
-            <Text style={styles.title}>{t.wait_for_approval}</Text>
+            <Text style={styles.title}>{t('wait_for_approval')}</Text>
           )
         }
       
@@ -146,14 +148,14 @@ const DriverApprovalScreen = () => {
       {isBlocked ? (
          <View style={styles.body}>
          <Text style={styles.infoText}>
-          {t.your_account_has_been_blocked_due_to_some_reasons}
+          {t('your_account_has_been_blocked_due_to_some_reasons')}
          </Text>
          <Text style={styles.infoText}>
-           {t.if_you_have_any_queries_please}{' '}
-           <Text style={styles.contactLink} onPress={handleContactUs}>{t.contact_us}.</Text>
+           {t('if_you_have_any_queries_please')}{' '}
+           <Text style={styles.contactLink} onPress={handleContactUs}>{t('contact_us')}.</Text>
          </Text>
          <TouchableOpacity style={styles.unblockBtn} onPress={sendUnBlockRequest}>
-          <Text style={styles.unblockBtnText}>{unBlockRequestSent ? t.unblock_request_sent : t.send_unblock_request}</Text>
+          <Text style={styles.unblockBtnText}>{unBlockRequestSent ? t('unblock_request_sent') : t('send_unblock_request')}</Text>
          </TouchableOpacity>
        </View>
       ):(
@@ -161,11 +163,11 @@ const DriverApprovalScreen = () => {
         {/* Message Section */}
       <View style={styles.body}>
         <Text style={styles.infoText}>
-          {t.we_are_working_hard_to_verify_taxi_and_approve_them_so_please_understand_that_approval_process_will_take_some_time_thanks_for_your_patience}
+          {t('we_are_working_hard_to_verify_taxi_and_approve_them_so_please_understand_that_approval_process_will_take_some_time_thanks_for_your_patience')}
         </Text>
         <Text style={styles.infoText}>
-            {t.if_you_have_any_queries_regarding_registration_or_app_please}{' '}
-          <Text style={styles.contactLink} onPress={handleContactUs}>{t.contact_us}.</Text>
+            {t('if_you_have_any_queries_regarding_registration_or_app_please')}{' '}
+          <Text style={styles.contactLink} onPress={handleContactUs}>{t('contact_us')}.</Text>
         </Text>
       </View>
       {/* Edit Documents Button */}
@@ -173,7 +175,7 @@ const DriverApprovalScreen = () => {
       <View style={styles.footer}>
         <TouchableOpacity style={styles.editBtn} onPress={handleEditDocuments}>
             <DocWhiteIcon />
-          <Text style={styles.editBtnText}>{t.edit_documents}</Text>
+          <Text style={styles.editBtnText}>{t('edit_documents')}</Text>
         </TouchableOpacity>
       </View>
       )}
@@ -191,7 +193,7 @@ const DriverApprovalScreen = () => {
           },
         ]}
         onPress={() => handleLogout()}>
-        <Text style={settingsScreen.logoutButtonText}>{t.logout}</Text>
+        <Text style={settingsScreen.logoutButtonText}>{t('logout')}</Text>
       </TouchableOpacity>
     </View>
   );

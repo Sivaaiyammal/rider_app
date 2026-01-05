@@ -5,9 +5,10 @@ import NavBar from '../../../common/components/NavBar'
 import UseBackButton from '../../../common/hooks/UseBackButton'
 import DriverEntry from '../DriverVehicleDetails/DriverEntry'
 import { Colors } from '../../../common/constants/constants'
+import { useTranslation } from 'react-i18next'
 
 const DriverPersonalInfo = () => {
-    const t = {}
+    const { t } = useTranslation()
     const {goBack} = useStackScreenStore()
 
     const onBackPress = () => {
@@ -16,7 +17,7 @@ const DriverPersonalInfo = () => {
 
   return (
     <View style={styles.container}>
-        <NavBar title={t.personal_information} onBackPress={onBackPress}/>
+        <NavBar title={t('personal_information')} onBackPress={onBackPress}/>
         <UseBackButton onBackPress={onBackPress} />
         <View style={styles.personalInfoContainer}> 
             <DriverEntry isEdit={true}/>

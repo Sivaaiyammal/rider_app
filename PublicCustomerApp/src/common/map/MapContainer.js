@@ -4,7 +4,7 @@ import React, {useCallback, useRef} from 'react';
 
 import FullScreenLoader from '../loaders/FullScreenLoader';
 import { useMapMarkerStore } from '../store/useMapMarkerStore';
-import NEMap from '../../components/Native/NEMap';
+import NEMap from './NeMap';
 
 const MapContainer = () => {
   const {

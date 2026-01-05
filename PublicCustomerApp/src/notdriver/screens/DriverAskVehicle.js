@@ -8,6 +8,7 @@ import { showNotification } from '../../common/components/Alerts/showNotificatio
 import FullScreenLoader from '../../common/loaders/FullScreenLoader'
 import NavBar from '../../common/components/NavBar'
 import { Colors, Fonts } from '../../common/constants/constants'
+import { useTranslation } from 'react-i18next'
 
 const DriverAskVehicle = () => {
     const {userInfo} = useUserStore()
@@ -15,14 +16,14 @@ const DriverAskVehicle = () => {
     const [loading, setLoading] = useState(false)
     const {vendorId,setVehicleInfo} = usePublicDriverStore()
     const [vehicleList, setVehicleList] = useState([])
-    const t = {}
+    const {t} = useTranslation()
 
     const onChooseVehicle = async (vehicle) => {
         const api = new APIRequest()
         const vehicleId = vehicle._id
         setLoading(true)
           try {
-            const response = await api.request(`/publicrides/driver/updateDriverVehicle?vehicleId=${vehicleId}`,"POST", {}, userInfo?.user?.token)
+            const response = await api.request(`/publicrides/driver/updateDriverVehicle?vehicleId=${vehicleId}`,"POST", {}, userInfo?.token)
             if(response.success){
               setVehicleInfo(vehicle);
               setStackScreen('Home')
@@ -41,7 +42,7 @@ const DriverAskVehicle = () => {
         setLoading(true)
         const api = new APIRequest()
         try {
-            const response = await api.request(`/publicrides/driver/getAvailabelVendorVehicle?vendorId=${vendorId}`,"GET", {}, userInfo?.user?.token)
+            const response = await api.request(`/publicrides/driver/getAvailabelVendorVehicle?vendorId=${vendorId}`,"GET", {}, userInfo?.token)
             if(response.success){
                 setVehicleList(response.vehicleList)
             } else {
@@ -94,7 +95,7 @@ const DriverAskVehicle = () => {
                                 styles.statusText,
                                 isBlocked ? styles.blockedText : styles.availableText
                             ]}>
-                                {isBlocked ? t.blocked : t.available}
+                                {isBlocked ? t('blocked') : t('available')}
                             </Text>
                         </View>
                     </View>
@@ -103,23 +104,23 @@ const DriverAskVehicle = () => {
                 <View style={styles.cardBody}>
                     <View style={styles.vehicleDetails}>
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>{t.make || 'Make'}:</Text>
+                            <Text style={styles.detailLabel}>{t('make') || 'Make'}:</Text>
                             <Text style={styles.detailValue}>{vehicle.make}</Text>
                         </View>
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>{t.model || 'Model'}:</Text>
+                            <Text style={styles.detailLabel}>{t('model') || 'Model'}:</Text>
                             <Text style={styles.detailValue}>{vehicle.model}</Text>
                         </View>
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>{t.type || 'Type'}:</Text>
+                            <Text style={styles.detailLabel}>{t('type') || 'Type'}:</Text>
                             <Text style={styles.detailValue}>{vehicle.type}</Text>
                         </View>
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>{t.color || 'Color'}:</Text>
+                            <Text style={styles.detailLabel}>{t('color') || 'Color'}:</Text>
                             <Text style={styles.detailValue}>{vehicle.color}</Text>
                         </View>
                         <View style={styles.detailRow}>
-                            <Text style={styles.detailLabel}>{t.year || 'Year'}:</Text>
+                            <Text style={styles.detailLabel}>{t('year') || 'Year'}:</Text>
                             <Text style={styles.detailValue}>{vehicle.year}</Text>
                         </View>
                     </View>
@@ -132,11 +133,11 @@ const DriverAskVehicle = () => {
                             onPress={() => handleVehicleSelect(vehicle)}
                             activeOpacity={0.8}
                         >
-                            <Text style={styles.chooseButtonText}>{t.choose_vehicle}</Text>
+                            <Text style={styles.chooseButtonText}>{t('choose_vehicle')}</Text>
                         </TouchableOpacity>
                     ) : (
                         <View style={styles.disabledButton}>
-                            <Text style={styles.disabledButtonText}>{t.not_available}</Text>
+                            <Text style={styles.disabledButtonText}>{t('not_available')}</Text>
                         </View>
                     )}
                 </View>
@@ -144,7 +145,7 @@ const DriverAskVehicle = () => {
                 {isBlocked && (
                     <View style={styles.blockedOverlay}>
                         <Text style={styles.blockedMessage}>
-                            {t.already_assigned_to_driver}
+                            {t('already_assigned_to_driver')}
                         </Text>
                     </View>
                 )}
@@ -154,9 +155,9 @@ const DriverAskVehicle = () => {
 
     const renderEmptyComponent = () => (
         <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>{t.no_vehicles_available}</Text>
+            <Text style={styles.emptyText}>{t('no_vehicles_available')}</Text>
             <Text style={styles.emptySubtext}>
-                {t.please_contact_your_administrator}
+                {t('please_contact_your_administrator')}
             </Text>
         </View>
     )
@@ -165,11 +166,11 @@ const DriverAskVehicle = () => {
 
     return (
         <View style={styles.container}>
-            {loading && <FullScreenLoader message={t.loading_vehicles} />}
-             <NavBar title={t.available_vehicles}/>
+            {loading && <FullScreenLoader message={t('loading_vehicles')} />}
+             <NavBar title={t('available_vehicles')}/>
             <View style={styles.header}>
                 <Text style={styles.headerSubtitle}>
-                    {t.choose_from_available_vehicles}
+                    {t('choose_from_available_vehicles')}
                 </Text>
             </View>
             <FlatList

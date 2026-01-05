@@ -14,6 +14,7 @@ import publicrideDriverApi from '../../api/publicrideDriverApi';
 import { styles } from '../../styles/vehicleEntryStyles';
 import InputField from '../../../common/components/InputField';
 import { driverDetailStyles } from '../../styles/DriverDetailsUpload';
+import { useTranslation } from 'react-i18next';
 
 function getFormattedDate(timestamp) {
   if (!timestamp) return null;
@@ -44,7 +45,7 @@ function getFormattedDate(timestamp) {
   }]
 
 const VehicleEntry = ({onNext}) => {
-  const t = {}
+  const {t} = useTranslation()
   const {setVehicleInfo, vehicleInfo} = usePublicDriverStore();
   const [selected, setSelected] = useState(vehicleList?.find(item => item?.name === vehicleInfo.type)?.name || null);
   const {userInfo} = useUserStore();
@@ -130,23 +131,23 @@ const VehicleEntry = ({onNext}) => {
 
   // Memoize color mapping to avoid recreating on each render
   const colorMap = useMemo(() => ({
-    '#FF0000': t.red,
-    '#00FF00': t.green,
-    '#0000FF': t.blue,
-    '#FFFF00': t.yellow,
-    '#FF00FF': t.magenta,
-    '#00FFFF': t.cyan,
-    '#000000': t.black,
-    '#FFFFFF': t.white,
-    '#808080': t.gray,
-    '#FFA500': t.orange,
-    '#800080': t.purple,
-    '#A52A2A': t.brown,
-    '#FFC0CB': t.pink,
-    '#808000': t.olive,
-    '#800000': t.maroon,
-    '#008080': t.teal,
-    '#000080': t.navy,
+    '#FF0000': t('red'),
+    '#00FF00': t('green'),
+    '#0000FF': t('blue'),
+    '#FFFF00': t('yellow'),
+    '#FF00FF': t('magenta'),
+    '#00FFFF': t('cyan'),
+    '#000000': t('black'),
+    '#FFFFFF': t('white'),
+    '#808080': t('gray'),
+    '#FFA500': t('orange'),
+    '#800080': t('purple'),
+    '#A52A2A': t('brown'),
+    '#FFC0CB': t('pink'),
+    '#808000': t('olive'),
+    '#800000': t('maroon'),
+    '#008080': t('teal'),
+    '#000080': t('navy'),
   }), [t]);
 
   // Memoize year list to avoid recalculating
@@ -246,9 +247,9 @@ const VehicleEntry = ({onNext}) => {
     const currentYear = new Date().getFullYear();
     const yearNum = parseInt(year);
     if (isNaN(yearNum)) {
-      return t.please_enter_a_valid_year;
+      return t('please_enter_a_valid_year');
     } else if (yearNum < 1900 || yearNum > currentYear) {
-      return t[`year_must_be_between_1900_and_${currentYear}`];
+      return t(`year_must_be_between_1900_and_${currentYear}`);
     }
     return '';
   }, [t]);
@@ -263,31 +264,31 @@ const VehicleEntry = ({onNext}) => {
     }
 
     if (!regNum) {
-      setRegNumErr(t.please_enter_registration_number);
+      setRegNumErr(t('please_enter_registration_number'));
       isValid = false;
     } else if (!vehicleNumberPattern.test(regNum)) {
-      setRegNumErr(t.please_enter_a_valid_vehicle_registration_number);
+      setRegNumErr(t('please_enter_a_valid_vehicle_registration_number'));
       isValid = false;
     } else {
       setRegNumErr('');
     }
     
     if (!vehicleBrand) {
-      setVehicleBrandErr(t.please_enter_vehicle_brand);
+      setVehicleBrandErr(t('please_enter_vehicle_brand'));
       isValid = false;
     } else {
       setVehicleBrandErr('');
     }
     
     if (!vehicleModal) {
-      setVehicleModalErr(t.please_enter_vehicle_model);
+      setVehicleModalErr(t('please_enter_vehicle_model'));
       isValid = false;
     } else {
       setVehicleModalErr('');
     }
     
     const yearError = !manufactureYear 
-      ? t.please_enter_manufacturing_year 
+      ? t('please_enter_manufacturing_year') 
       : validateManufactureYear(manufactureYear);
     
     if (yearError) {
@@ -298,14 +299,14 @@ const VehicleEntry = ({onNext}) => {
     }
     
     if (!vehicleColor) {
-      setVehicleColorErr(t.please_enter_vehicle_color);
+      setVehicleColorErr(t('please_enter_vehicle_color'));
       isValid = false;
     } else {
       setVehicleColorErr('');
     }
     
     if (!fuelType) {
-      setFuelTypeErr(t.please_select_fuel_type);
+      setFuelTypeErr(t('please_select_fuel_type'));
       isValid = false;
     } else {
       setFuelTypeErr('');
@@ -358,7 +359,7 @@ const VehicleEntry = ({onNext}) => {
     const b = parseInt(hexColor.slice(5, 7), 16);
     
     // Find the closest color in our map
-    let closestColor = t.custom;
+    let closestColor = t('custom');
     let minDistance = Number.MAX_VALUE;
     
     Object.entries(colorMap).forEach(([hex, name]) => {
@@ -378,7 +379,7 @@ const VehicleEntry = ({onNext}) => {
     });
     
     return closestColor;
-  }, [colorMap, t]);
+  }, [colorMap]);
 
   // const onColorChange = useCallback((color) => {
   //   setSelectedColor(color);
@@ -407,7 +408,7 @@ const VehicleEntry = ({onNext}) => {
   
   const openModelPicker = useCallback(() => {
     if (!vehicleBrand) {
-      Alert.alert(t.please_select_vehicle_brand_first);
+      Alert.alert(t('please_select_vehicle_brand_first'));
       return;
     }
     
@@ -544,13 +545,13 @@ const VehicleEntry = ({onNext}) => {
   }, [fuelTypeErr]);
 
   const fuelTypes = [
-    { label: t.petrol, value: 'PETROL' },
-    { label: t.diesel, value: 'DIESEL' },
-    { label: t.cng, value: 'CNG' },
-    { label: t.ev, value: 'EV' },
-    { label: t.lpg, value: 'LPG' },
-    { label: t.petrol_plus_cng, value: 'PETROL + CNG' },
-    { label: t.hydrogen, value: 'HYDROGEN' },
+    { label: t('petrol'), value: 'PETROL' },
+    { label: t('diesel'), value: 'DIESEL' },
+    { label: t('cng'), value: 'CNG' },
+    { label: t('ev'), value: 'EV' },
+    { label: t('lpg'), value: 'LPG' },
+    { label: t('petrol_plus_cng'), value: 'PETROL + CNG' },
+    { label: t('hydrogen'), value: 'HYDROGEN' },
   ];
 
   const getImage = (key) => {
@@ -594,7 +595,7 @@ const VehicleEntry = ({onNext}) => {
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
           <>
-          <Text style={[styles.vehicleName, styles.marginBottom10]}>{t.vehicle_type}</Text>
+          <Text style={[styles.vehicleName, styles.marginBottom10]}>{t('vehicle_type')}</Text>
           <View style={styles.vehileList}>
             
             {Object.entries(vehicles?.vehicleTypes).map(([key, value]) => (
@@ -631,7 +632,7 @@ const VehicleEntry = ({onNext}) => {
           <InputField
             style={styles.textField}
             value={regNum}
-            label={t.vehicle_registration_number}
+            label={t('vehicle_registration_number')}
             errorText={regNumErr}
             autoCapitalize='characters'
             onChangeText={text => {
@@ -645,7 +646,7 @@ const VehicleEntry = ({onNext}) => {
             <InputField
               style={styles.textField}
               value={vehicleBrand}
-              label={t.vehicle_brand}
+              label={t('vehicle_brand')}
               errorText={vehicleBrandErr}
               editable={false}
               isRequired={true}
@@ -656,7 +657,7 @@ const VehicleEntry = ({onNext}) => {
             <InputField
               style={driverDetailStyles.textField}
               value={vehicleModal}
-              label={t.vehicle_model}
+              label={t('vehicle_model')}
               errorText={vehicleModalErr}
               editable={false}
               isRequired={true}
@@ -667,7 +668,7 @@ const VehicleEntry = ({onNext}) => {
             <InputField
               style={styles.textField}
               value={manufactureYear}
-              label={t.manufacturing_year}
+              label={t('manufacturing_year')}
               errorText={manufactureYearErr}
               editable={false}
               isRequired={true}
@@ -677,7 +678,7 @@ const VehicleEntry = ({onNext}) => {
             <InputField
               style={styles.textField}
               value={vehicleColor}
-              label={t.vehicle_color}
+              label={t('vehicle_color')}
               errorText={vehicleColorErr}
               editable={false}
             />
@@ -686,7 +687,7 @@ const VehicleEntry = ({onNext}) => {
             <InputField
               style={styles.textField}
               value={fuelTypes.find(f => f.value === fuelType)?.label || ''}
-              label={t.fuel_type}
+              label={t('fuel_type')}
               errorText={fuelTypeErr}
               editable={false}
               isRequired={true}
@@ -695,7 +696,7 @@ const VehicleEntry = ({onNext}) => {
           <InputField
             style={styles.textField}
             value={permitNumber}
-            label={t.permit_number}
+            label={t('permit_number')}
             errorText={permitNumberErr}
             onChangeText={text => {
               setPermitNumber(text);
@@ -708,12 +709,12 @@ const VehicleEntry = ({onNext}) => {
         <InputField
             style={styles.textField}
             value={insuranceExpiry}
-            label={t.insurance_expiry}
+            label={t('insurance_expiry')}
             editable={false}
             isRequired={true}
           />
         </TouchableOpacity>
-        <Text style={styles.radioButtonTxt}>{t.road_tax}</Text>
+        <Text style={styles.radioButtonTxt}>{t('road_tax')}</Text>
         <View style={styles.radioButtonContainer}>
         {roadTaxExpiryLifetime.map((item) => (
             <TouchableOpacity 
@@ -729,7 +730,7 @@ const VehicleEntry = ({onNext}) => {
               }}
             >
               <View style={styles.radioButton}>
-                 <Text style={styles.radioButtonTxt}>{t[item.value]}</Text>
+                 <Text style={styles.radioButtonTxt}>{t(item.value)}</Text>
               </View>
             </TouchableOpacity> 
          ))}
@@ -738,7 +739,7 @@ const VehicleEntry = ({onNext}) => {
           <InputField
             style={styles.textField}
             value={roadTaxExpiry}
-            label={t.road_tax_expiry}
+            label={t('road_tax_expiry')}
             editable={false}
             isRequired={true}
           />
@@ -748,7 +749,7 @@ const VehicleEntry = ({onNext}) => {
           <InputField
             style={styles.textField}
             value={fitnessExpiry}
-            label={t.fitness_expiry}
+            label={t('fitness_expiry')}
             editable={false}
             isRequired={true}
           />
@@ -757,7 +758,7 @@ const VehicleEntry = ({onNext}) => {
           <InputField
             style={styles.textField}
             value={pucExpiry}
-            label={t.puc_expiry}
+            label={t('puc_expiry')}
             editable={false}
             isRequired={true}
             />
@@ -771,7 +772,7 @@ const VehicleEntry = ({onNext}) => {
           onPress={onNextPress}
           disabled={isLoading}
         >
-          <Text style={driverDetailStyles.nextTxt}>{t.next}</Text>
+          <Text style={driverDetailStyles.nextTxt}>{t('next')}</Text>
           {isLoading ? <ActivityIndicator size="small" color={Colors.white} /> : <AntDesign name="arrowright" color={Colors.white} size={16} />}
         </TouchableOpacity>
       </View>
@@ -787,7 +788,7 @@ const VehicleEntry = ({onNext}) => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t.select_vehicle_color}</Text>
+              <Text style={styles.modalTitle}>{t('select_vehicle_color')}</Text>
               <TouchableOpacity onPress={() => setColorPickerVisible(false)}>
                 <AntDesign name="close" size={24} color={Colors.black} />
               </TouchableOpacity>
@@ -834,7 +835,7 @@ const VehicleEntry = ({onNext}) => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t.select_manufacturing_year}</Text>
+              <Text style={styles.modalTitle}>{t('select_manufacturing_year')}</Text>
               <TouchableOpacity onPress={() => setYearPickerVisible(false)}>
                 <AntDesign name="close" size={24} color={Colors.black} />
               </TouchableOpacity>
@@ -875,7 +876,7 @@ const VehicleEntry = ({onNext}) => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t.select_vehicle_brand}</Text>
+              <Text style={styles.modalTitle}>{t('select_vehicle_brand')}</Text>
               <TouchableOpacity onPress={() => setBrandPickerVisible(false)}>
                 <AntDesign name="close" size={24} color={Colors.black} />
               </TouchableOpacity>
@@ -884,7 +885,7 @@ const VehicleEntry = ({onNext}) => {
             <View style={styles.searchContainer}>
               <TextInput
                 style={styles.searchInput}
-                placeholder={t.type_vehicle_brand}
+                placeholder={t('type_vehicle_brand')}
                 value={brandSearchQuery}
                 onChangeText={setBrandSearchQuery}
               />
@@ -927,7 +928,7 @@ const VehicleEntry = ({onNext}) => {
                   }}
                 >
                   <Text style={[styles.yearText, {color: Colors.violet}]}>
-                    {`${t.add} ${brandSearchQuery} ${t.as_vehicle_brand}`}
+                    {`${t('add')} ${brandSearchQuery} ${t('as_vehicle_brand')}`}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -946,7 +947,7 @@ const VehicleEntry = ({onNext}) => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t.select_vehicle_model}</Text>
+              <Text style={styles.modalTitle}>{t('select_vehicle_model')}</Text>
               <TouchableOpacity onPress={() => setModelPickerVisible(false)}>
                 <AntDesign name="close" size={24} color={Colors.black} />
               </TouchableOpacity>
@@ -955,7 +956,7 @@ const VehicleEntry = ({onNext}) => {
             <View style={styles.searchContainer}>
               <TextInput
                 style={styles.searchInput}
-                placeholder={t.type_vehicle_model}
+                placeholder={t('type_vehicle_model')}
                 value={modelSearchQuery}
                 onChangeText={setModelSearchQuery}
               />
@@ -998,7 +999,7 @@ const VehicleEntry = ({onNext}) => {
                   }}
                 >
                   <Text style={[styles.yearText, {color: Colors.violet}]}>
-                    {`${t.add} ${modelSearchQuery} ${t.as_vehicle_model}`}
+                    {`${t('add')} ${modelSearchQuery} ${t('as_vehicle_model')}`}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -1017,7 +1018,7 @@ const VehicleEntry = ({onNext}) => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{t.select_fuel_type}</Text>
+              <Text style={styles.modalTitle}>{t('select_fuel_type')}</Text>
               <TouchableOpacity onPress={() => setFuelTypePickerVisible(false)}>
                 <AntDesign name="close" size={24} color={Colors.black} />
               </TouchableOpacity>

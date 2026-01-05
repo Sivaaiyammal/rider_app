@@ -39,9 +39,10 @@ import AboutUs from './AboutUs';
 import About from '../../common/assets/icons/about.svg'
 import MoreApp from '../../common/assets/icons/moreApp.svg'
 import GlobalContext from '../../context/GlobalContext';
+import { useTranslation } from 'react-i18next';
 
 export default function PublicDriverSettingsScreen() {
-  const t = {};
+  const {t} = useTranslation();
   // const resetAllStore = useResetStore();
   const {userInfo} = useUserStore();
   const {logout} = useContext(GlobalContext);
@@ -170,7 +171,7 @@ export default function PublicDriverSettingsScreen() {
       console.log(error, 'Error logging out');
       showNotification(
         error?.message || 'Network request failed',
-        t.pls_try_later,
+        t('pls_try_later'),
         'danger',
       );
     }
@@ -234,8 +235,8 @@ export default function PublicDriverSettingsScreen() {
             </View>
           </View>
           <View>
-            <Text style={settingsScreen.helloTxt}>{t.hello} !</Text>
-            <Text style={settingsScreen.nameTxt}>{userInfo?.user?.name || userInfo?.user?.phone}</Text>
+            <Text style={settingsScreen.helloTxt}>{t('hello')} !</Text>
+            <Text style={settingsScreen.nameTxt}>{userInfo?.name || userInfo?.phone}</Text>
           </View>
         </View>
         {filteredSettingsData.map(item => {
@@ -266,7 +267,7 @@ export default function PublicDriverSettingsScreen() {
           },
         ]}
         onPress={() => handleLogout()}>
-        <Text style={settingsScreen.logoutButtonText}>{t.logout}</Text>
+        <Text style={settingsScreen.logoutButtonText}>{t('logout')}</Text>
       </TouchableOpacity>
       {showScreen && modalScreen()}
     </View>

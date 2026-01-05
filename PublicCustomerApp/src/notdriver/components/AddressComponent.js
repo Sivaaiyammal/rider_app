@@ -6,11 +6,12 @@ import { Colors, Fonts } from '../../common/constants/constants';
 import WayPointIndicator from '../Indicators/WayPointIndicator';
 import YellowMarker from '../../notdriver/assets/icons/YellowMarker.svg';
 import StatLocBlue from '../../notdriver/assets/icons/statLocBlue.svg';
+import { useTranslation } from 'react-i18next';
 
 const AddressComponent = props => {
   const {userInfo} = useUserStore()
   const {percentage, waypoints, screen, deviceLocation, isPublicRides} = props;
-  const t = {}
+  const {t} = useTranslation()
 
   const busPosition = useRef(new Animated.Value(0)).current;
   const [finalPosition, setFinalPosition] = useState(0);
@@ -39,7 +40,7 @@ const AddressComponent = props => {
 
   function isMyStop(name) {
     const result = transformedData.find(stop => 
-      stop?.passangers?.some(passenger => passenger?._id === userInfo?.user?._id)
+      stop?.passangers?.some(passenger => passenger?._id === userInfo?._id)
     );
 
     if (result && name === result.name) {
@@ -73,8 +74,8 @@ const AddressComponent = props => {
             <View style={[styles.markerIcons,{backgroundColor:isPublicRides ? Colors.white : Colors.grey_light}]}>{displayIcon}</View>
             <Text style={styles.nameTxt}>
               {displayName === 'stop'
-                ? t[displayName] + ' ' + index
-                : t[displayName] || displayName} <Text style={styles.yourStopTxt}>{t[isMyStop(item.name)]}</Text>
+                ? t(displayName) + ' ' + index
+                : t(displayName) || displayName} <Text style={styles.yourStopTxt}>{t(isMyStop(item.name))}</Text>
             </Text>
             <Text style={styles.addTxt}>{item.address}</Text>
           </View>

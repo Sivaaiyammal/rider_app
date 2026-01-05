@@ -77,45 +77,45 @@ const MapContainer = ({ mapStyle }) => {
  
 
   return (
-    <Animated.View style={[styles.mapContainer, defaultStyle, { transition: 'all 20s ease-in-out' }]}>
-      {!mapReady && <Loaders message="Setting up Map" />}
-      {loading && <FullScreenLoader />}
-      <MapTopOverley />
-      <NEMap
-        mapStyle={mapStyle || styles.mapStyles}
-        homeLocation={mapLocation}
-        onMapReady={() => {
-          setMapReady(true);
-        }}
-        onMapRotationChanged={onMapRotationChanged}
-        markers={mapMarkers}
-        searchUnit={searchStr}
-        autoPOISearch={searchPOI}
-        settingsProps={defaultSettings}
-        bounds={mapBounds?.length > 0 ? mapBounds : null}
-        onSearchResults={setOnSearchResults}
-        onSearchPOIResults={setSearchPOIResults}
-        mode={mode}
-        onMarkerClick={markerClickCallback}
-        onMapCenterChanged={onMapCenterChanged}
-        onMapClick={mapClickCallback}
-        geometries={geometries}
-        findRoute={directionPoints}
-        onMapDblclick={mapDblclickCallback}
-        navigation={startNavigation}
-        onDirectionReady={directionReady}
-        onUserLocationChange={userLocation}
-        distanceListner={setDisduration}
-        onSearchPOIError={setSearchPOIError}
-        vehicleMarkers={vehicleMarkers}
-        onRouteLoading={setRouteLoading}
-        onNavigationEnd={(e) => console.log('hari--->>navigationEnd-->>', e)}
-      />
+    // <Animated.View style={[styles.mapContainer, defaultStyle, { transition: 'all 20s ease-in-out' }]}>
+    //   {!mapReady && <Loaders message="Setting up Map" />}
+    //   {loading && <FullScreenLoader />}
+    //   <MapTopOverley />
+    //   <NEMap
+    //     mapStyle={mapStyle || styles.mapStyles}
+    //     homeLocation={mapLocation}
+    //     onMapReady={() => {
+    //       setMapReady(true);
+    //     }}
+    //     onMapRotationChanged={onMapRotationChanged}
+    //     markers={mapMarkers}
+    //     searchUnit={searchStr}
+    //     autoPOISearch={searchPOI}
+    //     settingsProps={defaultSettings}
+    //     bounds={mapBounds?.length > 0 ? mapBounds : null}
+    //     onSearchResults={setOnSearchResults}
+    //     onSearchPOIResults={setSearchPOIResults}
+    //     mode={mode}
+    //     onMarkerClick={markerClickCallback}
+    //     onMapCenterChanged={onMapCenterChanged}
+    //     onMapClick={mapClickCallback}
+    //     geometries={geometries}
+    //     findRoute={directionPoints}
+    //     onMapDblclick={mapDblclickCallback}
+    //     navigation={startNavigation}
+    //     onDirectionReady={directionReady}
+    //     onUserLocationChange={userLocation}
+    //     distanceListner={setDisduration}
+    //     onSearchPOIError={setSearchPOIError}
+    //     vehicleMarkers={vehicleMarkers}
+    //     onRouteLoading={setRouteLoading}
+    //     onNavigationEnd={(e) => console.log('hari--->>navigationEnd-->>', e)}
+    //   />
 
      
 
-    </Animated.View>
-    
+    // </Animated.View>
+     <></>
   );
 };
 

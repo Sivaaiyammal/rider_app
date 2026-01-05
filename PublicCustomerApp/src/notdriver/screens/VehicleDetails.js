@@ -8,9 +8,10 @@ import APIRequest from '../../common/APIRequest'
 import { showNotification } from '../../common/components/Alerts/showNotification'
 import { Colors, Fonts } from '../../common/constants/constants'
 import { moderateScale, scale, verticalScale } from '../../common/utils/scalingutils'
+import { useTranslation } from 'react-i18next'
 
 const VehicleDetails = () => {
-    const t = {}
+    const {t} = useTranslation()
     const { vehicleInfo, setVehicleInfo } = usePublicDriverStore()
     const { userInfo } = useUserStore()
     const {setStackScreen} = useStackScreenStore()
@@ -31,7 +32,7 @@ const VehicleDetails = () => {
             if (response.success) {
                 showNotification(
                     response?.message || 'Logged out from vehicle',
-                    t.pls_try_later,
+                    t('pls_try_later'),
                     'success',
                 )
                 // todo : remove from local storage userInfo
@@ -40,7 +41,7 @@ const VehicleDetails = () => {
             } else {
                 showNotification(
                     response?.message || 'Failed to logout from vehicle',
-                    t.pls_try_later,
+                    t('pls_try_later'),
                     'danger',
                 )
             }
@@ -48,7 +49,7 @@ const VehicleDetails = () => {
             console.log(error, 'Error logging out')
             showNotification(
                 error?.message || 'Network request failed',
-                t.pls_try_later,
+                t('pls_try_later'),
                 'danger',
             )
         }
@@ -94,8 +95,8 @@ const VehicleDetails = () => {
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <Text style={styles.headerTitle}>{t.vehicle_information}</Text>
-                    <Text style={styles.headerSubtitle}>{t.logged_in_vehicle_details}</Text>
+                    <Text style={styles.headerTitle}>{t('vehicle_information')}</Text>
+                    <Text style={styles.headerSubtitle}>{t('logged_in_vehicle_details')}</Text>
                 </View>
 
                 {/* Vehicle Details Card */}
@@ -120,7 +121,7 @@ const VehicleDetails = () => {
                 >   
                     <View style={styles.logoutContent}>
                         {/* <LogoutIcon width={20} height={20} /> */}
-                        <Text style={styles.logoutText}>{t.logout_from_vehicle}</Text>
+                        <Text style={styles.logoutText}>{t('logout_from_vehicle')}</Text>
                     </View>
                 </TouchableOpacity>
             </ScrollView>

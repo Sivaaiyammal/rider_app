@@ -14,6 +14,7 @@ import BottomSheetPopup from '../../common/components/BottomSheetPopup';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 import { height } from '../../common/utils/scalingutils';
 import { Colors, Fonts } from '../../common/constants/constants';
+import { useTranslation } from 'react-i18next';
 
 
 
@@ -37,7 +38,7 @@ const CancelRideModal = ({
   loading,
   tripData
 }) => {
-  const t = {}
+  const {t} = useTranslation()
   const {tripCancelReason,setTripCancelReason } = useTripAcceptStore()
   const [otherReason, setOtherReason] = useState('');
   const [error, setError] = useState('');
@@ -66,12 +67,12 @@ const CancelRideModal = ({
     // Validate if "other" is selected and input is empty
 
     if (!tripCancelReason) {
-      showNotification(t.please_select_a_reason || 'Please select a reason','', 'danger');
+      showNotification(t('please_select_a_reason') || 'Please select a reason','', 'danger');
       return;
     }
 
     if (tripCancelReason === 'other' && (!otherReason || !otherReason.trim())) {
-      setError(t.please_enter_a_reason || 'Please enter a reason');
+      setError(t('please_enter_a_reason') || 'Please enter a reason');
       return;
     }
 
@@ -103,11 +104,11 @@ const CancelRideModal = ({
        {loading && <FullScreenLoader  />}
         <View style={styles.modalView}>
             <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{tripData.status === 'PICKEDUP' ? t.end_trip : t.cancel_ride}</Text>
+                <Text style={styles.modalTitle}>{tripData.status === 'PICKEDUP' ? t('end_trip') : t('cancel_ride')}</Text>
                 {tripData.status === 'PICKEDUP' ? (
-                  <Text style={styles.modalText}>{t.please_select_a_reason_for_ending_the_trip}</Text>
+                  <Text style={styles.modalText}>{t('please_select_a_reason_for_ending_the_trip')}</Text>
                 ) : (
-                  <Text style={styles.modalText}>{t.please_select_a_reason_for_cancelling_the_trip}</Text>
+                  <Text style={styles.modalText}>{t('please_select_a_reason_for_cancelling_the_trip')}</Text>
                 )}
                 <View style={styles.modalBody}> 
                   <View style={{ height:height*0.4, backgroundColor: Colors.grey_light, padding: 10, borderRadius: 10 }}>
@@ -117,7 +118,7 @@ const CancelRideModal = ({
                 <CustomCheckBox
                   isChecked={tripCancelReason === reason}
                 />
-                <Text style={styles.reasonText}>{t[reason]}</Text>
+                <Text style={styles.reasonText}>{t(reason)}</Text>
               </TouchableOpacity>
             ))}
             </ScrollView>
@@ -125,7 +126,7 @@ const CancelRideModal = ({
               <>
                 <TextInput
                   style={[styles.textInput, error && styles.textInputError]}
-                  placeholder={t.other_reason}
+                  placeholder={t('other_reason') || 'Other Reason'}
                   value={otherReason}
                   onChangeText={handleOtherReasonChange}
                   multiline={true}
@@ -150,7 +151,7 @@ const CancelRideModal = ({
               disabled={!tripCancelReason}
               onPress={handleCancel}
             >
-              <Text style={styles.modalButtonText}>{tripData?.status === 'PICKEDUP' ? t.end_trip : t.cancel_ride}</Text>
+              <Text style={styles.modalButtonText}>{tripData?.status === 'PICKEDUP' ? t('end_trip') : t('cancel_ride')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -162,7 +163,7 @@ const CancelRideModal = ({
                 setError('');
               }}
             >
-              <Text style={styles.modalButtonText}>{t.close || 'Close'}</Text>
+              <Text style={styles.modalButtonText}>{t('close') || 'Close'}</Text>
             </TouchableOpacity>
           </View>
         </View>

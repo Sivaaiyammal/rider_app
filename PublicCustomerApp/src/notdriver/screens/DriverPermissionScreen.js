@@ -18,9 +18,10 @@ import PopupContainerWithBtns from '../../common/components/PopupContainerWithBt
 import BgLocation from '../../notdriver/assets/icons/Location.svg';
 import useDeviceTokenStore from '../../common/store/useDeviceTokenStore';
 import overlayController from '../../common/controllers/Overlay';
+import { useTranslation } from 'react-i18next';
 
 const DriverPermissionScreen = () => {
-  const t = {};
+  const {t} = useTranslation();
   const {goBack} = useStackScreenStore();
   const {hasLocationPermission, setHasNotificationPermission, setHasLocationPermission, hasNotificationPermission, hasBackgroundLocationPermission, setHasBackgroundLocationPermission, hasOverlayPermission, setHasOverlayPermission} = useDeviceTokenStore();
 
@@ -38,8 +39,8 @@ const DriverPermissionScreen = () => {
     if (type === 'notification') {
       if (hasNotificationPermission)
         return showNotification(
-          `${t.notification_permission} ${t.already_enabled}`,
-          t.disable_manually_app_settings,
+          `${t('notification_permission')} ${t('already_enabled')}`,
+          t('disable_manually_app_settings'),
           'warning',
           3000,
         );
@@ -50,8 +51,8 @@ const DriverPermissionScreen = () => {
     if (type === 'location') {
       if (hasLocationPermission)
         return showNotification(
-          t.location_permission + ' ' + t.already_enabled,
-          t.disable_manually_app_settings,
+          t('location_permission') + ' ' + t('already_enabled'),
+          t('disable_manually_app_settings'),
           'warning',
           3000,
         );
@@ -62,8 +63,8 @@ const DriverPermissionScreen = () => {
     if (type === 'backgroundLocation') {
       if (hasBackgroundLocationPermission)
         return showNotification(
-          t.bg_loc_permission + ' ' + t.already_enabled,
-          t.disable_manually_app_settings,
+          t('bg_loc_permission') + ' ' + t('already_enabled'),
+          t('disable_manually_app_settings'),
           'warning',
           3000,
         );
@@ -74,7 +75,7 @@ const DriverPermissionScreen = () => {
 
 
     if (type === "overlay") {
-      if (hasOverlayPermission) return showNotification('OverLay Permission' + " " + t.already_enabled, t.disable_manually_app_settings, "warning", 3000)
+      if (hasOverlayPermission) return showNotification('OverLay Permission' + " " + t('already_enabled'), t('disable_manually_app_settings'), "warning", 3000)
       setType(type)
       return setTogglePopup(true)
     }
@@ -124,7 +125,7 @@ const DriverPermissionScreen = () => {
             status: status,
             updatedOn: new Date().getTime()
           }
-          await DataStore.storeData('userInfo', JSON.stringify(_newUserInfo));
+          await DataStore.storeData('userdetails',_newUserInfo);
           setDriverStatus(status)
           if (status === 'online') {
             BGLocationTask.runDriverBgTask();
@@ -194,7 +195,7 @@ const DriverPermissionScreen = () => {
           </PopupContainerWithBtns>
         }
         <TouchableOpacity onPress={() => updateDriverStatus()} style={styles.OnlineBtn}>
-        <Text style={styles.OnlineBtnText}>{t.go_online}</Text>
+        <Text style={styles.OnlineBtnText}>{t('go_online')}</Text>
         </TouchableOpacity>
        
     </View>

@@ -1,10 +1,11 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import React from 'react';
 import { Colors, Fonts } from '../constants/constants';
+import { useTranslation } from 'react-i18next';
 
 
 const TopTabs = ({ tabs, activeTab, setActiveTab, containerStyle, tabStyle, activeTabStyle, textStyle, activeTextStyle }) => {
-    const t = {}
+    const {t} = useTranslation()
 
     const styles = StyleSheet.create({
         container: {
@@ -67,7 +68,7 @@ const TopTabs = ({ tabs, activeTab, setActiveTab, containerStyle, tabStyle, acti
                         styles.tabText,
                         activeTab === tab.key && styles.activeTabText
                     ]}>
-                        {(t[tab.title] || tab.title)}
+                        {(t(tab.title) || tab.title)}
                     </Text>
                 </TouchableOpacity>
             ))}

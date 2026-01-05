@@ -5,9 +5,10 @@ import APIRequest from '../../../common/APIRequest'
 import HistoryHeader from './HistoryHeader'
 import TripHistoryList from './TripHistoryList'
 import { Colors, Fonts } from '../../../common/constants/constants'
+import { useTranslation } from 'react-i18next'
 
 const TripHistory = () => {
-  const t = {}
+  const { t } = useTranslation()
   const [tripData, setTripData] = useState([]);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
@@ -105,7 +106,7 @@ const TripHistory = () => {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>{t.trip_history}</Text>
+        <Text style={styles.headerTitle}>{t('trip_history')}</Text>
       </View>
       <HistoryHeader
         onDateRangeSelect={onDateRangeSelect} 
