@@ -449,9 +449,8 @@ public class DriverOverlayController {
                 return null;
             }
             JSONObject info = parseJsonObject(rawUserInfo);
-            JSONObject user = info.optJSONObject("user");
-            if (user != null) {
-                cachedDriverId = user.optString("_id", null);
+            if (info != null) {
+                cachedDriverId = info.optString("_id", null);
                 Log.d(TAG, "Resolved driverId=" + cachedDriverId);
                 return cachedDriverId;
             }
