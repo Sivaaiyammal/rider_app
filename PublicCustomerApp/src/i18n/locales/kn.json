@@ -685,5 +685,12 @@
   "see_all_drivers": "ಎಲ್ಲಾ ಚಾಲಕರನ್ನು ನೋಡಿ",
   "no_drivers_for_vehicle": "{vehicle} ಗೆ ಚಾಲಕರಿಲ್ಲ",
   "no_drivers_for_vehicle_body": "ನೀವು ಆಯ್ಕೆ ಮಾಡಿದ {vehicle} ಗೆ ಹತ್ತಿರದಲ್ಲಿ ಚಾಲಕರಿಲ್ಲ. ನಾವು ಲಭ್ಯವಿರುವ ಚಾಲಕರೊಂದಿಗೆ ಮತ್ತೊಂದು ವಾಹನವನ್ನು ಆರಿಸಿದ್ದೇವೆ.",
-  "edit_places_button": "ಸ್ಥಳಗಳನ್ನು ಸಂಪಾದಿಸಿ"
+  "edit_places_button": "ಸ್ಥಳಗಳನ್ನು ಸಂಪಾದಿಸಿ",
+  "trip_distance_too_short_title": "ಪ್ರವಾಸದ ದೂರ ತುಂಬಾ ಕಡಿಮೆ",
+  "trip_distance_too_short": "ಪ್ರವಾಸದ ದೂರ ತುಂಬಾ ಕಡಿಮೆಯಾಗಿದೆ. ಕನಿಷ್ಠ ಅನುಮತಿತ ದೂರ {minDistance} ಮೀಟರ್.",
+  "ride_matched": "ಸವಾರಿ ಹೊಂದಿಕೆಯಾಯಿತು",
+  "ride_accepted": "ಸವಾರಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ",
+  "ride_picked_up": "ಸವಾರಿ ಪಿಕಪ್ ಮಾಡಲಾಗಿದೆ",
+  "cancelled_by_driver": "ಚಾಲಕರಿಂದ ರದ್ದು",
+  "cancelled_by_you": "ನಿಮ್ಮಿಂದ ರದ್ದು"
 }

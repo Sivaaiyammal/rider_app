@@ -87,8 +87,6 @@ const OTPScreen = ({route}) => {
         addListener(user?.token);
         await DataStore.storeData('userdetails', user);
         // Prefetch user stats after successful login
-        try { prefetchUserStats(); } catch (e) {}
-      
         
         if (isNewUser) {
           navigation.dispatch(

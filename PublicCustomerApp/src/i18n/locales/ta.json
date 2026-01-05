@@ -677,5 +677,12 @@
   "see_all_drivers": "அனைத்து ஓட்டுநர்களையும் காண்க",
   "no_drivers_for_vehicle": "{vehicle}க்கு ஓட்டுநர்கள் இல்லை",
   "no_drivers_for_vehicle_body": "நீங்கள் தேர்ந்தெடுத்த {vehicle}க்கு அருகில் ஓட்டுநர்கள் இல்லை. நாங்கள் கிடைக்கும் ஓட்டுநர்களுடன் மற்றொரு வாகனத்தைத் தேர்ந்தெடுத்தோம்.",
-  "edit_places_button": "வேறு  இடங்களைத் தேட"
+  "edit_places_button": "வேறு  இடங்களைத் தேட",
+  "trip_distance_too_short_title": "பயண தூரம் மிகவும் குறைவு",
+  "trip_distance_too_short": "பயண தூரம் மிகவும் குறைவு. குறைந்தபட்ச அனுமதிக்கப்பட்ட தூரம் {minDistance} மீட்டர்.",
+  "ride_matched": "சவாரி பொருந்தியது",
+  "ride_accepted": "சவாரி ஏற்றுக்கொள்ளப்பட்டது",
+  "ride_picked_up": "சவாரி பிக்கப் செய்யப்பட்டது",
+  "cancelled_by_driver": "ஓட்டுநரால் ரத்து",
+  "cancelled_by_you": "நீங்கள் ரத்து செய்தது"
 }

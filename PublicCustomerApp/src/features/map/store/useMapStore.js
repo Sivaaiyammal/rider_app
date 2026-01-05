@@ -143,7 +143,11 @@ const useMapStore = create((set) => ({
             key: 1,
             mapLocation: { lat: 13.067439, lng: 80.237617, zoom: 15 }
         });
-    }
+    },
+
+    routeRetryCount : 0,
+    setRouteRetryCount: (routeRetryCount) => set({ routeRetryCount }),
+
 }));
 
 export default useMapStore;

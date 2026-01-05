@@ -704,5 +704,15 @@
   "see_all_drivers": "See available drivers",
   "no_drivers_for_vehicle": "No drivers for {vehicle}",
   "no_drivers_for_vehicle_body": "Your selected {vehicle} has no drivers nearby. We picked another vehicle with available drivers.",
-  "edit_places_button": "Edit Places"
+  "edit_places_button": "Edit Places",
+  "trip_distance_too_short_title": "Trip Distance Too Short",
+  "trip_distance_too_short": "The trip distance is too short. Minimum allowed distance is {minDistance} meters.",
+
+ "ride_matched": "Ride Matched",
+ "ride_accepted": "Ride Accepted",
+ "ride_picked_up": "Ride Picked Up",
+ "cancelled_by_driver": "Cancelled by Driver",
+ "cancelled_by_you": "Cancelled by You"
+
+
 }

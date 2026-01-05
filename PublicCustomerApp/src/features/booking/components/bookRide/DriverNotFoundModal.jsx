@@ -6,8 +6,9 @@ import AdaptiveText from '../../../../components/Common/AdaptiveText';
 import { colors, Fonts } from '../../../../constants/constants';
 
 const DriverNotFoundImage = require('../../../../assets/image/Driver_Not_Found.webp');
+const auto = require('../../../../assets/vehicle/AUTO.webp');
 
-const DriverNotFoundModal = ({ visible, onClose, title, message, ctaLabel, onPrimaryAction }) => {
+const DriverNotFoundModal = ({ visible, onClose, title, message, ctaLabel, onPrimaryAction, type = null }) => {
   const { t } = useTranslation();
 
   const resolvedTitle = title || t('driver_not_found');
@@ -31,7 +32,7 @@ const DriverNotFoundModal = ({ visible, onClose, title, message, ctaLabel, onPri
     >
       <View style={styles.modalContainer}>
         <View style={styles.modalView}>
-          <Image source={DriverNotFoundImage} style={styles.modalImage} resizeMode="contain" />
+          {type === 'min_distance'? <Image source={auto} style={[styles.modalImage,{width: 150}]} resizeMode="contain" /> : <Image source={DriverNotFoundImage} style={styles.modalImage} resizeMode="contain" /> }
           <AdaptiveText style={styles.modalTitle}>{resolvedTitle}</AdaptiveText>
           <AdaptiveText style={styles.modalMessage}>{resolvedMessage}</AdaptiveText>
           <TouchableOpacity

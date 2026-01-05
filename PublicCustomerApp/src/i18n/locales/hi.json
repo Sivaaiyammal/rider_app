@@ -680,5 +680,12 @@
   "see_all_drivers": "सभी ड्राइवर देखें",
   "no_drivers_for_vehicle": "{vehicle} के लिए कोई ड्राइवर नहीं",
   "no_drivers_for_vehicle_body": "आपके चुने हुए {vehicle} के पास कोई ड्राइवर नहीं है। हमने उपलब्ध ड्राइवरों के साथ दूसरा वाहन चुना है।",
-  "edit_places_button": "स्थान संपादित करें"
+  "edit_places_button": "स्थान संपादित करें",
+  "trip_distance_too_short_title": "यात्रा दूरी बहुत कम",
+  "trip_distance_too_short": "यात्रा दूरी बहुत कम है। न्यूनतम अनुमत दूरी {minDistance} मीटर है।",
+  "ride_matched": "सवारी मिल गई",
+  "ride_accepted": "सवारी स्वीकार की गई",
+  "ride_picked_up": "सवारी पिकअप हो गई",
+  "cancelled_by_driver": "ड्राइवर द्वारा रद्द",
+  "cancelled_by_you": "आपके द्वारा रद्द"
 }

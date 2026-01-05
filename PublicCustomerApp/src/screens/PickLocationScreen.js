@@ -935,7 +935,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
               console.log('Calculated distance (meters):', distanceMeters);
 
              
-              const isSameLocation = distanceMeters < 100; // treat <30m as same location
+              const isSameLocation = distanceMeters < 20; // treat <30m as same location
               if (isSameLocation) {
                 const title = t('same_location_title', { defaultValue: 'Locations too close' });
                 const message = t('same_location_message', { defaultValue: 'Pickup and drop-off locations are very close. Please choose a farther location.' });

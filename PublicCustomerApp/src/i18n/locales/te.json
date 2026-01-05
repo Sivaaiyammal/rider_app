@@ -675,5 +675,12 @@
   "see_all_drivers": "అందరు డ్రైవర్లను చూడండి",
   "no_drivers_for_vehicle": "{vehicle} కోసం డ్రైవర్లు లేరు",
   "no_drivers_for_vehicle_body": "మీరు ఎంచుకున్న {vehicle} కు సమీపంలో డ్రైవర్లు లేరు. మేము అందుబాటులో ఉన్న డ్రైవర్లతో మరో వాహనాన్ని ఎంచుకున్నాము.",
-  "edit_places_button": "స్థలాలను సవరించండి"
+  "edit_places_button": "స్థలాలను సవరించండి",
+  "trip_distance_too_short_title": "ప్రయాణ దూరం చాలా తక్కువ",
+  "trip_distance_too_short": "ప్రయాణ దూరం చాలా తక్కువగా ఉంది. కనీస అనుమతించబడిన దూరం {minDistance} మీటర్లు.",
+  "ride_matched": "రైడ్ జత కుదిరింది",
+  "ride_accepted": "రైడ్ ఆమోదించబడింది",
+  "ride_picked_up": "రైడ్ పికప్ చేయబడింది",
+  "cancelled_by_driver": "డ్రైవర్ రద్దు చేశాడు",
+  "cancelled_by_you": "మీరు రద్దు చేశారు"
 }
