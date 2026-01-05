@@ -16,6 +16,7 @@ import { homeStyles } from '../styles/homeStyles';
 import { driverDrawerStyles } from '../styles/driverDrawerStyles';
 import { Colors } from '../../common/constants/constants';
 import { flexStyle } from '../../common/styles/flexStyle';
+import { useTranslation } from 'react-i18next';
 
 const SideDrawerPublicRides = () => {
   const { width: WIDTH } = Dimensions.get('window')
@@ -52,7 +53,7 @@ const SideDrawerPublicRides = () => {
   
   ]);
 
-  const t ={}
+  const {t} = useTranslation()
 
   const _toggleSubview = useCallback(() => {
     let toValue = (width);
@@ -137,7 +138,7 @@ const SideDrawerPublicRides = () => {
                     <View style={flexStyle.frg10}>
                       {item.icons}
                       <Text style={driverDrawerStyles.optionName}>
-                        {t[item.title] ?? item.title}
+                        {t(item.title)}
                       </Text>
                       {item.name === 'Track Your Device' &&
                         !hasAllPermissions > 0 ? (

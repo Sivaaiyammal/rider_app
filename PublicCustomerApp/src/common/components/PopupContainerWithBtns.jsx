@@ -4,15 +4,16 @@ import {
     StyleSheet,
     TouchableOpacity,
 } from 'react-native';
-import React from 'react';
+import React, { useTransition } from 'react';
 import { getRedirection } from "react-native-translation"
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Colors, Fonts } from '../constants/constants';
+import { useTranslation } from 'react-i18next';
 
 
 
 const PopupContainerWithBtns = ({ handleOnPress, handleCancel, children }) => {
-    const t = {}
+    const {t} = useTranslation()
 
 
     return (
@@ -33,7 +34,7 @@ const PopupContainerWithBtns = ({ handleOnPress, handleCancel, children }) => {
                     <Text style={styles.acceptBtnText}>{"Proceed"}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleCancel} >
-                    <Text style={styles.cancelBtnText}>{t.cancel}</Text>
+                    <Text style={styles.cancelBtnText}>{t('cancel')}</Text>
                 </TouchableOpacity>
 
             </View>

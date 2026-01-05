@@ -15,6 +15,7 @@ import { Colors, Fonts } from '../../constants/constants'
 import SkeletonLoader from '../../loaders/SkeletonLoader'
 import CreateTicketForm from '../../components/CreateTicketForm'
 import SupportCard from '../../components/SupportCard'
+import { useTranslation } from 'react-i18next'
 
 
 
@@ -24,7 +25,7 @@ const TicketSupportScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [filteredTickets, setFilteredTickets] = useState([]);
-  const t = {}
+  const {t} = useTranslation()
   
   const {stackScreen, setStackScreen, goBack} = useStackScreenStore()
 
@@ -189,14 +190,14 @@ const TicketSupportScreen = () => {
 
   return (
     <View style={styles.Screen}>
-      <NavBar title={t.support_ticket} onBackPress={() => goBack()}/>
+      <NavBar title={t('support_ticket')} onBackPress={() => goBack()}/>
         <UseBackButton onBackPress={() => goBack()}/>
           {/* Search Bar */}
           <View style={styles.searchContainer}>
           <Ionicons name="search" size={20} color="#6B7280" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder={t.search_tickets}
+            placeholder={t('search_tickets')}
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor="#9CA3AF"
@@ -243,9 +244,9 @@ const TicketSupportScreen = () => {
         ) : filteredTickets?.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Ionicons name="chatbubble-outline" size={48} color="#9CA3AF" />
-            <Text style={styles.emptyTitle}>{t.no_tickets_found}</Text>
+            <Text style={styles.emptyTitle}>{t('no_tickets_found')}</Text>
             <Text style={styles.emptySubtitle}>
-              {searchQuery ? t.try_adjusting_your_search_terms : t.create_your_first_support_ticket}
+              {searchQuery ? t('try_adjusting_your_search_terms') : t('create_your_first_support_ticket')}
             </Text>
             {!searchQuery && (
               <TouchableOpacity
@@ -253,7 +254,7 @@ const TicketSupportScreen = () => {
                 onPress={() => setShowCreateForm(true)}
               >
                 <Ionicons name="add" size={16} color="#FFFFFF" />
-                <Text style={styles.createFirstButtonText}>{t.create_ticket}</Text>
+                <Text style={styles.createFirstButtonText}>{t('create_ticket')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -272,14 +273,14 @@ const TicketSupportScreen = () => {
             if (isLoadingMore) {
               return (
                 <View style={styles.loadingMoreContainer}>
-                  <Text style={styles.loadingMoreText}>{t.loading_more_tickets}</Text>
+                  <Text style={styles.loadingMoreText}>{t('loading_more_tickets')}</Text>
                 </View>
               );
             }
             if (!hasMoreTickets && filteredTickets?.length > 0) {
               return (
                 <View style={styles.noMoreContainer}>
-                  <Text style={styles.noMoreText}>{t.no_more_tickets_to_load}</Text>
+                  <Text style={styles.noMoreText}>{t('no_more_tickets_to_load')}</Text>
                 </View>
               );
             }

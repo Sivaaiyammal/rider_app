@@ -28,6 +28,7 @@ import Rupee from '../../notdriver/assets/icons/rupee.svg';
 import AddressComponent from '../components/AddressComponent';
 import RideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
 import PushNotifications from '../../common/core/PushNotifications';
+import { useTranslation } from 'react-i18next';
 
 
 const {NeNativeModule} = NativeModules;
@@ -60,7 +61,7 @@ const TripAccept = () => {
   const animationRef = useRef(null);
 
 
-  const t = {}
+  const { t } = useTranslation();
   
   const {setDirectionPoints,setMapBounds} = useMapMarkerStore();
 
@@ -229,11 +230,11 @@ const TripAccept = () => {
         }
       })
       const padding = [50, 50, 50, height*0.5]
-      // setDirectionPoints({
-      //   locations: directions,
-      //   type: 'car',
-      //   padding: padding.map(v => parseInt(v, 10))
-      // });
+      setDirectionPoints({
+        locations: directions,
+        type: 'car',
+        padding: padding.map(v => parseInt(v, 10))
+      });
     }
      return () => {
       setDirectionPoints(null);
@@ -261,7 +262,7 @@ const TripAccept = () => {
             <View style={{flexDirection:'row', justifyContent:'space-evenly', alignItems:'center', width:'90%', alignSelf:'center'}}>
               <Rupee width={30} height={30}/>
               <View style={styles.bonusContainer}>
-                <Text style={styles.bonusText}>{t.special_bonus_applied || 'Special bonus applied !!'}</Text>
+                <Text style={styles.bonusText}>{t('special_bonus_applied') || 'Special bonus applied !!'}</Text>
               </View>
               <Rupee width={30} height={30}/>
             </View>
@@ -269,11 +270,11 @@ const TripAccept = () => {
           <View style={styles.addressComponent}>
             <View style={styles.tripDetailsConatiner}>
               <View style={styles.tripDetailsSubConatiner}>
-                <Text style={styles.tripDetailsSubConatinerTxt}>{t.distance}</Text>
+                <Text style={styles.tripDetailsSubConatinerTxt}>{t('distance')}</Text>
                 <Text style={styles.tripDetailsSubConatinerSubTxt}>{formatDistance(tripDetails?.estimatedDistance)}</Text>
               </View>
               <View style={styles.tripDetailsSubConatiner}>
-                <Text style={styles.tripDetailsSubConatinerTxt}>{t.booked_at}</Text>
+                <Text style={styles.tripDetailsSubConatinerTxt}>{t('booked_at')}</Text>
                 <Text style={styles.tripDetailsSubConatinerSubTxt}>{DateTimeFormatter.requiredDateFormat(bookingTime || alertedAt, 'hh:mm A')}</Text>
               </View>
             </View>
@@ -287,11 +288,11 @@ const TripAccept = () => {
           <View style={styles.buttonWrapper}>
             <Animated.View style={[styles.progressOverlay, {width: animatedWidth}]} />
             <TouchableOpacity style={styles.button} activeOpacity={0.8} onPress={()=>handleAccept()}>
-              <Text style={styles.buttonText}>{t.accept_ride}</Text>
+              <Text style={styles.buttonText}>{t('accept_ride')}</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity style={styles.declineBtn} onPress={()=>handleDecline()}>
-            <Text style={styles.declineBtnTxt}>{t.decline_ride}</Text>
+            <Text style={styles.declineBtnTxt}>{t('decline_ride')}</Text>
           </TouchableOpacity>
         </CustomeBottomSheet>
       </View>

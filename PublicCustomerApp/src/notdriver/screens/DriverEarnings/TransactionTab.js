@@ -1,16 +1,17 @@
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native'
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, use } from 'react'
 import useUserStore from '../../../common/store/useUserStore'
 import APIRequest from '../../../common/APIRequest'
 import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter'
 import { Colors, Fonts } from '../../../common/constants/constants'
 import HistoryHeader from '../TripHistory/HistoryHeader'
 import { height } from '../../../common/utils/scalingutils'
+import { useTranslation } from 'react-i18next'
 
 
 
 const TransactionTab = () => {
-  const t = {}
+  const { t } = useTranslation();
   const { userInfo } = useUserStore()
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -131,28 +132,28 @@ const TransactionTab = () => {
       {/* Payment Details */}
       <View style={styles.paymentDetails}>
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>{t.amount}</Text>
+          <Text style={styles.detailLabel}>{t('amount')}</Text>
           <Text style={[styles.detailValue, { color: Colors.green }]}>
             {formatAmount(item.amount / 100)}
           </Text>
         </View>
         
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>{t.currency}</Text>
+          <Text style={styles.detailLabel}>{t('currency')}</Text>
           <Text style={[styles.detailValue, { color: Colors.orange }]}>
             {item.currency}
           </Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>{t.payment_id}</Text>
+          <Text style={styles.detailLabel}>{t('payment_id')}</Text>
           <Text style={styles.detailValue}>
             {item.paymentId || 'N/A'}
           </Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>{t.receipt}</Text>
+          <Text style={styles.detailLabel}>{t('receipt')}</Text>
           <Text style={styles.detailValue}>
             {item.receipt || 'N/A'}
           </Text>
@@ -166,14 +167,14 @@ const TransactionTab = () => {
         </View>
 
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>{t.email}</Text>
+          <Text style={styles.detailLabel}>{t('email')}</Text>
           <Text style={styles.detailValue}>
             {item.email || 'N/A'}
           </Text>
         </View>
 
         <View style={styles.detailRow}>
-          <Text style={styles.detailLabel}>{t.contact}</Text>
+          <Text style={styles.detailLabel}>{t('contact')}</Text>
           <Text style={styles.detailValue}>
             {item.contact || 'N/A'}
           </Text>
@@ -187,16 +188,16 @@ const TransactionTab = () => {
     return (
       <View style={styles.loadingFooter}>
         <ActivityIndicator size="small" color={Colors.periwinkle} />
-        <Text style={styles.loadingText}>{t.loading_more_transactions}</Text>
+        <Text style={styles.loadingText}>{t('loading_more_transactions')}</Text>
       </View>
     );
   };
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyText}>{t.no_transactions_found}</Text>
+      <Text style={styles.emptyText}>{t('no_transactions_found')}</Text>
       <Text style={styles.emptySubText}>
-        {t.you_havent_made_any_transactions_yet_for_the_selected_date_range}
+        {t('you_havent_made_any_transactions_yet_for_the_selected_date_range')}
       </Text>
     </View>
   );

@@ -16,6 +16,7 @@ import TotalDistance from '../../notdriver/assets/icons/totalDistance.svg'
 import TotalEarnings from '../../notdriver/assets/icons/totalEarnings.svg'
 import TotalHours from '../../notdriver/assets/icons/totalHours.svg'
 import PushNotifications from '../../common/core/PushNotifications';
+import { useTranslation } from 'react-i18next';
 
 const StopChangeRequest = () => {
     const {newStopData, setNewStopData, updateNewStopData} = useTripsStore();
@@ -24,7 +25,7 @@ const StopChangeRequest = () => {
     const {activeTripData, setActiveTripData} = useTripsStore();
     const {userInfo} = useUserStore()
     const {setStackScreen} = useStackScreenStore()
-    const t = {}
+    const {t} = useTranslation()
     const [isLoading, setIsLoading] = useState()
 
     const updateStopData = (tripData, newStopData) => {
@@ -125,10 +126,10 @@ const StopChangeRequest = () => {
      {loading || isLoading && <FullScreenLoader />}
      <View style={styles.BtnContainer}>
         <TouchableOpacity style={[styles.actinBtns,{backgroundColor:Colors.black}]} onPress={()=>onRejectPress()}>
-            <Text style={[styles.actinBtnsTxt,{}]}>{t.reject || 'Reject'}</Text>
+            <Text style={[styles.actinBtnsTxt,{}]}>{t('reject') || 'Reject'}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.actinBtns,{backgroundColor:Colors.periwinkle}]} onPress={()=>onAcceptPress()}>
-            <Text style={[styles.actinBtnsTxt,{}]}>{t.accept}</Text>
+            <Text style={[styles.actinBtnsTxt,{}]}>{t('accept')}</Text>
         </TouchableOpacity>
         </View>
      <View style={styles.tripDetailsViewContainer}>

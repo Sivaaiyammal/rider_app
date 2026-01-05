@@ -26,11 +26,12 @@ import { Colors } from '../../../common/constants/constants';
 import FullScreenLoader from '../../../common/loaders/FullScreenLoader';
 import NavBarA from '../../../common/components/NavBarA';
 import { driverDetailStyles } from '../../styles/DriverDetailsUpload';
+import { useTranslation } from 'react-i18next';
 
 
 const DriverVehiclesDetails = ({isEdit = false, isEditInfo = false, approved}) => {
   const navigation = useNavigation();
-  const t = {}
+  const {t} = useTranslation()
   const {logout, userInfo} = useUserStore();
   const {getCompletionStatus, setIsPickLocationPressed, isPickLocationPressed} = usePublicDriverStore();
   const [currentStep, setCurrentStep] = useState(1);
@@ -130,7 +131,7 @@ const DriverVehiclesDetails = ({isEdit = false, isEditInfo = false, approved}) =
       console.log(error, 'Error logging out');
       showNotification(
         error?.message || 'Network request failed',
-        t.pls_try_later,
+        t('pls_try_later'),
         'danger',
       );
     }

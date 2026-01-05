@@ -13,6 +13,7 @@ import CustomeBottomSheet from '../../../common/components/CustomeBottomSheet';
 import { Colors, Fonts } from '../../../common/constants/constants';
 import AddressComponent from '../../components/AddressComponent';
 import CancelRideModal from '../../components/CancelModel';
+import { useTranslation } from 'react-i18next';
 
 
 const {NeNativeModule} = NativeModules;
@@ -98,7 +99,7 @@ const formatScheduledAt = scheduleDateTime => {
 const UpComingTripsView = () => {
   const {upComingTripDetails, loading, setLoading} = useTripAcceptStore();
   const {setDirectionPoints, routeLoading} = useMapMarkerStore();
-  const t = {}
+  const {t} = useTranslation()
   const {goBack} = useStackScreenStore();
   const countdownMeta = getCountdownMeta(
     upComingTripDetails?.scheduleDateTime,
@@ -254,7 +255,7 @@ const UpComingTripsView = () => {
                           : '0.00 km'}
                       </Text>
                       <Text style={styles.cardLabel}>
-                        {t.distance || 'Distance'}
+                        {t('distance') || 'Distance'}
                       </Text>
                     </View>
 
@@ -268,7 +269,7 @@ const UpComingTripsView = () => {
                           : '0 Mins'}
                       </Text>
                       <Text style={styles.cardLabel}>
-                        {t.duration || 'Duration'}
+                        {t('duration') || 'Duration'}
                       </Text>
                     </View>
 
@@ -282,7 +283,7 @@ const UpComingTripsView = () => {
                           ? parseFloat(upComingTripDetails.minFare).toFixed(2)
                           : '0.00'}
                       </Text>
-                      <Text style={styles.cardLabel}>{t.fare || 'Fare'}</Text>
+                      <Text style={styles.cardLabel}>{t('fare') || 'Fare'}</Text>
                     </View>
                   </View>
       <TouchableOpacity

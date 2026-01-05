@@ -14,9 +14,10 @@ import NavBar from '../../common/components/NavBar';
 import UseBackButton from '../../common/hooks/UseBackButton';
 import { height } from '../../common/utils/scalingutils';
 import InputField from '../../common/components/InputField';
+import { useTranslation } from 'react-i18next';
 
 const WriteReview = ({isStackScreen}) => {
-  const t = {}
+  const {t} = useTranslation()
 
     const [isHidden, setIsHidden] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -97,19 +98,19 @@ const WriteReview = ({isStackScreen}) => {
 
     const onSubmitPress = () => {
         if (goodThings.length === 0) {
-            setGoodThingsErr(t.please_enter_some_good_things);
+            setGoodThingsErr(t('please_enter_some_good_things'));
         }
        else if (badThings.length === 0) {
-            setBadThingsErr(t.please_enter_some_bad_things);
+            setBadThingsErr(t('please_enter_some_bad_things'));
         }   
         else if (improvements.length === 0) {
-            setImprovementsErr(t.please_enter_some_improvements);
+            setImprovementsErr(t('please_enter_some_improvements'));
         }
         else if (issues.length === 0) {
-            setIssuesErr(t.please_enter_some_issues);
+            setIssuesErr(t('please_enter_some_issues'));
         }   
         else if (email.trim().length === 0 || !emailPattern.test(email.trim())) {
-            setEmailErr(t.please_enter_a_valid_email);
+            setEmailErr(t('please_enter_a_valid_email'));
         }
         else {
             submitFeedback();
@@ -124,7 +125,7 @@ const WriteReview = ({isStackScreen}) => {
         <FullScreenLoader />
       )}
       {isStackScreen && <>
-       <NavBar title={t['write_feedback']} onBackPress={()=> goBack()}></NavBar>
+       <NavBar title={t('write_feedback')} onBackPress={()=> goBack()}></NavBar>
       <UseBackButton onBackPress={()=> isHidden ? setIsHidden(false) : goBack()} />
       </>}
       <WebView
@@ -145,7 +146,7 @@ const WriteReview = ({isStackScreen}) => {
           <View style={{marginTop:40, width:'90%', alignSelf:'center'}}>
               <InputField
         value={goodThings}
-        label={t.say_some_good_things_about_our_app}
+        label={t('say_some_good_things_about_our_app')}
         errorText={goodThingsErr}
         onChangeText={text => {
           setGoodThings(text);
@@ -156,7 +157,7 @@ const WriteReview = ({isStackScreen}) => {
       />
                  <InputField
         value={badThings}
-        label={t.say_some_bad_things_about_our_app}
+        label={t('say_some_bad_things_about_our_app')}
         errorText={badThingsErr}
         onChangeText={text => {
           setBadThings(text);
@@ -167,7 +168,7 @@ const WriteReview = ({isStackScreen}) => {
       />
         <InputField
         value={improvements}
-        label={t.improvements_you_would_like_to_say}
+        label={t('improvements_you_would_like_to_say')}
         errorText={improvementsErr}
         onChangeText={text => {
           setImprovements(text);
@@ -178,7 +179,7 @@ const WriteReview = ({isStackScreen}) => {
         />
         <InputField
         value={issues}
-        label={t.issues_you_are_facing}
+        label={t('issues_you_are_facing')}
         errorText={issuesErr}
         onChangeText={text => {
           setIssues(text);
@@ -189,7 +190,7 @@ const WriteReview = ({isStackScreen}) => {
       />        
       <InputField
         value={email}
-        label={t.contact_email}
+        label={t('contact_email')}
         errorText={emailErr}
         onChangeText={text => {
           setEmail(text);
@@ -200,10 +201,10 @@ const WriteReview = ({isStackScreen}) => {
 
       </View>
       <TouchableOpacity style={styles.FormButton} onPress={()=>onSubmitPress()}>
-        <Text style={styles.FormButtonText}>{t.submit}</Text>
+        <Text style={styles.FormButtonText}>{t('submit')}</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.FormButtonCancel} onPress={()=>setIsHidden(false)}>
-        <Text style={styles.FormButtonCancelText}>{t.cancel}</Text>
+        <Text style={styles.FormButtonCancelText}>{t('cancel')}</Text>
       </TouchableOpacity>
         </ScrollView>
         </KeyboardAvoidingView>

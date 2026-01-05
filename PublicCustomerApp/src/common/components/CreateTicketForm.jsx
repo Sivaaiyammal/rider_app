@@ -17,11 +17,12 @@ import APIRequest from '../APIRequest';
 import UseBackButton from '../hooks/UseBackButton';
 import TripSelectionScreen from '../screens/RiseSupportTicket/TripSelectionScreen';
 import { Fonts } from '../constants/constants';
+import { useTranslation } from 'react-i18next';
 
 
 
 const CreateTicketForm = ({ onSubmit, onCancel }) => {
-  const t = {}
+  const {t} = useTranslation()
   const {userInfo} = useUserStore();
   const [formData, setFormData] = useState({
     subject: '',
@@ -291,9 +292,9 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
            >
              <Ionicons name="chevron-back" size={24} color="#000000" />
            </TouchableOpacity>
-           <Text style={styles.title}>{t.create_new_ticket}</Text>
+           <Text style={styles.title}>{t('create_new_ticket')}</Text>
          </View>
-         <Text style={styles.subtitle}>{t.describe_your_issue_and_we_ll_help_you_resolve_it}</Text>
+         <Text style={styles.subtitle}>{t('describe_your_issue_and_we_ll_help_you_resolve_it')}</Text>
        </View>
       <UseBackButton onBackPress={onCancel} />
       {/* Scrollable Form Content */}
@@ -308,7 +309,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
         <View style={styles.form}>
           {/* Ticket Type Selection */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t.ticket_type} *</Text>
+            <Text style={styles.label}>{t('ticket_type')} *</Text>
             <View style={styles.ticketTypeContainer}>
               <TouchableOpacity
                 style={[
@@ -328,7 +329,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
                     formData.ticketType === 'app' && styles.ticketTypeButtonTextActive,
                   ]}
                 >
-                  {t.app_related}
+                  {t('app_related')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -349,7 +350,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
                     formData.ticketType === 'trip' && styles.ticketTypeButtonTextActive,
                   ]}
                 >
-                  {t.trip_related}
+                  {t('trip_related')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -369,7 +370,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               }
             ]}
           >
-            <Text style={styles.label}>{t.select_trip} *</Text>
+            <Text style={styles.label}>{t('select_trip')} *</Text>
             <TouchableOpacity
               style={[styles.dropdownButton, errors.selectedTrip && styles.inputError]}
               onPress={() => {
@@ -404,33 +405,33 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
                 }
               ]}
             >
-              <Text style={styles.tripDetailsTitle}>{t.trip_details}:</Text>
+              <Text style={styles.tripDetailsTitle}>{t('trip_details')}:</Text>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t.from}:</Text>
+                <Text style={styles.tripDetailLabel}>{t('from')}:</Text>
                 <Text style={styles.tripDetailValue}>{formData.selectedTrip?.stops?.[0]?.address || 'Unknown location'}</Text>
               </View>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t.to}:</Text>
+                <Text style={styles.tripDetailLabel}>{t('to')}:</Text>
                 <Text style={styles.tripDetailValue}>{formData.selectedTrip?.stops?.[formData.selectedTrip?.stops?.length - 1]?.address || 'Unknown location'}</Text>
               </View>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t.date}:</Text>
+                <Text style={styles.tripDetailLabel}>{t('date')}:</Text>
                 <Text style={styles.tripDetailValue}>{formData.selectedTrip ? formatDate(formData.selectedTrip.bookingTime) : ''}</Text>
               </View>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t.fare}:</Text>
+                <Text style={styles.tripDetailLabel}>{t('fare')}:</Text>
                 <Text style={styles.tripDetailValue}>₹{formData.selectedTrip?.estimatedFare || formData.selectedTrip?.minFare || 0}</Text>
               </View>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t.distance}:</Text>
+                <Text style={styles.tripDetailLabel}>{t('distance')}:</Text>
                 <Text style={styles.tripDetailValue}>{formData.selectedTrip?.estimatedDistance || 0} km</Text>
               </View>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t.driver}:</Text>
+                <Text style={styles.tripDetailLabel}>{t('driver')}:</Text>
                 <Text style={styles.tripDetailValue}>{formData.selectedTrip?.driverInfo?.driverName || 'No driver assigned'}</Text>
               </View>
               <View style={styles.tripDetailRow}>
-                <Text style={styles.tripDetailLabel}>{t.status}:</Text>
+                <Text style={styles.tripDetailLabel}>{t('status')}:</Text>
                 <Text style={styles.tripDetailValue}>{formData.selectedTrip?.status || 'Unknown'}</Text>
               </View>
             </Animated.View>
@@ -440,10 +441,10 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
 
           {/* Category */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t.category} *</Text>
+            <Text style={styles.label}>{t('category')} *</Text>
             {loadingCategories ? (
               <View style={styles.loadingContainer}>
-                <Text style={styles.loadingText}>{t.loading_categories}</Text>
+                <Text style={styles.loadingText}>{t('loading_categories')}</Text>
               </View>
             ) : filteredCategories.length > 0 ? (
               <View style={styles.categoryContainer}>
@@ -472,7 +473,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               </View>
             ) : (
               <View style={styles.noCategoriesContainer}>
-                <Text style={styles.noCategoriesText}>{t.no_categories_available_for_this_ticket_type}</Text>
+                <Text style={styles.noCategoriesText}>{t('no_categories_available_for_this_ticket_type')}</Text>
               </View>
             )}
             {errors.category && <Text style={styles.errorText}>{errors.category}</Text>}
@@ -515,11 +516,11 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
 
           {/* Description */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t.description} *</Text>
+            <Text style={styles.label}>{t('description')} *</Text>
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 80}>
             <TextInput
               style={[styles.textArea, errors.description && styles.inputError]}
-              placeholder={t.please_provide_detailed_information_about_your_issue}
+              placeholder={t('please_provide_detailed_information_about_your_issue')}
               value={formData.description}
               onChangeText={(text) => updateFormData('description', text)}
               multiline
@@ -551,11 +552,11 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
     <View style={styles.fixedBottom}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-            <Text style={styles.cancelButtonText}>{t.cancel}</Text>
+            <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
             <Ionicons name="send" size={16} color="#FFFFFF" />
-            <Text style={styles.submitButtonText}>{t.create_ticket}</Text>
+            <Text style={styles.submitButtonText}>{t('create_ticket')}</Text>
           </TouchableOpacity>
         </View>
       </View>

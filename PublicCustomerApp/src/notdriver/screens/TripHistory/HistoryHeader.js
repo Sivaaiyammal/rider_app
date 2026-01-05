@@ -8,6 +8,7 @@ import CustomeCalender from '../../../common/components/CustomeCalender';
 import { Colors, Fonts } from '../../../common/constants/constants';
 import CustomDropdown from '../../../common/components/CustomDropdown';
 import { lines } from '../../../common/styles/flexStyle';
+import { useTranslation } from 'react-i18next';
 
 const DRIVER_TARGETS = {
   day: { trips: 20, distance: 120, duration: 12, earnings: 3000 },
@@ -49,7 +50,7 @@ function getTimes(startDate, endDate) {
 }
 
 const HistoryHeader = ({ onDateRangeSelect, onTripStatusChange, isEarnings }) => {
-  const t = {}
+  const {t} = useTranslation()
   const [selectedTab, setSelectedTab] = useState(1);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [startDate, setStartDate] = useState('');
@@ -152,7 +153,7 @@ const HistoryHeader = ({ onDateRangeSelect, onTripStatusChange, isEarnings }) =>
         <TouchableOpacity
           onPress={handleConfirmDateSelection}
           style={styles.confirmButton}>
-          <Text style={styles.confirmButtonText}>{t.confirm}</Text>
+          <Text style={styles.confirmButtonText}>{t('confirm')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -174,7 +175,7 @@ const HistoryHeader = ({ onDateRangeSelect, onTripStatusChange, isEarnings }) =>
               style={[styles.tabButton, isSelected && styles.selectedTab]}
             >
               <Text style={[styles.tabText, isSelected && styles.selectedTabText]}>
-                {t[tab.title]}
+                {t(tab.title)}
               </Text>
             </TouchableOpacity>
           );
@@ -197,7 +198,7 @@ const HistoryHeader = ({ onDateRangeSelect, onTripStatusChange, isEarnings }) =>
          <View style={styles.dropdownContainer}>
            <CustomDropdown
              data={tripStatus} 
-             placeholder={t.select_status} 
+             placeholder={t('select_status')} 
              onChange={handleSelect} 
              initialValue="ALL"
            />
@@ -209,7 +210,7 @@ const HistoryHeader = ({ onDateRangeSelect, onTripStatusChange, isEarnings }) =>
                  customDateRange ? (
                        <Text style={[styles.tabText, styles.customDateText,]}>{formatDateRange()}</Text>
                  ) : (
-                   <Text style={[styles.tabText]}>{t.select_date_range}</Text>
+                   <Text style={[styles.tabText]}>{t('select_date_range')}</Text>
                  )
                }
            <MaterialIcons name="calendar-today" size={16} color={Colors.black} />

@@ -80,7 +80,18 @@ export const useMapMarkerStore = create(set => ({
   setDirectionReadyCallback : (directionReadyCallback) => set({ directionReadyCallback }),
 
   directionPoints: null,
-  setDirectionPoints: (directionPoints) => set({ directionPoints }),
+  directionKey: 0,
+  // setDirectionPoints: (directionPoints) => set({ directionPoints }),
+   setDirectionPoints: (directionPoints) => set(state => {
+        if (directionPoints === null) {
+            return { directionPoints: null };
+        }
+        const newDirectionKey = state.directionKey + 1;
+        const payloadArray = Array.isArray(directionPoints)
+            ? directionPoints
+            : [directionPoints];
+        return { directionPoints: [...payloadArray, newDirectionKey], directionKey: newDirectionKey };
+    }),
 
   startNavigation: false,
   setStartNavigation: (startNavigation) => set({ startNavigation }),

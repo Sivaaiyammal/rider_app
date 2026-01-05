@@ -28,8 +28,6 @@ import APIRequest from '../../common/APIRequest';
 import BGLocationTask from '../../common/controllers/BGLocationTask';
 import locationTask from '../../common/controllers/GetCurrentLocation';
 import Marker from '../../common/map/Marker';
-import useTripRequestStore from '../store/useTripRequestStore';
-import useTripsStore from '../store/useTripsStore';
 import { useStackScreenStore } from '../../common/store/useStackScreenStore';
 import { useTripAcceptStore } from '../store/useTripAcceptStore';
 import useUserStore from '../../common/store/useUserStore';
@@ -73,6 +71,7 @@ import UpComingTripsView from './UpComingTrips/UpComingTripsView';
 import DriverIDCard from './DriverIDCard';
 import PublicRidesPriceChart from './PublicRidesPriceChart/PublicRidesPriceChart';
 import PublicRidesPriceChartDetails from './PublicRidesPriceChart/PublicRidesPriceChartDetails';
+import { useTranslation } from 'react-i18next';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -113,7 +112,7 @@ const PublicRidesDriverHomeScreen = () => {
     hasLocationPermission,
     setHasLocationPermission,
   } = useDeviceTokenStore();
-  const t = {};
+  const {t} = useTranslation();
   const [role, setRole] = useState('dco');
   const [isBlockLoading, setIsBlockLoading] = useState(false)
   const {setDirectionPoints, directionPoints, setGeometries, geometries} = useMapMarkerStore()
@@ -449,8 +448,8 @@ const PublicRidesDriverHomeScreen = () => {
       const hasLocationpermission = await RequestFineLocationPermission(t);
       if (!hasLocationpermission) {
         showNotification(
-          t.loc_permission_denied,
-          t.grant_loc_permission,
+          t('loc_permission_denied'),
+          t('grant_loc_permission'),
           'danger',
           3000,
         );
@@ -466,7 +465,7 @@ const PublicRidesDriverHomeScreen = () => {
       <View style={styles.overlay}>
         <View style={styles.container}>
           <Text style={styles.text}>
-            {t.please_enable_notification_permission_to_get_real_time_updates}
+            {t('please_enable_notification_permission_to_get_real_time_updates')}
           </Text>
           <TouchableOpacity 
             style={styles.button}
@@ -478,7 +477,7 @@ const PublicRidesDriverHomeScreen = () => {
               })
             }}>
             <Text style={styles.buttonText}>
-            {t.enable_now}
+            {t('enable_now')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -491,7 +490,7 @@ const PublicRidesDriverHomeScreen = () => {
       <View style={styles.overlay}>
         <View style={styles.container}>
           <Text style={styles.text}>
-            {t.please_enable_location_permission_to_get_real_time_updates}
+            {t('please_enable_location_permission_to_get_real_time_updates')}
           </Text>
           <TouchableOpacity 
             style={styles.button}
@@ -504,7 +503,7 @@ const PublicRidesDriverHomeScreen = () => {
               })
             }}>
             <Text style={styles.buttonText}>
-              {t.enable_now}
+              {t('enable_now')}
             </Text>
           </TouchableOpacity>
         </View>

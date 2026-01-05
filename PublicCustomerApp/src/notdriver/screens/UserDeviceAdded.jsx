@@ -22,9 +22,10 @@ import useDeviceTokenStore from '../../common/store/useDeviceTokenStore';
 import WarningMiniText from '../../common/components/WarningMiniText';
 import { Colors, Fonts } from '../../common/constants/constants';
 import BGLocationTask from '../../common/controllers/BGLocationTask';
+import { useTranslation } from 'react-i18next';
 
 const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
-  const t = {}
+  const {t} = useTranslation()
 
   const hasLocationPermission = useDeviceTokenStore(
     state => state.hasLocationPermission,
@@ -53,7 +54,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
         <Text style={{ fontSize: 14, fontFamily: Fonts.light}}>
           {'We need location, background tracking, and notification permissions for real-time trip monitoring, passenger alerts, and seamless navigation updates while driving.'}
         </Text>
-        {hasLocationPermission && hasBackgroundLocationPermission && hasLocationPermission && (
+        {/* {hasLocationPermission && hasBackgroundLocationPermission && hasLocationPermission && (
           <View style={userDeviceStyle.permissionContainer}>
             <View style={userDeviceStyle.upper}>
               <View style={userDeviceStyle.iconWithText}>
@@ -72,8 +73,8 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
               />
             </View>
           </View>
-        )}
-        <Text style={{ color: 'black',marginLeft: 10, fontSize: 16, fontFamily: Fonts.regular, marginVertical: 10, marginTop: 20 }}>{t.req_tracking_perm}</Text>
+        )} */}
+        <Text style={{ color: 'black',marginLeft: 10, fontSize: 16, fontFamily: Fonts.regular, marginVertical: 10, marginTop: 20 }}>{t('req_tracking_perm')}</Text>
 
         <View style={userDeviceStyle.permissionContainer}>
           <View style={userDeviceStyle.upper}>
@@ -83,7 +84,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
               </View>
 
               <Text style={userDeviceStyle.title}>
-                {t.notification_permission}
+                {t('notification_permission')}
               </Text>
             </View>
 
@@ -101,7 +102,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
               </View>
 
               <Text style={userDeviceStyle.title}>
-                {t.location_permission}
+                {t('location_permission')}
               </Text>
             </View>
 
@@ -123,7 +124,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
                   </View>
 
                   <Text style={[userDeviceStyle.title, { width: "100%" }]}>
-                    {t.bg_loc_permission}
+                    {t('bg_loc_permission')}
                   </Text>
                   <Popover
                     from={(
@@ -132,7 +133,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
                       </TouchableOpacity>
                     )}>
                     <Text style={{ color: "black", padding: 8, fontFamily: Fonts.light }}>
-                      {t.vm_tracker_tracking_info}
+                      {t('vm_tracker_tracking_info')}
                     </Text>
                   </Popover>
                 </View>
@@ -280,7 +281,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
               margin: 10,
             }]}>
               <Text style={userDeviceStyle.title}>
-                {t.disable_battery_optim}
+                {t('disable_battery_optim')}
               </Text>
               <WarningMiniText
                 text="disable_battery_info" />
@@ -291,13 +292,13 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
         )}
 
         <Text style={userDeviceStyle.warningText}>
-          {t.you_can_enable_in_this_screen}
+          {t('you_can_enable_in_this_screen')}
         </Text>
         <TouchableOpacity
           style={userDeviceStyle.settingsButton}
           onPress={() => Linking.openSettings()}>
           <Text style={userDeviceStyle.settingsButtonText}>
-            {t.enable_disable_manually}
+            {t('enable_disable_manually')}
           </Text>
         </TouchableOpacity>
 

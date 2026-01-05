@@ -13,6 +13,7 @@ import CustomDropdown from '../../../common/components/CustomDropdown';
 import { driverDetailStyles } from '../../styles/DriverDetailsUpload';
 import ProfileImagePicker from '../../components/ProfileImagePicker';
 import DocUploadIcon from '../../../notdriver/assets/icons/docUpload.svg';
+import { useTranslation } from 'react-i18next';
 
 const styles = StyleSheet.create({
   container: {
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
 });
 
 const BankDetails = ({onNext, isView, isEdit = false}) => {
-  const t = {};
+  const {t} = useTranslation()
   const {driverConfig} = useTripsStore();
   const {setBankInfo, bankInfo} = usePublicDriverStore();
   const {userInfo} = useUserStore();
@@ -152,30 +153,30 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
 
   const validateAccountNumber = useCallback((accountNum) => {
     if (!accountNum) {
-      return t.please_enter_account_number;
+      return t('please_enter_account_number');
     }
     if (!accountNumberPattern.test(accountNum)) {
-      return t.please_enter_a_valid_account_number_9_18_digits;
+      return t('please_enter_a_valid_account_number_9_18_digits');
     }
     return '';
   }, [t]);
 
   const validateIFSCCode = useCallback((ifsc) => {
     if (!ifsc) {
-      return t.please_enter_ifsc_code;
+      return t('please_enter_ifsc_code');
     }
     if (!ifscCodePattern.test(ifsc.toUpperCase())) {
-      return t.please_enter_a_valid_ifsc_code_e_g_sbin0001234;
+      return t('please_enter_a_valid_ifsc_code_e_g_sbin0001234');
     }
     return '';
   }, [t]);
 
   const validateEmail = useCallback((email) => {
     if (!email.trim()) {
-      return t.please_enter_a_valid_email;
+      return t('please_enter_a_valid_email');
     }
     if (!emailPattern.test(email.trim())) {
-      return t.please_enter_a_valid_email;
+      return t('please_enter_a_valid_email');
     }
     return '';
   }, [t]);
@@ -240,7 +241,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
 
     // Validate Passbook Image
     if (!passbookImage) {
-      setPassbookImageErr(t.please_upload_bank_passbook_front_page);
+      setPassbookImageErr(t('please_upload_bank_passbook_front_page'));
       isValid = false;
     } else {
       setPassbookImageErr('');
@@ -248,7 +249,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
 
     // Validate Account Holder
     if (!accountHolder.trim()) {
-      setAccountHolderErr(t.please_enter_account_holder_name);
+      setAccountHolderErr(t('please_enter_account_holder_name'));
       isValid = false;
     } else {
       setAccountHolderErr('');
@@ -265,10 +266,10 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
 
     // Validate Re-enter Account Number
     if (!reEnterAccountNumber) {
-      setReEnterAccountNumberErr(t.please_re_enter_account_number);
+      setReEnterAccountNumberErr(t('please_re_enter_account_number'));
       isValid = false;
     } else if (accountNumber !== reEnterAccountNumber) {
-      setReEnterAccountNumberErr(t.account_numbers_do_not_match);
+      setReEnterAccountNumberErr(t('account_numbers_do_not_match'));
       isValid = false;
     } else {
       setReEnterAccountNumberErr('');
@@ -276,7 +277,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
 
     // Validate Bank Name
     if (!bankName.trim()) {
-      setBankNameErr(t.please_enter_bank_name);
+      setBankNameErr(t('please_enter_bank_name'));
       isValid = false;
     } else {
       setBankNameErr('');
@@ -293,21 +294,21 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
 
     // Validate Branch
     if (!branch.trim()) {
-      setBranchErr(t.please_enter_branch_name);
+      setBranchErr(t('please_enter_branch_name'));
       isValid = false;
     } else {
       setBranchErr('');
     }
 
     if(!upiId.trim()) {
-      setUpiIdErr(t.please_enter_valid_upi_id);
+      setUpiIdErr(t('please_enter_a_valid_upi_id'));
       isValid = false;
     } else {
       setUpiIdErr('')
     }
     // Validate UPI ID
     if (!upiIdPattern.test(upiId.trim())) {
-      setUpiIdErr(t.please_enter_a_valid_upi_id_9999999999_upi);
+      setUpiIdErr(t('please_enter_a_valid_upi_id_9999999999_upi'));
       isValid = false;
     } else {
       setUpiIdErr('');
@@ -458,10 +459,10 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <ProfileImagePicker
             imageFile={passbookImage}
             setImageFile={(value)=>{setPassbookImage(value); setBankInfo({passbookImage: value});}}
-            label={t.upload_bank_passbook_front_page +'*'}
+            label={t('upload_bank_passbook_front_page') +'*'}
             cloudIcon={<DocUploadIcon width={48} height={34} />}
-            browseLabel={t.browse}
-            cameraLabel={t.camera}
+            browseLabel={t('browse')}
+            cameraLabel={t('camera')}
             containerStyle={{marginBottom: 18}}
             buttonStyle={{}}
             onImagePicked={() => passbookImageErr && setPassbookImageErr('')}
@@ -488,7 +489,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <InputField
             style={styles.textField}
             value={accountHolder}
-            label={t.account_holder_name}
+            label={t('account_holder_name')}
             errorText={accountHolderErr}
             onChangeText={text => {
               setAccountHolder(text);
@@ -502,7 +503,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <InputField
             style={styles.textField}
             value={accountNumber}
-            label={t.account_number}
+            label={t('account_number')}
             errorText={accountNumberErr}
             keyboardType="numeric"
             maxLength={18}
@@ -518,7 +519,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <InputField
             style={styles.textField}
             value={reEnterAccountNumber}
-            label={t.re_enter_account_number}
+            label={t('re_enter_account_number')}
             errorText={reEnterAccountNumberErr}
             keyboardType="numeric"
             maxLength={18}
@@ -534,7 +535,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <InputField
             style={styles.textField}
             value={bankName}
-            label={t.bank_name}
+            label={t('bank_name')}
             errorText={bankNameErr}
             onChangeText={text => {
               setBankName(text);
@@ -548,7 +549,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <InputField
             style={styles.textField}
             value={ifscCode}
-            label={t.ifsc_code}
+            label={t('ifsc_code')}
             errorText={ifscCodeErr}
             autoCapitalize="characters"
             maxLength={11}
@@ -564,7 +565,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <InputField
             style={styles.textField}
             value={branch}
-            label={t.branch}
+            label={t('branch')}
             errorText={branchErr}
             onChangeText={text => {
               setBranch(text);
@@ -578,7 +579,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
            <InputField
             style={styles.textField}
             value={upiId}
-            label={t.upi_id}
+            label={t('upi_id')}
             errorText={upiIdErr}
             onChangeText={text => {
               setUpiId(text); 
@@ -593,7 +594,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <InputField
             style={styles.textField}
             value={email}
-            label={t.email}
+            label={t('email')}
             errorText={emailErr}
             onChangeText={text => {
               setEmail(text);
@@ -606,12 +607,12 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
             autoCapitalize="none"
           />
 
-          <Text style={{fontFamily: Fonts.medium, fontSize: 16, marginBottom: 10, textAlign: 'center'}}>Enter your Residential Address</Text>
-          <Text style={styles.dropdownLabel}>{t.address} *</Text>
+          <Text style={{fontFamily: Fonts.medium, fontSize: 16, marginBottom: 10, textAlign: 'center'}}>{t('enter_your_residential_address')}</Text>
+          <Text style={styles.dropdownLabel}>{t('address')} *</Text>
           <InputField
             style={styles.textField}
             value={lineOne}
-            label={t.line_one}
+            label={t('line_one')}
             errorText={lineOneErr.replace('Street address', 'Line one')}
             onChangeText={text => {
               setLineOne(text);
@@ -627,7 +628,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <InputField
             style={styles.textField}
             value={lineTwo}
-            label={t.line_two}
+            label={t('line_two')}
             errorText={lineTwoErr.replace('Street address', 'Line two')}
             onChangeText={text => {
               setLineTwo(text);
@@ -641,7 +642,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <InputField
             style={styles.textField}
             value={city}
-            label={t.city}
+            label={t('city')}
             errorText={cityErr}
             onChangeText={text => {
               setCity(text);
@@ -658,7 +659,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
               data={INDIAN_STATES}
               labelField="label"
               valueField="value"
-              placeholder={t.state}
+              placeholder={t('state')}
               initialValue={state}
               onChange={(item) => {
                 setState(item.value);
@@ -676,7 +677,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <InputField
             style={styles.textField}
             value={postalCode}
-            label={t.postal_code}
+            label={t('postal_code')}
             errorText={postalCodeErr}
             onChangeText={text => {
               setPostalCode(text);
@@ -692,7 +693,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <InputField
             style={styles.textField}
             value={country}
-            label={t.country}
+            label={t('country')}
             editable={false}
           />
         </View>
@@ -705,7 +706,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
             onPress={onNextPress}
             disabled={isLoading}
           >
-            <Text style={driverDetailStyles.nextTxt}>{t.next}</Text>
+            <Text style={driverDetailStyles.nextTxt}>{t('next')}</Text>
             {isLoading ? <ActivityIndicator size="small" color={Colors.white} /> : <AntDesign name="arrowright" color={Colors.white} size={16} />}
           </TouchableOpacity>
         </View>

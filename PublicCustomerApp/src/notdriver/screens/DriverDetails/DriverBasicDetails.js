@@ -14,18 +14,19 @@ import FullScreenLoader from '../../../common/loaders/FullScreenLoader'
 import NavBar from '../../../common/components/NavBar'
 import UseBackButton from '../../../common/hooks/UseBackButton'
 import { vehicleList } from '../../../common/constants/jsonData'
+import { useTranslation } from 'react-i18next'
 
 
 // import Idcard from '../../../Assets/driverIcons/idcard.svg'
 
 const DriverBasicDetails = () => {
-   const t = {}
+   const {t} = useTranslation()
    const {goBack, setStackScreen} = useStackScreenStore();
    const {vehicleInfo} = usePublicDriverStore();
    const [isModalVisible, setIsModalVisible] = useState(false);
    const {userInfo} = useUserStore()
    const [isLoading, setIsLoading] = useState(false)
-   const {driverDue, driverRatings, dire} = usePublicDriverStore();
+   const {driverDue, driverRatings} = usePublicDriverStore();
    
     const onBackPress = () => {
         goBack()
@@ -79,13 +80,13 @@ const DriverBasicDetails = () => {
         // },
         {
             id: 2,
-            title: t.personal_information,
+            title: t('personal_information'),
             icon: <MaterialIcons name="person" size={24} color={Colors.black} />,
             onPress: () => setStackScreen('DriverPersonalInfo')
         },
         {
             id: 3,
-            title: t.proof_documents,
+            title: t('proof_documents'),
             icon: <MaterialIcons name="description" size={24} color={Colors.black} />,
             onPress: () => setStackScreen('DriverProofDocuments')
         },
@@ -103,7 +104,7 @@ const DriverBasicDetails = () => {
         // },
         {
             id: 6,
-            title: t.bank_account,
+            title: t('bank_account'),
             icon: <MaterialIcons name="account-balance" size={24} color={Colors.black} />,
             onPress: () => setStackScreen('BankAccountDetails'),
         },
@@ -151,7 +152,7 @@ const DriverBasicDetails = () => {
   return (
     <View style={styles.container}>
         {isLoading && <FullScreenLoader />}
-        <NavBar title={t.basic_details} onBackPress={onBackPress} />
+        <NavBar title={t('basic_details')} onBackPress={onBackPress} />
         <UseBackButton onBackPress={onBackPress} />
         <ScrollView contentContainerStyle={styles.scrollView} showsVerticalScrollIndicator={false}>
             {driverRatings && (
@@ -164,7 +165,7 @@ const DriverBasicDetails = () => {
                     //  starStyle={styles.starRating}
                       /> 
                       <Text style={styles.starRatingText}>{(driverRatings?.currentrating).toFixed(1)}<Text style={styles.starRatingTextSub}>/5</Text></Text>
-                      <Text style={styles.starRatingTextSub}>{t.reviews}: {driverRatings?.count}</Text>
+                      <Text style={styles.starRatingTextSub}>{t('reviews')}: {driverRatings?.count}</Text>
       
                      
             </View>
@@ -194,10 +195,10 @@ const DriverBasicDetails = () => {
                 {menuItems.map(renderMenuItem)}
             </View>
             <TouchableOpacity style={[styles.deleteAccountBtn,{borderColor:Colors.periwinkle}]} onPress={handleEditDocuments}> 
-                <Text style={[styles.deleteAccountBtnText,{color:Colors.periwinkle}]}>{t.edit_documents}</Text>
+                <Text style={[styles.deleteAccountBtnText,{color:Colors.periwinkle}]}>{t('edit_documents')}</Text>
                 </TouchableOpacity>
             <TouchableOpacity style={styles.deleteAccountBtn} onPress={()=>setStackScreen('DeleteAccount')}> 
-                <Text style={styles.deleteAccountBtnText}>{t.delete_account}</Text>
+                <Text style={styles.deleteAccountBtnText}>{t('delete_account')}</Text>
                 </TouchableOpacity>
         </ScrollView>
 
@@ -211,32 +212,32 @@ const DriverBasicDetails = () => {
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContainer}>
                     <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>{t.edit_documents}</Text>
+                        <Text style={styles.modalTitle}>{t('edit_documents')}</Text>
                     </View>
                     
                     <View style={styles.modalContent}>
                         <Text style={styles.modalText}>
-                            {t.are_you_sure_you_want_to_edit_documents}
+                            {t('are_you_sure_you_want_to_edit_documents')}
                         </Text>
                         
                         <View style={styles.warningContainer}>
                             <MaterialIcons name="warning" size={20} color={Colors.orange} />
                             <Text style={styles.warningText}>
-                                {t.once_edit_started_your_account_will_be_on_hold_till_documents_are_verified_and_approved}
+                                {t('once_edit_started_your_account_will_be_on_hold_till_documents_are_verified_and_approved')}
                             </Text>
                         </View>
                         
                         <View style={styles.warningContainer}>
                             <MaterialIcons name="block" size={20} color={Colors.red} />
                             <Text style={styles.warningText}>
-                                {t.you_cannot_take_trips_till_that}
+                                {t('you_cannot_take_trips_till_that')}
                             </Text>
                         </View>
                         
                         <View style={styles.warningContainer}>
                             <MaterialIcons name="payment" size={20} color={Colors.red} />
                             <Text style={styles.warningText}>
-                                {t.if_you_have_pending_due_amount_please_clear_all_due_before}
+                                {t('if_you_have_pending_due_amount_please_clear_all_due_before')}
                             </Text>
                         </View>
                     </View>
@@ -246,14 +247,14 @@ const DriverBasicDetails = () => {
                             style={[styles.modalButton, styles.cancelButton]} 
                             onPress={handleCancelEdit}
                         >
-                            <Text style={styles.cancelButtonText}>{t.cancel}</Text>
+                            <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
                         </TouchableOpacity>
                         
                         <TouchableOpacity 
                             style={[styles.modalButton, styles.confirmButton]} 
                             onPress={handleConfirmEdit}
                         >
-                            <Text style={styles.confirmButtonText}>{t.confirm}</Text>
+                            <Text style={styles.confirmButtonText}>{t('confirm')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

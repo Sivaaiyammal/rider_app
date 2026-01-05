@@ -15,6 +15,7 @@ import useUserStore from '../../store/useUserStore';
 import { DateTimeFormatter } from '../../utils/DateTimeFormatter';
 import APIRequest from '../../APIRequest';
 import { Fonts } from '../../constants/constants';
+import { useTranslation } from 'react-i18next';
 
 
 const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
@@ -26,7 +27,7 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [hasMoreData, setHasMoreData] = useState(true);
   const {userInfo} = useUserStore();
-  const t = {}
+  const {t} = useTranslation()
 
   const fetchTrips = async (page = 1, isRefresh = false) => {
    const dates =  DateTimeFormatter.getThisMonthStartEndTime();
@@ -201,7 +202,7 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
     if (!hasMoreData) {
       return (
         <View style={styles.footerContainer}>
-          <Text style={styles.footerText}>{t.no_more_trips_to_load}</Text>
+          <Text style={styles.footerText}>{t('no_more_trips_to_load')}</Text>
         </View>
       );
     }
@@ -210,7 +211,7 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
       return (
         <View style={styles.footerContainer}>
           <ActivityIndicator size="small" color="#000000" />
-          <Text style={styles.footerText}>{t.loading_your_recent_trips}</Text>
+          <Text style={styles.footerText}>{t('loading_your_recent_trips')}</Text>
         </View>
       );
     }
@@ -221,9 +222,9 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
   const renderEmptyState = () => (
     <View style={styles.emptyContainer}>
       <Ionicons name="car-outline" size={48} color="#9CA3AF" />
-      <Text style={styles.emptyTitle}>{t.no_trips_found}</Text>
+      <Text style={styles.emptyTitle}>{t('no_trips_found')}</Text>
       <Text style={styles.emptySubtitle}>
-        {t.you_dont_have_any_trips_in_your_history_yet}
+        {t('you_dont_have_any_trips_in_your_history_yet')}
       </Text>
     </View>
   );
@@ -238,7 +239,7 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
         >
           <Ionicons name="chevron-back" size={24} color="#000000" />
         </TouchableOpacity>
-        <Text style={styles.title}>{t.select_trip}</Text>
+        <Text style={styles.title}>{t('select_trip')}</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -268,7 +269,7 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
       {loading && trips.length === 0 && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#000000" />
-          <Text style={styles.loadingText}>{t.loading_trips}</Text>
+          <Text style={styles.loadingText}>{t('loading_trips')}</Text>
         </View>
       )}
     </View>

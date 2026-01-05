@@ -15,6 +15,7 @@ import APIRequest from '../../../common/APIRequest';
 import { showNotification } from '../../../common/components/Alerts/showNotification';
 import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter';
 import { Colors, Fonts } from '../../../common/constants/constants';
+import { useTranslation } from 'react-i18next';
 
 const toNumber = value => {
   const numeric = Number(value);
@@ -176,7 +177,7 @@ const createInvoiceState = baseAmount => {
 const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo}) => {
   const {setDriverDue, minDueAmount, razorpayLinkedAccountDetails} = usePublicDriverStore();
   const {driverConfig} = useTripsStore();
-  const t = {}
+  const {t} = useTranslation()
   const [isSummaryLoading, setIsSummaryLoading] = useState(false);
   const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
   const [invoiceVisible, setInvoiceVisible] = useState(false);
@@ -387,11 +388,11 @@ const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo})
         resizeMode="cover"
         style={styles.headerContinaerBG}>
         <View style={styles.payDueContainer}>
-          <Text style={styles.payDueText}>{t.pay_due_amount}</Text>
+          <Text style={styles.payDueText}>{t('pay_due_amount')}</Text>
           <Text style={styles.priceTxt}>₹{driverDue ? driverDue.toFixed(2) : 0}</Text>
           {driverDueDate && (
             <Text style={styles.dueTxt}>
-              {t.next_due_date}:{' '}
+              {t('next_due_date')}:{' '}
               {DateTimeFormatter.requiredDateFormat(
                 driverDueDate,
                 'D MMM,YYYY',
@@ -411,7 +412,7 @@ const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo})
               {isSummaryLoading || isPaymentProcessing ? (
                 <ActivityIndicator />
               ) : (
-                <Text style={styles.payNowBtnTxt}>{t.pay_now}</Text>
+                <Text style={styles.payNowBtnTxt}>{t('pay_now')}</Text>
               )}
             </TouchableOpacity>
           )}
@@ -428,7 +429,7 @@ const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo})
         }}>
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContainer}>
-            <Text style={styles.invoiceTitle}>{t.invoice || 'Invoice'}</Text>
+            <Text style={styles.invoiceTitle}>{t('invoice') || 'Invoice'}</Text>
             {summaryRows.length > 0
               ? summaryRows.map(row => (
                   <View style={styles.invoiceRow} key={row.key}>
@@ -517,7 +518,7 @@ const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo})
                 style={[styles.modalButton, styles.cancelButton]}
                 disabled={isPaymentProcessing}
                 onPress={() => setInvoiceVisible(false)}>
-                <Text style={styles.cancelButtonText}>{t.cancel || 'Cancel'}</Text>
+                <Text style={styles.cancelButtonText}>{t('cancel') || 'Cancel'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
@@ -533,7 +534,7 @@ const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo})
                 {isPaymentProcessing ? (
                   <ActivityIndicator color={Colors.white} />
                 ) : (
-                  <Text style={styles.confirmButtonText}>{t.pay_now || 'Pay Now'}</Text>
+                  <Text style={styles.confirmButtonText}>{t('pay_now') || 'Pay Now'}</Text>
                 )}
               </TouchableOpacity>
             </View>

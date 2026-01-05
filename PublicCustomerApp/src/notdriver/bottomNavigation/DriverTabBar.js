@@ -7,6 +7,7 @@ import { Fonts } from '../../common/constants/constants';
 import useUserStore from '../../common/store/useUserStore';
 import useCurrentScreenStore from '../../common/store/useCurrentScreenStore';
 import { flexStyle } from '../../common/styles/flexStyle';
+import { useTranslation } from 'react-i18next';
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -62,6 +63,7 @@ export default function DriverTabBar({ menus }) {
   const { currentScreen, setCurrentScreen, showBottomTabs, setShowBottomTabs } = useCurrentScreenStore();
   const activeIndex = menus.findIndex(menu => menu.name === currentScreen);
   const { selectedLanguage } = useUserStore();
+  const {t} = useTranslation()
 
   const onMenuClick = async (name) => {
     setCurrentScreen(name);
@@ -114,7 +116,7 @@ export default function DriverTabBar({ menus }) {
                         textAlign:"center",
                       },
                     ]}>
-                    {menu.title} 
+                    {t(menu.title)} 
                   </Text>
                   {notification ? <View style={styles.notification}>
                     <Text style={{fontSize:10,fontWeight: 'bold'}}>{notification}</Text>

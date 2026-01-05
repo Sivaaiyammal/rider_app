@@ -1,10 +1,11 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { Text } from "react-native";
 import { Fonts } from "../constants/constants";
+import { useTranslation } from "react-i18next";
 
 
 export default function WarningMiniText({text}) {
-  const t = {}
+  const {t} = useTranslation()
 
   return (
     <Text style={{
@@ -13,6 +14,6 @@ export default function WarningMiniText({text}) {
         marginTop: 10,
         marginBottom: 10,
         fontFamily: Fonts.light
-    }}>{t[text]}</Text>
+    }}>{t(text)}</Text>
   )
 }
