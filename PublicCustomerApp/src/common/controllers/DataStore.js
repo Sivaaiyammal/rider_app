@@ -27,6 +27,9 @@ const ALLOWED_KEYS = [
    // driverKeys
   'bg_userToken',
   'bg_deviceImei',
+  'userInfo',
+  'isOngoingTrip',
+  'activeTripId'
  
 ]
 

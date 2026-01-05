@@ -24,7 +24,6 @@ import useUserStore from '../../common/store/useUserStore';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 import useDeviceTokenStore from '../../common/store/useDeviceTokenStore';
 import BGLocationTask from '../../common/controllers/BGLocationTask';
-import overlayController from '../Controller/OverlayController';
 import { useStackScreenStore } from '../../common/store/useStackScreenStore';
 import { breakData } from '../constants/JsonData';
 import { showNotification } from '../../common/components/Alerts/showNotification';
@@ -32,6 +31,7 @@ import { DataStore } from '../../common/controllers/DataStore';
 import { Colors, Fonts } from '../../common/constants/constants';
 import { height } from '../../common/utils/scalingutils';
 import { useTranslation } from 'react-i18next';
+import overlayController from '../../common/controllers/Overlay';
 
 const FloatingButton = ({layOutHeight}) => {
   const {driverStatus, setDriverStatus} = useDriverStatusStore();
@@ -125,7 +125,7 @@ const FloatingButton = ({layOutHeight}) => {
        if (response?.success) {
           showNotification(response?.message,'','success')
           const _newUserInfo = userInfo
-          _newUserInfo.user.driverStatus = {
+          _newUserInfo.driverStatus = {
             status: status,
             updatedOn: new Date().getTime()
           }
@@ -145,6 +145,7 @@ const FloatingButton = ({layOutHeight}) => {
        }
        setIsLoading(false)
      }catch (e) {
+       console.log("ERROR UPDATING DRIVER STATUS:", e)
       showNotification('Something Went Wrong','','danger')
       setIsLoading(false)
      }

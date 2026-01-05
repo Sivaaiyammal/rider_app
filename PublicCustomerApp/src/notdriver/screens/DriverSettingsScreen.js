@@ -38,11 +38,13 @@ import Privacy from '../../notdriver/assets/icons/privacy.svg'
 import AboutUs from './AboutUs';
 import About from '../../common/assets/icons/about.svg'
 import MoreApp from '../../common/assets/icons/moreApp.svg'
+import GlobalContext from '../../context/GlobalContext';
 
 export default function PublicDriverSettingsScreen() {
   const t = {};
   // const resetAllStore = useResetStore();
-  const {logout, userInfo} = useUserStore();
+  const {userInfo} = useUserStore();
+  const {logout} = useContext(GlobalContext);
   const [loading, setLoading] = useState(false);
   const {setStackScreen} = useStackScreenStore();
   const {driverRole, setDriverRole} = usePublicDriverStore();

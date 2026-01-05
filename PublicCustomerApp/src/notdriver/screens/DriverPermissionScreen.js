@@ -8,7 +8,6 @@ import { openOverLaySettings, RequestActivityPermission, RequestBackgroundLocati
 import APIRequest from '../../common/APIRequest';
 import { DataStore } from '../../common/controllers/DataStore';
 import BGLocationTask from '../../common/controllers/BGLocationTask';
-import overlayController from '../Controller/OverlayController';
 import { permissionData } from '../../common/constants/jsonData';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 import NavBar from '../../common/components/NavBar';
@@ -17,11 +16,13 @@ import { Colors, Fonts } from '../../common/constants/constants';
 import UserDeviceAdded from './UserDeviceAdded';
 import PopupContainerWithBtns from '../../common/components/PopupContainerWithBtns';
 import BgLocation from '../../notdriver/assets/icons/Location.svg';
+import useDeviceTokenStore from '../../common/store/useDeviceTokenStore';
+import overlayController from '../../common/controllers/Overlay';
 
 const DriverPermissionScreen = () => {
   const t = {};
   const {goBack} = useStackScreenStore();
-  const {hasLocationPermission, setHasNotificationPermission, setHasLocationPermission, hasNotificationPermission, hasBackgroundLocationPermission, setHasBackgroundLocationPermission, hasActivityRecognitionPermission, setHasActivityRecognitionPermission, hasOverlayPermission, setHasOverlayPermission} = useDeviceTokenStore();
+  const {hasLocationPermission, setHasNotificationPermission, setHasLocationPermission, hasNotificationPermission, hasBackgroundLocationPermission, setHasBackgroundLocationPermission, hasOverlayPermission, setHasOverlayPermission} = useDeviceTokenStore();
 
   const [togglePopup, setTogglePopup] = useState(false);
   const [type, setType] = useState('backgroundLocation');
@@ -69,11 +70,6 @@ const DriverPermissionScreen = () => {
       setType(type);
      
       return setTogglePopup(true);
-    }
-    if (type === "activityRecognition") {
-      if (hasActivityRecognitionPermission) return showNotification(t.activity_recog + " " + t.already_enabled, t.disable_manually_app_settings, "warning", 3000)
-      setType(type)
-      return setTogglePopup(true)
     }
 
 
@@ -124,7 +120,7 @@ const DriverPermissionScreen = () => {
        if (response?.success) {
           showNotification(response?.message,'','success')
           const _newUserInfo = userInfo
-          _newUserInfo.user.driverStatus = {
+          _newUserInfo.driverStatus = {
             status: status,
             updatedOn: new Date().getTime()
           }

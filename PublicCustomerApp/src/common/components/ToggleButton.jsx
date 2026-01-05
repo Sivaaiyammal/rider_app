@@ -26,7 +26,7 @@ const CustomToggleButton = ({ isToggled, setIsToggled }) => {
 
     const trackColor = animation.interpolate({
         inputRange: [0, 1],
-        outputRange: ['#767577', Colors.dark.periwinkle],
+        outputRange: ['#767577', Colors.periwinkle],
     });
 
     return (

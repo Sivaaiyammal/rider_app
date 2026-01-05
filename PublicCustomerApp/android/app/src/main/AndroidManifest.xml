@@ -25,7 +25,8 @@
       android:allowBackup="false"
       android:theme="@style/AppTheme"
       android:supportsRtl="true"
-    
+      android:networkSecurityConfig="@xml/network_security_config"
+    android:usesCleartextTraffic="true"
 
       
       >
@@ -90,12 +91,12 @@
             tools:node="remove" />
 
               <service
-            android:name=".DriverLocationService"
+            android:name="com.virtualmaze.prcustomer.driverTracking.DriverLocationService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="location" />
         <service
-            android:name="com.vmtrackers.overlay.OverlayHeadlessService"
+            android:name="com.virtualmaze.prcustomer.overlay.OverlayHeadlessService"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 

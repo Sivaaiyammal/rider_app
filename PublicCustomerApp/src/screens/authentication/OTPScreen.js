@@ -3,14 +3,12 @@ import React, {useState, useEffect, useRef, useContext} from 'react';
 import {useTranslation} from 'react-i18next';
 
 import {loginStyles} from '../../styles/UserStyles';
-import OTPTextInput from 'react-native-otp-textinput';
 import {colors} from '../../constants/constants';
 import {CommonActions, useNavigation} from '@react-navigation/native';
 import {showNotification} from '../../components/NotificationManger';
 import {DataStore} from '../../controllers/DataStore';
 import useUserInfoStore from '../../store/useUserInfoStore';
 import {requestOTPMutation, verifyDriverOTPMutation, verifyOTPMutation} from '../../API/APICalls/UserAPICalls';
-import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import messaging from '@react-native-firebase/messaging';
 import DeviceInfo from 'react-native-device-info';  
@@ -36,7 +34,7 @@ const OTPScreen = ({route}) => {
   const {userRole, setUserInfo} = useUserStore();
   const {t} = useTranslation();
   const navigation = useNavigation();
-  const {addListener} = useContext(GlobalContext);
+  const {addListener, addRideMatchListener, addNOTSocketListener} = useContext(GlobalContext);
   const { initializeSocket} = useRideMatching();
   const [loginPhoneNumber] = useState(
     route.params.phoneNumber,
@@ -131,8 +129,10 @@ const OTPScreen = ({route}) => {
         console.log('Driver Verification data', user);
         setID(user._id);
         setUserdetails(user);
+        setUserInfo(user);
         await DataStore.storeData('access_token', user?.token);
-        addListener(user?.token);
+        addNOTSocketListener(user?.token);
+        addRideMatchListener(user?._id);
         await DataStore.storeData('userdetails', user);
         await DataStore.storeData("bg_userToken", user?.token)
         await DataStore.storeData("bg_deviceImei", deviceImei)
