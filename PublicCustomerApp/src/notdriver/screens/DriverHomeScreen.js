@@ -20,7 +20,7 @@ import MapContainer from '../../common/map/MapContainer';
 import usePublicDriverStore from '../store/usePublicDriverStore';
 import DriverTabBar from '../bottomNavigation/DriverTabBar';
 import publicrideDriverApi from '../api/publicrideDriverApi';
-import { showNotification } from '../../components/NotificationManger';
+import { showNotification } from '../../common/components/NotificationManger';
 import useDeviceTokenStore from '../../common/store/useDeviceTokenStore';
 import useDriverStatusStore from '../store/useDriverStatusStore';
 import useCurrentScreenStore from '../../common/store/useCurrentScreenStore';

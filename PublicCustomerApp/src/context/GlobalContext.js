@@ -2,9 +2,9 @@ import React, {createContext, useEffect, useState, useCallback} from 'react';
 import PropTypes from 'prop-types';
 import {useColorScheme} from 'react-native';
 
-import { DataStore } from '../controllers/DataStore';
-import wsService from '../controllers/SocketServices';
-import { lightTheme, darkTheme } from '../constants/theme';
+import { DataStore } from '../common/controllers/DataStore';
+import wsService from '../notCustomer/controllers/SocketServices';
+import { lightTheme, darkTheme } from '../common/constants/theme';
 import notwsService from '../common/controllers/socketServices/NOTSocketServices';
 import publicrideDriverApi from '../notdriver/api/publicrideDriverApi';
 import RideMatchWSService from '../common/controllers/socketServices/RideMatchSocketService';
