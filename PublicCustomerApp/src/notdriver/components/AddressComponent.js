@@ -5,7 +5,7 @@ import useUserStore from '../../common/store/useUserStore';
 import { Colors, Fonts } from '../../common/constants/constants';
 import WayPointIndicator from '../Indicators/WayPointIndicator';
 import YellowMarker from '../../notdriver/assets/icons/YellowMarker.svg';
-import StatLocBlue from '../../notdriver/assets/icons/StatLocBlue.svg';
+import StatLocBlue from '../../notdriver/assets/icons/statLocBlue.svg';
 
 const AddressComponent = props => {
   const {userInfo} = useUserStore()
@@ -77,18 +77,6 @@ const AddressComponent = props => {
                 : t[displayName] || displayName} <Text style={styles.yourStopTxt}>{t[isMyStop(item.name)]}</Text>
             </Text>
             <Text style={styles.addTxt}>{item.address}</Text>
-            {/* isPublicRides */}
-            {/* {isPublicRides && item?.stopUpdated && item.updatedAt &&(
-              <View style={styles.waitingTimeContainer}>
-               <Text style={styles.waitingTimeTxt}>{item?.stopUpdated ? '✔' : '✘' } {' '}updatedAt: {DateTimeFormatter.requiredDateFormat(item?.updatedAt, 'hh:mm a')}</Text>
-               <Text style={styles.waitingTimeTxt}>{index === transformedData.length - 1 ? 'Total Waiting Time: ' : 'Waiting Time: '}{DateTimeFormatter.formatMinutesToDuration(item.driverWaitTime)}</Text> 
-              </View>
-            )} */}
-            {/* {!isPublicRides && item?.passangers &&item?.passangers?.length !== 0 && (
-              <Text style={styles.countTxt}>
-                <Students /> {item?.passangers?.length}
-              </Text>
-            )} */}
           </View>
         );
       })}

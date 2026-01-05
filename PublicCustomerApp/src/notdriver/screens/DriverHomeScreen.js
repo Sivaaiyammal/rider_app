@@ -49,6 +49,30 @@ import DriverPermissionScreen from './DriverPermissionScreen';
 import DriverVehiclesDetails from './DriverVehicleDetails/DriverVehiclesDetails';
 import EditDriverVehicleDetails from './EditDriverVehicleDetails';
 import DriverApprovalScreen from './DriverApprovalScreen';
+import TripAccept from './TripAccept';
+import AddDriverLocation from './AddDriverLocation';
+import PublicDriverTrackingScreen from './PublicDriverTrackingScreen';
+import StopChangeRequest from './StopChangeRequest';
+import DriverAskVehicle from './DriverAskVehicle';
+import TicketSupportScreen from '../../common/screens/RiseSupportTicket/TicketSupportScreen';
+import TicketDetailScreen from '../../common/screens/RiseSupportTicket/TicketDetailScreen';
+import TripDetailScreen from './TripHistory/TripDetailScreen';
+import DriverBasicDetails from './DriverDetails/DriverBasicDetails';
+import DriverPersonalInfo from './DriverDetails/DriverPersonalInfo';
+import DriverProofDocuments from './DriverDetails/DriverProofDocuments';
+import BankAccountDetails from './DriverDetails/BankAccountDetails';
+import DeleteAccount from './DeleteAccount';
+import DriverEditInfo from './DriverDetails/DriverEditInfo';
+import SupportScreen from './SupportScreen';
+import DriverVehicleApprovalScreen from './DriverVehicleApprovalScreen';
+import DriverAccountRevokeScreen from './DriverAccountRevokeScreen';
+import DriverHelpSupport from './DriverHelpSupport';
+import WriteReview from './WriteReview';
+import UpComingTripsList from './UpComingTripsList';
+import UpComingTripsView from './UpComingTrips/UpComingTripsView';
+import DriverIDCard from './DriverIDCard';
+import PublicRidesPriceChart from './PublicRidesPriceChart/PublicRidesPriceChart';
+import PublicRidesPriceChartDetails from './PublicRidesPriceChart/PublicRidesPriceChartDetails';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -513,58 +537,58 @@ const PublicRidesDriverHomeScreen = () => {
           return <EditDriverVehicleDetails />;
       case 'DriverApprovalScreen':
           return <DriverApprovalScreen />;
-      // case 'TripAccept':
-      //   return <TripAccept />
-      // case 'AddDriverLocation':
-      //     return <AddDriverLocation isPassanger={false} updatePassangerLocation={null}/>
-      // case 'PublicDriverTrackingScreen':
-      //     return <PublicDriverTrackingScreen />
-      // case 'StopChangeRequest':
-      //     return <StopChangeRequest />
-      // case 'DriverAskVehicle':
-      //     return <DriverAskVehicle />
-      // case 'TicketSupportScreen':
-      //     return <TicketSupportScreen />
-      // case 'TicketDetailScreen':
-      //       return <TicketDetailScreen />
-      // case 'TripDetailScreen':
-      //       return <TripDetailScreen />
-      // case 'DriverAccountDetails':
-      //         return <DriverBasicDetails />
-      // case 'DriverPersonalInfo':
-      //         return <DriverPersonalInfo />
-      // case 'DriverProofDocuments':
-      //         return <DriverProofDocuments />
-      // case 'BankAccountDetails':
-      //         return <BankAccountDetails />
-      // case 'DeleteAccount':
-      //         return <DeleteAccount />
-      // case 'DriverEditInfo':
-      //         return <DriverEditInfo />
+      case 'TripAccept':
+        return <TripAccept />
+      case 'AddDriverLocation':
+          return <AddDriverLocation isPassanger={false} updatePassangerLocation={null}/>
+      case 'PublicDriverTrackingScreen':
+          return <PublicDriverTrackingScreen />
+      case 'StopChangeRequest':
+          return <StopChangeRequest />
+      case 'DriverAskVehicle':
+          return <DriverAskVehicle />
+      case 'TicketSupportScreen':
+          return <TicketSupportScreen />
+      case 'TicketDetailScreen':
+            return <TicketDetailScreen />
+      case 'TripDetailScreen':
+            return <TripDetailScreen />
+      case 'DriverAccountDetails':
+              return <DriverBasicDetails />
+      case 'DriverPersonalInfo':
+              return <DriverPersonalInfo />
+      case 'DriverProofDocuments':
+              return <DriverProofDocuments />
+      case 'BankAccountDetails':
+              return <BankAccountDetails />
+      case 'DeleteAccount':
+              return <DeleteAccount />
+      case 'DriverEditInfo':
+              return <DriverEditInfo />
       // case 'LinkPaymentGateway':
       //         return <LinkPaymentGateway />
-      // case 'SupportScreen':
-      //         return <SupportScreen isStackScreen={true}/>
-      // case 'DriverVehicleApprovalScreen':
-      //         return <DriverVehicleApprovalScreen />
-      // case 'AccountRevokeScreen':
-      //         return <DriverAccountRevokeScreen />
-      // case 'DriverHelpSupport':
-      //         return <DriverHelpSupport />
-      // case 'WriteReview':
-      //         return <WriteReview isStackScreen={true}/>
-      // case 'UpComingTripsList':
-      //         return <UpComingTripsList />
-      // case 'UpComingTripsView':
-      //         return <UpComingTripsView />
-      // case 'DriverIDCard':
-      //         return <DriverIDCard />
+      case 'SupportScreen':
+              return <SupportScreen isStackScreen={true}/>
+      case 'DriverVehicleApprovalScreen':
+              return <DriverVehicleApprovalScreen />
+      case 'AccountRevokeScreen':
+              return <DriverAccountRevokeScreen />
+      case 'DriverHelpSupport':
+              return <DriverHelpSupport />
+      case 'WriteReview':
+              return <WriteReview isStackScreen={true}/>
+      case 'UpComingTripsList':
+              return <UpComingTripsList />
+      case 'UpComingTripsView':
+              return <UpComingTripsView />
+      case 'DriverIDCard':
+              return <DriverIDCard />
       // case 'LanguageSelectionScreen':
       //         return <LanguageSelectionScreen fromSettings />; // <LanguageSelectionScreen isStackScreen={true}/>
-      // case 'PriceChart':
-      //         return <PublicRidesPriceChart />;
-      // case 'PriceChartDetails':
-      //         return <PublicRidesPriceChartDetails />;
+      case 'PriceChart':
+              return <PublicRidesPriceChart />;
+      case 'PriceChartDetails':
+              return <PublicRidesPriceChartDetails />;
       default:
         return <Text>Home</Text>;
     }

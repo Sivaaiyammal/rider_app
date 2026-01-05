@@ -1,19 +1,17 @@
-import { NativeModules, StyleSheet, Text, View } from 'react-native'
-import React, { useContext, useEffect } from 'react'
-import { useSelectedRouteStore } from '../../../Store/useTripsStore'
-import UseBackButton from '../../../hooks/useBackButton';
-import { useStackScreenStore } from '../../../Store/useStackScreenStore';
+import { NativeModules, StyleSheet, View } from 'react-native'
+import React, { useEffect } from 'react'
+import { useSelectedRouteStore } from '../../store/useTripsStore';
+import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
+import { useMapMarkerStore } from '../../../common/store/useMapMarkerStore';
+import usePublicDriverStore from '../../store/usePublicDriverStore';
+import UseBackButton from '../../../common/hooks/UseBackButton';
 import PublicDriverTripPaymentScreen from '../PublicDriverTripPaymentScreen';
-import { useMapMarkerStore } from '../../../Store/useMapMarkerStore';
-import GlobalContext from '../../../Context/GlobalContext';
-import usePublicDriverStore from '../../../Store/usePublicDriverStore';
 
 const {NeNativeModule} = NativeModules;
 
 const TripDetailScreen = () => {
     const {selectedTrip, setSelectedTrip} = useSelectedRouteStore();
     const {goBack} = useStackScreenStore();
-    const {userInfo} = useContext(GlobalContext);
     const {setDirectionPoints,setMapBounds} = useMapMarkerStore();
     const onBackPress = () => {
         goBack('Home')

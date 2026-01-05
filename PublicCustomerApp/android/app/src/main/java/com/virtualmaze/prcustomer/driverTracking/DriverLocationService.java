@@ -172,7 +172,7 @@ public class DriverLocationService extends Service {
                     storedToken     = normalize(AsyncStorageReader.readValueFromAsyncStorage(this, "deviceToken"), null);
                     storedDistanceUnit = normalize(AsyncStorageReader.readValueFromAsyncStorage(this, "unitType"), "km");
 
-                    if (isDriverRole(userRole) && storedUserToken == null) {
+                    if (storedUserToken == null) {
                         Log.e(TAG, "Driver role requires storedUserToken. Stopping service.");
                         stopForegroundSafe();
                         stopSelf();
@@ -338,13 +338,13 @@ public class DriverLocationService extends Service {
             return;
         }
 
-        if (!isDriverRole(userRole)) {
-            driverOverlayController.stop();
-            if (overlayService != null) {
-                overlayService.stopOverlay();
-            }
-            return;
-        }
+        // if (!isDriverRole(userRole)) {
+        //     driverOverlayController.stop();
+        //     if (overlayService != null) {
+        //         overlayService.stopOverlay();
+        //     }
+        //     return;
+        // }
 
         if (!hasOverlayPermission()) {
             Log.w(TAG, "Overlay permission missing; driver overlay disabled");
@@ -591,10 +591,10 @@ public class DriverLocationService extends Service {
         // DO NOT read storage here; rely on refresher
         updateNotification(currentActivity, "");
         boolean overlayPermitted = hasOverlayPermission();
-        if (driverOverlayController != null && isDriverRole(userRole) && overlayPermitted) {
+        if (driverOverlayController != null  && overlayPermitted) {
             driverOverlayController.start();
         }
-        if (overlayService != null && overlayPermitted && isDriverRole(userRole)) {
+        if (overlayService != null && overlayPermitted) {
             overlayService.ensureOverlayBubble();
         }
         return START_STICKY;
