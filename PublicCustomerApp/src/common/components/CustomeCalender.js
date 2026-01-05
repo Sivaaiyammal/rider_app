@@ -2,7 +2,7 @@ import React from 'react';
 import {Calendar} from 'react-native-calendars';
 import PropTypes from 'prop-types';
 import { Colors } from '../constants/constants';
-import { Fonts } from '../../constants/constants';
+import { Fonts } from '../constants/constants';
 
 
 const getDatesBetween = (startDate, endDate) => {

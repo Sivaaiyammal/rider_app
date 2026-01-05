@@ -15,7 +15,7 @@ import { useStackScreenStore } from '../../common/store/useStackScreenStore';
 import useTripsStore from '../store/useTripsStore';
 import { useMapMarkerStore } from '../../common/store/useMapMarkerStore';
 import { showNotification } from '../../common/components/Alerts/showNotification';
-import tripAlert from '../../controllers/TripAlert';
+import tripAlert from '../../common/controllers/TripAlert';
 import { DataStore } from '../../common/controllers/DataStore';
 import BGLocationTask from '../../common/controllers/BGLocationTask';
 import driverWaitingTime from '../Controller/DriverWaitingTime';

@@ -6,7 +6,7 @@ import SideDrawerPublicRides from '../components/SideDrawerPublicRides';
 import HotSpotRegions from '../components/HotSpotRegions';
 import HomeHeader from '../components/HomeHeader';
 import TrackingMapIcons from '../../common/components/Alerts/TrackingMapIcons';
-import { Fonts } from '../../constants/constants';
+import { Fonts } from '../../common/constants/constants';
 import { Colors } from '../../common/constants/constants';
 import { RouteScreenStyles } from '../styles/RouteScreenStyles';
 import { height } from '../../common/utils/scalingutils';

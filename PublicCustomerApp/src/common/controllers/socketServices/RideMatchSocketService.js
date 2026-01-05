@@ -8,7 +8,7 @@ import useHotSpotStore from '../../../notdriver/store/useHotSpotStore';
 import { useMapMarkerStore } from '../../store/useMapMarkerStore';
 import useTripsStore from '../../../notdriver/store/useTripsStore';
 import { DataStore } from '../DataStore';
-import { showNotification } from '../../../components/NotificationManger';
+import { showNotification } from '../../../common/components/NotificationManger';
 import tripAlert from '../TripAlert';
 
 const SOCKET_URL = Config.DRIVER_SOCKET_URL;

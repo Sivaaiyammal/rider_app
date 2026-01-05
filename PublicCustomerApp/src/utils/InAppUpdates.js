@@ -4,7 +4,7 @@ import SpInAppUpdates, {
 } from 'sp-react-native-in-app-updates';
 import { Platform, Alert } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import useConfigStore from '../store/useConfigStore';
+import useConfigStore from '../notCustomer/store/useConfigStore';
 
 class InAppUpdates {
   constructor() {

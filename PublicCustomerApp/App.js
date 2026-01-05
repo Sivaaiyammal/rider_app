@@ -12,7 +12,7 @@ import crashlytics from '@react-native-firebase/crashlytics';
 
 import { ApolloProvider, HttpLink, ApolloClient, InMemoryCache } from '@apollo/client';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import FallbackComponent from './src/components/FallbackComponent';
+import FallbackComponent from './src/common/components/FallbackComponent';
 
 
 const App = () => {

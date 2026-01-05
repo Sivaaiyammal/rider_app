@@ -6,26 +6,25 @@ import React, {
   useMemo,
 } from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {DataStore} from '../controllers/DataStore';
-import SplashScreen from '../screens/SplashScreen';
-import WelcomeScreen from '../screens/OnBoard/WelcomeScreen.jsx';
-import LanguageScreen from '../screens/OnBoard/LanguageScreen.jsx';
-import OnBoarding from '../screens/OnBoard/OnBoarding.jsx';
-import Home from '../screens/Home';
-import TrackingTestScreen from '../screens/TrackingTestScreen.jsx';
-import LocationPermissionScreen from '../screens/LocationPermissionScreen';
-import LoginScreen from '../screens/authentication/LoginScreen';
-import RegisterationScreen from '../screens/authentication/RegisterationScreen';
-import OTPScreen from '../screens/authentication/OTPScreen';
-import DriverAccessScreen from '../screens/Driver/DriverAccessScreen.jsx';
-import useUserInfoStore from '../store/useUserInfoStore';
+import {DataStore} from '../common/controllers/DataStore';
+import SplashScreen from '../common/screens/SplashScreen';
+import WelcomeScreen from '../common/screens/OnBoard/WelcomeScreen.jsx';
+import LanguageScreen from '../common/screens/OnBoard/LanguageScreen.jsx';
+import OnBoarding from '../common/screens/OnBoard/OnBoarding.jsx';
+import Home from '../notCustomer/screens/Home';
+import TrackingTestScreen from '../common/screens/TrackingTestScreen.jsx';
+import LocationPermissionScreen from '../common/screens/LocationPermissionScreen';
+import LoginScreen from '../common/screens/authentication/LoginScreen';
+import RegisterationScreen from '../common/screens/authentication/RegisterationScreen';
+import OTPScreen from '../common/screens/authentication/OTPScreen';
+import DriverAccessScreen from '../common/screens/Driver/DriverAccessScreen.jsx';
+import useUserInfoStore from '../common/store/useUserInfoStore';
 import {GlobalContext} from '../context/GlobalContext';
 import PropTypes from 'prop-types';
 import i18n from '../i18n';
 import InAppUpdates from '../utils/InAppUpdates';
-import {prefetchUserStats} from '../controllers/UserStatsPrefetch';
 
-import ContactScreen from '../features/about/screens/ContactScreen';
+import ContactScreen from '../notCustomer/features/about/screens/ContactScreen';
 import useUserStore from '../common/store/useUserStore.js';
 import DriverHomeScreen from '../notdriver/screens/DriverHomeScreen.js';
 
@@ -66,11 +65,7 @@ const Navigation = () => {
     if (access_token.data) {
       setInitialRoute('HomeScreen');
       addListener(access_token.data);
-      try {
-        await prefetchUserStats();
-      } catch (e) {
-        console.warn('User stats prefetch failed', e);
-      }
+      
     } else if (language.data && language.data !== 'languageDone') {
       // If language is stored as a language code (en, ta, hi, etc.)
       setLanguage(language.data);

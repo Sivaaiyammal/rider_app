@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import NetworkConnectivity from '../controllers/NetworkConnectivity';
+import NetworkConnectivity from '../common/controllers/NetworkConnectivity';
 import PropTypes from 'prop-types';
 
 const NetworkContext = createContext();

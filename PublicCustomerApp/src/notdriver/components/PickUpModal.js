@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import React, {useRef, useState} from 'react'
-import OTPInput from '../../components/Common/OTPInput';
+import OTPInput from '../../common/components/OTPInput';
 import {  width } from '../../common/utils/scalingutils';
 import { Colors, Fonts } from '../../common/constants/constants';
 import Locgrey from '../../notdriver/assets/icons/loc_grey.svg'

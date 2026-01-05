@@ -8,6 +8,9 @@ import HatchBack from '../../common/assets/icons/hatchback.svg'
 import Sedan from '../../common/assets/icons/sedan.svg'
 import SUV from '../../common/assets/icons/suv.svg'
 import MotorBike from '../../common/assets/icons/motorbike.svg'
+import OnWayTrip from '../../notCustomer/assets/image/svgIcons/onWayTrip.svg';
+import RoundTrip from '../../notCustomer/assets/image/svgIcons/roundTrip.svg';
+import StopsTrip from '../../notCustomer/assets/image/svgIcons/stopsTrip.svg';
 
 import ThingsA from '../../notdriver/assets/icons/thingsA.svg';
 import ThingsB from '../../notdriver/assets/icons/thingsB.svg';
@@ -91,6 +94,46 @@ export const tabBtns = [
     title: "submit"
   },
 ];
+
+ export const tripType = [
+  {
+    id: 1,
+    name: 'One Way',
+    icon: <OnWayTrip />,
+    value:'one_way'
+  },
+  {
+    id: 2,
+    name: 'Round Trip',
+    icon: <RoundTrip />,
+    value:'round_trip',
+  },
+  {
+    id: 3,
+    name: 'Add Five Stops',
+    icon: <StopsTrip />,
+    value:'round_trip',
+  },
+];
+
+export const rideType = [
+  {
+    id: 1,
+    translationKey: 'pickup_now',
+    name: 'Pickup Now',
+    value:'instant',
+    disabled: false
+  },
+  {
+    id: 2,
+    translationKey: 'schedule',
+    name: 'Schedule',
+    value:'schedule',
+    disabled: true,
+    comingSoon: true
+  }
+];
+
 
 export const device_type = [
   {

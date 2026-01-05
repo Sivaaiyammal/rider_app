@@ -1,4 +1,4 @@
-import APIRequest from "../../controllers/APIRequest";
+import APIRequest from "../APIRequest";
 
 export const getPresignedImageUrl = async (objectName, token ) => {
     try {

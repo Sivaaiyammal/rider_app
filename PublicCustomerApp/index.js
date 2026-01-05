@@ -21,5 +21,5 @@ AppRegistry.registerHeadlessTask('OverlayPayloadTask', () => async (data) => {
   } catch {}
 });
 
-LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
+// LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();

@@ -5,7 +5,7 @@ import useUserStore from '../../common/store/useUserStore';
 import { useStackScreenStore } from '../../common/store/useStackScreenStore';
 import useDeviceAPIStore from '../../common/store/useDeviceAPIStore';
 import { useMapMarkerStore } from '../../common/store/useMapMarkerStore';
-import useRideSelectionStore from '../../store/useRideSelectionStore';
+import useRideSelectionStore from '../../common/store/useRideSelectionStore';
 import { Colors, contactPhone, Fonts } from '../../common/constants/constants';
 import { showNotification } from '../../common/components/Alerts/showNotification';
 import APIRequest from '../../common/APIRequest';

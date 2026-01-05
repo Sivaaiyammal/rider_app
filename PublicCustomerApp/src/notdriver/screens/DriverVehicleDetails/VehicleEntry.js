@@ -7,7 +7,7 @@ import moment from 'moment';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import { carColorList, indianAutoRickshawBrands, indianBikeBrands, indianElectricAutoRickshawBrands, indianElectricHatchbackBrands, indianElectricSedanBrands, indianElectricSUVBrands, indianHatchbackBrands, indianSedanBrands, indianSUVBrands, vehicleList } from '../../../common/constants/jsonData';
 import useUserStore from '../../../common/store/useUserStore';
-import APIRequest from '../../../controllers/APIRequest';
+import APIRequest from '../../../common/controllers/APIRequest';
 import { showNotification } from '../../../common/components/Alerts/showNotification';
 import { Colors, Fonts, vehicleNumberPattern } from '../../../common/constants/constants';
 import publicrideDriverApi from '../../api/publicrideDriverApi';
