@@ -400,7 +400,7 @@ class NEMap extends Component {
           }
           bounds={this.state.mapLoaded? this.props.bounds : null}
           navigation={this.props.navigation}
-          settingsProps={defaultSettings}
+          settingsProps={this.props.settingsProps }
           searchUnit={this.props.searchUnit}
         />
       </>
@@ -443,7 +443,8 @@ NEMap.propTypes = {
   onDirectionInit: PropsTypes.func,
   onRouteLoading: PropsTypes.func,
   onNativeError: PropsTypes.func,
-  onNavigationError: PropsTypes.func
+  onNavigationError: PropsTypes.func,
+  settingsProps: PropsTypes.object,
 };
 
 export default NEMap;

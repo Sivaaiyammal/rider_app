@@ -33,6 +33,17 @@ const MapContainer = () => {
     setNavigationError,
     setRouteNotFound
   } = useMapMarkerStore();
+   const defaultSettings = {
+    "distanceFormate": "Kilometers(km)/ Meters(m)",
+    "ferry": "Avoid",
+    "gpsReliability": "High",
+    "highways": "Prefer",
+    "language": "en",
+    "livingStreet": "Slightly Prefer",
+    "mapAppearance": "Small",
+    "navAccuracy": "Medium",
+    "tolls": "Slightly Prefer"
+  }
 
   const lastUpdateRef = useRef(0);
 
@@ -83,6 +94,7 @@ const MapContainer = () => {
         onNativeError={setNativeError}
         onNavigationError={setNavigationError}
         routeNotFound={setRouteNotFound}
+        settingsProps={defaultSettings}
       />
     </View>
   );
