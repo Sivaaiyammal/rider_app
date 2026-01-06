@@ -48,7 +48,7 @@ const DriverMapScreen = (props) => {
       >
         <View style={styles.refreshContentRow}>
           <Text style={[styles.contactText, {bottom:5}]}>
-            {isRefreshing ? t.refreshing || 'Refreshing...' : t.check_status || 't.check_status'}
+            {isRefreshing ? t('refreshing') || 'Refreshing...' : t('check_status')}
           </Text>
           {isRefreshing && <ActivityIndicator animating={isRefreshing} size={14} color={'#1976D2'}/>}
           
@@ -69,35 +69,35 @@ const DriverMapScreen = (props) => {
         {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
         {blocked ? 
         <View style={[styles.blockedContainer,{bottom: height * 0.09 +(layOutHeight ||0)}]}>
-          <Text style={styles.blockedTitle}>{t.your_account_has_been_blocked}</Text>
-          <Text style={styles.blockedSubtitle}>{t.due_to_one_or_more_of_the_following_reasons}</Text>
+          <Text style={styles.blockedTitle}>{t('your_account_has_been_blocked')}</Text>
+          <Text style={styles.blockedSubtitle}>{t('due_to_one_or_more_of_the_following_reasons')}</Text>
           <View style={styles.reasonsContainer}>
-            <Text style={styles.reasonText}>• {t.pending_payment_dues}</Text>
-            <Text style={styles.reasonText}>• {t.high_number_of_rejected_trips}</Text>
-            <Text style={styles.reasonText}>• {t.low_driver_ratings}</Text>
+            <Text style={styles.reasonText}>• {t('pending_payment_dues')}</Text>
+            <Text style={styles.reasonText}>• {t('high_number_of_rejected_trips')}</Text>
+            <Text style={styles.reasonText}>• {t('low_driver_ratings')}</Text>
           </View>
           <TouchableOpacity style={styles.contactBtn} onPress={() => setStackScreen('SupportScreen')}>
-          <Text style={styles.contactText}>{t.please_contact_support_for_more_information}</Text>
+          <Text style={styles.contactText}>{t('please_contact_support_for_more_information')}</Text>
           </TouchableOpacity>
           {refreshBtn()}
         </View> 
         : !approved ? <View style={[styles.blockedContainer,{bottom: height * 0.09 +(layOutHeight ||0)}]}>
-        <Text style={styles.blockedTitle}>{t.your_account_is_under_review}</Text>
-        <Text style={styles.blockedSubtitle}>{t.please_wait_while_we_verify_your_account}</Text>
+        <Text style={styles.blockedTitle}>{t('your_account_is_under_review')}</Text>
+        <Text style={styles.blockedSubtitle}>{t('please_wait_while_we_verify_your_account')}</Text>
         <View style={styles.reasonsContainer}>
-          <Text style={styles.reasonText}>• {t.document_verification_in_progress}</Text>
-          <Text style={styles.reasonText}>• {t.background_check_pending}</Text>
-          <Text style={styles.reasonText}>• {t.vehicle_inspection_review}</Text>
+          <Text style={styles.reasonText}>• {t('document_verification_in_progress')}</Text>
+          <Text style={styles.reasonText}>• {t('background_check_pending')}</Text>
+          <Text style={styles.reasonText}>• {t('vehicle_inspection_review')}</Text>
            {refreshBtn()}
         </View>
       </View> : !isBankVerified ? 
         <View style={[styles.bankVerificationContainer,{bottom:height * 0.09 +(layOutHeight ||0)}]}>
-          <Text style={styles.bankVerificationTitle}>{t.bank_details_under_review}</Text>
-          <Text style={styles.bankVerificationSubtitle}>{t.your_bank_account_is_being_verified_for_payment_processing}</Text>
+          <Text style={styles.bankVerificationTitle}>{t('bank_details_under_review')}</Text>
+          <Text style={styles.bankVerificationSubtitle}>{t('your_bank_account_is_being_verified_for_payment_processing')}</Text>
           <View style={styles.bankReasonsContainer}>
-            <Text style={styles.bankReasonText}>• {t.bank_account_verification_in_progress}</Text>
-            <Text style={styles.bankReasonText}>• {t.payment_details_being_validated}</Text>
-            <Text style={styles.bankReasonText}>• {t.this_process_usually_takes_1_2_business_days}</Text>
+            <Text style={styles.bankReasonText}>• {t('bank_account_verification_in_progress')}</Text>
+            <Text style={styles.bankReasonText}>• {t('payment_details_being_validated')}</Text>
+            <Text style={styles.bankReasonText}>• {t('this_process_usually_takes_1_2_business_days')}</Text>
           </View>
           <TouchableOpacity style={styles.bankContactBtn} onPress={() => setStackScreen('SupportScreen')}>
             <Text style={styles.bankContactText}>{t.contact_support_if_verification_takes_longer}</Text>

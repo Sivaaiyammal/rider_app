@@ -1,11 +1,10 @@
 import React, { useContext, useState } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Linking, ScrollView, Platform } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Linking, ScrollView, Platform } from 'react-native';
 import {useQuery} from 'react-query';
 import useUserStore from '../../common/store/useUserStore';
 import { useStackScreenStore } from '../../common/store/useStackScreenStore';
 import useDeviceAPIStore from '../../common/store/useDeviceAPIStore';
 import { useMapMarkerStore } from '../../common/store/useMapMarkerStore';
-import useRideSelectionStore from '../../common/store/useRideSelectionStore';
 import { Colors, contactPhone, Fonts } from '../../common/constants/constants';
 import { showNotification } from '../../common/components/Alerts/showNotification';
 import APIRequest from '../../common/APIRequest';
@@ -19,9 +18,11 @@ import ApprovalIcon from '../../notdriver/assets/icons/Approval_BG.svg';
 import DocWhiteIcon from '../../notdriver/assets/icons/doc_white.svg';
 import { useTranslation } from 'react-i18next';
 import usePublicDriverStore from '../store/usePublicDriverStore';
+import GlobalContext from '../../context/GlobalContext';
 
 const DriverApprovalScreen = () => {
-  const { userInfo, logout } = useUserStore()
+  const { userInfo } = useUserStore()
+  const {logout} = useContext(GlobalContext)
   const {setStackScreen} = useStackScreenStore();
   const {userDeviceId} = useDeviceAPIStore();
   const {driverRole, isApproved, isBlocked, unBlockRequestSent, setUnBlockRequestSent, driverInfo, setDriverInfo} = usePublicDriverStore();
@@ -30,7 +31,7 @@ const DriverApprovalScreen = () => {
   const [loading, setLoading] = useState(false)
   const {t} = useTranslation();
   const {setMapMarkers} = useMapMarkerStore();
-  const resetAllStore = useRideSelectionStore();
+  // const resetAllStore = useRideSelectionStore();
 
   const handleContactUs = () => {
     Linking.openURL(`tel:${contactPhone}`);
@@ -105,7 +106,7 @@ const DriverApprovalScreen = () => {
       setMapMarkers(null);
 
       setTimeout(() => {
-        resetAllStore();
+        // resetAllStore();
         logout('driver');
         setLoading(false);
         BGLocationTask.stopDriverBgTask();

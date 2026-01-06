@@ -6,7 +6,6 @@ import usePublicDriverStore from '../store/usePublicDriverStore';
 import useUserStore from '../../common/store/useUserStore';
 import BGLocationTask from '../../common/controllers/BGLocationTask';
 import overlayController from '../Controller/OverlayController';
-import { DataStore } from '../../common/controllers/DataStore';
 import { showNotification } from '../../common/components/Alerts/showNotification';
 import { useStackScreenStore } from '../../common/store/useStackScreenStore';
 import { useMapMarkerStore } from '../../common/store/useMapMarkerStore';

@@ -48,7 +48,7 @@ const SideDrawerPublicRides = () => {
       name: 'Price Chart',
       screenName: 'PriceChart',
       icons: <PriceChart width={20} height={20} />,
-      title: 'Price Chart',
+      title: 'price_chart',
     },
   
   ]);
@@ -123,7 +123,7 @@ const SideDrawerPublicRides = () => {
         ]}
         >
         <View style={driverDrawerStyles.subContainer}>
-          <DriverLogo width={160} height={90} />
+          {/* <DriverLogo width={160} height={90} /> */}
           <Text style={driverDrawerStyles.versionText}>
             v{DeviceInfo.getVersion()} ({DeviceInfo.getBuildNumber()})
           </Text>

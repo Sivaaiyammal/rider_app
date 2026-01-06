@@ -23,7 +23,13 @@ import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 import InputField from '../../common/components/InputField';
 
 const PublicDriverTrackingScreen = () => {
-  const {activeTripData , setActiveTripData, setFareBreakDown,newStopData} = useTripsStore();
+  const {
+    activeTripData,
+    setActiveTripData,
+    setFareBreakDown,
+    newStopData,
+    setNewStopData,
+  } = useTripsStore();
   const {setHasActiveTrip} = useTripAcceptStore();
   const [isLoading, setIsLoading] = useState(false)
   const {userInfo} = useUserStore()
@@ -172,9 +178,21 @@ const PublicDriverTrackingScreen = () => {
     getIsOnGoingTrip()
   },[])
 
+  useEffect(() => {
+    if (!newStopData) {
+      return;
+    }
+    // Defer navigation so we don't mutate navigation state while React renders
+    const timer = setTimeout(() => {
+      setStackScreen('StopChangeRequest');
+      setNewStopData(null);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [newStopData, setStackScreen, setNewStopData]);
+
   const renderTripStatusComponent = () => {
      if (newStopData) {
-      return setStackScreen('StopChangeRequest')
+      return null;
      }
      if (tripsStatus === 'ACCEPTED' || tripsStatus === 'PICKEDUP') {
       return <DriverOnRide />

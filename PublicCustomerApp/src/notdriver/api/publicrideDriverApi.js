@@ -1,6 +1,6 @@
 import Config from 'react-native-config';
-import { DataStore } from '../../controllers/DataStore';
 import APIRequest from '../../common/APIRequest';
+import { DataStore } from '../../common/controllers/DataStore';
 
 class PublicrideDriverApi {
   constructor() {
@@ -14,6 +14,7 @@ class PublicrideDriverApi {
         const parsedData = userData.data;
         if (parsedData && parsedData?.token) {
           this.token = parsedData?.token;
+          console.log('Token initialized in PublicrideDriverApi', this.token);
         }
       }
     } catch (error) {
@@ -100,6 +101,7 @@ class PublicrideDriverApi {
   async acceptTrip(payload, token=this.token) {
     try {
       const api = new APIRequest(Config.ROOT_API_URL)
+      // console.log('Accept Trip Payload:', payload, token);
       const response = await api.request(`/publicrides/driver/acceptRide`, 'POST', payload, token);
       return response;
     } catch (error) {
