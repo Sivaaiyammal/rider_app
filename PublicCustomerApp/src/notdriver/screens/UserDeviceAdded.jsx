@@ -52,29 +52,8 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
     <>
       <ScrollView style={userDeviceStyle.container} contentContainerStyle={{ paddingBottom: 100 }}>
         <Text style={{ fontSize: 14, fontFamily: Fonts.light}}>
-          {'We need location, background tracking, and notification permissions for real-time trip monitoring, passenger alerts, and seamless navigation updates while driving.'}
+          {t('permission_screen_info')}
         </Text>
-        {/* {hasLocationPermission && hasBackgroundLocationPermission && hasLocationPermission && (
-          <View style={userDeviceStyle.permissionContainer}>
-            <View style={userDeviceStyle.upper}>
-              <View style={userDeviceStyle.iconWithText}>
-                <View style={userDeviceStyle.iconContainer}>
-                  <LocTrackingPermission width={20} height={20} />
-                </View>
-
-                <Text style={userDeviceStyle.title}>
-                  Location Tracking
-                </Text>
-              </View>
-
-              <CustomToggleButton
-                isToggled={BGLocationTask.isRunning()}
-                setIsToggled={() => handleToggleButton('tracking')}
-              />
-            </View>
-          </View>
-        )} */}
-        <Text style={{ color: 'black',marginLeft: 10, fontSize: 16, fontFamily: Fonts.regular, marginVertical: 10, marginTop: 20 }}>{t('req_tracking_perm')}</Text>
 
         <View style={userDeviceStyle.permissionContainer}>
           <View style={userDeviceStyle.upper}>
@@ -148,91 +127,6 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
             </View>
           )}
         </View>
-       
-
-
-          <>
-            {/* <Text style={{ color: 'black', fontSize: 16, fontFamily: Fonts.regular,marginLeft: 10, marginVertical: 10 }}> {t.opt_perm}</Text> */}
-
-        
-
-            {/* <View style={userDeviceStyle.permissionContainer}> */}
-              {/* {Platform.OS === 'android' ? (
-                <View style={userDeviceStyle.upper}>
-                  <View style={{ gap: 5, flexDirection: 'row', alignItems: 'center' }}>
-                    <View style={userDeviceStyle.iconWithText}>
-                      <View style={userDeviceStyle.iconContainer}>
-                        <UsageStatsPermission width={20} height={20} />
-                      </View>
-
-                      <Text style={[userDeviceStyle.title, { fontSize: 12 }]}>
-                        {t.usage_stats_permission}
-                      </Text>
-                      <Popover
-
-                        from={(
-                          <TouchableOpacity>
-                            <Icon name="help-outline" size={16} color="rgba(0,0,0,0.7)" />
-                          </TouchableOpacity>
-                        )}>
-                        <Text style={{ color: "black", padding: 8, fontFamily: Fonts.light }}>
-                          {t.usage_stats_permission_info}
-                        </Text>
-                        <TouchableOpacity onPress={() => Linking.openURL(privacyPolicyURL)}>
-                        <Text style={{ color: Colors.skyBlue,fontFamily: Fonts.light, padding: 8 }}>{t.privacy_policy}</Text>
-                        </TouchableOpacity>
-                       
-                      </Popover>
-                    </View>
-
-                  </View>
-                  <ToggleButton
-                    isToggled={hasUsageStatsPermission}
-                    setIsToggled={() => handleToggleButton('usageStats')}
-                  />
-                </View>
-              ) : (
-                <></>
-              )
-              } */}
-            {/* </View> */}
-
-            {/* <View style={userDeviceStyle.permissionContainer}>
-              {Platform.OS === 'android' ? (
-                <View style={userDeviceStyle.upper}>
-                  <View style={{ gap: 5, flexDirection: 'row', alignItems: 'center' }}>
-                    <View style={userDeviceStyle.iconWithText}>
-                      <View style={userDeviceStyle.iconContainer}>
-                        <DeviceAccessibility width={20} height={20} />
-                      </View>
-                      <Text style={[userDeviceStyle.title, { fontSize: 12 }]}>
-                        {t.device_accessibility_service}
-                      </Text>
-                      <Popover
-                        from={(
-                          <TouchableOpacity>
-                            <Icon name="help-outline" size={16} color="rgba(0,0,0,0.7)" />
-                          </TouchableOpacity>
-                        )}>
-                        <Text style={{ color: "black", padding: 8, fontFamily: Fonts.light }}>
-                          {t.device_accessibility_service_info} {`\n`} {'Accessibility -> Installed apps -> VM Trackers -> toggle on'}
-                        </Text>
-                      </Popover>
-                    </View>
-
-                  </View>
-                  <ToggleButton
-                    isToggled={hasAccessibilityPermission}
-                    setIsToggled={() => handleToggleButton('accessibility')}
-                  />
-                </View>
-              ) : (
-                <></>
-              )
-              }
-            </View> */}
-          </>
-
            <View style={[userDeviceStyle.upper,{width: '94%', alignSelf: 'center', marginTop:10}]}>
            <View style={{ gap: 5, flexDirection: 'row', alignItems: 'center' }}>
              <View style={userDeviceStyle.iconWithText}>
@@ -241,7 +135,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
                </View>
 
                <Text style={[userDeviceStyle.title, { width: "100%" }]}>
-                 Display Over Other Apps
+                 {t('display_over_other_apps')}
                </Text>
                <Popover
                  from={(
@@ -250,7 +144,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
                    </TouchableOpacity>
                  )}>
                  <Text style={{ color: "black", padding: 8, fontFamily: Fonts.light }}>
-                  Display Over Other Apps this permission is required to display the overlay over other apps. This ensures drivers can promptly respond to new ride requests. The overlay is not used for advertising or unrelated content.
+                  {t('overlay_permission_info')}
                  </Text>
                </Popover>
              </View>
@@ -259,19 +153,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
              isToggled={hasOverlayPermission}
              setIsToggled={() => handleToggleButton('overlay')}
            />
-         </View>
-
-{/* <TouchableOpacity onPress={async () => await ensureOverlayPermission()}> 
-          <Text>Ensure Overlay Permission</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => overlayController.startOverlay()}> 
-          <Text>Start Overlay</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => overlayController.stopOverlay()}> 
-          <Text>Stop Overlay</Text>
-        </TouchableOpacity> */}
-
-     
+         </View>     
 
         {Platform.OS === 'android' && Platform.Version <= 28 ? (
           <></>

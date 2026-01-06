@@ -45,6 +45,7 @@ class RideMatchWSService {
       console.log(`[DriverWSService] Attempt ${attemptNum}/${maxRetries} - accepting trip ${tripId}`);
       try {
         const res = await publicrideDriverApi.acceptTrip({ tripId });
+        console.log(`[DriverWSService] Response on attempt ${attemptNum}:`, res);
         if (res?.success) {
           console.log(`[DriverWSService] ✅ Accept succeeded on attempt ${attemptNum}`);
           return res;

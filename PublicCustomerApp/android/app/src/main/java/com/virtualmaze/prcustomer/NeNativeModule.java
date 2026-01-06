@@ -8,6 +8,8 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.app.Activity;
 import android.graphics.Rect;
@@ -112,6 +114,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.dot.nenativemap.search.SearchResultCallback;
 import com.dot.nenativemap.search.Search;
 import com.dot.nenativemap.search.SearchData;
+import com.nenative.services.android.navigation.ui.v5.navigationEndView.NavigationTripData;
+import com.nenative.services.android.navigation.ui.v5.NavigationView;
 // import com.dot.nenativemap.annotations.PolylineOptions;
 
 public class NeNativeModule extends ViewGroupManager<MapView> implements LifecycleEventListener {
@@ -607,6 +611,47 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             Log.e("NeNativeModule", "setMode failed; deferring", t);
             pendingMode = mode;
         }
+    }
+
+
+    /**
+     * Emits a general error event to React Native
+     * Event name: "onNativeError"
+     * Event data: { errorType, errorMessage, errorCode, timestamp }
+     * 
+     * Usage in React Native:
+     * DeviceEventEmitter.addListener('onNativeError', (errorData) => {
+     *   console.log('Native Error:', errorData.errorType, errorData.errorMessage, errorData.errorCode);
+     * });
+     */
+    private void emitGeneralErrorEvent(String errorType, String errorMessage, String errorCode) {
+        WritableMap eventData = Arguments.createMap();
+        eventData.putString("errorType", errorType);
+        eventData.putString("errorMessage", errorMessage);
+        eventData.putString("errorCode", errorCode);
+        eventData.putLong("timestamp", System.currentTimeMillis());
+        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("onNativeError", eventData);
+    }
+
+        /**
+     * Emits a navigation-specific error event to React Native
+     * Event name: "onNavigationError"
+     * Event data: { errorType: "NAVIGATION_ERROR", errorMessage, errorCode, timestamp }
+     * 
+     * Usage in React Native:
+     * DeviceEventEmitter.addListener('onNavigationError', (errorData) => {
+     *   console.log('Navigation Error:', errorData.errorMessage, errorData.errorCode);
+     * });
+     */
+    private void emitNavigationErrorEvent(String errorMessage, String errorCode) {
+        WritableMap eventData = Arguments.createMap();
+        eventData.putString("errorType", "NAVIGATION_ERROR");
+        eventData.putString("errorMessage", errorMessage);
+        eventData.putString("errorCode", errorCode);
+        eventData.putLong("timestamp", System.currentTimeMillis());
+        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("onNavigationError", eventData);
     }
 
     @ReactProp(name = "homeLocation")
@@ -1189,6 +1234,24 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             }
         }
         return null;
+    }
+
+    @ReactMethod
+    private void recenterNavigation() {
+        Activity currentActivity = SharedDirections.getCurrentActivity();
+        if (currentActivity == null) {
+            return;
+        }
+        currentActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                NENativeNavigationFragment navigationFragment = NENativeNavigationFragment.getInstance();
+                if (navigationFragment != null) {
+                    NavigationView navigationView = navigationFragment.getNavigationView();
+                    navigationView.performRecenterButton();
+                }
+            }
+        });
     }
 
     @ReactProp(name = "polylines")
@@ -2003,166 +2066,225 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
        });
    }
 
-   private void launchNavigation(Activity activity, NavigationMode navigationMode,
-           NavigationEndListener navigationEndListener, ProgressChangeListener progressChangeListener, int viewIds) {
+       private void launchNavigation(Activity activity, NavigationMode navigationMode,
+            NavigationEndListener navigationEndListener, ProgressChangeListener progressChangeListener, int viewIds) {
 
-       ViewGroup reactNativeView = reactNativeContext.getCurrentActivity().findViewById(viewIds);
-       WritableNativeMap eventData = new WritableNativeMap();
-       eventData.putString("message", "insdie lunch navigation" + mapView);
+        ViewGroup reactNativeView = reactNativeContext.getCurrentActivity().findViewById(viewIds);
+        WritableNativeMap eventData = new WritableNativeMap();
+        eventData.putString("message", "insdie lunch navigation" + mapView);
 
-       reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-               .emit("navigation", eventData);
-       boolean enableDebugInfo = false;
-       boolean enablePoorGPSSimulation = false;
-       String locationProvider = "auto";
-       ProviderType providerType = ProviderType.AUTO;
-       if (locationProvider.equals("android")) {
-           providerType = ProviderType.ANDROID;
-       } else if (locationProvider.equals("ne")) {
-           providerType = ProviderType.NE_FUSED;
-       }
+        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("navigation", eventData);
+        boolean enableDebugInfo = false;
+        boolean enablePoorGPSSimulation = false;
+        String locationProvider = "auto";
+        ProviderType providerType = ProviderType.AUTO;
+        if (locationProvider.equals("android")) {
+            providerType = ProviderType.ANDROID;
+        } else if (locationProvider.equals("ne")) {
+            providerType = ProviderType.NE_FUSED;
+        }
 
-       MapController.MapStyle mapStyle = MapController.MapStyle.DAY;
+        MapController.MapStyle mapStyle = MapController.MapStyle.DAY;
 //        if(settingsProps != null) {
 //            String mapStyleString = Boolean.parseBoolean(settingsProps.get("enableDarkTheme")) ? "NIGHT2" : "DAY2";
 //            mapStyle = MapController.MapStyle.valueOf(mapStyleString);
 //        }
 
-       CameraPosition cameraPosition = new CameraPosition();
-       // TODO : issue in updating the current location
+        CameraPosition cameraPosition = new CameraPosition();
+        // TODO : issue in updating the current location
 
-       // TODO : issue - real time navigation, route found between two different point,
-       // navigation camera zoom to user location, but is not rerouteing from current
-       // location
-       // TODO : in map box - it's rerouting from current location.
-       LngLat origin = new LngLat(77.181608, 8.341317);
-       cameraPosition.longitude = origin.longitude;
-       cameraPosition.latitude = origin.latitude;
-       cameraPosition.zoom = 15;
-       double gpsReliability = 0.7;
-       double navPrecision = 100;
+        // TODO : issue - real time navigation, route found between two different point,
+        // navigation camera zoom to user location, but is not rerouteing from current
+        // location
+        // TODO : in map box - it's rerouting from current location.
+        LngLat origin = new LngLat(77.181608, 8.341317);
+        cameraPosition.longitude = origin.longitude;
+        cameraPosition.latitude = origin.latitude;
+        cameraPosition.zoom = 15;
+        double gpsReliability = 0.7;
+        double navPrecision = 100;
 
-       if (settingsProps != null) {
+        if (settingsProps != null) {
 
-           switch (settingsProps.get("gpsReliability")) {
-               case "High":
-                   gpsReliability = 0.7;
-                   break;
-               case "Medium":
-                   gpsReliability = 0.5;
-                   break;
-               case "Low":
-                   gpsReliability = 0.3;
-                   break;
-           }
+            switch (settingsProps.get("gpsReliability")) {
+                case "High":
+                    gpsReliability = 0.7;
+                    break;
+                case "Medium":
+                    gpsReliability = 0.5;
+                    break;
+                case "Low":
+                    gpsReliability = 0.3;
+                    break;
+            }
 
-           switch (settingsProps.get("navAccuracy")) {
-               case "High":
-                   navPrecision = 100;
-                   break;
-               case "Medium":
-                   navPrecision = 50;
-                   break;
-               case "Low":
-                   navPrecision = 10;
-                   break;
-           }
-       }
+            switch (settingsProps.get("navAccuracy")) {
+                case "High":
+                    navPrecision = 100;
+                    break;
+                case "Medium":
+                    navPrecision = 50;
+                    break;
+                case "Low":
+                    navPrecision = 10;
+                    break;
+            }
+        }
 
-       eventData = new WritableNativeMap();
-       eventData.putString("message", "before  start navigation" + mapView);
+        eventData = new WritableNativeMap();
+        eventData.putString("message", "before  start navigation" + mapView);
 
-       reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-               .emit("navigation", eventData);
-       String directionCriteria = DirectionsCriteria.KILOMETERS;
-       NavigationLauncherOptions options = NavigationLauncherOptions.builder()
-               .directionsRoute(routeInstructionsDisplay)
-               // .shouldSimulateRoute(simulateRoute)
-               .enable3dBuildingVisibility(false)
-               .setMapStyle(mapStyle)
-               .setNavigationMode(navigationMode)
-               .setLanguageCode(settingsProps.get("language"))
-               .initialMapCameraPosition(cameraPosition)
-               .extrusionVisibility(false)
-               // .enableDebugInfoView(enableDebugInfo)
-               .enablePoorGPSSimulation(enablePoorGPSSimulation)
-               .providerType(providerType)
-               .distanceUnit(directionCriteria)
-               .legIsManuallyProvided(false)
-               .gpsReliability(gpsReliability)
-               .navPrecision(navPrecision)
-               .build();
-       // Call this method with Context from within an Activity
-       if (mapView != null) {
-           createDummyView();
+        reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit("navigation", eventData);
+        
+        // Check if routeInstructionsDisplay is not null before building options
+        if (routeInstructionsDisplay == null) {
+            Log.e("NavigationError", "routeInstructionsDisplay is null, cannot start navigation");
+            // Emit comprehensive error event
+            emitNavigationErrorEvent("Route instructions not available for navigation launch", "ROUTE_INSTRUCTIONS_NULL_LAUNCH");
+            emitGeneralErrorEvent("NAVIGATION_ERROR", "Cannot launch navigation: Route instructions not available", "NAV_002");
+            return;
+        }
+        
+        String directionCriteria = DirectionsCriteria.KILOMETERS;
+        NavigationLauncherOptions options = NavigationLauncherOptions.builder()
+                .directionsRoute(routeInstructionsDisplay)
+                // .shouldSimulateRoute(simulateRoute)
+                .enable3dBuildingVisibility(false)
+                .setMapStyle(mapStyle)
+                .setNavigationMode(navigationMode)
+                .setLanguageCode(settingsProps.get("language"))
+                .initialMapCameraPosition(cameraPosition)
+                .extrusionVisibility(false)
+                // .enableDebugInfoView(enableDebugInfo)
+                .enablePoorGPSSimulation(enablePoorGPSSimulation)
+                .providerType(providerType)
+                .distanceUnit(directionCriteria)
+                .legIsManuallyProvided(false)
+                .gpsReliability(gpsReliability)
+                .navPrecision(navPrecision)
+                .build();
+        // Call this method with Context from within an Activity
+        if (mapView != null) {
+            createDummyView();
 
-           NavigationLauncher.startNavigation(
-                   activity,
-                   reactNativeView,
-                   mapView,
-                   mapController,
-                   navigationEndListener,
-                   new NavigationRateListener() {
-                       @Override
-                       public void onSendRating(float rating) {
+            NavigationLauncher.startNavigation(
+                    activity,
+                    reactNativeView,
+                    mapView,
+                    mapController,
+                    navigationEndListener,
+                    new NavigationRateListener() {
+                        @Override
+                        public void onSendRating(float rating) {
 
-                       }
+                        }
 
-                       @Override
-                       public void onNavigationShare(NavigationTripData tripData){
+                        @Override
+                        public void onNavigationShare(NavigationTripData navigationTripData) {
 
-                       }
+                        }
+                    },
+                    new ProgressChangeListener() {
+                        @Override
+                        public void onProgressChange(Location location, NavigationStatus navigationStatus) {
+                            WritableNativeMap eventData = new WritableNativeMap();
+                            WritableArray locationArray = Arguments.createArray();
+                            locationArray
+                                    .pushDouble(navigationStatus.getLocation().getCoordinate().coordinates().get(1));
+                            locationArray
+                                    .pushDouble(navigationStatus.getLocation().getCoordinate().coordinates().get(0));
+                            float remainingDistance = navigationStatus.getRemainingRouteDistance();
+                            float remainingDuration = navigationStatus.getRemainingRouteDuration();
+                            float ldistance = navigationStatus.getRemainingLegDistance();
+                            float lduration = navigationStatus.getRemainingRouteDuration();
+                            float speed = navigationStatus.getLocation().getSpeed();
+                            float legIndex = navigationStatus.getLegIndex();
+                            float bearing = navigationStatus.getLocation().getBearing();
+                            locationArray.pushDouble(remainingDistance);
+                            locationArray.pushDouble(remainingDuration);
+                            locationArray.pushDouble(speed);
+                            locationArray.pushDouble(ldistance);
+                            locationArray.pushDouble(lduration);
+                            locationArray.pushDouble(legIndex);
+                            locationArray.pushDouble(bearing);
 
+                            eventData.putArray("location", locationArray);
 
-                   },
-                   new ProgressChangeListener() {
-                       @Override
-                       public void onProgressChange(Location location, NavigationStatus navigationStatus) {
-                           WritableNativeMap eventData = new WritableNativeMap();
-                           WritableArray locationArray = Arguments.createArray();
-                           locationArray
-                                   .pushDouble(navigationStatus.getLocation().getCoordinate().coordinates().get(1));
-                           locationArray
-                                   .pushDouble(navigationStatus.getLocation().getCoordinate().coordinates().get(0));
-                           float remainingDistance = navigationStatus.getRemainingRouteDistance();
-                           float remainingDuration = navigationStatus.getRemainingRouteDuration();
-                           float ldistance = navigationStatus.getRemainingLegDistance();
-                           float lduration = navigationStatus.getRemainingRouteDuration();
-                           float speed = navigationStatus.getLocation().getSpeed();
-                           float legIndex = navigationStatus.getLegIndex();
-                           float bearing = navigationStatus.getLocation().getBearing();
-                           locationArray.pushDouble(remainingDistance);
-                           locationArray.pushDouble(remainingDuration);
-                           locationArray.pushDouble(speed);
-                           locationArray.pushDouble(ldistance);
-                           locationArray.pushDouble(lduration);
-                           locationArray.pushDouble(legIndex);
-                           locationArray.pushDouble(bearing);
+                            reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                    .emit("navigationLocation", eventData);
 
-                           eventData.putArray("location", locationArray);
+                            // Add your logic for handling progress changes here
+                            Navigator.getInstance().setVanishingPoint(0.0f, 0.0f); // navigation icon view
+                        }
+                    }, options);
+            eventData = new WritableNativeMap();
+            eventData.putString("message", "err mapview is null");
 
-                           reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                                   .emit("navigationLocation", eventData);
+            reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit("onNavigationReady", eventData);
+            Activity currentActivity = SharedDirections.getCurrentActivity();
+            if (currentActivity == null) {
+                return;
+            }
+            currentActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    NENativeNavigationFragment.getInstance();
+                    NENativeNavigationFragment navigationFragment = NENativeNavigationFragment.getInstance();
+                    if (navigationFragment != null) {
+//                        navigationFragment.setNavigationErrorListener(new NavigationErrorListener() {
+//                            @Override
+//                            public void onNavigationError(String message) {
+//
+//                            }
+//                        });
+                    }
+                }
+            });
+                    
+                    // Add 1 second delay before executing navigation view code
+                    new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            Activity currentActivity = SharedDirections.getCurrentActivity();
+                            if (currentActivity == null) {
+                                return;
+                            }
+                            currentActivity.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    NENativeNavigationFragment navigationFragment = NENativeNavigationFragment.getInstance();
+                                    if (navigationFragment != null) {
+                                        NavigationView navigationView = navigationFragment.getNavigationView();
+                                        Log.d("TAG", "navigationView: bottomSheet -- 1"+ navigationView);
+                                        if (navigationView == null) {
+                                            Log.d("TAG", "navigationView: bottomSheet -- 2"+navigationView);
+                                        } else {
+                                            Log.d("TAG", "navigationView: bottomSheet -- 2"+navigationView);
+                                            navigationView.isShowTripSummaryView(false);
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }, 1000); // 1 second delay
 
-                           // Add your logic for handling progress changes here
-                       }
-                   }, options);
-           eventData = new WritableNativeMap();
-           eventData.putString("message", "err mapview is null");
-
-           reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                   .emit("onNavigationReady", eventData);
-
-       } else {
-           eventData = new WritableNativeMap();
-           eventData.putString("message", "err mapview is null");
-
-           reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                   .emit("navigation", eventData);
-       }
-       // Utils.setIsNavigationVoiceCommand(false);
-   }
-
+        } else {
+            Log.e("NavigationError", "mapView is null, cannot start navigation");
+            // Emit comprehensive error event
+            emitNavigationErrorEvent("Map view is null, cannot start navigation", "MAPVIEW_NULL");
+            emitGeneralErrorEvent("NAVIGATION_ERROR", "Cannot start navigation: Map view is null", "NAV_003");
+            
+            eventData = new WritableNativeMap();
+            eventData.putString("message", "err mapview is null");
+            reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit("navigation", eventData);
+        }
+        // Utils.setIsNavigationVoiceCommand(false);
+    }
+   
    public List<RoutePointData> getSelectedRoutePointsList() {
        return selectedRoutePoints;
    }

@@ -7,12 +7,12 @@ import {loginStyles} from '../../styles/UserStyles';
 import Logo from '../../assets/image/logo.svg';
 import Phone from '../../assets/image/svgIcons/phone.svg';
 import {CommonActions, useNavigation} from '@react-navigation/native';
-import {DataStore} from '../../controllers/DataStore';
 
 import {requestOTPMutation} from '../../API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../components/Loaders/FullScreenLoader';
 import { colors } from '../../constants/constants';
 import { showPhoneNumberHint } from '@shayrn/react-native-android-phone-number-hint';
+import { DataStore } from '../../common/controllers/DataStore';
 
 
 const DriverAuthentication = () => {

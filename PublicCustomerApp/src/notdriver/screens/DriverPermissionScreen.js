@@ -180,7 +180,7 @@ const DriverPermissionScreen = () => {
   return (
     <View style={styles.screenContainer}>
       {isLoading && <FullScreenLoader/>}
-      <NavBar title={'track_user_device'} onBackPress={onBackPress} />
+      <NavBar title={'permission_screen'} onBackPress={onBackPress} />
       <UseBackButton onBackPress={onBackPress} />
       {usePermissionChecker()}
       {

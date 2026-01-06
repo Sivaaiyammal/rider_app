@@ -6,7 +6,7 @@ import useCurrentScreenStore from '../store/useCurrentScreenStore';
 import { useTripAcceptStore } from '../../notdriver/store/useTripAcceptStore';
 import useTripsStore from '../../notdriver/store/useTripsStore';
 import { useMapMarkerStore } from '../store/useMapMarkerStore';
-import { DataStore } from '../controllers/DataStore';
+import { DataStore } from '../../common/controllers/DataStore';
 const {NeNativeModule} = NativeModules
 
 class PushNotifications {

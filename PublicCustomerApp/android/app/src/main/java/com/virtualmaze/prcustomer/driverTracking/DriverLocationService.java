@@ -535,7 +535,7 @@ public class DriverLocationService extends Service {
         }
 
         return new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.drawable.ic_launcher_round)
+                .setSmallIcon(R.drawable.ic_launcher)
                 .setCustomContentView(compactView)
                 .setCustomBigContentView(notificationView)
                 .setOngoing(true)
