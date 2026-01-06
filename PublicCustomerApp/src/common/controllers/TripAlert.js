@@ -13,7 +13,12 @@ class TripAlert {
   playAlertSound() {
     console.log('Playing alert sound using native method');
     return PlayTripSoundModule.playAlertSound();
-   }
+  }
+
+  playDriverAllocatedAlert() {
+   
+    return PlayTripSoundModule.playSound('driver_allocated', false);
+  }
 
   stopAlertSound() {
     return PlayTripSoundModule.stopAlertSound();
@@ -22,3 +27,4 @@ class TripAlert {
 
 const tripAlert = new TripAlert();
 export default tripAlert;
+

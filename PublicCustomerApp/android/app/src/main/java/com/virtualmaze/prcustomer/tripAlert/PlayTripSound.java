@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class PlayTripSound {
     private static final String TAG = "PlayTripSound";
-    private static final String SOUND_NAME = "tripalert";
+    private static final String DEFAULT_SOUND_NAME = "tripalert";
     private static PlayTripSound instance;
 
     private final Context appContext;
@@ -50,11 +50,16 @@ public final class PlayTripSound {
     }
 
     public void playAlertSound(@NonNull Promise promise) {
-        playAlertSoundInternal(false, 0, promise);
+        playSoundInternal(null, false, 0, promise);
     }
 
     public void playAlertSoundWithLoop(int loopCount, @NonNull Promise promise) {
-        playAlertSoundInternal(true, loopCount, promise);
+        playSoundInternal(null, true, loopCount, promise);
+    }
+
+    public void playSound(@Nullable String soundName, boolean loop, @NonNull Promise promise) {
+        // loop=true with loopCount=0 means infinite looping
+        playSoundInternal(soundName, loop, 0, promise);
     }
 
     public void stopAlertSound() {
@@ -65,15 +70,25 @@ public final class PlayTripSound {
         return mediaPlayer != null && mediaPlayer.isPlaying();
     }
 
-    private void playAlertSoundInternal(boolean enableLoop, int loopCount, @Nullable Promise promise) {
+    private void playSoundInternal(@Nullable String soundName, boolean enableLoop, int loopCount, @Nullable Promise promise) {
         final AtomicBoolean promiseSettled = new AtomicBoolean(false);
         try {
             stopAlertSoundInternal();
 
-            int resId = appContext.getResources().getIdentifier(SOUND_NAME, "raw", appContext.getPackageName());
+            String effectiveName = sanitizeSoundName(soundName);
+            if (effectiveName == null || effectiveName.trim().isEmpty()) {
+                effectiveName = DEFAULT_SOUND_NAME;
+            }
+
+            int resId = appContext.getResources().getIdentifier(effectiveName, "raw", appContext.getPackageName());
             if (resId == 0) {
-                rejectPromise(promise, promiseSettled, "SOUND_ERROR", SOUND_NAME + " resource not found");
-                return;
+                // Fallback to default if the requested sound is not found
+                resId = appContext.getResources().getIdentifier(DEFAULT_SOUND_NAME, "raw", appContext.getPackageName());
+                if (resId == 0) {
+                    rejectPromise(promise, promiseSettled, "SOUND_ERROR", effectiveName + " resource not found, and default '" + DEFAULT_SOUND_NAME + "' missing");
+                    return;
+                }
+                effectiveName = DEFAULT_SOUND_NAME;
             }
 
             requestAudioFocus();
@@ -87,10 +102,12 @@ public final class PlayTripSound {
 
             setupLooping(mediaPlayer, enableLoop, loopCount);
 
+            final String nameForLog = effectiveName;
+
             mediaPlayer.setOnPreparedListener(mp -> {
                 try {
                     mp.start();
-                    Log.d(TAG, "Alert sound started");
+                    Log.d(TAG, "Alert sound started: " + nameForLog + ", loop=" + enableLoop + (enableLoop ? ", loopCount=" + loopCount : ""));
                     resolvePromise(promise, promiseSettled, "Sound started");
                 } catch (Exception startErr) {
                     Log.e(TAG, "Start error: " + startErr.getMessage());
@@ -112,6 +129,23 @@ public final class PlayTripSound {
             rejectPromise(promise, promiseSettled, "SOUND_ERROR", "Failed to play sound: " + e.getMessage());
             stopAlertSoundInternal();
         }
+    }
+
+    private @Nullable String sanitizeSoundName(@Nullable String input) {
+        if (input == null) return null;
+        String name = input.trim();
+        if (name.isEmpty()) return null;
+        // Strip any path like "res/raw/driver_allocated.mp3" or "raw/driver_allocated.mp3"
+        int slashIdx = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
+        if (slashIdx >= 0 && slashIdx + 1 < name.length()) {
+            name = name.substring(slashIdx + 1);
+        }
+        // Strip extension if present
+        int dotIdx = name.lastIndexOf('.');
+        if (dotIdx > 0) {
+            name = name.substring(0, dotIdx);
+        }
+        return name;
     }
 
     private void setupLooping(MediaPlayer player, boolean enableLoop, int loopCount) {
