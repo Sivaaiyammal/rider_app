@@ -391,7 +391,17 @@ class NEMap extends Component {
         <MapView
           style={this.state.resizeDone ? this.props.mapStyle : defaultStyle}
           markers={this.state.mapLoaded ? this.props.markers : null}
-          homeLocation={this.state.resolvedHomeLocation}
+          homeLocation={
+            this.state.mapLoaded
+              ? [
+                this.props.homeLocation || {
+                  lat: 13.0827,
+                  lng: 80.2707,
+                  zoom: 6,
+                },
+              ]
+              : null
+          }
           geometries={this.state.mapLoaded ? this.props.geometries : null}
           findRoute={
             this.state.mapLoaded && this.props.findRoute?.length !== 0
@@ -402,6 +412,11 @@ class NEMap extends Component {
           navigation={this.props.navigation}
           settingsProps={this.props.settingsProps }
           searchUnit={this.props.searchUnit}
+          vehicleMarkers={
+            this.state.mapLoaded && this.props.vehicleMarkers?.length !== 0
+              ? this.props.vehicleMarkers
+              : null
+          }
         />
       </>
     ) : (
@@ -445,6 +460,7 @@ NEMap.propTypes = {
   onNativeError: PropsTypes.func,
   onNavigationError: PropsTypes.func,
   settingsProps: PropsTypes.object,
+  vehicleMarkers: PropsTypes.array
 };
 
 export default NEMap;

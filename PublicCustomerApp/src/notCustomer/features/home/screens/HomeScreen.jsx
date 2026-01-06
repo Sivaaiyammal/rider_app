@@ -304,15 +304,16 @@ const MapScreen = () => {
   };
 
   useEffect(()=>{
+    console.log("Location updated in HomeScreen:", location);
     if(location && location.length > 0){
-     
+      console.log("Setting map bounds and home marker for location:", location);
       const bounds = utils.getBoundingBox([[location[0],location[1]]],1000)
       const margin = [10, 10, 10, 10+height*0.4]
       const finalBounds = [bounds, margin]
       setTimeout(() => {
         setMapBounds(finalBounds);
         setHomeMapMarker(location)
-      }, 100);
+      },500);
     }
     return () => {
       setMapMarkers([])
