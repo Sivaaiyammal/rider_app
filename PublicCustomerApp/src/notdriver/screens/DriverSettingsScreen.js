@@ -39,6 +39,7 @@ import About from '../../common/assets/icons/about.svg'
 import MoreApp from '../../common/assets/icons/moreApp.svg'
 import GlobalContext from '../../context/GlobalContext';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
 
 export default function PublicDriverSettingsScreen() {
   const {t} = useTranslation();
@@ -50,6 +51,7 @@ export default function PublicDriverSettingsScreen() {
   const {driverRole, setDriverRole} = usePublicDriverStore();
   const [screenData, updateScreenData] = useState(null);
   const [showScreen, setShowScreen] = useState(null);
+  const navigation = useNavigation();
 
   const {setMapMarkers} = useMapMarkerStore();
   const {userDeviceId} = useDeviceAPIStore();

@@ -10,6 +10,7 @@ import publicrideDriverApi from '../notdriver/api/publicrideDriverApi';
 import RideMatchWSService from '../common/controllers/socketServices/RideMatchSocketService';
 import useUserStore from '../common/store/useUserStore';
 import { showNotification } from '../common/components/Alerts/showNotification';
+import { useNavigation } from '@react-navigation/native';
 
 export const GlobalContext = createContext();
 
@@ -23,6 +24,8 @@ export const ContextProvider = ({children}) => {
   const [themeMode, setThemeMode] = useState('default'); // 'light', 'dark', 'default'
   const [isInitialized, setIsInitialized] = useState(false);
   const {setUserInfo} = useUserStore()
+
+  const navigation = useNavigation();
 
   const themeOperations = useCallback((mode) => {
     let newTheme;
@@ -157,10 +160,12 @@ export const ContextProvider = ({children}) => {
       DataStore.clearData('role')
       DataStore.clearData('activeTripId')
       DataStore.clearSession();
-      // navigation.reset({
-      //   index: 0,
-      //   routes: [{ name: 'UserRoleScreen' }],
-      // });
+      DataStore.clearSession('userdetails');
+      DataStore.clearSession('access_token');
+              navigation.reset({
+          index: 0,
+          routes: [{ name: 'LoginScreen' }],
+        });
       // showNotification(
       //   t.logout_success,
       //   t.login_to,

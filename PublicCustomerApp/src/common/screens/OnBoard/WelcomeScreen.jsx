@@ -33,10 +33,10 @@ const WelcomeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <AdaptiveText style={styles.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>
-        {t('welcome.title')}
+        {t('title')}
       </AdaptiveText>
       <AdaptiveText style={styles.subtitleText} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>
-        {t('welcome.subtitle')}
+        {t('subtitle')}
       </AdaptiveText>
       <View style={styles.actions}>
 
@@ -77,15 +77,15 @@ const WelcomeScreen = ({ navigation }) => {
                   adjustsFontSizeToFit
                   minimumFontScale={0.7}
                 >
-                  {`${t('welcome.customer')} ${t('welcome.continue_as')}`}
+                  {`${t('customer')} ${t('continue_as')}`}
                 </AdaptiveText>
               ) : (
                 <>
                   <AdaptiveText style={[styles.cardLabel, styles.cardLabelPassenger]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-                    {t('welcome.continue_as')}
+                    {t('continue_as')}
                   </AdaptiveText>
                   <AdaptiveText style={[styles.cardTitle, styles.cardTitlePassenger]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
-                    {t('welcome.customer')}
+                    {t('customer')}
                   </AdaptiveText>
                 </>
               )}
@@ -134,18 +134,18 @@ const WelcomeScreen = ({ navigation }) => {
                   color={'white'}
                   fontSize={18}
                 >
-                  {t('welcome.driver_ta_full')}
+                  {t('driver_ta_full')}
                 </AdaptiveText>
               ) : (
                 <>
                   <AdaptiveText style={[styles.cardLabel, styles.cardLabelDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-                    {t('welcome.become_a')}
+                    {t('become_a')}
                   </AdaptiveText>
                   <AdaptiveText style={[styles.cardTitle, styles.cardTitleDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} color={'white'}>
-                    {t('welcome.driver')}
+                    {t('driver')}
                   </AdaptiveText>
                   <AdaptiveText style={[styles.cardLabel, styles.cardLabelDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-                    {t('welcome.and_earn_money')}
+                    {t('and_earn_money')}
                   </AdaptiveText>
                 </>
               )}

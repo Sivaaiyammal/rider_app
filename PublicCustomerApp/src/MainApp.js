@@ -210,21 +210,21 @@ const MainAppContent = () => {
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>
-       <ContextProvider>
+       
         <AlertNotificationRoot theme="light">
           <>
             <NavigationContainer ref={navigationRef}>
-            {memoizedDriverInitializationHandler}
+              <ContextProvider>
+              {memoizedDriverInitializationHandler}
               <Navigation />
+              </ContextProvider>
             </NavigationContainer>
             <FeedbackBottomSheet />
             {(!isConnected && (
               <NetworkBanner onRetry={checkConnection} />
             ))}
-         
           </>
       </AlertNotificationRoot>
-      </ContextProvider>
     </GestureHandlerRootView>
   );
 };

@@ -15,6 +15,7 @@ import FullScreenLoader from '../../../notCustomer/components/Loaders/FullScreen
 import { colors } from '../../../notCustomer/constants/constants';
 import { showPhoneNumberHint } from '@shayrn/react-native-android-phone-number-hint';
 import useUserStore from '../../store/useUserStore';
+import NavBar from '../../components/NavBar';
 
 
 const LoginScreen = ({ route }) => {
@@ -155,6 +156,10 @@ const LoginScreen = ({ route }) => {
     <>
       {(isLoading || isOtpLoading) && <FullScreenLoader />}
       <View style={loginStyles.screen}>
+        <NavBar onBackPress={() =>navigation.reset({
+          index: 0,
+          routes: [{ name: 'WelcomeScreen' }],
+        })} title={''}/>
         <View style={loginStyles.header}>
           <Logo />
           <Text style={loginStyles.headerTxt}>

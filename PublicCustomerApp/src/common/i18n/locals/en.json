@@ -410,5 +410,18 @@
     "mail": "Mail",
     "home": "Home",
     "accept": "Accept",
-    "settings": "Settings"
+    "settings": "Settings",
+    "driver_login": "Driver Login",
+    "customer_login": "Customer Login",
+    "sign_in_by_mobile": "Sign In By Mobile",
+    "mobile_number": "Mobile Number",
+    "request_otp": "Request OTP",
+    "one_time_password_otp": "One Time Password(OTP)",
+    "enter_otp_sent_to_mobile": "Enter the OTP sent to your mobile number",
+    "title": "Welcome to Namma Ooru Taxi",
+    "subtitle": "Choose how you would like to continue.",
+    "continue_as": "Continue as",
+    "customer": "Passenger",
+    "become_a": "Become a",
+    "and_earn_money": "& earn money"
 }
