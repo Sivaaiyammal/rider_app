@@ -41,7 +41,6 @@ local.properties
 # node.js
 #
 node_modules/
-android/libs
 npm-debug.log
 yarn-error.log
 package-lock.json
