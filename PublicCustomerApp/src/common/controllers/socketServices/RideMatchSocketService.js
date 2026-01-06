@@ -10,6 +10,8 @@ import useTripsStore from '../../../notdriver/store/useTripsStore';
 import { DataStore } from '../DataStore';
 import { showNotification } from '../../../common/components/NotificationManger';
 import tripAlert from '../TripAlert';
+import { cancelRide } from '../../../notCustomer/API/EndPoints/EndPoints';
+import { cancelTrip } from '../../../notdriver/components/CancelTripUpdate';
 
 const SOCKET_URL = Config.DRIVER_SOCKET_URL;
 const {NeNativeModule} = NativeModules;
@@ -173,7 +175,10 @@ class RideMatchWSService {
   }
 
   onRideMatchCancel(data) {
-    console.log('hari-->>onRideMatchCancel-->>', data);
+    if (data.status === "CANCELLED") {
+     cancelTrip(data)
+     tripAlert.stopAlertSound();
+    }
   }
 
   /**

@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import MainApp from './src/MainApp';
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { I18nextProvider } from 'react-i18next';
-import customerI18n from './src/i18n';
 import commonI18n from './src/common/i18n';
 import useUserStore from './src/common/store/useUserStore';
 import Config from "react-native-config";
@@ -17,7 +16,6 @@ import FallbackComponent from './src/common/components/FallbackComponent';
 
 const App = () => {
   const { userRole } = useUserStore();
-  const activeI18n = userRole === 'driver' ? commonI18n : customerI18n;
 const grapqlEndPoint = Config.ROOT_API_URL + '/publicrides/customer/graphql/location';
 const driverGraphqlEndPoint = Config.ROOT_API_URL +'/publicrides/driver/graphql/location';
 
@@ -48,13 +46,10 @@ const client = new ApolloClient({
     crashlytics().recordError(error);
   };
 
-
-
-
   return (
     <ErrorBoundary onError={myErrorHandler} FallbackComponent={FallbackComponent}>
       <ApolloProvider client={client}>
-      <I18nextProvider i18n={activeI18n}>
+      <I18nextProvider i18n={commonI18n}>
         <QueryClientProvider client={queryClient}>
            <SafeAreaProvider> 
             <MainApp />

@@ -112,7 +112,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
                       </TouchableOpacity>
                     )}>
                     <Text style={{ color: "black", padding: 8, fontFamily: Fonts.light }}>
-                      {t('vm_tracker_tracking_info')}
+                      {t('not_tracking_info')}
                     </Text>
                   </Popover>
                 </View>
@@ -144,7 +144,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
                    </TouchableOpacity>
                  )}>
                  <Text style={{ color: "black", padding: 8, fontFamily: Fonts.light }}>
-                  {t('overlay_permission_info')}
+                  {t('display_over_other_apps_info')}
                  </Text>
                </Popover>
              </View>

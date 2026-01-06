@@ -40,6 +40,7 @@ import MoreApp from '../../common/assets/icons/moreApp.svg'
 import GlobalContext from '../../context/GlobalContext';
 import { useTranslation } from 'react-i18next';
 import { useNavigation } from '@react-navigation/native';
+import LanguageScreen from '../../common/screens/OnBoard/LanguageScreen';
 
 export default function PublicDriverSettingsScreen() {
   const {t} = useTranslation();
@@ -70,8 +71,8 @@ export default function PublicDriverSettingsScreen() {
       id: 22,
       name: "Language",
       icon: <Language />,
-      // component: <LanguageScreen fromSettings />,
-      title: 'language'
+      component: <LanguageScreen fromSettings />,
+      title: 'language',
     },
     // {
     //   id: 3,
@@ -82,7 +83,7 @@ export default function PublicDriverSettingsScreen() {
     // },
     {
       id: 2,
-      name: 'raise_ticket',
+      name: 'Raise Ticket',
       icon:  <Supportticket width={30} height={30} />,
       component: <TicketSupportScreen />,
       title: 'raise_ticket',
@@ -249,7 +250,7 @@ export default function PublicDriverSettingsScreen() {
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 {item.icon}
                 <Text numberOfLines={2} style={settingsScreen.buttonsTxt}>
-                  {t[item.title] || item.name}
+                  {t(item.title) || item.name}
                 </Text>
               </View>
               <Entypo name="chevron-right" size={20} color={Colors.black} />

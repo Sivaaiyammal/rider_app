@@ -9,7 +9,11 @@
     "lint:fix": "eslint --fix .",
     "start": "react-native start --reset-cache --client-logs",
     "prepare": "husky",
-    "test": "jest"
+    "test": "jest",
+    "android-debug": "cd android && ./gradlew assembleDebug && cd ..",
+    "android-clean": "cd android && ./gradlew clean && cd ..",
+    "android-release": "cd android && ./gradlew assembleRelease && cd ..",
+    "android-bundle": "cd android && ./gradlew bundleRelease && cd .."
   },
   "lint-staged": {
     "**/*.{js,jsx,json}": [

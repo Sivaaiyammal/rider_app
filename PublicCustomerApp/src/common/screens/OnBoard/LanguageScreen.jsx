@@ -12,14 +12,13 @@ import { Fonts } from '../../../notCustomer/constants/constants';
 import { useStackScreenStore } from '../../../notCustomer/store/useStackScreenStore';
 import NavBar from '../../../notCustomer/components/NavBar';
 
-const LanguageScreen = ({fromDrawer}) => {
+const LanguageScreen = ({fromDrawer, fromSettings}) => {
   const navigation = useNavigation();
   const {goBack} = useStackScreenStore();
   const [InsideAppLanguageChange, setInsideAppLanguageChange] = useState(false);
   const { t } = useTranslation();
   const { 
     theme, 
-    isDarkMode
 
   } = useContext(GlobalContext);
 
@@ -68,12 +67,10 @@ const LanguageScreen = ({fromDrawer}) => {
    
    
     <View style={[styles.screen]}>
-      
-        <View style={styles.header}> 
+       {fromSettings  ? <></> : <View style={styles.header}> 
       {fromDrawer && <NavBar withBg={true} onBackPress={() => goBack()} title={'Choose Language'} />}       
-     { !fromDrawer && <AdaptiveText style={styles.title} color={theme.text} >{t('choose_language')}</AdaptiveText>}
-     
-      </View>
+      {!fromDrawer && <AdaptiveText style={styles.title} color={theme.text} >{t('choose_language')}</AdaptiveText>}
+      </View>}
       <View style={styles.langContainer}>
         {languages.map((item) => (
           <View key={item.id} style={styles.langItemWrapper}>

@@ -436,10 +436,7 @@ export const dateFilterOptions = [
 
 
 export const permissionData = {
-  backgroundLocation: "VMTrackers requires background location permission to continuously track your location, even when the app is closed or not in use. This ensures uninterrupted tracking for accurate traking records.",
-  activityRecognition: "VMTrackers require activity recognition permission to Provide a more accurate and refined location history by understanding your activity patterns.Optimize battery consumption by reducing frequency of location tracking when your device is stationary and Enhance the overall user experience by tailoring our services to your activity level.",
-  usageStats:"VMTrackers require usage statistics from the user's device to monitor and report how long certain apps have been used. This data is used to help parents understand their family members' device usage patterns. \n Find App in the list and enable by clicking toggle button",
-  accessibility: "VMTrackers uses the AccessibilityService API on this device to detect which apps are being used and for how long. This data is used to: \n 1. Provide parental controls (block apps as configured by the parent) \n 2. VMTrackers does not collect, store, or share this data for any other purpose. No personal or sensitive data is shared externally. Please enable this permission only to enable Parental Controls so VMTrackers can provide these parental control features \n Accessibility -> Installed apps -> VM Trackers -> toggle on",
+  backgroundLocation: "NOT requires background location permission to continuously track your location, even when the app is closed or not in use. This ensures uninterrupted tracking for accurate traking records.",
   overlay: "Display Over Other Apps this permission is required to display the overlay over other apps. This ensures drivers can promptly respond to new ride requests. The overlay is not used for advertising or unrelated content.\n go to Settings > Apps > Special app access (or Advanced > Special app access) \n > Appear on top > VM Trackers > toggle on"
 }
 

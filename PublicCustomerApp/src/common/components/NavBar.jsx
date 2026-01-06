@@ -17,7 +17,7 @@ const NavBar = props => {
         <View style={navStyles.leftBtn}>{Icons.back_arrow}</View>
       </TouchableOpacity>
       <TouchableOpacity style={navStyles.content}>
-        <Text style={navStyles.contentTxt}>{t('title') ?? title}</Text>
+        <Text style={navStyles.contentTxt}>{title}</Text>
       </TouchableOpacity>
       <TouchableOpacity style={navStyles.rightIcon} onPress={onrightIconPress}>
         {rightIcon && (

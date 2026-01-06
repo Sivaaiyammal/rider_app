@@ -1,5 +1,5 @@
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useEffect, useState, useCallback, useMemo, use } from 'react';
+import React, {useEffect, useState, useCallback, useMemo, use, useContext } from 'react';
 import {useQuery} from 'react-query';
 
 import HomeTab from '../../notdriver/assets/icons/homeTab.svg';
@@ -72,6 +72,7 @@ import DriverIDCard from './DriverIDCard';
 import PublicRidesPriceChart from './PublicRidesPriceChart/PublicRidesPriceChart';
 import PublicRidesPriceChartDetails from './PublicRidesPriceChart/PublicRidesPriceChartDetails';
 import { useTranslation } from 'react-i18next';
+import GlobalContext from '../../context/GlobalContext';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -112,6 +113,7 @@ const PublicRidesDriverHomeScreen = () => {
     hasLocationPermission,
     setHasLocationPermission,
   } = useDeviceTokenStore();
+  const {logout} = useContext(GlobalContext);
   const {t} = useTranslation();
   const [role, setRole] = useState('dco');
   const [isBlockLoading, setIsBlockLoading] = useState(false)
@@ -364,8 +366,7 @@ const PublicRidesDriverHomeScreen = () => {
       }
       else {
         if (response.error === "SESSION_EXPIRED") {
-          // logout('driver');
-          setStackScreen('AuthenticationScreen');
+          logout('driver');
            BGLocationTask.stopDriverBgTask();
           return
         }
@@ -564,8 +565,6 @@ const PublicRidesDriverHomeScreen = () => {
               return <DeleteAccount />
       case 'DriverEditInfo':
               return <DriverEditInfo />
-      // case 'LinkPaymentGateway':
-      //         return <LinkPaymentGateway />
       case 'SupportScreen':
               return <SupportScreen isStackScreen={true}/>
       case 'DriverVehicleApprovalScreen':
@@ -607,7 +606,7 @@ const PublicRidesDriverHomeScreen = () => {
       {renderContent()}
       {approved ? memoizedDriverLocationHandler : null}
       <PaymentCompletionScreen />
-      <AppUpdateChecker />
+      {/* <AppUpdateChecker /> */}
     </View>
   );
 };

@@ -4,7 +4,10 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
@@ -36,6 +39,8 @@ import com.virtualmaze.prcustomer.driverTracking.DriverLocationService;
 import com.virtualmaze.prcustomer.tripAlert.PlayTripSoundModule;
 import com.virtualmaze.prcustomer.R;
 
+import androidx.core.app.NotificationCompat;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,6 +64,8 @@ public class DriverOverlayController {
     private static final String ADDRESS_FALLBACK = "Address not available";
     private static final String EVENT_TRIP_OVERLAY_VISIBILITY = "driverTripOverlayVisibility";
     private static final String EVENT_TRIP_OVERLAY_RESPONSE = "driverTripOverlayResponse";
+    private static final String CANCEL_CHANNEL_ID = "driver_trip_cancel_channel";
+    private static final int CANCEL_NOTIFICATION_ID = 9_912;
 
     private final Context context;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -188,6 +195,31 @@ public class DriverOverlayController {
                         Log.w(TAG, "Unexpected trip_request payload type: " +
                                 (payload != null ? payload.getClass() : "null"));
                     }
+                }
+            });
+
+            driverSocket.on("cancel_ride_match", args -> {
+                if (args == null || args.length == 0) {
+                    Log.w(TAG, "Missing cancel_ride_match payload");
+                    return;
+                }
+
+                Object payload = args[0];
+                JSONObject cancelData = null;
+                if (payload instanceof JSONObject) {
+                    cancelData = (JSONObject) payload;
+                } else if (payload instanceof String) {
+                    try {
+                        cancelData = new JSONObject((String) payload);
+                    } catch (JSONException parseError) {
+                        Log.e(TAG, "Failed to parse cancel_ride_match string payload", parseError);
+                    }
+                } else {
+                    Log.w(TAG, "Unexpected cancel_ride_match payload type: " + payload.getClass());
+                }
+
+                if (cancelData != null) {
+                    handleCancelRideMatch(cancelData);
                 }
             });
 
@@ -350,6 +382,81 @@ public class DriverOverlayController {
             service.setOverlayActive(false);
         }
         emitOverlayVisibility(false);
+    }
+
+    private void handleCancelRideMatch(JSONObject payload) {
+        if (payload == null) {
+            Log.w(TAG, "cancel_ride_match event missing payload");
+            return;
+        }
+
+        String status = payload.optString("status", "");
+        if (!"CANCELLED".equalsIgnoreCase(status)) {
+            Log.d(TAG, "cancel_ride_match ignored with status=" + status);
+            return;
+        }
+
+        Log.i(TAG, "Received cancel_ride_match -> dismissing overlay");
+        final JSONObject payloadCopy = payload;
+        mainHandler.post(() -> {
+            removeOverlay();
+            showTripCancelledNotification(payloadCopy);
+        });
+    }
+
+    private void showTripCancelledNotification(JSONObject payload) {
+        try {
+            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (manager == null) {
+                Log.w(TAG, "NotificationManager unavailable; cannot show cancel alert");
+                return;
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel existing = manager.getNotificationChannel(CANCEL_CHANNEL_ID);
+                if (existing == null) {
+                    NotificationChannel channel = new NotificationChannel(
+                            CANCEL_CHANNEL_ID,
+                            "Trip updates",
+                            NotificationManager.IMPORTANCE_HIGH
+                    );
+                    channel.enableVibration(true);
+                    manager.createNotificationChannel(channel);
+                }
+            }
+
+            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+            PendingIntent contentIntent = null;
+            if (launchIntent != null) {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                int pendingFlags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                        ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                        : PendingIntent.FLAG_UPDATE_CURRENT;
+                contentIntent = PendingIntent.getActivity(context, 0, launchIntent, pendingFlags);
+            }
+
+            String message = payload != null ? payload.optString("message", "") : "";
+            if (message == null || message.trim().isEmpty()) {
+                message = "Trip has been cancelled by passanger.";
+            }
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CANCEL_CHANNEL_ID)
+                    .setSmallIcon(R.mipmap.ic_launcher_round)
+                    .setContentTitle("Trip cancelled")
+                    .setContentText(message)
+                    .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                    .setAutoCancel(true)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setDefaults(Notification.DEFAULT_ALL);
+
+            if (contentIntent != null) {
+                builder.setContentIntent(contentIntent);
+            }
+
+            manager.notify(CANCEL_NOTIFICATION_ID, builder.build());
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to show cancellation notification", e);
+        }
     }
 
     private void openApp() {

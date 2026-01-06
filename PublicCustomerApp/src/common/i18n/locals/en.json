@@ -412,7 +412,7 @@
     "accept": "Accept",
     "settings": "Settings",
     "driver_login": "Driver Login",
-    "customer_login": "Customer Login",
+    "customer_login": "Passenger Login",
     "sign_in_by_mobile": "Sign In By Mobile",
     "mobile_number": "Mobile Number",
     "request_otp": "Request OTP",
@@ -423,5 +423,11 @@
     "continue_as": "Continue as",
     "customer": "Passenger",
     "become_a": "Become a",
-    "and_earn_money": "& earn money"
+    "and_earn_money": "& earn money",
+    "contact": "Contact",
+    "send_feedback": "Send FeedBack",
+    "terms_and_conditions": "Terms and Conditions",
+    "privacy_policy": "Privacy Policy",
+    "about_us": "About Us",
+    "more_apps": "More Apps"
 }

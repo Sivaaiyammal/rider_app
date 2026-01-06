@@ -36,6 +36,6 @@ export const cancelTrip = res => {
   NeNativeModule.endNavigation();
   setStartNavigation(false);
   setDisduration(null);
-  BGLocationTask.stopDriverBgTask();
+  // BGLocationTask.stopDriverBgTask();
   showNotification(res?.message, '', 'success');
 };

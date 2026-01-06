@@ -412,7 +412,7 @@
     "accept": "ஏற்றுக்கொள்",
     "settings": "அமைப்புகள்",
     "driver_login": "இயக்கி உள்நுழைவு",
-    "customer_login": "வாடிக்கையாளர் உள்நுழைவு",
+    "customer_login": "பயணிகள் உள்நுழைவு",
     "sign_in_by_mobile": "மொபைல் மூலம் உள்நுழையவும்",
     "mobile_number": "மொபைல் எண்",
     "request_otp": "OTP-யைக் கோருங்கள்",
@@ -423,5 +423,11 @@
     "continue_as": "எனத் தொடரவும்",
     "customer": "பயணிகள்",
     "become_a": "ஆகுங்கள்",
-    "and_earn_money": "& பணம் சம்பாதிக்கவும்"
+    "and_earn_money": "& பணம் சம்பாதிக்கவும்",
+    "contact": "தொடர்பு",
+    "send_feedback": "பின்னூட்டத்தை அனுப்பு",
+    "terms_and_conditions": "விதிமுறைகள் மற்றும் நிபந்தனைகள்",
+    "privacy_policy": "தனியுரிமைக் கொள்கை",
+    "about_us": "எங்களை பற்றி",
+    "more_apps": "மேலும் பயன்பாடுகள்"
 }
