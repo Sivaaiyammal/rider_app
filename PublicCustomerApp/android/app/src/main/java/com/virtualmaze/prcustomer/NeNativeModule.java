@@ -1477,7 +1477,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         }
     }
 
-     @ReactMethod
+    @ReactMethod
     public void clearDirectionPoints() {
                     directions.getInstance().clearRoute();
                     routeInstructionsDisplay = null;

@@ -35,6 +35,16 @@ public class PlayTripSoundModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void playSound(String soundName, boolean loop, Promise promise) {
+        playSound.playSound(soundName, loop, promise);
+    }
+
+    @ReactMethod
+    public void playDefaultTripAlert(Promise promise) {
+        playSound.playSound(null, true, promise);
+    }
+
+    @ReactMethod
     public void isPlaying(Promise promise) {
         promise.resolve(playSound.isPlaying());
     }

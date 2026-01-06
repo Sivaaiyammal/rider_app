@@ -67,13 +67,11 @@ const MainAppContent = () => {
       console.log('Foreground message received:', data);
 
       const clearedtxt = title?.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, '').trim();
-      console.log('clearedtxt',clearedtxt);
-      console.log(clearedtxt , '===','driver assigned');
-      console.log(clearedtxt == 'driver assigned');
+      
     
       if (clearedtxt == 'driver assigned') {
-        console.log('Playing trip alert sound');
-        tripAlert.playAlertSound()
+
+        tripAlert.playDriverAllocatedAlert();
         Vibration.vibrate();
       }
       PushNotifications.sendNotification(body, title, data);
