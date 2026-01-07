@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Text, ScrollView, Dimensions, Linki
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import AdaptiveText from '../../../notCustomer/components/Common/AdaptiveText';
-import i18n from '../../../notCustomer/i18n';
+import i18n from '../../../common/i18n';
 import { colors, Fonts } from '../../../notCustomer/constants/constants';
 import { GlobalContext } from '../../../context/GlobalContext';
 import { useStackScreenStore } from '../../../notCustomer/store/useStackScreenStore';

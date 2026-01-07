@@ -313,7 +313,7 @@ const MapScreen = () => {
       setTimeout(() => {
         setMapBounds(finalBounds);
         setHomeMapMarker(location)
-      },500);
+      },100);
     }
     return () => {
       setMapMarkers([])

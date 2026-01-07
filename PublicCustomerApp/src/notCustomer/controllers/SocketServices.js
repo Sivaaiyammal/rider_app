@@ -15,7 +15,7 @@ import Config from "react-native-config";
 import useMapStore from '../features/map/store/useMapStore';
 import { resetTo } from '../../navigation/RootNavigation';
 import { showNotification } from '../components/NotificationManger';
-import i18n from '../i18n';
+import i18n from '../../common/i18n';
 const SOCKET_URL = Config.ROOT_API_URL;
 
 
@@ -47,6 +47,17 @@ class WSService {
     if(data?.driver && data?.otp){
       console.log("driverAllocateddddddddddddddddddddddddddddddd",JSON.stringify(data))
       if(data?.tripData){
+         if(data?.tripData?._id){
+          const currentTrip = await this.DataStore.loadData(PREF.CURRENT_TRIP);
+          if(currentTrip?.data){
+              console.log("currentTrip?.data?._id",currentTrip?.data)
+              console.log("data?._id",data?.tripData._id)
+              if(currentTrip?.data !== data?.tripData._id){
+                return;
+              }
+          }
+
+        }
         this.useCurrentRideInfoStore.getState().setCurrentRideInfo(data?.tripData);
       }
       if(data?._id){
@@ -62,20 +73,19 @@ class WSService {
   }
   async onRideStatus(data){
     const currentTrip = await this.DataStore.loadData(PREF.CURRENT_TRIP);
-    console.log("currentTripFromSocket",currentTrip)
-    
-    
-    if(data?.tripStatus){
-      if(data?.tripStatus === 'CANCELLED'){
-        try {
-          if(data?.isOnGoingTrip && data?.fareDetails){
-            if(currentTrip?.data){
+     if(currentTrip?.data){
               console.log("currentTrip?.data?._id",currentTrip?.data)
               console.log("data?._id",data?._id)
               if(currentTrip?.data !== data?._id){
                 return;
               }
-            }
+    }
+    
+    if(data?.tripStatus){
+      if(data?.tripStatus === 'CANCELLED'){
+        try {
+          if(data?.isOnGoingTrip && data?.fareDetails){
+           
             this.useStackScreenStore.getState().setStackScreen('PaymentScreen',{});
             this.useCurrentRideInfoStore.getState().setFareDetails(data?.tripFare);
             this.useCurrentRideInfoStore.getState().setFinalDistance(data?.tripFare?.distance);

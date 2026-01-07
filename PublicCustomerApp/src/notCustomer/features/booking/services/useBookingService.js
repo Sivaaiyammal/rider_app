@@ -161,6 +161,8 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
 
     
     console.log(selectedVehicle,"selectedVehicle in prepareBookingPayload")
+
+    const estimatedWaitTime = stops.map((stop) => stop.waitingTime || 0).reduce((a, b) => a + b, 0);
     
 
     // Build payload with dummy values for testing
@@ -193,6 +195,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       regionCode: regionOfficeCode || 'default',
       appVersion: (DeviceInfo.getVersion?.() || ''),
       buildNumber: (DeviceInfo.getBuildNumber?.() || ''),
+      estimatedWaitTime : estimatedWaitTime || 0
      
       
     };

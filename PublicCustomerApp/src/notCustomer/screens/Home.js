@@ -267,14 +267,15 @@ const Home = () => {
 
 
   useEffect(() => { 
-    if (driverMatched) {  
+    const currentScreen = getCurrentScreenName();
+    if (driverMatched && currentScreen === 'RideStatus') {  
       console.log('Driver matched, stopping nearby driver polling');
       checkOnGoingRideAndLog(); 
       setDriverMatched(false);
       
     }
 
-  }, [driverMatched]);
+  }, [driverMatched,getCurrentScreenName]);
   
   const handleUserLocatioChange = useCallback(currentLocation => {
     const lng = currentLocation?.longitude;
@@ -455,8 +456,12 @@ const Home = () => {
         }
       
       if(Response?.trip){
+         if(Response?.trip?.status == "PENDING")
+        {
+          return;
+        }
 
-        if (Response?.trip?.status == "CANCELLED" || Response?.trip?.status == "PENDING" || Response?.trip?.status == "COMPLETED" || Response?.trip?.status == "DIVERGED") {
+        if (Response?.trip?.status == "CANCELLED"|| Response?.trip?.status == "COMPLETED" || Response?.trip?.status == "DIVERGED") {
           await DataStore.clearData(PREF.CURRENT_TRIP)
           resetCurrentRideInfo();
            console.log(rideEndLocation,rideStartLocation,"rideEndLocationrideEndLocation____________________")
@@ -673,14 +678,16 @@ const Home = () => {
       appState.current = nextState;
       console.log("nextState",nextState)
       if (nextState === 'active') {
-        // On returning to foreground, re-check ongoing ride and permissions
+        const currentScreen = getCurrentScreenName();
+        if(tripId && (currentScreen === 'RideStatus' || currentScreen === 'Home')){
         await checkOnGoingRideAndLog(true);
+        }
         console.log("navigate to permission if needed")
         await navigateToPermissionIfNeeded();
       }
     });
     return () => subscription.remove();
-  }, [navigateToPermissionIfNeeded]);
+  }, [navigateToPermissionIfNeeded,tripId,getCurrentScreenName]);
 
   useCustomBackHandler();
 

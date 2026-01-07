@@ -63,8 +63,8 @@ def excel_to_json_by_language(excel_file: str, sheet_name: str | None, output_pa
         # Generate JSON filename based on language
         json_file = os.path.join(output_path, f"{lang}.json")
         
-        # Write JSON to a file
-        with open(json_file, 'w') as f:
+        # Write JSON to a file with utf-8 encoding
+        with open(json_file, 'w', encoding='utf-8') as f:
             json.dump(lang_dict, f, indent=4, ensure_ascii=False)
 
 def _list_sheets(excel_file: str):
