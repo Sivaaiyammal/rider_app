@@ -27,13 +27,20 @@ import NavBar from '../../common/components/NavBar';
 import LocationPicker from '../components/LocationPicker';
 import SearchResult from '../components/SearchView/SearchResult';
 import StateVectorConatiner from '../components/SearchView/StateVectorConatiner';
+import APIRequest from '../../common/controllers/APIRequest';
+import AlertModal from '../components/AlertModal';
+import locationTask from '../../common/controllers/GetCurrentLocation';
+import { checkFineLocationPermissions, RequestFineLocationPermission } from '../../common/controllers/PermissionHandler';
+import { showNotification } from '../../common/components/Alerts/showNotification';
+import { useTranslation } from 'react-i18next';
+import useUserStore from '../../common/store/useUserStore';
 
 const CACHE_EXPIRY = 5 * 60 * 1000;
 const searchCache = new Map();
 
 const AddDriverLocation = ({isPassanger, updatePassangerLocation, isGeofenceSearch, onCloseIconPress, updateMapMarker,fromDriverEntry = false}) => {
   const {goBack} = useStackScreenStore();
-  const {setMapClickCallback, setMapMarkers, setUserLocation, setMapLocation, setOnMapCenterChanged, setOnMapRotationChanged, mapMoving, setMapMoving} =
+  const {setMapClickCallback, setMapMarkers, setUserLocation, setMapLocation, setOnMapCenterChanged, setOnMapRotationChanged, mapMoving, setMapMoving, userLocation} =
     useMapMarkerStore();
   const { onSearchResults, setOnSearchResults } = useMapMarkerStore();
   const { setDriverInfo} = usePublicDriverStore();
@@ -47,6 +54,12 @@ const AddDriverLocation = ({isPassanger, updatePassangerLocation, isGeofenceSear
   const [hasSearchResults, setHasSearchResults] = useState(false);
   const [stateVector, setStateVector] = useState(null);
   const [matchedStrings, setMatchedStrings] = useState([]);
+  const {t} = useTranslation()
+  const [showLocationModal, setShowLocationModal] = useState(false);
+
+  const {userInfo} = useUserStore()
+
+  const [isLocationLoading, setIsLocationLoading] = useState(false);
 
     // Region configuration
     const REGIONS = useMemo(() => [
@@ -66,8 +79,8 @@ const AddDriverLocation = ({isPassanger, updatePassangerLocation, isGeofenceSear
       const response = await search.reverseGeocodeV2(coordinates);
       if (response) {
         return (
-          response.properties.street ||
-          response.properties.name ||
+          response?.properties?.street ||
+          response?.properties?.name ||
           'Unnamed Location'
         );
       }
@@ -364,6 +377,73 @@ const removeStateVecotr = async (item) => {
     setAddressName(null)
  }
 
+   const getUserLocation = async () =>{
+    await locationTask.getCurrentLocation()  
+  }
+
+  const getCurrentLocation = async () => {
+    const isLocationPermitted = await checkFineLocationPermissions();
+    if (!isLocationPermitted) {
+      const hasLocationpermission = await RequestFineLocationPermission();
+      if (!hasLocationpermission) {
+        showNotification(
+          t('location_permission_denied'),
+          t('grant_location_permission'),
+          'danger',
+          3000,
+        );
+        return;
+      }
+    }
+    getUserLocation();
+  };
+
+ const LocationRequestModal = () => {
+     return (
+       <AlertModal
+       isVisible={showLocationModal}
+       onClose={() => {
+         setShowLocationModal(false);
+       }}
+       rightBtnText={t('allow')}
+       leftBtnTxt={t('cancel')}
+       successMessage={t('please_allow_location_access_to_continue_we_need_your_location_to_continue')} 
+       onRightPress={() => {
+         getCurrentLocation();
+         setShowLocationModal(false);
+       }}
+       animationType={'slide'}
+     />
+     );
+   };
+
+ const updateDriverPrefferedLocation =async (updateDriverHomeLocation)=> {
+   if (!userLocation) {
+      setShowLocationModal(true);
+      return;
+    }
+   try {
+    setIsLocationLoading(true)
+     const api = new APIRequest();
+     const url = `/publicrides/driver/updatePreferredWorkLocation`;
+     const payload = {
+       homeLocation: updateDriverHomeLocation,
+       location: userLocation.reverse(),
+     };
+     const res = await api.request(url, 'POST', payload, userInfo?.token);
+     if (res?.success) {
+         setDriverInfo({homeLocation: updateDriverHomeLocation,coordinates: [selectedAddress.lng, selectedAddress.lat]})
+         onGoBack()
+     } else {
+        showNotification(res?.message, res?.message, 'danger');
+     }
+    setIsLocationLoading(false)
+   } catch (err) {
+      console.log("Error updating preferred location", err);
+    setIsLocationLoading(false)
+   }
+ }
+
  const onConfirmLocation = () => {
    const updateDriverHomeLocation = {
      coordinates : [selectedAddress.lng, selectedAddress.lat],
@@ -372,8 +452,7 @@ const removeStateVecotr = async (item) => {
    if (isPassanger) {
     updatePassangerLocation(updateDriverHomeLocation)
    }else {
-    setDriverInfo({homeLocation: updateDriverHomeLocation,coordinates: [selectedAddress.lng, selectedAddress.lat]})
-    onGoBack()
+    updateDriverPrefferedLocation(updateDriverHomeLocation)
    }
  }
 
@@ -388,7 +467,7 @@ const removeStateVecotr = async (item) => {
 
   return (
     <View style={{flex: 1, alignContent: 'center' , justifyContent:'center'}}>
-      {/* {logoutLoading && <FullScreenLoader />} */}
+      {isLocationLoading && <FullScreenLoader />}
        {! isGeofenceSearch && <NavBar title={isPassanger ? "Add Your Pick up Location" : "Add Driver Location"} onBackPress={() => onGoBack()} withBg />}
       <UseBackButton onBackPress={() => onGoBack()} />
         {!onSearchResults && !isGeofenceSearch &&  <LocationPicker setIsLoading={setIsLoading} onAddressCallback={onAddressCallback}/>}
@@ -426,7 +505,7 @@ const removeStateVecotr = async (item) => {
         </TouchableOpacity>
       }
       </View>
-      
+      {showLocationModal && <LocationRequestModal />}
       {/* {showLogoutModal && renderLogoutModal()} */}
     </View>
   );

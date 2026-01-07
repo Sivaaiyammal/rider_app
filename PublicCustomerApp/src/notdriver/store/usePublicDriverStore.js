@@ -19,27 +19,19 @@ const usePublicDriverStore = create((set, get) => ({
   driverInfo: {
     name: '',
     phone: '',
-    aadharNo: '',
     alternatePhone: '',
-    panNo: '',
     licenseNo: '',
+    driverPhoto: null,
     gender: '',
-    homeLocation: null
+    homeLocation: null,
+    licenseDocument: null,
+    dob: '',
   },
   
   vehicleInfo: {
     type: '',
-    model: '',
-    color: '',
-    make: '',
-    year: '',
     regNo: '',
-    fuelType: '',
-    insuranceExpiry: '',
-    roadTaxExpiry: '',
-    fitnessExpiry: '',
-    pucExpiry: '',
-    permitNumber: '',
+    vehicleRcDoc: null,
   },
   
   bankInfo: {
@@ -112,7 +104,7 @@ const usePublicDriverStore = create((set, get) => ({
   getCompletionStatus: () => {
     const { driverInfo, vehicleInfo, documents, bankInfo } = get();
 
-    const { alternatePhone, aadharNo, licenseNo,  ...restDriverInfo } = driverInfo;
+    const { alternatePhone, licenseNo, licenseDocument, driverPhoto, ...restDriverInfo } = driverInfo;
     const isDriverInfoComplete = Object.values(restDriverInfo).every(value => 
       value !== null && value !== undefined && value !== ''
     );
@@ -121,16 +113,15 @@ const usePublicDriverStore = create((set, get) => ({
       return 1;
     }
 
-    const { permitNumber, ...restVehicleInfo } = vehicleInfo;
-    
-    // Check vehicle info completion
-    const isVehicleInfoComplete = Object.values(restVehicleInfo).every(value => 
-      value !== null && value !== undefined && value !== ''
-    );
-   
-      if(!isVehicleInfoComplete){
-        return 2;
-      }
+    const requiredVehicleFields = ['type', 'regNo'];
+    const isVehicleInfoComplete = requiredVehicleFields.every(field => {
+      const value = vehicleInfo[field];
+      return value !== null && value !== undefined && value !== '';
+    });
+
+    if(!isVehicleInfoComplete){
+      return 2;
+    }
 
     // Check bank info completion
     const isBankInfoComplete = Object.values(bankInfo).every(value => 
@@ -290,23 +281,18 @@ const usePublicDriverStore = create((set, get) => ({
         aadharNo: '',
         panNo: '',
         licenseNo: '',
+        licenseDocument: null,
+        aadharDocument: null,
+        panDocument: null,
+        driverPhoto: null,
         gender: '',
         alternatePhone: '',
         homeLocation: null
       },
       vehicleInfo: {
         type: '',
-        model: '',
-        color: '',
-        make: '',
-        year: '',
         regNo: '',
-        fuelType: '',
-        insuranceExpiry: '',
-        roadTaxExpiry: '',
-        fitnessExpiry: '',
-        pucExpiry: '',
-        permitNumber: '',
+        vehicleRcDoc: null,
       },
       bankInfo: {
         accountHolderName: '',

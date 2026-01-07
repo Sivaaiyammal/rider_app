@@ -15,7 +15,6 @@ import InputField from '../../../common/components/InputField';
 import DocumentImageScanner from '../../components/DocumentImageScanner';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import useUserStore from '../../../common/store/useUserStore';
-import publicrideDriverApi from '../../api/publicrideDriverApi';
 import { showNotification } from '../../../common/components/Alerts/showNotification';
 import APIRequest from '../../../common/controllers/APIRequest';
 import { Colors, Fonts, vehicleNumberPattern } from '../../../common/constants/constants';
@@ -193,167 +192,38 @@ const VehicleEntry = ({ onNext }) => {
     return isValid;
   }, [regNo, selectedType, t, vehicleRcDoc]);
 
+  console.log('VehicleEntry Rendered', vehicleInfo.vehicleRcDoc);
+
   const onNextPress = useCallback(async () => {
     if (!validate()) {
       return;
     }
-    
-    // Find models for the selected brand based on vehicle type
-    let brandData = null;
-    
-    if (selected && selected) {
-      if (selected === "SUV") {
-        brandData = indianSUVBrands.find(brand => brand.name === vehicleBrand);
-      } else if (selected === "SEDAN") {
-        brandData = indianSedanBrands.find(brand => brand.name === vehicleBrand);
-      } else if (selected === "HATCHBACK") {
-        brandData = indianHatchbackBrands.find(brand => brand.name === vehicleBrand);
-      } else if (selected === "BIKE") {
-        brandData = indianBikeBrands.find(brand => brand.name === vehicleBrand);
-      } else if (selected === "AUTO") {
-        brandData = indianAutoRickshawBrands.find(brand => brand.name === vehicleBrand);
-      } else if (selected === "ELECTRIC_SEDAN") {
-        brandData = indianElectricSedanBrands.find(brand => brand.name === vehicleBrand);
-      } else if (selected === "ELECTRIC_HATCHBACK") {
-        brandData = indianElectricHatchbackBrands.find(brand => brand.name === vehicleBrand);
-      } else if (selected === "ELECTRIC_SUV") {
-        brandData = indianElectricSUVBrands.find(brand => brand.name === vehicleBrand);
-      } else if (selected === "ELECTRIC_AUTO") {
-        brandData = indianElectricAutoRickshawBrands.find(brand => brand.name === vehicleBrand);
-      }
+
+    const formData = new FormData();
+    formData.append('type', selectedType);
+    formData.append('regNo', regNo.trim());
+    if (vehicleRcDoc) {
+      formData.append('vehicleRcDoc', {
+        uri: vehicleRcDoc.uri || vehicleRcDoc,
+        name: 'vehicle_rc.jpg', // Adjust the name as needed
+        type: 'image/jpeg', // Adjust the type as needed
+      });
     }
-    
-    if (brandData && brandData.models) {
-      setCurrentModels(brandData.models);
-      setFilteredModels(brandData.models);
-    } else {
-      // If brand not found in our list, allow custom model entry
-      setCurrentModels([]);
-      setFilteredModels([]);
-    }
-    
-    setModelSearchQuery('');
-    setModelPickerVisible(true);
-  }, [selected, vehicleBrand, t]);
-  
-  const selectedVehicle = useCallback((item) => {
-    if(item.includes('ELECTRIC')){
-      setFuelType('EV');  
-      setVehicleInfo({ fuelType: 'EV' });
-    } else {
-      setFuelType(vehicleInfo.fuelType);
-      setVehicleInfo({ fuelType: vehicleInfo.fuelType });
-    }
-    setSelected(item);
-    setVehicleBrand('');
-    setVehicleModal('');
-  }, []);
 
-  const selectBrand = useCallback((brand) => {
-    setVehicleBrand(brand);
-    if (vehicleBrandErr) setVehicleBrandErr('');
-    setBrandPickerVisible(false);
-    
-    // Reset model when brand changes
-    setVehicleModal('');
-  }, [vehicleBrandErr]);
-
-  const selectModel = useCallback((model) => {
-    setVehicleModal(model);
-    if (vehicleModalErr) setVehicleModalErr('');
-    setModelPickerVisible(false);
-  }, [vehicleModalErr]);
-
-  const selectYear = useCallback((year) => {
-    setManufactureYear(year.toString());
-    setVehicleInfo({ year: year.toString() });
-    if (manufactureYearErr) setManufactureYearErr('');
-    setYearPickerVisible(false);
-  }, [manufactureYearErr]);
-
-  // DateTime picker handlers
-  const openInsuranceExpiryPicker = useCallback(() => {
-    setInsuranceExpiryPickerVisible(true);
-  }, []);
-
-  const openRoadTaxExpiryPicker = useCallback(() => {
-    setRoadTaxExpiryPickerVisible(true);
-  }, []);
-
-  const openFitnessExpiryPicker = useCallback(() => {
-    setFitnessExpiryPickerVisible(true);
-  }, []);
-
-  const openPucExpiryPicker = useCallback(() => {
-    setPucExpiryPickerVisible(true);
-  }, []);
-
-  const openFuelTypePicker = useCallback(() => {
-    setFuelTypePickerVisible(true);
-  }, []);
-
-  const handleInsuranceExpiryChange = useCallback((event, selectedDate) => {
-    setInsuranceExpiryPickerVisible(false);
-    if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-      setInsuranceExpiry(formattedDate);
-    }
-  }, []);
-
-  const handleRoadTaxExpiryChange = useCallback((event, selectedDate) => {
-    setRoadTaxExpiryPickerVisible(false);
-    if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-      setRoadTaxExpiry(formattedDate);
-    }
-  }, []);
-
-  const handleFitnessExpiryChange = useCallback((event, selectedDate) => {
-    setFitnessExpiryPickerVisible(false);
-    if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-      setFitnessExpiry(formattedDate);
-    }
-  }, []);
-
-  const handlePucExpiryChange = useCallback((event, selectedDate) => {
-    setPucExpiryPickerVisible(false);
-    if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-      setPucExpiry(formattedDate);
-    }
-  }, []);
-
-  const handleFuelTypeChange = useCallback((item) => {
-    setFuelType(item.value);
-    if (fuelTypeErr) setFuelTypeErr('');
-    setFuelTypePickerVisible(false);
-  }, [fuelTypeErr]);
-
-  const fuelTypes = [
-    { label: t('petrol'), value: 'PETROL' },
-    { label: t('diesel'), value: 'DIESEL' },
-    { label: t('cng'), value: 'CNG' },
-    { label: t('ev'), value: 'EV' },
-    { label: t('lpg'), value: 'LPG' },
-    { label: t('petrol_plus_cng'), value: 'PETROL + CNG' },
-    { label: t('hydrogen'), value: 'HYDROGEN' },
-  ];
-
-  const getImage = (key) => {
-    return vehicleList?.find(item => item.name === key)?.image
-  }
-
-  // Update the DateTimePicker components to handle invalid dates safely
-  const getSafeDate = useCallback((dateString) => {
-    if (!dateString) return new Date();
-    
+    setIsSaving(true);
     try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        return new Date();
+      const api = new APIRequest();
+      const response = await api.request(`/publicrides/driver/updateDriverVehicleInfo`, 'POST', formData, userInfo?.token);
+      if (response?.success) {
+        setVehicleInfo({
+          type: selectedType,
+          regNo: regNo.trim(),
+          vehicleRcDoc: vehicleRcDoc,
+        });
+        onNext?.(formData);
+      } else {
+        showNotification(response?.message, '', 'danger');
       }
-      return date;
     } catch (error) {
       console.error('Error updating vehicle details:', error);
       showNotification(
@@ -432,6 +302,7 @@ const VehicleEntry = ({ onNext }) => {
                 setVehicleRcError('');
               }
             }}
+            initialImage={vehicleRcDoc || vehicleInfo?.vehicleRcDoc || null}
             helperText={t('vehicle_rc_scan_helper', {
               defaultValue: 'Upload or capture the vehicle RC to detect the registration number automatically.',
             })}

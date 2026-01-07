@@ -3,10 +3,8 @@ import { Colors, Fonts } from "../../common/constants/constants";
 
 export const styles = StyleSheet.create({
     container: {
-      // flex: 1,
-      // display: 'flex',
-      // flexDirection: 'column',
-      // justifyContent: 'space-between',
+      flex: 1,
+      backgroundColor: Colors.white,
     },
     scrollView: {
       flex: 1,

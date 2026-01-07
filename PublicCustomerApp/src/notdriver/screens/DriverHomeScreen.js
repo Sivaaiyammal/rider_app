@@ -47,6 +47,7 @@ import DriverPermissionScreen from './DriverPermissionScreen';
 import DriverVehiclesDetails from './DriverVehicleDetails/DriverVehiclesDetails';
 import EditDriverVehicleDetails from './EditDriverVehicleDetails';
 import DriverApprovalScreen from './DriverApprovalScreen';
+import DocumentCenter from './DriverDocumentCenter/DocumentCenter';
 import TripAccept from './TripAccept';
 import AddDriverLocation from './AddDriverLocation';
 import PublicDriverTrackingScreen from './PublicDriverTrackingScreen';
@@ -73,6 +74,10 @@ import PublicRidesPriceChart from './PublicRidesPriceChart/PublicRidesPriceChart
 import PublicRidesPriceChartDetails from './PublicRidesPriceChart/PublicRidesPriceChartDetails';
 import { useTranslation } from 'react-i18next';
 import GlobalContext from '../../context/GlobalContext';
+import DriverEntry from './DriverDocumentCenter/DriverEntry';
+import VehicleEntry from './DriverDocumentCenter/VehicleEntry';
+import BankDetails from './DriverDocumentCenter/BankDetails';
+import DriverProofDoc from './DriverDocumentCenter/DriverProofDoc';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -128,12 +133,13 @@ const PublicRidesDriverHomeScreen = () => {
     setDriverInfo({
       name: response.driver?.name || '',
       phone: response.driver?.phone || '',
-      aadharNo: response.driver?.aadharNo || '',
-      panNo: response.driver?.panNo || '',
       licenseNo: response.driver?.licenseNo || '',
       gender: response.driver?.gender || '',
       homeLocation: response.driver?.homeLocation || null,
       alternatePhone : response.driver?.alternatePhone || '',
+      driverPhoto : response.driver?.documents?.driverPhoto || null,
+      licenseDocument: response.driver?.documents?.drivingLicense || null,
+      dob: response.driver?.dob || '',
     });
   }
   const storePublicDriverVehicleInfo = (response) => {
@@ -141,6 +147,7 @@ const PublicRidesDriverHomeScreen = () => {
       return;
      }
      const vehicleInfo = response.driver?.ownVehicleInfo;
+     vehicleInfo.vehicleRcDoc = vehicleInfo.documents.vehicleRcDoc|| null;
       setVehicleInfo(vehicleInfo);
   }
   const storeDocumentsInfo = (response) => {
@@ -254,6 +261,7 @@ const PublicRidesDriverHomeScreen = () => {
     {
       refetchOnReconnect: true,
       onSuccess: (response) => {
+        console.log('Driver Details Response:', response);
         if(response?.success){
         storePublicDriverInfo(response);
         storePublicDriverVehicleInfo(response);
@@ -312,7 +320,7 @@ const PublicRidesDriverHomeScreen = () => {
         }
 
         if(response?.driver?.role === 'dco' && !checkDriverDetails(response)){
-          setStackScreen('DriverVehicleDetails');
+          setStackScreen('DocumentCenter');
           BGLocationTask.stopDriverBgTask();
           return
         }
@@ -531,6 +539,8 @@ const PublicRidesDriverHomeScreen = () => {
         return <DriverRouteDetailsScreen />;
       case 'DriverPermissionScreen':
         return <DriverPermissionScreen />;
+      case 'DocumentCenter':
+        return <DocumentCenter />;
       case 'DriverVehicleDetails':
         return <DriverVehiclesDetails approved={approved}/>;
       case 'EditDriverVehicleDetails':
@@ -587,6 +597,14 @@ const PublicRidesDriverHomeScreen = () => {
               return <PublicRidesPriceChart />;
       case 'PriceChartDetails':
               return <PublicRidesPriceChartDetails />;
+      case 'DriverEntry':
+              return <DriverEntry />;
+      case 'DriverVehicleEntry':
+              return <VehicleEntry />;        
+      case 'DriverBankDetails':
+              return <BankDetails />; 
+      case 'DriverProofDoc':
+              return <DriverProofDoc/>;  
       default:
         return <Text>Home</Text>;
     }

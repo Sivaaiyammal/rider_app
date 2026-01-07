@@ -151,67 +151,10 @@ export const documentsList = [
   {
     id: "aadhar",
     name: "aadhar_card",
-    required:true
   },
   {
     id: "panCard",
     name: "pan_card",
-    required:true
-  },
-  {
-    id: "drivingLicense",
-    name: "driving_license",
-    required:true
-  },
-  {
-    id: "insurance",
-    name: "insurance",
-    required:true
-  },
-   {
-    id: "vehicleRcDoc",
-    name: "vehicle_rc_document",
-    required:true
-  },
-   {
-    id: "vehicleRcDocBackSide",
-    name: "vehicle_rc_document_back_side",
-    required:true
-  },
-    {
-    id: "vehiclePhoto",
-    name: "vehicle_photo",
-    required:true
-  },
-    {
-    id: "driverPhoto",
-    name: "driver_photo",
-    required:true
-  },
-  {
-    id: "pucDoc",
-    name: "pollution_certificate",
-    required:false
-  },
-  {
-    id: "roadTaxDoc",
-    name: "road_tax_document",
-    required:false  
-  },
-  {
-    id: "permitDoc",
-    name: "permit_document",
-    required:false
-  },
-  {
-    id: "fitnessDoc",
-    name: "fitness_document",
-    required:false
-  },
-  {
-    id: "pvc",
-    name: "police_verification_certificate",
-    required:false
   }
 ]
 

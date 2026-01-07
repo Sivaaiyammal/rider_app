@@ -22,16 +22,26 @@ class PublicrideDriverApi {
     }
   }
 
-  async updateDriverDetails(payload,token=this.token) {
+  async updateDriverDetails(formData,token=this.token) {
     try {
        const api = new APIRequest(Config.ROOT_API_URL)
-      const response = await api.request(`/publicrides/driver/updateDriverDetails`, 'POST', payload, token);
+      const response = await api.request(`/publicrides/driver/updateDriverInfo`, 'POST', formData, token);
       return response;
     } catch (error) {
       console.error('Error updating driver   details:', error);
       throw error;
     }
     }
+  async updateDriverProof(formData, token=this.token) {
+    try {
+      const api = new APIRequest(Config.ROOT_API_URL)
+      const response = await api.request(`/publicrides/driver/updateDriverProof`, 'POST', formData, token);
+      return response;
+    } catch (error) {
+      console.error('Error updating driver proof documents:', error);
+      throw error;
+    }
+  }
   async updateVehicleDetails(payload,token=this.token) {
     try {
        const api = new APIRequest(Config.ROOT_API_URL)

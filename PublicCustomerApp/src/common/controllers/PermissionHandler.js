@@ -439,8 +439,8 @@ export const RequestCameraPermission = async (translation) => {
       );
       if (result === "never_ask_again") {
         Alert.alert(
-          translation.perm_title,
-          translation.perm_help_info,
+          'Camer Permission Required',
+          'Camera permission is required to use camera features. Please enable it from settings. To Upload Documents',
           [
             {
               text: "Cancel",

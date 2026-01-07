@@ -35,6 +35,7 @@
     "@react-native-firebase/app": "^22.0.0",
     "@react-native-firebase/crashlytics": "^22.0.0",
     "@react-native-firebase/messaging": "^22.0.0",
+    "@react-native-ml-kit/text-recognition": "^2.0.0",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
     "@shayrn/react-native-android-phone-number-hint": "^0.1.5",

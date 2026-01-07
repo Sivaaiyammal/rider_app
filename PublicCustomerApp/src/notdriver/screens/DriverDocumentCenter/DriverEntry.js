@@ -4,13 +4,13 @@ import {
   View,
   ActivityIndicator,
   ScrollView,
+  Platform,
 } from 'react-native';
-import React, {useState, useEffect, useCallback, use} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import useUserStore from '../../../common/store/useUserStore';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
-import { useMapMarkerStore } from '../../../common/store/useMapMarkerStore';
 import { Colors, licenseNumberPattern, phoneNumberPattern } from '../../../common/constants/constants';
 import publicrideDriverApi from '../../api/publicrideDriverApi';
 import { showNotification } from '../../../common/components/Alerts/showNotification';
@@ -27,31 +27,56 @@ import AlertModal from '../../components/AlertModal';
 import { useTranslation } from 'react-i18next';
 import DocumentImageScanner from '../../components/DocumentImageScanner';
 import NavBar from '../../../notCustomer/components/NavBar';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import APIRequest from '../../../common/controllers/APIRequest';
 
 const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
   const {t} = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const {userInfo} = useUserStore()
   const {setDriverInfo, driverInfo} = usePublicDriverStore();
-  const { setStackScreen } = useStackScreenStore();
   const [name, setName] = useState(driverInfo.name);
   const [phone, setPhone] = useState(driverInfo.phone);
   const [alternatePhone, setAlternatePhone] = useState(driverInfo.alternatePhone);
   const [licenseNum, setLicenseNum] = useState(driverInfo.licenseNo);
   const [gender, setGender] = useState(driverInfo.gender);
+  const [dob, setDob] = useState(driverInfo.dob || '');
   const [nameErr, setNameErr] = useState('');
   const [phoneErr, setPhoneErr] = useState('');
   const [alternatePhoneErr, setAlternatePhoneErr] = useState('');
   const [licenseNumErr, setLicenseNumErr] = useState('');
   const [driverLocation, setDriverLocation] = useState(driverInfo.homeLocation);
-  const [driverLocationErr, setDriverLocationErr] = useState('');
   const [genderErr, setGenderErr] = useState('');
+  const [dobErr, setDobErr] = useState('');
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [licenseScanMessage, setLicenseScanMessage] = useState('');
   const [driverPhoto, setDriverPhoto] = useState(driverInfo.driverPhoto || null);
+  const [showDobPicker, setShowDobPicker] = useState(false);
+  const parseDobToDate = useCallback((value) => {
+    const fallback = new Date(1990, 0, 1);
+    if (!value || typeof value !== 'string') return fallback;
+    // Try DD-MM-YYYY
+    let m = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (m) {
+      const d = Number(m[1]);
+      const mo = Number(m[2]) - 1;
+      const y = Number(m[3]);
+      const dt = new Date(y, mo, d);
+      return isNaN(dt.getTime()) ? fallback : dt;
+    }
+    // Try YYYY-MM-DD (legacy)
+    m = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) {
+      const y = Number(m[1]);
+      const mo = Number(m[2]) - 1;
+      const d = Number(m[3]);
+      const dt = new Date(y, mo, d);
+      return isNaN(dt.getTime()) ? fallback : dt;
+    }
+    return fallback;
+  }, []);
+  const [dobDate, setDobDate] = useState(parseDobToDate(driverInfo.dob || dob));
   
-  const {userLocation} = useMapMarkerStore();
-
   const {goBack} = useStackScreenStore();
 
   const normalizeLicenseNumber = useCallback(value => {
@@ -83,42 +108,40 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
     return licenseMatch ? licenseMatch[0] : '';
   }, []);
 
-  const handleLicenseScanComplete = useCallback(result => {
-    if (!result) {
-      setLicenseScanMessage('');
-      return;
-    }
-
-    if (result.image) {
-      setDriverInfo({ licenseDocument: result.image });
-    }
-
-    const detectedLicense = extractLicenseNumber(result.text);
-
-    let didUpdate = false;
-
-    if (detectedLicense) {
-      const formatted = normalizeLicenseNumber(detectedLicense);
-      if (formatted) {
-        setLicenseNum(formatted);
-        setDriverInfo({ licenseNo: formatted });
-        if (licenseNumErr && formatted.length > 0) {
-          setLicenseNumErr('');
-        }
-        didUpdate = true;
+  const handleLicenseScanComplete = useCallback(
+    result => {
+      if (!result) {
+        setLicenseScanMessage('');
+        return;
       }
-    }
 
-    if (didUpdate) {
-      setLicenseScanMessage(t('details_detected_review', {
-        defaultValue: 'Details detected automatically. Review before submitting.',
-      }));
-    } else {
-      setLicenseScanMessage(t('details_not_detected_update_manual', {
-        defaultValue: 'Could not extract license details. Update the fields manually.',
-      }));
-    }
-  }, [extractLicenseNumber, licenseNumErr, normalizeLicenseNumber, setDriverInfo, t]);
+      if (result.image) {
+        setDriverInfo({ licenseDocument: result.image });
+      }
+
+      if (result.text) {
+        const extracted = extractLicenseNumber(result.text);
+        if (extracted) {
+          const normalized = normalizeLicenseNumber(extracted);
+          setLicenseNum(normalized);
+          setDriverInfo({ licenseNo: normalized });
+          setLicenseScanMessage(
+            t('license_detected_auto_filled', {
+              defaultValue: 'License number detected and filled.',
+            }),
+          );
+        } else {
+          setLicenseScanMessage(
+            t('license_not_detected', {
+              defaultValue:
+                "Couldn’t detect license number. You can edit manually.",
+            }),
+          );
+        }
+      }
+    },
+    [extractLicenseNumber, normalizeLicenseNumber, setDriverInfo, t],
+  );
 
   const validateName = () => {
     if (name.length === 0) {
@@ -176,59 +199,79 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
     return true;
   };
 
-  const validateDriverLocation = () => {
-    if (!driverLocation || driverLocation.addressName === '') {
-      setDriverLocationErr(t('please_enter_driver_location'));
+  const validateDob = () => {
+    if (!dob || dob.trim().length === 0) {
+      setDobErr(t('please_enter_dob', { defaultValue: 'Please enter date of birth' }));
       return false;
     }
-    setDriverLocationErr('');
+    setDobErr('');
     return true;
   };
+  
+  const buildFileParam = file => {
+    if (!file || typeof file === 'string' || !file.uri) {
+      return null;
+    }
+    return {
+      uri: file.uri,
+      type: file.type || 'image/jpeg',
+      name: file.name || `document_${Date.now()}.jpg`,
+    };
+  };
+
+  console.log('DriverEntry Rendered', driverInfo);
   
   const onNextPress = async () => {
     const isNameValid = validateName();
     const isPhoneValid = validatePhone();
     const isLicenseValid = validateLicense();
     const isGenderValid = validateGender();
-    const isDriverLocationValid = validateDriverLocation();
     const isAlternatePhoneValid = validateAlternatePhone();
-  
-    if (!userLocation) {
-      setShowLocationModal(true);
+    const isDobValid = validateDob();
+
+    if (!(isNameValid && isPhoneValid && isLicenseValid && isGenderValid && isAlternatePhoneValid && isDobValid)) {
       return;
     }
 
-    if (isNameValid && isPhoneValid && isLicenseValid && isGenderValid && isDriverLocationValid && isAlternatePhoneValid) {
-      const payload = {
-        name: name,
-        phone: phone,
-        alternatePhone: alternatePhone,
-        aadharNo: driverInfo.aadharNo,
-        panNo: driverInfo.panNo,
-        licenseNo: licenseNum,
-        gender: gender,
-        homeLocation: {coordinates:driverInfo.homeLocation?.coordinates , addressName:driverInfo.homeLocation?.addressName},
-        location: userLocation.reverse(),
-        driverPhoto: driverPhoto || driverInfo.driverPhoto || null,
-      };
-      setIsLoading(true);
-      try {
-        const response = await publicrideDriverApi.updateDriverDetails(payload,userInfo?.token);
-        setIsLoading(false);
-        if (response.success) {
-          setDriverInfo(payload);
-          onNext();
-        } else {
-          showNotification(response?.message, 'Please Contact Support', 'danger')
-        }
-      } catch (error) {
-        console.error('Error updating driver details:', error);
-      } finally {
-        setIsLoading(false);
+    const resolvedDriverPhoto = driverPhoto || driverInfo.driverPhoto || null;
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('gender', gender);
+    formData.append('phone', phone);
+    if (alternatePhone) formData.append('alternatePhone', alternatePhone);
+    formData.append('dob', dob);
+    if (licenseNum) formData.append('licenseNo', licenseNum.trim());
+
+    const driverPhotoFile = buildFileParam(resolvedDriverPhoto);
+    if (driverPhotoFile) formData.append('driverPhoto', driverPhotoFile);
+
+    const licenseFile = buildFileParam(driverInfo.licenseDocument || null);
+    if (licenseFile) formData.append('drivingLicense', licenseFile);
+
+    setIsLoading(true);
+    try {
+      const api = new APIRequest();
+      const response = await api.request(`/publicrides/driver/updateDriverInfo`, 'POST', formData, userInfo?.token);
+      if (response.success) {
+        setDriverInfo({
+          ...driverInfo,
+          name,
+          phone,
+          alternatePhone,
+          licenseNo: licenseNum,
+          gender,
+          driverPhoto: resolvedDriverPhoto,
+          dob,
+        });
+      } else {
+        showNotification(response?.message, 'Please Contact Support', 'danger');
       }
+    } catch (error) {
+      console.error('Error updating driver details:', error);
+    } finally {
+      setIsLoading(false);
     }
-      
-    
   };
 
   const getUserLocation = async () =>{
@@ -279,13 +322,6 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
     }
   }, [])
 
-
-
-  const handleLocationPress = () => {
-      setLocationPressed(true)
-      setStackScreen('AddDriverLocation',{fromDriverEntry: true})
-  }
-
   useEffect(() => {
     setDriverLocation(driverInfo.homeLocation);
   }, [driverInfo.homeLocation])
@@ -293,6 +329,17 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
   useEffect(() => {
     setDriverPhoto(driverInfo.driverPhoto || null);
   }, [driverInfo.driverPhoto]);
+
+  useEffect(() => {
+    const input = driverInfo.dob || '';
+    const d = parseDobToDate(input);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    const formatted = input ? `${dd}-${mm}-${yyyy}` : '';
+    setDob(formatted);
+    setDobDate(d);
+  }, [driverInfo.dob, parseDobToDate]);
 
   return (
     <View style={{flex: 1, backgroundColor: Colors.white}}>
@@ -307,6 +354,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
           })}
           browseLabel={t('browse', { defaultValue: 'Browse' })}
           cameraLabel={t('camera', { defaultValue: 'Camera' })}
+          initialImage={driverPhoto || driverInfo.driverPhoto || null}
           onScanComplete={result => {
             if (result?.image) {
               setDriverPhoto(result.image);
@@ -339,6 +387,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
           })}
           browseLabel={t('browse', { defaultValue: 'Browse' })}
           cameraLabel={t('camera', { defaultValue: 'Camera' })}
+          initialImage={driverInfo.licenseDocument || null}
           onScanComplete={handleLicenseScanComplete}
           onImageSelected={image => {
             if (image) {
@@ -363,21 +412,6 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
           </Text>
         ) : null}
       </View>
-      {/* <TouchableOpacity onPress={handleLocationPress} disabled={isEdit}>    
-       <InputField
-        style={driverDetailStyles.textField}
-        value={driverLocation?.addressName}
-        label={t('preferred_work_location')}
-        errorText={driverLocationErr}
-        onChangeText={text => {
-          if (driverLocationErr && text.length > 0) setDriverLocation(driverLocation);
-        }}
-        icon={<Entypo name="location" size={16} color="black" />}
-        editable={false}
-        onPressOut={() => setStackScreen('AddDriverLocation',{fromDriverEntry: true})}
-        selection={{start:0, end:0}}
-      />
-        </TouchableOpacity> */}
       <InputField
         style={driverDetailStyles.textField}
         value={name}
@@ -454,6 +488,45 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
         noSpaces={true}
         />
       </View>
+
+         <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => !isEdit && setShowDobPicker(true)}
+        disabled={isEdit}
+      >
+        <InputField
+          style={driverDetailStyles.textField}
+          value={dob}
+          label={t('dob', { defaultValue: 'Date of Birth (DD-MM-YYYY)' })}
+          errorText={dobErr}
+          editable={false}
+          isRequired={true}
+        />
+      </TouchableOpacity>
+      {showDobPicker && (
+        <DateTimePicker
+          value={dobDate}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          maximumDate={new Date()}
+          onChange={(event, selectedDate) => {
+            if (Platform.OS === 'android') {
+              setShowDobPicker(false);
+            }
+            if (selectedDate) {
+              const yyyy = selectedDate.getFullYear();
+              const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+              const ddv = String(selectedDate.getDate()).padStart(2, '0');
+              const formatted = `${ddv}-${mm}-${yyyy}`;
+              setDob(formatted);
+              setDriverInfo({ dob: formatted });
+              setDobErr('');
+              setDobDate(selectedDate);
+            }
+          }}
+          // On iOS keep it visible until user navigates; optional Done/Cancel could be added if needed
+        />
+      )}
 
          <InputField
         style={driverDetailStyles.textField}

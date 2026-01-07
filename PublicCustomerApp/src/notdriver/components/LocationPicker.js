@@ -52,7 +52,6 @@ const LocationPicker = (props) => {
   };
 
   const onmapCenterChanged = async data => {
-    console.log('onmapCenterChanged', data);
     setMapMoving(false);
     debouncedMapCenterChange(data);
   };

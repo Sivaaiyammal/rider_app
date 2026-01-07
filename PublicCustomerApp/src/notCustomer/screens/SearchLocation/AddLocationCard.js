@@ -236,8 +236,8 @@ const AddLocationCard = () => {
       const response = await search.reverseGeocode(coordinates);
       if (response) {
         return (
-          response.properties.street ||
-          response.properties.name ||
+          response?.properties?.street ||
+          response?.properties?.name ||
           "Unnamed Location"
         );
       }
