@@ -346,9 +346,9 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
           >
             <Ionicons name="chevron-back" size={24} color="#000000" />
           </TouchableOpacity>
-          <Text style={styles.title}>{t('support_create_form.title')}</Text>
+          <Text style={styles.title}>{t('support_create_form_title')}</Text>
         </View>
-        <Text style={styles.subtitle}>{t('support_create_form.subtitle')}</Text>
+        <Text style={styles.subtitle}>{t('support_create_form_subtitle')}</Text>
       </View>
 
       {/* Scrollable Form Content */}
@@ -365,7 +365,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
         <View style={styles.form}>
           {/* Ticket Type Selection */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('support_create_form.ticket_type')} *</Text>
+            <Text style={styles.label}>{t('support_create_form_ticket_type')} *</Text>
             <View style={styles.ticketTypeContainer}>
               <TouchableOpacity
                 style={[
@@ -385,7 +385,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
                     formData.ticketType === 'app' && styles.ticketTypeButtonTextActive,
                   ]}
                 >
-                  {t('support_create_form.app_related')}
+                  {t('support_create_form_app_related')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -406,7 +406,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
                     formData.ticketType === 'trip' && styles.ticketTypeButtonTextActive,
                   ]}
                 >
-                  {t('support_create_form.trip_related')}
+                  {t('support_create_form_trip_related')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -426,7 +426,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               },
             ]}
           >
-            <Text style={styles.label}>{t('support_create_form.select_trip_label')} *</Text>
+            <Text style={styles.label}>{t('support_create_form_select_trip_label')} *</Text>
             <TouchableOpacity
               style={[styles.dropdownButton, errors.selectedTrip && styles.inputError]}
               onPress={() => {
@@ -441,13 +441,13 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               >
                 {formData.selectedTrip
                   ? formatTripDisplay(formData.selectedTrip)
-                  : t('support_create_form.select_trip_placeholder')}
+                  : t('support_create_form_select_trip_placeholder')}
               </Text>
               <Ionicons name="chevron-down" size={16} color="#6B7280" />
             </TouchableOpacity>
             {errors.selectedTrip && (
               <Text style={styles.errorText}>
-                {t('support_create_form.error_select_trip')}
+                {t('support_create_form_error_select_trip')}
               </Text>
             )}
 
@@ -466,11 +466,11 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               ]}
             >
               <Text style={styles.tripDetailsTitle}>
-                {t('support_create_form.trip_details')}:
+                {t('support_create_form_trip_details')}:
               </Text>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>
-                  {t('support_create_form.from')}:
+                  {t('support_create_form_from')}:
                 </Text>
                 <Text style={styles.tripDetailValue}>
                   {formData.selectedTrip?.stops?.[0]?.address || 'Unknown location'}
@@ -478,7 +478,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               </View>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>
-                  {t('support_create_form.to')}:
+                  {t('support_create_form_to')}:
                 </Text>
                 <Text style={styles.tripDetailValue}>
                   {formData.selectedTrip?.stops?.[formData.selectedTrip?.stops?.length - 1]?.address ||
@@ -487,7 +487,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               </View>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>
-                  {t('support_create_form.date')}:
+                  {t('support_create_form_date')}:
                 </Text>
                 <Text style={styles.tripDetailValue}>
                   {formData.selectedTrip ? formatDate(formData.selectedTrip.bookingTime) : ''}
@@ -495,7 +495,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               </View>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>
-                  {t('support_create_form.fare')}:
+                  {t('support_create_form_fare')}:
                 </Text>
                 <Text style={styles.tripDetailValue}>
                   ₹{formData.selectedTrip?.estimatedFare ||
@@ -505,7 +505,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               </View>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>
-                  {t('support_create_form.distance')}:
+                  {t('support_create_form_distance')}:
                 </Text>
                 <Text style={styles.tripDetailValue}>
                   {formData.selectedTrip?.estimatedDistance || 0} km
@@ -513,7 +513,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               </View>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>
-                  {t('support_create_form.driver')}:
+                  {t('support_create_form_driver')}:
                 </Text>
                 <Text style={styles.tripDetailValue}>
                   {formData.selectedTrip?.driverInfo?.driverName || 'No driver assigned'}
@@ -521,7 +521,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
               </View>
               <View style={styles.tripDetailRow}>
                 <Text style={styles.tripDetailLabel}>
-                  {t('support_create_form.status')}:
+                  {t('support_create_form_status')}:
                 </Text>
                 <Text style={styles.tripDetailValue}>
                   {formData.selectedTrip?.status || 'Unknown'}
@@ -532,11 +532,11 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
 
           {/* Category */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('support_create_form.category_label')} *</Text>
+            <Text style={styles.label}>{t('support_create_form_category_label')} *</Text>
             {loadingCategories ? (
               <View style={styles.loadingContainer}>
                 <Text style={styles.loadingText}>
-                  {t('support_create_form.loading_categories')}
+                  {t('support_create_form_loading_categories')}
                 </Text>
               </View>
             ) : filteredCategories.length > 0 ? (
@@ -567,23 +567,23 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
             ) : (
               <View style={styles.noCategoriesContainer}>
                 <Text style={styles.noCategoriesText}>
-                  {t('support_create_form.no_categories')}
+                  {t('support_create_form_no_categories')}
                 </Text>
               </View>
             )}
             {errors.category && (
               <Text style={styles.errorText}>
-                {t('support_create_form.error_category_required')}
+                {t('support_create_form_error_category_required')}
               </Text>
             )}
           </View>
 
           {/* Description */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>{t('support_create_form.description_label')} *</Text>
+            <Text style={styles.label}>{t('support_create_form_description_label')} *</Text>
             <TextInput
               style={[styles.textArea, errors.description && styles.inputError]}
-              placeholder={t('support_create_form.description_placeholder')}
+              placeholder={t('support_create_form_description_placeholder')}
               value={formData.description}
               onFocus={() => {
                 setDescriptionFocused(true);
@@ -599,7 +599,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
             />
             {errors.description && (
               <Text style={styles.errorText}>
-                {t('support_create_form.error_description_required')}
+                {t('support_create_form_error_description_required')}
               </Text>
             )}
           </View>

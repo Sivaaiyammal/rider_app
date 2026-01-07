@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { DataStore } from '../../../notCustomer/controllers/DataStore';
 import { useTranslation } from 'react-i18next';
 import AdaptiveText from '../../../notCustomer/components/Common/AdaptiveText';
-import i18n from '../../../i18n';
+import i18n from '../../../common/i18n';
 import { GlobalContext } from '../../../context/GlobalContext';
 import { Fonts } from '../../../notCustomer/constants/constants';
 import { useStackScreenStore } from '../../../notCustomer/store/useStackScreenStore';

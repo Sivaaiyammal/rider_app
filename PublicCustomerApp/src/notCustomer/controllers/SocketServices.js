@@ -181,8 +181,8 @@ class WSService {
         this.useStackScreenStore.getState().reset();
         this.close();
         showNotification(
-          i18n.t('session.logged_out_title'),
-          i18n.t('session.logged_out_other_device_message'),
+          i18n.t('session_logged_out_title'),
+          i18n.t('session_logged_out_other_device_message'),
           'warning'
         );
         resetTo('LoginScreen');

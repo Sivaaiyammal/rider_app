@@ -338,7 +338,7 @@ const Home = () => {
       index: 0,
       routes: [{ name: 'LoginScreen' }],
     });
-    showNotification(t('session.logged_out_title'), t('session.logged_out_other_device_message'), 'warning');
+    showNotification(t('session_logged_out_title'), t('session_logged_out_other_device_message'), 'warning');
   }
 
 

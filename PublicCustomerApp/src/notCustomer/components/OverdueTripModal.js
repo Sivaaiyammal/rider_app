@@ -61,14 +61,14 @@ const OverdueTripModal = ({ visible, onClose, onSelect, TripId }) => {
             style={styles.headerImage}
             resizeMode="contain"
             accessible
-            accessibilityLabel={t('overdue.image_alt', 'Trip overdue illustration')}
+            accessibilityLabel={t('overdue_image_alt', 'Trip overdue illustration')}
           />
          
           <AdaptiveText style={styles.title}>
-            {t('overdue.title')}
+            {t('overdue_title')}
           </AdaptiveText>
           <Text style={styles.message}>
-            {t('overdue.message')}
+            {t('overdue_message')}
           </Text>
           {submitting && (
             <View style={styles.loaderRow}>
@@ -82,14 +82,14 @@ const OverdueTripModal = ({ visible, onClose, onSelect, TripId }) => {
                 style={styles.input}
                 multiline
                 editable={!submitting}
-                placeholder={t('overdue.cancellation_note_placeholder', 'Tell us why you are ending the trip')}
+                placeholder={t('overdue_cancellation_note_placeholder', 'Tell us why you are ending the trip')}
                 placeholderTextColor="#999"
                 value={message}
                 onChangeText={setMessage}
                 maxLength={250}
               />
               <Text style={styles.helperText}>
-                {t('overdue.cancellation_note_helper', 'We will share this note with support.')}
+                {t('overdue_cancellation_note_helper', 'We will share this note with support.')}
               </Text>
               <View style={styles.buttons}>
                 <TouchableOpacity
@@ -104,17 +104,17 @@ const OverdueTripModal = ({ visible, onClose, onSelect, TripId }) => {
                   onPress={handleSubmitCancellation}
                   disabled={submitting || !message.trim()}
                 >
-                  <AdaptiveText style={styles.primaryBtnText}>{t('overdue.send_cancellation', 'Send & Cancel Trip')}</AdaptiveText>
+                  <AdaptiveText style={styles.primaryBtnText}>{t('overdue_send_cancellation', 'Send & Cancel Trip')}</AdaptiveText>
                 </TouchableOpacity>
               </View>
             </>
           ) : (
             <View style={styles.buttons}>
               <TouchableOpacity style={[styles.btn, submitting && styles.btnDisabled]} disabled={submitting} onPress={handleStayOnTrip}>
-                <AdaptiveText style={styles.btnText}>{t('overdue.no_im_on_ride', "No, I'm on ride")}</AdaptiveText>
+                <AdaptiveText style={styles.btnText}>{t('overdue_no_im_on_ride', "No, I'm on ride")}</AdaptiveText>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.primaryBtn, submitting && styles.btnDisabled]} disabled={submitting} onPress={handleEndTripPress}>
-                <AdaptiveText style={styles.primaryBtnText}>{t('overdue.end_trip', 'End Trip')}</AdaptiveText>
+                <AdaptiveText style={styles.primaryBtnText}>{t('overdue_end_trip', 'End Trip')}</AdaptiveText>
               </TouchableOpacity>
             </View>
           )}

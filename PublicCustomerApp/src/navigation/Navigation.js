@@ -21,7 +21,7 @@ import DriverAccessScreen from '../common/screens/Driver/DriverAccessScreen.jsx'
 import useUserInfoStore from '../common/store/useUserInfoStore';
 import {GlobalContext} from '../context/GlobalContext';
 import PropTypes from 'prop-types';
-import i18n from '../i18n';
+import i18n from '../common/i18n';
 import InAppUpdates from '../utils/InAppUpdates';
 
 import ContactScreen from '../notCustomer/features/about/screens/ContactScreen';

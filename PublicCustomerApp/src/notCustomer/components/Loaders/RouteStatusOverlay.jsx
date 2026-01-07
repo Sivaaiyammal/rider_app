@@ -40,25 +40,25 @@ const RouteStatusOverlay = ({
               )}
             </View>
             <Text style={styles.errorText} numberOfLines={2}>
-              {t('routeStatus.errorTitle', { defaultValue: errorTitle })}
+              {t('routeStatus_errorTitle', { defaultValue: errorTitle })}
             </Text>
             {!!errorDescription && (
               <Text style={styles.errorDesc} numberOfLines={3}>
-                {t('routeStatus.errorDescription', { defaultValue: errorDescription })}
+                {t('routeStatus_errorDescription', { defaultValue: errorDescription })}
               </Text>
             )}
             <Text style={styles.helperText}>
-              {t('routeStatus.helper', { defaultValue: 'Ensure your internet is stable and try again.' })}
+              {t('routeStatus_helper', { defaultValue: 'Ensure your internet is stable and try again.' })}
             </Text>
             {extraContent}
             {onRetry && (
               <TouchableOpacity style={styles.retryBtn} onPress={onRetry}>
-                <Text style={styles.retryText}>{t('routeStatus.retry', { defaultValue: 'Try Again' })}</Text>
+                <Text style={styles.retryText}>{t('routeStatus_retry', { defaultValue: 'Try Again' })}</Text>
               </TouchableOpacity>
             )}
             {onBack && (
               <TouchableOpacity style={styles.backBtn} onPress={onBack}>
-                <Text style={styles.backText}>{t('routeStatus.back', { defaultValue: 'Back' })}</Text>
+                <Text style={styles.backText}>{t('routeStatus_back', { defaultValue: 'Back' })}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -69,7 +69,7 @@ const RouteStatusOverlay = ({
           <View style={styles.contentRow}>
               <View style={styles.content}>
             <ActivityIndicator size="small" color="#0f223c" />
-            <Text style={styles.message}>{t('routeStatus.fetching', { defaultValue: 'Fetching route' })}</Text>
+            <Text style={styles.message}>{t('routeStatus_fetching', { defaultValue: 'Fetching route' })}</Text>
             </View>
           </View>
         )}

@@ -50,14 +50,14 @@ const ContactScreen = () => {
           <View style={styles.infoRow}>
             <Ionicons name="call-outline" size={30} color={colors.violet} />
             <View>
-              <Text style={styles.infoTextHeading}>{t('contact.call_us')}</Text>
+              <Text style={styles.infoTextHeading}>{t('contact_call_us')}</Text>
               <Text style={styles.infoText}>{contactData.phone}</Text>
             </View>
           </View>
           <View style={styles.infoRow}>
             <Ionicons name="mail-outline" size={30} color={colors.violet} />
             <View>
-              <Text style={styles.infoTextHeading}>{t('contact.email_us')}</Text>
+              <Text style={styles.infoTextHeading}>{t('contact_email_us')}</Text>
               <Text style={styles.infoText}>{contactData.email}</Text>
             </View>
             

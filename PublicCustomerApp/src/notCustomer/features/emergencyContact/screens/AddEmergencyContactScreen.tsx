@@ -225,7 +225,7 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
 
   return (
     <View style={styles.container}>
-      <NavBar withBg onBackPress={() => (onBack ? onBack() : goBack())} title={t('emergency.select_contacts_title')} />
+      <NavBar withBg onBackPress={() => (onBack ? onBack() : goBack())} title={t('emergency_select_contacts_title')} />
 
       {isLoading ? (
         <View style={styles.center}> 
@@ -239,7 +239,7 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
               <TextInput
                 value={query}
                 onChangeText={setQuery}
-              placeholder={t('emergency.search_placeholder')}
+              placeholder={t('emergency_search_placeholder')}
                 placeholderTextColor="#999"
                 style={[styles.search, query ? { paddingRight: 36 } : null]}
               />
@@ -249,10 +249,10 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
                 </TouchableOpacity>
               )}
             </View>
-            <Text style={styles.title}>{t('emergency.select_up_to_contacts', { count: MAX_SELECTION })}</Text>
-            <Text style={styles.subtitle}>{t('emergency.selected_count', { count: selectedCount })}</Text>
+            <Text style={styles.title}>{t('emergency_select_up_to_contacts', { count: MAX_SELECTION })}</Text>
+            <Text style={styles.subtitle}>{t('emergency_selected_count', { count: selectedCount })}</Text>
             {selectedCount >= MAX_SELECTION && (
-              <Text style={styles.maxText}>{t('emergency.maximum_selected', { count: MAX_SELECTION })}</Text>
+              <Text style={styles.maxText}>{t('emergency_maximum_selected', { count: MAX_SELECTION })}</Text>
             )}
           </View>
 
@@ -275,7 +275,7 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
         {submitting ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={styles.submitText}>{t('emergency.add_contacts_cta')}</Text>
+          <Text style={styles.submitText}>{t('emergency_add_contacts_cta')}</Text>
         )}
           </TouchableOpacity>
         </>

@@ -53,7 +53,7 @@ const EmergencyHomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      <NavBar withBg onBackPress={handleBackBtn} title={t('emergency.contacts_title')} />
+      <NavBar withBg onBackPress={handleBackBtn} title={t('emergency_contacts_title')} />
       <View style={styles.contentContainer}>
         {loading ? (
           <View style={{ width: '100%', paddingHorizontal: 16 }}>
@@ -71,14 +71,14 @@ const EmergencyHomeScreen = () => {
           <>
             <View style={styles.emptyCenter}>
               <View style={styles.infoContainer}>
-                <Text style={styles.infoText}>{t('emergency.empty_title')}</Text>
+                <Text style={styles.infoText}>{t('emergency_empty_title')}</Text>
                 <Text style={styles.infoSubText}>
-                  {t('emergency.empty_subtitle')}
+                  {t('emergency_empty_subtitle')}
                 </Text>
               </View>
             </View>
             <TouchableOpacity style={styles.fixedButton} onPress={handleAddEmergencyContact}>
-              <Text style={styles.fixedButtonText}>{t('emergency.add_contact')}</Text>
+              <Text style={styles.fixedButtonText}>{t('emergency_add_contact')}</Text>
             </TouchableOpacity>
           </>
         ) : (
@@ -100,12 +100,12 @@ const EmergencyHomeScreen = () => {
                     accessibilityLabel={`Delete ${item.name}`}
                     onPress={() => {
                       Alert.alert(
-                        t('emergency.remove_contact'),
-                        t('emergency.remove_contact_message', { name: item.name }),
+                        t('emergency_remove_contact'),
+                        t('emergency_remove_contact_message', { name: item.name }),
                         [
-                          { text: t('emergency.cancel'), style: 'cancel' },
+                          { text: t('emergency_cancel'), style: 'cancel' },
                           {
-                            text: t('emergency.delete'),
+                            text: t('emergency_delete'),
                             style: 'destructive',
                             onPress: async () => {
                               try {
@@ -135,11 +135,11 @@ const EmergencyHomeScreen = () => {
               disabled={contacts.length >= 5}
             >
               <Text style={styles.fixedButtonText}>
-                {contacts.length >= 5 ? t('emergency.edit_contacts') : t('emergency.add_contact')}
+                {contacts.length >= 5 ? t('emergency_edit_contacts') : t('emergency_add_contact')}
               </Text>
             </TouchableOpacity>
             {contacts.length >= 5 && (
-              <Text style={styles.limitText}>{t('emergency.limit_reached', { count: 5 })}</Text>
+              <Text style={styles.limitText}>{t('emergency_limit_reached', { count: 5 })}</Text>
             )}
           </>
         )}

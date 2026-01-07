@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { DataStore } from '../../common/controllers/DataStore';
-import i18n from '../../i18n';
+import i18n from '../../common/i18n';
 
 const useUserInfoStore = create(set => ({
   id: null,

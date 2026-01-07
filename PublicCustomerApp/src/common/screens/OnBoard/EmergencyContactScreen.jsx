@@ -55,13 +55,13 @@ export default function EmergencyContactScreenOverlay({ onClose }) {
       
       </View>
       <View style={styles.content}>
-        <Text style={styles.heading}>{t('emergency.emergency_contact')}</Text>
+        <Text style={styles.heading}>{t('emergency_emergency_contact')}</Text>
        
-        <Text style={styles.description}>{t('emergency.description')}</Text>
+        <Text style={styles.description}>{t('emergency_description')}</Text>
         <View style={styles.benefits}>
-          <Text style={styles.benefitItem}>• {t('emergency.benefit_1')}</Text>
-          <Text style={styles.benefitItem}>• {t('emergency.benefit_2')}</Text>
-          <Text style={styles.benefitItem}>• {t('emergency.benefit_3')}</Text>
+          <Text style={styles.benefitItem}>• {t('emergency_benefit_1')}</Text>
+          <Text style={styles.benefitItem}>• {t('emergency_benefit_2')}</Text>
+          <Text style={styles.benefitItem}>• {t('emergency_benefit_3')}</Text>
         </View>
       </View>
       <View style={styles.buttons}>
