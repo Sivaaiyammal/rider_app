@@ -38,20 +38,20 @@ OptionItem.propTypes = {
 // Centralized field generator (labels/placeholders via i18n)
 const buildFields = (t, screenName) => ([
   ...(screenName && String(screenName).toLowerCase().includes('search') ? [
-    { name: 'searchIssue', label: t('feedback.search_issue_label'), type: 'multiline', placeholder: t('feedback.search_issue_placeholder'), required: true },
+    { name: 'searchIssue', label: t('feedback_search_issue_label'), type: 'multiline', placeholder: t('feedback_search_issue_placeholder'), required: true },
   ] : []),
   ...(screenName && String(screenName).toLowerCase().includes('picklocation') ? [
-    { name: 'pickLocationIssue', label: t('feedback.pick_location_issue_label'), type: 'multiline', placeholder: t('feedback.pick_location_issue_placeholder'), required: true },
+    { name: 'pickLocationIssue', label: t('feedback_pick_location_issue_label'), type: 'multiline', placeholder: t('feedback_pick_location_issue_placeholder'), required: true },
   ] : []),
   ...(screenName && (String(screenName).toLowerCase().includes('bookride') || String(screenName).toLowerCase().includes('planride')) ? [
-    { name: 'tripIssue', label: t('feedback.trip_issue_label'), type: 'multiline', placeholder: t('feedback.trip_issue_placeholder'), required: true },
+    { name: 'tripIssue', label: t('feedback_trip_issue_label'), type: 'multiline', placeholder: t('feedback_trip_issue_placeholder'), required: true },
   ] : []),
-  { name: 'goodThings', label: t('feedback.good_things_label'), type: 'multiline', placeholder: t('feedback.good_things_placeholder'), required: true },
-  { name: 'badThings', label: t('feedback.bad_things_label'), type: 'multiline', placeholder: t('feedback.bad_things_placeholder'), required: true },
-  { name: 'improvements', label: t('feedback.improvements_label'), type: 'multiline', placeholder: t('feedback.improvements_placeholder'), required: true },
-  { name: 'issueMessage', label: t('feedback.issue_label'), type: 'multiline', placeholder: t('feedback.issue_placeholder'), required: true },
-  { name: 'contactEmail', label: t('feedback.contact_email_label'), type: 'email', placeholder: t('feedback.email_placeholder'), autoCapitalize: 'none' },
-  { name: 'consentEmail', label: t('feedback.consent_text'), type: 'toggle', defaultValue: false },
+  { name: 'goodThings', label: t('feedback_good_things_label'), type: 'multiline', placeholder: t('feedback_good_things_placeholder'), required: true },
+  { name: 'badThings', label: t('feedback_bad_things_label'), type: 'multiline', placeholder: t('feedback_bad_things_placeholder'), required: true },
+  { name: 'improvements', label: t('feedback_improvements_label'), type: 'multiline', placeholder: t('feedback_improvements_placeholder'), required: true },
+  { name: 'issueMessage', label: t('feedback_issue_label'), type: 'multiline', placeholder: t('feedback_issue_placeholder'), required: true },
+  { name: 'contactEmail', label: t('feedback_contact_email_label'), type: 'email', placeholder: t('feedback_email_placeholder'), autoCapitalize: 'none' },
+  { name: 'consentEmail', label: t('feedback_consent_text'), type: 'toggle', defaultValue: false },
 ]);
 
 const SectionTitle = ({ icon, text, required }) => (
@@ -181,18 +181,18 @@ const FeedbackBottomSheet = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (trimmedEmail && !values.consentEmail) {
-      alert(t('feedback.validation_email_consent'));
+      alert(t('feedback_validation_email_consent'));
       return;
     }
 
     // If consent is enabled, or email is voluntarily provided, ensure email is valid
     if (values.consentEmail || trimmedEmail) {
       if (!trimmedEmail) {
-        alert(t('feedback.validation_email'));
+        alert(t('feedback_validation_email'));
         return;
       }
       if (!emailRegex.test(trimmedEmail)) {
-        alert(t('feedback.validation_email'));
+        alert(t('feedback_validation_email'));
         return;
       }
     }
@@ -463,28 +463,28 @@ const FeedbackBottomSheet = () => {
         <View style={styles.titleRow}>
           <View style={styles.titleLeft}>
             <Ionicons name={'chatbubbles-outline'} size={20} color={'#0A84FF'} />
-            <Text style={styles.title}>{t('feedback.title')}</Text>
+            <Text style={styles.title}>{t('feedback_title')}</Text>
           </View>
           <TouchableOpacity onPress={() => sheetRef.current?.close()} style={styles.closeBtn} accessibilityLabel={'Close feedback'}>
             <Ionicons name={'close'} size={22} color={'#111'} />
           </TouchableOpacity>
         </View>
-        <Text style={styles.subtitle}>{t('feedback.subtitle')}</Text>
+        <Text style={styles.subtitle}>{t('feedback_subtitle')}</Text>
         <View style={styles.fieldsWrap}>
           {screenName && String(screenName).toLowerCase().includes('search') && (
             <>
-              <SectionTitle icon={'search-outline'} text={t('feedback.search_issue_title')} required />
+              <SectionTitle icon={'search-outline'} text={t('feedback_search_issue_title')} required />
             {!!values.searchQuery && (
-              <Text style={styles.coordsText}>{t('feedback.search_query_label', { query: values.searchQuery })}</Text>
+              <Text style={styles.coordsText}>{t('feedback_search_query_label', { query: values.searchQuery })}</Text>
             )}
               {fields.filter(f => f.name === 'searchIssue').map(renderField)}
             </>
           )}
           {screenName && String(screenName).toLowerCase().includes('picklocation') && (
             <>
-              <SectionTitle icon={'location-outline'} text={t('feedback.pick_location_issue_title')} required />
+              <SectionTitle icon={'location-outline'} text={t('feedback_pick_location_issue_title')} required />
               {!!values.coords && (
-                <Text style={styles.coordsText}>{t('feedback.selected_coords')}: {values.coords}</Text>
+                <Text style={styles.coordsText}>{t('feedback_selected_coords')}: {values.coords}</Text>
               )}
               {fields.filter(f => f.name === 'pickLocationIssue').map(renderField)}
             </>
@@ -494,55 +494,55 @@ const FeedbackBottomSheet = () => {
             (String(screenName).toLowerCase().includes('planride') && !!values.tripStartName && !!values.tripEndName && !!values.tripDistanceKm)
           ) && (
             <>
-              <SectionTitle icon={'flag-outline'} text={t('feedback.trip_issue_title')} required />
-              <Text style={styles.coordsText}>{t('feedback.pickup_label')}: {utils.formatAddressName(values.tripStartName) || '-'}</Text>
-              <Text style={styles.coordsText}>{t('feedback.drop_label')}: {utils.formatAddressName(values.tripEndName) || '-'}</Text>
+              <SectionTitle icon={'flag-outline'} text={t('feedback_trip_issue_title')} required />
+              <Text style={styles.coordsText}>{t('feedback_pickup_label')}: {utils.formatAddressName(values.tripStartName) || '-'}</Text>
+              <Text style={styles.coordsText}>{t('feedback_drop_label')}: {utils.formatAddressName(values.tripEndName) || '-'}</Text>
               {!!values.tripDistanceKm && (
-                <Text style={styles.coordsText}>{t('feedback.distance_label')}: {values.tripDistanceKm} km</Text>
+                <Text style={styles.coordsText}>{t('feedback_distance_label')}: {values.tripDistanceKm} km</Text>
               )}
               {fields.filter(f => f.name === 'tripIssue').map(renderField)}
             </>
           )}
           {screenName && String(screenName).toLowerCase().includes('ridestatus') && (
             <>
-              <SectionTitle icon={'flag-outline'} text={t('feedback.trip_issue_title')} required />
-              <Text style={styles.coordsText}>{t('feedback.pickup_label')}: {utils.formatAddressName(values.tripStartName) || '-'}</Text>
-              <Text style={styles.coordsText}>{t('feedback.drop_label')}: {utils.formatAddressName(values.tripEndName) || '-'}</Text>
+              <SectionTitle icon={'flag-outline'} text={t('feedback_trip_issue_title')} required />
+              <Text style={styles.coordsText}>{t('feedback_pickup_label')}: {utils.formatAddressName(values.tripStartName) || '-'}</Text>
+              <Text style={styles.coordsText}>{t('feedback_drop_label')}: {utils.formatAddressName(values.tripEndName) || '-'}</Text>
               {!!values.tripDistanceKm && (
-                <Text style={styles.coordsText}>{t('feedback.distance_label')}: {values.tripDistanceKm} km</Text>
+                <Text style={styles.coordsText}>{t('feedback_distance_label')}: {values.tripDistanceKm} km</Text>
               )}
               {!!values.estimatedFare && (
-                <Text style={styles.coordsText}>{t('feedback.estimated_fare_label', 'Estimated fare')}: ₹{values.estimatedFare}</Text>
+                <Text style={styles.coordsText}>{t('feedback_estimated_fare_label', 'Estimated fare')}: ₹{values.estimatedFare}</Text>
               )}
               {fields.filter(f => f.name === 'tripIssue').map(renderField)}
             </>
           )}
-          <SectionTitle icon={'happy-outline'} text={t('feedback.good_things_title')} required />
+          <SectionTitle icon={'happy-outline'} text={t('feedback_good_things_title')} required />
           {fields.filter(f => f.name === 'goodThings').map(renderField)}
 
         
-          <SectionTitle icon={'alert-circle-outline'} text={t('feedback.bad_things_title')} required />
+          <SectionTitle icon={'alert-circle-outline'} text={t('feedback_bad_things_title')} required />
           {fields.filter(f => f.name === 'badThings').map(renderField)}
 
         
-          <SectionTitle icon={'trending-up-outline'} text={t('feedback.improvements_title')} required />
+          <SectionTitle icon={'trending-up-outline'} text={t('feedback_improvements_title')} required />
           {fields.filter(f => f.name === 'improvements').map(renderField)}
 
         
           {showGenericIssue && (
             <>
-              <SectionTitle icon={'bug-outline'} text={t('feedback.issue_title')} required />
+              <SectionTitle icon={'bug-outline'} text={t('feedback_issue_title')} required />
               {fields.filter(f => f.name === 'issueMessage').map(renderField)}
             </>
           )}
 
         
-          <SectionTitle icon={'mail-outline'} text={t('feedback.email_title')} />
+          <SectionTitle icon={'mail-outline'} text={t('feedback_email_title')} />
           <View style={styles.contactRow}>
             <TextInput
               value={values.contactEmail || ''}
               onChangeText={(t) => setValue('contactEmail', t)}
-              placeholder={t('feedback.email_placeholder')}
+              placeholder={t('feedback_email_placeholder')}
               placeholderTextColor={'#9AA1A9'}
               style={[styles.input, styles.contactInput]}
               autoCapitalize={'none'}
@@ -550,10 +550,10 @@ const FeedbackBottomSheet = () => {
               keyboardType={'email-address'}
             />
           </View>
-          <Text style={styles.hintText}>{t('feedback.email_hint')}</Text>
+          <Text style={styles.hintText}>{t('feedback_email_hint')}</Text>
           <View style={styles.consentRow}>
             <Checkbox checked={!!values.consentEmail} onToggle={() => setValue('consentEmail', !values.consentEmail)} />
-            <Text style={styles.consentText}>{t('feedback.consent_text')}</Text>
+            <Text style={styles.consentText}>{t('feedback_consent_text')}</Text>
           </View>
         </View>
 

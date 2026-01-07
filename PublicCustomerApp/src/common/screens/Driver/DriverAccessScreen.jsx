@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Text, ScrollView, Dimensions, Linki
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import AdaptiveText from '../../../notCustomer/components/Common/AdaptiveText';
-import i18n from '../../../notCustomer/i18n';
+import i18n from '../../../common/i18n';
 import { colors, Fonts } from '../../../notCustomer/constants/constants';
 import { GlobalContext } from '../../../context/GlobalContext';
 import { useStackScreenStore } from '../../../notCustomer/store/useStackScreenStore';
@@ -160,10 +160,10 @@ const DriverAccessScreen = ({fromHome=false}) => {
           <Image source={DRIVER_BANNER} style={styles.banner} resizeMode="cover" />
           <View style={styles.bannerOverlay}>
             <AdaptiveText style={styles.bannerOverlayTitle}>
-              {i18n.t('driver_access.banner_title')}
+              {i18n.t('driver_access_banner_title')}
             </AdaptiveText>
             <Text style={styles.bannerOverlayText}>
-              {i18n.t('driver_access.banner_subtitle')}
+              {i18n.t('driver_access_banner_subtitle')}
             </Text>
           </View>
           
@@ -176,7 +176,7 @@ const DriverAccessScreen = ({fromHome=false}) => {
              onPress={() => Linking.openURL(PLAY_STORE_WEB_URL)}
           >
             <Text style={[styles.linkButtonText, { color: colors.yellow}] }>
-              {i18n.t('driver_access.download_driver_app')}
+              {i18n.t('driver_access_download_driver_app')}
             </Text>
           </TouchableOpacity>
 
@@ -186,7 +186,7 @@ const DriverAccessScreen = ({fromHome=false}) => {
         {/* Steps to become a driver (zigzag, image/text alternating) */}
         <View style={[styles.section, styles.stepsSection]}>
           <AdaptiveText style={[styles.sectionTitle, { color: '#0F223C'}] }>
-            {i18n.t('driver_access.how_to_become_driver')}
+            {i18n.t('driver_access_how_to_become_driver')}
           </AdaptiveText>
           <View style={styles.stepsList}>
             {DRIVER_STEPS.map((step, index) => {
@@ -208,11 +208,11 @@ const DriverAccessScreen = ({fromHome=false}) => {
                       <Text style={[styles.stepNumberTitle, { color: colors.yellow }] }>
                         {`Step ${index + 1}: `}
                         <Text style={[styles.stepInlineTitle, { color: '#0F223C' }]}>
-                          {i18n.t(`driver_access.steps.${step.key.replace('-', '_')}_title`)}
+                          {i18n.t(`driver_access_steps_${step.key.replace('-', '_')}_title`)}
                         </Text>
                       </Text>
                       <Text style={[styles.stepDescription, { color: 'rgba(15, 34, 60, 0.8)' }] }>
-                        {i18n.t(`driver_access.steps.${step.key.replace('-', '_')}_desc`)}
+                        {i18n.t(`driver_access_steps_${step.key.replace('-', '_')}_desc`)}
                       </Text>
                     </View>
                   </View>
@@ -233,10 +233,10 @@ const DriverAccessScreen = ({fromHome=false}) => {
             <Text style={styles.helpIcon}>📞</Text>
             <View style={styles.helpTextWrap}>
               <AdaptiveText style={[styles.helpTitle, { color: '#0F223C'}] }>
-                {i18n.t('driver_access.help_title')}
+                {i18n.t('driver_access_help_title')}
               </AdaptiveText>
               <Text style={[styles.helpSubtitle, { color: 'rgba(15, 34, 60, 0.8)' }] }>
-                {i18n.t('driver_access.help_subtitle')}
+                {i18n.t('driver_access_help_subtitle')}
               </Text>
             </View>
           </View>
@@ -244,13 +244,13 @@ const DriverAccessScreen = ({fromHome=false}) => {
             style={[styles.contactButton, { backgroundColor: colors.blue_xxdark }]}
             onPress={handleContactUs}
           >
-            <Text style={[styles.contactButtonText, { color: colors.white }]}>{i18n.t('driver_access.go_to_contact_us')}</Text>
+            <Text style={[styles.contactButtonText, { color: colors.white }]}>{i18n.t('driver_access_go_to_contact_us')}</Text>
           </TouchableOpacity>
         </View>
 
         <View style={[styles.section, styles.carouselSection]}>
           <AdaptiveText style={[styles.sectionTitle, { color: '#0F223C'}] }>
-            {i18n.t('driver_access.why_drivers_choose_us')}
+            {i18n.t('driver_access_why_drivers_choose_us')}
           </AdaptiveText>
           <View style={[styles.carouselContainer, { height: cardHeight }]}>
             <ScrollView

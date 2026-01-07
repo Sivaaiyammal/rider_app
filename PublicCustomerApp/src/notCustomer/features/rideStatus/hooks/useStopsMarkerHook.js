@@ -41,7 +41,7 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
         if(markerType === "pickup"){  
             setMarkersList(prevMarkers => {
                 // Remove all stop markers (keep only driver marker)
-                const stopMarker0 = new Marker(`${0}-stop${markerType}`, stops[0].name, stops[0].location[0], stops[0].location[1], 'pickup_point', 75 )
+                const stopMarker0 = new Marker(`${0}-stop${markerType}`, stops[0].name, stops[0].location[0], stops[0].location[1], 'home', 36 )
                 if(driverLatitude && driverLongitude){
                     return [driverMarker, stopMarker0];
                 }else{

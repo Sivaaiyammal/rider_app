@@ -12,7 +12,7 @@ import firebaseConfig from '../firebaseConfig';
 import messaging from '@react-native-firebase/messaging';
 import { NetworkProvider, useNetwork } from './context/NetworkContext';
 import NetworkBanner from './notCustomer/components/NetworkBanner';
-import i18n from './i18n';
+import i18n from './common/i18n';
 // import { useNearbyPollingControl } from './store/useNearByDriverPollingControl';
 import FeedbackBottomSheet from './notCustomer/components/FeedbackBottomSheet';
 import tripAlert from './common/controllers/TripAlert';

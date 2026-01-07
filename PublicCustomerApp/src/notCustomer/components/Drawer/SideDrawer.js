@@ -132,7 +132,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
     },
     {
       id: 'emergency',
-      name: t('emergency.emergency_contact'),
+      name: t('emergency_emergency_contact'),
       screen: 'EmergencyScreen',
       icon: <Ionicons name="alert-circle" size={20} color="black" />,
 

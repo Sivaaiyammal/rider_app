@@ -170,6 +170,7 @@ const Home = () => {
   const geocodeCache = useRef(new Map());
   const processLocationRef = useRef(null);
   const lastProcessedLocationRef = useRef(null); // Track last processed location to avoid rerenders
+  const isCheckingRideRef = useRef(false);
   
  
   const stableDebounceCallback = useRef((lng, lat) => {
@@ -267,14 +268,15 @@ const Home = () => {
 
 
   useEffect(() => { 
-    if (driverMatched) {  
+    const currentScreen = getCurrentScreenName();
+    if (driverMatched && currentScreen === 'RideStatus') {  
       console.log('Driver matched, stopping nearby driver polling');
       checkOnGoingRideAndLog(); 
       setDriverMatched(false);
       
     }
 
-  }, [driverMatched]);
+  }, [driverMatched,getCurrentScreenName]);
   
   const handleUserLocatioChange = useCallback(currentLocation => {
     const lng = currentLocation?.longitude;
@@ -338,7 +340,7 @@ const Home = () => {
       index: 0,
       routes: [{ name: 'LoginScreen' }],
     });
-    showNotification(t('session.logged_out_title'), t('session.logged_out_other_device_message'), 'warning');
+    showNotification(t('session_logged_out_title'), t('session_logged_out_other_device_message'), 'warning');
   }
 
 
@@ -359,6 +361,12 @@ const Home = () => {
   } 
 
   const checkOnGoingRideAndLog = async (update=false) => {
+    if (isCheckingRideRef.current) {
+      console.log('checkOnGoingRideAndLog already in progress');
+      return;
+    }
+
+    isCheckingRideRef.current = true;
     const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
     const currentTripId=currentTrip?.data || null
     console.log("currentTripId......hhdhd",currentTripId)
@@ -455,8 +463,12 @@ const Home = () => {
         }
       
       if(Response?.trip){
+         if(Response?.trip?.status == "PENDING")
+        {
+          return;
+        }
 
-        if (Response?.trip?.status == "CANCELLED" || Response?.trip?.status == "PENDING" || Response?.trip?.status == "COMPLETED" || Response?.trip?.status == "DIVERGED") {
+        if (Response?.trip?.status == "CANCELLED"|| Response?.trip?.status == "COMPLETED" || Response?.trip?.status == "DIVERGED") {
           await DataStore.clearData(PREF.CURRENT_TRIP)
           resetCurrentRideInfo();
            console.log(rideEndLocation,rideStartLocation,"rideEndLocationrideEndLocation____________________")
@@ -518,6 +530,7 @@ const Home = () => {
       console.error('Error fetching ongoing ride:', error);
       setConfigError(true);
     } finally {
+      isCheckingRideRef.current = false;
       setBootLoading(false);
     }
   }
@@ -673,14 +686,16 @@ const Home = () => {
       appState.current = nextState;
       console.log("nextState",nextState)
       if (nextState === 'active') {
-        // On returning to foreground, re-check ongoing ride and permissions
+        const currentScreen = getCurrentScreenName();
+        if(tripId && (currentScreen === 'RideStatus' || currentScreen === 'Home')){
         await checkOnGoingRideAndLog(true);
+        }
         console.log("navigate to permission if needed")
         await navigateToPermissionIfNeeded();
       }
     });
     return () => subscription.remove();
-  }, [navigateToPermissionIfNeeded]);
+  }, [navigateToPermissionIfNeeded,tripId,getCurrentScreenName]);
 
   useCustomBackHandler();
 
