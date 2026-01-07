@@ -170,6 +170,7 @@ const Home = () => {
   const geocodeCache = useRef(new Map());
   const processLocationRef = useRef(null);
   const lastProcessedLocationRef = useRef(null); // Track last processed location to avoid rerenders
+  const isCheckingRideRef = useRef(false);
   
  
   const stableDebounceCallback = useRef((lng, lat) => {
@@ -360,6 +361,12 @@ const Home = () => {
   } 
 
   const checkOnGoingRideAndLog = async (update=false) => {
+    if (isCheckingRideRef.current) {
+      console.log('checkOnGoingRideAndLog already in progress');
+      return;
+    }
+
+    isCheckingRideRef.current = true;
     const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
     const currentTripId=currentTrip?.data || null
     console.log("currentTripId......hhdhd",currentTripId)
@@ -523,6 +530,7 @@ const Home = () => {
       console.error('Error fetching ongoing ride:', error);
       setConfigError(true);
     } finally {
+      isCheckingRideRef.current = false;
       setBootLoading(false);
     }
   }
