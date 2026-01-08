@@ -14,7 +14,6 @@ class PublicrideDriverApi {
         const parsedData = userData.data;
         if (parsedData && parsedData?.token) {
           this.token = parsedData?.token;
-          console.log('Token initialized in PublicrideDriverApi', this.token);
         }
       }
     } catch (error) {

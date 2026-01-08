@@ -25,33 +25,115 @@ const ProfileImagePicker = ({
 }) => {
     const [showModal, setShowModal] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [previewSource, setPreviewSource] = useState(() => {
+      if (!imageFile) {
+        return null;
+      }
+      if (typeof imageFile === 'string') {
+        return null;
+      }
+      if (imageFile?.uri) {
+        return imageFile;
+      }
+      return { uri: imageFile };
+    })
     const {userInfo} = useUserStore()
     // const [neImage, setNewImage] = useState(imageFile)
 
     useEffect(() => {
-      if (!imageFile) return;
-      const fetchImgaeUrl = async () => {
-        setIsLoading(true);
-        const key = imageFile?.replace(/^https:\/\/[^/]+\/?/, '');
-        const response = await getPresignedImageUrl(key, userInfo?.token);
-       const newImge = {
-        uri: response,
-        name: imageFile.name,
-        type: imageFile.type
-       }
-       setImageFile(newImge)
+      let isMounted = true;
+
+      const resolveRemoteImage = async () => {
+        if (!imageFile) {
+          setPreviewSource(null);
+          return;
+        }
+
+        if (typeof imageFile === 'string' || imageFile?.key) {
+          const rawUrl = typeof imageFile === 'string' ? imageFile : imageFile?.uri || '';
+          const keySource = typeof imageFile === 'string' ? imageFile : imageFile?.key || rawUrl;
+          try {
+            setIsLoading(true);
+            const key = keySource?.replace(/^https?:\/\/[^/]+\/?/, '')?.replace(/^\//, '');
+            if (!key) {
+              if (typeof imageFile === 'string') {
+                setPreviewSource({ uri: imageFile });
+              } else if (imageFile?.uri) {
+                setPreviewSource(imageFile);
+              }
+              setIsLoading(false);
+              return;
+            }
+            const response = await getPresignedImageUrl(key, userInfo?.token);
+            if (!isMounted) {
+              return;
+            }
+
+            const inferredName = (() => {
+              if (typeof imageFile === 'object' && imageFile?.name) {
+                return imageFile.name;
+              }
+              const lastSegment = keySource?.split('/')?.pop() || 'image.jpg';
+              return lastSegment.split('?')[0] || 'image.jpg';
+            })();
+
+            const inferredType = (() => {
+              const source = keySource?.toLowerCase() || '';
+              if (source.endsWith('.pdf')) {
+                return 'application/pdf';
+              }
+              if (source.endsWith('.png')) {
+                return 'image/png';
+              }
+              if (source.endsWith('.webp')) {
+                return 'image/webp';
+              }
+              return 'image/jpeg';
+            })();
+
+            const resolved = {
+              uri: response,
+              name: inferredName,
+              type: inferredType,
+              key,
+              originalUrl: typeof imageFile === 'string' ? imageFile : imageFile?.uri || response,
+            };
+
+            setPreviewSource(resolved);
+            if (setImageFile) {
+              setImageFile(resolved);
+            }
+          } catch (error) {
+            console.error('Error Fetching Image:', error);
+            if (isMounted) {
+              if (typeof imageFile === 'string') {
+                setPreviewSource({ uri: imageFile });
+              } else if (imageFile?.uri) {
+                setPreviewSource(imageFile);
+              }
+            }
+          } finally {
+            if (isMounted) {
+              setIsLoading(false);
+            }
+          }
+          return;
+        }
+
+        if (imageFile?.uri) {
+          setPreviewSource(imageFile);
+          return;
+        }
+
+        setPreviewSource({ uri: imageFile });
       };
-  
-      fetchImgaeUrl(imageFile.key)
-        .then((res) => {
-         
-          setIsLoading(false);
-        })
-        .catch(error => {
-          console.error('Error Fetching Imgae:', error);
-          setIsLoading(false);
-        });
-    }, []);
+
+      resolveRemoteImage();
+
+      return () => {
+        isMounted = false;
+      };
+    }, [imageFile, setImageFile, userInfo?.token]);
 
     const openImagePicker = async () => {
         const options = {
@@ -181,18 +263,18 @@ const ProfileImagePicker = ({
       {cloudIcon && <View style={styles.cloudIcon}>{cloudIcon}</View>}
       <Text style={styles.title}>{label}</Text>
       <View style={styles.imageContainer}>
-        {imageFile ?
-        <>
         {isLoading && <FullScreenLoader />}
-         <Image source={{uri: imageFile.uri}} style={styles.image} />
+        {previewSource ?
+        <>
+         <Image source={{uri: previewSource?.uri}} style={styles.image} />
          {!isView && 
           <TouchableOpacity onPress={()=>onUploadPress()} style={{marginTop:10}}>
           <Text style={styles.imageText}>Re Upload</Text>
           </TouchableOpacity>
          }
         </>: 
-        (
-           !isView && (
+          (
+            !isView && (
             <View style={styles.buttonRow}>
             <TouchableOpacity style={[styles.actionButton, buttonStyle]} onPress={()=>uploadImage('gallery')}>
               <GalleryIcon width={24} height={24} />
