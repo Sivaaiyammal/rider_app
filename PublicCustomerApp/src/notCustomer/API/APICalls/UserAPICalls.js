@@ -12,7 +12,7 @@ import {
   verifyDriverOTP,
 } from '../EndPoints/EndPoints';
 import {showNotification} from '../../components/NotificationManger';
-import { t } from 'i18next';
+import i18n from '../../../common/i18n';
 
 const queryClient = new QueryClient();
 
@@ -26,13 +26,13 @@ export const requestOTPMutation = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification(t('login_failed'), t('something_went_wrong'), 'danger');
+        showNotification(i18n.t('login_failed'), i18n.t('something_went_wrong'), 'danger');
       }
     },
     onError: error => {
       showNotification(
-        t(`login_failed`),
-        t('something_went_wrong'),
+        i18n.t('login_failed'),
+        i18n.t('something_went_wrong'),
         'danger',
       );
     },
@@ -48,13 +48,13 @@ export const testLogin = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification(t('login_failed'), t('something_went_wrong'), 'danger');
+        showNotification(i18n.t('login_failed'), i18n.t('something_went_wrong'), 'danger');
       }
     },
     onError: error => {
       showNotification(
-        t('login_failed'),
-        t('something_went_wrong'),
+        i18n.t('login_failed'),
+        i18n.t('something_went_wrong'),
         'danger',
       );
     },
@@ -72,13 +72,15 @@ export const verifyOTPMutation = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification(t('verification_failed'), t('some_error_occurred'), 'danger');
+        console.log('OTP verification failed:', data);
+        showNotification(i18n.t('verification_failed'), i18n.t('some_error_occurred'), 'danger');
       }
     },
     onError: error => {
+      console.log('Error during OTP verification:', error);
       showNotification(
-        t('verification_failed'),
-        t(`some_error_occurred`),
+        i18n.t('verification_failed'),
+        i18n.t('some_error_occurred'),
         'danger',
       );
     },
@@ -95,11 +97,11 @@ export const profileUpdateMutations = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification(t('registration_failed'), t('something_went_wrong'), 'danger');
+        showNotification(i18n.t('registration_failed'), i18n.t('something_went_wrong'), 'danger');
       }
     },
     onError: error => {
-      showNotification(t('registration_failed'), t('something_went_wrong'), 'danger');
+      showNotification(i18n.t('registration_failed'), i18n.t('something_went_wrong'), 'danger');
     },
   });
 };
@@ -142,13 +144,13 @@ export const deleteAccountMutation = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification(t('delete_account_failed'), t('something_went_wrong') , 'danger');
+        showNotification(i18n.t('delete_account_failed'), i18n.t('something_went_wrong') , 'danger');
       }
     },
     onError: error => {
       showNotification(
-        t(`delete_account_failed`),
-        t('something_went_wrong'),
+        i18n.t('delete_account_failed'),
+        i18n.t('something_went_wrong'),
         'danger',
       );
     },
@@ -184,13 +186,13 @@ export const requestDriverOTPMutation = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification(t('login_failed'), t('something_went_wrong'), 'danger');
+        showNotification(i18n.t('login_failed'), i18n.t('something_went_wrong'), 'danger');
       }
     },
     onError: error => {
       showNotification(
-        t(`login_failed`),
-        t('something_went_wrong'),
+        i18n.t('login_failed'),
+        i18n.t('something_went_wrong'),
         'danger',
       );
     },
@@ -206,13 +208,13 @@ export const verifyDriverOTPMutation = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification(t('verification_failed'), t('some_error_occurred'), 'danger');
+        showNotification(i18n.t('verification_failed'), i18n.t('some_error_occurred'), 'danger');
       }
     },
     onError: error => {
       showNotification(
-        t('verification_failed'),
-        t(`some_error_occurred`),
+        i18n.t('verification_failed'),
+        i18n.t('some_error_occurred'),
         'danger',
       );
     },
