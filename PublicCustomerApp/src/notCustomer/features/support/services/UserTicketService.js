@@ -7,7 +7,7 @@ class UserTicketService {
    * @returns {Promise} API response
    */
   static async getAllTickets(page = 1, limit = 10) {
-    const response = await apiClient.get(`${Config.PUBLICRIDEDASHBORAD_URL}/api/passenger-tickets?page=${page}&limit=${limit}`);
+    const response = await apiClient.get(`${Config.SUPPORT_SYSTEM_URL}/api/passenger-tickets?page=${page}&limit=${limit}`);
     return response?.data;
   }
 
@@ -19,7 +19,7 @@ class UserTicketService {
    */
   static async getTicketDetails(ticketId, params = {}) {
    
-    const response = await apiClient.get(`${Config.PUBLICRIDEDASHBORAD_URL}/api/passenger-tickets/${ticketId}`, { params });
+    const response = await apiClient.get(`${Config.SUPPORT_SYSTEM_URL}/api/passenger-tickets/${ticketId}`, { params });
     return response?.data;
   }
 
@@ -49,7 +49,7 @@ class UserTicketService {
    * @returns {Promise} API response
    */
   static async createTicket(ticketData) {
-    const response = await apiClient.post(`${Config.PUBLICRIDEDASHBORAD_URL}/api/passenger-tickets`, ticketData);
+    const response = await apiClient.post(`${Config.SUPPORT_SYSTEM_URL}/api/passenger-tickets`, ticketData);
     return response?.data;
   }
 
@@ -60,7 +60,7 @@ class UserTicketService {
     // Debug: log the value, not the FormData object itself
     console.log('messageText', formData);
     const response = await apiClient.post(
-      `${Config.PUBLICRIDEDASHBORAD_URL}/api/passenger-tickets/${ticketId}/comments`,
+      `${Config.SUPPORT_SYSTEM_URL}/api/passenger-tickets/${ticketId}/comments`,
       formData,
       {
         headers: {

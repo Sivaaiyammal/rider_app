@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import Config from "react-native-config"; 
 // You can change this URL to your ride matching socket server
-const RIDE_MATCHING_SOCKET_URL = Config.RIDE_MATCH_SOCKET_URL// Replace with your actual ride matching socket URL
+const RIDE_MATCHING_SOCKET_URL = Config.DRIVER_SOCKET_URL// Replace with your actual ride matching socket URL
 ;
 class RideMatchingSocketService {
   constructor() {
