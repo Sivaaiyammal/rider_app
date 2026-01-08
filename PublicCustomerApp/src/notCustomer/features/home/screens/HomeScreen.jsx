@@ -48,6 +48,9 @@ const BottomSheetHeader = ({ makeRidePlan, style }) => {
   const handlePress = useCallback(() => {
     makeRidePlan();
   }, [makeRidePlan]);
+
+ 
+
   
   return (
     <View style={[styles.bottomSheetHeader, style]}>
@@ -304,7 +307,7 @@ const MapScreen = () => {
   };
 
   useEffect(()=>{
-    console.log("Location updated in HomeScreen:", location);
+    resetRideBookingLocation()
     if(location && location.length > 0){
       console.log("Setting map bounds and home marker for location:", location);
       const bounds = utils.getBoundingBox([[location[0],location[1]]],1000)
