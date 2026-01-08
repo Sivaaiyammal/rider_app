@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import PropTypes from 'prop-types';
 import { Fonts, colors } from '../../../constants/constants';
 import { useTranslation } from 'react-i18next';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
-const RatingBox = ({ onRatingSubmit, title , description}) => {
+const RatingBox = ({ onRatingSubmit, title , description, isSubmitting }) => {
   const {t} = useTranslation();
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState('');
@@ -15,7 +15,7 @@ const RatingBox = ({ onRatingSubmit, title , description}) => {
   };
 
   const handleSubmit = () => {
-    if (onRatingSubmit) {
+    if (onRatingSubmit && !isSubmitting && rating > 0) {
       onRatingSubmit({
         rating,
         comment: comments.trim()
@@ -77,11 +77,18 @@ const RatingBox = ({ onRatingSubmit, title , description}) => {
       </View>
 
       <TouchableOpacity 
-          style={[styles.submitButton, rating === 0 && styles.submitButtonDisabled]}
+          style={[
+            styles.submitButton,
+            (rating === 0 || isSubmitting) && styles.submitButtonDisabled,
+          ]}
           onPress={handleSubmit}
-          disabled={rating === 0}
+          disabled={rating === 0 || isSubmitting}
         >
-          <AdaptiveText style={styles.submitButtonText}>{t('submit')}</AdaptiveText>
+          {isSubmitting ? (
+            <ActivityIndicator size="small" color={colors.white} />
+          ) : (
+            <AdaptiveText style={styles.submitButtonText}>{t('submit')}</AdaptiveText>
+          )}
       </TouchableOpacity>
     </View>
   );
@@ -91,11 +98,13 @@ RatingBox.propTypes = {
   onRatingSubmit: PropTypes.func,
   title: PropTypes.string,
   description: PropTypes.string,
+  isSubmitting: PropTypes.bool,
 };
 
 RatingBox.defaultProps = {
     title: 'how_is_your_trips',
   description: 'your_feedback_will_help_us_improving_driving_experience_better',
+  isSubmitting: false,
 };
 
 const styles = StyleSheet.create({
