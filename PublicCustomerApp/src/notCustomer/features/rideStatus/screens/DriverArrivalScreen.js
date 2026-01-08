@@ -279,7 +279,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
             <Image source={{ uri: driverPhotoUri }} style={styles.driverImg} resizeMode="cover" />
             <View style={styles.ratingRow}>
               <Text style={styles.star}>★</Text>
-              <Text style={styles.ratingText}>{rating}</Text>
+              {/* <Text style={styles.ratingText}>{rating}</Text> */}
             </View>
           </View>
           <View style={styles.driverInfo}>

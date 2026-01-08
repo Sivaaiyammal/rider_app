@@ -157,6 +157,8 @@ const useTrackHook = (screenMode = 'arrival') => {
     if (lastScreenModeRef.current !== screenMode) {
       // Screen mode changed, reset all markers and polylines
       setMapMarkers([]);
+      
+      setVehicleMarkers([]);
       clearPolyline();
       driverMarkerRef.current = null;
       startMarkerRef.current = null;
@@ -192,7 +194,7 @@ const useTrackHook = (screenMode = 'arrival') => {
     }
 
     setMapMarkers(markers);
-  }, [driverMarker, startMarker, endMarker, waypointMarkers, setMapMarkers, screenMode]);
+  }, [driverMarker, startMarker, endMarker, waypointMarkers, setMapMarkers, setVehicleMarkers, screenMode]);
 
   // Update polyline when driver location changes (for arrival screen)
   useEffect(() => {
@@ -203,6 +205,7 @@ const useTrackHook = (screenMode = 'arrival') => {
 
   const cleanupMarkers = useCallback(() => {
     setMapMarkers([]);
+    setVehicleMarkers([]);
     clearPolyline();
     driverMarkerRef.current = null;
     startMarkerRef.current = null;
@@ -210,7 +213,7 @@ const useTrackHook = (screenMode = 'arrival') => {
     waypointMarkersRef.current = [];
     lastDriverLocationRef.current = null;
     lastScreenModeRef.current = null;
-  }, [setMapMarkers, clearPolyline]);
+  }, [setMapMarkers, setVehicleMarkers, clearPolyline]);
 
   const updateDriverLocation = useCallback((latitude, longitude, angle = null) => {
     setDriverInfo({

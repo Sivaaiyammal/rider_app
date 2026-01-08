@@ -26,7 +26,7 @@ const SearchLoader = ({ onCancel }) => {
     stopMatching,
     status
   } = useRideMatching();
-  const { setMapMarkers, setMapLocation } = useMapStore();
+  const { setMapMarkers, setMapLocation,setVehicleMarkers } = useMapStore();
   const { vehicleType, tripId } = useCurrentRideInfoStore();
   const { id: userId } = useUserInfoStore();
   const [showFailedModal, setShowFailedModal] = useState(false);
@@ -83,9 +83,9 @@ const SearchLoader = ({ onCancel }) => {
   useEffect(() => {
     if (driverMarker) {
       
-      setMapMarkers([driverMarker]);
+      setVehicleMarkers([driverMarker]);
     }
-  }, [driverMarker, setMapMarkers]);
+  }, [driverMarker, setVehicleMarkers]);
 
   const handleCancel = () => {
     setShowFailedModal(false);

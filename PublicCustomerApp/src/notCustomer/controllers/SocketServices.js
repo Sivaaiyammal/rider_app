@@ -94,6 +94,7 @@ class WSService {
           }else{
             this.useMapStore.getState().setGeometries([]);
             this.useMapStore.getState().setMapMarkers([]);
+            this.useMapStore.getState().setVehicleMarkers([]);
             this.useCurrentRideInfoStore.getState().setOtp(null);
             this.useAssignedDriverInfoStore.getState().setDriverInfo(null);
             this.useCurrentRideInfoStore.getState().setOngoingingTripCancelled(false);

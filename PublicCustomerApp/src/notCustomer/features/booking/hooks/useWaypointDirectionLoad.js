@@ -9,7 +9,7 @@ import useMapStore from '../../../features/map/store/useMapStore';
 const useWaypointDirectionLoad = () => {
   const { reOrderWaypoints,reachedStops } = useWayPointReorderStore();
   
-  const { setDirectionPoints, setMapMarkers } = useMapStore();
+  const { setDirectionPoints, setMapMarkers , setVehicleMarkers } = useMapStore();
 
   /**
    * Transforms reOrderWaypoints data into direction points format
@@ -32,6 +32,7 @@ const useWaypointDirectionLoad = () => {
       // Clear existing markers if requested
       if (clearMarkers) {
         setMapMarkers([]);
+        setVehicleMarkers([]);
       }
 
       

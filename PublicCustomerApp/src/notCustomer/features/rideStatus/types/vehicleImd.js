@@ -7,7 +7,7 @@ import SuvIcon from '../../../assets/vehicle/SUV.webp';
 import SedanIcon from '../../../assets/vehicle/SEDAN.webp';
 import HatchbackIcon from '../../../assets/vehicle/HATCHBACK.webp';
 import ExSedanIcon from '../../../assets/vehicle/ExSEDAN.webp';
-import ElectricAutoIcon from '../../../assets/vehicle/AUTO.webp';
+import ElectricAutoIcon from '../../../assets/vehicle/ELECTRIC_AUTO.webp';
 import ElectricBikeIcon from '../../../assets/vehicle/BIKE.webp';
 import ElectricHatchbackIcon from '../../../assets/vehicle/HATCHBACK.webp';
 import ElectricSedanIcon from '../../../assets/vehicle/SEDAN.webp';
