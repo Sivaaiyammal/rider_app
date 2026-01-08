@@ -111,7 +111,6 @@ class PublicrideDriverApi {
   async acceptTrip(payload, token=this.token) {
     try {
       const api = new APIRequest(Config.ROOT_API_URL)
-      // console.log('Accept Trip Payload:', payload, token);
       const response = await api.request(`/publicrides/driver/acceptRide`, 'POST', payload, token);
       return response;
     } catch (error) {

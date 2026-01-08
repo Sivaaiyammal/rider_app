@@ -12,6 +12,8 @@ import { showNotification } from '../../../common/components/NotificationManger'
 import tripAlert from '../TripAlert';
 import { cancelRide } from '../../../notCustomer/API/EndPoints/EndPoints';
 import { cancelTrip } from '../../../notdriver/components/CancelTripUpdate';
+import APIRequest from '../APIRequest';
+import useUserStore from '../../store/useUserStore';
 
 const SOCKET_URL = Config.DRIVER_SOCKET_URL;
 const {NeNativeModule} = NativeModules;
@@ -38,7 +40,7 @@ class RideMatchWSService {
     this._detachListeners = this._detachListeners.bind(this);
   }
 
-  async _acceptTripWithRetry(tripId, maxRetries = 3) {
+  async _acceptTripWithRetry(tripId, maxRetries = 3, token) {
     let attempt = 0;
     let lastResponse = null;
     console.log(`[DriverWSService] Starting accept with retry: tripId=${tripId}, maxRetries=${maxRetries}`);
@@ -46,7 +48,8 @@ class RideMatchWSService {
       const attemptNum = attempt + 1;
       console.log(`[DriverWSService] Attempt ${attemptNum}/${maxRetries} - accepting trip ${tripId}`);
       try {
-        const res = await publicrideDriverApi.acceptTrip({ tripId });
+        const api = new APIRequest();
+        const res =  await api.request(`/publicrides/driver/acceptRide`, 'POST', { tripId }, token)
         console.log(`[DriverWSService] Response on attempt ${attemptNum}:`, res);
         if (res?.success) {
           console.log(`[DriverWSService] ✅ Accept succeeded on attempt ${attemptNum}`);
@@ -111,11 +114,12 @@ class RideMatchWSService {
     } = useTripAcceptStore.getState();
     const {setDirectionPoints} = useMapMarkerStore.getState();
     const {activeTripData, setActiveTripData} = useTripsStore.getState();
+    const {userInfo} = useUserStore()
     try {
       if (data?.status === 'success') {
         setLoading(true);
         if (data?.response === 'accept') {
-          const response = await this._acceptTripWithRetry(data?.trip_id, 3);
+          const response = await this._acceptTripWithRetry(data?.trip_id, 3, userInfo?.token);
           if (response?.success) {
             DataStore.storeData('activeTripId', data?.trip_id);
             const tripData = response?.currentTrip;
@@ -134,7 +138,8 @@ class RideMatchWSService {
             // Attempt to cancel the trip after repeated accept failures
             try {
               const cancelReason = 'Trip accept failed by tracking engine attempted three times';
-              const cancelResp = await publicrideDriverApi.cancelTrip(data?.trip_id, cancelReason);
+              const api = new APIRequest();
+              const cancelResp = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:data?.trip_id, reason: cancelReason}, userInfo?.token);
               if (cancelResp?.success) {
                 showNotification('Trip Cancelled', cancelResp?.message, 'success');
               } else {
