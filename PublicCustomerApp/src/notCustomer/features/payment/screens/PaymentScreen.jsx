@@ -50,7 +50,7 @@ const PaymentScreen = ({lastTripId=null}) => {
   const showModel = true; // set to false to skip confirmation
   // Config: control whether gateway fee is added to shown fare before clicking PAY
   const showGateFeeAddedFare = false;
-  const {setStackScreen} = useStackScreenStore();
+  const {setStackScreen , reset} = useStackScreenStore();
   const { incrementTotalSpend,incrementCompletedTrips } = useUserInfoStore();
   const animateIn = () => {
     Animated.timing(overlayAnim, {
@@ -88,6 +88,7 @@ const PaymentScreen = ({lastTripId=null}) => {
 
     const id = lastTripId || currentTripId?.data;
     if(!id){
+      reset()
       return;
     }
     const tripDetails = await getTripDetails(id);
