@@ -4,7 +4,6 @@ import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { Colors, Fonts } from '../../common/constants/constants';
 import { checkCameraPermission, RequestCameraPermission } from '../../common/controllers/PermissionHandler';
-import AlertModal from './AlertModal';
 import CameraIcon from '../../common/assets/icons/CameraIcon.svg';
 import GalleryIcon from '../../common/assets/icons/Gallery.svg';
 import { getPresignedImageUrl } from '../../common/utils/getPresignedImageUrl';
@@ -34,7 +33,6 @@ const DocumentImageScanner = ({
   documentLabel = null,
   initialImage = null, // can be string URL or { uri, ... }
 }) => {
-  const [isModalVisible, setModalVisible] = useState(false);
   const [isBusy, setBusy] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [scanResult, setScanResult] = useState(null);
@@ -44,17 +42,6 @@ const DocumentImageScanner = ({
   const [presignedUrl, setPresignedUrl] = useState(null);
 
   const {userInfo} = useUserStore();
-
-  const closeModal = useCallback(() => setModalVisible(false), []);
-
-  const openModal = useCallback(() => {
-    if (disabled) {
-      setErrorMessage(null);
-      return;
-    }
-    setErrorMessage(null);
-    setModalVisible(true);
-  }, [disabled]);
 
   const buildAssetPayload = useCallback(asset => ({
     uri: asset.uri,
@@ -115,7 +102,6 @@ const DocumentImageScanner = ({
       setErrorMessage(null);
       return;
     }
-    closeModal();
     setBusy(true);
     setErrorMessage(null);
 
@@ -158,45 +144,7 @@ const DocumentImageScanner = ({
       setErrorMessage('Something went wrong. Try again.');
       setBusy(false);
     }
-  }, [closeModal, disabled, handleScan]);
-
-  const renderModal = useCallback(() => (
-    <AlertModal
-      isVisible={isModalVisible}
-      onClose={closeModal}
-      leftBtnTxt="Cancel"
-      isLoading={isBusy}
-    >
-      <View style={styles.modalContent}>
-        <TouchableOpacity
-          style={[
-            styles.modalButton,
-            styles.modalButtonLeft,
-            buttonStyle,
-            (disabled || isBusy) && styles.disabledActionButton,
-          ]}
-          onPress={() => runImagePicker('gallery')}
-          disabled={disabled || isBusy}
-        >
-          <GalleryIcon width={24} height={24} />
-          <Text style={styles.modalButtonText}>{browseLabel}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.modalButton,
-            styles.modalButtonRight,
-            buttonStyle,
-            (disabled || isBusy) && styles.disabledActionButton,
-          ]}
-          onPress={() => runImagePicker('camera')}
-          disabled={disabled || isBusy}
-        >
-          <CameraIcon width={24} height={24} />
-          <Text style={styles.modalButtonText}>{cameraLabel}</Text>
-        </TouchableOpacity>
-      </View>
-    </AlertModal>
-  ), [buttonStyle, browseLabel, cameraLabel, closeModal, isBusy, isModalVisible, runImagePicker]);
+  }, [disabled, handleScan]);
 
   const helper = useMemo(() => helperText?.trim?.(), [helperText]);
   const displayUri = useMemo(() => {
@@ -331,7 +279,7 @@ const DocumentImageScanner = ({
             buttonStyle,
             (disabled || isBusy) && styles.disabledActionButton,
           ]}
-          onPress={openModal}
+          onPress={() => runImagePicker('gallery')}
           disabled={disabled || isBusy}
         >
           <GalleryIcon width={24} height={24} />
@@ -351,8 +299,6 @@ const DocumentImageScanner = ({
           <Text style={styles.actionButtonText}>{cameraLabel}</Text>
         </TouchableOpacity>
       </View>
-
-      {isModalVisible && renderModal()}
     </View>
   );
 };
@@ -461,32 +407,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 14,
     color: Colors.black,
-  },
-  modalContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    padding: 10,
-  },
-  modalButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.periwinkle,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalButtonLeft: {
-    marginRight: 8,
-  },
-  modalButtonRight: {
-    marginLeft: 8,
-  },
-  modalButtonText: {
-    fontFamily: Fonts.medium,
-    fontSize: 12,
-    color: Colors.periwinkle,
   },
   disabledActionButton: {
     opacity: 0.6,
