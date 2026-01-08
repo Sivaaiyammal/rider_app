@@ -281,7 +281,6 @@ const PublicRidesDriverHomeScreen = () => {
     {
       refetchOnReconnect: true,
       onSuccess: (response) => {
-        console.log('Driver Details Response:', response);
         if(response?.success){
         storePublicDriverInfo(response);
         storePublicDriverVehicleInfo(response);
