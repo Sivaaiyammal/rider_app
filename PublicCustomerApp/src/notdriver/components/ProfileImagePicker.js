@@ -1,5 +1,5 @@
 import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker'
 import { Image } from 'react-native'
 import useUserStore from '../../common/store/useUserStore'
@@ -25,6 +25,8 @@ const ProfileImagePicker = ({
 }) => {
     const [showModal, setShowModal] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const resolvedKeyRef = useRef(null)
+    const resolvedOriginalRef = useRef(null)
     const [previewSource, setPreviewSource] = useState(() => {
       if (!imageFile) {
         return null;
@@ -49,9 +51,32 @@ const ProfileImagePicker = ({
           return;
         }
 
+        if (typeof imageFile === 'object' && imageFile?.resolved) {
+          setPreviewSource(imageFile);
+          resolvedKeyRef.current = imageFile.key || imageFile.originalUrl || imageFile.uri || null;
+          resolvedOriginalRef.current = imageFile.originalUrl || imageFile.uri || null;
+          setIsLoading(false);
+          return;
+        }
+
         if (typeof imageFile === 'string' || imageFile?.key) {
           const rawUrl = typeof imageFile === 'string' ? imageFile : imageFile?.uri || '';
           const keySource = typeof imageFile === 'string' ? imageFile : imageFile?.key || rawUrl;
+          const previousKey = resolvedKeyRef.current;
+          if (keySource && previousKey && keySource === previousKey) {
+            setPreviewSource(prev => {
+              if (prev?.uri) {
+                return prev;
+              }
+              if (typeof imageFile === 'object' && imageFile?.uri) {
+                return imageFile;
+              }
+              const fallbackUri = resolvedOriginalRef.current || keySource;
+              return fallbackUri ? { uri: fallbackUri } : null;
+            });
+            setIsLoading(false);
+            return;
+          }
           try {
             setIsLoading(true);
             const key = keySource?.replace(/^https?:\/\/[^/]+\/?/, '')?.replace(/^\//, '');
@@ -62,6 +87,8 @@ const ProfileImagePicker = ({
                 setPreviewSource(imageFile);
               }
               setIsLoading(false);
+              resolvedKeyRef.current = keySource || imageFile?.uri || null;
+              resolvedOriginalRef.current = keySource || imageFile?.uri || null;
               return;
             }
             const response = await getPresignedImageUrl(key, userInfo?.token);
@@ -97,12 +124,15 @@ const ProfileImagePicker = ({
               type: inferredType,
               key,
               originalUrl: typeof imageFile === 'string' ? imageFile : imageFile?.uri || response,
+              resolved: true,
             };
 
             setPreviewSource(resolved);
-            if (setImageFile) {
+            if (setImageFile && (typeof imageFile !== 'object' || !imageFile?.resolved)) {
               setImageFile(resolved);
             }
+            resolvedKeyRef.current = keySource;
+            resolvedOriginalRef.current = resolved.originalUrl;
           } catch (error) {
             console.error('Error Fetching Image:', error);
             if (isMounted) {
@@ -111,6 +141,8 @@ const ProfileImagePicker = ({
               } else if (imageFile?.uri) {
                 setPreviewSource(imageFile);
               }
+              resolvedKeyRef.current = keySource || imageFile?.uri || null;
+              resolvedOriginalRef.current = keySource || imageFile?.uri || null;
             }
           } finally {
             if (isMounted) {
@@ -121,11 +153,21 @@ const ProfileImagePicker = ({
         }
 
         if (imageFile?.uri) {
-          setPreviewSource(imageFile);
+          const resolvedLocal = typeof imageFile === 'object' && !imageFile?.resolved
+            ? { ...imageFile, resolved: true }
+            : imageFile;
+          setPreviewSource(resolvedLocal);
+          if (setImageFile && resolvedLocal !== imageFile) {
+            setImageFile(resolvedLocal);
+          }
+          resolvedKeyRef.current = imageFile?.key || imageFile?.uri;
+          resolvedOriginalRef.current = imageFile?.uri;
           return;
         }
 
-        setPreviewSource({ uri: imageFile });
+        setPreviewSource({ uri: imageFile, resolved: true });
+        resolvedKeyRef.current = imageFile;
+        resolvedOriginalRef.current = imageFile;
       };
 
       resolveRemoteImage();
@@ -159,7 +201,10 @@ const ProfileImagePicker = ({
                 width: asset.width || 360,
                 fileSize: asset.fileSize || 24404,
               }  
-              const imageFile = assetFile  
+              const imageFile = assetFile
+              setPreviewSource(imageFile)
+              resolvedKeyRef.current = imageFile.key || imageFile.uri
+              resolvedOriginalRef.current = imageFile.uri
               setImageFile(imageFile)
               if (onImagePicked) onImagePicked(imageFile)
               setShowModal(false);
@@ -200,7 +245,10 @@ const ProfileImagePicker = ({
                 width: asset.width || 360,
                 fileSize: asset.fileSize || 24404,
               }  
-              const imageFile = assetFile 
+              const imageFile = assetFile
+              setPreviewSource(imageFile)
+              resolvedKeyRef.current = imageFile.key || imageFile.uri
+              resolvedOriginalRef.current = imageFile.uri
               setImageFile(imageFile)
               if (onImagePicked) onImagePicked(imageFile)
               setShowModal(false);

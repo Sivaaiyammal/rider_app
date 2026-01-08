@@ -11,11 +11,9 @@ import { showNotification } from '../../../common/components/Alerts/showNotifica
 import InputField from '../../../common/components/InputField';
 import CustomDropdown from '../../../common/components/CustomDropdown';
 import { driverDetailStyles } from '../../styles/DriverDetailsUpload';
-import ProfileImagePicker from '../../components/ProfileImagePicker';
-import DocUploadIcon from '../../../notdriver/assets/icons/docUpload.svg';
+import DocumentImageScanner from '../../components/DocumentImageScanner';
 import { useTranslation } from 'react-i18next';
 import NavBar from '../../../common/components/NavBar';
-import TextRecognition from '@react-native-ml-kit/text-recognition';
 import UseBackButton from '../../../common/hooks/UseBackButton';
 
 const styles = StyleSheet.create({
@@ -123,7 +121,6 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
   // const [referenceCode, setReferenceCode] = useState(bankInfo?.referenceCode || generateReferenceCode());
 
   const [passbookImage, setPassbookImage] = useState(bankInfo?.passbookImage || null);
-  const [isScanningPassbook, setIsScanningPassbook] = useState(false);
   const [passbookScanMessage, setPassbookScanMessage] = useState('');
 
   // Error states
@@ -346,7 +343,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
     };
   }, []);
 
-  const handlePassbookImagePicked = useCallback(async image => {
+  const handlePassbookImageSelected = useCallback(image => {
     if (!image) {
       return;
     }
@@ -356,117 +353,113 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
     if (passbookImageErr) {
       setPassbookImageErr('');
     }
-
     setPassbookScanMessage('');
-    setIsScanningPassbook(true);
+  }, [passbookImageErr, setBankInfo]);
 
-    try {
-      if (!image.uri || image.uri.startsWith('http')) {
-        setPassbookScanMessage(
-          t('details_not_detected_update_manual', {
-            defaultValue: 'Could not extract details. Update the fields manually.',
-          }),
-        );
-        return;
-      }
-
-      const result = await TextRecognition.recognize(image.uri);
-      const detectedText = result?.text || '';
-
-      if (!detectedText) {
-        setPassbookScanMessage(
-          t('details_not_detected_update_manual', {
-            defaultValue: 'Could not extract details. Update the fields manually.',
-          }),
-        );
-        return;
-      }
-
-      const parsed = parsePassbookDetails(detectedText);
-      let didUpdate = false;
-
-      if (parsed.accountHolderName) {
-        const holder = parsed.accountHolderName.trim();
-        setAccountHolder(holder);
-        setBankInfo({ accountHolderName: holder });
-        setAccountHolderErr('');
-        didUpdate = true;
-      }
-
-      if (parsed.accountNumber) {
-        const sanitizedAccount = parsed.accountNumber.trim();
-        setAccountNumber(sanitizedAccount);
-        setReEnterAccountNumber(sanitizedAccount);
-        setBankInfo({ accountNumber: sanitizedAccount });
-        setAccountNumberErr('');
-        setReEnterAccountNumberErr('');
-        didUpdate = true;
-      }
-
-      if (parsed.ifscCode) {
-        const ifsc = parsed.ifscCode.trim().toUpperCase();
-        setIfscCode(ifsc);
-        setBankInfo({ ifscCode: ifsc });
-        setIfscCodeErr('');
-        didUpdate = true;
-      }
-
-      if (parsed.branchName) {
-        const branchName = parsed.branchName.trim();
-        setBranch(branchName);
-        setBankInfo({ branch: branchName });
-        setBranchErr('');
-        didUpdate = true;
-      }
-
-      if (parsed.bankName) {
-        const detectedName = parsed.bankName.trim();
-        setBankName(detectedName);
-        setBankInfo({ bankName: detectedName });
-        setBankNameErr('');
-        didUpdate = true;
-      }
-
-      if (parsed.upiId) {
-        const detectedUpi = parsed.upiId.trim();
-        if (upiIdPattern.test(detectedUpi)) {
-          setUpiId(detectedUpi);
-          setBankInfo({ UPIID: detectedUpi });
-          setUpiIdErr('');
-          didUpdate = true;
-        }
-      }
-
-      if (parsed.email) {
-        const detectedEmail = parsed.email.trim();
-        if (emailPattern.test(detectedEmail)) {
-          setEmail(detectedEmail);
-          setBankInfo({ email: detectedEmail });
-          setEmailErr('');
-          didUpdate = true;
-        }
-      }
-
-      setPassbookScanMessage(
-        didUpdate
-          ? t('details_detected_review', {
-              defaultValue: 'Details detected automatically. Review before submitting.',
-            })
-          : t('details_not_detected_update_manual', {
-              defaultValue: 'Could not extract details. Update the fields manually.',
-            }),
-      );
-    } catch (error) {
-      console.warn('Passbook scan failed', error);
+  const handlePassbookScanComplete = useCallback(result => {
+    if (!result) {
       setPassbookScanMessage(
         t('details_not_detected_update_manual', {
           defaultValue: 'Could not extract details. Update the fields manually.',
         }),
       );
-    } finally {
-      setIsScanningPassbook(false);
+      return;
     }
-  }, [parsePassbookDetails, passbookImageErr, setBankInfo, t]);
+
+    const { image, text } = result;
+
+    if (image) {
+      setPassbookImage(image);
+      setBankInfo({ passbookImage: image });
+      setPassbookImageErr('');
+    }
+
+    const detectedText = text || '';
+
+    if (!detectedText.trim()) {
+      setPassbookScanMessage(
+        t('details_not_detected_update_manual', {
+          defaultValue: 'Could not extract details. Update the fields manually.',
+        }),
+      );
+      return;
+    }
+
+    const parsed = parsePassbookDetails(detectedText);
+    let didUpdate = false;
+
+    if (parsed.accountHolderName) {
+      const holder = parsed.accountHolderName.trim();
+      setAccountHolder(holder);
+      setBankInfo({ accountHolderName: holder });
+      setAccountHolderErr('');
+      didUpdate = true;
+    }
+
+    if (parsed.accountNumber) {
+      const sanitizedAccount = parsed.accountNumber.trim();
+      setAccountNumber(sanitizedAccount);
+      setReEnterAccountNumber(sanitizedAccount);
+      setBankInfo({ accountNumber: sanitizedAccount });
+      setAccountNumberErr('');
+      setReEnterAccountNumberErr('');
+      didUpdate = true;
+    }
+
+    if (parsed.ifscCode) {
+      const ifsc = parsed.ifscCode.trim().toUpperCase();
+      setIfscCode(ifsc);
+      setBankInfo({ ifscCode: ifsc });
+      setIfscCodeErr('');
+      didUpdate = true;
+    }
+
+    if (parsed.branchName) {
+      const branchName = parsed.branchName.trim();
+      setBranch(branchName);
+      setBankInfo({ branch: branchName });
+      setBranchErr('');
+      didUpdate = true;
+    }
+
+    if (parsed.bankName) {
+      const detectedName = parsed.bankName.trim();
+      setBankName(detectedName);
+      setBankInfo({ bankName: detectedName });
+      setBankNameErr('');
+      didUpdate = true;
+    }
+
+    if (parsed.upiId) {
+      const detectedUpi = parsed.upiId.trim();
+      if (upiIdPattern.test(detectedUpi)) {
+        setUpiId(detectedUpi);
+        setBankInfo({ UPIID: detectedUpi });
+        setUpiIdErr('');
+        didUpdate = true;
+      }
+    }
+
+    if (parsed.email) {
+      const detectedEmail = parsed.email.trim();
+      if (emailPattern.test(detectedEmail)) {
+        setEmail(detectedEmail);
+        setBankInfo({ email: detectedEmail });
+        setEmailErr('');
+        didUpdate = true;
+      }
+    }
+
+    setPassbookScanMessage(
+      didUpdate
+        ? t('details_detected_review', {
+            defaultValue: 'Details detected automatically. Review before submitting.',
+          })
+        : t('details_not_detected_update_manual', {
+            defaultValue: 'Could not extract details. Update the fields manually.',
+          }),
+    );
+  }, [emailPattern, parsePassbookDetails, setBankInfo, t, upiIdPattern]);
 
   const onNextPress = async () => {
     let isValid = true;
@@ -694,29 +687,27 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           </View>
           )}
           {/* Passbook Upload Section */}
-          <ProfileImagePicker
-            imageFile={passbookImage}
-            setImageFile={(value)=>{setPassbookImage(value); setBankInfo({passbookImage: value});}}
-            label={t('upload_bank_passbook_front_page') +'*'}
-            cloudIcon={<DocUploadIcon width={48} height={34} />}
-            browseLabel={t('browse')}
-            cameraLabel={t('camera')}
-            containerStyle={{marginBottom: 18}}
-            buttonStyle={{}}
-            onImagePicked={handlePassbookImagePicked}
-            includeBase64={false}
-            isView={isView}
+          <DocumentImageScanner
+            documentLabel={t('bank_passbook', { defaultValue: 'Bank Passbook' })}
+            scannerTitle={`${t('upload_bank_passbook_front_page', {
+              defaultValue: 'Upload bank passbook front page',
+            })}*`}
+            helperText={t('passbook_scan_helper', {
+              defaultValue: 'Upload or capture the front page to auto-detect account details.',
+            })}
+            browseLabel={t('browse', { defaultValue: 'Browse' })}
+            cameraLabel={t('camera', { defaultValue: 'Camera' })}
+            initialImage={passbookImage}
+            onImageSelected={handlePassbookImageSelected}
+            onScanComplete={handlePassbookScanComplete}
+            disabled={isView}
+            disabledMessage={t('editing_disabled', {
+              defaultValue: 'Editing is disabled in this mode.',
+            })}
+            containerStyle={{ marginBottom: 18 }}
           />
           {passbookImageErr ? (
             <Text style={{color: Colors.red, textAlign: 'center', marginBottom: 8, fontFamily: Fonts.medium}}>{passbookImageErr}</Text>
-          ) : null}
-          {isScanningPassbook ? (
-            <View style={{alignItems: 'center', marginBottom: 8}}>
-              <ActivityIndicator size="small" color={Colors.periwinkle} />
-              <Text style={{color: Colors.cool_grey, fontFamily: Fonts.light, fontSize: 12, marginTop: 4}}>
-                {t('reading_passbook_details', {defaultValue: 'Reading passbook details…'})}
-              </Text>
-            </View>
           ) : null}
           {passbookScanMessage ? (
             <Text style={{color: Colors.cool_grey, textAlign: 'center', marginBottom: 8, fontFamily: Fonts.light}}>
