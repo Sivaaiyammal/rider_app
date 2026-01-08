@@ -484,6 +484,7 @@ const removeStateVecotr = async (item) => {
           onChangeText={(text)=>_onChangeText(text)}
           autoFocus
           ref={searchInputRef}
+          multiline
         />
          {isLoding && <ActivityIndicator color={Colors.periwinkle}/>}
            <TouchableOpacity style={{padding: 5}} onPressIn={onClosePress}>

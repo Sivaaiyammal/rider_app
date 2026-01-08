@@ -248,7 +248,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
 
   const validateLicense = () => {
     if (licenseNum.length === 0) {
-      setLicenseNumErr(t.please_enter_license_number);
+      setLicenseNumErr(t('please_enter_license_number'));
       return false;
     } else if (!licenseNumberPattern.test(licenseNum)) {
       setLicenseNumErr(t('please_enter_a_valid_license_number_tn01_20110012345'));

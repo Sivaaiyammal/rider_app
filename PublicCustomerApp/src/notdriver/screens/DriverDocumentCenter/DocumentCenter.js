@@ -200,7 +200,7 @@ const {
       <View style={styles.footer}>
         <TouchableOpacity
           style={[styles.doneButton, !docCompleted && styles.doneButtonDisabled]}
-          onPress={goBack}
+          onPress={()=>setStackScreen('DriverApprovalScreen')}
           activeOpacity={0.8}
           disabled={!docCompleted}
         >
