@@ -85,6 +85,10 @@ const SearchLoader = ({ onCancel }) => {
       
       setVehicleMarkers([driverMarker]);
     }
+
+    return () => {
+      setVehicleMarkers([]);
+    }
   }, [driverMarker, setVehicleMarkers]);
 
   const handleCancel = () => {

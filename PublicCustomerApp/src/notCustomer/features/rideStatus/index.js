@@ -46,8 +46,8 @@ const RideStatus = () => {
   const {
     setGeometries,
     setMapBounds,
-    setMapMarkers
-    ,setVehicleMarkers
+    setMapMarkers,
+    setVehicleMarkers
   } = useMapStore();
   const {driverLatitude,driverLongitude} = useAssignedDriverInfoStore();
   const { duration,totalDistance,tripStatus,tripId,paymentMethod,setPaymentMethod,showBookingCancelModel,setShowBookingCancelModel,resetCurrentRideInfo,setFareDetails,setTripStatus,setFinalDistance,setFinalDuration,onGoingTripCancelled,setOngoingingTripCancelled,stops,estimatedFare} = useCurrentRideInfoStore();
@@ -275,7 +275,7 @@ const RideStatus = () => {
       setShowBookingCancelModel(false);
       setGeometries([])
       setMapMarkers([])
-      setVehicleMarkers([])
+    
     }
   },[])
 
