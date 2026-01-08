@@ -16,6 +16,7 @@ import { colors } from '../../../notCustomer/constants/constants';
 import { showPhoneNumberHint } from '@shayrn/react-native-android-phone-number-hint';
 import useUserStore from '../../store/useUserStore';
 import NavBar from '../../components/NavBar';
+import { phoneNumberPattern, phoneNumberPatternIN } from '../../constants/constants';
 
 
 const LoginScreen = ({ route }) => {
@@ -35,7 +36,7 @@ const LoginScreen = ({ route }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneNumErr, setPhoneNumErr] = useState('');
 
-  console.log('Login Screen Role:', navRole, userRole);
+  // console.log('Login Screen Role:', navRole, userRole);
 
   const handleLoginSuccess = (data) => {
     if (data) {
@@ -92,17 +93,30 @@ const LoginScreen = ({ route }) => {
 
  
   const requestOTP = async () => {
-    
     const payload = {
       phone: `+${country.callingCode[0]}${phoneNumber}`,
      
     };
-    if (navRole === 'customer') {
+    
+    // Update error message based on phone number length
+    if (phoneNumber.length === 0) {
+      setPhoneNumErr('');
+    } else if (phoneNumber.length < 10) {
+      setPhoneNumErr(t('phone_number_must_be_10_digits'));
+    } else if (phoneNumber.length > 10) {
+      setPhoneNumErr(t('phone_number_must_be_10_digits'));
+    } else if (!phoneNumberPatternIN.test(phoneNumber)) {
+       setPhoneNumErr(t('valid_phone'));
+    } else {
+  if (navRole === 'customer') {
     DataStore.storeData('login_phoneNumber', phoneNumber);
     requestOTPMutate(payload);
     } else {
     requestDriverOTPMutate(payload);
     }
+     
+    }
+  
   };
 
   const handleChange = text => {
@@ -116,6 +130,8 @@ const LoginScreen = ({ route }) => {
       setPhoneNumErr(t('phone_number_must_be_10_digits'));
     } else if (numericValue.length > 10) {
       setPhoneNumErr(t('phone_number_must_be_10_digits'));
+    } else if (!phoneNumberPatternIN.test(numericValue)) {
+       setPhoneNumErr(t('valid_phone'));
     } else {
       setPhoneNumErr('');
     }
