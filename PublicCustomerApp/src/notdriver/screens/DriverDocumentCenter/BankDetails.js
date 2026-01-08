@@ -906,8 +906,8 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
             onPress={onNextPress}
             disabled={isLoading}
           >
-            <Text style={driverDetailStyles.nextTxt}>{t('next')}</Text>
-            {isLoading ? <ActivityIndicator size="small" color={Colors.white} /> : <AntDesign name="arrowright" color={Colors.white} size={16} />}
+            
+            {isLoading ? <ActivityIndicator size="small" color={Colors.white} /> : <Text style={driverDetailStyles.nextTxt}>{t('next')}</Text>}
           </TouchableOpacity>
         </View>
         )

@@ -15,8 +15,8 @@ const BankAccountDetails = () => {
     }
   return (
     <View style={styles.container}>
-        <NavBar title={'Bank Account Details'} onBackPress={onBackPress}/>
-        <UseBackButton onBackPress={onBackPress} />
+        {/* <NavBar title={'Bank Account Details'} onBackPress={onBackPress}/>
+        <UseBackButton onBackPress={onBackPress} /> */}
         <View style={styles.documentsListContainer}>
          <BankDetails isView={true} isEdit={true}/>
         </View>

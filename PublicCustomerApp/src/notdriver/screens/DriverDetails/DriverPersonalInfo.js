@@ -3,9 +3,9 @@ import React from 'react'
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore'
 import NavBar from '../../../common/components/NavBar'
 import UseBackButton from '../../../common/hooks/UseBackButton'
-import DriverEntry from '../DriverVehicleDetails/DriverEntry'
 import { Colors } from '../../../common/constants/constants'
 import { useTranslation } from 'react-i18next'
+import DriverEntry from '../DriverDocumentCenter/DriverEntry'
 
 const DriverPersonalInfo = () => {
     const { t } = useTranslation()
@@ -17,11 +17,11 @@ const DriverPersonalInfo = () => {
 
   return (
     <View style={styles.container}>
-        <NavBar title={t('personal_information')} onBackPress={onBackPress}/>
-        <UseBackButton onBackPress={onBackPress} />
-        <View style={styles.personalInfoContainer}> 
+        {/* <NavBar title={t('personal_information')} onBackPress={onBackPress}/>
+        <UseBackButton onBackPress={onBackPress} /> */}
+        {/* <View style={styles.personalInfoContainer}>  */}
             <DriverEntry isEdit={true}/>
-        </View>
+        {/* </View> */}
     </View>
   )
 }

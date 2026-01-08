@@ -6,6 +6,7 @@ import UseBackButton from '../../../common/hooks/UseBackButton'
 import DocumentsListScreen from '../DriverVehicleDetails/DocumentsListScreen'
 import { Colors } from '../../../common/constants/constants'
 import { useTranslation } from 'react-i18next'
+import DriverProofDoc from '../DriverDocumentCenter/DriverProofDoc'
 
 const DriverProofDocuments = () => {
     const {t} = useTranslation()
@@ -17,11 +18,11 @@ const DriverProofDocuments = () => {
 
   return (
     <View style={styles.container}>
-        <NavBar title={t('proof_documents')} onBackPress={onBackPress}/>
+        {/* <NavBar title={t('proof_documents')} onBackPress={onBackPress}/>
         <UseBackButton onBackPress={onBackPress} />
-        <View style={styles.documentsListContainer}>
-        <DocumentsListScreen isEdit={true}/>
-        </View>
+        <View style={styles.documentsListContainer}> */}
+        <DriverProofDoc isEdit={true}/>
+        {/* </View> */}
        
     </View>
   )

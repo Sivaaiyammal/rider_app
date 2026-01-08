@@ -44,7 +44,7 @@ const DriverBasicDetails = () => {
             const res = await api.request(url, 'GET', {}, userInfo?.token);
             if(res.success){
                 setIsModalVisible(false);
-                setStackScreen('DriverEditInfo');
+                setStackScreen('DocumentCenter');
                 BGLocationTask.stopDriverBgTask();
             } else {
                 showNotification(res?.message || 'Something went wrong', 'error')

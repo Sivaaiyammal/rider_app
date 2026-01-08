@@ -31,7 +31,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import APIRequest from '../../../common/controllers/APIRequest';
 import UseBackButton from '../../../common/hooks/UseBackButton';
 
-const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
+const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
   const {t} = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const {userInfo} = useUserStore()
@@ -563,13 +563,13 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
         isRequired={false}
         editable={true}
       />
-      
-      <TouchableOpacity
+      {isEdit ? <></> :<TouchableOpacity
         style={driverDetailStyles.nextBtn}
         onPress={() => onNextPress()}>
-        <Text style={driverDetailStyles.nextTxt}>{t('next')}</Text>
-        {isLoading ? <ActivityIndicator size="small" color={Colors.white} /> : <AntDesign name="arrowright" color={Colors.white} size={18} />}
-      </TouchableOpacity>
+        
+        {isLoading ? <ActivityIndicator size="small" color={Colors.white} /> :<Text style={driverDetailStyles.nextTxt}>{t('next')}</Text> }
+      </TouchableOpacity>}
+      
     
       </View>
       </ScrollView>
