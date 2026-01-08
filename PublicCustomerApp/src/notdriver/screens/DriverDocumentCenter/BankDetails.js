@@ -16,6 +16,7 @@ import DocUploadIcon from '../../../notdriver/assets/icons/docUpload.svg';
 import { useTranslation } from 'react-i18next';
 import NavBar from '../../../common/components/NavBar';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
+import UseBackButton from '../../../common/hooks/UseBackButton';
 
 const styles = StyleSheet.create({
   container: {
@@ -141,6 +142,8 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
   const [postalCodeErr, setPostalCodeErr] = useState('');
   // const [referenceCodeErr, setReferenceCodeErr] = useState('');
   const [passbookImageErr, setPassbookImageErr] = useState('');
+
+  const {setBankDetailsCompleteStatus} = usePublicDriverStore();
 
   // Validation patterns
   const accountNumberPattern = /^\d{9,18}$/; // 9-18 digits for account number
@@ -605,7 +608,10 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
             passbookImage: passbookImage
           }      
           setBankInfo(payload);
-          onNext(payload);
+          // onNext(payload);
+          goBack();
+          setBankDetailsCompleteStatus(true)
+          showNotification(response?.message, '', 'success');
         }
          else {
           showNotification(response?.message, '', 'danger');
@@ -620,6 +626,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
   return (
     <View style={styles.container}>
       <NavBar title="Bank Details" onBackPress={() => goBack('DocumentCenter')} />
+        <UseBackButton onBackPress={() => goBack()} />
         <View style={{width: '90%', flex: 1, alignSelf: 'center'}}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>

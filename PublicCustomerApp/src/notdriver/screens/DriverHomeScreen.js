@@ -81,20 +81,40 @@ import DriverProofDoc from './DriverDocumentCenter/DriverProofDoc';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
-  const requiredKeys = ['panNo', 'name', 'phone', 'gender', 'location'];
+  const requiredKeys = ['name', 'phone', 'gender', 'location', 'dob', 'licenseNo'];
   const vehicleInfo = response.driver?.ownVehicleInfo;
   const document = response.driver?.documents;
   const bankDetails = response?.driver?.bankDetails;
-  const vehicleDocuments = response.driver?.ownVehicleInfo?.documents;
-  const requiredDocuments = ['passbookImage', 'aadhar', 'panCard', 'driverPhoto','drivingLicense',];
-  const hasAllDocuments = requiredDocuments.every(doc => document && document[doc]);
-  const requiredVehicleDocuments = ['insurance','vehicleRcDoc', 'vehiclePhoto','vehicleRcDocBackSide'];
-  const hasAllVehicleDocuments = requiredVehicleDocuments.every(doc =>  vehicleDocuments && vehicleDocuments[doc]);
+  // const vehicleDocuments = response.driver?.ownVehicleInfo?.documents;
+  // const requiredDocuments = ['passbookImage','aadhar','panCard' ,'drivingLicense'];
+  // const requiredVehicleDocuments = ['vehicleRcDoc'];
+
+  const proofDoc = ['aadhar','panCard']
+  const hasProofDocuments = proofDoc.some(doc => document && document[doc]);
+  
+  const {setLocationCompleteStatus,setDriverDetailsCompleteStatus, setVehicleDetailsCompleteStatus, setBankDetailsCompleteStatus,setDocumentsCompleteStatus} = usePublicDriverStore.getState();
+  
+  if (['location'].every(key => key in response.driver)) {
+  setLocationCompleteStatus(true)
+  }
+
+  if (requiredKeys.every(key => key in response.driver)) {
+    setDriverDetailsCompleteStatus(true)
+  }
+  if (vehicleInfo) {
+    setVehicleDetailsCompleteStatus(true)
+  }
+  if (bankDetails) {
+    setBankDetailsCompleteStatus(true)
+  }
+  if (hasProofDocuments) {
+    setDocumentsCompleteStatus(true)
+  }
   return (
     requiredKeys.every(key => key in response.driver) && 
     vehicleInfo && 
     bankDetails &&
-    hasAllDocuments && hasAllVehicleDocuments
+    hasProofDocuments
   );
 };
 

@@ -22,6 +22,14 @@ const DocumentCenter = () => {
   const bankInfo = usePublicDriverStore(state => state.bankInfo);
   const documents = usePublicDriverStore(state => state.documents);
 
+const {
+  locationCompleteStatus,
+  driverDetailsCompleteStatus,
+  vehicleDetailsCompleteStatus,
+  bankDetailsCompleteStatus,
+  documentsCompleteStatus,
+} = usePublicDriverStore();
+
   const onBackPress = () => {
     goBack();
   };
@@ -43,6 +51,28 @@ const DocumentCenter = () => {
       .every(item => item.status === 'uploaded' || item.status === 'verified');
   }, [documents]);
 
+  const allStepsComplete = useMemo(
+    () =>
+      locationComplete &&
+      driverDetailsComplete &&
+      vehicleDetailsComplete &&
+      bankDetailsComplete &&
+      documentsComplete,
+    [
+      locationComplete,
+      driverDetailsComplete,
+      vehicleDetailsComplete,
+      bankDetailsComplete,
+      documentsComplete,
+    ],
+  );
+
+    const docCompleted =  locationCompleteStatus &&
+  driverDetailsCompleteStatus &&
+  vehicleDetailsCompleteStatus &&
+  bankDetailsCompleteStatus &&
+  documentsCompleteStatus
+
   const sections = useMemo(
     () => [
       {
@@ -53,7 +83,7 @@ const DocumentCenter = () => {
         // }),
         icon: 'place',
         screen: 'AddDriverLocation',
-        complete: locationComplete,
+        complete: locationCompleteStatus,
       },
       {
         id: 'driverDetails',
@@ -63,7 +93,7 @@ const DocumentCenter = () => {
         // }),
         icon: 'person',
         screen: 'DriverEntry',
-        complete: driverDetailsComplete,
+        complete: driverDetailsCompleteStatus,
       },
       {
         id: 'vehicleDetails',
@@ -73,7 +103,7 @@ const DocumentCenter = () => {
         // }),
         icon: 'directions-car',
         screen: 'DriverVehicleEntry',
-        complete: vehicleDetailsComplete,
+        complete: vehicleDetailsCompleteStatus,
       },
       {
         id: 'bankDetails',
@@ -83,7 +113,7 @@ const DocumentCenter = () => {
         // }),
         icon: 'account-balance',
         screen: 'DriverBankDetails',
-        complete: bankDetailsComplete,
+        complete: bankDetailsCompleteStatus,
       },
       {
         id: 'proofDocuments',
@@ -93,7 +123,7 @@ const DocumentCenter = () => {
         // }),
         icon: 'fact-check',
         screen: 'DriverProofDoc',
-        complete: documentsComplete,
+        complete: documentsCompleteStatus,
       },
     ],
     [
@@ -103,6 +133,11 @@ const DocumentCenter = () => {
       vehicleDetailsComplete,
       bankDetailsComplete,
       documentsComplete,
+        locationCompleteStatus,
+        driverDetailsCompleteStatus,
+        vehicleDetailsCompleteStatus,
+        bankDetailsCompleteStatus,
+        documentsCompleteStatus
     ],
   );
 
@@ -133,15 +168,19 @@ const DocumentCenter = () => {
 
   return (
     <View style={styles.container}>
-      {/* <NavBar
-        title={t('document_center', {defaultValue: 'Document Center'})}
-        onBackPress={onBackPress}
-      /> */}
       <Text style={styles.title}>{t('document_center', {defaultValue: 'Document Center'})}</Text>
       <UseBackButton onBackPress={onBackPress} />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
+        {/* {allStepsComplete ? (
+          <View style={styles.approvalBanner}>
+            <MaterialIcons name="hourglass-top" size={20} color={Colors.periwinkle} />
+            <Text style={styles.approvalBannerText}>
+              {t('waiting_for_approval', {defaultValue: 'Waiting for approval'})}
+            </Text>
+          </View>
+        ) : null} */}
         <Text style={styles.subtitle}>
           {t('document_center_subtitle', {
             defaultValue: 'Finish these steps so you can start accepting rides.',
@@ -173,6 +212,16 @@ const DocumentCenter = () => {
           ))}
         </View>
       </ScrollView>
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[styles.doneButton, !docCompleted && styles.doneButtonDisabled]}
+          onPress={goBack}
+          activeOpacity={0.8}
+          disabled={!docCompleted}
+        >
+          <Text style={styles.doneButtonText}>{t('done', {defaultValue: 'Done'})}</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -186,7 +235,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingBottom: 32,
+    paddingBottom: 120,
   },
   subtitle: {
     marginTop: 24,
@@ -197,6 +246,22 @@ const styles = StyleSheet.create({
   },
   sectionsContainer: {
     gap: 12,
+  },
+  approvalBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: Colors.white_dirt,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.periwinkle,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  approvalBannerText: {
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: Colors.periwinkle,
   },
   sectionCard: {
     backgroundColor: Colors.white,
@@ -266,5 +331,25 @@ const styles = StyleSheet.create({
     color: Colors.black,
     marginTop:16,
     marginLeft:16,
-  }
+  },
+  footer: {
+    borderTopWidth: 1,
+    borderTopColor: Colors.grey_light,
+    padding: 16,
+    backgroundColor: Colors.white,
+  },
+  doneButton: {
+    backgroundColor: Colors.periwinkle,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  doneButtonDisabled: {
+    opacity: 0.6,
+  },
+  doneButtonText: {
+    fontFamily: Fonts.medium,
+    fontSize: 16,
+    color: Colors.white,
+  },
 });

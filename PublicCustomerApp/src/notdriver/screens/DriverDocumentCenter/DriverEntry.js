@@ -29,6 +29,7 @@ import DocumentImageScanner from '../../components/DocumentImageScanner';
 import NavBar from '../../../notCustomer/components/NavBar';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import APIRequest from '../../../common/controllers/APIRequest';
+import UseBackButton from '../../../common/hooks/UseBackButton';
 
 const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
   const {t} = useTranslation();
@@ -76,6 +77,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
     return fallback;
   }, []);
   const [dobDate, setDobDate] = useState(parseDobToDate(driverInfo.dob || dob));
+  const {setDriverDetailsCompleteStatus} = usePublicDriverStore();
   
   const {goBack} = useStackScreenStore();
 
@@ -253,6 +255,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
     try {
       const api = new APIRequest();
       const response = await api.request(`/publicrides/driver/updateDriverInfo`, 'POST', formData, userInfo?.token);
+      console.log('Update Driver Info Response:', response);
       if (response.success) {
         setDriverInfo({
           ...driverInfo,
@@ -264,6 +267,9 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
           driverPhoto: resolvedDriverPhoto,
           dob,
         });
+        showNotification(response?.message, response?.message, 'success');
+        goBack();
+        setDriverDetailsCompleteStatus(true)
       } else {
         showNotification(response?.message, 'Please Contact Support', 'danger');
       }
@@ -344,6 +350,7 @@ const DriverEntry = ({onNext, isEdit = false, setLocationPressed = null}) => {
   return (
     <View style={{flex: 1, backgroundColor: Colors.white}}>
     <NavBar title={t('driver_details',{defaultValue: 'Driver Details'})} onBackPress={() => goBack()} />
+      <UseBackButton onBackPress={() => goBack()} />
     <ScrollView contentContainerStyle={{paddingBottom: 32, backgroundColor: Colors.white, alignItems: 'center'}}>
     <View style={{gap: 10, width:'90%'}}>
       <View>

@@ -20,6 +20,7 @@ import APIRequest from '../../../common/controllers/APIRequest';
 import { Colors, Fonts, vehicleNumberPattern } from '../../../common/constants/constants';
 import { vehicleList } from '../../../common/constants/jsonData';
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
+import UseBackButton from '../../../common/hooks/UseBackButton';
 
 const VehicleEntry = ({ onNext }) => {
   const { t } = useTranslation();
@@ -39,6 +40,8 @@ const VehicleEntry = ({ onNext }) => {
   const [vehicleRcScanMessage, setVehicleRcScanMessage] = useState('');
 
   const {goBack} = useStackScreenStore();
+
+  const { setVehicleDetailsCompleteStatus } = usePublicDriverStore();
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -220,7 +223,10 @@ const VehicleEntry = ({ onNext }) => {
           regNo: regNo.trim(),
           vehicleRcDoc: vehicleRcDoc,
         });
-        onNext?.(formData);
+        // onNext?.(formData);
+        setVehicleDetailsCompleteStatus(true)
+        showNotification(response?.message, '', 'success');
+        goBack();
       } else {
         showNotification(response?.message, '', 'danger');
       }
@@ -280,6 +286,7 @@ const VehicleEntry = ({ onNext }) => {
   return (
     <View style={styles.container}>
       <NavBar title={t('vehicle_details', { defaultValue: 'Vehicle Details' })} onBackPress={() => goBack()} />
+        <UseBackButton onBackPress={() => goBack()} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>

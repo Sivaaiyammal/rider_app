@@ -265,6 +265,21 @@ const usePublicDriverStore = create((set, get) => ({
   showPaymentInitiatedLoader: false,
   setShowPaymentInitiatedLoader: (show) => set({ showPaymentInitiatedLoader: show}),
 
+  locationCompleteStatus: null,
+  setLocationCompleteStatus: (status) => set({ locationCompleteStatus: status}),
+
+  driverDetailsCompleteStatus: null,
+  setDriverDetailsCompleteStatus: (status) => set({ driverDetailsCompleteStatus: status}),
+
+  vehicleDetailsCompleteStatus: null,
+  setVehicleDetailsCompleteStatus: (status) => set({ vehicleDetailsCompleteStatus: status}),
+
+  bankDetailsCompleteStatus: null,
+  setBankDetailsCompleteStatus: (status) => set({ bankDetailsCompleteStatus: status}),
+
+  documentsCompleteStatus: null,
+  setDocumentsCompleteStatus: (status) => set({ documentsCompleteStatus: status}),
+
   // Reset all state to initial values
   resetPublicDriverState: () => {
     set({
@@ -322,7 +337,12 @@ const usePublicDriverStore = create((set, get) => ({
       unBlockRequestSent: false,
       driverDueDate: null,
       driverRatings:null,
-      razorpayLinkedAccountDetails: null
+      razorpayLinkedAccountDetails: null,
+      setLocationCompleteStatus:null,
+setDriverDetailsCompleteStatus:null,
+setVehicleDetailsCompleteStatus:null,
+setBankDetailsCompleteStatus:null,
+setDocumentsCompleteStatus:null
     });
   },
 }));

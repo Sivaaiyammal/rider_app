@@ -61,6 +61,8 @@ const AddDriverLocation = ({isPassanger, updatePassangerLocation, isGeofenceSear
 
   const [isLocationLoading, setIsLocationLoading] = useState(false);
 
+  const {setLocationCompleteStatus} = usePublicDriverStore();
+
     // Region configuration
     const REGIONS = useMemo(() => [
       { id: 1, name: 'India', value: 'india' },
@@ -430,9 +432,11 @@ const removeStateVecotr = async (item) => {
        homeLocation: updateDriverHomeLocation,
        location: userLocation.reverse(),
      };
+     console.log("payload",JSON.stringify(payload));
      const res = await api.request(url, 'POST', payload, userInfo?.token);
      if (res?.success) {
          setDriverInfo({homeLocation: updateDriverHomeLocation,coordinates: [selectedAddress.lng, selectedAddress.lat]})
+         setLocationCompleteStatus(true)
          onGoBack()
      } else {
         showNotification(res?.message, res?.message, 'danger');
@@ -446,7 +450,7 @@ const removeStateVecotr = async (item) => {
 
  const onConfirmLocation = () => {
    const updateDriverHomeLocation = {
-     coordinates : [selectedAddress.lng, selectedAddress.lat],
+     coordinates : [selectedAddress.lat, selectedAddress.lng],
      addressName : selectedAddress.address,
    } 
    if (isPassanger) {

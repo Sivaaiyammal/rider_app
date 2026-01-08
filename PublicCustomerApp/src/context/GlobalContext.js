@@ -11,6 +11,7 @@ import RideMatchWSService from '../common/controllers/socketServices/RideMatchSo
 import useUserStore from '../common/store/useUserStore';
 import { showNotification } from '../common/components/Alerts/showNotification';
 import { useNavigation } from '@react-navigation/native';
+import usePublicDriverStore from '../notdriver/store/usePublicDriverStore';
 
 export const GlobalContext = createContext();
 
@@ -24,6 +25,8 @@ export const ContextProvider = ({children}) => {
   const [themeMode, setThemeMode] = useState('default'); // 'light', 'dark', 'default'
   const [isInitialized, setIsInitialized] = useState(false);
   const {setUserInfo} = useUserStore()
+
+  const {resetPublicDriverState} = usePublicDriverStore();
 
   const navigation = useNavigation();
 
@@ -156,6 +159,7 @@ export const ContextProvider = ({children}) => {
     try {
       // setIsLoading(true);
       setUserInfo(null);
+      resetPublicDriverState();
       // DataStore.clearData('userInfo');
       DataStore.clearData('role')
       DataStore.clearData('activeTripId')

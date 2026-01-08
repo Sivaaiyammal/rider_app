@@ -11,6 +11,7 @@ import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
 import publicrideDriverApi from '../../api/publicrideDriverApi';
 import { showNotification } from '../../../common/components/Alerts/showNotification';
 import useUserStore from '../../../common/store/useUserStore';
+import UseBackButton from '../../../common/hooks/UseBackButton';
 
 const aadhaarPattern = /\b\d{4}\s?\d{4}\s?\d{4}\b/;
 const aadhaarDigitsPattern = /^\d{12}$/;
@@ -48,6 +49,8 @@ const DriverProofDoc = () => {
     };
   });
   const { userInfo } = useUserStore();
+
+  const {setDocumentsCompleteStatus} = usePublicDriverStore();
 
   const [activeTab, setActiveTab] = useState('aadhaar');
   const [aadhaarNumber, setAadhaarNumber] = useState(driverInfo?.aadharNo || '');
@@ -126,6 +129,8 @@ const DriverProofDoc = () => {
         updateDocumentStatus(docId, 'uploaded');
         setDriverInfo({ [driverDocKey]: image });
         setPendingImage(prev => ({ ...prev, [docId]: null }));
+        setDocumentsCompleteStatus(true)
+        goBack();
         showNotification(
           docLabel,
           t('document_upload_success', { defaultValue: 'Document updated successfully.' }),
@@ -358,6 +363,7 @@ const DriverProofDoc = () => {
         title={t('proof_documents', { defaultValue: 'Proof Documents' })}
         onBackPress={() => goBack()}
       />
+      <UseBackButton onBackPress={() => goBack()} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.switchContainer}>
           {switchOptions.map(option => {
