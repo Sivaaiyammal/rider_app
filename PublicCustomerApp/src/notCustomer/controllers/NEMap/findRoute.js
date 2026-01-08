@@ -1,5 +1,40 @@
 import Config from "react-native-config";
 
+const REQUEST_TIMEOUT_MS = 5000;
+const MAX_RETRY_ATTEMPTS = 1;
+
+async function fetchWithTimeout(url, attempt = 0) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            signal: controller.signal,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return response;
+    } catch (error) {
+        const isTimeout = error.name === 'AbortError';
+
+        if (isTimeout && attempt < MAX_RETRY_ATTEMPTS) {
+            const nextAttempt = attempt + 1;
+            console.warn(`Route fetch timeout retry ${nextAttempt}/${MAX_RETRY_ATTEMPTS} for ${url}`);
+            return fetchWithTimeout(url, nextAttempt);
+        }
+
+        throw isTimeout
+            ? new Error(`Request timed out after ${REQUEST_TIMEOUT_MS / 1000}s`)
+            : error;
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
 export async function findRoute(points) {
     if (!points) return null;
  
@@ -28,19 +63,7 @@ export async function findRoute(points) {
         const url = `${Config.ROUTE_API_URL}?data=${encodedData}&access_token=${Config.NE_ACCESS_TOKEN}`;
         console.log("Route Request URL:", url);
 
-    
-        
-        const response = await fetch(url, {
-            method: 'GET',
-        });
-        
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        
-        
+        const response = await fetchWithTimeout(url);
         const routeData = await response.json();
         console.log("Route Response Data:", JSON.stringify(routeData));
         return routeData;

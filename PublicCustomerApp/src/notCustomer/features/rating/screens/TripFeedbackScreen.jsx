@@ -38,6 +38,7 @@ export default function TripFeedbackScreen() {
      const {t} = useTranslation();
 
     const [minDelayDone, setMinDelayDone] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
       const timer = setTimeout(() => setMinDelayDone(true), 3000);
@@ -124,6 +125,11 @@ export default function TripFeedbackScreen() {
   
 
   const handleSubmit = async (ratingData) => {
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
     ratingData.tripId = currentTripId
 
     console.log("ratingData before submit",ratingData)
@@ -153,6 +159,8 @@ export default function TripFeedbackScreen() {
     }
   }catch(e){
     console.log("Error submitting feedback",e)
+  }finally{
+    setIsSubmitting(false);
   }
   }
 
@@ -250,7 +258,7 @@ export default function TripFeedbackScreen() {
           <View style={{marginVertical:10}}>
             <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={driverDetails?.vehicleType} vehicleBrand={driverDetails?.vehicleBrand} vehicleModel={driverDetails?.vehicleModel} vehicleNumber={driverDetails?.vehicleNumber} layoutStyle={"row"} descriptonSize={12}/>
             </View>
-           <RatingBox onRatingSubmit={handleSubmit}/>
+           <RatingBox onRatingSubmit={handleSubmit} isSubmitting={isSubmitting}/>
            <TouchableOpacity onPress={handleClose}>
           <AdaptiveText style={styles.LATERText}>
             {t('later')}
