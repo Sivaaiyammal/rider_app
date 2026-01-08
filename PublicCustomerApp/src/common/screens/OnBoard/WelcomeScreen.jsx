@@ -134,7 +134,7 @@ const WelcomeScreen = ({ navigation }) => {
                   color={'white'}
                   fontSize={18}
                 >
-                  {t('driver_ta_full')}
+                  {t('welcome_driver_ta_full')}
                 </AdaptiveText>
               ) : (
                 <>
