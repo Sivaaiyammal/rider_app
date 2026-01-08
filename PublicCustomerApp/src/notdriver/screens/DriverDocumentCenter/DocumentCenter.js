@@ -86,7 +86,7 @@ const {
       },
       {
         id: 'driverDetails',
-        title: t('driver_details', {defaultValue: 'Driver Details'}),
+        title: t('driver_details'),
         // description: t('document_center_driver_desc', {
         //   defaultValue: 'Review and update your personal information.',
         // }),
@@ -106,7 +106,7 @@ const {
       },
       {
         id: 'bankDetails',
-        title: t('bank_details', {defaultValue: 'Bank Details'}),
+        title: t('bank_details'),
         // description: t('document_center_bank_desc', {
         //   defaultValue: 'Verify the bank account for your payouts.',
         // }),
@@ -145,16 +145,22 @@ const {
           complete ? styles.statusTextComplete : styles.statusTextPending,
         ]}>
         {complete
-          ? t('complete', {defaultValue: 'Complete'})
-          : t('pending', {defaultValue: 'Pending'})}
+          ? t('complete')
+          : t('pending')}
       </Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('document_center', {defaultValue: 'Document Center'})}</Text>
-      <UseBackButton onBackPress={onBackPress} />
+      <View style={styles.headerView}>
+      <Text style={styles.title}>{t('document_center')}</Text>
+       <TouchableOpacity style={styles.powerOffBtn} onPress={() => setStackScreen('DriverHelpSupport')}>
+        <MaterialIcons name="support-agent" size={24} color={Colors.black} />
+       </TouchableOpacity>
+      </View>
+      
+      {/* <UseBackButton onBackPress={onBackPress} /> */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
@@ -167,9 +173,7 @@ const {
           </View>
         ) : null} */}
         <Text style={styles.subtitle}>
-          {t('document_center_subtitle', {
-            defaultValue: 'Finish these steps so you can start accepting rides.',
-          })}
+          {t('document_center_subtitle')}
         </Text>
         <View style={styles.sectionsContainer}>
           {sections.map(section => (
@@ -314,8 +318,8 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.semi_bold,
     fontSize: 20,
     color: Colors.black,
-    marginTop:16,
-    marginLeft:16,
+    // marginTop:16,
+    // marginLeft:16,
   },
   footer: {
     borderTopWidth: 1,
@@ -337,4 +341,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.white,
   },
+  headerView:{
+    width:'90%',
+    alignSelf:'center',
+    flexDirection:'row',
+    justifyContent:'space-between',
+    alignItems:'center',
+    marginTop:16,
+  }
 });

@@ -172,9 +172,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
           setLicenseNum(normalized);
           setDriverInfo({ licenseNo: normalized });
           autoMessages.push(
-            t('license_number_detected', {
-              defaultValue: 'License number detected and filled automatically.',
-            }),
+            t('license_number_detected')
           );
         }
 
@@ -185,9 +183,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
           setDobDate(parseDobToDate(detectedDob));
           setDobErr('');
           autoMessages.push(
-            t('dob_detected_auto_filled', {
-              defaultValue: 'Date of birth detected and filled automatically.',
-            }),
+            t('dob_detected_auto_filled'),
           );
         }
 
@@ -195,9 +191,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
           setLicenseScanMessage(autoMessages.join(' '));
         } else {
           setLicenseScanMessage(
-            t('license_details_not_detected', {
-              defaultValue: "Couldn’t detect licence details. Update the fields manually.",
-            }),
+            t('license_details_not_detected'),
           );
         }
       }
@@ -226,7 +220,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
       setPhoneErr(t('please_enter_phone'));
       return false;
     } else if (!phoneNumberPattern.test(phone)) {
-      setPhoneErr(t('valid_phone') +' '+ t('starts_with_91'));
+      setPhoneErr(t('valid_phone'));
       return false;
     }
     setPhoneErr('');
@@ -269,7 +263,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
 
   const validateDob = () => {
     if (!dob || dob.trim().length === 0) {
-      setDobErr(t('please_enter_dob', { defaultValue: 'Please enter date of birth' }));
+      setDobErr(t('please_enter_dob'));
       return false;
     }
     setDobErr('');
@@ -586,8 +580,8 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
               if (genderErr) setGenderErr('');
             }}
             >
-            {item.icon}
-            <Text style={driverDetailStyles.GenderTxt}>{item.name}</Text>
+            {/* {item.icon} */}
+            <Text style={driverDetailStyles.GenderTxt}>{t(item.name)}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -619,9 +613,10 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
         errorText={licenseNumErr}
         autoCapitalize='characters' 
         onChangeText={text => {
-          setLicenseNum(text);
-          setDriverInfo({ licenseNo: text });
-          if (licenseNumErr && text.length > 0) setLicenseNumErr('');
+          const formatted = (text || '').toUpperCase();
+          setLicenseNum(formatted);
+          setDriverInfo({ licenseNo: formatted });
+          if (licenseNumErr && formatted.length > 0) setLicenseNumErr('');
           if (licenseScanMessage) setLicenseScanMessage('');
         }}
         icon={<License />}

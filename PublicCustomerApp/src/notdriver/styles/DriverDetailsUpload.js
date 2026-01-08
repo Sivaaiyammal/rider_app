@@ -34,10 +34,12 @@ export const driverDetailStyles = StyleSheet.create({
         width: '100%',
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         alignSelf: 'center',
         paddingVertical: 10,
-        paddingBottom:15
+        paddingBottom:15,
+        flexWrap: 'wrap',
+        justifyContent: 'space-evenly',
+        gap:10
       },
       GenderBtn: {
         width: '48%',

@@ -266,14 +266,19 @@ const getYearsArray = () => {
 export const genderData = [
   {
     id:1,
-    name:'Male',
-    icon:< Male />,
+    name:'male',
+    // icon:< Male />,
     value:'male'
   },{
     id:2,
-    name:'Female',
-    icon:< Female />,
+    name:'female',
+    // icon:< Female />,
     value:'female'
+  },{
+    id:3,
+    name:'prefer_not_to_say',
+    // icon:< Male />,
+    value:'prefer_not_to_say'
   }
 
 ]

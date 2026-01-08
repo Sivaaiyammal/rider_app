@@ -166,7 +166,7 @@ public class DriverLocationService extends Service {
                 try {
                     storedDeviceId = Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
-                    userRole        = normalize(AsyncStorageReader.readValueFromAsyncStorage(this, "role"), "unknown");
+                    userRole        = normalize(AsyncStorageReader.readValueFromAsyncStorage(this, "userRole"), "unknown");
                     storedUserToken = normalize(AsyncStorageReader.readValueFromAsyncStorage(this, "bg_userToken"), null);
                     tripId          = normalize(AsyncStorageReader.readValueFromAsyncStorage(this, "activeTripId"), null);
                     storedToken     = normalize(AsyncStorageReader.readValueFromAsyncStorage(this, "deviceToken"), null);
@@ -301,7 +301,7 @@ public class DriverLocationService extends Service {
                 String newUnit = normalize(AsyncStorageReader.readValueFromAsyncStorage(this, "unitType"), "km");
                 if (!equalsSafe(storedDistanceUnit, newUnit)) storedDistanceUnit = newUnit;
 
-                String newRole = normalize(AsyncStorageReader.readValueFromAsyncStorage(this, "role"), userRole);
+                String newRole = normalize(AsyncStorageReader.readValueFromAsyncStorage(this, "userRole"), userRole);
                 if (!equalsSafe(userRole, newRole)) {
                     userRole = newRole;
                     refreshOverlayBinding();

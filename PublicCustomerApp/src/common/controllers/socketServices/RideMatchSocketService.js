@@ -114,7 +114,7 @@ class RideMatchWSService {
     } = useTripAcceptStore.getState();
     const {setDirectionPoints} = useMapMarkerStore.getState();
     const {activeTripData, setActiveTripData} = useTripsStore.getState();
-    const {userInfo} = useUserStore()
+    const {userInfo} = useUserStore.getState();
     try {
       if (data?.status === 'success') {
         setLoading(true);
