@@ -78,6 +78,7 @@ import DriverEntry from './DriverDocumentCenter/DriverEntry';
 import VehicleEntry from './DriverDocumentCenter/VehicleEntry';
 import BankDetails from './DriverDocumentCenter/BankDetails';
 import DriverProofDoc from './DriverDocumentCenter/DriverProofDoc';
+import LanguageSelectionScreen from './LanguageSelectionScreen';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -610,8 +611,8 @@ const PublicRidesDriverHomeScreen = () => {
               return <UpComingTripsView />
       case 'DriverIDCard':
               return <DriverIDCard />
-      // case 'LanguageSelectionScreen':
-      //         return <LanguageSelectionScreen fromSettings />; // <LanguageSelectionScreen isStackScreen={true}/>
+      case 'LanguageSelectionScreen':
+              return <LanguageSelectionScreen />; // <LanguageSelectionScreen isStackScreen={true}/>
       case 'PriceChart':
               return <PublicRidesPriceChart />;
       case 'PriceChartDetails':

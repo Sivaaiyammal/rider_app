@@ -875,7 +875,7 @@ const DriverOnRide = () => {
                     RouteScreenStyles.stopTxt,
                     {fontSize: 12, width: '60%'},
                   ]}>
-                  {t.please_enable_required_permissions}
+                  {t('please_enable_required_permissions')}
                 </Text>
                 <TouchableOpacity
                   onPress={() => setStackScreen('DriverPermissionScreen')}

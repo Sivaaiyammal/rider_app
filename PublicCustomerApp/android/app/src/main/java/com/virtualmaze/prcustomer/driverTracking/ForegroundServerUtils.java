@@ -246,7 +246,8 @@ public class ForegroundServerUtils {
                 
                 JSONObject requestBody = new JSONObject();
                 try {
-                    if ("driver".equalsIgnoreCase(userRole) || "publicridedriver".equalsIgnoreCase(userRole)){
+                    Log.d(TAG, "sendToServer: " + userRole);
+                    if ("driver".equalsIgnoreCase(userRole)){
                         requestBody.put("sessionId", deviceId);
                         requestBody.put("completed", false);
                     }
@@ -338,7 +339,7 @@ public class ForegroundServerUtils {
                 
                 JSONObject requestBody = new JSONObject();
                 try {
-                    if ("driver".equalsIgnoreCase(userRole) || "publicridedriver".equalsIgnoreCase(userRole)){
+                    if ("driver".equalsIgnoreCase(userRole)){
                         requestBody.put("completed", false);
                     }
 //                    requestBody.put("id", deviceId);

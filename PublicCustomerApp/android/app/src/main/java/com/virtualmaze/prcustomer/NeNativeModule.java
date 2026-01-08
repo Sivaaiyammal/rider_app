@@ -1896,7 +1896,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
            if (mapController != null) {
                mapController.setCurrentLocationEnabled(true);
            }
-           NavigationMode mode = NavigationMode.SIMULATE;
+           NavigationMode mode = NavigationMode.REALTIME;
 
            startNavigation(reactNativeContext.getCurrentActivity(), viewIds, mode,
                    new NavigationEndListener() {

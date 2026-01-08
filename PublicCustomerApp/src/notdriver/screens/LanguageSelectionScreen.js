@@ -1,16 +1,15 @@
 import { Text, TouchableOpacity, View, StyleSheet, Vibration } from 'react-native';
 import React, { useState, useContext, useEffect } from 'react';
-import { languages } from '../../../notCustomer/constants/JsonData';
-import { colors } from '../../../notCustomer/constants/constants';
 import { useNavigation } from '@react-navigation/native';
-import { DataStore } from '../../../notCustomer/controllers/DataStore';
 import { useTranslation } from 'react-i18next';
-import AdaptiveText from '../../../notCustomer/components/Common/AdaptiveText';
-import i18n from '../../../common/i18n';
-import { GlobalContext } from '../../../context/GlobalContext';
-import { Fonts } from '../../../notCustomer/constants/constants';
-import { useStackScreenStore } from '../../../notCustomer/store/useStackScreenStore';
-import NavBar from '../../../notCustomer/components/NavBar';
+import { useStackScreenStore } from '../../common/store/useStackScreenStore';
+import GlobalContext from '../../context/GlobalContext';
+import { languages } from '../../notCustomer/constants/JsonData';
+import i18n from '../../common/i18n';
+import { DataStore } from '../../common/controllers/DataStore';
+import NavBar from '../../common/components/NavBar';
+import { Colors, Fonts } from '../../common/constants/constants';
+import UseBackButton from '../../common/hooks/UseBackButton';
 
 const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   const navigation = useNavigation();
@@ -19,9 +18,7 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   const { t } = useTranslation();
   const { 
     theme, 
-
   } = useContext(GlobalContext);
-  const {goBack: goBackStack} = useStackScreenStore();
 
   const [selected, setSelected] = useState(languages[0]);
 
@@ -38,31 +35,15 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
     setSelected(item);
   };
 
-
   const handleLanguageChange = (language) => {
     changeLanguage(language);
-    i18n.changeLanguage(language.code);
+    // i18n.changeLanguage(language.code);
   };
 
-  const onNextPress = async () => {
-    // Save the selected language to AsyncStorage
-    // Vibration.vibrate(100);
-    await DataStore.storeData('language', selected.code);
-
-    if (fromDriverStack) {
-       i18n.changeLanguage(InsideAppLanguageChange.code);
-       goBackStack()
-       return
-    }
-    
-    if(fromDrawer){
-      i18n.changeLanguage(InsideAppLanguageChange.code);
-      goBack();
-    }
-    else{
-      // navigation.navigate('OnBoarding');
-      navigation.navigate('WelcomeScreen');
-    }
+  const onNextPress = async () => {  
+       await DataStore.storeData('language', selected.code);
+       i18n.changeLanguage(selected.code);
+       goBack();
   };
 
   const handleLanguageChangeInSideApp = (language) => {
@@ -71,23 +52,21 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   }
 
   return (
-   
-   
     <View style={[styles.screen]}>
        {fromSettings  ? <></> : <View style={styles.header}> 
-      {(fromDrawer || fromDriverStack )  &&<NavBar withBg={true} onBackPress={() => fromDriverStack?  goBackStack() : goBack()} title={'Choose Language'} />}       
-      {!fromDrawer && <AdaptiveText style={styles.title} color={theme.text} >{t('choose_language')}</AdaptiveText>}
+      {<NavBar withBg={true} onBackPress={() => goBack()} title={'Choose Language'} />}       
       </View>}
+      <UseBackButton onBackPress={() => goBack()} />
       <View style={styles.langContainer}>
         {languages.map((item) => (
           <View key={item.id} style={styles.langItemWrapper}>
             <TouchableOpacity
-              onPress={() => fromDrawer?handleLanguageChangeInSideApp(item):handleLanguageChange(item)}
+              onPress={() => handleLanguageChange(item)}
               style={[
                 styles.langBtn,
                 {
                   backgroundColor:
-                    selected.id === item.id ? theme.primary_secondary : colors.white,
+                    selected.id === item.id ? theme.primary_secondary : Colors.white,
                 },
               ]}>
               <Text style={styles.langTxt}>{item.name}</Text>
@@ -99,7 +78,7 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
       <TouchableOpacity
         style={[styles.nextBtn]}
         onPress={() => onNextPress()}>
-        <Text style={[styles.nextBtnTxt]}>{fromDrawer || fromDriverStack ? t('done') : t('next')}</Text>
+        <Text style={[styles.nextBtnTxt]}>{t('done')}</Text>
       </TouchableOpacity>
     </View>
     
@@ -111,7 +90,7 @@ const styles = StyleSheet.create({
     screen: {
       flex: 1,
       alignItems: 'center',
-      backgroundColor: colors.white,
+      backgroundColor: Colors.white,
       paddingHorizontal: 10,
     },
     header: {
@@ -124,7 +103,7 @@ const styles = StyleSheet.create({
     title: {
       fontFamily: Fonts.semi_bold,
       fontSize: 32,
-      color: colors.black,
+      color: Colors.black,
       marginTop: 30,
       textAlign: 'center',
     },
@@ -140,7 +119,7 @@ const styles = StyleSheet.create({
       marginBottom: 15,
     },
     langBtn: {
-      backgroundColor: colors.white,
+      backgroundColor: Colors.white,
       borderRadius: 5,
       shadowColor: '#000',
       shadowOffset: {
@@ -159,18 +138,18 @@ const styles = StyleSheet.create({
     },
     langTxt: {
       fontFamily: Fonts.semi_bold,
-      color: colors.black,
+      color: Colors.black,
       fontSize: 16,
     },
     langSubTxt: {
       fontFamily: Fonts.regular,
-      color: colors.black,
+      color: Colors.black,
       fontSize: 12,
     },
     nextBtn: {
       position: 'absolute',
       bottom: 20,
-      backgroundColor: colors.blue_xxdark,
+      backgroundColor: Colors.blue_xxdark,
       width: '80%',
       paddingVertical: 10,
       borderRadius: 30,
@@ -178,7 +157,7 @@ const styles = StyleSheet.create({
     },
     nextBtnTxt: {
       fontFamily: Fonts.medium,
-      color: colors.white,
+      color: Colors.white,
       fontSize: 14,
       textTransform: 'uppercase',
     },
