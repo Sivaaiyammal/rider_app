@@ -3,7 +3,6 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View
 import { useTranslation } from 'react-i18next';
 
 import NavBar from '../../../common/components/NavBar';
-import InputField from '../../../common/components/InputField';
 import DocumentImageScanner from '../../components/DocumentImageScanner';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import { Colors, Fonts } from '../../../common/constants/constants';
@@ -228,7 +227,7 @@ const DriverProofDoc = () => {
         disabled={uploading.aadhar}
         disabledMessage={t('document_upload_in_progress', { defaultValue: 'Uploading document. Please wait…' })}
       />
-      {aadhaarScanMessage ? <Text style={styles.helperText}>{aadhaarScanMessage}</Text> : null}
+      {/* {aadhaarScanMessage ? <Text style={styles.helperText}>{aadhaarScanMessage}</Text> : null}
       <InputField
         style={styles.textField}
         label={t('aadhaar_number', { defaultValue: 'Aadhaar Number' })}
@@ -244,7 +243,7 @@ const DriverProofDoc = () => {
         }}
         isRequired
         editable={false}
-      />
+      /> */}
       <TouchableOpacity
         style={[
           styles.uploadButton,
@@ -303,7 +302,7 @@ const DriverProofDoc = () => {
         disabled={uploading.panCard}
         disabledMessage={t('document_upload_in_progress', { defaultValue: 'Uploading document. Please wait…' })}
       />
-      {panScanMessage ? <Text style={styles.helperText}>{panScanMessage}</Text> : null}
+      {/* {panScanMessage ? <Text style={styles.helperText}>{panScanMessage}</Text> : null}
       <InputField
         style={styles.textField}
         label={t('pan_number', { defaultValue: 'PAN Number' })}
@@ -318,7 +317,7 @@ const DriverProofDoc = () => {
         }}
         isRequired
         editable={false}
-      />
+      /> */}
       <TouchableOpacity
         style={[
           styles.uploadButton,

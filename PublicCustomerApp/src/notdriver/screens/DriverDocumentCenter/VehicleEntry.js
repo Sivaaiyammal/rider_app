@@ -195,8 +195,6 @@ const VehicleEntry = ({ onNext }) => {
     return isValid;
   }, [regNo, selectedType, t, vehicleRcDoc]);
 
-  console.log('VehicleEntry Rendered', vehicleInfo.vehicleRcDoc);
-
   const onNextPress = useCallback(async () => {
     if (!validate()) {
       return;

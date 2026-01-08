@@ -293,6 +293,20 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
       }
     }
 
+    const bankKeywords = ['BANK OF', 'BANK LTD', 'BANK LIMITED', 'BANK'];
+    let detectedBankName = '';
+    for (let i = 0; i < lines.length; i += 1) {
+      const upperLine = lines[i].toUpperCase();
+      const hasKeyword = bankKeywords.some(keyword => upperLine.includes(keyword));
+      if (hasKeyword) {
+        const cleaned = lines[i].replace(/BRANCH.*/i, '').trim();
+        if (cleaned && cleaned.length > 2 && !/ACCOUNT|A\/C|ACC\s*NO/i.test(cleaned.toUpperCase())) {
+          detectedBankName = cleaned;
+          break;
+        }
+      }
+    }
+
     const branchKeywords = ['BRANCH', 'BRANCH NAME'];
     let branchName = '';
     for (let i = 0; i < lines.length; i += 1) {
@@ -305,6 +319,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
         } else if (i + 1 < lines.length) {
           branchName = lines[i + 1].trim();
         }
+        branchName = branchName.replace(/BRANCH/i, '').trim();
         if (branchName) {
           break;
         }
@@ -314,11 +329,20 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
     const ifscMatch = normalized.toUpperCase().match(/([A-Z]{4}0[A-Z0-9]{6})/);
     const ifscCode = ifscMatch ? ifscMatch[1].toUpperCase() : '';
 
+    const upiMatch = normalized.match(/\b[a-zA-Z0-9._-]{2,}@[a-zA-Z]{2,}\b/);
+    const detectedUpi = upiMatch ? upiMatch[0] : '';
+
+    const emailMatch = normalized.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+    const detectedEmail = emailMatch ? emailMatch[0] : '';
+
     return {
       accountNumber: accountNumber || '',
       accountHolderName: accountHolderName || '',
       branchName: branchName || '',
       ifscCode,
+      bankName: detectedBankName || '',
+      upiId: detectedUpi || '',
+      email: detectedEmail || '',
     };
   }, []);
 
@@ -393,6 +417,34 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
         setBankInfo({ branch: branchName });
         setBranchErr('');
         didUpdate = true;
+      }
+
+      if (parsed.bankName) {
+        const detectedName = parsed.bankName.trim();
+        setBankName(detectedName);
+        setBankInfo({ bankName: detectedName });
+        setBankNameErr('');
+        didUpdate = true;
+      }
+
+      if (parsed.upiId) {
+        const detectedUpi = parsed.upiId.trim();
+        if (upiIdPattern.test(detectedUpi)) {
+          setUpiId(detectedUpi);
+          setBankInfo({ UPIID: detectedUpi });
+          setUpiIdErr('');
+          didUpdate = true;
+        }
+      }
+
+      if (parsed.email) {
+        const detectedEmail = parsed.email.trim();
+        if (emailPattern.test(detectedEmail)) {
+          setEmail(detectedEmail);
+          setBankInfo({ email: detectedEmail });
+          setEmailErr('');
+          didUpdate = true;
+        }
       }
 
       setPassbookScanMessage(

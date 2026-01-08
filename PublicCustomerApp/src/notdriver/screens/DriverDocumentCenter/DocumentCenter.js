@@ -34,38 +34,38 @@ const {
     goBack();
   };
 
-  const locationComplete = Boolean(driverInfo?.homeLocation);
-  const driverDetailsComplete = Boolean(
-    driverInfo?.name && driverInfo?.phone && driverInfo?.gender && driverInfo?.licenseNo && driverInfo?.dob && driverInfo?.driverPhoto && driverInfo?.licenseDocument,
-  );
-  const vehicleDetailsComplete = Boolean(vehicleInfo?.regNo && vehicleInfo?.type && vehicleInfo?.vehicleRcDoc);
-  const bankDetailsComplete = Boolean(
-    bankInfo?.accountHolderName && bankInfo?.accountNumber && bankInfo?.ifscCode,
-  );
-  const documentsComplete = useMemo(() => {
-    if (!documents || documents.length === 0) {
-      return false;
-    }
-    return documents
-      .filter(item => item.required)
-      .every(item => item.status === 'uploaded' || item.status === 'verified');
-  }, [documents]);
+//   const locationComplete = Boolean(driverInfo?.homeLocation);
+//   const driverDetailsComplete = Boolean(
+//     driverInfo?.name && driverInfo?.phone && driverInfo?.gender && driverInfo?.licenseNo && driverInfo?.dob && driverInfo?.driverPhoto && driverInfo?.licenseDocument,
+//   );
+//   const vehicleDetailsComplete = Boolean(vehicleInfo?.regNo && vehicleInfo?.type && vehicleInfo?.vehicleRcDoc);
+//   const bankDetailsComplete = Boolean(
+//     bankInfo?.accountHolderName && bankInfo?.accountNumber && bankInfo?.ifscCode,
+//   );
+//   const documentsComplete = useMemo(() => {
+//     if (!documents || documents.length === 0) {
+//       return false;
+//     }
+//     return documents
+//       .filter(item => item.required)
+//       .every(item => item.status === 'uploaded' || item.status === 'verified');
+//   }, [documents]);
 
-  const allStepsComplete = useMemo(
-    () =>
-      locationComplete &&
-      driverDetailsComplete &&
-      vehicleDetailsComplete &&
-      bankDetailsComplete &&
-      documentsComplete,
-    [
-      locationComplete,
-      driverDetailsComplete,
-      vehicleDetailsComplete,
-      bankDetailsComplete,
-      documentsComplete,
-    ],
-  );
+//   const allStepsComplete = useMemo(
+//     () =>
+//       locationComplete &&
+//       driverDetailsComplete &&
+//       vehicleDetailsComplete &&
+//       bankDetailsComplete &&
+//       documentsComplete,
+//     [
+//       locationComplete,
+//       driverDetailsComplete,
+//       vehicleDetailsComplete,
+//       bankDetailsComplete,
+//       documentsComplete,
+//     ],
+//   );
 
     const docCompleted =  locationCompleteStatus &&
   driverDetailsCompleteStatus &&
@@ -73,8 +73,7 @@ const {
   bankDetailsCompleteStatus &&
   documentsCompleteStatus
 
-  const sections = useMemo(
-    () => [
+  const sections = [
       {
         id: 'preferredLocation',
         title: t('preferred_work_location'),
@@ -125,21 +124,7 @@ const {
         screen: 'DriverProofDoc',
         complete: documentsCompleteStatus,
       },
-    ],
-    [
-      t,
-      locationComplete,
-      driverDetailsComplete,
-      vehicleDetailsComplete,
-      bankDetailsComplete,
-      documentsComplete,
-        locationCompleteStatus,
-        driverDetailsCompleteStatus,
-        vehicleDetailsCompleteStatus,
-        bankDetailsCompleteStatus,
-        documentsCompleteStatus
-    ],
-  );
+    ]
 
   const handleSectionPress = screen => {
     if (!screen) {

@@ -7,12 +7,10 @@ import {
   Platform,
 } from 'react-native';
 import React, {useState, useEffect, useCallback} from 'react';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import useUserStore from '../../../common/store/useUserStore';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
 import { Colors, licenseNumberPattern, phoneNumberPattern } from '../../../common/constants/constants';
-import publicrideDriverApi from '../../api/publicrideDriverApi';
 import { showNotification } from '../../../common/components/Alerts/showNotification';
 import locationTask from '../../../common/controllers/GetCurrentLocation';
 import { checkFineLocationPermissions, RequestFineLocationPermission } from '../../../common/controllers/PermissionHandler';
@@ -49,6 +47,8 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
   const [driverLocation, setDriverLocation] = useState(driverInfo.homeLocation);
   const [genderErr, setGenderErr] = useState('');
   const [dobErr, setDobErr] = useState('');
+  const [driverPhotoErr, setDriverPhotoErr] = useState('');
+  const [licenseDocErr, setLicenseDocErr] = useState('');
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [licenseScanMessage, setLicenseScanMessage] = useState('');
   const [driverPhoto, setDriverPhoto] = useState(driverInfo.driverPhoto || null);
@@ -110,6 +110,47 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
     return licenseMatch ? licenseMatch[0] : '';
   }, []);
 
+  const extractDobFromText = useCallback(text => {
+    if (!text) {
+      return '';
+    }
+
+    const normalized = text.replace(/\s+/g, ' ');
+    const dobLabelMatch = normalized.match(/(?:DOB|Date of Birth)[:\-\s]*(\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})/i);
+    let dobCandidate = dobLabelMatch?.[1] || '';
+
+    if (!dobCandidate) {
+      const genericMatch = normalized.match(/\b(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})\b/);
+      if (genericMatch) {
+        dobCandidate = `${genericMatch[1]}-${genericMatch[2]}-${genericMatch[3]}`;
+      }
+    }
+
+    if (!dobCandidate) {
+      return '';
+    }
+
+    const cleaned = dobCandidate.trim().replace(/[.\/]/g, '-');
+    const parts = cleaned.split('-');
+    if (parts.length !== 3) {
+      return '';
+    }
+
+    let [day, month, year] = parts;
+    if (year.length === 2) {
+      year = Number(year) > 30 ? `19${year}` : `20${year}`;
+    }
+
+    const paddedDay = day.padStart(2, '0');
+    const paddedMonth = month.padStart(2, '0');
+
+    if (paddedDay > '31' || paddedMonth > '12' || year.length !== 4) {
+      return '';
+    }
+
+    return `${paddedDay}-${paddedMonth}-${year}`;
+  }, []);
+
   const handleLicenseScanComplete = useCallback(
     result => {
       if (!result) {
@@ -119,30 +160,56 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
 
       if (result.image) {
         setDriverInfo({ licenseDocument: result.image });
+        setLicenseDocErr('');
       }
 
       if (result.text) {
-        const extracted = extractLicenseNumber(result.text);
-        if (extracted) {
-          const normalized = normalizeLicenseNumber(extracted);
+        const autoMessages = [];
+
+        const extractedLicense = extractLicenseNumber(result.text);
+        if (extractedLicense) {
+          const normalized = normalizeLicenseNumber(extractedLicense);
           setLicenseNum(normalized);
           setDriverInfo({ licenseNo: normalized });
-          setLicenseScanMessage(
-            t('license_detected_auto_filled', {
-              defaultValue: 'License number detected and filled.',
+          autoMessages.push(
+            t('license_number_detected', {
+              defaultValue: 'License number detected and filled automatically.',
             }),
           );
+        }
+
+        const detectedDob = extractDobFromText(result.text);
+        if (detectedDob) {
+          setDob(detectedDob);
+          setDriverInfo({ dob: detectedDob });
+          setDobDate(parseDobToDate(detectedDob));
+          setDobErr('');
+          autoMessages.push(
+            t('dob_detected_auto_filled', {
+              defaultValue: 'Date of birth detected and filled automatically.',
+            }),
+          );
+        }
+
+        if (autoMessages.length > 0) {
+          setLicenseScanMessage(autoMessages.join(' '));
         } else {
           setLicenseScanMessage(
-            t('license_not_detected', {
-              defaultValue:
-                "Couldn’t detect license number. You can edit manually.",
+            t('license_details_not_detected', {
+              defaultValue: "Couldn’t detect licence details. Update the fields manually.",
             }),
           );
         }
       }
     },
-    [extractLicenseNumber, normalizeLicenseNumber, setDriverInfo, t],
+    [
+      extractDobFromText,
+      extractLicenseNumber,
+      normalizeLicenseNumber,
+      parseDobToDate,
+      setDriverInfo,
+      t,
+    ],
   );
 
   const validateName = () => {
@@ -180,10 +247,9 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
   }
 
   const validateLicense = () => {
-    if (!licenseNum || licenseNum.length === 0) {
-      setLicenseNumErr('');
-      // setLicenseNumErr(t.please_enter_license_number);
-      return true;
+    if (licenseNum.length === 0) {
+      setLicenseNumErr(t.please_enter_license_number);
+      return false;
     } else if (!licenseNumberPattern.test(licenseNum)) {
       setLicenseNumErr(t('please_enter_a_valid_license_number_tn01_20110012345'));
       return false;
@@ -221,8 +287,19 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
     };
   };
 
-  console.log('DriverEntry Rendered', driverInfo);
-  
+  const hasImageValue = useCallback(image => {
+    if (!image) {
+      return false;
+    }
+    if (typeof image === 'string') {
+      return image.trim().length > 0;
+    }
+    if (typeof image === 'object' && image.uri) {
+      return String(image.uri).trim().length > 0;
+    }
+    return false;
+  }, []);
+
   const onNextPress = async () => {
     const isNameValid = validateName();
     const isPhoneValid = validatePhone();
@@ -231,11 +308,44 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
     const isAlternatePhoneValid = validateAlternatePhone();
     const isDobValid = validateDob();
 
-    if (!(isNameValid && isPhoneValid && isLicenseValid && isGenderValid && isAlternatePhoneValid && isDobValid)) {
-      return;
+    const resolvedDriverPhoto = driverPhoto || driverInfo.driverPhoto || null;
+    const hasDriverPhoto = hasImageValue(resolvedDriverPhoto);
+    const hasLicenseDoc = hasImageValue(driverInfo.licenseDocument);
+
+    if (!hasDriverPhoto) {
+      setDriverPhotoErr(
+        t('please_upload_driver_photo', {
+          defaultValue: 'Upload the driver photo before proceeding.',
+        }),
+      );
+    } else {
+      setDriverPhotoErr('');
     }
 
-    const resolvedDriverPhoto = driverPhoto || driverInfo.driverPhoto || null;
+    if (!hasLicenseDoc) {
+      setLicenseDocErr(
+        t('please_upload_license_document', {
+          defaultValue: 'Upload the driving license before proceeding.',
+        }),
+      );
+    } else {
+      setLicenseDocErr('');
+    }
+
+    if (
+      !(
+        isNameValid &&
+        isPhoneValid &&
+        isLicenseValid &&
+        isGenderValid &&
+        isAlternatePhoneValid &&
+        isDobValid &&
+        hasDriverPhoto &&
+        hasLicenseDoc
+      )
+    ) {
+      return;
+    }
 
     const formData = new FormData();
     formData.append('name', name);
@@ -337,6 +447,18 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
   }, [driverInfo.driverPhoto]);
 
   useEffect(() => {
+    if (hasImageValue(driverPhoto || driverInfo.driverPhoto)) {
+      setDriverPhotoErr('');
+    }
+  }, [driverPhoto, driverInfo.driverPhoto, hasImageValue]);
+
+  useEffect(() => {
+    if (hasImageValue(driverInfo.licenseDocument)) {
+      setLicenseDocErr('');
+    }
+  }, [driverInfo.licenseDocument, hasImageValue]);
+
+  useEffect(() => {
     const input = driverInfo.dob || '';
     const d = parseDobToDate(input);
     const dd = String(d.getDate()).padStart(2, '0');
@@ -366,12 +488,14 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
             if (result?.image) {
               setDriverPhoto(result.image);
               setDriverInfo({ driverPhoto: result.image });
+              setDriverPhotoErr('');
             }
           }}
           onImageSelected={image => {
             if (image) {
               setDriverPhoto(image);
               setDriverInfo({ driverPhoto: image });
+              setDriverPhotoErr('');
             }
           }}
           helperText={t('driver_photo_helper', {
@@ -386,6 +510,11 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
           })}
           containerStyle={{ marginTop: 0 }}
         />
+        {driverPhotoErr ? (
+          <Text style={{ color: Colors.danger_red, fontSize: 12, marginTop: 8 }}>
+            {driverPhotoErr}
+          </Text>
+        ) : null}
       </View>
         <View style={{ marginTop: 16 }}>
         <DocumentImageScanner
@@ -399,6 +528,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
           onImageSelected={image => {
             if (image) {
               setDriverInfo({ licenseDocument: image });
+              setLicenseDocErr('');
             }
           }}
           helperText={t('license_scan_helper', {
@@ -413,6 +543,11 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
           })}
           containerStyle={{ marginTop: 0 }}
         />
+        {licenseDocErr ? (
+          <Text style={{ color: Colors.danger_red, fontSize: 12, marginTop: 8 }}>
+            {licenseDocErr}
+          </Text>
+        ) : null}
         {licenseScanMessage ? (
           <Text style={{ color: Colors.cool_grey, fontSize: 12, marginTop: 8 }}>
             {licenseScanMessage}
