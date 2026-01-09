@@ -1,5 +1,6 @@
-import React, {useMemo} from 'react';
+import React, {useState} from 'react';
 import {
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,67 +12,28 @@ import {useTranslation} from 'react-i18next';
 
 import {useStackScreenStore} from '../../../common/store/useStackScreenStore';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
-import UseBackButton from '../../../common/hooks/UseBackButton';
 import {Colors, Fonts} from '../../../common/constants/constants';
 
 const DocumentCenter = () => {
   const {t} = useTranslation();
-  const {goBack, setStackScreen} = useStackScreenStore();
+  const {setStackScreen} = useStackScreenStore();
   const driverInfo = usePublicDriverStore(state => state.driverInfo);
-  const vehicleInfo = usePublicDriverStore(state => state.vehicleInfo);
-  const bankInfo = usePublicDriverStore(state => state.bankInfo);
-  const documents = usePublicDriverStore(state => state.documents);
+  const [showBankOptions, setShowBankOptions] = useState(false);
 
-const {
-  locationCompleteStatus,
-  driverDetailsCompleteStatus,
-  vehicleDetailsCompleteStatus,
-  bankDetailsCompleteStatus,
-  documentsCompleteStatus,
-} = usePublicDriverStore();
+  const {
+    locationCompleteStatus,
+    driverDetailsCompleteStatus,
+    vehicleDetailsCompleteStatus,
+    bankDetailsCompleteStatus,
+    documentsCompleteStatus,
+  } = usePublicDriverStore();
 
-  const onBackPress = () => {
-    goBack();
-  };
-
-//   const locationComplete = Boolean(driverInfo?.homeLocation);
-//   const driverDetailsComplete = Boolean(
-//     driverInfo?.name && driverInfo?.phone && driverInfo?.gender && driverInfo?.licenseNo && driverInfo?.dob && driverInfo?.driverPhoto && driverInfo?.licenseDocument,
-//   );
-//   const vehicleDetailsComplete = Boolean(vehicleInfo?.regNo && vehicleInfo?.type && vehicleInfo?.vehicleRcDoc);
-//   const bankDetailsComplete = Boolean(
-//     bankInfo?.accountHolderName && bankInfo?.accountNumber && bankInfo?.ifscCode,
-//   );
-//   const documentsComplete = useMemo(() => {
-//     if (!documents || documents.length === 0) {
-//       return false;
-//     }
-//     return documents
-//       .filter(item => item.required)
-//       .every(item => item.status === 'uploaded' || item.status === 'verified');
-//   }, [documents]);
-
-//   const allStepsComplete = useMemo(
-//     () =>
-//       locationComplete &&
-//       driverDetailsComplete &&
-//       vehicleDetailsComplete &&
-//       bankDetailsComplete &&
-//       documentsComplete,
-//     [
-//       locationComplete,
-//       driverDetailsComplete,
-//       vehicleDetailsComplete,
-//       bankDetailsComplete,
-//       documentsComplete,
-//     ],
-//   );
-
-    const docCompleted =  locationCompleteStatus &&
-  driverDetailsCompleteStatus &&
-  vehicleDetailsCompleteStatus &&
-  bankDetailsCompleteStatus &&
-  documentsCompleteStatus
+  const docCompleted =
+    locationCompleteStatus &&
+    driverDetailsCompleteStatus &&
+    vehicleDetailsCompleteStatus &&
+    bankDetailsCompleteStatus &&
+    documentsCompleteStatus;
 
   const sections = [
       {
@@ -124,13 +86,25 @@ const {
         screen: 'DriverProofDoc',
         complete: documentsCompleteStatus,
       },
-    ]
+    ];
 
-  const handleSectionPress = screen => {
+  const handleSectionPress = section => {
+    if (section.id === 'bankDetails') {
+      setShowBankOptions(true);
+      return;
+    }
+    if (!section.screen) {
+      return;
+    }
+    setStackScreen(section.screen);
+  };
+
+  const handleBankSelection = screen => {
+    setShowBankOptions(false);
     if (!screen) {
       return;
     }
-    setStackScreen(screen);
+    setTimeout(() => setStackScreen(screen), 200);
   };
 
   const renderStatus = complete => (
@@ -160,18 +134,10 @@ const {
        </TouchableOpacity>
       </View>
       
-      {/* <UseBackButton onBackPress={onBackPress} /> */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
-        {/* {allStepsComplete ? (
-          <View style={styles.approvalBanner}>
-            <MaterialIcons name="hourglass-top" size={20} color={Colors.periwinkle} />
-            <Text style={styles.approvalBannerText}>
-              {t('waiting_for_approval', {defaultValue: 'Waiting for approval'})}
-            </Text>
-          </View>
-        ) : null} */}
+
         <Text style={styles.subtitle}>
           {t('document_center_subtitle')}
         </Text>
@@ -181,7 +147,7 @@ const {
               key={section.id}
               activeOpacity={0.8}
               style={styles.sectionCard}
-              onPress={() => handleSectionPress(section.screen)}>
+              onPress={() => handleSectionPress(section)}>
               <View style={styles.iconWrapper}>
                 <MaterialIcons name={section.icon} size={24} color={Colors.white} />
               </View>
@@ -201,6 +167,50 @@ const {
           ))}
         </View>
       </ScrollView>
+      <Modal
+        transparent
+        visible={showBankOptions}
+        animationType="fade"
+        onRequestClose={() => setShowBankOptions(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>
+              {t('document_center_bank_modal_title', {
+                defaultValue: 'Verify payouts with',
+              })}
+            </Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              activeOpacity={0.8}
+              onPress={() => handleBankSelection('UPIVerification')}>
+              <Text style={styles.modalButtonText}>
+                {t('document_center_select_upi', {
+                  defaultValue: 'Verify UPI ID',
+                })}
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.orText}>--- OR ---</Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              activeOpacity={0.8}
+              onPress={() => handleBankSelection('DriverBankDetails')}>
+              <Text style={styles.modalButtonText}>
+                {t('document_center_select_bank', {
+                  defaultValue: 'Verify Bank Account',
+                })}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.modalCancelButton}
+              activeOpacity={0.8}
+              onPress={() => setShowBankOptions(false)}>
+              <Text style={styles.modalCancelText}>
+                {t('cancel', {defaultValue: 'Cancel'})}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
       <View style={styles.footer}>
         <TouchableOpacity
           style={[styles.doneButton, !docCompleted && styles.doneButtonDisabled]}
@@ -348,5 +358,52 @@ const styles = StyleSheet.create({
     justifyContent:'space-between',
     alignItems:'center',
     marginTop:16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContainer: {
+    width: '100%',
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  modalTitle: {
+    fontFamily: Fonts.semi_bold,
+    fontSize: 18,
+    color: Colors.black,
+    textAlign: 'center',
+  },
+  modalButton: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: Colors.periwinkle,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    fontFamily: Fonts.medium,
+    fontSize: 16,
+    color: Colors.white,
+  },
+  modalCancelButton: {
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontFamily: Fonts.medium,
+    fontSize: 15,
+    color: Colors.warm_grey,
+  },
+  orText:{
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: Colors.dark_grey,
+    textAlign:'center',
   }
 });

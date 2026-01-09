@@ -14,6 +14,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 10,
+    paddingRight:10
+    // paddingHorizontal:10
     // marginVertical: 10,
   },
   input: {
@@ -25,7 +27,7 @@ const styles = StyleSheet.create({
     height: 50,
   },
   labelContainer: {
-    marginBottom: 5,
+    // marginBottom: 5,
     paddingLeft: 4,
   },
   label: {
@@ -74,7 +76,7 @@ const InputField = ({
             {label}{isRequired ? ' *' : ''}
           </Text>
         </View>
-      ) : null}
+      ) : <></>}
       <View style={[styles.inputContainer, { borderColor, backgroundColor: bgColor }, style]}>
         <TextInput
           ref={inputRef}

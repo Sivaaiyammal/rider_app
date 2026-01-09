@@ -77,18 +77,23 @@ import GlobalContext from '../../context/GlobalContext';
 import DriverEntry from './DriverDocumentCenter/DriverEntry';
 import VehicleEntry from './DriverDocumentCenter/VehicleEntry';
 import BankDetails from './DriverDocumentCenter/BankDetails';
+import UPIVerification from './DriverDocumentCenter/UPIVerification';
 import DriverProofDoc from './DriverDocumentCenter/DriverProofDoc';
 import LanguageSelectionScreen from './LanguageSelectionScreen';
 
 const checkDriverDetails = (response) => {
+     console.log('hari-->>vehicleInfo-->>', response)
+
   if (!response?.driver) return false;
-  const requiredKeys = ['name', 'phone', 'gender', 'location', 'dob', 'licenseNo'];
-  const vehicleInfo = response.driver?.ownVehicleInfo;
+  const requiredKeys = ['name', 'phone', 'gender', 'location', 'dob'];
+  const isParivahanFailed = response.driver?.ownVehicleInfo?.isParivahanFailed === true;
+  const infoKeys = ['type', 'regNo'];
+  const documentKeys = isParivahanFailed ? ['vehicleRcDoc', 'insurance', 'permitDoc'] : ['vehicleRcDoc'];
+  const vehicleInfo = response.driver?.ownVehicleInfo || {};
   const document = response.driver?.documents;
-  const bankDetails = response?.driver?.bankDetails;
-  // const vehicleDocuments = response.driver?.ownVehicleInfo?.documents;
-  // const requiredDocuments = ['passbookImage','aadhar','panCard' ,'drivingLicense'];
-  // const requiredVehicleDocuments = ['vehicleRcDoc'];
+  const bankDetails = response?.driver?.bankDetails?.UPIID;
+
+  const vehicleDocuments = response.driver?.ownVehicleInfo?.documents;
 
   const proofDoc = ['aadhar','panCard']
   const hasProofDocuments = proofDoc.some(doc => document && document[doc]);
@@ -101,8 +106,13 @@ const checkDriverDetails = (response) => {
 
   if (requiredKeys.every(key => key in response.driver)) {
     setDriverDetailsCompleteStatus(true)
-  }
-  if (vehicleInfo) {
+  } 
+  
+  const hasVehicleInfo = infoKeys.every(key => vehicleInfo && vehicleInfo[key])
+  const hasVehicleDocuments = documentKeys.every(key => vehicleDocuments && vehicleDocuments[key])
+
+  console.log('hari-->>hasVehicleInfo-->>', hasVehicleInfo, hasVehicleDocuments)
+  if (hasVehicleInfo && hasVehicleDocuments) {
     setVehicleDetailsCompleteStatus(true)
   }
   if (bankDetails) {
@@ -113,7 +123,8 @@ const checkDriverDetails = (response) => {
   }
   return (
     requiredKeys.every(key => key in response.driver) && 
-    vehicleInfo && 
+    hasVehicleInfo &&
+    hasVehicleDocuments &&
     bankDetails &&
     hasProofDocuments
   );
@@ -121,13 +132,13 @@ const checkDriverDetails = (response) => {
 
 const PublicRidesDriverHomeScreen = () => {
   const {setDriverInfo, 
-    setVehicleInfo, storeDocuments, documents, 
+    setVehicleInfo, storeDocuments,
     setBankInfo, setVendorId, setDriverRole, 
     setDriverDue, setDriverEarnings, 
     setDriverTotalTrips, setIsBlocked,
     setIsApproved, setUnBlockRequestSent, 
     setdriverDueDate,setDriverRatings, 
-    setRazorpayLinkedAccountDetails,setMinDueAmount, setDueDuration} = usePublicDriverStore();
+    setRazorpayLinkedAccountDetails,setMinDueAmount, setDueDuration, setIsParivahanFailed} = usePublicDriverStore();
   const { stackScreen, setStackScreen } = useStackScreenStore();
   const {setTimeoutSeconds, setLoading: setTripAcceptLoading} = useTripAcceptStore();
   const {setDriverStatus, setUpComingTrips} = useDriverStatusStore();
@@ -169,7 +180,13 @@ const PublicRidesDriverHomeScreen = () => {
      }
      const vehicleInfo = response.driver?.ownVehicleInfo;
      vehicleInfo.vehicleRcDoc = vehicleInfo.documents.vehicleRcDoc|| null;
-      setVehicleInfo(vehicleInfo);
+     vehicleInfo.insurance = vehicleInfo.documents.insurance|| null;
+     vehicleInfo.permitDoc = vehicleInfo.documents.permitDoc|| null;
+     const parivahan_status = vehicleInfo?.isParivahanFailed;
+     setVehicleInfo(vehicleInfo);
+      if (parivahan_status) {
+        setIsParivahanFailed(true)
+      }
   }
   const storeDocumentsInfo = (response) => {
     const documents = response.driver?.documents;
@@ -623,6 +640,8 @@ const PublicRidesDriverHomeScreen = () => {
               return <VehicleEntry />;        
       case 'DriverBankDetails':
               return <BankDetails />; 
+            case 'UPIVerification':
+              return <UPIVerification />;
       case 'DriverProofDoc':
               return <DriverProofDoc/>;  
       default:
