@@ -687,7 +687,7 @@ const Home = () => {
       console.log("nextState",nextState)
       if (nextState === 'active') {
         const currentScreen = getCurrentScreenName();
-        if(tripId && (currentScreen === 'RideStatus' || currentScreen === 'Home' || currentScreen === 'PaymentScreen')){
+        if (currentScreen === 'RideStatus' || currentScreen === 'Home' || currentScreen === 'PaymentScreen'){
         await checkOnGoingRideAndLog(true);
         }
         console.log("navigate to permission if needed")

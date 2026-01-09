@@ -91,7 +91,7 @@ const RideStatus = () => {
     
         } else {
           console.log('tripStatus',tripStatus)
-          await DataStore.clearData(PREF.CURRENT_TRIP)
+          // await DataStore.clearData(PREF.CURRENT_TRIP)
           resetCurrentRideInfo();
           goBack();
         } 
@@ -111,7 +111,7 @@ const RideStatus = () => {
   const handleCancel = async (reason) => {
     setCancelLoading(true);
     if(tripStatus === TripStatus.PENDING){
-      await DataStore.clearData(PREF.CURRENT_TRIP)
+      //  await DataStore.clearData(PREF.CURRENT_TRIP)
       incrementCancelledTrips()
       stopMatching(tripId,userId)
       resetCurrentRideInfo();
