@@ -241,9 +241,9 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
   }
 
   const validateLicense = () => {
-    if (licenseNum.length === 0) {
-      setLicenseNumErr(t('please_enter_license_number'));
-      return false;
+    if (!alternatePhone || licenseNum.length === 0) {
+      setLicenseNumErr('');
+      return true;
     } else if (!licenseNumberPattern.test(licenseNum)) {
       setLicenseNumErr(t('please_enter_a_valid_license_number_tn01_20110012345'));
       return false;
@@ -510,7 +510,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
           </Text>
         ) : null}
       </View>
-        <View style={{ marginTop: 16 }}>
+        <View style={{ marginVertical: 16 }}>
         <DocumentImageScanner
           documentLabel={t('driving_license', {
             defaultValue: 'Driving License',
@@ -606,24 +606,6 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
         isRequired={true}
         editable={ false}
       />
-      <InputField
-        style={driverDetailStyles.textField}
-        value={licenseNum}
-        label={t('license_number')}
-        errorText={licenseNumErr}
-        autoCapitalize='characters' 
-        onChangeText={text => {
-          const formatted = (text || '').toUpperCase();
-          setLicenseNum(formatted);
-          setDriverInfo({ licenseNo: formatted });
-          if (licenseNumErr && formatted.length > 0) setLicenseNumErr('');
-          if (licenseScanMessage) setLicenseScanMessage('');
-        }}
-        icon={<License />}
-        isRequired={true}
-        editable={isEdit ? false : true}
-        noSpaces={true}
-        />
       </View>
 
          <TouchableOpacity
@@ -664,6 +646,25 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
           // On iOS keep it visible until user navigates; optional Done/Cancel could be added if needed
         />
       )}
+
+            <InputField
+        style={driverDetailStyles.textField}
+        value={licenseNum}
+        label={t('license_number')}
+        errorText={licenseNumErr}
+        autoCapitalize='characters' 
+        onChangeText={text => {
+          const formatted = (text || '').toUpperCase();
+          setLicenseNum(formatted);
+          setDriverInfo({ licenseNo: formatted });
+          if (licenseNumErr && formatted.length > 0) setLicenseNumErr('');
+          if (licenseScanMessage) setLicenseScanMessage('');
+        }}
+        icon={<License />}
+        isRequired={false}
+        editable={isEdit ? false : true}
+        noSpaces={true}
+        />
 
          <InputField
         style={driverDetailStyles.textField}

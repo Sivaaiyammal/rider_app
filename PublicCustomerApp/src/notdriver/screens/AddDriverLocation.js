@@ -20,7 +20,6 @@ import { Colors, Fonts } from '../../common/constants/constants';
 import { RouteScreenStyles } from '../styles/RouteScreenStyles';
 import TrackingMapIcons from '../../common/components/Alerts/TrackingMapIcons';
 import useLocationStore from '../../common/store/useLocationStore';
-import SearchAPI from '../../common/map/Search';
 import { clearAllStateVectors, clearSingleStateVector, performSearch } from '../../common/map/NESearch';
 import { height, width } from '../../common/utils/scalingutils';
 import NavBar from '../../common/components/NavBar';
@@ -34,6 +33,7 @@ import { checkFineLocationPermissions, RequestFineLocationPermission } from '../
 import { showNotification } from '../../common/components/Alerts/showNotification';
 import { useTranslation } from 'react-i18next';
 import useUserStore from '../../common/store/useUserStore';
+import SearchAPI from '../../notCustomer/controllers/NEMap/Search';
 
 const CACHE_EXPIRY = 5 * 60 * 1000;
 const searchCache = new Map();
@@ -63,6 +63,8 @@ const AddDriverLocation = ({isPassanger, updatePassangerLocation, isGeofenceSear
 
   const {setLocationCompleteStatus} = usePublicDriverStore();
 
+  const searchRef = useRef(new SearchAPI());
+
     // Region configuration
     const REGIONS = useMemo(() => [
       { id: 1, name: 'India', value: 'india' },
@@ -74,35 +76,37 @@ const AddDriverLocation = ({isPassanger, updatePassangerLocation, isGeofenceSear
   const searchInputRef = useRef(null);
   const abortControllerRef = useRef(null);
 
-  const fetchAddressName = async (lat, lng) => {
-    const coordinates = [lat, lng];
-    try {
-      const search = new SearchAPI();
-      const response = await search.reverseGeocodeV2(coordinates);
-      if (response) {
-        return (
-          response?.properties?.street ||
-          response?.properties?.name ||
-          'Unnamed Location'
-        );
-      }
-    } catch (e) {
-      console.error('Failed to fetch address', e);
-      return '';
-    }
-  };
+  // const fetchAddressName = async (lat, lng) => {
+  //   const coordinates = [lat, lng];
+  //   try {
+  //     const search = new SearchAPI();
+  //     const response = await search.reverseGeocodeV2(coordinates);
+  //     if (response) {
+  //       return (
+  //         response?.properties?.street ||
+  //         response?.properties?.name ||
+  //         'Unnamed Location'
+  //       );
+  //     }
+  //   } catch (e) {
+  //     console.error('Failed to fetch address', e);
+  //     return '';
+  //   }
+  // };
 
   const updateUserLocation = async (coordinates, fromSearch=false) => {
     setIsLoading(true);
     const {latitude, longitude} = coordinates;
     if (!fromSearch) {
-      const address = await fetchAddressName(latitude, longitude);
-      setAddressName(address);
-      setSelectedAddress({
-        lat:latitude,
-        lng:longitude,
-        address: address
-      })
+      // const address = await fetchAddressName(latitude, longitude);
+      const response = await searchRef.current.reverseGeocode(longitude, latitude); 
+      console.log("response",JSON.stringify(response));
+      // setAddressName(address);
+      // setSelectedAddress({
+      //   lat:latitude,
+      //   lng:longitude,
+      //   address: address
+      // })
     }
     setUserLocation([latitude, longitude]);
     const userMarker = new Marker(

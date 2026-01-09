@@ -32,6 +32,9 @@ const usePublicDriverStore = create((set, get) => ({
     type: '',
     regNo: '',
     vehicleRcDoc: null,
+    insuranceDoc: null,
+    permitNumber: '',
+    permitDoc: null,
   },
   
   bankInfo: {
@@ -113,7 +116,7 @@ const usePublicDriverStore = create((set, get) => ({
       return 1;
     }
 
-    const requiredVehicleFields = ['type', 'regNo'];
+    const requiredVehicleFields = ['type', 'regNo', 'permitNumber', 'insuranceDoc'];
     const isVehicleInfoComplete = requiredVehicleFields.every(field => {
       const value = vehicleInfo[field];
       return value !== null && value !== undefined && value !== '';
@@ -280,6 +283,9 @@ const usePublicDriverStore = create((set, get) => ({
   documentsCompleteStatus: null,
   setDocumentsCompleteStatus: (status) => set({ documentsCompleteStatus: status}),
 
+  isParivahanFailed: false,
+  setIsParivahanFailed: (status) => set({ isParivahanFailed: status}),
+
   // Reset all state to initial values
   resetPublicDriverState: () => {
     set({
@@ -308,6 +314,9 @@ const usePublicDriverStore = create((set, get) => ({
         type: null,
         regNo: null,
         vehicleRcDoc: null,
+        insurance: null,
+        permitNumber: null,
+        permitDoc: null,
       },
       bankInfo: {
         accountHolderName: null,

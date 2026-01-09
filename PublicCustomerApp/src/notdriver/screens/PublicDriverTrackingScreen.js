@@ -182,11 +182,12 @@ const PublicDriverTrackingScreen = () => {
     if (!newStopData) {
       return;
     }
+
     // Defer navigation so we don't mutate navigation state while React renders
     const timer = setTimeout(() => {
       setStackScreen('StopChangeRequest');
-      setNewStopData(null);
-    }, 0);
+      // setNewStopData(null);
+    }, 100);
     return () => clearTimeout(timer);
   }, [newStopData, setStackScreen, setNewStopData]);
 

@@ -15,7 +15,6 @@ import InputField from '../../../common/components/InputField';
 import DocumentImageScanner from '../../components/DocumentImageScanner';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import useUserStore from '../../../common/store/useUserStore';
-import publicrideDriverApi from '../../api/publicrideDriverApi';
 import { showNotification } from '../../../common/components/Alerts/showNotification';
 import APIRequest from '../../../common/controllers/APIRequest';
 import { Colors, Fonts, vehicleNumberPattern } from '../../../common/constants/constants';
@@ -38,6 +37,12 @@ const VehicleEntry = ({ onNext }) => {
   const [vehicleRcDoc, setVehicleRcDoc] = useState(vehicleInfo.vehicleRcDoc || null);
   const [vehicleRcError, setVehicleRcError] = useState('');
   const [vehicleRcScanMessage, setVehicleRcScanMessage] = useState('');
+
+  const [insuranceDoc, setInsuranceDoc] = useState(vehicleInfo.insuranceDoc || null);
+  const [insuranceDocError, setInsuranceDocError] = useState('');
+
+  const [permitNumber, setPermitNumber] = useState(vehicleInfo.permitNumber || '');
+  const [permitNumberError, setPermitNumberError] = useState('');
 
   const {goBack} = useStackScreenStore();
 
@@ -176,6 +181,13 @@ const VehicleEntry = ({ onNext }) => {
       setVehicleRcError('');
     }
 
+    if (!insuranceDoc) {
+      setInsuranceDocError(t('please_upload_insurance_document', { defaultValue: 'Upload the insurance document.' }));
+      isValid = false;
+    } else {
+      setInsuranceDocError('');
+    }
+
     if (!regNo) {
       setRegNoError(t('please_enter_registration_number', { defaultValue: 'Enter registration number.' }));
       isValid = false;
@@ -190,13 +202,22 @@ const VehicleEntry = ({ onNext }) => {
       setRegNoError('');
     }
 
+    if (!permitNumber?.trim()) {
+      setPermitNumberError(t('please_enter_permit_number', { defaultValue: 'Enter the permit number.' }));
+      isValid = false;
+    } else {
+      setPermitNumberError('');
+    }
+
     return isValid;
-  }, [regNo, selectedType, t, vehicleRcDoc]);
+  }, [insuranceDoc, permitNumber, regNo, selectedType, t, vehicleRcDoc]);
 
   const onNextPress = useCallback(async () => {
     if (!validate()) {
       return;
     }
+
+    setVehicleInfo({ permitNumber: permitNumber.trim() });
     
     // Find models for the selected brand based on vehicle type
     let brandData = null;
@@ -234,7 +255,7 @@ const VehicleEntry = ({ onNext }) => {
     
     setModelSearchQuery('');
     setModelPickerVisible(true);
-  }, [selected, vehicleBrand, t]);
+  }, [permitNumber, selected, setVehicleInfo, t, vehicleBrand]);
   
   const selectedVehicle = useCallback((item) => {
     if(item.includes('ELECTRIC')){
@@ -445,6 +466,28 @@ const VehicleEntry = ({ onNext }) => {
         </View>
 
         <View style={styles.section}>
+          <DocumentImageScanner
+            documentLabel={t('vehicle_insurance_document', { defaultValue: 'Insurance Document' })}
+            browseLabel={t('browse', { defaultValue: 'Browse' })}
+            cameraLabel={t('camera', { defaultValue: 'Camera' })}
+            onImageSelected={image => {
+              if (image) {
+                setInsuranceDoc(image);
+                setVehicleInfo({ insuranceDoc: image });
+                setInsuranceDocError('');
+              }
+            }}
+            initialImage={insuranceDoc || vehicleInfo?.insuranceDoc || null}
+            helperText={t('insurance_scan_helper', {
+              defaultValue: 'Upload your active insurance proof to stay compliant.',
+            })}
+            scannerTitle={t('upload_vehicle_insurance', { defaultValue: 'Upload or capture insurance document' })}
+            containerStyle={styles.rcScannerContainer}
+          />
+          {insuranceDocError ? <Text style={styles.errorText}>{insuranceDocError}</Text> : null}
+        </View>
+
+        <View style={styles.section}>
           <InputField
             label={t('vehicle_registration_number', { defaultValue: 'Vehicle Registration Number' })}
             value={regNo}
@@ -455,6 +498,21 @@ const VehicleEntry = ({ onNext }) => {
               setVehicleInfo({ regNo: text });
               setRegNoError('');
               setVehicleRcScanMessage('');
+            }}
+            isRequired
+          />
+        </View>
+
+        <View style={styles.section}>
+          <InputField
+            label={t('vehicle_permit_number', { defaultValue: 'Permit Number' })}
+            value={permitNumber}
+            errorText={permitNumberError}
+            autoCapitalize="characters"
+            onChangeText={text => {
+              setPermitNumber(text);
+              setVehicleInfo({ permitNumber: text });
+              setPermitNumberError('');
             }}
             isRequired
           />

@@ -1,8 +1,6 @@
 import {StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, ScrollView, Platform} from 'react-native';
 import React, {useState, useCallback} from 'react';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import { Colors, emailPattern, Fonts, upiIdPattern } from '../../../common/constants/constants';
-import useTripsStore from '../../store/useTripsStore';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import useUserStore from '../../../common/store/useUserStore';
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
@@ -96,7 +94,6 @@ const styles = StyleSheet.create({
 
 const BankDetails = ({onNext, isView, isEdit = false}) => {
   const {t} = useTranslation()
-  const {driverConfig} = useTripsStore();
   const {setBankInfo, bankInfo} = usePublicDriverStore();
   const {userInfo} = useUserStore();
   const {setStackScreen} = useStackScreenStore();

@@ -89,7 +89,6 @@ const DocumentImageScanner = ({
         raw: recognition.raw,
       });
     } catch (error) {
-      console.warn('DocumentImageScanner scan failed', error);
       setErrorMessage('Unable to read the image. Try again with a clearer photo.');
       setScanResult(null);
     } finally {
@@ -384,8 +383,8 @@ const styles = StyleSheet.create({
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginHorizontal: -8,
-    marginTop: 4,
+    // marginHorizontal: -8,
+    marginTop: 10,
   },
   actionButton: {
     flex: 1,
@@ -407,6 +406,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 14,
     color: Colors.black,
+    marginLeft:8
   },
   disabledActionButton: {
     opacity: 0.6,
