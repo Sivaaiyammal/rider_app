@@ -8,15 +8,18 @@ import CameraIcon from '../../common/assets/icons/CameraIcon.svg';
 import GalleryIcon from '../../common/assets/icons/Gallery.svg';
 import { getPresignedImageUrl } from '../../common/utils/getPresignedImageUrl';
 import useUserStore from '../../common/store/useUserStore';
+import APIRequest from '../../common/controllers/APIRequest';
 
 const pickerOptions = {
   mediaType: 'photo',
   presentationStyle: 'fullScreen',
-  includeBase64: false,
+  includeBase64: true,
   maxWidth: 1280,
   maxHeight: 1280,
   quality: 0.8,
 };
+
+const DEFAULT_PRE_SCAN_ENDPOINT = '/publicrides/driver/scanDoc';
 
 const DocumentImageScanner = ({
   onScanComplete,
@@ -32,6 +35,8 @@ const DocumentImageScanner = ({
   documentType = null,
   documentLabel = null,
   initialImage = null, // can be string URL or { uri, ... }
+  preScanEndpoint = DEFAULT_PRE_SCAN_ENDPOINT,
+  preScanMethod = 'POST',
 }) => {
   const [isBusy, setBusy] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -42,6 +47,7 @@ const DocumentImageScanner = ({
   const [presignedUrl, setPresignedUrl] = useState(null);
 
   const {userInfo} = useUserStore();
+  const authToken = userInfo?.token;
 
   const buildAssetPayload = useCallback(asset => ({
     uri: asset.uri,
@@ -72,7 +78,7 @@ const DocumentImageScanner = ({
     };
   }, []);
 
-  const handleScan = useCallback(async asset => {
+  const processAsset = useCallback(async asset => {
     setBusy(true);
     setErrorMessage(null);
 
@@ -81,12 +87,120 @@ const DocumentImageScanner = ({
       setSelectedImage(payload);
       onImageSelected?.(payload);
 
+      const detectScanLimitReached = candidate => {
+        if (!candidate) {
+          return false;
+        }
+
+        const status =
+          candidate?.status ??
+          candidate?.code ??
+          candidate?.httpStatus ??
+          candidate?.response?.status ??
+          candidate?.data?.status ??
+          candidate?.response?.data?.status ??
+          null;
+
+        const messageCandidates = [
+          candidate?.message,
+          candidate?.error,
+          candidate?.errorMessage,
+          candidate?.response?.data?.message,
+          candidate?.response?.data?.error,
+          candidate?.data?.message,
+          candidate?.data?.error,
+        ];
+
+        const normalizedMessage = messageCandidates
+          .map(entry => (typeof entry === 'string' ? entry.trim().toLowerCase() : ''))
+          .find(Boolean);
+
+        const normalizedToken = normalizedMessage ? normalizedMessage.replace(/\s+/g, '_') : '';
+
+        return status === 429 || normalizedMessage === 'max_scan_reached' || normalizedToken === 'max_scan_reached';
+      };
+
+      let preScanResponse = null;
+      let scanLimitReached = false;
+
+      if (preScanEndpoint) {
+        const base64Image = asset.base64;
+        if (base64Image) {
+          try {
+            const resolvedDocType = documentType
+              ? `${documentType}`.trim() || 'UNKNOWN'
+              : `${documentLabel || 'UNKNOWN'}`.trim().replace(/\s+/g, '_').toUpperCase() || 'UNKNOWN';
+            const serverResponse =
+              typeof preScanEndpoint === 'function'
+                ? await preScanEndpoint({
+                    docType: resolvedDocType,
+                    image: base64Image,
+                    asset,
+                    payload,
+                  })
+                : await new APIRequest().request(
+                    preScanEndpoint,
+                    preScanMethod,
+                    {
+                      docType: resolvedDocType,
+                      documentType: resolvedDocType,
+                      image: base64Image,
+                    },
+                    authToken,
+                  );
+
+            preScanResponse = serverResponse;
+            scanLimitReached = detectScanLimitReached(serverResponse);
+
+            if (serverResponse?.success && !scanLimitReached) {
+              const extractedText =
+                serverResponse?.data?.text ??
+                serverResponse?.data?.extractedText ??
+                serverResponse?.data?.recognizedText ??
+                '';
+
+              const remoteResult = {
+                text: extractedText,
+                raw: serverResponse,
+              };
+
+              setScanResult(remoteResult);
+              onScanComplete?.({
+                image: payload,
+                text: remoteResult.text,
+                raw: serverResponse,
+                preScanResponse: serverResponse,
+                scanLimitReached: false,
+              });
+              return;
+            }
+
+            if (scanLimitReached) {
+              console.info('Pre-scan limit reached. Falling back to on-device recognition.');
+            }
+          } catch (error) {
+            preScanResponse = error?.response?.data ?? error?.data ?? null;
+            scanLimitReached = detectScanLimitReached(error) || detectScanLimitReached(preScanResponse);
+
+            if (scanLimitReached) {
+              console.info('Pre-scan limit reached during request. Falling back to on-device recognition.');
+            } else {
+              console.warn('Document pre-scan failed', error);
+            }
+          }
+        } else {
+          console.warn('Pre-scan requested but base64 data is unavailable.');
+        }
+      }
+
       const recognition = await recogniseText(asset.uri);
       setScanResult(recognition);
       onScanComplete?.({
         image: payload,
         text: recognition.text,
         raw: recognition.raw,
+        preScanResponse,
+        scanLimitReached,
       });
     } catch (error) {
       setErrorMessage('Unable to read the image. Try again with a clearer photo.');
@@ -94,7 +208,17 @@ const DocumentImageScanner = ({
     } finally {
       setBusy(false);
     }
-  }, [buildAssetPayload, onImageSelected, onScanComplete, recogniseText]);
+  }, [
+    buildAssetPayload,
+    documentLabel,
+    documentType,
+    onImageSelected,
+    onScanComplete,
+    preScanEndpoint,
+    preScanMethod,
+    recogniseText,
+    authToken,
+  ]);
 
   const runImagePicker = useCallback(async source => {
     if (disabled) {
@@ -104,7 +228,8 @@ const DocumentImageScanner = ({
     setBusy(true);
     setErrorMessage(null);
 
-    const pickAction = source === 'camera' ? launchCamera : launchImageLibrary;
+      const pickAction = source === 'camera' ? launchCamera : launchImageLibrary;
+      const pickerConfig = pickerOptions;
 
     try {
       if (source === 'camera') {
@@ -116,7 +241,7 @@ const DocumentImageScanner = ({
         }
       }
 
-      pickAction(pickerOptions, response => {
+      pickAction(pickerConfig, response => {
         if (response?.didCancel) {
           setBusy(false);
           return;
@@ -136,14 +261,14 @@ const DocumentImageScanner = ({
           return;
         }
 
-        handleScan(asset);
+        processAsset(asset);
       });
     } catch (error) {
       console.warn('Image picker exception', error);
       setErrorMessage('Something went wrong. Try again.');
       setBusy(false);
     }
-  }, [disabled, handleScan]);
+  }, [disabled, preScanEndpoint, processAsset]);
 
   const helper = useMemo(() => helperText?.trim?.(), [helperText]);
   const displayUri = useMemo(() => {
@@ -258,6 +383,12 @@ const DocumentImageScanner = ({
         ) : (
           <Text style={styles.placeholder}>No image selected yet.</Text>
         )}
+        {isBusy ? (
+          <View style={styles.previewOverlay}>
+            <ActivityIndicator size="large" color={Colors.periwinkle} />
+            <Text style={styles.overlayText}>Processing document...</Text>
+          </View>
+        ) : null}
       </View>
 
       {/* {scanResult?.text ? (
@@ -342,11 +473,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+    position: 'relative',
   },
   previewImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+  },
+  previewOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  overlayText: {
+    marginTop: 12,
+    fontFamily: Fonts.regular,
+    fontSize: 12,
+    color: Colors.cool_grey,
+    textAlign: 'center',
   },
   placeholder: {
     fontFamily: Fonts.regular,

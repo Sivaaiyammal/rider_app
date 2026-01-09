@@ -151,6 +151,20 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
     return `${paddedDay}-${paddedMonth}-${year}`;
   }, []);
 
+  const formatIsoDateToDisplay = useCallback((value) => {
+    if (!value) {
+      return '';
+    }
+
+    const isoMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return `${day}-${month}-${year}`;
+    }
+
+    return '';
+  }, []);
+
   const handleLicenseScanComplete = useCallback(
     result => {
       if (!result) {
@@ -163,42 +177,94 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
         setLicenseDocErr('');
       }
 
-      if (result.text) {
-        const autoMessages = [];
+      const serverPayload = result?.preScanResponse ?? result?.raw?.data ?? result?.raw ?? null;
+      const autoMessages = [];
+      let licenseUpdated = false;
+      let dobUpdated = false;
 
+      const pushMessage = message => {
+        if (message && !autoMessages.includes(message)) {
+          autoMessages.push(message);
+        }
+      };
+
+      if (serverPayload) {
+        const parsedValues = serverPayload?.parsed ?? {};
+        const rawFields = serverPayload?.rawFields ?? {};
+
+        const resolvedLicense =
+          parsedValues?.licenseNumber ||
+          rawFields?.DocumentNumber?.valueString ||
+          rawFields?.DocumentNumber?.content ||
+          '';
+        if (resolvedLicense) {
+          const normalized = normalizeLicenseNumber(resolvedLicense);
+          setLicenseNum(normalized);
+          setDriverInfo({ licenseNo: normalized });
+          setLicenseNumErr('');
+          pushMessage(t('license_number_detected'));
+          licenseUpdated = true;
+        }
+
+        const resolvedDob =
+          formatIsoDateToDisplay(parsedValues?.dateOfBirth) ||
+          formatIsoDateToDisplay(rawFields?.DateOfBirth?.valueDate) ||
+          (rawFields?.DateOfBirth?.content ? extractDobFromText(rawFields?.DateOfBirth?.content) : '');
+
+        if (resolvedDob) {
+          setDob(resolvedDob);
+          setDriverInfo({ dob: resolvedDob });
+          setDobDate(parseDobToDate(resolvedDob));
+          setDobErr('');
+          pushMessage(t('dob_detected_auto_filled'));
+          dobUpdated = true;
+        }
+
+        const firstName = parsedValues?.firstName?.trim?.() || '';
+        const lastName = parsedValues?.lastName?.trim?.() || '';
+        const combinedName = [firstName, lastName].filter(Boolean).join(' ');
+        if (combinedName) {
+          setName(combinedName);
+          setDriverInfo({ name: combinedName });
+          setNameErr('');
+          pushMessage(t('name_detected_auto_filled', { defaultValue: 'Name detected and auto-filled.' }));
+        }
+      }
+
+      if (result.text) {
         const extractedLicense = extractLicenseNumber(result.text);
-        if (extractedLicense) {
+        if (extractedLicense && !licenseUpdated) {
           const normalized = normalizeLicenseNumber(extractedLicense);
           setLicenseNum(normalized);
           setDriverInfo({ licenseNo: normalized });
-          autoMessages.push(
-            t('license_number_detected')
-          );
+          setLicenseNumErr('');
+          pushMessage(t('license_number_detected'));
+          licenseUpdated = true;
         }
 
         const detectedDob = extractDobFromText(result.text);
-        if (detectedDob) {
+        if (detectedDob && !dobUpdated) {
           setDob(detectedDob);
           setDriverInfo({ dob: detectedDob });
           setDobDate(parseDobToDate(detectedDob));
           setDobErr('');
-          autoMessages.push(
-            t('dob_detected_auto_filled'),
-          );
+          pushMessage(t('dob_detected_auto_filled'));
+          dobUpdated = true;
         }
+      }
 
-        if (autoMessages.length > 0) {
-          setLicenseScanMessage(autoMessages.join(' '));
-        } else {
-          setLicenseScanMessage(
-            t('license_details_not_detected'),
-          );
-        }
+      if (autoMessages.length > 0) {
+        setLicenseScanMessage(autoMessages.join(' '));
+      } else {
+        setLicenseScanMessage(t('license_details_not_detected'));
       }
     },
     [
+      dob,
       extractDobFromText,
       extractLicenseNumber,
+      formatIsoDateToDisplay,
+      licenseNum,
       normalizeLicenseNumber,
       parseDobToDate,
       setDriverInfo,
@@ -512,6 +578,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
       </View>
         <View style={{ marginVertical: 16 }}>
         <DocumentImageScanner
+          documentType="DRIVING_LICENSE"
           documentLabel={t('driving_license', {
             defaultValue: 'Driving License',
           })}

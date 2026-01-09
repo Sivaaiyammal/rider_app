@@ -526,6 +526,7 @@ const VehicleEntry = ({ onNext }) => {
 
         <View style={styles.section}>
           <DocumentImageScanner
+            documentType="VEHICLE_RC"
             documentLabel={t('vehicle_registration_certificate', { defaultValue: 'Vehicle RC' })}
             browseLabel={t('browse', { defaultValue: 'Browse' })}
             cameraLabel={t('camera', { defaultValue: 'Camera' })}
@@ -554,6 +555,7 @@ const VehicleEntry = ({ onNext }) => {
           <>
             <View style={styles.section}>
               <DocumentImageScanner
+                documentType="VEHICLE_INSURANCE"
                 documentLabel={t('vehicle_insurance_document', { defaultValue: 'Insurance Document' })}
                 browseLabel={t('browse', { defaultValue: 'Browse' })}
                 cameraLabel={t('camera', { defaultValue: 'Camera' })}
@@ -576,6 +578,7 @@ const VehicleEntry = ({ onNext }) => {
 
             <View style={styles.section}>
               <DocumentImageScanner
+                documentType="VEHICLE_PERMIT"
                 documentLabel={t('vehicle_permit_document', { defaultValue: 'Permit Document' })}
                 browseLabel={t('browse', { defaultValue: 'Browse' })}
                 cameraLabel={t('camera', { defaultValue: 'Camera' })}
