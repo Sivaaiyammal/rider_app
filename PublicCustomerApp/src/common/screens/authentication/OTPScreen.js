@@ -103,6 +103,7 @@ const OTPScreen = ({route}) => {
         // showNotification(t('otp_verified'), t('otp_verified_successfully'), 'success');
       } else {
         setOtpError(t('invalid_otp'));
+        console.log('OTP verification failed:', data);
         if(typeof data?.message === 'string'){  
           showNotification(t('failed'), t('invalid_otp'), 'danger');
         }else{
@@ -110,7 +111,7 @@ const OTPScreen = ({route}) => {
         }
       }
     } catch (error) {
-      console.error('Error in handleVerificationSuccess:', error);
+      console.log('Error in handleVerificationSuccess:', error);
       showNotification(t('failed'), t('something_went_wrong'), 'danger');
     }
   };
@@ -144,6 +145,7 @@ const OTPScreen = ({route}) => {
         if(typeof data?.message === 'string'){  
           showNotification(t('failed'), t('invalid_otp'), 'danger');
         }else{
+          console.log('Driver OTP verification failed:', data);
           showNotification(t('failed'), t('something_went_wrong'), 'danger');
         }
       }

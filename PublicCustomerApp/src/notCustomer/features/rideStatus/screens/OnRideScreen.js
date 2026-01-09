@@ -324,11 +324,13 @@ const styles = StyleSheet.create({
     marginRight: 8,
     backgroundColor: '#fff',
     zIndex: 2,
+    elevation: 2,
   },
   driverImg: {
     width: 60,
     height: 60,
     borderRadius: 24,
+    elevation: 2,
   },
   onRideBadge: {
     position: 'absolute',

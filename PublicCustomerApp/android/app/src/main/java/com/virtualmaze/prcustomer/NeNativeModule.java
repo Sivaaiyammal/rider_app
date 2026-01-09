@@ -850,7 +850,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                         markerOptions.title(title).snippet(snippet);
                     }
                     if(doRotation){
-                        markerOptions.rotation(0);
+                        markerOptions.rotation(angle);
                     }
                     if(marker!=null){
                         try {
@@ -1066,7 +1066,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                         markerOptions.title(title).snippet(snippet);
                     }
                     if(doRotation){
-                        markerOptions.rotation(0);
+                        
+                        markerOptions.rotation(angle);
                     }
                     if(marker!=null){
                         try {

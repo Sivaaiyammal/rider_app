@@ -1,142 +1,229 @@
-        import React, { useState,useEffect     } from 'react';
-        import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, ActivityIndicator, Linking, Platform } from 'react-native';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, ActivityIndicator, Linking, Platform } from 'react-native';
 import PropTypes from 'prop-types';
-import { Fonts, colors } from '../../../constants/constants';
-import { getVehicleImage } from '../types/vehicleImd';
-
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-import {useStackScreenStore} from '../../../store/useStackScreenStore';
-import  LocationTypes  from '../../booking/types/LocationTypes.json';
+import { Fonts, colors } from '../../../constants/constants';
+import { getVehicleImage } from '../types/vehicleImd';
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
+import LocationTypes from '../../booking/types/LocationTypes.json';
 import useAssignedDriverInfoStore from '../store/useAssignedDriverInfoStore';
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 import { changeStopLocation } from '../services/StopLocationChangeService';
-import {showNotification} from '../../../components/NotificationManger';
+import { showNotification } from '../../../components/NotificationManger';
 import { useTranslation } from 'react-i18next';
 import useWayPointReorderStore from '../../booking/store/useWayPointReorderStore';
 import TripDetailsModal from '../../../components/TripDetailsModal';
-import { height,utils } from '../../../utils/Utils';
+import { height, utils } from '../../../utils/Utils';
 import useRouteDraw from '../hooks/useRouteDraw';
 import StatusConatainerWrapper from '../component/StatusConatainerWrapper';
 import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 import useUserInfoStore from '../../../../common/store/useUserInfoStore';
-import { makeMaskedCallToDriver } from '../../../API/EndPoints/EndPoints';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { getTotalDistanceAndTime } from '../services/getTotalDistanceandTime';
 
-  const DriverArrivalScreen = ({onCancel,handleOverlay}) => {
-  // Dummy data
-  const {driverName,rating,vehicleNumber,model,brand,color,driverPhoto,phone,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
-  const {stops,otp,duration,totalDistance,vehicleType,estimatedFare,paymentMethod} = useCurrentRideInfoStore();
-  const {goBack,setStackScreen} = useStackScreenStore();
-  
-  const {t} = useTranslation();
-  const {waitingForDriverApproval} = useWayPointReorderStore();
-  // Initialize tracking hook for driver arrival screen with polyline support
-
-  useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"pickup",driverAngle);
-  const {estimatedDuration,SetViewBoundingBox} = useRouteDraw({destinationlat:stops?.length > 0 ? stops[0].location[1] : null,destinationlon:stops?.length > 0 ? stops[0].location[0] : null,driverLat:driverLatitude,driverLon:driverLongitude})  
-  const {userdetails} = useUserInfoStore();
-
-  const [loading,setLoading] = useState(false);
-
-  
-
-  const handlePickLocation = async (item) => {
-      goBack()
-      const formatedAddress=utils.formatAddressName(item)
-      item.address=formatedAddress
-
-      console.log('item',item);
-    
-      const {totalDistance,totalDuration} = await getTotalDistanceAndTime(stops,true);
-
-      console.log('totalDistance,totalDuration',totalDistance,totalDuration);
-    
-
-      try {
-        const res =  await changeStopLocation(item,totalDistance,totalDuration);
-        if (res.success) {
-          // showNotification(t('pickup_location'), t('updated_successfully'), 'success');
-         
-        }
-      } catch (error) {
-        console.log('error',error);
-      }
-    
-    }
-
-  const handleChangeLocation = (item) => {
-    console.log('handleChangeLocation item',item);
-    setStackScreen('PickLocationScreen',{
-      onPickLocationResultCallback:handlePickLocation,
-      locationType:LocationTypes.START_LOCATION,
-      defaultLocation:item,
-      label:t('edit_pickup_location'),
-      isFromRidePointsSelection:false,
-      loading:loading,
-      limitRadius:1
-    })
+const shallowEqual = (a, b) => {
+  if (Object.is(a, b)) {
+    return true;
   }
+  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+    return false;
+  }
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  if (aKeys.length !== bKeys.length) {
+    return false;
+  }
+  for (let index = 0; index < aKeys.length; index += 1) {
+    const key = aKeys[index];
+    if (!Object.prototype.hasOwnProperty.call(b, key) || !Object.is(a[key], b[key])) {
+      return false;
+    }
+  }
+  return true;
+};
 
-  useEffect(() => {
-    setTimeout(() => {
-      SetViewBoundingBox()
-    }, 1000)
-  }, [stops])
+const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
+  const {
+    driverName,
+    rating,
+    vehicleNumber,
+    model,
+    brand,
+    color,
+    driverPhoto,
+    phone,
+  } = useAssignedDriverInfoStore(
+    state => ({
+      driverName: state.driverName,
+      rating: state.rating,
+      vehicleNumber: state.vehicleNumber,
+      model: state.model,
+      brand: state.brand,
+      color: state.color,
+      driverPhoto: state.driverPhoto,
+      phone: state.phone,
+    }),
+    shallowEqual,
+  );
 
-  useEffect(() => {
-    const setinterval = setInterval(() => {
-      SetViewBoundingBox()
-    }, 15000);
-    return () => clearInterval(setinterval);
+  const {
+    stops,
+    otp,
+    duration,
+    totalDistance,
+    vehicleType,
+    estimatedFare,
+    paymentMethod,
+  } = useCurrentRideInfoStore(
+    state => ({
+      stops: state.stops,
+      otp: state.otp,
+      duration: state.duration,
+      totalDistance: state.totalDistance,
+      vehicleType: state.vehicleType,
+      estimatedFare: state.estimatedFare,
+      paymentMethod: state.paymentMethod,
+    }),
+    shallowEqual,
+  );
+
+  const { goBack, setStackScreen } = useStackScreenStore();
+  const { t } = useTranslation();
+  const { waitingForDriverApproval } = useWayPointReorderStore();
+  const { userdetails } = useUserInfoStore();
+
+  const [loading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [isCallingDriver, setIsCallingDriver] = useState(false);
+  const [estimatedDuration, setEstimatedDuration] = useState(null);
+
+  const boundingBoxRef = useRef(null);
+
+  const pickupStop = useMemo(() => (stops && stops.length > 0 ? stops[0] : null), [stops]);
+  const otpDigits = useMemo(() => (otp ? otp.split('') : []), [otp]);
+  const passengerPhone = userdetails?.phone;
+
+  const driverPhotoUri = useMemo(() => {
+    if (driverPhoto && driverPhoto.trim() !== '') {
+      return driverPhoto;
+    }
+    return null;
+  }, [driverPhoto]);
+
+  const durationDisplay = useMemo(() => {
+    if (estimatedDuration === null || estimatedDuration === undefined) {
+      return { label: '--', isSingular: false };
+    }
+    const numericValue = Number(estimatedDuration);
+    if (!Number.isFinite(numericValue)) {
+      return { label: estimatedDuration, isSingular: false };
+    }
+    const rounded = Math.max(0, Math.round(numericValue));
+    return { label: String(rounded), isSingular: rounded === 1 };
+  }, [estimatedDuration]);
+
+  const handleBoundingBoxReady = useCallback(fn => {
+    boundingBoxRef.current = fn;
   }, []);
 
+  const handleEstimatedDurationChange = useCallback(value => {
+    setEstimatedDuration(prev => (Object.is(prev, value) ? prev : value));
+  }, []);
 
+  const handleMapIconPress = useCallback(() => {
+    boundingBoxRef.current?.();
+  }, []);
 
-  
-  /**
-   * Attempts to initiate a phone call to the driver with platform specific behaviour.
-   * - iOS: uses telprompt (fallback to tel) so user gets confirmation sheet.
-   * - Android: uses tel scheme directly.
-   * - Sanitises phone number, strips spaces, brackets, dashes.
-   * - If masked calling feature (API) is desired, keep existing handleCallDriver for backend initiation.
-   */
-  const makeCallIntent = async () => {
-    if (isCallingDriver) return; // prevent spamming
-    const passengerNumber = userdetails?.phone;
-    const driverNumberRaw = phone;
+  useEffect(() => {
+    if (!stops || stops.length === 0) {
+      return undefined;
+    }
+    const timeout = setTimeout(() => {
+      boundingBoxRef.current?.();
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [stops]);
 
-    if (!passengerNumber || !driverNumberRaw) {
-      showNotification(t('error'), t('unable_to_place_call'),'error');
+  useEffect(() => {
+    const interval = setInterval(() => {
+      boundingBoxRef.current?.();
+    }, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handlePickLocation = useCallback(
+    async item => {
+      if (!item) {
+        return;
+      }
+      goBack();
+      const formattedAddress = utils.formatAddressName(item);
+      item.address = formattedAddress;
+
+      const { totalDistance: updatedDistance, totalDuration } = await getTotalDistanceAndTime(stops, true);
+
+      try {
+        const res = await changeStopLocation(item, updatedDistance, totalDuration);
+        if (res.success) {
+          // success toast handled elsewhere; keep silent update
+        }
+      } catch (error) {
+        console.log('error', error);
+      }
+    },
+    [goBack, stops],
+  );
+
+  const handleChangeLocation = useCallback(
+    item => {
+      if (!item) {
+        return;
+      }
+      setStackScreen('PickLocationScreen', {
+        onPickLocationResultCallback: handlePickLocation,
+        locationType: LocationTypes.START_LOCATION,
+        defaultLocation: item,
+        label: t('edit_pickup_location'),
+        isFromRidePointsSelection: false,
+        loading,
+        limitRadius: 1,
+      });
+    },
+    [handlePickLocation, loading, setStackScreen, t],
+  );
+
+  const toggleExpand = useCallback(() => {
+    const action = expanded ? 'close' : 'open';
+    handleOverlay(action);
+    setExpanded(prev => !prev);
+  }, [expanded, handleOverlay]);
+
+  const chevronRotation = expanded ? '90deg' : '0deg';
+
+  const makeCallIntent = useCallback(async () => {
+    if (isCallingDriver) {
+      return;
+    }
+    if (!passengerPhone || !phone) {
+      showNotification(t('error'), t('unable_to_place_call'), 'error');
       return;
     }
 
-    // Basic sanitisation – keep leading + for international format
-    const driverNumber = driverNumberRaw.replace(/[^+\d]/g, '');
-    if (driverNumber.length < 5) { // arbitrary minimal length check
-      showNotification(t('error'), t('invalid_driver_phone_number'),'error');
+    const driverNumber = phone.replace(/[^+\d]/g, '');
+    if (driverNumber.length < 5) {
+      showNotification(t('error'), t('invalid_driver_phone_number'), 'error');
       return;
     }
 
     try {
       setIsCallingDriver(true);
 
-      // Optionally trigger masked call API if required by business logic
-      // If masking is mandatory, uncomment below and remove direct dial fallback on success.
-      // const bodyData = { from: passengerNumber, to: driverNumber };
-      // const makeCall = await makeMaskedCallToDriver(bodyData);
-      // if (!makeCall?.success) {
-      //   showNotification(t('error'), t('error_in_making_call_to_driver'),'error');
-      //   return;
-      // }
-
-      // Construct URL
       const scheme = Platform.OS === 'ios' ? 'telprompt:' : 'tel:';
       const url = `${scheme}${driverNumber}`;
       const canOpen = await Linking.canOpenURL(url);
+
       if (!canOpen) {
-        // Fallback: try plain tel on iOS if telprompt failed.
         if (Platform.OS === 'ios' && scheme === 'telprompt:') {
           const fallbackUrl = `tel:${driverNumber}`;
           const fallbackOk = await Linking.canOpenURL(fallbackUrl);
@@ -145,213 +232,193 @@ import { getTotalDistanceAndTime } from '../services/getTotalDistanceandTime';
             return;
           }
         }
-        showNotification(t('error'), t('unable_to_place_call'),'error');
+        showNotification(t('error'), t('unable_to_place_call'), 'error');
         return;
       }
+
       await Linking.openURL(url);
     } catch (error) {
-      showNotification(t('error'), t('error_in_making_call_to_driver'),'error');
+      showNotification(t('error'), t('error_in_making_call_to_driver'), 'error');
     } finally {
       setIsCallingDriver(false);
     }
-  };
+  }, [isCallingDriver, passengerPhone, phone, t]);
 
-  const handleCallDriver = async () => {
+  return (
+    <StatusConatainerWrapper backgroundColor="black" onMapIconPress={handleMapIconPress}>
+      <DriverLocationEffects
+        stops={stops}
+        vehicleType={vehicleType}
+        onEstimatedDurationChange={handleEstimatedDurationChange}
+        onBoundingBoxReady={handleBoundingBoxReady}
+      />
 
-    if (isCallingDriver) return;
-    const passengerNumber = userdetails?.phone;
-    if (!passengerNumber || !phone) {
-      showNotification(t('error'), t('unable_to_place_call'),'error');
-      return;
-    }
-
-    try{
-      setIsCallingDriver(true);
-      const bodyData = {
-        from: passengerNumber,
-        to: phone,
-      };
-      const makeCall = await makeMaskedCallToDriver(bodyData);
-
-      if (!makeCall?.success) {
-        showNotification(t('error'), t('error_in_making_call_to_driver'),'error');
-      }else{
-        showNotification(t('calling_to_driver'), t('call_initiated_with_driver_shortly'), 'error');
-      }
-    } catch (error) {
-      showNotification(t('error'), t('error_in_making_call_to_driver'),'error');
-    } finally {
-      setIsCallingDriver(false);
-    }
-  }
-
-  
-
-  
-
-
-  // Animation state for trip details
-  const [expanded, setExpanded] = useState(false);
-  const toggleExpand = () => {
-    expanded ? handleOverlay('close') : handleOverlay('open');
-    setExpanded(prev => !prev);
-  };
-
-  const chevronRotation = expanded ? '90deg' : '0deg';
-
-  // Check if driver photo URL is valid
-  const driverPhotoUri = driverPhoto && driverPhoto.trim() !== '' ? driverPhoto : null;
-
-  // Loading state for calling driver
-  const [isCallingDriver, setIsCallingDriver] = useState(false);
-
-    return (
-        <StatusConatainerWrapper backgroundColor='black' onMapIconPress={()=>{
-            SetViewBoundingBox()
-        }}> 
-       
-           
-                
-      <View style={[styles.containerTop]}>
-       
+      <View style={styles.containerTop}>
         <AdaptiveText style={styles.topBarText}>{t('your_driver_will_arrive_in')}</AdaptiveText>
         <View style={styles.timeBox}>
-          <AdaptiveText style={styles.timeText}>{estimatedDuration || '--'} {estimatedDuration == 1 ? 'Min' : 'Mins'}</AdaptiveText>
-            </View>
-        
-    </View>
-    <View style={[styles.root,{backgroundColor:'white'}]}>
-    
-      {/* Vehicle details */}
-      <View style={styles.vehicleCard}>
-    
-        {getVehicleImage(vehicleType,styles.vehicleImg)}
-        <View style={styles.vehicleInfo}>
-          <Text style={styles.vehicleNum}>{vehicleNumber}</Text>
-          <Text style={styles.vehicleDesc}>{brand} {model}  .  {color}</Text>
-              </View>
-            </View>
-  
-      {/* Driver details and OTP */}
-      <View style={styles.driverRow}>
-        <View style={styles.driverProfile}>
-              <Image source={{uri:driverPhotoUri}} style={styles.driverImg} resizeMode='cover' />
-          
-          <View style={styles.ratingRow}>
-            <Text style={styles.star}>★</Text>
-            <Text style={styles.ratingText}>{rating}</Text>
+          <AdaptiveText style={styles.timeText}>
+            {durationDisplay.label}
+            {durationDisplay.label === '--' ? '' : durationDisplay.isSingular ? ' Min' : ' Mins'}
+          </AdaptiveText>
+        </View>
+      </View>
+
+      <View style={[styles.root, { backgroundColor: 'white' }]}>
+        <View style={styles.vehicleCard}>
+          {getVehicleImage(vehicleType, styles.vehicleImg)}
+          <View style={styles.vehicleInfo}>
+            <Text style={styles.vehicleNum}>{vehicleNumber}</Text>
+            <Text style={styles.vehicleDesc}>
+              {brand} {model}  .  {color}
+            </Text>
           </View>
         </View>
-        <View style={styles.driverInfo}>
-          <Text style={styles.driverName}>{driverName}</Text>
-        </View>
-        <View style={styles.otpBox}>
-          <Text style={styles.otpLabel}>OTP</Text>
-          <View style={styles.otpRow}>
-            {otp?.split('').map((d, i) => (
-              <Text key={i} style={styles.otpDigit}>{d}</Text>
-                  ))}
-                </View>
-              </View>
+
+        <View style={styles.driverRow}>
+          <View style={styles.driverProfile}>
+            <Image source={{ uri: driverPhotoUri }} style={styles.driverImg} resizeMode="cover" />
+            <View style={styles.ratingRow}>
+              <Text style={styles.star}>★</Text>
+              {/* <Text style={styles.ratingText}>{rating}</Text> */}
             </View>
-
-
-            
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',paddingHorizontal:5}}>
-        <View style={{flex:1,gap:5,paddingVertical:10}}>
-          <Text style={{ color: '#888', fontSize: 13,fontFamily:Fonts.regular }}>{t('pickup_location')}</Text>
-          <Text style={{ color: '#222', fontSize: 15,maxWidth:"90%",fontFamily:Fonts.regular,textAlign:'left' }} numberOfLines={1} ellipsizeMode="tail">
-            {stops?.length > 0 ? stops[0]?.address : '--'}
-          </Text>
+          </View>
+          <View style={styles.driverInfo}>
+            <Text style={styles.driverName}>{driverName}</Text>
+          </View>
+          <View style={styles.otpBox}>
+            <Text style={styles.otpLabel}>OTP</Text>
+            <View style={styles.otpRow}>
+              {otpDigits.map((digit, index) => (
+                <Text key={index} style={styles.otpDigit}>
+                  {digit}
+                </Text>
+              ))}
+            </View>
+          </View>
         </View>
-          <TouchableOpacity style={{borderColor: '#4289e5', borderWidth:1, borderRadius: 8, paddingVertical: 8, paddingHorizontal: 12 }} onPress={()=>{
-            handleChangeLocation(stops?.length > 0 ? stops[0] : null)
-          }}>
-          <Text style={{ color:colors.blue, fontSize: 14, fontFamily:Fonts.regular }}>{t('change')}</Text>
-        </TouchableOpacity>
-      </View>
-  
-      <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
+
+        <View style={styles.pickupRow}>
+          <View style={styles.pickupInfo}>
+            <Text style={styles.pickupLabel}>{t('pickup_location')}</Text>
+            <Text style={styles.pickupValue} numberOfLines={1} ellipsizeMode="tail">
+              {pickupStop?.address || '--'}
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.changeBtn} onPress={() => handleChangeLocation(pickupStop)}>
+            <Text style={styles.changeBtnText}>{t('change')}</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
           <AdaptiveText style={styles.tripDetailsLabel}>{t('trip_details')}</AdaptiveText>
-          <View style={{flexDirection:"row",alignItems:"center",gap:10}}>
-          {
-            waitingForDriverApproval === "PENDING" &&
-            <View style={styles.driverWaitingApprovalContainer}>
+          <View style={styles.tripDetailsRight}>
+            {waitingForDriverApproval === 'PENDING' && (
+              <View style={styles.driverWaitingApprovalContainer}>
                 <Text style={styles.driverWaitingApprovalText}>{t('waiting_for_driver_approval')}</Text>
-                
+              </View>
+            )}
+            <Animated.View style={{ transform: [{ rotate: chevronRotation }] }}>
+              <Icon name="keyboard-arrow-right" size={25} color="#000" />
+            </Animated.View>
+          </View>
+        </TouchableOpacity>
+
+        <TripDetailsModal
+          visible={expanded}
+          onClose={toggleExpand}
+          stops={stops?.length > 0 ? stops : []}
+          waitingForDriverApproval={waitingForDriverApproval}
+          height={height}
+          onCancel={onCancel}
+          paymentMethod={paymentMethod}
+        >
+          <View style={{ flexDirection: 'row', flex: 1, marginBottom: 0 }}>
+            <View style={styles.rideInfoItem}>
+              <Text style={styles.rideInfoLabel}>{t('duration')}</Text>
+              <Text style={styles.rideInfoValue}>{duration || '--'} Min</Text>
             </View>
-          }
-          <Animated.View style={{ transform: [{ rotate: chevronRotation }] }}>
-            <Icon name="keyboard-arrow-right" size={25} color="#000" />
-          </Animated.View>
+            <View style={styles.rideInfoItem}>
+              <Text style={styles.rideInfoLabel}>{t('distance')}</Text>
+              <Text style={styles.rideInfoValue}>{totalDistance || '--'} Km</Text>
+            </View>
+            <View style={styles.rideInfoItem}>
+              <Text style={styles.rideInfoLabel}>{t('est_price')}</Text>
+              <Text style={styles.rideInfoValue}>₹{estimatedFare || '--'}</Text>
+            </View>
           </View>
-        </TouchableOpacity>
-  
- 
-   
-      {/* Trip Details Modal */}
-      <TripDetailsModal
-        visible={expanded}
-        onClose={toggleExpand}
-        stops={stops?.length > 0 ? stops : []}
-        waitingForDriverApproval={waitingForDriverApproval}
-        height={height} // You can adjust this value or import height from utils
-        onCancel={onCancel}
-        paymentMethod={paymentMethod}
-      >
-        <View style={{ flexDirection: 'row', flex: 1, marginBottom: 0 }}>
-          <View style={styles.rideInfoItem}>
-            <Text style={styles.rideInfoLabel}>{t('duration')}</Text>
-            <Text style={styles.rideInfoValue}>{duration || '--'} Min</Text>
-          </View>
-          <View style={styles.rideInfoItem}>
-            <Text style={styles.rideInfoLabel}>{t('distance')}</Text>
-            <Text style={styles.rideInfoValue}>{totalDistance || '--'} Km</Text>
-          </View>
-          <View style={styles.rideInfoItem}>
-            <Text style={styles.rideInfoLabel}>{t('est_price')}</Text>
-            <Text style={styles.rideInfoValue}>₹{estimatedFare || '--'}</Text>
-          </View>
+        </TripDetailsModal>
+
+        <View style={styles.actionRow}>
+          <TouchableOpacity
+            style={[styles.callBtn, isCallingDriver && styles.callBtnDisabled]}
+            onPress={makeCallIntent}
+            disabled={isCallingDriver}
+          >
+            {isCallingDriver ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <>
+                <Icon name="phone" size={20} color={colors.white} />
+                <Text style={styles.callBtnText}>{t('call_driver')}</Text>
+              </>
+            )}
+          </TouchableOpacity>
         </View>
-       
-      </TripDetailsModal>
-
-      {/* Action buttons */}
-      <View style={styles.actionRow}>
-     
-        <TouchableOpacity style={[styles.callBtn, isCallingDriver && { opacity: 0.7 }]} onPress={makeCallIntent} disabled={isCallingDriver}>
-          {isCallingDriver ? (
-            <ActivityIndicator size="small" color={colors.white} />
-          ) : (
-            <>
-              <Icon name="phone" size={20} color={colors.white} />
-              <Text style={styles.callBtnText}>{t('call_driver')}</Text>
-            </>
-          )}
-        </TouchableOpacity>
-        {/* <TouchableOpacity style={styles.shareBtn}>
-          <Icon name="share" size={25} color={colors.white} />
-        </TouchableOpacity> */}
-         
       </View>
-    </View>
-      
-
-   
     </StatusConatainerWrapper>
   );
 };
 
+const DriverLocationEffects = React.memo(
+  ({ stops, vehicleType, onBoundingBoxReady, onEstimatedDurationChange }) => {
+    const { driverLatitude, driverLongitude, driverAngle } = useAssignedDriverInfoStore(
+      state => ({
+        driverLatitude: state.driverLatitude,
+        driverLongitude: state.driverLongitude,
+        driverAngle: state.driverAngle,
+      }),
+      shallowEqual,
+    );
+
+    const primaryStop = useMemo(() => (stops && stops.length > 0 ? stops[0] : null), [stops]);
+    const destinationLat = primaryStop?.location?.[1] ?? null;
+    const destinationLon = primaryStop?.location?.[0] ?? null;
+
+    const { estimatedDuration, SetViewBoundingBox } = useRouteDraw({
+      destinationlat: destinationLat,
+      destinationlon: destinationLon,
+      driverLat: driverLatitude,
+      driverLon: driverLongitude,
+    });
+
+    useStopsMarkerHook(stops, driverLatitude, driverLongitude, vehicleType, 'pickup', driverAngle);
+
+    useEffect(() => {
+      if (onBoundingBoxReady) {
+        onBoundingBoxReady(SetViewBoundingBox);
+      }
+    }, [SetViewBoundingBox, onBoundingBoxReady]);
+
+    useEffect(() => {
+      if (onEstimatedDurationChange) {
+        onEstimatedDurationChange(estimatedDuration);
+      }
+    }, [estimatedDuration, onEstimatedDurationChange]);
+
+    return null;
+  },
+);
+
+DriverLocationEffects.displayName = 'DriverLocationEffects';
+
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-  
     padding: 16,
     justifyContent: 'flex-start',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
-  
   containerTop_inner: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -366,15 +433,13 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   container_inner: {
-    backgroundColor:'#0f223c',
+    backgroundColor: '#0f223c',
     borderRadius: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 10,
-   
-    
   },
   currentLocationIcon: {
     padding: 10,
@@ -383,16 +448,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'white',
     elevation: 10,
-    top:-10
+    top: -10,
   },
   containerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-   
     paddingHorizontal: 15,
     paddingVertical: 10,
-   
     zIndex: 0,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
@@ -425,6 +488,41 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontFamily: Fonts.regular,
     fontSize: 14,
+  },
+  pickupRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 5,
+    paddingVertical: 10,
+  },
+  pickupInfo: {
+    flex: 1,
+    gap: 5,
+  },
+  pickupLabel: {
+    color: '#888',
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+  },
+  pickupValue: {
+    color: '#222',
+    fontSize: 15,
+    maxWidth: '90%',
+    fontFamily: Fonts.regular,
+    textAlign: 'left',
+  },
+  changeBtn: {
+    borderColor: '#4289e5',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  changeBtnText: {
+    color: colors.blue,
+    fontSize: 14,
+    fontFamily: Fonts.regular,
   },
   vehicleCard: {
     backgroundColor: '#fff',
@@ -470,13 +568,15 @@ const styles = StyleSheet.create({
   },
   driverProfile: {
     alignItems: 'center',
-    
+  
     marginRight: 10,
   },
   driverImg: {
     width: 70,
     height: 70,
     borderRadius: 50,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
     marginBottom: 4,
   },
   ratingRow: {
@@ -596,6 +696,9 @@ const styles = StyleSheet.create({
     flex:1,
     
   },
+  callBtnDisabled: {
+    opacity: 0.7,
+  },
   callBtnText: {
 
     color: colors.white,
@@ -651,6 +754,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: Fonts.regular,
   },
+  tripDetailsRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  driverWaitingApprovalContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 5,
+    borderRadius: 12,
+    flexDirection: 'row',
+  },
+  driverWaitingApprovalText: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: colors.grey_xxdark,
+  },
   chevron: {
     fontSize: 20,
     color: '#888',
@@ -663,8 +783,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
 });
-  
-  export default DriverArrivalScreen;
+
+export default DriverArrivalScreen;
+
 DriverArrivalScreen.propTypes = {
   onCancel: PropTypes.func,
   handleOverlay: PropTypes.func,

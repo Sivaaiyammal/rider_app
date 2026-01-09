@@ -13,8 +13,7 @@ const useDirectionLoad = () => {
     rideWayPoints 
   } = useRideBookingLocationStore();
 
-  
-  const { setDirectionPoints, setMapMarkers } = useMapStore();
+  const { setDirectionPoints, setMapMarkers , setVehicleMarkers } = useMapStore();
 
 
   
@@ -74,6 +73,7 @@ const useDirectionLoad = () => {
       // Clear existing markers if requested
       if (clearMarkers) {
         setMapMarkers([]);
+        setVehicleMarkers([]);
       }
       
       // Transform to the format expected by setDirectionPoints

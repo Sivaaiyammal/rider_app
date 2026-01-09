@@ -85,15 +85,15 @@ class WSService {
       if(data?.tripStatus === 'CANCELLED'){
         try {
           if(data?.isOnGoingTrip && data?.fareDetails){
-           
-            this.useStackScreenStore.getState().setStackScreen('PaymentScreen',{});
             this.useCurrentRideInfoStore.getState().setFareDetails(data?.tripFare);
             this.useCurrentRideInfoStore.getState().setFinalDistance(data?.tripFare?.distance);
             this.useCurrentRideInfoStore.getState().setFinalDuration(data?.tripFare?.duration);
             this.useCurrentRideInfoStore.getState().setOngoingingTripCancelled(true);
+            this.useStackScreenStore.getState().setStackScreen('PaymentScreen',{});
           }else{
             this.useMapStore.getState().setGeometries([]);
             this.useMapStore.getState().setMapMarkers([]);
+            this.useMapStore.getState().setVehicleMarkers([]);
             this.useCurrentRideInfoStore.getState().setOtp(null);
             this.useAssignedDriverInfoStore.getState().setDriverInfo(null);
             this.useCurrentRideInfoStore.getState().setOngoingingTripCancelled(false);
