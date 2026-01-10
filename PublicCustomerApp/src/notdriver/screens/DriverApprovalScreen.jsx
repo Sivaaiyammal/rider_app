@@ -38,7 +38,7 @@ const DriverApprovalScreen = () => {
   };
 
   const handleEditDocuments = () => {
-    setStackScreen('EditDriverVehicleDetails');
+    setStackScreen('DocumentCenter');
   };
 
   const sendUnBlockRequest = async() => {

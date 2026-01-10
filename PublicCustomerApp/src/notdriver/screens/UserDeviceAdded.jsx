@@ -51,7 +51,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
   return (
     <>
       <ScrollView style={userDeviceStyle.container} contentContainerStyle={{ paddingBottom: 100 }}>
-        <Text style={{ fontSize: 14, fontFamily: Fonts.light}}>
+        <Text style={{ fontSize: 14, fontFamily: Fonts.light, color:Colors.black}}>
           {t('permission_screen_info')}
         </Text>
 

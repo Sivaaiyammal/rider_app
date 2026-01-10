@@ -693,7 +693,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 20,
-    fontFamily:Fonts.regular
+    fontFamily:Fonts.regular,
+    color: Colors.black
   },
   button: {
     backgroundColor: '#4A90E2',

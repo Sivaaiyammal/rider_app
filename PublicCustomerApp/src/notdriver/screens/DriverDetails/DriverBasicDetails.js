@@ -26,7 +26,7 @@ const DriverBasicDetails = () => {
    const [isModalVisible, setIsModalVisible] = useState(false);
    const {userInfo} = useUserStore()
    const [isLoading, setIsLoading] = useState(false)
-   const {driverDue, driverRatings} = usePublicDriverStore();
+   const {driverDue, driverRatings, razorpayLinkedAccountDetails} = usePublicDriverStore();
    
     const onBackPress = () => {
         goBack()
@@ -130,17 +130,12 @@ const DriverBasicDetails = () => {
                 <View style={styles.iconContainer}>
                     {item.icon}
                 </View>
+                <View>
                 <Text style={styles.menuItemText}>{item.title}</Text>
+                </View>
             </View>
+            <Text style={styles.VerifyText}>{item.id === 6 && !razorpayLinkedAccountDetails ? 'Verify Now' : ''}</Text>
             <View style={styles.menuItemRight}>
-                {item.showProgress && (
-                    <View style={styles.progressContainer}>
-                        <Text style={styles.progressText}>{item.progress}%</Text>
-                        <View style={styles.progressCircle}>
-                            <View style={[styles.progressFill, { width: `${item.progress}%` }]} />
-                        </View>
-                    </View>
-                )}
                 <Ionicons name="chevron-forward" size={20} color={Colors.warm_grey} />
             </View>
         </TouchableOpacity>
@@ -523,5 +518,11 @@ const styles = StyleSheet.create({
         color:Colors.periwinkle,
         fontSize:12,
         marginLeft:5,
+    },
+    VerifyText:{
+        fontSize:12,
+        fontFamily:Fonts.medium,
+        color:Colors.red,
+        marginRight:10,
     }
 })

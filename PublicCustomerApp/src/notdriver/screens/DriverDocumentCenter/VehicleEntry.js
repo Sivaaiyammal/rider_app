@@ -114,20 +114,7 @@ const VehicleEntry = ({ onNext }) => {
     if (!value) {
       return '';
     }
-    const cleaned = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-    if (cleaned.length <= 2) {
-      return cleaned;
-    }
-    const stateCode = cleaned.slice(0, 2);
-    const districtCode = cleaned.slice(2, Math.min(4, cleaned.length));
-    const remainder = cleaned.slice(Math.min(4, cleaned.length));
-    const number = remainder.slice(-4);
-    const series = remainder.slice(0, Math.max(0, remainder.length - 4));
-    return [stateCode, districtCode, series, number]
-      .filter(Boolean)
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    return value.toUpperCase().replace(/[^A-Z0-9]/g, '');
   }, []);
 
   const extractVehicleRegNumber = useCallback(text => {
@@ -152,20 +139,59 @@ const VehicleEntry = ({ onNext }) => {
         setVehicleRcError('');
       }
 
-      const detectedRegNo = extractVehicleRegNumber(result.text);
-      if (detectedRegNo) {
-        const formatted = normalizeVehicleRegNumber(detectedRegNo);
-        if (formatted) {
-          setRegNo(formatted);
-          setVehicleInfo({ regNo: formatted });
-          setVehicleRcScanMessage(
-            t('details_detected_review', {
-              defaultValue: 'Details detected automatically. Review before submitting.',
-            }),
-          );
-          setRegNoError('');
-          return;
+      const applyVehicleNumber = candidate => {
+        if (!candidate) {
+          return false;
         }
+        const detected = extractVehicleRegNumber(candidate);
+        if (!detected) {
+          return false;
+        }
+        const formatted = normalizeVehicleRegNumber(detected);
+        if (!formatted) {
+          return false;
+        }
+        setRegNo(formatted);
+        setVehicleInfo({ regNo: formatted });
+        setRegNoError('');
+        return true;
+      };
+
+      const serverPayload = result?.preScanResponse ?? result?.raw?.data ?? result?.raw ?? null;
+      const payloadData = serverPayload?.data ?? serverPayload;
+
+      let autoFilled = false;
+
+      if (payloadData) {
+        const parsedValues = payloadData?.parsed ?? {};
+        const rawFields = payloadData?.rawFields ?? {};
+
+        const candidateSources = [
+          parsedValues?.registrationNumber,
+          parsedValues?.licenseNumber,
+          rawFields?.DocumentNumber?.valueString,
+          rawFields?.DocumentNumber?.content,
+        ];
+
+        for (const candidate of candidateSources) {
+          if (applyVehicleNumber(candidate)) {
+            autoFilled = true;
+            break;
+          }
+        }
+      }
+
+      if (!autoFilled && result.text) {
+        autoFilled = applyVehicleNumber(result.text);
+      }
+
+      if (autoFilled) {
+        setVehicleRcScanMessage(
+          t('details_detected_review', {
+            defaultValue: 'Details detected automatically. Review before submitting.',
+          }),
+        );
+        return;
       }
 
       setVehicleRcScanMessage(

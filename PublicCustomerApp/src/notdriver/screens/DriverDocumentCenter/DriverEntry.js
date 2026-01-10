@@ -189,8 +189,9 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
       };
 
       if (serverPayload) {
-        const parsedValues = serverPayload?.parsed ?? {};
-        const rawFields = serverPayload?.rawFields ?? {};
+        const payloadData = serverPayload?.data ?? serverPayload;
+        const parsedValues = payloadData?.parsed ?? {};
+        const rawFields = payloadData?.rawFields ?? {};
 
         const resolvedLicense =
           parsedValues?.licenseNumber ||

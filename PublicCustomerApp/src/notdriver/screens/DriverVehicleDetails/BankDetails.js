@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const BankDetails = ({onNext, isView, isEdit = false}) => {
+const BankDetails = ({onNext, isView, isEdit = false, isUploadRequired}) => {
   const {t} = useTranslation()
   const {driverConfig} = useTripsStore();
   const {setBankInfo, bankInfo} = usePublicDriverStore();
@@ -605,7 +605,12 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
             passbookImage: passbookImage
           }      
           setBankInfo(payload);
-          onNext(payload);
+          if (isUploadRequired ) {
+              goBack();
+          } else {
+             onNext(payload);
+          }
+        
         }
          else {
           showNotification(response?.message, '', 'danger');
@@ -899,8 +904,8 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
             onPress={onNextPress}
             disabled={isLoading}
           >
-            <Text style={driverDetailStyles.nextTxt}>{t('next')}</Text>
-            {isLoading ? <ActivityIndicator size="small" color={Colors.white} /> : <AntDesign name="arrowright" color={Colors.white} size={16} />}
+            <Text style={driverDetailStyles.nextTxt}>{isUploadRequired ? t('next'): t('submit')}</Text>
+            {isLoading ? <ActivityIndicator size="small" color={Colors.white} /> : isUploadRequired ? <AntDesign name="arrowright" color={Colors.white} size={16} /> : null}
           </TouchableOpacity>
         </View>
         )

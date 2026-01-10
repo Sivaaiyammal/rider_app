@@ -10,6 +10,8 @@ import { getPresignedImageUrl } from '../../common/utils/getPresignedImageUrl';
 import useUserStore from '../../common/store/useUserStore';
 import APIRequest from '../../common/controllers/APIRequest';
 
+const PRE_SCAN_ENABLED_TYPES = new Set(['VEHICLE_RC', 'DRIVING_LICENSE']);
+
 const pickerOptions = {
   mediaType: 'photo',
   presentationStyle: 'fullScreen',
@@ -87,6 +89,15 @@ const DocumentImageScanner = ({
       setSelectedImage(payload);
       onImageSelected?.(payload);
 
+      const resolvedDocTypeRaw = documentType
+        ? `${documentType}`.trim()
+        : `${documentLabel || 'UNKNOWN'}`.trim();
+      const normalizedDocType = resolvedDocTypeRaw
+        ? resolvedDocTypeRaw.replace(/\s+/g, '_').toUpperCase()
+        : 'UNKNOWN';
+      const isScanAllowed = PRE_SCAN_ENABLED_TYPES.has(normalizedDocType);
+      const shouldRunPreScan = Boolean(preScanEndpoint) && isScanAllowed;
+
       const detectScanLimitReached = candidate => {
         if (!candidate) {
           return false;
@@ -123,17 +134,14 @@ const DocumentImageScanner = ({
       let preScanResponse = null;
       let scanLimitReached = false;
 
-      if (preScanEndpoint) {
+      if (shouldRunPreScan) {
         const base64Image = asset.base64;
         if (base64Image) {
           try {
-            const resolvedDocType = documentType
-              ? `${documentType}`.trim() || 'UNKNOWN'
-              : `${documentLabel || 'UNKNOWN'}`.trim().replace(/\s+/g, '_').toUpperCase() || 'UNKNOWN';
             const serverResponse =
               typeof preScanEndpoint === 'function'
                 ? await preScanEndpoint({
-                    docType: resolvedDocType,
+                    docType: normalizedDocType,
                     image: base64Image,
                     asset,
                     payload,
@@ -142,12 +150,14 @@ const DocumentImageScanner = ({
                     preScanEndpoint,
                     preScanMethod,
                     {
-                      docType: resolvedDocType,
-                      documentType: resolvedDocType,
+                      docType: normalizedDocType,
+                      documentType: normalizedDocType,
                       image: base64Image,
                     },
                     authToken,
                   );
+
+                  console.log('Pre-scan server response:', JSON.stringify(serverResponse));
 
             preScanResponse = serverResponse;
             scanLimitReached = detectScanLimitReached(serverResponse);
@@ -177,6 +187,7 @@ const DocumentImageScanner = ({
 
             if (scanLimitReached) {
               console.info('Pre-scan limit reached. Falling back to on-device recognition.');
+              preScanResponse = null;
             }
           } catch (error) {
             preScanResponse = error?.response?.data ?? error?.data ?? null;
@@ -184,6 +195,7 @@ const DocumentImageScanner = ({
 
             if (scanLimitReached) {
               console.info('Pre-scan limit reached during request. Falling back to on-device recognition.');
+              preScanResponse = null;
             } else {
               console.warn('Document pre-scan failed', error);
             }
@@ -191,6 +203,20 @@ const DocumentImageScanner = ({
         } else {
           console.warn('Pre-scan requested but base64 data is unavailable.');
         }
+      } else if (preScanEndpoint) {
+        console.info(`Pre-scan skipped for document type ${normalizedDocType}.`);
+      }
+
+      if (!isScanAllowed) {
+        setScanResult(null);
+        onScanComplete?.({
+          image: payload,
+          text: '',
+          raw: null,
+          preScanResponse: null,
+          scanLimitReached: false,
+        });
+        return;
       }
 
       const recognition = await recogniseText(asset.uri);

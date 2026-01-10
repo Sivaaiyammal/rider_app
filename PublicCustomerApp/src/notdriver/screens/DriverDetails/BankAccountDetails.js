@@ -5,20 +5,26 @@ import NavBar from '../../../common/components/NavBar'
 import UseBackButton from '../../../common/hooks/UseBackButton'
 import BankDetails from '../DriverVehicleDetails/BankDetails'
 import { Colors } from '../../../common/constants/constants'
+import usePublicDriverStore from '../../store/usePublicDriverStore'
 
 
 const BankAccountDetails = () => {
     const {goBack} = useStackScreenStore()
+    const {razorpayLinkedAccountDetails} = usePublicDriverStore();
+
+    console.log("Razorpay Linked Account Details:", razorpayLinkedAccountDetails);
 
     const onBackPress = () => {
         goBack()
     }
+
+    const editView = razorpayLinkedAccountDetails ? true : false
   return (
     <View style={styles.container}>
         {/* <NavBar title={'Bank Account Details'} onBackPress={onBackPress}/>
         <UseBackButton onBackPress={onBackPress} /> */}
         <View style={styles.documentsListContainer}>
-         <BankDetails isView={true} isEdit={true}/>
+         <BankDetails isView={editView} isEdit={editView} isUploadRequired={editView}/>
         </View>
     </View>
   )

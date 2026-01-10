@@ -101,20 +101,7 @@ const VehicleEntry = ({ onNext }) => {
     if (!value) {
       return '';
     }
-    const cleaned = value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-    if (cleaned.length <= 2) {
-      return cleaned;
-    }
-    const stateCode = cleaned.slice(0, 2);
-    const districtCode = cleaned.slice(2, Math.min(4, cleaned.length));
-    const remainder = cleaned.slice(Math.min(4, cleaned.length));
-    const number = remainder.slice(-4);
-    const series = remainder.slice(0, Math.max(0, remainder.length - 4));
-    return [stateCode, districtCode, series, number]
-      .filter(Boolean)
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+    return value.toUpperCase().replace(/[^A-Z0-9]/g, '');
   }, []);
 
   const extractVehicleRegNumber = useCallback(text => {

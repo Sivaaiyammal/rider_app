@@ -247,7 +247,6 @@ const AddDriverLocation = ({isPassanger, updatePassangerLocation, isGeofenceSear
           });
         } else if (searchResults?.searchData) {
           const searchDataArray = getSearchData(searchResults.searchData);
-          console.log("searchDataArray",JSON.stringify(searchDataArray));
           setOnSearchResults(searchDataArray);
         
           const ms = searchResults?.searchData?.matchedStrings || [];
@@ -543,6 +542,7 @@ const styles = StyleSheet.create({
     padding: 10,
     fontFamily: Fonts.regular,
     width: '80%',
+    color:Colors.black
   },
   addLocationBtn: {
     backgroundColor: Colors.periwinkle,

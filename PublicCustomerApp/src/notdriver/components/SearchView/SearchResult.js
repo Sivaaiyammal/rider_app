@@ -134,7 +134,7 @@ const SearchResult = ({
         <View style={styles.middleContent}>
           <Text
             numberOfLines={1}
-            style={[styles.nameText, isFastMatch && {color: Colors.grey_dark}]}>
+            style={[styles.nameText, isFastMatch && {color: Colors.black}]}>
             {name}
           </Text>
           {isFastMatch && <Text style={styles.fastMatchText}>Suggestion</Text>}
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
   nameText: {
     fontSize: 16,
     fontFamily: Fonts.light,
-    color: Colors.font_black,
+    color: Colors.black,
     textTransform: 'capitalize',
   },
   rightContent: {
