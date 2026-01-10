@@ -23,7 +23,7 @@
   "dependencies": {
     "@apollo/client": "^3.13.8",
     "@eslint/js": "^9.10.0",
-    "@gorhom/bottom-sheet": "5.1.2",
+    "@gorhom/bottom-sheet": "^5.2.8",
     "@mapbox/polyline": "^1.2.1",
     "@msgpack/msgpack": "^3.1.2",
     "@react-native-async-storage/async-storage": "^2.0.0",
@@ -90,7 +90,7 @@
     "react-native-razorpay": "^2.3.0",
     "react-native-reanimated": "^3.17.5",
     "react-native-safe-area-context": "^5.4.0",
-    "react-native-screens": "^3.34.0",
+    "react-native-screens": "^4.10.0",
     "react-native-sha256": "^1.4.10",
     "react-native-star-rating-widget": "^1.9.2",
     "react-native-svg": "^15.11.2",

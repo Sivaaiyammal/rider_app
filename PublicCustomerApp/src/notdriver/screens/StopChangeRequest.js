@@ -58,10 +58,10 @@ const StopChangeRequest = () => {
             );
             if (res.success) {
                 updateNewStopData(newStopData)
-                setStackScreen('PublicDriverTrackingScreen')
                 setNewStopData(null)
                 showNotification('Stops Updated Successfully', '' , 'success')
                 PushNotifications.onClearAllNotifications();
+                setStackScreen('PublicDriverTrackingScreen')
             } else {
                 showNotification(res?.message, '' , 'danger')
             }
@@ -89,10 +89,10 @@ const StopChangeRequest = () => {
               userInfo?.token,
             );
             if (res.success) {
-                setStackScreen('PublicDriverTrackingScreen')
                 setNewStopData(null)
                 showNotification('Stops Updated Successfully', '' , 'success')
                 PushNotifications.onClearAllNotifications();
+                setStackScreen('PublicDriverTrackingScreen')
             }else {
                 showNotification(res?.message, '' , 'danger')
             }

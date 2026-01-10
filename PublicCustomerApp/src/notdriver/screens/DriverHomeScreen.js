@@ -82,8 +82,6 @@ import DriverProofDoc from './DriverDocumentCenter/DriverProofDoc';
 import LanguageSelectionScreen from './LanguageSelectionScreen';
 
 const checkDriverDetails = (response) => {
-     console.log('hari-->>vehicleInfo-->>', response)
-
   if (!response?.driver) return false;
   const requiredKeys = ['name', 'phone', 'gender', 'location', 'dob'];
   const isParivahanFailed = response.driver?.ownVehicleInfo?.isParivahanFailed === true;
@@ -111,7 +109,6 @@ const checkDriverDetails = (response) => {
   const hasVehicleInfo = infoKeys.every(key => vehicleInfo && vehicleInfo[key])
   const hasVehicleDocuments = documentKeys.every(key => vehicleDocuments && vehicleDocuments[key])
 
-  console.log('hari-->>hasVehicleInfo-->>', hasVehicleInfo, hasVehicleDocuments)
   if (hasVehicleInfo && hasVehicleDocuments) {
     setVehicleDetailsCompleteStatus(true)
   }
@@ -454,7 +451,7 @@ const PublicRidesDriverHomeScreen = () => {
           'userMarker',
           longitude,
           latitude,
-          'user_marker_selected',
+          'pin_inactive',
           36,
           false,
         );
@@ -655,9 +652,15 @@ const PublicRidesDriverHomeScreen = () => {
   );
 
   return (
-    <View style={{ flex: 1 }}>
-      {isLoading && <FullScreenLoader />}
+    <>
+   
+     <View style={{ flex: 1 }}>
       <MapContainer />
+        {(isLoading )&&
+    <View style={{position:'absolute', width:'100%', height:'100%',}}>
+    <FullScreenLoader /> 
+    </View>
+    }
       {!hasNotificationPermission && renderNotificationPermission()}
       {!hasLocationPermission && renderLocationPermission()}
       {renderContent()}
@@ -665,6 +668,8 @@ const PublicRidesDriverHomeScreen = () => {
       <PaymentCompletionScreen />
       {/* <AppUpdateChecker /> */}
     </View>
+    </>
+   
   );
 };
 

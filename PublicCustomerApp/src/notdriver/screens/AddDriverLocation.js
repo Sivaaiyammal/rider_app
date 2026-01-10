@@ -114,7 +114,7 @@ const AddDriverLocation = ({isPassanger, updatePassangerLocation, isGeofenceSear
       'userMarker',
       longitude,
       latitude,
-      'user_marker',
+      'pin_inactive',
       36,
       true,
     );

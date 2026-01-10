@@ -178,22 +178,22 @@ const PublicDriverTrackingScreen = () => {
     getIsOnGoingTrip()
   },[])
 
-  useEffect(() => {
-    if (!newStopData) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!newStopData) {
+  //     return;
+  //   }
 
-    // Defer navigation so we don't mutate navigation state while React renders
-    const timer = setTimeout(() => {
-      setStackScreen('StopChangeRequest');
-      // setNewStopData(null);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [newStopData, setStackScreen, setNewStopData]);
+  //   // Defer navigation so we don't mutate navigation state while React renders
+  //   const timer = setTimeout(() => {
+  //     setStackScreen('StopChangeRequest');
+  //     // setNewStopData(null);
+  //   }, 100);
+  //   return () => clearTimeout(timer);
+  // }, [newStopData, setStackScreen, setNewStopData]);
 
   const renderTripStatusComponent = () => {
      if (newStopData) {
-      return null;
+      return setStackScreen('StopChangeRequest');
      }
      if (tripsStatus === 'ACCEPTED' || tripsStatus === 'PICKEDUP') {
       return <DriverOnRide />

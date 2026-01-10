@@ -833,7 +833,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           <InputField
             style={styles.textField}
             value={email}
-            label={t('email')}
+            label={t('Email')}
             errorText={emailErr}
             onChangeText={text => {
               setEmail(text);

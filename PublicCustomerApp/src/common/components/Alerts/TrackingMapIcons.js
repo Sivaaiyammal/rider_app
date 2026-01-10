@@ -83,7 +83,7 @@ const TrackingMapIcons = props => {
           'userMarker',
           longitude,
           latitude,
-          'user_marker_selected',
+          'pin_inactive',
           36,
           false,
         );
@@ -167,6 +167,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 1,
     elevation: 5,
+    zIndex:9
   },
   SOSBtn: {
     backgroundColor: Colors.red,
