@@ -354,9 +354,11 @@ const PublicRidesDriverHomeScreen = () => {
         }
 
         if(response?.driver?.role === 'dco' && !checkDriverDetails(response)){
+          if (!isApproved) {
           setStackScreen('DocumentCenter');
           BGLocationTask.stopDriverBgTask();
           return
+          }
         }
 
         if (response?.driver?.role === 'salaried' && 

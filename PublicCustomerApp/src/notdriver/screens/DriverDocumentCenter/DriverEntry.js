@@ -10,7 +10,7 @@ import React, {useState, useEffect, useCallback} from 'react';
 import useUserStore from '../../../common/store/useUserStore';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
-import { Colors, licenseNumberPattern, phoneNumberPattern } from '../../../common/constants/constants';
+import { Colors, Fonts, licenseNumberPattern, phoneNumberPattern } from '../../../common/constants/constants';
 import { showNotification } from '../../../common/components/Alerts/showNotification';
 import locationTask from '../../../common/controllers/GetCurrentLocation';
 import { checkFineLocationPermissions, RequestFineLocationPermission } from '../../../common/controllers/PermissionHandler';
@@ -582,6 +582,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
           })}
           browseLabel={t('browse', { defaultValue: 'Browse' })}
           cameraLabel={t('camera', { defaultValue: 'Camera' })}
+          cameraType="front"
           initialImage={driverPhoto || driverInfo.driverPhoto || null}
           onScanComplete={result => {
             if (result?.image) {
@@ -623,6 +624,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
           })}
           browseLabel={t('browse', { defaultValue: 'Browse' })}
           cameraLabel={t('camera', { defaultValue: 'Camera' })}
+          cameraType="back"
           initialImage={driverInfo.licenseDocument || null}
           onScanComplete={handleLicenseScanComplete}
           onImageSelected={image => {
@@ -668,6 +670,10 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
         isRequired={true}
         editable={isEdit ? false : true}
       />
+      <Text style={driverDetailStyles.GenderLabel}>
+        {t('gender', {defaultValue: 'Gender'})}
+        <Text style={{color: Colors.danger_red}}> *</Text>
+      </Text>
       <View style={driverDetailStyles.GenderContainer}>
         {genderData.map(item => (
           <TouchableOpacity
@@ -675,8 +681,14 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
             style={[
               driverDetailStyles.GenderBtn,
               {
-                backgroundColor: item.value.toLowerCase() === gender.toLowerCase() ? Colors.white : Colors.grey,
-                borderColor: item.value.toLowerCase() === gender.toLowerCase() ? Colors.periwinkle : Colors.grey,
+                backgroundColor:
+                  item.value.toLowerCase() === gender.toLowerCase()
+                    ? Colors.white
+                    : Colors.grey_light,
+                borderColor:
+                  item.value.toLowerCase() === gender.toLowerCase()
+                    ? Colors.periwinkle
+                    : Colors.grey_light,
               },
             ]}
             disabled={isEdit}
@@ -687,7 +699,16 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
             }}
             >
             {/* {item.icon} */}
-            <Text style={driverDetailStyles.GenderTxt}>{t(item.name)}</Text>
+            <Text
+              style={[
+                driverDetailStyles.GenderTxt,
+                item.value.toLowerCase() === gender.toLowerCase()
+                  ? {color: Colors.periwinkle, fontFamily: Fonts.semi_bold}
+                  : {},
+              ]}
+            >
+              {t(item.name)}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>

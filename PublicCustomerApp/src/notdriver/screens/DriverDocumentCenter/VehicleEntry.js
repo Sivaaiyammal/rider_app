@@ -556,6 +556,7 @@ const VehicleEntry = ({ onNext }) => {
             documentLabel={t('vehicle_registration_certificate', { defaultValue: 'Vehicle RC' })}
             browseLabel={t('browse', { defaultValue: 'Browse' })}
             cameraLabel={t('camera', { defaultValue: 'Camera' })}
+            cameraType="back"
             onScanComplete={handleVehicleRcScanComplete}
             onImageSelected={image => {
               if (image) {
@@ -585,6 +586,7 @@ const VehicleEntry = ({ onNext }) => {
                 documentLabel={t('vehicle_insurance_document', { defaultValue: 'Insurance Document' })}
                 browseLabel={t('browse', { defaultValue: 'Browse' })}
                 cameraLabel={t('camera', { defaultValue: 'Camera' })}
+                cameraType="back"
                 onImageSelected={image => {
                   if (image) {
                     setInsuranceDoc(image);
@@ -615,6 +617,7 @@ const VehicleEntry = ({ onNext }) => {
                     setPermitDocError('');
                   }
                 }}
+                cameraType="back"
                 initialImage={permitDoc || vehicleInfo?.permitDoc || null}
                 helperText={t('permit_scan_helper', {
                   defaultValue: 'Upload your valid vehicle permit for faster verification.',
