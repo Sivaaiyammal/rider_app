@@ -208,6 +208,7 @@ const DriverProofDoc = () => {
         browseLabel={t('browse', { defaultValue: 'Browse' })}
         cameraLabel={t('camera', { defaultValue: 'Camera' })}
         onScanComplete={handleAadhaarScan}
+        cameraType='back'
         onImageSelected={image => {
           if (image) {
             setPendingImage(prev => ({ ...prev, aadhar: image }));
@@ -283,6 +284,7 @@ const DriverProofDoc = () => {
         browseLabel={t('browse', { defaultValue: 'Browse' })}
         cameraLabel={t('camera', { defaultValue: 'Camera' })}
         onScanComplete={handlePanScan}
+        cameraType='back'
         onImageSelected={image => {
           if (image) {
             setPendingImage(prev => ({ ...prev, panCard: image }));

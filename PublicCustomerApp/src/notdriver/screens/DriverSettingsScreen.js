@@ -49,7 +49,7 @@ export default function PublicDriverSettingsScreen() {
   const {logout} = useContext(GlobalContext);
   const [loading, setLoading] = useState(false);
   const {setStackScreen} = useStackScreenStore();
-  const {driverRole, setDriverRole} = usePublicDriverStore();
+  const {driverRole, setDriverRole, driverInfo} = usePublicDriverStore();
   const [screenData, updateScreenData] = useState(null);
   const [showScreen, setShowScreen] = useState(null);
   const navigation = useNavigation();
@@ -215,7 +215,7 @@ export default function PublicDriverSettingsScreen() {
             <View>{Icons.back_arrow}</View>
           </TouchableOpacity>
           <Text style={[settingsScreen.settingText, settingsScreen.headerText]}>
-            {t[screenData.title] || screenData.name}
+            {t(screenData.title) || screenData.name}
           </Text>
         </View>
         {screenData.component}
@@ -238,7 +238,7 @@ export default function PublicDriverSettingsScreen() {
           </View>
           <View>
             <Text style={settingsScreen.helloTxt}>{t('hello')} !</Text>
-            <Text style={settingsScreen.nameTxt}>{userInfo?.name || userInfo?.phone}</Text>
+            <Text style={settingsScreen.nameTxt}>{driverInfo?.name || driverInfo?.phone}</Text>
           </View>
         </View>
         {filteredSettingsData.map(item => {

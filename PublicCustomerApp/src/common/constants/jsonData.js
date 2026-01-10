@@ -385,7 +385,7 @@ export const dateFilterOptions = [
 
 export const permissionData = {
   backgroundLocation: "NOT requires background location permission to continuously track your location, even when the app is closed or not in use. This ensures uninterrupted tracking for accurate traking records.",
-  overlay: "Display Over Other Apps this permission is required to display the overlay over other apps. This ensures drivers can promptly respond to new ride requests. The overlay is not used for advertising or unrelated content.\n go to Settings > Apps > Special app access (or Advanced > Special app access) \n > Appear on top > VM Trackers > toggle on"
+  overlay: "Display Over Other Apps this permission is required to display the overlay over other apps. This ensures drivers can promptly respond to new ride requests. The overlay is not used for advertising or unrelated content.\n go to Settings > Apps > Special app access (or Advanced > Special app access) \n > Appear on top > NOT > toggle on"
 }
 
 export const multiLanguages = [

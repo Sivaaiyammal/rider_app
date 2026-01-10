@@ -39,6 +39,7 @@ const DocumentImageScanner = ({
   initialImage = null, // can be string URL or { uri, ... }
   preScanEndpoint = DEFAULT_PRE_SCAN_ENDPOINT,
   preScanMethod = 'POST',
+  cameraType = 'back',
 }) => {
   const [isBusy, setBusy] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -255,7 +256,13 @@ const DocumentImageScanner = ({
     setErrorMessage(null);
 
       const pickAction = source === 'camera' ? launchCamera : launchImageLibrary;
-      const pickerConfig = pickerOptions;
+      const pickerConfig =
+        source === 'camera'
+          ? {
+              ...pickerOptions,
+              cameraType: cameraType === 'front' ? 'front' : 'back',
+            }
+          : {...pickerOptions};
 
     try {
       if (source === 'camera') {
@@ -294,7 +301,7 @@ const DocumentImageScanner = ({
       setErrorMessage('Something went wrong. Try again.');
       setBusy(false);
     }
-  }, [disabled, preScanEndpoint, processAsset]);
+  }, [cameraType, disabled, processAsset]);
 
   const helper = useMemo(() => helperText?.trim?.(), [helperText]);
   const displayUri = useMemo(() => {
@@ -377,8 +384,6 @@ const DocumentImageScanner = ({
       isMounted = false;
     };
   }, [initialImage, userInfo?.token]);
-
-  console.log('DocumentImageScanner Render:', scanResult)
 
   return (
     <View style={[styles.container, containerStyle]}>

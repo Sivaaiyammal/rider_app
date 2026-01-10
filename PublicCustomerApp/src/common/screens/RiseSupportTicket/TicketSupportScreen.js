@@ -162,7 +162,7 @@ const TicketSupportScreen = () => {
       onPress={() => setActiveTab(tab)}
     >
       <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-        {t[tab]}
+        {t(`${tab}`)}
       </Text>
       <View style={[styles.countBadge, activeTab === tab && styles.activeCountBadge]}>
         <Text style={[styles.countText, activeTab === tab && styles.activeCountText]}>
