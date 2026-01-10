@@ -92,7 +92,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
     if (cleaned.length <= 8) {
       return `${cleaned.slice(0, 4)} ${cleaned.slice(4)}`.trim();
     }
-    if (cleaned.length <= 12) {
+    if (cleaned.length <= 15) {
       return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 8)}${cleaned.slice(8)}`.trim();
     }
     const first = cleaned.slice(0, 4);
@@ -101,13 +101,54 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
     return `${first} ${second}${rest}`.trim();
   }, []);
       
-  const extractLicenseNumber = useCallback(text => {
+  const resolveLicenseNumberFromServer = useCallback(serverPayload => {
+    if (!serverPayload) {
+      return '';
+    }
+
+    const data = serverPayload?.data ?? serverPayload;
+    const parsedValues = data?.parsed ?? {};
+    const rawFields = data?.rawFields ?? {};
+
+    const candidateList = [
+      parsedValues?.licenseNumber,
+      rawFields?.DocumentNumber?.valueString,
+      rawFields?.DocumentNumber?.content,
+    ];
+
+    for (const candidate of candidateList) {
+      if (typeof candidate === 'string' && candidate.trim().length > 0) {
+        return candidate.trim();
+      }
+    }
+
+    return '';
+  }, []);
+
+  const extractLicenseNumberFromText = useCallback(text => {
     if (!text) {
       return '';
     }
-    const normalized = text.toUpperCase().replace(/[^A-Z0-9\s]/g, ' ');
-    const licenseMatch = normalized.match(/[A-Z]{2}\s*\d{2}\s*\d{4}\s*\d{7,8}/);
-    return licenseMatch ? licenseMatch[0] : '';
+
+    const normalized = text
+      .toUpperCase()
+      .replace(/[^A-Z0-9\s]/g, ' ');
+
+    const regexCandidates = [
+      /[A-Z]{2}\s*\d{1,2}\s*\d{4}\s*[A-Z0-9]{5,8}/,
+      /[A-Z]{2}\s*\d{1,2}\s*[A-Z]{1,2}\s*\d{4}\s*[A-Z0-9]{3,6}/,
+    ];
+
+    for (const pattern of regexCandidates) {
+      const match = normalized.match(pattern);
+      if (match?.[0]) {
+        return match[0];
+      }
+    }
+
+    const compact = text.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const compactMatch = compact.match(/[A-Z]{2}\d{1,2}[A-Z0-9]{0,2}\d{4}[A-Z0-9]{3,7}/);
+    return compactMatch?.[0] || '';
   }, []);
 
   const extractDobFromText = useCallback(text => {
@@ -193,11 +234,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
         const parsedValues = payloadData?.parsed ?? {};
         const rawFields = payloadData?.rawFields ?? {};
 
-        const resolvedLicense =
-          parsedValues?.licenseNumber ||
-          rawFields?.DocumentNumber?.valueString ||
-          rawFields?.DocumentNumber?.content ||
-          '';
+        const resolvedLicense = resolveLicenseNumberFromServer(serverPayload);
         if (resolvedLicense) {
           const normalized = normalizeLicenseNumber(resolvedLicense);
           setLicenseNum(normalized);
@@ -233,7 +270,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
       }
 
       if (result.text) {
-        const extractedLicense = extractLicenseNumber(result.text);
+        const extractedLicense = extractLicenseNumberFromText(result.text);
         if (extractedLicense && !licenseUpdated) {
           const normalized = normalizeLicenseNumber(extractedLicense);
           setLicenseNum(normalized);
@@ -263,11 +300,12 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
     [
       dob,
       extractDobFromText,
-      extractLicenseNumber,
+      extractLicenseNumberFromText,
       formatIsoDateToDisplay,
       licenseNum,
       normalizeLicenseNumber,
       parseDobToDate,
+      resolveLicenseNumberFromServer,
       setDriverInfo,
       t,
     ],

@@ -64,8 +64,6 @@ const MainAppContent = () => {
       const title = data?.title ?? 'Notification';
       const body = notification?.body ?? data?.message ?? data?.body ?? '';
 
-      console.log('Foreground message received:', data);
-
       const clearedtxt = title?.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, '').trim();
       
     

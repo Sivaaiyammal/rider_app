@@ -697,6 +697,8 @@ const DriverOnRide = () => {
   }
   }, [routeNotFound]);
 
+  // console.log('hari-->>render-->>activeTripData-->>', activeTripData);
+
   return (
     <>
     {/* {(isLoading || loading) &&

@@ -378,6 +378,8 @@ const DocumentImageScanner = ({
     };
   }, [initialImage, userInfo?.token]);
 
+  console.log('DocumentImageScanner Render:', scanResult)
+
   return (
     <View style={[styles.container, containerStyle]}>
       <View style={styles.headerRow}>

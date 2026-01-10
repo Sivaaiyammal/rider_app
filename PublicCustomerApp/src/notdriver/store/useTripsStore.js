@@ -20,7 +20,7 @@ const storeFunctione = (set, get) => ({
   activeTripData: null,
   updateStopData: (stopName, isReached, newStatus, waitingTime, stopUpdated) => {
     set(state => {
-      const updatedTrips = state.activeTripData.map(trip => ({
+      const updatedTrips = state?.activeTripData?.map(trip => ({
         ...trip,
         status: newStatus,
         stops: trip.stops.map(stop =>
@@ -64,8 +64,9 @@ const storeFunctione = (set, get) => ({
 
   getReachedStops: () => {
     const tripData = get().activeTripData;
+    if (!tripData) return [];
     return tripData?.[0]?.stops?.filter(
-      stop => stop.stopUpdated
+      stop => stop?.stopUpdated
     )?.map(stop => ({
       lat: stop?.location[1],
       lon: stop?.location[0],
