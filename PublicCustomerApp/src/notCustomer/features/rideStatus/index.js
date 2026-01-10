@@ -74,10 +74,13 @@ const RideStatus = () => {
 
   const CancelRide = async (payload) => {
     try{
-      console.log("payl;oad",payload)
+    console.log("payload",payload)
     const response = await cancelRide(payload);
     console.log('response',response)
     if (response.success) {
+      setGeometries([])
+      setMapMarkers([])
+      setVehicleMarkers([])
       Vibration.vibrate();
         showNotification('Ride cancelled successfully');
        
@@ -281,7 +284,8 @@ const RideStatus = () => {
   },[])
 
   useEffect(()=>{
-  
+    setShowBottomSheet(false)
+    setShowOverlay(false);
     if (tripStatus === TripStatus.COMPLETED || tripStatus === TripStatus.DIVERGED ){
       setStackScreen('TripFeedbackScreen',{})
     }

@@ -4,6 +4,7 @@ import Polyline from '../../../controllers/NEMap/Polyline';
 import polyline from '@mapbox/polyline';
 import useMapStore from '../../map/store/useMapStore';
 import {utils} from '../../../utils/Utils';
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
 
 export default function useRouteDraw({ destinationlat,destinationlon, driverLat, driverLon,remainingStops }) {
 	const [estimatedDuration, setEstimatedDuration] = useState(1);
@@ -13,6 +14,7 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
     const [originalDistance, setOriginalDistance] = useState(0);
     const [originalDuration, setOriginalDuration] = useState(0);
 	const { setGeometries, setMapBounds } = useMapStore();
+	const{getCurrentScreenName}=useStackScreenStore();
 	useEffect(() => {
 		if (destinationlat == null || destinationlon == null) return;
 		setIsDiverted(true);
@@ -26,7 +28,10 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 		setRemainingDistance(0);
 		// Immediately reflect the updated remaining-stops polyline on the map
 		// so UI updates without waiting for the next driver position tick.
+		
+		if(getCurrentScreenName() ==='RideStatus'){
 		setGeometries([remainingStops]);
+		}
 		console.log("remainingStops",remainingStops)
 		// Adjust bounds to the stops polyline if available
 		if (remainingStops?.coordinates && remainingStops.coordinates.length > 1) {
@@ -229,7 +234,9 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 			polylines.push(remainingStops)
 		}
 		
+			if(getCurrentScreenName() ==='RideStatus'){
 		setGeometries(polylines);
+			}
 	}
 
 

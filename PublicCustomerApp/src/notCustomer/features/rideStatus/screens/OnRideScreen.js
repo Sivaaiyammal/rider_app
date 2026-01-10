@@ -24,8 +24,15 @@ import BackgroundLocationPreInfoModal from '../component/BackgroundLocationPreIn
 import { DataStore } from '../../../controllers/DataStore';
 import PREF from '../../../storage/PREF';
 import { RequestBackgroundLocationPermission } from '../../../controllers/PermissionHandler';
+
+const limitText = (text, max = 10) => {
+  if (!text) {
+    return '';
+  }
+  return text.length > max ? `${text.slice(0, max)}...` : text;
+};
 const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
-  const {driverName,vehicleNumber,model,brand,driverPhoto,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
+  const {driverName,vehicleNumber,model,brand,color,driverPhoto,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
   const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare} = useCurrentRideInfoStore();
   const {waitingForDriverApproval} = useWayPointReorderStore();
   const currentStop = useMemo(() => stops?.find(item => item.isReached === false) || null, [stops]);
@@ -37,6 +44,14 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const animation = useRef(new Animated.Value(0)).current;
   
   const isElectricVehicle = vehicleType == "ELECTRIC_AUTO" || vehicleType == "ELECTRIC_BIKE" || vehicleType == "ELECTRIC_HATCHBACK" || vehicleType == "ELECTRIC_SEDAN" || vehicleType == "ELECTRIC_SUV" || vehicleType == "ELECTRIC_EXSEDAN";
+
+  const vehicleDetails = useMemo(() => {
+    const parts = [limitText(brand, 10), limitText(model, 10), limitText(color, 10)];
+    if (vehicleNumber) {
+      parts.push(limitText(vehicleNumber, 12));
+    }
+    return parts.filter(Boolean).join(' · ');
+  }, [brand, model, color, vehicleNumber]);
   
   const [expanded, setExpanded] = useState(false);
   const [showSOS, setShowSOS] = useState(false);
@@ -135,7 +150,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
         </View>
         {/* Driver and vehicle info */}
         <Text style={styles.driverName}>{driverName}</Text>
-        <Text style={styles.vehicleDesc}>{brand} {model} · {vehicleNumber}</Text>
+        <Text style={styles.vehicleDesc} numberOfLines={1} ellipsizeMode="tail">{vehicleDetails}</Text>
         {/* Estimated amount */}
         <View style={styles.amountBox}>
           <FontAwesome name="receipt" size={20} color="#00770d" />
