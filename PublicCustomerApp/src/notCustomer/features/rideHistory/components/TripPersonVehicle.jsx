@@ -4,6 +4,13 @@ import { getVehicleImage } from '../../rideStatus/types/vehicleImd';
 import { Fonts, colors } from '../../../constants/constants';
 import { VEHICLE_LABELS } from '../../../constants/VehicleLabels';
 
+const limitText = (text, max = 10) => {
+  if (!text) {
+    return '';
+  }
+  return text.length > max ? `${text.slice(0, max)}...` : text;
+};
+
 const TripPersonVehicle = ({
   driverName,
   driverPhoto,
@@ -22,7 +29,15 @@ const TripPersonVehicle = ({
     </View>
     <View style={[layoutStyle=="row"&&{alignItems:"flex-start"},usedScreen=="MyRides"&&{alignItems:"flex-end"}]}>
     {usedScreen !=="MyRides"&&driverName && <Text style={[styles.driverName,usedScreen=="MyRides"&&{fontSize:15,fontFamily:Fonts.regular}]}>{ driverName}</Text>}
-    {usedScreen !=="MyRides"&&<Text style={[styles.vehicleDesc,{fontSize:descriptonSize}]}>{vehicleBrand} {vehicleModel} . {vehicleNumber}</Text>}
+    {usedScreen !=="MyRides"&&(
+      <Text
+        style={[styles.vehicleDesc,{fontSize:descriptonSize}]}
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
+        {limitText(vehicleBrand, 10)} {limitText(vehicleModel, 10)} . {limitText(vehicleNumber, 12)}
+      </Text>
+    )}
   
     </View>
   </View>

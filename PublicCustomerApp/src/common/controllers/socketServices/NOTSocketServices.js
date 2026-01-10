@@ -46,13 +46,14 @@ onDriverTripStatus(data) {
           DataStore.storeData('activeTripId', null);
           DataStore.storeData('isOngoingTrip', null)
           setDirectionPoints(null)
-          setActiveTripData([])
+         
           setHasActiveTrip(null)
           setDisduration(null)
           NeNativeModule.endNavigation();
           setStartNavigation(false);
           setStackScreen('Home')
           setCurrentScreen('Map')
+          setActiveTripData([])
       }
       setNewStopData(null)
       useTripsStore.setState({newStopData: null})

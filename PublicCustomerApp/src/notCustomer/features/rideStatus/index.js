@@ -232,7 +232,8 @@ const RideStatus = () => {
 
       const payload = {
         tripId,
-        reason
+        reason,
+        isNotyetPickedUp: true
       };
       console.log("payload",payload)
 

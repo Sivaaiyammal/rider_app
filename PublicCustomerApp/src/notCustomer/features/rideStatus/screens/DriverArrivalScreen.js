@@ -67,6 +67,12 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
     shallowEqual,
   );
 
+  // Helper to limit string length and add ellipsis if needed
+  const limitText = (text, max = 10) => {
+    if (!text) return '';
+    return text.length > max ? text.slice(0, max) + '…' : text;
+  };
+
   const {
     stops,
     otp,
@@ -268,8 +274,8 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
           {getVehicleImage(vehicleType, styles.vehicleImg)}
           <View style={styles.vehicleInfo}>
             <Text style={styles.vehicleNum}>{vehicleNumber}</Text>
-            <Text style={styles.vehicleDesc}>
-              {brand} {model}  .  {color}
+            <Text style={styles.vehicleDesc} numberOfLines={1} ellipsizeMode="tail">
+              {limitText(brand, 10)} {limitText(model, 10)}  .  {limitText(color, 10)}
             </Text>
           </View>
         </View>
