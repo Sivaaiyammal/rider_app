@@ -1,12 +1,21 @@
 import {StyleSheet} from 'react-native';
 import {colors, Fonts} from '../constants/constants';
-import {width} from '../utils/Utils';
+import {height, width} from '../utils/Utils';
 
 export const SplashStyles = StyleSheet.create({
   screen: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: colors.white,
+    justifyContent: 'center',
+    backgroundColor: '#01041D',
+    paddingHorizontal: 24,
+    paddingTop: 0,
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: height * 0.15,
   },
   logoContainer: {
     width: '100%',
@@ -16,7 +25,7 @@ export const SplashStyles = StyleSheet.create({
   },
   splashTitle: {
     fontFamily: Fonts.bold,
-    color: colors.black,
+    color: colors.white,
     fontSize: 24,
     marginTop: 15,
     textAlign: 'center',
@@ -25,14 +34,23 @@ export const SplashStyles = StyleSheet.create({
     fontFamily: Fonts.regular,
     marginTop: 10,
     fontSize: 16,
-    color: colors.grey_dark,
+    color: 'rgba(255,255,255,0.72)',
   },
+  loader: {
+    marginBottom: 24,
+  },
+  
   splashBg: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 40,
     overflow: 'hidden',
     width: '100%',
     alignItems: 'center',
+  },
+  bottomAnimation: {
+    alignSelf: 'center',
+    height: height * 0.4,
+    width: width,
   },
 });
 
