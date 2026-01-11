@@ -208,13 +208,13 @@ export const verifyDriverOTPMutation = onSuccessCallback => {
           onSuccessCallback(data);
         }
       } else {
-        showNotification(i18n.t('verification_failed'), i18n.t('some_error_occurred'), 'danger');
+        showNotification(i18n.t('verification_failed'), i18n.t('invalid_otp', {defaultValue: 'Invalid OTP'}), 'danger');
       }
     },
     onError: error => {
       showNotification(
         i18n.t('verification_failed'),
-        i18n.t('some_error_occurred'),
+        i18n.t('Invalid_otp',{defaultValue:'Invalid OTP'}),
         'danger',
       );
     },
