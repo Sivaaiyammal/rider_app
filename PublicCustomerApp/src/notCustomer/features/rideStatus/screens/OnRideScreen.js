@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Animated, Modal } from 'react-native';
-import { getVehicleImage } from '../types/vehicleImd';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, Modal } from 'react-native';
 import {Fonts} from '../../../constants/constants';
 
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -24,13 +23,8 @@ import BackgroundLocationPreInfoModal from '../component/BackgroundLocationPreIn
 import { DataStore } from '../../../controllers/DataStore';
 import PREF from '../../../storage/PREF';
 import { RequestBackgroundLocationPermission } from '../../../controllers/PermissionHandler';
+import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
 
-const limitText = (text, max = 10) => {
-  if (!text) {
-    return '';
-  }
-  return text.length > max ? `${text.slice(0, max)}...` : text;
-};
 const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {driverName,vehicleNumber,model,brand,color,driverPhoto,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
   const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare} = useCurrentRideInfoStore();
@@ -45,14 +39,6 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   
   const isElectricVehicle = vehicleType == "ELECTRIC_AUTO" || vehicleType == "ELECTRIC_BIKE" || vehicleType == "ELECTRIC_HATCHBACK" || vehicleType == "ELECTRIC_SEDAN" || vehicleType == "ELECTRIC_SUV" || vehicleType == "ELECTRIC_EXSEDAN";
 
-  const vehicleDetails = useMemo(() => {
-    const parts = [limitText(brand, 10), limitText(model, 10), limitText(color, 10)];
-    if (vehicleNumber) {
-      parts.push(limitText(vehicleNumber, 12));
-    }
-    return parts.filter(Boolean).join(' · ');
-  }, [brand, model, color, vehicleNumber]);
-  
   const [expanded, setExpanded] = useState(false);
   const [showSOS, setShowSOS] = useState(false);
   const [showPreInfo, setShowPreInfo] = useState(false);
@@ -91,9 +77,6 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   }, []);
 
   
-
-
- 
   const chevronRotation = animation.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '90deg'],
@@ -139,18 +122,19 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
 
       {/* Card */}
      
-        {/* Vehicle and driver images */}
-        <View style={styles.imagesRow}>
-        {getVehicleImage(vehicleType,styles.vehicleImg)}
-          <View style={styles.driverImgWrap}>
-             {isElectricVehicle && <Icon name="bolt" size={25} color="#00770d" style={{position:"absolute",top:0,left:0}} />}
-            <Image source={{ uri: driverPhotoUri }} style={styles.driverImg} />
-          </View>
-          {/* <View style={styles.onRideBadge}><Text style={styles.onRideBadgeText}>{t('on_ride')}</Text></View> */}
+        <View style={styles.vehicleDetailsContainer}>
+          <TripPersonVehicle
+            driverName={driverName}
+            driverPhoto={driverPhotoUri || undefined}
+            vehicleType={vehicleType}
+            vehicleBrand={brand}
+            vehicleModel={model}
+            vehicleNumber={vehicleNumber}
+            vehicleColor={color}
+            isElectricVehicle={isElectricVehicle}
+            descriptonSize={14}
+          />
         </View>
-        {/* Driver and vehicle info */}
-        <Text style={styles.driverName}>{driverName}</Text>
-        <Text style={styles.vehicleDesc} numberOfLines={1} ellipsizeMode="tail">{vehicleDetails}</Text>
         {/* Estimated amount */}
         <View style={styles.amountBox}>
           <FontAwesome name="receipt" size={20} color="#00770d" />
@@ -282,12 +266,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
-  vehicleImg: {
-    width: 70,
-    height: 70,
-    resizeMode: 'contain',
-    transform: [{ scaleX: -1 }],
-  },
   topBarText: {
     color: '#fff',
     fontSize: 16,
@@ -321,32 +299,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  imagesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-    marginTop: 8,
-    width:"100%"
-  },
-  
-  driverImgWrap: {
-    borderWidth: 2,
-    borderColor: '#fff',
-    borderRadius: 32,
-    overflow: 'hidden',
-    marginLeft: -10,
-    marginRight: 8,
-    backgroundColor: '#fff',
-    zIndex: 2,
-    elevation: 2,
-  },
-  driverImg: {
-    width: 60,
-    height: 60,
-    borderRadius: 24,
-    elevation: 2,
-  },
   onRideBadge: {
     position: 'absolute',
     right: 10,
@@ -361,20 +313,9 @@ const styles = StyleSheet.create({
     fontFamily:Fonts.regular,
     fontSize: 14,
   },
-  driverName: {
-    fontFamily:Fonts.regular,
-    fontSize: 20,
-    textAlign: 'center',
-    marginTop: 4,
-    color:colors.black
-  },
-  vehicleDesc: {
-    color:colors.grey_xxdark,
-    fontFamily:Fonts.regular,
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 8,
-    
+  vehicleDetailsContainer: {
+    width: '100%',
+    alignItems: 'center',
   },
   amountBox: {
     backgroundColor: '#e3ffe6',
