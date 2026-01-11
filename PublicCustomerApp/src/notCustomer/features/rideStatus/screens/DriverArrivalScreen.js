@@ -274,9 +274,25 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
           {getVehicleImage(vehicleType, styles.vehicleImg)}
           <View style={styles.vehicleInfo}>
             <Text style={styles.vehicleNum}>{vehicleNumber}</Text>
-            <Text style={styles.vehicleDesc} numberOfLines={1} ellipsizeMode="tail">
-              {limitText(brand, 10)} {limitText(model, 10)}  .  {limitText(color, 10)}
-            </Text>
+            <View style={styles.vehicleDescRow}>
+              {brand ? (
+                <Text style={styles.vehicleDesc} numberOfLines={1} ellipsizeMode="tail">
+                  {brand}
+                </Text>
+              ) : null}
+              {brand && model ? <Text style={styles.vehicleDescSeparator}>.</Text> : null}
+              {model ? (
+                <Text style={styles.vehicleDesc} numberOfLines={1} ellipsizeMode="tail">
+                  {model}
+                </Text>
+              ) : null}
+              {(model || brand) && color ? <Text style={styles.vehicleDescSeparator}>.</Text> : null}
+              {color ? (
+                <Text  numberOfLines={1} ellipsizeMode="tail">
+                {limitText(color, 10)}
+                </Text>
+              ) : null}
+            </View>
           </View>
         </View>
 
@@ -541,11 +557,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     justifyContent: 'center',
     gap: 20,
+    paddingLeft:20,
+   
   },
   vehicleInfo: {
-   
+    flex: 1,
+    minWidth: 0,
     justifyContent: 'center',
-
+  },
+  vehicleDescRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1,
+    minWidth: 0,
   },
   vehicleImg: {
     width: 70,
@@ -561,6 +585,14 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   vehicleDesc: {
+    color: '#616161',
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  vehicleDescSeparator: {
+    marginHorizontal: 4,
     color: '#616161',
     fontSize: 14,
     fontFamily: Fonts.regular,
