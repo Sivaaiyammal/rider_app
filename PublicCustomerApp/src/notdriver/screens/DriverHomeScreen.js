@@ -80,6 +80,7 @@ import BankDetails from './DriverDocumentCenter/BankDetails';
 import UPIVerification from './DriverDocumentCenter/UPIVerification';
 import DriverProofDoc from './DriverDocumentCenter/DriverProofDoc';
 import LanguageSelectionScreen from './LanguageSelectionScreen';
+import EditDocCenter from './EditDocCenter';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -643,6 +644,8 @@ const PublicRidesDriverHomeScreen = () => {
               return <UPIVerification />;
       case 'DriverProofDoc':
               return <DriverProofDoc/>;  
+               case 'EditDocCenter':
+              return <EditDocCenter/>;  
       default:
         return <Text>Home</Text>;
     }

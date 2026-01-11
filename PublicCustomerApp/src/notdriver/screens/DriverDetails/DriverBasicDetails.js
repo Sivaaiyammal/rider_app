@@ -34,7 +34,7 @@ const DriverBasicDetails = () => {
 
     const handleEditDocuments = () => {
         // setIsModalVisible(true);
-         setStackScreen('DocumentCenter');
+         setStackScreen('EditDocCenter');
                 BGLocationTask.stopDriverBgTask();
     }
 
