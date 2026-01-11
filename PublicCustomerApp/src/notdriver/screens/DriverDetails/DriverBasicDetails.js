@@ -33,7 +33,9 @@ const DriverBasicDetails = () => {
     }
 
     const handleEditDocuments = () => {
-        setIsModalVisible(true);
+        // setIsModalVisible(true);
+         setStackScreen('DocumentCenter');
+                BGLocationTask.stopDriverBgTask();
     }
 
     const handleEditDocumentsAPI = async () => {

@@ -950,9 +950,14 @@ const DriverOnRide = () => {
               deviceLocation={null}
               isPublicRides={true}
             />
+            {isReachedDropoff? (
+             <></>
+            ):(
             <TouchableOpacity style={styles.cancelTripBtn} onPress={()=>setCancelRideModalVisible(true)}>
               <Text style={styles.cancelTripBtnTxt}>{activeTripData?.[0]?.status === 'PICKEDUP' ? t('end_trip') : t('cancel_trip')}</Text>
             </TouchableOpacity>
+            )}
+       
         </CustomeBottomSheet>
       )}
       {cancelRideModalVisible && <CancelRideModal modalVisible={cancelRideModalVisible} setModalVisible={setCancelRideModalVisible} callCancelRide={handleEndTrip} loading={loading} tripData={activeTripData?.[0]}/>}
