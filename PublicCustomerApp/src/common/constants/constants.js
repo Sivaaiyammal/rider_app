@@ -119,8 +119,8 @@ export const upiIdPattern = /^[a-zA-Z0-9._-]{2,256}@[a-zA-Z]{2,64}$/;
 export const phoneNumberPattern = /^\+91[6-9]\d{9}$/;
 export const phoneNumberPatternIN = /^(?:\+91)?[6-9]\d{9}$/;
 
-export const termsURL = 'https://tracker.vmmaps.com/Legal/terms-and-conditions';
-export const privacyPolicyURL = 'https://tracker.vmmaps.com/Legal/privacy-policy';
+export const termsURL = 'https://nammaoorutaxi.com/notdriver/legal/term';
+export const privacyPolicyURL = 'https://nammaoorutaxi.com/notdriver/legal/privacypolicy';
 export const webPortalURL = 'https://tracker.vmmaps.com';
 export const mapcopyrightURL = 'https://www.openstreetmap.org/copyright';
 

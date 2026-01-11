@@ -12,7 +12,7 @@ const TermsAndConditions = () => {
         <FullScreenLoader />
       )}
       <WebView
-        source={{ uri: 'https://tracker.vmmaps.com/Legal/terms-and-conditions' }}
+        source={{ uri: 'https://nammaoorutaxi.com/notdriver/legal/term' }}
         style={{ flex: 1 }}
         onLoadEnd={() => setIsLoading(false)}
       />

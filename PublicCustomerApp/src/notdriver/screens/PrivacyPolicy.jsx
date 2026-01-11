@@ -10,7 +10,7 @@ const PrivacyPolicy = () => {
     <View style={styles.container}>
       {isLoading && <FullScreenLoader />}
       <WebView
-        source={{ uri: 'https://tracker.vmmaps.com/Legal/privacy-policy' }}
+        source={{ uri: 'https://nammaoorutaxi.com/notdriver/legal/privacypolicy' }}
         style={styles.webview}
         onLoadStart={() => setIsLoading(true)}
         onLoadEnd={() => setIsLoading(false)}
