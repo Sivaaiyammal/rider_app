@@ -103,7 +103,7 @@ export default function DriverInitializationScreen() {
 
   const fetchDriverConfig = async () => {
     const api = new APIRequest();
-    const url = `/publicrides/driver/driverAppConfig`;
+    const url = `/publicrides/driver/notDriverAppConfig`;
     const res = await api.request(url, 'POST', {}, token);
     if (res.success) {
       return res?.data;

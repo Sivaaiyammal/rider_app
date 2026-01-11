@@ -41,22 +41,23 @@ onDriverTripStatus(data) {
           NeNativeModule.endNavigation();
           setStartNavigation(false);
           driverWaitingTime.stopWaitingTime();
+          setNewStopData(null)
+          useTripsStore.setState({newStopData: null})
           setStackScreen('PublicDriverTrackingScreen')
          } else {
           DataStore.storeData('activeTripId', null);
           DataStore.storeData('isOngoingTrip', null)
           setDirectionPoints(null)
-         
           setHasActiveTrip(null)
           setDisduration(null)
           NeNativeModule.endNavigation();
           setStartNavigation(false);
+          setActiveTripData([])
+          setNewStopData(null)
+          useTripsStore.setState({newStopData: null})
           setStackScreen('Home')
           setCurrentScreen('Map')
-          setActiveTripData([])
       }
-      setNewStopData(null)
-      useTripsStore.setState({newStopData: null})
   }
 }
 

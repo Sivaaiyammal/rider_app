@@ -668,7 +668,7 @@ const PublicRidesDriverHomeScreen = () => {
       {renderContent()}
       {approved ? memoizedDriverLocationHandler : null}
       <PaymentCompletionScreen />
-      {/* <AppUpdateChecker /> */}
+      <AppUpdateChecker />
     </View>
     </>
    
