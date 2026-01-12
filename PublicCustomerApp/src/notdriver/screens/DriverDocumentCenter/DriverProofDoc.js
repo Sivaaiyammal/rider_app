@@ -60,6 +60,8 @@ const DriverProofDoc = () => {
   const [pendingImage, setPendingImage] = useState({ aadhar: null, panCard: null });
   const { aadharDocument, panDocument } = driverInfo || {};
 
+  const {setIsApproved} = usePublicDriverStore();
+
   const switchOptions = useMemo(() => ([
     { id: 'aadhaar', label: t('aadhaar_card', { defaultValue: 'Aadhaar Card' }) },
     { id: 'pan', label: t('pan_card', { defaultValue: 'PAN Card' }) },
@@ -129,6 +131,7 @@ const DriverProofDoc = () => {
         setDriverInfo({ [driverDocKey]: image });
         setPendingImage(prev => ({ ...prev, [docId]: null }));
         setDocumentsCompleteStatus(true)
+        setIsApproved(false)
         goBack();
         showNotification(
           docLabel,

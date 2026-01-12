@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
 
 const BankDetails = ({onNext, isView, isEdit = false}) => {
   const {t} = useTranslation()
-  const {setBankInfo, bankInfo} = usePublicDriverStore();
+  const {setBankInfo, bankInfo, setIsApproved} = usePublicDriverStore();
   const {userInfo} = useUserStore();
   const {setStackScreen} = useStackScreenStore();
   const [isLoading, setIsLoading] = useState(false);
@@ -650,6 +650,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
             passbookImage: passbookImage
           }      
           setBankInfo(payload);
+          setIsApproved(false)
           // onNext(payload);
           goBack();
           setBankDetailsCompleteStatus(true)

@@ -26,9 +26,9 @@ const UPIVerification = () => {
   const {t} = useTranslation();
   const {goBack} = useStackScreenStore();
   const [isLoading, setIsLoading] = React.useState(false);
+  const {setIsApproved} = usePublicDriverStore();
 
   const {userInfo} = useUserStore();
-  console.log('bankInfo UPIID==>', bankInfo?.UPIID);
 
   const updateUPIInfo = () => {
     if (upiId.trim().length === 0) {
@@ -55,6 +55,7 @@ const UPIVerification = () => {
           UPIID: upiId.trim(),
         };
         setBankInfo(payload);
+        setIsApproved(false)
         showNotification(
           'success',
           t('upi_updated_successfully'),

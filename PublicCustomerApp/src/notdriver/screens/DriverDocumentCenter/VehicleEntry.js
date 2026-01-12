@@ -57,9 +57,9 @@ const VehicleEntry = ({ onNext }) => {
 
   const [isSaving, setIsSaving] = useState(false);
 
-  const shouldShowAdditionalDocs = isParivahanFailed;
+  const {setIsApproved} = usePublicDriverStore();
 
-  console.log('VehicleEntry Rendered: ', { isParivahanFailed });
+  const shouldShowAdditionalDocs = isParivahanFailed;
 
   const loadVehicleTypes = useCallback(async () => {
     setIsFetchingTypes(true);
@@ -463,6 +463,7 @@ const VehicleEntry = ({ onNext }) => {
         showNotification(response?.message, '', 'success');
         setIsParivahanFailed(false);
         setVehicleDetailsCompleteStatus(true);
+        setIsApproved(false)
         goBack();
         return;
       } else {
