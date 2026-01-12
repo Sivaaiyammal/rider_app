@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next'
 
 const ReportTab = () => {
   const {t} = useTranslation()
-  const { userInfo } = useUserStore
+  const { userInfo } = useUserStore()
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
