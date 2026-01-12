@@ -59,7 +59,7 @@ const PickUpModal = ({
         <View style={styles.locBgImg}>
           <Locgrey />
         </View>
-        <Text style={styles.address}>{isPublicRide ?  stopsDetails?.stops[0]?.address : stopsDetails?.address}</Text>
+        <Text style={styles.address}>{isPublicRide ?  stopsDetails?.stops?.[0]?.address : stopsDetails?.address}</Text>
       </View>
         <View style={{width: '80%', alignSelf: 'center', marginVertical: 10}}>
           {/* <OTPTextView
