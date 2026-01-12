@@ -73,7 +73,7 @@ const DriverApprovalScreen = () => {
     });
   }
 
-  const { data, isLoading, error } = useQuery(
+  const { data, isLoading, error, refetch, isFetching } = useQuery(
     ['driverDetails'], 
     () => publicrideDriverApi.getDriverDetails(userInfo?.token),
     {
@@ -86,6 +86,27 @@ const DriverApprovalScreen = () => {
       onError: (error) => {setStackScreen('DriverApprovalScreen')},
     }
   );
+
+  const [isChecking, setIsChecking] = useState(false);
+
+  const onCheckStatusPress = async () => {
+    if (isChecking) return;
+    setIsChecking(true);
+    try {
+      const result = await refetch();
+      const resp = result?.data;
+      const approved = resp?.driver?.isApproved;
+      if (approved) {
+        setStackScreen('Home');
+      } else {
+        showNotification(t('still_under_review') || 'Still under review', '', 'info');
+      }
+    } catch (e) {
+      showNotification(t('something_went_wrong') || 'Something went wrong', '', 'danger');
+    } finally {
+      setIsChecking(false);
+    }
+  };
 
   const handleLogout = async () => {
     const url = `/publicrides/driver/publicridesdriverLogout?platform=${Platform.OS}`;
@@ -170,6 +191,15 @@ const DriverApprovalScreen = () => {
             {t('if_you_have_any_queries_regarding_registration_or_app_please')}{' '}
           <Text style={styles.contactLink} onPress={handleContactUs}>{t('contact_us')}.</Text>
         </Text>
+        <TouchableOpacity
+          style={[styles.checkStatusBtn, (isChecking || isFetching) && styles.checkStatusBtnDisabled]}
+          onPress={onCheckStatusPress}
+          disabled={isChecking || isFetching}
+        >
+          <Text style={styles.checkStatusText}>
+            {(isChecking || isFetching) ? (t('refreshing') || 'Refreshing...') : (t('check_status') || 'Check Status')}
+          </Text>
+        </TouchableOpacity>
       </View>
       {/* Edit Documents Button */}
       {driverRole === 'dco' && (
@@ -302,5 +332,22 @@ const styles = StyleSheet.create({
     fontFamily:Fonts.regular,
     fontSize:16,
     color:Colors.white
+  },
+  checkStatusBtn:{
+    backgroundColor: Colors.grey_light,
+    alignItems: 'center',
+    alignSelf: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  checkStatusBtnDisabled:{
+    opacity: 0.6,
+  },
+  checkStatusText:{
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: '#1976D2',
   }
 })

@@ -62,6 +62,61 @@ const DriverProofDoc = () => {
 
   const {setIsApproved} = usePublicDriverStore();
 
+  // Simple delay helper for retry backoff
+  const sleep = useCallback(ms => new Promise(resolve => setTimeout(resolve, ms)), []);
+
+  // Determine if an error is retriable (network/timeout/5xx-like)
+  const isRetriableError = useCallback(error => {
+    const msg = (error?.message || '').toLowerCase();
+    if (msg.includes('network request failed') || msg.includes('timeout') || msg.includes('fetch failed') || msg.includes('ecconnaborted')) {
+      return true;
+    }
+    const status = error?.status || error?.response?.status;
+    if (typeof status === 'number' && status >= 500) {
+      return true;
+    }
+    return false;
+  }, []);
+
+  // Upload wrapper with exponential backoff retry
+  const uploadWithRetry = useCallback(
+    async (formData, token, maxAttempts = 3) => {
+      let attempt = 1;
+      let lastError;
+      // Cap backoff to 8s max; base ~2s
+      const baseDelay = 2000;
+
+      while (attempt <= maxAttempts) {
+        try {
+          const response = await publicrideDriverApi.updateDriverProof(formData, token);
+          if (response?.success) {
+            return response;
+          }
+          // Non-success response: retry unless attempts exhausted
+          lastError = new Error(response?.message || 'Upload failed');
+        } catch (error) {
+          lastError = error;
+          if (!isRetriableError(error)) {
+            // Non-retriable -> fail immediately
+            throw error;
+          }
+        }
+
+        // If we reached here, we should retry if attempts remain
+        if (attempt < maxAttempts) {
+          const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), 8000);
+          await sleep(delay);
+          attempt += 1;
+          continue;
+        }
+
+        // Exhausted attempts
+        throw lastError || new Error('Upload failed');
+      }
+    },
+    [isRetriableError, sleep]
+  );
+
   const switchOptions = useMemo(() => ([
     { id: 'aadhaar', label: t('aadhaar_card', { defaultValue: 'Aadhaar Card' }) },
     { id: 'pan', label: t('pan_card', { defaultValue: 'PAN Card' }) },
@@ -124,7 +179,7 @@ const DriverProofDoc = () => {
     const driverDocKey = docId === 'aadhar' ? 'aadharDocument' : 'panDocument';
 
     try {
-      const response = await publicrideDriverApi.updateDriverProof(formData, userInfo?.token);
+      const response = await uploadWithRetry(formData, userInfo?.token, 3);
       if (response?.success) {
         setDocumentFile(docId, image);
         updateDocumentStatus(docId, 'uploaded');
@@ -151,7 +206,7 @@ const DriverProofDoc = () => {
     } finally {
       setUploading(prev => ({ ...prev, [docId]: false }));
     }
-  }, [setDocumentFile, setDriverInfo, setPendingImage, t, updateDocumentStatus, userInfo?.token]);
+  }, [setDocumentFile, setDriverInfo, setPendingImage, t, updateDocumentStatus, userInfo?.token, uploadWithRetry]);
 
   const handleAadhaarScan = useCallback(result => {
     if (!result) {
@@ -231,23 +286,6 @@ const DriverProofDoc = () => {
         disabled={uploading.aadhar}
         disabledMessage={t('document_upload_in_progress', { defaultValue: 'Uploading document. Please wait…' })}
       />
-      {/* {aadhaarScanMessage ? <Text style={styles.helperText}>{aadhaarScanMessage}</Text> : null}
-      <InputField
-        style={styles.textField}
-        label={t('aadhaar_number', { defaultValue: 'Aadhaar Number' })}
-        value={aadhaarNumber}
-        keyboardType="numeric"
-        maxLength={14}
-        onChangeText={text => {
-          const digits = text.replace(/\D/g, '').slice(0, 12);
-          const formatted = formatAadhaar(digits);
-          setAadhaarNumber(formatted);
-          setDriverInfo({ aadharNo: digits });
-          setAadhaarScanMessage('');
-        }}
-        isRequired
-        editable={false}
-      /> */}
       <TouchableOpacity
         style={[
           styles.uploadButton,
@@ -307,22 +345,6 @@ const DriverProofDoc = () => {
         disabled={uploading.panCard}
         disabledMessage={t('document_upload_in_progress', { defaultValue: 'Uploading document. Please wait…' })}
       />
-      {/* {panScanMessage ? <Text style={styles.helperText}>{panScanMessage}</Text> : null}
-      <InputField
-        style={styles.textField}
-        label={t('pan_number', { defaultValue: 'PAN Number' })}
-        value={panNumber}
-        autoCapitalize="characters"
-        maxLength={10}
-        onChangeText={text => {
-          const normalized = text.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
-          setPanNumber(normalized);
-          setDriverInfo({ panNo: normalized });
-          setPanScanMessage('');
-        }}
-        isRequired
-        editable={false}
-      /> */}
       <TouchableOpacity
         style={[
           styles.uploadButton,

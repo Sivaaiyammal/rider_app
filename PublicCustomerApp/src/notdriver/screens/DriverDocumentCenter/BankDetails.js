@@ -4,7 +4,6 @@ import { Colors, emailPattern, Fonts, upiIdPattern } from '../../../common/const
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import useUserStore from '../../../common/store/useUserStore';
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
-import publicrideDriverApi from '../../api/publicrideDriverApi';
 import { showNotification } from '../../../common/components/Alerts/showNotification';
 import InputField from '../../../common/components/InputField';
 import CustomDropdown from '../../../common/components/CustomDropdown';
@@ -13,6 +12,7 @@ import DocumentImageScanner from '../../components/DocumentImageScanner';
 import { useTranslation } from 'react-i18next';
 import NavBar from '../../../common/components/NavBar';
 import UseBackButton from '../../../common/hooks/UseBackButton';
+import APIRequest from '../../../common/APIRequest';
 
 const styles = StyleSheet.create({
   container: {
@@ -616,9 +616,9 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
       postal_code: postalCode.trim(),
       country: country.trim()
     }));
-    if(!passbookImage?.uri?.includes('https://objectstore.e2enetworks.net')){
+    if(!passbookImage?.includes('https://not-publicrides.objectstore.e2enetworks.net')){
     formData.append('passbookImage', {
-      uri: Platform.OS === 'android' ? passbookImage?.uri : passbookImage?.uri?.replace('file://', ''),
+        uri: Platform.OS === 'android' ? passbookImage?.uri : passbookImage?.uri?.replace('file://', ''),
         name: passbookImage?.name,
         type: passbookImage?.type,
       });
@@ -628,7 +628,8 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
       setIsLoading(true);
    
       try {
-        const response = await publicrideDriverApi.updateBankDetails(formData, userInfo?.token);
+        const api = new APIRequest()
+        const response = await api.request('/publicrides/driver/uploadBankDetails', 'POST', formData, userInfo.token)
         if(response.success){
           const payload = {
             accountHolderName: accountHolder.trim(),
