@@ -166,8 +166,8 @@ export const RequestBackgroundLocationPermission = async (translation) => {// tr
 
     if (result === "never_ask_again") {
         Alert.alert(
-          translation['perm_required'],
-          translation.perm_help_info,
+          'Permission Required',
+          'Enable permissions from settings to continue',
           [
             {
               text: "Cancel",
@@ -224,8 +224,8 @@ export const RequestFineLocationPermission = async (translation) => { // transla
 
     if (result === "never_ask_again") {
       Alert.alert(
-        translation['perm_required'],
-        translation.perm_help_info,
+        'Permission Required',
+        'Enable permissions from settings to continue',
         [
           {
             text: "Cancel",
@@ -322,8 +322,8 @@ export const RequestNotificationPermission = async (translation) => {
 
       if (grantedPostNotifications === "never_ask_again") {
         Alert.alert(
-          translation['perm_required'],
-          translation.perm_help_info,
+          "Permission Required",
+          "Enable permissions from settings to continue",
           [
             {
               text: "Cancel",
