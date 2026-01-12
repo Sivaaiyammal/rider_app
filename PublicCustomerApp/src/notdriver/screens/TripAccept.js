@@ -7,7 +7,7 @@ import {
   Easing,
   NativeModules,
 } from 'react-native';
-import React, {useEffect, useState, useRef, useCallback, useMemo} from 'react';
+import React, {useEffect, useState, useRef, useCallback, useMemo, useContext} from 'react';
 import { useTripAcceptStore } from '../store/useTripAcceptStore';
 import usePublicDriverStore from '../store/usePublicDriverStore';
 import useUserStore from '../../common/store/useUserStore';
@@ -29,6 +29,8 @@ import AddressComponent from '../components/AddressComponent';
 import RideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
 import PushNotifications from '../../common/core/PushNotifications';
 import { useTranslation } from 'react-i18next';
+import APIRequest from '../../common/APIRequest';
+import GlobalContext from '../../context/GlobalContext';
 
 
 const {NeNativeModule} = NativeModules;
@@ -59,6 +61,8 @@ const TripAccept = () => {
   const [timeLeft, setTimeLeft] = useState(null);
   const progressAnim = useRef(new Animated.Value(1)).current;
   const animationRef = useRef(null);
+
+  const {logout} = useContext(GlobalContext)
 
 
   const { t } = useTranslation();
@@ -241,8 +245,24 @@ const TripAccept = () => {
      }
   },[stopsForDisplay])
 
+  const checkDriverToken = async () => {
+     const api = new APIRequest()
+     try {
+       const response = await api.request('/publicrides/driver/checkDriverToken', "GET", null, userInfo?.token);
+        if (response.error === "SESSION_EXPIRED") {
+          logout('driver');
+           BGLocationTask.stopDriverBgTask();
+           tripAlert.stopAlertSound();
+          return
+        }
+     } catch (err) {
+       console.log('hari-->>checkDriverToken-->>err-->>', err);
+     }
+  }
+
   // Cleanup effect to reset loading state when component unmounts
   useEffect(() => {
+    checkDriverToken()
     return () => {
       setLoading(false);
       reset();

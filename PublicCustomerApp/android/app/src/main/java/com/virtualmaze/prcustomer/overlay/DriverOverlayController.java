@@ -51,6 +51,11 @@ import java.util.Locale;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * Handles driver alert overlay logic (Socket.IO lifecycle + banner rendering) so the
@@ -189,8 +194,8 @@ public class DriverOverlayController {
                     if (payload instanceof JSONObject) {
                         JSONObject obj = (JSONObject) payload;
                         Log.i(TAG, "Received trip_request for driver=" + driverId + " payload=" + obj);
-                        stopAlertAudio();
-                        mainHandler.post(() -> showOverlay(obj));
+                        // Before showing overlay, verify driver token session status
+                        checkDriverTokenAndHandle(obj);
                     } else {
                         Log.w(TAG, "Unexpected trip_request payload type: " +
                                 (payload != null ? payload.getClass() : "null"));
@@ -228,6 +233,146 @@ public class DriverOverlayController {
             Log.e(TAG, "initDriverSocket error", e);
             scheduleSocketRetry();
         }
+    }
+
+    /**
+     * Calls server to verify the driver's token validity. If session has expired,
+     * stops socket, alarm sound and tracking services; otherwise proceeds to show overlay.
+     */
+    private void checkDriverTokenAndHandle(JSONObject tripPayload) {
+        try {
+            final String token = stripQuotes(normalizeToken(
+                    AsyncStorageReader.readValueFromAsyncStorage(context, "bg_userToken")));
+            final String fallbackToken = stripQuotes(normalizeToken(
+                    AsyncStorageReader.readValueFromAsyncStorage(context, "access_token")));
+
+            String authToken = (token != null && !token.isEmpty()) ? token : fallbackToken;
+            if (authToken == null || authToken.isEmpty()) {
+                Log.w(TAG, "Missing auth token; proceeding without session check");
+                stopAlertAudio();
+                mainHandler.post(() -> showOverlay(tripPayload));
+                return;
+            }
+
+            String url = BuildConfig.ROOT_API_URL + "/publicrides/driver/checkDriverToken";
+            OkHttpClient client = new OkHttpClient();
+            Request request = new Request.Builder()
+                    .url(url)
+                    .get()
+                    .addHeader("Authorization", "Bearer " + authToken)
+                    .addHeader("x-device-auth", "Bearer " + authToken)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, java.io.IOException e) {
+                    Log.e(TAG, "checkDriverToken request failed", e);
+                    stopAlertAudio();
+                    mainHandler.post(() -> showOverlay(tripPayload));
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) {
+                    String body = null;
+                    boolean expired = false;
+                    try {
+                        body = response.body() != null ? response.body().string() : null;
+                        expired = isSessionExpiredFromBody(body);
+                    } catch (Exception parseError) {
+                        Log.w(TAG, "Failed parsing checkDriverToken response", parseError);
+                    } finally {
+                        try { if (response.body() != null) response.close(); } catch (Exception ignored) {}
+                    }
+
+                    if (expired) {
+                        Log.w(TAG, "Session expired detected on checkDriverToken; stopping services");
+                        mainHandler.post(() -> handleSessionExpired());
+                    } else {
+                        stopAlertAudio();
+                        mainHandler.post(() -> showOverlay(tripPayload));
+                    }
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "checkDriverTokenAndHandle error", e);
+            stopAlertAudio();
+            mainHandler.post(() -> showOverlay(tripPayload));
+        }
+    }
+
+    private void handleSessionExpired() {
+        try {
+            // Stop overlay + socket via the service's unified handler
+            DriverLocationService service = DriverLocationService.getInstanceSafe();
+            if (service != null) {
+                service.onSessionExpiredFromServer();
+            } else {
+                // Fallback: stop overlay locally and disconnect socket
+                stop();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to handle session expiration", e);
+            try { stop(); } catch (Exception ignored) {}
+        }
+    }
+
+    private boolean isSessionExpiredFromBody(String responseBody) {
+        if (responseBody == null) return false;
+        String trimmed = responseBody.trim();
+        if (trimmed.isEmpty()) return false;
+        try {
+            Object parsed = new JSONTokener(trimmed).nextValue();
+            if (parsed instanceof JSONObject) {
+                JSONObject obj = (JSONObject) parsed;
+                String err = obj.optString("error", "");
+                if (!err.isEmpty()) {
+                    String lower = err.trim().toLowerCase(Locale.US);
+                    if ("session_expired".equals(lower) || lower.contains("session_expired")) {
+                        return true;
+                    }
+                }
+                // Also consider message fields
+                String msg = obj.optString("message", "");
+                String code = obj.optString("code", "");
+                String normMsg = msg != null ? msg.trim().toLowerCase(Locale.US) : "";
+                String normCode = code != null ? code.trim().toLowerCase(Locale.US) : "";
+                if (normMsg.contains("session_expired") || normCode.contains("session_expired")) {
+                    return true;
+                }
+            } else if (parsed instanceof JSONArray) {
+                JSONArray arr = (JSONArray) parsed;
+                for (int i = 0; i < arr.length(); i++) {
+                    String val = String.valueOf(arr.opt(i));
+                    if (val != null && val.toLowerCase(Locale.US).contains("session_expired")) {
+                        return true;
+                    }
+                }
+            } else if (parsed instanceof String) {
+                String s = (String) parsed;
+                if (s.trim().toLowerCase(Locale.US).contains("session_expired")) {
+                    return true;
+                }
+            }
+        } catch (Exception ignored) {
+            // Fallback to substring check below
+        }
+        return trimmed.toLowerCase(Locale.US).contains("session_expired");
+    }
+
+    private static String normalizeToken(String value) {
+        if (value == null) return null;
+        String v = value.trim();
+        if (v.isEmpty() || "null".equalsIgnoreCase(v)) return null;
+        return v;
+    }
+
+    private static String stripQuotes(String value) {
+        if (value == null) return null;
+        String v = value.trim();
+        if (v.length() >= 2 && v.startsWith("\"") && v.endsWith("\"")) {
+            v = v.substring(1, v.length() - 1);
+        }
+        return v;
     }
 
     private void scheduleSocketRetry() {

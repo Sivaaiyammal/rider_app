@@ -43,25 +43,21 @@ class RideMatchWSService {
   async _acceptTripWithRetry(tripId, maxRetries = 3, token) {
     let attempt = 0;
     let lastResponse = null;
-    console.log(`[DriverWSService] Starting accept with retry: tripId=${tripId}, maxRetries=${maxRetries}`);
     while (attempt < maxRetries) {
       const attemptNum = attempt + 1;
       console.log(`[DriverWSService] Attempt ${attemptNum}/${maxRetries} - accepting trip ${tripId}`);
       try {
         const api = new APIRequest();
         const res =  await api.request(`/publicrides/driver/acceptRide`, 'POST', { tripId }, token)
-        console.log(`[DriverWSService] Response on attempt ${attemptNum}:`, res);
         if (res?.success) {
           console.log(`[DriverWSService] ✅ Accept succeeded on attempt ${attemptNum}`);
           return res;
         }
         lastResponse = res;
-        const msg = res?.message || 'Unknown error from server';
-        console.log(`[DriverWSService] ❌ Accept failed on attempt ${attemptNum}: ${msg}`);
+        // const msg = res?.message || 'Unknown error from server';
       } catch (e) {
         const errMsg = e?.message || String(e);
         lastResponse = { success: false, message: errMsg };
-        console.log(`[DriverWSService] ❌ Network/exception on attempt ${attemptNum}: ${errMsg}`);
       }
       attempt += 1;
       if (attempt < maxRetries) {
@@ -70,7 +66,7 @@ class RideMatchWSService {
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
-    console.log(`[DriverWSService] 🚫 Exhausted retries for trip ${tripId}`);
+    // console.log(`[DriverWSService] 🚫 Exhausted retries for trip ${tripId}`);
     return lastResponse;
   }
 
