@@ -1,6 +1,6 @@
 import {useColorScheme ,StatusBar,Vibration,Linking} from 'react-native';
 import React, { useCallback, useEffect, useMemo } from 'react';
-import firebase from '@react-native-firebase/app';
+import { getApp, getApps, initializeApp } from '@react-native-firebase/app';
 import Navigation from './navigation/Navigation';
 import { navigationRef } from './navigation/RootNavigation';
 import {NavigationContainer} from '@react-navigation/native';
@@ -9,7 +9,13 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import { DataStore } from './common/controllers/DataStore';
 import { ContextProvider } from './context/GlobalContext';
 import firebaseConfig from '../firebaseConfig';
-import messaging from '@react-native-firebase/messaging';
+import {
+  getInitialNotification,
+  getMessaging,
+  getToken,
+  onMessage,
+  setBackgroundMessageHandler,
+} from '@react-native-firebase/messaging';
 import { NetworkProvider, useNetwork } from './context/NetworkContext';
 import NetworkBanner from './notCustomer/components/NetworkBanner';
 import i18n from './common/i18n';
@@ -23,9 +29,8 @@ import useDeviceAPIStore from './common/store/useDeviceAPIStore';
 import PushNotifications from './common/core/PushNotifications';
 
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const messagingInstance = getMessaging(firebaseApp);
 
 const MainAppContent = () => {
   const appearance = useColorScheme();
@@ -58,7 +63,7 @@ const MainAppContent = () => {
   useEffect(() => {
     initLanguage();
     
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
+    const unsubscribe = onMessage(messagingInstance, async remoteMessage => {
       const notification = remoteMessage?.notification;
       const data = remoteMessage?.data || {};
       const title = data?.title ?? 'Notification';
@@ -77,8 +82,7 @@ const MainAppContent = () => {
 
 
 
-    messaging()
-    .getInitialNotification()
+    getInitialNotification(messagingInstance)
     .then(remoteMessage => {
         PushNotifications.onRemoteNotificationHandler(remoteMessage)
     });
@@ -86,8 +90,7 @@ const MainAppContent = () => {
     // Listen for background messages
    
 
-
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
+    setBackgroundMessageHandler(messagingInstance, async remoteMessage => {
       console.log('Message handled in the background!',remoteMessage);
       // await PushNotifications.updateDataFromRequest(remoteMessage);
       const data = remoteMessage?.data || {};
@@ -103,11 +106,9 @@ const MainAppContent = () => {
         Vibration.vibrate();
       }
     })
-
-
-    messaging()
-      .getToken()
-      
+    getToken(messagingInstance).catch(error => {
+      console.error('Error getting FCM token:', error);
+    });
 
     return unsubscribe;
   }, []);
