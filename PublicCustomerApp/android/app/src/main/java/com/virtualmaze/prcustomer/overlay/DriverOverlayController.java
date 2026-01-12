@@ -110,6 +110,7 @@ public class DriverOverlayController {
         mainHandler.removeCallbacks(socketHealthCheckRunnable);
         cancelOverlayAutoDismiss();
         removeOverlay();
+        stopAlertAudio();
         try {
             if (driverSocket != null) {
                 driverSocket.off();
@@ -302,6 +303,7 @@ public class DriverOverlayController {
 
     private void handleSessionExpired() {
         try {
+            stopAlertAudio();
             // Stop overlay + socket via the service's unified handler
             DriverLocationService service = DriverLocationService.getInstanceSafe();
             if (service != null) {

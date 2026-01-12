@@ -81,6 +81,7 @@ import UPIVerification from './DriverDocumentCenter/UPIVerification';
 import DriverProofDoc from './DriverDocumentCenter/DriverProofDoc';
 import LanguageSelectionScreen from './LanguageSelectionScreen';
 import EditDocCenter from './EditDocCenter';
+import tripAlert from '../../common/controllers/TripAlert';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -413,6 +414,7 @@ const PublicRidesDriverHomeScreen = () => {
         if (response.error === "SESSION_EXPIRED") {
           logout('driver');
            BGLocationTask.stopDriverBgTask();
+          tripAlert.stopAlertSound()
           return
         }
       }
