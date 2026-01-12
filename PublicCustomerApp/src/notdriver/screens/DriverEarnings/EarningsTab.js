@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next'
 
 const EarningsTab = () => {
   const {t} = useTranslation()
-    const {userInfo} = useUserStore
+    const {userInfo} = useUserStore()
    const {driverDue, driverEarnings, driverDueDate, setdriverDueDate, driverInfo, setDriverDue, dueDuration} = usePublicDriverStore()
    const merchantId = 'M2202LBE4KQJX'
    const [payments, setPayments] = useState([])
