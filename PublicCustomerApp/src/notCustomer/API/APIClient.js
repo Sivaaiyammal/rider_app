@@ -79,7 +79,7 @@ apiClient.interceptors.response.use(
     let errorMessage = 'An unknown error occurred';
     let statusCode = null;
     if (isTimeoutError) {
-      errorMessage = `Request timed out after ${REQUEST_TIMEOUT_MS / 1000}s`;
+      errorMessage = `Request timed out. Please retry.`;
       console.error('HTTP timeout error:', error.config?.url);
     } else if (error.response) {
       statusCode = error.response.status;
