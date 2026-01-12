@@ -16,7 +16,6 @@ class APIRequest {
   constructor(baseURL) {
     this.baseURL = baseURL || Config.ROOT_API_URL;
     this.retryTime = 1000 * 5
-    console.log("APIRequest Base URL: ", this.baseURL)
   }
 
   async request(

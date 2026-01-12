@@ -40,8 +40,6 @@ const DriverMapScreen = props => {
   const pendingDueAmount = Number(driverDue ?? 0);
   const showPendingDue = Boolean(driverDueDate) && driverDueDate < currentTimeMs && pendingDueAmount > 0;
 
-  console.log('driverDueDate', driverDueDate, currentTimeMs);
-
   useEffect(() => {
     NeNativeModule.clearDirectionPoints();
   }, []);
