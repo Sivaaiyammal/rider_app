@@ -394,7 +394,7 @@ const DriverOnRide = () => {
         setDirectionPoints(null);
         setIsReachedPickup(false);
         setCurrentTripAcceptedTime(new Date().getTime());
-        updateDirectionsPoints();
+        // updateDirectionsPoints();
       }else{
         showNotification(res?.message, res?.message, 'danger');
       }
