@@ -409,7 +409,7 @@ const PayDue = ({driverDue, driverDueDate , fetchDueDate, driverInfo}) => {
                   opacity: isPayEnabled ? 1 : 0.5,
                 }
               ]}
-              // disabled={!isPayEnabled || isSummaryLoading}
+              disabled={!isPayEnabled || isSummaryLoading}
               onPress={openInvoice}>
               {isSummaryLoading || isPaymentProcessing ? (
                 <ActivityIndicator />
@@ -531,7 +531,7 @@ const PayDue = ({driverDue, driverDueDate , fetchDueDate, driverInfo}) => {
                     opacity: isPayEnabled ? 1 : 0.5,
                   }
                 ]}
-                // disabled={!isPayEnabled || isSummaryLoading || isPaymentProcessing}
+                disabled={!isPayEnabled || isSummaryLoading || isPaymentProcessing}
                 onPress={handlePayDue}>
                 {isPaymentProcessing ? (
                   <ActivityIndicator color={Colors.white} />
