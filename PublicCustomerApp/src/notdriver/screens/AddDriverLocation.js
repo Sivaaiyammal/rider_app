@@ -73,6 +73,8 @@ const AddDriverLocation = ({isPassanger, updatePassangerLocation, isGeofenceSear
   
     const [selectedRegion, setSelectedRegion] = useState(REGIONS[0]);
 
+    const {setIsApproved} = usePublicDriverStore();
+
   const searchInputRef = useRef(null);
   const abortControllerRef = useRef(null);
 
@@ -440,6 +442,7 @@ const removeStateVecotr = async (item) => {
      if (res?.success) {
          setDriverInfo({homeLocation: updateDriverHomeLocation,coordinates: [selectedAddress.lng, selectedAddress.lat]})
          setLocationCompleteStatus(true)
+         setIsApproved(false)
          onGoBack()
      } else {
         showNotification(res?.message, res?.message, 'danger');

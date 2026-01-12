@@ -19,6 +19,8 @@ const DocumentCenter = () => {
   const {setStackScreen} = useStackScreenStore();
   const driverInfo = usePublicDriverStore(state => state.driverInfo);
   const [showBankOptions, setShowBankOptions] = useState(false);
+  const {isApproved} = usePublicDriverStore();
+  const {goBack} = useStackScreenStore();
 
   const {
     locationCompleteStatus,
@@ -105,6 +107,16 @@ const DocumentCenter = () => {
       return;
     }
     setTimeout(() => setStackScreen(screen), 200);
+  };
+
+  const onDonePress = () => {
+    if (isApproved) {
+      // setStackScreen('Home')
+      // setCurrentScreen('Map');
+      goBack();
+    } else {
+      setStackScreen('DriverApprovalScreen')
+    }
   };
 
   const renderStatus = complete => (
@@ -214,7 +226,7 @@ const DocumentCenter = () => {
       <View style={styles.footer}>
         <TouchableOpacity
           style={[styles.doneButton, !docCompleted && styles.doneButtonDisabled]}
-          onPress={()=>setStackScreen('DriverApprovalScreen')}
+          onPress={()=> onDonePress()}
           activeOpacity={0.8}
           disabled={!docCompleted}
         >

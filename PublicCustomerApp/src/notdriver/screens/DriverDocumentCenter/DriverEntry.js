@@ -53,6 +53,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
   const [licenseScanMessage, setLicenseScanMessage] = useState('');
   const [driverPhoto, setDriverPhoto] = useState(driverInfo.driverPhoto || null);
   const [showDobPicker, setShowDobPicker] = useState(false);
+  const {setIsApproved} = usePublicDriverStore();
   const parseDobToDate = useCallback((value) => {
     const fallback = new Date(1990, 0, 1);
     if (!value || typeof value !== 'string') return fallback;
@@ -477,8 +478,9 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
           dob,
         });
         showNotification(response?.message, response?.message, 'success');
+        setIsApproved(false)
+         setDriverDetailsCompleteStatus(true)
         goBack();
-        setDriverDetailsCompleteStatus(true)
       } else {
         showNotification(response?.message, 'Please Contact Support', 'danger');
       }
