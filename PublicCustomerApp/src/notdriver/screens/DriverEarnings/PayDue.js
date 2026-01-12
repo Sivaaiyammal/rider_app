@@ -16,6 +16,7 @@ import { showNotification } from '../../../common/components/Alerts/showNotifica
 import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter';
 import { Colors, Fonts } from '../../../common/constants/constants';
 import { useTranslation } from 'react-i18next';
+import useUserStore from '../../../common/store/useUserStore';
 
 const toNumber = value => {
   const numeric = Number(value);
@@ -174,7 +175,7 @@ const createInvoiceState = baseAmount => {
   };
 };
 
-const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo}) => {
+const PayDue = ({driverDue, driverDueDate , fetchDueDate, driverInfo}) => {
   const {setDriverDue, minDueAmount, razorpayLinkedAccountDetails} = usePublicDriverStore();
   const {driverConfig} = useTripsStore();
   const {t} = useTranslation()
@@ -184,6 +185,7 @@ const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo})
   const [invoiceDetails, setInvoiceDetails] = useState(() =>
     createInvoiceState(driverDue),
   );
+  const {userInfo} = useUserStore()
 
   const updateTransactionID = async paymentResponse => {
     try {
@@ -407,7 +409,7 @@ const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo})
                   opacity: isPayEnabled ? 1 : 0.5,
                 }
               ]}
-              disabled={!isPayEnabled || isSummaryLoading}
+              // disabled={!isPayEnabled || isSummaryLoading}
               onPress={openInvoice}>
               {isSummaryLoading || isPaymentProcessing ? (
                 <ActivityIndicator />
@@ -529,7 +531,7 @@ const PayDue = ({driverDue, userInfo, driverDueDate , fetchDueDate, driverInfo})
                     opacity: isPayEnabled ? 1 : 0.5,
                   }
                 ]}
-                disabled={!isPayEnabled || isSummaryLoading || isPaymentProcessing}
+                // disabled={!isPayEnabled || isSummaryLoading || isPaymentProcessing}
                 onPress={handlePayDue}>
                 {isPaymentProcessing ? (
                   <ActivityIndicator color={Colors.white} />
