@@ -52,7 +52,7 @@ const TripAccept = () => {
   const {setShowRatingModal, setShowPaymentInitiatedLoader} = usePublicDriverStore();
   const {userInfo} = useUserStore();
   const {setStackScreen} = useStackScreenStore();
-  const {setActiveTripData} = useTripsStore();
+  const {setActiveTripData, setNewStopData} = useTripsStore();
   // const resetAllStore = useResetStore();
   const bookingTime = tripDetails?.bookingTime
   const timerDuration = timeOutSeconds || 15;
@@ -136,6 +136,7 @@ const TripAccept = () => {
       setActiveTripData([]);
       DataStore.storeData('activeTripId', null);
       NeNativeModule.clearDirectionPoints()
+      setNewStopData(null)
       // Reset trip accept store completely
       reset();
       BGLocationTask.hideOverlay();
@@ -207,6 +208,7 @@ const TripAccept = () => {
       PushNotifications.onClearAllNotifications();
       tripAlert.stopAlertSound();
       setTimeLeft(2);
+      setNewStopData(null)
       reset();
     } catch (err) {
       console.log('hari-->>accept-->>err-->>', err);

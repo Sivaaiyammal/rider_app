@@ -135,7 +135,7 @@ class RideMatchWSService {
             try {
               const cancelReason = 'Trip accept failed by tracking engine attempted three times';
               const api = new APIRequest();
-              const cancelResp = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:data?.trip_id, reason: cancelReason}, userInfo?.token);
+              const cancelResp = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:data?.trip_id, reason: cancelReason, isBeforePickup: true}, userInfo?.token);
               if (cancelResp?.success) {
                 showNotification('Trip Cancelled', cancelResp?.message, 'success');
               } else {

@@ -88,7 +88,7 @@ const CancelRideModal = ({
 
   const status = tripData?.status
   
-  const filteredReasons = status === 'ACCEPTED' ? reasons.slice(1, reasons.length) : reasons;
+  const filteredReasons = status === 'ACCEPTED' ? reasons.slice(1, reasons?.length) : reasons;
 
   return (
       <BottomSheetPopup
@@ -104,8 +104,8 @@ const CancelRideModal = ({
        {loading && <FullScreenLoader  />}
         <View style={styles.modalView}>
             <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{tripData.status === 'PICKEDUP' ? t('end_trip') : t('cancel_ride')}</Text>
-                {tripData.status === 'PICKEDUP' ? (
+                <Text style={styles.modalTitle}>{tripData?.status === 'PICKEDUP' ? t('end_trip') : t('cancel_ride')}</Text>
+                {tripData?.status === 'PICKEDUP' ? (
                   <Text style={styles.modalText}>{t('please_select_a_reason_for_ending_the_trip')}</Text>
                 ) : (
                   <Text style={styles.modalText}>{t('please_select_a_reason_for_cancelling_the_trip')}</Text>

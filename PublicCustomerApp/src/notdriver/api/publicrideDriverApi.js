@@ -51,18 +51,6 @@ class PublicrideDriverApi {
     }
   }
 
-  async cancelTrip(tripId,reason,token=this.token) {
-    const reasonForCancel = reason? reason : ''
-    const api = new APIRequest(Config.ROOT_API_URL)
-    try {
-      const response = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:tripId, reason: reasonForCancel}, token);
-      return response;
-    } catch (error) {
-      console.error('Error canceling trip:', error);  
-      throw error;
-    }
-  }
-
   async updateBankDetails(formData,token=this.token) {
     try {
        const api = new APIRequest(Config.ROOT_API_URL)

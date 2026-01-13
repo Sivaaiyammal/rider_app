@@ -187,7 +187,7 @@ const DriverOnRide = () => {
       setLoading(true);
       if (tripsStatus === 'ACCEPTED') {
         const api = new APIRequest();
-        const response = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:activeTripData[0]._id, reason: reason}, userInfo.token);
+        const response = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:activeTripData[0]._id, reason: reason, isBeforePickup: true}, userInfo.token);
         if (response.success) {
           cancelTrip(response)
         } else {

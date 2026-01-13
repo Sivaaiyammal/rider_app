@@ -109,6 +109,7 @@ const TripFareCalculator = ({ tripData, onDone, setLoading, setError, isGetFare 
           "totalDistance": totalDistance,
           "totalDuration": totalDuration,
           "encodedPolyline" : encodedData,
+          "isBeforePickup": false,
           "droppedAtLoc": {
            "lat": userLocation?.[0],
            "lon": userLocation?.[1]
