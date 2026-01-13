@@ -253,6 +253,7 @@ const TripAccept = () => {
           logout('driver');
            BGLocationTask.stopDriverBgTask();
            tripAlert.stopAlertSound();
+           RideMatchWSService.close();
           return
         }
      } catch (err) {
