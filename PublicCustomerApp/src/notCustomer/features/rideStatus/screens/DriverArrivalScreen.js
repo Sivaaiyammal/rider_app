@@ -193,7 +193,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
         label: t('edit_pickup_location'),
         isFromRidePointsSelection: false,
         loading,
-        limitRadius: 1,
+        limitRadius: 0.5,
       });
     },
     [handlePickLocation, loading, setStackScreen, t],
