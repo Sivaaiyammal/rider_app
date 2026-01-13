@@ -125,7 +125,6 @@ const OTPScreen = ({route}) => {
           const deviceImei = await DeviceInfo.getUniqueId().catch(error => {
         console.log('Error getting device IMEI: ', error);
         });
-        console.log('Driver Verification data', user);
         setID(user._id);
         setUserdetails(user);
         setUserInfo(user);
