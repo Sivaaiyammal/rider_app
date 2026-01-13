@@ -167,7 +167,7 @@ export default function DriverInitializationScreen() {
       // Remove the event listener when the component unmounts
       event.remove();
     };
-  }, []); // Empty dependency array to ensure the effect runs only once
+  }, [stateChange]);
 
   // Update device API store states based on query results
   useEffect(() => {
