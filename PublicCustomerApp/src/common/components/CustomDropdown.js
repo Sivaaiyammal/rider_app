@@ -34,7 +34,7 @@ const CustomDropdown = ({
   const renderLabel = () => {
     if (value || isFocus) {
       return (
-        <Text style={[styles.label, isFocus && { color: 'blue' },{width:'100%', paddingHorizontal:10}]}>
+        <Text style={[styles.label,  { color: isFocus ? 'blue' : 'gray' },{width:'100%', paddingHorizontal:10}]}>
           {placeholder}
         </Text>
       );
@@ -46,7 +46,7 @@ const CustomDropdown = ({
     <View style={[styles.container, style]}>
       {renderLabel()}
       <Dropdown
-        style={[styles.dropdown, dropdownStyle, isFocus && { borderColor: 'blue' }]}
+        style={[styles.dropdown, dropdownStyle, { borderColor:  isFocus  ?'blue' : 'gray' }]}
         placeholderStyle={styles.placeholderStyle}
         selectedTextStyle={styles.selectedTextStyle}
         inputSearchStyle={styles.inputSearchStyle}
@@ -61,6 +61,7 @@ const CustomDropdown = ({
         value={value}
         onFocus={() => setIsFocus(true)}
         onBlur={() => setIsFocus(false)}
+        itemTextStyle={{color:'black', fontFamily:Fonts.regular}}
         onChange={item => {
           setValue(item[valueField]);
           onChange(item);
@@ -104,6 +105,7 @@ const styles = StyleSheet.create({
   selectedTextStyle: {
     fontSize: 14,
     fontFamily: Fonts.regular,
+    color:'black'
   },
   iconStyle: {
     width: 20,
@@ -113,5 +115,6 @@ const styles = StyleSheet.create({
     height: 40,
     fontSize: 16,
     fontFamily: Fonts.light,
+    color:'black'
   },
 });

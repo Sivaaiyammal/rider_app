@@ -14,7 +14,6 @@ import locationTask from '../../common/controllers/GetCurrentLocation';
 import BGLocationTask from '../../common/controllers/BGLocationTask';
 import driverWaitingTime from '../Controller/DriverWaitingTime';
 import { showNotification } from '../../common/components/Alerts/showNotification';
-import publicrideDriverApi from '../api/publicrideDriverApi';
 import { DataStore } from '../../common/controllers/DataStore';
 import APIRequest from '../../common/APIRequest';
 import DriverAnalytics from '../../common/Analytics/DriverAnalytics';
@@ -187,7 +186,8 @@ const DriverOnRide = () => {
     }
       setLoading(true);
       if (tripsStatus === 'ACCEPTED') {
-        const response = await publicrideDriverApi.cancelTrip(activeTripData[0]._id, reason);
+        const api = new APIRequest();
+        const response = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:activeTripData[0]._id, reason: reason}, userInfo.token);
         if (response.success) {
           cancelTrip(response)
         } else {
