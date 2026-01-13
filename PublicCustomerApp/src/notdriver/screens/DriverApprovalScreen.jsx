@@ -25,7 +25,7 @@ const DriverApprovalScreen = () => {
   const {logout} = useContext(GlobalContext)
   const {setStackScreen} = useStackScreenStore();
   const {userDeviceId} = useDeviceAPIStore();
-  const {driverRole, isApproved, isBlocked, unBlockRequestSent, setUnBlockRequestSent, driverInfo, setDriverInfo} = usePublicDriverStore();
+  const {driverRole, isApproved, isBlocked, unBlockRequestSent, setUnBlockRequestSent, driverInfo, setDriverInfo, setIsApproved} = usePublicDriverStore();
   const name = driverInfo?.name || 'Driver Name';
   const phone = driverInfo?.phone || '';
   const [loading, setLoading] = useState(false)
@@ -81,6 +81,7 @@ const DriverApprovalScreen = () => {
       onSuccess: (response) => {
         if(response?.success){
         storePublicDriverInfo(response);
+        setIsApproved(response?.driver?.isApproved || false);
       }
       },
       onError: (error) => {setStackScreen('DriverApprovalScreen')},
@@ -98,6 +99,7 @@ const DriverApprovalScreen = () => {
       const approved = resp?.driver?.isApproved;
       if (approved) {
         setStackScreen('Home');
+        setIsApproved(true)
       } else {
         showNotification(t('still_under_review') || 'Still under review', '', 'info');
       }

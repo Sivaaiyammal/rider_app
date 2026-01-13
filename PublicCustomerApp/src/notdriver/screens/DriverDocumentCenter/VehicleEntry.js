@@ -319,6 +319,30 @@ const VehicleEntry = ({ onNext }) => {
     return isValid;
   }, [insuranceDoc, permitDoc, permitNumber, regNo, selectedType, t, vehicleRcDoc]);
 
+  // Retry helper: attempts the API up to `maxRetries` times with exponential backoff
+  const requestWithRetry = useCallback(async (path, method, body, token, maxRetries = 3) => {
+    let attempt = 0;
+    let lastResponse = null;
+    while (attempt < maxRetries) {
+      try {
+        const api = new APIRequest();
+        const res = await api.request(path, method, body, token);
+        if (res?.success) {
+          return res;
+        }
+        lastResponse = res;
+      } catch (e) {
+        lastResponse = { success: false, message: e?.message || String(e) };
+      }
+      attempt += 1;
+      if (attempt < maxRetries) {
+        const delay = 500 * Math.pow(2, attempt - 1); // 500ms, 1000ms
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    return lastResponse;
+  }, []);
+
   const updateProof = useCallback(async () => {
     if (!_validateNew()) {
       return;
@@ -356,8 +380,13 @@ const VehicleEntry = ({ onNext }) => {
     setIsSaving(true);   
 
     try {
-      const api = new APIRequest();
-      const response = await api.request(`/publicrides/driver/updateDriverVehicleProof`, 'POST', formData, userInfo?.token);
+      const response = await requestWithRetry(
+        `/publicrides/driver/updateDriverVehicleProof`,
+        'POST',
+        formData,
+        userInfo?.token,
+        3,
+      );
 
       if (response?.success) {
         setVehicleInfo({
@@ -407,7 +436,7 @@ const VehicleEntry = ({ onNext }) => {
     if (!validate()) {
       return;
     }
-
+ setIsSaving(true);
     const formData = new FormData();
     formData.append('type', selectedType);
     formData.append('regNo', regNo.trim());
@@ -419,25 +448,17 @@ const VehicleEntry = ({ onNext }) => {
         type: 'image/jpeg', // Adjust the type as needed
       });
     }
-    // if (insuranceDoc) {
-    //   formData.append('insurance', {
-    //     uri: insuranceDoc.uri || insuranceDoc,
-    //     name: 'vehicle_insurance.jpg',
-    //     type: 'image/jpeg',
-    //   });
-    // }
-    // if (permitDoc) {
-    //   formData.append('permitDoc', {
-    //     uri: permitDoc.uri || permitDoc,
-    //     name: 'vehicle_permit.jpg',
-    //     type: 'image/jpeg',
-    //   });
-    // }
-
-    setIsSaving(true);
+   
+    console.log('Form Data Entries:', JSON.stringify(formData));
+   
     try {
-      const api = new APIRequest();
-      const response = await api.request(`/publicrides/driver/updateDriverVehicleInfo`, 'POST', formData, userInfo?.token);
+      const response = await requestWithRetry(
+        `/publicrides/driver/updateDriverVehicleInfo`,
+        'POST',
+        formData,
+        userInfo?.token,
+        3,
+      );
       if (response?.success) {
         setVehicleInfo({
           type: selectedType,
@@ -480,9 +501,6 @@ const VehicleEntry = ({ onNext }) => {
       setIsSaving(false);
     }
   }, [
-    goBack,
-    insuranceDoc,
-    onNext,
     permitDoc,
     permitNumber,
     regNo,
@@ -492,7 +510,6 @@ const VehicleEntry = ({ onNext }) => {
     setVehicleInfo,
     t,
     userInfo?.token,
-    validate,
     vehicleRcDoc,
   ]);
 
