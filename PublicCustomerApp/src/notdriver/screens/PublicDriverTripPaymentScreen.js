@@ -414,7 +414,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
               <Text
                 style={[
                   styles.amountValue,
-                  {fontFamily: Fonts.regular, bottom: 1},
+                  {fontFamily: Fonts.regular, bottom: 1, color:Colors.black},
                 ]}>
                 {t('payment_method')}
               </Text>
@@ -433,7 +433,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
           </View>
           <TouchableOpacity style={styles.upiCopyBtn} onPress={()=>copyToClipboard(bankInfo?.UPIID)}>
             <Text style={styles.upiCopyBtnText}>{bankInfo?.UPIID}</Text>
-            <Feather name="copy" size={16}/>
+            <Feather name="copy" size={16} color={Colors.black}/>
           </TouchableOpacity>
           <TouchableOpacity disabled={isLoading} style={styles.receiveBtn} onPress={()=>{driverRole === 'dco' ?onPaymentReceive(fareBreakDown, selectedPaymentMethod, selectedPaymentMethod) : setPaymentMethodModalVisible(true)}}>
             {isLoading? <ActivityIndicator color={Colors.white}/>: <Text style={styles.receiveBtnTxt}>{t('payment_received')}</Text>}
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
   },
   upiCopyBtnText:{
     fontFamily:Fonts.regular,
-    fontSize:14,
+    fontSize:14,color:Colors.black
   },
   receiveBtnTxt:{
     fontFamily:Fonts.regular,

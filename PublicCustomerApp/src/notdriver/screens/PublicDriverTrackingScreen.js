@@ -17,7 +17,7 @@ import AlertModal from '../components/AlertModal';
 import { RouteScreenStyles } from '../styles/RouteScreenStyles';
 import DriverOnRide from './DriverOnRide';
 import { driverDetailStyles } from '../styles/DriverDetailsUpload';
-import { Fonts } from '../../common/constants/constants';
+import { Colors, Fonts } from '../../common/constants/constants';
 import PublicDriverTripPaymentScreen from './PublicDriverTripPaymentScreen';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 import InputField from '../../common/components/InputField';
@@ -142,7 +142,7 @@ const PublicDriverTrackingScreen = () => {
     animationType={'slide'}
     children={
       <View>
-        <Text style={{fontFamily:Fonts.semi_bold, fontSize:16, textAlign:'center', marginBottom:10}}>Rate Passanger</Text>
+        <Text style={{fontFamily:Fonts.semi_bold, fontSize:16, textAlign:'center', marginBottom:10, color:Colors.black}}>Rate Passanger</Text>
         <StarRating
         rating={rating}
         onChange={setRating}
