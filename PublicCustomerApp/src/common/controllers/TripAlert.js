@@ -2,7 +2,10 @@
 /* eslint-disable no-async-promise-executor */
 /* eslint-disable no-console */
 
+import { NativeModules } from 'react-native';
 import Sound from 'react-native-sound';
+
+const { PlayTripSoundModule } = NativeModules
 
 class TripAlert {
   constructor() {
@@ -91,13 +94,14 @@ class TripAlert {
     // Stop current playing sound and reset loops
     this._stopCurrent();
     // Also ensure any preloaded looping sound is halted
-    ['tripalert', 'driver_allocated'].forEach((key) => {
-      const s = this.sounds[key];
-      if (s) {
-        try { s.setNumberOfLoops(0); } catch (_) {}
-        try { s.stop(); } catch (_) {}
-      }
-    });
+    // ['tripalert', 'driver_allocated'].forEach((key) => {
+    //   const s = this.sounds[key];
+    //   if (s) {
+    //     try { s.setNumberOfLoops(0); } catch (_) {}
+    //     try { s.stop(); } catch (_) {}
+    //   }
+    // });
+    PlayTripSoundModule.stopAlertSound();
     return true;
   }
 

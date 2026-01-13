@@ -168,10 +168,13 @@ class RideMatchWSService {
       } else {
         reset();
       }
+      tripAlert.stopAlertSound();
     } catch (err) {
       reset();
+      tripAlert.stopAlertSound();
     } finally {
       useTripAcceptStore.getState().setLoading(false);
+      tripAlert.stopAlertSound();
     }
   }
 
