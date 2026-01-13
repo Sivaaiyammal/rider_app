@@ -92,6 +92,7 @@
     "react-native-safe-area-context": "^5.4.0",
     "react-native-screens": "^4.10.0",
     "react-native-sha256": "^1.4.10",
+    "react-native-sound": "^0.13.0",
     "react-native-star-rating-widget": "^1.9.2",
     "react-native-svg": "^15.11.2",
     "react-native-svg-transformer": "^1.5.0",
