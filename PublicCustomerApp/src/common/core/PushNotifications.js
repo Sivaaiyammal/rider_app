@@ -23,6 +23,15 @@ class PushNotifications {
       requestPermissions: Platform.OS === 'ios' && true,
     });
 
+    // Ensure Android 13+ notification permission is requested
+    if (Platform.OS === 'android') {
+      try {
+        PushNotification.requestPermissions();
+      } catch (e) {
+        console.log('Android notification permission request failed:', e?.message);
+      }
+    }
+
     PushNotification.createChannel(
       {
         channelId: 'TrackerApp',
@@ -31,6 +40,7 @@ class PushNotifications {
         playSound: true,
         soundName: 'default',
         vibrate: true,
+        importance: 4,
       },
       created => console.log(`createChannel returned '${created}'`),
     );
@@ -166,14 +176,15 @@ class PushNotifications {
   }
 
   scheduleNotification() {
-    PushNotification.localNotification({
-      channelId: 'NOT App',
+    PushNotification.localNotificationSchedule({
+      channelId: 'TrackerApp',
       title: 'New Trip Request',
       message: 'Test Trip Report',
       details: {
         tripId: '67e62d255724d2f133eba97c'
       },
-      date: new Date(Date.now() + 1000 * 20), // 10 seconds from now
+      date: new Date(Date.now() + 1000 * 20),
+      allowWhileIdle: true,
     });
   }
 
@@ -253,8 +264,9 @@ class PushNotifications {
   }
 
   sendNotification(fileName, title, details = {}) {
+    console.log('Sending local notification:', {fileName, title, details});
     PushNotification.localNotification({
-      channelId: 'NOT APP',
+      channelId: 'TrackerApp',
       title: title, // 'File Downloaded',
       message: fileName,
       playSound: true,
@@ -264,6 +276,7 @@ class PushNotifications {
       details: details
     });
   }
+  
 }
 
 export default new PushNotifications();
