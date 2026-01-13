@@ -3,9 +3,9 @@ import React from 'react'
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore'
 import NavBar from '../../../common/components/NavBar'
 import UseBackButton from '../../../common/hooks/UseBackButton'
-import BankDetails from '../DriverVehicleDetails/BankDetails'
 import { Colors } from '../../../common/constants/constants'
 import usePublicDriverStore from '../../store/usePublicDriverStore'
+import BankDetails from '../DriverDocumentCenter/BankDetails'
 
 
 const BankAccountDetails = () => {

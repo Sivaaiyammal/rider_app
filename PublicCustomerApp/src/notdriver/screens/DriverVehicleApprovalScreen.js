@@ -39,7 +39,7 @@ const DriverVehicleApprovalScreen = ({ vehicleStatus = 'pending' }) => {
   };
 
   const handleEditDocuments = () => {
-    setStackScreen('EditDriverVehicleDetails');
+    setStackScreen('DocumentCenter');
   };
 
   const handleLogout = async () => {

@@ -651,8 +651,6 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
             passbookImage: passbookImage
           }      
           setBankInfo(payload);
-          setIsApproved(false)
-          // onNext(payload);
           goBack();
           setBankDetailsCompleteStatus(true)
           showNotification(response?.message, '', 'success');
