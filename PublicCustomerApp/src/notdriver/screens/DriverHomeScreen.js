@@ -82,6 +82,7 @@ import DriverProofDoc from './DriverDocumentCenter/DriverProofDoc';
 import LanguageSelectionScreen from './LanguageSelectionScreen';
 import EditDocCenter from './EditDocCenter';
 import tripAlert from '../../common/controllers/TripAlert';
+import rideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -159,6 +160,8 @@ const PublicRidesDriverHomeScreen = () => {
   const [isBankVerified, setIsBankVerified] = useState(false)
   const {setMapLocation, setMapBounds, setUserLocation, setMapMarkers, mapMarkers} = useMapMarkerStore();
   const [loading, setLoading] = useState(false)
+  const [wsConnected, setWsConnected] = useState(Boolean(rideMatchWSService?.socket?.connected));
+  const [wsConnecting, setWsConnecting] = useState(false);
 
   const storePublicDriverInfo = (response) => {
     setDriverInfo({
@@ -484,6 +487,24 @@ const PublicRidesDriverHomeScreen = () => {
     getCurrentLocation();
   },[])
 
+  // Track socket connection status and listen for connect/disconnect
+  useEffect(() => {
+    const sock = rideMatchWSService?.socket;
+    setWsConnected(Boolean(sock?.connected));
+    if (!sock) return;
+    const onConnect = () => setWsConnected(true);
+    const onDisconnect = () => setWsConnected(false);
+    const onError = () => setWsConnected(false);
+    rideMatchWSService.on('connect', onConnect);
+    rideMatchWSService.on('disconnect', onDisconnect);
+    rideMatchWSService.on('connect_error', onError);
+    return () => {
+      rideMatchWSService.off('connect', onConnect);
+      rideMatchWSService.off('disconnect', onDisconnect);
+      rideMatchWSService.off('connect_error', onError);
+    };
+  }, [rideMatchWSService?.socket]);
+
   const getUserLocation = async () =>{
     await locationTask.getCurrentLocation().then((position) => {
         setUserMarker(position.coords.latitude, position.coords.longitude)
@@ -663,6 +684,29 @@ const PublicRidesDriverHomeScreen = () => {
    
      <View style={{ flex: 1 }}>
       <MapContainer />
+      {/* Socket reconnect banner (only for approved, not blocked) */}
+      {!wsConnected && approved && !blocked && (
+        <View style={{position:'absolute', top: 0, left: 0, right: 0, backgroundColor: Colors.pale_grey_two, padding: 8, flexDirection:'row', alignItems:'center', justifyContent:'space-between', zIndex: 1000}}>
+          <Text style={{fontFamily: Fonts.medium, color: Colors.black}}>Network Not Connected</Text>
+          <TouchableOpacity
+            disabled={wsConnecting}
+            onPress={async () => {
+              try {
+                setWsConnecting(true);
+                const ok = await rideMatchWSService.initDriverRoomSocket(userInfo?._id);
+                setWsConnected(Boolean(ok));
+              } catch (e) {
+                setWsConnected(false);
+              } finally {
+                setWsConnecting(false);
+              }
+            }}
+            style={{backgroundColor: Colors.periwinkle, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8}}
+          >
+            <Text style={{color: Colors.white, fontFamily: Fonts.medium}}>{wsConnecting ? 'Reconnecting…' : 'Reconnect'}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
         {(isLoading )&&
     <View style={{position:'absolute', width:'100%', height:'100%',}}>
     <FullScreenLoader /> 
