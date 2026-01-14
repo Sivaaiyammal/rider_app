@@ -616,7 +616,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
       postal_code: postalCode.trim(),
       country: country.trim()
     }));
-    if(passbookImage.uri.includes('file://')){
+    if(passbookImage?.uri?.includes('file://')){
     formData.append('passbookImage', {
         uri: Platform.OS === 'android' ? passbookImage?.uri : passbookImage?.uri?.replace('file://', ''),
         name: passbookImage?.name,

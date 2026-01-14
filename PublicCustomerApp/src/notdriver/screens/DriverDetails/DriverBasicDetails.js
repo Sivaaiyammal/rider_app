@@ -5,6 +5,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import StarRating from 'react-native-star-rating-widget'
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore'
 import usePublicDriverStore from '../../store/usePublicDriverStore'
+import publicrideDriverApi from '../../api/publicrideDriverApi'
 import useUserStore from '../../../common/store/useUserStore'
 import APIRequest from '../../../common/APIRequest'
 import BGLocationTask from '../../../common/controllers/BGLocationTask'
@@ -26,7 +27,8 @@ const DriverBasicDetails = () => {
    const [isModalVisible, setIsModalVisible] = useState(false);
    const {userInfo} = useUserStore()
    const [isLoading, setIsLoading] = useState(false)
-   const {driverDue, driverRatings, razorpayLinkedAccountDetails} = usePublicDriverStore();
+   const {bankDetailsCompleteStatus} = usePublicDriverStore();
+    const {driverDue, driverRatings, razorpayLinkedAccountDetails, setRazorpayLinkedAccountDetails} = usePublicDriverStore();
    
     const onBackPress = () => {
         goBack()
@@ -71,6 +73,24 @@ const DriverBasicDetails = () => {
 
     const handleCancelEdit = () => {
         setIsModalVisible(false);
+    }
+
+    const handleCheckStatus = async () => {
+        try {
+            setIsLoading(true);
+            const res = await publicrideDriverApi.getDriverDetails(userInfo?.token);
+            if (res?.success) {
+                const details = res?.driver?.razorpayLinkedAccountDetails || null;
+                setRazorpayLinkedAccountDetails(details);
+                showNotification(details?.accountDetails?.activation_status, '', 'success');
+            } else {
+                showNotification(res?.message || t('something_went_wrong', { defaultValue: 'Something went wrong. Try again.' }), '', 'danger');
+            }
+        } catch (e) {
+            showNotification(e?.message || t('something_went_wrong', { defaultValue: 'Something went wrong. Try again.' }), '', 'danger');
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     const menuItems = [
@@ -133,10 +153,30 @@ const DriverBasicDetails = () => {
                     {item.icon}
                 </View>
                 <View>
-                <Text style={styles.menuItemText}>{item.title}</Text>
+                    <Text style={styles.menuItemText}>{item.title}</Text>
                 </View>
             </View>
-            <Text style={styles.VerifyText}>{item.id === 6 && !razorpayLinkedAccountDetails ? 'Verify Now' : ''}</Text>
+            {item.id === 6 && (
+                razorpayLinkedAccountDetails || bankDetailsCompleteStatus? (
+                    razorpayLinkedAccountDetails?.accountDetails?.activation_status === 'activated' ? (
+                        <Text style={[styles.VerifyText,{color:'green'}]} capitalize>{razorpayLinkedAccountDetails?.accountDetails?.activation_status?.toUpperCase()}</Text>
+                    ) : (
+                        <View style={styles.statusWithButton}>
+                            <Text style={[styles.VerifyText,{color:'red'}]} capitalize>{razorpayLinkedAccountDetails?.accountDetails?.activation_status?.toUpperCase()}</Text>
+                            <TouchableOpacity style={styles.checkStatusInlineBtn} onPress={handleCheckStatus}>
+                                <Text style={styles.checkStatusBtnText}>{t('check_status', { defaultValue: 'Check Status' })}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )
+                ) : (
+                      <View style={styles.statusWithButton}>
+                            <Text style={styles.VerifyText}>{'Verify Now'}</Text>
+                            <TouchableOpacity style={styles.checkStatusInlineBtn} onPress={handleCheckStatus}>
+                                <Text style={styles.checkStatusBtnText}>{t('check_status', { defaultValue: 'Check Status' })}</Text>
+                            </TouchableOpacity>
+                        </View>
+                )
+            )}
             <View style={styles.menuItemRight}>
                 <Ionicons name="chevron-forward" size={20} color={Colors.warm_grey} />
             </View>
@@ -526,5 +566,27 @@ const styles = StyleSheet.create({
         fontFamily:Fonts.medium,
         color:Colors.red,
         marginRight:10,
+    },
+    checkStatusContainer: {
+        paddingHorizontal: 20,
+        paddingBottom: 10,
+    },
+        statusWithButton: {
+            alignItems: 'flex-start',
+            gap: 6,
+        },
+        checkStatusInlineBtn: {
+            alignSelf: 'flex-start',
+            backgroundColor: Colors.periwinkle,
+            borderRadius: 8,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderWidth: 1,
+            borderColor: Colors.periwinkle,
+        },
+    checkStatusBtnText: {
+        color: Colors.white,
+        fontFamily: Fonts.medium,
+        fontSize: 14,
     }
 })

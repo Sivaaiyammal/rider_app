@@ -228,8 +228,6 @@ const AddDriverLocation = ({isPassanger, updatePassangerLocation, isGeofenceSear
           category: [],
         };
 
-        console.log("searchParams",JSON.stringify(searchParams));
-
         setIsLoading(true);
 
 
@@ -462,7 +460,6 @@ const removeStateVecotr = async (item) => {
        homeLocation: updateDriverHomeLocation,
        location: userLocation.reverse(),
      };
-     console.log("payload",JSON.stringify(payload));
      const res = await api.request(url, 'POST', payload, userInfo?.token);
      if (res?.success) {
          setDriverInfo({homeLocation: updateDriverHomeLocation,coordinates: [selectedAddress.lng, selectedAddress.lat]})
