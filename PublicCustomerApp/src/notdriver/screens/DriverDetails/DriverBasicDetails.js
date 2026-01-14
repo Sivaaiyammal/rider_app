@@ -171,7 +171,7 @@ const DriverBasicDetails = () => {
                         <Text style={[styles.VerifyText,{color:'green'}]} capitalize>{razorpayLinkedAccountDetails?.accountDetails?.activation_status?.toUpperCase()}</Text>
                     ) : (
                         <View style={styles.statusWithButton}>
-                            <Text style={[styles.VerifyText,{color:'red'}]} capitalize>{razorpayLinkedAccountDetails?.accountDetails?.activation_status?.toUpperCase() || "under verification"}</Text>
+                            <Text style={[styles.VerifyText,{color:'red'}]} capitalize>{razorpayLinkedAccountDetails?.accountDetails?.activation_status?.toUpperCase() || "UNDER VERIFICATION"}</Text>
                             <TouchableOpacity style={styles.checkStatusInlineBtn} onPress={handleCheckStatus}>
                                 <Text style={styles.checkStatusBtnText}>{t('check_status', { defaultValue: 'Check Status' })}</Text>
                             </TouchableOpacity>

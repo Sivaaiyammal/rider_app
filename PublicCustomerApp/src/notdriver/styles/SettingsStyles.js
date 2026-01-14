@@ -280,7 +280,7 @@ export const settingsScreen = StyleSheet.create({
 export const settingStyle = StyleSheet.create({
     title:{ 
         fontWeight: 'bold', 
-        color: "#7d5fff", 
+        color: Colors.periwinkle, 
         fontSize: 16 
     },
     jstfy:{

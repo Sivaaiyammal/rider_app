@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import analytics from '@react-native-firebase/analytics';
 
-import { Fonts } from '../../common/constants/constants';
+import { Colors, Fonts } from '../../common/constants/constants';
 import useUserStore from '../../common/store/useUserStore';
 import useCurrentScreenStore from '../../common/store/useCurrentScreenStore';
 import { flexStyle } from '../../common/styles/flexStyle';
@@ -110,7 +110,7 @@ export default function DriverTabBar({ menus }) {
                       styles.menuName,
                       {
                         color:
-                          currentScreen === menu.name ? '#7d5fff' : '#757575',
+                          currentScreen === menu.name ?Colors.periwinkle : '#757575',
                           fontFamily:currentScreen === menu.name ?  Fonts.medium:  Fonts.light,
                         fontSize: selectedLanguage === "en" ? 12 : 10,
                         textAlign:"center",

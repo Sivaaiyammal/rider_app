@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   popUpIcon: {
-    backgroundColor: '#7d5fff',
+    backgroundColor: Colors.periwinkle,
     width: 50,
     height: 50,
     borderRadius: 25,

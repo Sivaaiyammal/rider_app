@@ -94,6 +94,7 @@ const DriverOnRide = () => {
   const [newLegIndex, setNewLegIndex] = useState(0)
   const prevNavLegIndex = useRef(null); // store last navLegIndex
   const [openNavChoiceModal, setOpenNavChoiceModal] = useState(false)
+  const [openRouteRetryModal, setOpenRouteRetryModal] = useState(false)
 
   const [watingTime, setWaitingTime] = useState(0)
   const [isAlertSent, setIsAlertSent] = useState(false)
@@ -622,6 +623,44 @@ const DriverOnRide = () => {
     );
   };
 
+  const renderRouteRetryModal = () => {
+    return (
+      <>
+        {/* Fullscreen overlay styled like RouteStatusOverlay */}
+        <View style={styles.routeOverlay} pointerEvents="auto">
+          <View style={styles.routeErrorBox}>
+            <View style={styles.routeIconWrapper}>
+              <MaterialCommunityIcons name="alert-circle-outline" size={44} color={Colors.red} />
+            </View>
+            <Text style={styles.routeErrorText} numberOfLines={2}>
+              {t('routeStatus_errorTitle', { defaultValue: 'Failed to fetch route' })}
+            </Text>
+            <Text style={styles.routeHelperText}>
+              {t('routeStatus_helper', { defaultValue: 'Ensure your internet is stable and try again.' })}
+            </Text>
+            <View style={{flexDirection:'row', gap:8, marginTop:6}}>
+              <TouchableOpacity
+                style={styles.routeRetryBtn}
+                onPress={() => {
+                  updateDirectionsPoints();
+                  setOpenRouteRetryModal(false);
+                }}
+              >
+                <Text style={styles.routeRetryText}>{t('routeStatus_retry', { defaultValue: 'Try Again' })}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.routeBackBtn}
+                onPress={() => setOpenRouteRetryModal(false)}
+              >
+                <Text style={styles.routeBackText}>{t('routeStatus_back', { defaultValue: 'Back' })}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </>
+    );
+  };
+
   const renderPickUpModal = () => {
     return (
       <BottomSheetPopup
@@ -659,6 +698,8 @@ const DriverOnRide = () => {
     NeNativeModule.recenterNavigation();
   }
 
+
+
   // const isRouteLoading = routeLoading?.loading ? routeLoading?.loading : false
 
   // Handle native errors
@@ -686,6 +727,12 @@ const DriverOnRide = () => {
   //     setStartNavigation(false);
   //   }
   // }, [navigationError]);
+
+    useEffect(() => {
+    if (routeLoading?.error) {
+      setOpenRouteRetryModal(true);
+    }
+  }, [routeLoading])
 
   // Handle Route not found error
    useEffect(() => {
@@ -964,6 +1011,7 @@ const DriverOnRide = () => {
         {modalVisible && renderPickUpModal()}
         {/* {showTimeStartModal && renderWaitTimeModal()} */}
         {openNavChoiceModal && renderOpenNavChoiceModal()}
+        {openRouteRetryModal && renderRouteRetryModal()}
     </View>
     </>
   );
@@ -1110,5 +1158,66 @@ const styles = StyleSheet.create({
       fontSize:11,
       color:Colors.grey_dark,
       flex:1
-    }
+    },
+    /* RouteStatusOverlay-like styles */
+    routeOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0,0,0,0.35)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 9999,
+    },
+    routeErrorBox: {
+      width: '75%',
+      backgroundColor: 'white',
+      justifyContent: 'center',
+      alignItems: 'center',
+      alignSelf: 'center',
+      borderRadius: 10,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      elevation: 4,
+    },
+    routeIconWrapper: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 6,
+    },
+    routeErrorText: {
+      color: Colors.red,
+      fontSize: 14,
+      marginBottom: 8,
+      fontFamily:Fonts.regular
+    },
+    routeHelperText: {
+      color: Colors.grey_dark,
+      fontSize: 12,
+      textAlign: 'center',
+      marginBottom: 8,
+      fontFamily:Fonts.regular
+    },
+    routeRetryBtn: {
+      backgroundColor: Colors.grey_dark,
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+    },
+    routeRetryText: {
+      color: 'white',
+      fontSize: 14,
+    fontFamily:Fonts.semi_bold
+    },
+    routeBackBtn: {
+      backgroundColor: 'transparent',
+      borderRadius: 8,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderWidth: 1,
+      borderColor: Colors.grey_dark,
+    },
+    routeBackText: {
+      color: Colors.grey_dark,
+      fontSize: 14,
+      fontFamily:Fonts.semi_bold
+    },
 })

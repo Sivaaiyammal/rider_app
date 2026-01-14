@@ -354,7 +354,8 @@ const usePublicDriverStore = create((set, get) => ({
 driverDetailsCompleteStatus:null,
 vehicleDetailsCompleteStatus:null,
 bankDetailsCompleteStatus:null,
-documentsCompleteStatus:null
+documentsCompleteStatus:null,
+razorpayUpdated:false
     });
   },
 }));
