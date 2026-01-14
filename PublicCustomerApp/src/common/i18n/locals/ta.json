@@ -24,7 +24,7 @@
     "please_enter_pan_number": "தயவுசெய்து PAN எண்ணை உள்ளிடவும்.",
     "please_enter_a_valid_pan_number": "தயவுசெய்து செல்லுபடியாகும் PAN எண்ணை உள்ளிடவும்.",
     "please_enter_license_number": "உரிம எண்ணை உள்ளிடவும்.",
-    "please_enter_a_valid_license_number_tn01_20110012345": "செல்லுபடியாகும் உரிம எண்ணை (TN01 20110012345) உள்ளிடவும்.",
+    "please_enter_a_valid_license_number_tn01_20110012345": "தயவுசெய்து செல்லுபடியாகும் உரிம எண்ணை உள்ளிடவும் (TN01 20110012345)",
     "please_enter_driver_location": "தயவுசெய்து டிரைவர் இருப்பிடத்தை உள்ளிடவும்.",
     "location_permission_denied": "இருப்பிட அனுமதி மறுக்கப்பட்டது",
     "grant_location_permission": "இருப்பிட அனுமதியை வழங்கு",
@@ -1053,7 +1053,7 @@
     "dob_detected_auto_filled": "பிறந்த தேதி கண்டறியப்பட்டு தானாகவே நிரப்பப்படும்.",
     "license_details_not_detected": "உரிம விவரங்களைக் கண்டறிய முடியவில்லை. புலங்களை கைமுறையாகப் புதுப்பிக்கவும்.",
     "please_enter_dob": "பிறந்த தேதியை உள்ளிடவும்.",
-    "please_upload_driver_photo": "தொடர்வதற்கு முன் ஓட்டுநர் புகைப்படத்தைப் பதிவேற்றவும்.",
+    "please_upload_driver_photo": "தொடர்வதற்கு முன் இயக்கி புகைப்படத்தைப் பதிவேற்றவும்.",
     "please_upload_license_document": "தொடர்வதற்கு முன் ஓட்டுநர் உரிமத்தைப் பதிவேற்றவும்.",
     "driver_photo_helper": "ஓட்டுநரின் தெளிவான சமீபத்திய புகைப்படத்தைப் பதிவேற்றவும் அல்லது பிடிக்கவும்.",
     "editing_disabled": "இந்த பயன்முறையில் திருத்துதல் முடக்கப்பட்டுள்ளது.",
@@ -1078,5 +1078,8 @@
     "document_center_select_upi": "UPI ஐடியைச் சரிபார்க்கவும்",
     "document_center_select_bank": "வங்கிக் கணக்கைச் சரிபார்க்கவும்",
     "enter_your_residential_address": "உங்கள் வீட்டு முகவரியை உள்ளிடவும்",
-    "passbook_scan_helper": "கணக்கு விவரங்களைத் தானாகக் கண்டறிய முதல் பக்கத்தைப் பதிவேற்றவும் அல்லது பிடிக்கவும்."
+    "passbook_scan_helper": "கணக்கு விவரங்களைத் தானாகக் கண்டறிய முதல் பக்கத்தைப் பதிவேற்றவும் அல்லது பிடிக்கவும்.",
+    "upi_verification": "UPI சரிபார்ப்பு",
+    "upi_updated_successfully": "UPI வெற்றிகரமாகப் புதுப்பிக்கப்பட்டது.",
+    "still_under_review": "இன்னும் மதிப்பாய்வில் உள்ளது"
 }

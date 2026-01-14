@@ -97,6 +97,7 @@ const AddDriverLocation = ({isPassanger, updatePassangerLocation, isGeofenceSear
   // };
 
   const updateUserLocation = async (coordinates, fromSearch=false) => {
+    console.log("coordinates",JSON.stringify(coordinates));
     setIsLoading(true);
     const {latitude, longitude} = coordinates;
     if (!fromSearch) {
@@ -385,8 +386,32 @@ const removeStateVecotr = async (item) => {
  }
 
    const getUserLocation = async () =>{
-    await locationTask.getCurrentLocation()  
+    await locationTask.getCurrentLocation().then((position) => {
+      const {latitude, longitude} = position.coords;
+      console.log("current location",latitude, longitude);
+      updateUserLocation({latitude, longitude});
+    }).catch((error) => {
+      console.log("Error getting current location", error);
+    });
   }
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchCurrent = async () => {
+      try {
+        const useLoc = await locationTask.getCurrentLocation();
+        if (!mounted) return;
+        const { latitude, longitude } = useLoc.coords;
+        updateUserLocation({ latitude, longitude });
+      } catch (e) {
+        console.log('Error getting current location on mount', e);
+      }
+    };
+    fetchCurrent();
+    return () => {
+      mounted = false;
+    };
+  }, [])
 
   const getCurrentLocation = async () => {
     const isLocationPermitted = await checkFineLocationPermissions();

@@ -43,7 +43,6 @@ const LocationPicker = (props) => {
   };
 
   const debouncedMapCenterChange = async data => {
-    console.log('data', data);
     setIsLoading(true);
     const address = await fetchAddressName(data.longitude, data.latitude);
     let item = {
