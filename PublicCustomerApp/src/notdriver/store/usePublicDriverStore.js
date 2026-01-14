@@ -280,6 +280,9 @@ const usePublicDriverStore = create((set, get) => ({
   bankDetailsCompleteStatus: null,
   setBankDetailsCompleteStatus: (status) => set({ bankDetailsCompleteStatus: status}),
 
+  razorpayUpdated:false,
+  setRazorpayUpdated:(status) => set({ razorpayUpdated: status}),
+
   documentsCompleteStatus: null,
   setDocumentsCompleteStatus: (status) => set({ documentsCompleteStatus: status}),
 

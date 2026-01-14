@@ -138,7 +138,7 @@ const PublicRidesDriverHomeScreen = () => {
     setDriverTotalTrips, setIsBlocked,
     setIsApproved, setUnBlockRequestSent, 
     setdriverDueDate,setDriverRatings, 
-    setRazorpayLinkedAccountDetails,setMinDueAmount, setDueDuration, setIsParivahanFailed} = usePublicDriverStore();
+    setRazorpayLinkedAccountDetails,setMinDueAmount, setDueDuration, setIsParivahanFailed, setRazorpayUpdated} = usePublicDriverStore();
   const { stackScreen, setStackScreen } = useStackScreenStore();
   const {setTimeoutSeconds, setLoading: setTripAcceptLoading} = useTripAcceptStore();
   const {setDriverStatus, setUpComingTrips} = useDriverStatusStore();
@@ -209,6 +209,11 @@ const PublicRidesDriverHomeScreen = () => {
         address = typeof _address === 'string' ? JSON.parse(_address) : _address;
     } catch (error) {
         address = _address;
+    }
+    if (_razorpayLinkedAccountDetails) {
+      setRazorpayUpdated(true)
+    } else {
+      setRazorpayUpdated(false)
     }
     setBankInfo({...bankInfo, address: address, razorpayLinkedAccountDetails: _razorpayLinkedAccountDetails});
   }

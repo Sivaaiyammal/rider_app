@@ -27,8 +27,7 @@ const DriverBasicDetails = () => {
    const [isModalVisible, setIsModalVisible] = useState(false);
    const {userInfo} = useUserStore()
    const [isLoading, setIsLoading] = useState(false)
-   const {bankDetailsCompleteStatus} = usePublicDriverStore();
-    const {driverDue, driverRatings, razorpayLinkedAccountDetails, setRazorpayLinkedAccountDetails} = usePublicDriverStore();
+   const { driverRatings, razorpayLinkedAccountDetails, setRazorpayLinkedAccountDetails, razorpayUpdated} = usePublicDriverStore();
    
     const onBackPress = () => {
         goBack()
@@ -148,6 +147,9 @@ const DriverBasicDetails = () => {
             style={styles.menuItem}
             onPress={item.onPress}
         >
+            <View style={{flexDirection:'row', width:'100%'}}>
+
+          
             <View style={styles.menuItemLeft}>
                 <View style={styles.iconContainer}>
                     {item.icon}
@@ -156,30 +158,32 @@ const DriverBasicDetails = () => {
                     <Text style={styles.menuItemText}>{item.title}</Text>
                 </View>
             </View>
+            
+            <View style={styles.menuItemRight}>
+                <Ionicons name="chevron-forward" size={20} color={Colors.warm_grey} />
+            </View>
+            </View>
             {item.id === 6 && (
-                razorpayLinkedAccountDetails || bankDetailsCompleteStatus? (
-                    razorpayLinkedAccountDetails?.accountDetails?.activation_status === 'activated' ? (
+                <View style={{ marginTop: 10 , alignItems:'center'}}>
+                    
+               {razorpayUpdated ? (
+                         razorpayLinkedAccountDetails?.accountDetails?.activation_status === 'activated' ? (
                         <Text style={[styles.VerifyText,{color:'green'}]} capitalize>{razorpayLinkedAccountDetails?.accountDetails?.activation_status?.toUpperCase()}</Text>
                     ) : (
                         <View style={styles.statusWithButton}>
-                            <Text style={[styles.VerifyText,{color:'red'}]} capitalize>{razorpayLinkedAccountDetails?.accountDetails?.activation_status?.toUpperCase()}</Text>
+                            <Text style={[styles.VerifyText,{color:'red'}]} capitalize>{razorpayLinkedAccountDetails?.accountDetails?.activation_status?.toUpperCase() || "under verification"}</Text>
                             <TouchableOpacity style={styles.checkStatusInlineBtn} onPress={handleCheckStatus}>
                                 <Text style={styles.checkStatusBtnText}>{t('check_status', { defaultValue: 'Check Status' })}</Text>
                             </TouchableOpacity>
                         </View>
                     )
-                ) : (
-                      <View style={styles.statusWithButton}>
-                            <Text style={styles.VerifyText}>{'Verify Now'}</Text>
-                            <TouchableOpacity style={styles.checkStatusInlineBtn} onPress={handleCheckStatus}>
-                                <Text style={styles.checkStatusBtnText}>{t('check_status', { defaultValue: 'Check Status' })}</Text>
-                            </TouchableOpacity>
-                        </View>
-                )
+               ) :(
+              <Text style={styles.VerifyText}>{'Verify Now'}</Text>
+               )}
+                </View>
+
             )}
-            <View style={styles.menuItemRight}>
-                <Ionicons name="chevron-forward" size={20} color={Colors.warm_grey} />
-            </View>
+              
         </TouchableOpacity>
     )
 
@@ -386,9 +390,9 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     menuItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+        // flexDirection: 'row',
+        // alignItems: 'center',
+        // justifyContent: 'space-between',
         paddingVertical: 16,
         paddingHorizontal: 20,
         borderBottomWidth: 1,
@@ -572,17 +576,18 @@ const styles = StyleSheet.create({
         paddingBottom: 10,
     },
         statusWithButton: {
-            alignItems: 'flex-start',
+            // alignItems: 'flex-start',
             gap: 6,
         },
         checkStatusInlineBtn: {
-            alignSelf: 'flex-start',
+            // alignSelf: 'flex-start',
             backgroundColor: Colors.periwinkle,
             borderRadius: 8,
             paddingHorizontal: 12,
             paddingVertical: 8,
             borderWidth: 1,
             borderColor: Colors.periwinkle,
+            alignItems: 'center',
         },
     checkStatusBtnText: {
         color: Colors.white,

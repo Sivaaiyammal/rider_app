@@ -137,7 +137,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
   // const [referenceCodeErr, setReferenceCodeErr] = useState('');
   const [passbookImageErr, setPassbookImageErr] = useState('');
 
-  const {setBankDetailsCompleteStatus} = usePublicDriverStore();
+  const {setBankDetailsCompleteStatus, setRazorpayUpdated } = usePublicDriverStore();
 
   // Validation patterns
   const accountNumberPattern = /^\d{9,18}$/; // 9-18 digits for account number
@@ -623,7 +623,6 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
         type: passbookImage?.type,
       });
     }
-
     if (isValid) {
       setIsLoading(true);
    
@@ -653,6 +652,11 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
           setBankInfo(payload);
           goBack();
           setBankDetailsCompleteStatus(true)
+          if (!accountNumber || accountNumber?.length === 0) {
+             setRazorpayUpdated(false);
+          } else {
+             setRazorpayUpdated(true);
+          }
           showNotification(response?.message, '', 'success');
         }
          else {

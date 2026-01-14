@@ -268,9 +268,12 @@ const DocumentImageScanner = ({
       if (source === 'camera') {
         const hasPermission = await checkCameraPermission();
         if (!hasPermission) {
-          await RequestCameraPermission();
-          setBusy(false);
-          return;
+          const granted = await RequestCameraPermission();
+          if (!granted) {
+            setBusy(false);
+            return;
+          }
+          // Permission just granted; proceed to open camera immediately.
         }
       }
 
