@@ -8,6 +8,7 @@ import { Colors, Icons } from '../../constants/constants';
 import { useMapMarkerStore } from '../../store/useMapMarkerStore';
 import { checkFineLocationPermissions, RequestFineLocationPermission } from '../../controllers/PermissionHandler';
 import { showNotification } from './showNotification';
+import { useTranslation } from 'react-i18next';
 
 const mapIconSet = [
   {
@@ -68,8 +69,9 @@ function GetDevicesBoundingBox(devices) {
 
 const TrackingMapIcons = props => {
   const {markersData, isDriverLocation, currentLocationCallBack, refreshDirections,} = props;
-  const {setMapLocation, setMapBounds, setUserLocation, setMapMarkers, directionPoints,mapMarkers} = useMapMarkerStore();
+  const {setMapLocation, setMapBounds, setUserLocation, setMapMarkers,mapMarkers} = useMapMarkerStore();
   const [loading, setLoading] = useState(false)
+  const {t} = useTranslation();
 
   const setUserMarker  = (latitude, longitude) => {
     setUserLocation([latitude, longitude])
@@ -111,8 +113,8 @@ const TrackingMapIcons = props => {
       const hasLocationpermission = await RequestFineLocationPermission();
       if (!hasLocationpermission) {
         showNotification(
-          t.loc_permission_denied,
-          t.grant_loc_permission,
+          t('loc_permission_denied'),
+          t('grant_loc_permission'),
           'danger',
           3000,
         );

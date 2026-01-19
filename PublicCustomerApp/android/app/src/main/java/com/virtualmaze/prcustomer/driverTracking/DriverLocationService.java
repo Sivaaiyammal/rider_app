@@ -498,17 +498,24 @@ public class DriverLocationService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) flags |= PendingIntent.FLAG_IMMUTABLE;
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, flags);
 
+
         RemoteViews notificationView = new RemoteViews(getPackageName(), R.layout.notification_driver_location);
         RemoteViews compactView = new RemoteViews(getPackageName(), R.layout.notification_driver_location_compact);
 
+        // Set text and color for system theme
+        int textColor = getNotificationTextColor();
         notificationView.setTextViewText(R.id.notification_title, "Tracking Enabled");
+        notificationView.setTextColor(R.id.notification_title, textColor);
         compactView.setTextViewText(R.id.notification_title, "Tracking Enabled");
+        compactView.setTextColor(R.id.notification_title, textColor);
 
         String descriptionText = overlayActive
             ? "Trip request pending"
             : "Background Location - " + currentAccuracyMode;
         notificationView.setTextViewText(R.id.notification_description, descriptionText);
+        notificationView.setTextColor(R.id.notification_description, textColor);
         compactView.setTextViewText(R.id.notification_description, descriptionText);
+        compactView.setTextColor(R.id.notification_description, textColor);
 
         notificationView.setTextViewText(R.id.notification_distance, distance);
         notificationView.setTextViewText(R.id.notification_duration, duration);
@@ -526,7 +533,8 @@ public class DriverLocationService extends Service {
         String channelId = "LocationTracking";
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
-                    channelId, "Location Tracking", NotificationManager.IMPORTANCE_LOW);
+                channelId, "Location Tracking", NotificationManager.IMPORTANCE_LOW);
+            // Set channel description with theme-aware text
             channel.setDescription("Used for location tracking");
             channel.setShowBadge(false);
             channel.setSound(null, null);
@@ -543,6 +551,18 @@ public class DriverLocationService extends Service {
                 .setContentIntent(pendingIntent)
                 .setColorized(false)
                 .build();
+    }
+
+    /**
+     * Returns black for light mode, white for dark mode.
+     */
+    private int getNotificationTextColor() {
+        int nightModeFlags = getResources().getConfiguration().uiMode & android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+        if (nightModeFlags == android.content.res.Configuration.UI_MODE_NIGHT_YES) {
+            return Color.WHITE;
+        } else {
+            return Color.BLACK;
+        }
     }
 
     private int getNotificationSyncImage(boolean s) {
