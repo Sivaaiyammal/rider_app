@@ -24,8 +24,21 @@ const OTPInput = ({
   const backspaceHandledRef = useRef(false);
   const isControlled = typeof value === 'string';
   const digits = useMemo(() => {
-    const src = isControlled ? value : internal.join('');
-    return (src || '').slice(0, inputCount).split('');
+    if (isControlled) {
+      const chars = (value || '').slice(0, inputCount).split('');
+      if (chars.length < inputCount) {
+        return chars.concat(Array(inputCount - chars.length).fill(''));
+      }
+      return chars;
+    }
+    if (internal.length !== inputCount) {
+      const normalized = Array(inputCount).fill('');
+      internal.slice(0, inputCount).forEach((char, idx) => {
+        normalized[idx] = char || '';
+      });
+      return normalized;
+    }
+    return internal;
   }, [value, internal, inputCount, isControlled]);
 
   // Normalize tint colors
@@ -46,16 +59,15 @@ const OTPInput = ({
 
   // Helpers
   const commit = (next) => {
-    const joined = next.join('');
-    if (!isControlled) setInternal(next);
+    const safeNext = next.slice(0, inputCount).map((char) => char || '');
+    const joined = safeNext.join('');
+    if (!isControlled) setInternal(safeNext);
     onChange?.(joined);
     if (joined.length === inputCount) onComplete?.(joined);
   };
 
   const setCharAt = (idx, char) => {
-    const next = Array(inputCount).fill('');
-    // start with current
-    digits.forEach((d, i) => { next[i] = d || ''; });
+    const next = digits.slice(0, inputCount);
     next[idx] = char;
     commit(next);
   };
@@ -69,6 +81,12 @@ const OTPInput = ({
 
     const onlyDigits = (text || '').replace(/[^0-9]/g, '');
     const currentDigit = digits[index] || '';
+
+    // Ignore non-digit input without clearing existing value
+    if ((text || '').length > 0 && onlyDigits.length === 0) {
+      inputsRef.current[index]?.setNativeProps?.({ text: currentDigit });
+      return;
+    }
     
     // Handle backspace/empty text - this is the PRIMARY handler for backspace
     if (onlyDigits.length === 0 && currentDigit.length > 0) {
@@ -101,7 +119,7 @@ const OTPInput = ({
     }
 
     // PASTE CASE: user pasted entire code or multiple digits
-    if (onlyDigits.length > 1) {
+    if ((text || '').length > 1 && onlyDigits.length > 1) {
       // Prevent brief flash of full code in the first box
       if (index === 0) {
         inputsRef.current[index]?.setNativeProps?.({ text: '' });
