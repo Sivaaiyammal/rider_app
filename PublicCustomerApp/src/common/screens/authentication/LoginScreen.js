@@ -142,7 +142,11 @@ const LoginScreen = ({ route }) => {
       return;
     }
     try {
-      const hinted = await showPhoneNumberHint();
+      const hinted = await showPhoneNumberHint(
+        {
+        showGuidanceDialog: false,
+        }
+      );
       if (hinted) {
         const digits = String(hinted).replace(/[^0-9]/g, '');
         const cc = country.callingCode[0];
