@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -353,29 +354,21 @@ const VehicleEntry = ({ onNext }) => {
     formData.append('regNo', regNo.trim());
     formData.append('permitNumber', permitNumber.trim());
 
-    // if (vehicleRcDoc) {
-    //   formData.append('vehicleRcDoc', {
-    //     uri: vehicleRcDoc.uri || vehicleRcDoc,
-    //     name: 'vehicle_rc.jpg',
-    //     type: 'image/jpeg',
-    //   });
-    // }
-
-    if (insuranceDoc) {
-      formData.append('insurance', {
-        uri: insuranceDoc.uri || insuranceDoc,
-        name: 'vehicle_insurance.jpg',
+         if(insuranceDoc?.uri?.includes('file://')){
+        formData.append('insurance', {
+            uri: Platform.OS === 'android' ? insuranceDoc?.uri : insuranceDoc?.uri?.replace('file://', ''),
+            name: 'vehicle_insurance.jpg',
         type: 'image/jpeg',
-      });
-    }
+          });
+        }
 
-    if (permitDoc) {
-      formData.append('permitDoc', {
-        uri: permitDoc.uri || permitDoc,
-        name: 'vehicle_permit.jpg',
+             if(permitDoc?.uri?.includes('file://')){
+        formData.append('permitDoc', {
+            uri: Platform.OS === 'android' ? permitDoc?.uri : permitDoc?.uri?.replace('file://', ''),
+            name: 'vehicle_permit.jpg',
         type: 'image/jpeg',
-      });
-    }
+          });
+        }
 
     setIsSaving(true);   
 
@@ -441,16 +434,14 @@ const VehicleEntry = ({ onNext }) => {
     formData.append('type', selectedType);
     formData.append('regNo', regNo.trim());
     formData.append('permitNumber', permitNumber.trim());
-    if (vehicleRcDoc) {
-      formData.append('vehicleRcDoc', {
-        uri: vehicleRcDoc.uri || vehicleRcDoc,
-        name: 'vehicle_rc.jpg', // Adjust the name as needed
-        type: 'image/jpeg', // Adjust the type as needed
-      });
-    }
-   
-    console.log('Form Data Entries:', JSON.stringify(formData));
-   
+        if(vehicleRcDoc?.uri?.includes('file://')){
+        formData.append('vehicleRcDoc', {
+            uri: Platform.OS === 'android' ? vehicleRcDoc?.uri : vehicleRcDoc?.uri?.replace('file://', ''),
+            name: 'vehicle_rc.jpg',
+            type: 'image/jpeg',
+          });
+        }
+      
     try {
       const response = await requestWithRetry(
         `/publicrides/driver/updateDriverVehicleInfo`,
