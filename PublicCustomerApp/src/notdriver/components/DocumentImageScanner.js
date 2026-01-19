@@ -268,12 +268,9 @@ const DocumentImageScanner = ({
       if (source === 'camera') {
         const hasPermission = await checkCameraPermission();
         if (!hasPermission) {
-          const granted = await RequestCameraPermission();
-          if (!granted) {
-            setBusy(false);
-            return;
-          }
-          // Permission just granted; proceed to open camera immediately.
+          await RequestCameraPermission();
+          setBusy(false);
+          return;
         }
       }
 
@@ -597,5 +594,12 @@ const styles = StyleSheet.create({
   },
   disabledActionButton: {
     opacity: 0.6,
+  },
+  eyeIcon:{
+    position:'absolute',
+    top:10,
+    right:10,
+    zIndex:1,
+    backgroundColor:'red'
   },
 });
