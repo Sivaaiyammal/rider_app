@@ -9,6 +9,8 @@ import GalleryIcon from '../../common/assets/icons/Gallery.svg';
 import { getPresignedImageUrl } from '../../common/utils/getPresignedImageUrl';
 import useUserStore from '../../common/store/useUserStore';
 import APIRequest from '../../common/controllers/APIRequest';
+import { useTranslation } from 'react-i18next';
+import Entypo from 'react-native-vector-icons/Entypo'
 
 const PRE_SCAN_ENABLED_TYPES = new Set(['VEHICLE_RC', 'DRIVING_LICENSE']);
 
@@ -48,6 +50,9 @@ const DocumentImageScanner = ({
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [presignedUrl, setPresignedUrl] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
+
+  const {t} = useTranslation()
 
   const {userInfo} = useUserStore();
   const authToken = userInfo?.token;
@@ -393,8 +398,11 @@ const DocumentImageScanner = ({
       </View>
       {activeDocumentLabel ? <Text style={styles.typeIndicator}>Selected: {activeDocumentLabel}</Text> : null}
       {helper ? <Text style={styles.helper}>{helper}</Text> : null}
-
       <View style={styles.previewSurface}>
+        <TouchableOpacity style={styles.eyeIcon} onPress={() => displayUri && !imageError && setShowImageModal(true)}>
+          <Entypo name={'eye'} color={Colors.black} size={18} />
+          <Text style={styles.eyeIconTxt}>{t('View')}</Text>
+        </TouchableOpacity>
         {displayUri && !imageError ? (
           <>
             {imageLoading && (
@@ -423,6 +431,32 @@ const DocumentImageScanner = ({
           </View>
         ) : null}
       </View>
+
+      {/* Modal for full image view */}
+      {showImageModal && displayUri && !imageError ? (
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.9)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 999,
+        }}>
+          <TouchableOpacity
+            style={{ position: 'absolute', top: 40, right: 20, zIndex: 1000 }}
+            onPress={() => setShowImageModal(false)}
+          >
+            <Entypo name={'cross'} color={'#fff'} size={32} />
+          </TouchableOpacity>
+          <Image
+            source={{ uri: displayUri }}
+            style={{ width: '95%', height: '80%', resizeMode: 'contain', borderRadius: 12 }}
+          />
+        </View>
+      ) : null}
 
       {/* {scanResult?.text ? (
         <View style={styles.resultBox}>
@@ -600,6 +634,16 @@ const styles = StyleSheet.create({
     top:10,
     right:10,
     zIndex:1,
-    backgroundColor:'red'
+    backgroundColor:Colors.grey_dark,
+    paddingVertical:4,
+    paddingHorizontal:10,
+    borderRadius:10,
+    elevation:5,
+    flexDirection:'row',
+    gap:5,
   },
+  eyeIconTxt:{
+    fontFamily:Fonts.regular,
+    color:Colors.black
+  }
 });
