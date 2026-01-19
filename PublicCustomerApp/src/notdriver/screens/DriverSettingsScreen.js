@@ -229,8 +229,7 @@ export default function PublicDriverSettingsScreen() {
     <View style={settingsScreen.screen}>
       {loading && <FullScreenLoader />}
       <UseBackButton onBackPress={() => onBackPress()} />
-      <ScrollView contentContainerStyle={{paddingBottom: 150}}>
-        <View style={settingsScreen.profileContainer}>
+         <View style={[settingsScreen.profileContainer, {borderBottomWidth:0.3, backgroundColor:Colors.white}]}>
           <View style={settingsScreen.profileImageContainer}>
             <View style={settingsScreen.passangerImg}>
               <User width={60} height={60} />
@@ -241,6 +240,8 @@ export default function PublicDriverSettingsScreen() {
             <Text style={settingsScreen.nameTxt}>{driverInfo?.name || driverInfo?.phone}</Text>
           </View>
         </View>
+      <ScrollView contentContainerStyle={{paddingBottom: 150}}>
+       
         {filteredSettingsData.map(item => {
           return (
             <TouchableOpacity

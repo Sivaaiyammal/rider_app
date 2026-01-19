@@ -1,7 +1,6 @@
 import io from 'socket.io-client';
 import Config from 'react-native-config';
 import { NativeModules } from 'react-native';
-import publicrideDriverApi from '../../../notdriver/api/publicrideDriverApi';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
 import { useTripAcceptStore } from '../../../notdriver/store/useTripAcceptStore';
 import useHotSpotStore from '../../../notdriver/store/useHotSpotStore';
@@ -10,7 +9,6 @@ import useTripsStore from '../../../notdriver/store/useTripsStore';
 import { DataStore } from '../DataStore';
 import { showNotification } from '../../../common/components/NotificationManger';
 import tripAlert from '../TripAlert';
-import { cancelRide } from '../../../notCustomer/API/EndPoints/EndPoints';
 import { cancelTrip } from '../../../notdriver/components/CancelTripUpdate';
 import APIRequest from '../APIRequest';
 import useUserStore from '../../store/useUserStore';
@@ -75,7 +73,6 @@ class RideMatchWSService {
    */
   async onTripRequest(data) {
     const {setStackScreen} = useStackScreenStore.getState();
-    console.log('Driver Socket - Trip Request received:', data);
     if (data?.type === 'trip_request') {
       useTripAcceptStore.setState({tripDetails: data.data});
       useTripAcceptStore.setState({tripId: data.data?.trip_id});

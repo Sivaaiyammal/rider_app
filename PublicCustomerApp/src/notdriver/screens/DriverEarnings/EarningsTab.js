@@ -114,7 +114,7 @@ const EarningsTab = () => {
   useEffect(()=>{
     fetchPayments()
     getTotalOnlineHours()
-  },[])
+  },[dueDuration])
 
   return (
     <View style={styles.screen}>

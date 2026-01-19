@@ -142,7 +142,7 @@ const PublicRidesDriverHomeScreen = () => {
   const { stackScreen, setStackScreen } = useStackScreenStore();
   const {setTimeoutSeconds, setLoading: setTripAcceptLoading} = useTripAcceptStore();
   const {setDriverStatus, setUpComingTrips} = useDriverStatusStore();
-  const {setCurrentScreen} = useCurrentScreenStore()
+  const {setCurrentScreen, currentScreen} = useCurrentScreenStore()
   const {userInfo } = useUserStore();
   const {
     hasNotificationPermission,
@@ -299,6 +299,11 @@ const PublicRidesDriverHomeScreen = () => {
       unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+     if (currentScreen !== 'Map') return;
+ refetch();
+  },[currentScreen])
 
   const { data, isLoading, error, refetch, isFetching } = useQuery(
     ['driverDetails'], 
