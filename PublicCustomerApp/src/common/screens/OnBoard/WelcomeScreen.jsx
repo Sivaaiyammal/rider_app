@@ -1,10 +1,11 @@
-import React, { use } from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image, useWindowDimensions } from 'react-native';
 import AdaptiveText from '../../../notCustomer/components/Common/AdaptiveText';
 import { colors, Fonts } from '../../../notCustomer/constants/constants';
 import { useTranslation } from 'react-i18next';
 import useUserStore from '../../store/useUserStore';
 import { DataStore } from '../../../notCustomer/controllers/DataStore';
+import { logFirebaseEvent } from '../../../common/utils/FirebaseAnalytics';
 
 const passengerImage = require('../../../notCustomer/assets/image/ContinueAsPassenger.webp');
 const driverImage = require('../../../notCustomer/assets/image/ContinueAsDriver.webp');
@@ -18,13 +19,30 @@ const WelcomeScreen = ({ navigation }) => {
   // Keep illustration offset proportional while splitting space evenly with copy.
   const cardImageMarginTop = -mediaWidth * 0.45;
 
+
+
+  useEffect(() => {    logFirebaseEvent('NOT_screen_view', {
+      screen: 'welcome_screen',
+    });
+  }, []);
+
   const handleCustomerContinue = () => {
+    logFirebaseEvent('NOT_role_select', {
+      selected_role: 'customer',
+      cta_name: 'continue_as_passenger',
+      source_screen: 'welcome_screen',
+    });
     setUserRole('customer');
     DataStore.storeData('userRole', 'customer');
     navigation.navigate('LoginScreen', {navRole: 'customer'});
   };
 
   const handleDriverContinue = () => {
+    logFirebaseEvent('NOT_role_select', {
+      selected_role: 'driver',
+      cta_name: 'continue_as_driver',
+      source_screen: 'welcome_screen',
+    });
     setUserRole('driver');
     DataStore.storeData('userRole', 'driver');
     navigation.navigate('LoginScreen', {navRole: 'driver'});

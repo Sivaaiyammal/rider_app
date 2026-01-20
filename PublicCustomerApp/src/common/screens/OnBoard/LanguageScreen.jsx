@@ -1,5 +1,5 @@
 import { Text, TouchableOpacity, View, StyleSheet, Vibration } from 'react-native';
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useMemo } from 'react';
 import { languages } from '../../../notCustomer/constants/JsonData';
 import { colors } from '../../../notCustomer/constants/constants';
 import { useNavigation } from '@react-navigation/native';
@@ -11,6 +11,7 @@ import { GlobalContext } from '../../../context/GlobalContext';
 import { Fonts } from '../../../notCustomer/constants/constants';
 import { useStackScreenStore } from '../../../notCustomer/store/useStackScreenStore';
 import NavBar from '../../../notCustomer/components/NavBar';
+import { logFirebaseEvent } from '../../../common/utils/FirebaseAnalytics';
 
 const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   const navigation = useNavigation();
@@ -25,6 +26,19 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
 
   const [selected, setSelected] = useState(languages[0]);
 
+  const entryPoint = useMemo(() => {
+    if (fromDriverStack) {
+      return 'driver_stack';
+    }
+    if (fromSettings) {
+      return 'settings';
+    }
+    if (fromDrawer) {
+      return 'drawer';
+    }
+    return 'onboarding';
+  }, [fromDriverStack, fromDrawer, fromSettings]);
+
   // Initialize selected language based on current i18n language
   useEffect(() => {
     const currentLanguage = i18n.language;
@@ -33,6 +47,13 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
       setSelected(currentLangObj);
     }
   }, []);
+
+  useEffect(() => {
+    logFirebaseEvent('NOT_screen_view', {
+      screen: 'language_screen',
+      entry_point: entryPoint,
+    });
+  }, [entryPoint]);
 
   const changeLanguage = item => {
     setSelected(item);
@@ -47,6 +68,13 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   const onNextPress = async () => {
     // Save the selected language to AsyncStorage
     // Vibration.vibrate(100);
+    await logFirebaseEvent('NOT_language_select', {
+      source_screen: 'language_screen',
+      entry_point: entryPoint,
+      language_code: selected.code,
+      language_name: selected.name,
+      cta_name: fromDrawer || fromDriverStack ? 'done' : 'next',
+    });
     await DataStore.storeData('language', selected.code);
 
     if (fromDriverStack) {
@@ -68,6 +96,12 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   const handleLanguageChangeInSideApp = (language) => {
      changeLanguage(language);
     setInsideAppLanguageChange(language);
+    logFirebaseEvent('NOT_language_select', {
+      source_screen: 'language_screen',
+      entry_point: entryPoint,
+      language_code: language.code,
+      language_name: language.name,
+    });
   }
 
   return (

@@ -17,6 +17,7 @@ import { showPhoneNumberHint } from '@shayrn/react-native-android-phone-number-h
 import useUserStore from '../../store/useUserStore';
 import NavBar from '../../components/NavBar';
 import { phoneNumberPattern, phoneNumberPatternIN } from '../../constants/constants';
+import { logFirebaseEvent } from '../../utils/FirebaseAnalytics';
 
 
 const LoginScreen = ({ route }) => {
@@ -36,9 +37,16 @@ const LoginScreen = ({ route }) => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneNumErr, setPhoneNumErr] = useState('');
 
+  useEffect(() => {
+    logFirebaseEvent('NOT_screen_view', {
+      screen: 'login_screen',
+      user_role: navRole,
+    });
+  }, [navRole]);
+
   // console.log('Login Screen Role:', navRole, userRole);
 
-  const handleLoginSuccess = (data) => {
+  const handleLoginSuccess = async (data) => {
     if (data) {
       // showNotification(t('otp_sent'), t('otp_sent_to_mobile'), 'success');
       console.log('Login data', data);
@@ -55,8 +63,9 @@ const LoginScreen = ({ route }) => {
     }
   };
 
-  const handleDriverLoginSuccess = (data) => {
+  const handleDriverLoginSuccess = async (data) => {
       if (data) {
+     
       navigation.dispatch(
         CommonActions.navigate({
           name: 'OTPScreen',
@@ -108,6 +117,10 @@ const LoginScreen = ({ route }) => {
     } else if (!phoneNumberPatternIN.test(phoneNumber)) {
        setPhoneNumErr(t('valid_phone'));
     } else {
+      await logFirebaseEvent('NOT_login_request_otp', {
+        source_screen: 'login_screen',
+        user_role: navRole,
+      });
   if (navRole === 'customer') {
     DataStore.storeData('login_phoneNumber', phoneNumber);
     requestOTPMutate(payload);
