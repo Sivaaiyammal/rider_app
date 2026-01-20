@@ -388,11 +388,11 @@ const DriverOnRide = () => {
       if(res?.success){
         showNotification(res?.message, res?.message, 'success');
         setModalVisible(!modalVisible);
-        updateStopData(nonreachedStops[0]?.name, true, 'PICKEDUP', 0, true)
-        setStartNavigation(false);
-        setDisduration(null);
-        NeNativeModule.endNavigation();
         setDirectionPoints(null);
+        setDisduration(null);
+        setStartNavigation(false);
+        updateStopData(nonreachedStops[0]?.name, true, 'PICKEDUP', 0, true)
+        
         setIsReachedPickup(false);
         setCurrentTripAcceptedTime(new Date().getTime());
         // updateDirectionsPoints();
@@ -412,6 +412,8 @@ const DriverOnRide = () => {
       return;
     }
     verifyOTP(otp)
+    setDisduration(null);
+    NeNativeModule.endNavigation();
   }
 
   const updateDirectionsPoints = () => {
