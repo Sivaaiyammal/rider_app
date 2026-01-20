@@ -160,7 +160,7 @@ public class DriverLocationService extends Service {
             );
 
             driverOverlayController = new DriverOverlayController(getApplicationContext());
-                overlayService = OverlayService.getInstance(getApplicationContext());
+            overlayService = OverlayService.getInstance(getApplicationContext());
 
             Executors.newSingleThreadExecutor().execute(() -> {
                 try {
@@ -221,7 +221,7 @@ public class DriverLocationService extends Service {
 
     private boolean promoteToForeground(Notification notification) {
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 startForeground(
                         FOREGROUND_NOTIFICATION_ID,
                         notification,
@@ -532,25 +532,35 @@ public class DriverLocationService extends Service {
 
         String channelId = "LocationTracking";
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                channelId, "Location Tracking", NotificationManager.IMPORTANCE_LOW);
-            // Set channel description with theme-aware text
-            channel.setDescription("Used for location tracking");
-            channel.setShowBadge(false);
-            channel.setSound(null, null);
             NotificationManager nm = getSystemService(NotificationManager.class);
-            if (nm != null) nm.createNotificationChannel(channel);
+            if (nm != null) {
+                NotificationChannel existing = nm.getNotificationChannel(channelId);
+                if (existing == null) {
+                    NotificationChannel channel = new NotificationChannel(
+                        channelId, "Location Tracking", NotificationManager.IMPORTANCE_LOW);
+                    channel.setDescription("Used for location tracking");
+                    channel.setShowBadge(false);
+                    channel.setSound(null, null);
+                    nm.createNotificationChannel(channel);
+                } else {
+                    // Optionally update properties if needed
+                    existing.setDescription("Used for location tracking");
+                    existing.setShowBadge(false);
+                    existing.setSound(null, null);
+                    nm.createNotificationChannel(existing);
+                }
+            }
         }
 
         return new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.drawable.ic_launcher)
-                .setCustomContentView(compactView)
-                .setCustomBigContentView(notificationView)
-                .setOngoing(true)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setContentIntent(pendingIntent)
-                .setColorized(false)
-                .build();
+            .setSmallIcon(R.drawable.ic_launcher)
+            .setCustomContentView(compactView)
+            .setCustomBigContentView(notificationView)
+            .setOngoing(true)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setContentIntent(pendingIntent)
+            .setColorized(false)
+            .build();
     }
 
     /**

@@ -29,8 +29,22 @@ import useDeviceAPIStore from './common/store/useDeviceAPIStore';
 import PushNotifications from './common/core/PushNotifications';
 
 
+
 const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const messagingInstance = getMessaging(firebaseApp);
+
+// Register background message handler at the top level
+setBackgroundMessageHandler(messagingInstance, async remoteMessage => {
+  console.log('Message handled in the background!', remoteMessage);
+  const data = remoteMessage?.data || {};
+  const title = data?.title ?? 'Notification';
+  const clearedtxt = title?.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, '').trim();
+  if (clearedtxt === 'driver assigned') {
+    console.log('Playing trip alert sound');
+    tripAlert.playAlertSound();
+    Vibration.vibrate();
+  }
+});
 
 const MainAppContent = () => {
   const appearance = useColorScheme();
@@ -70,7 +84,8 @@ const MainAppContent = () => {
       const body = notification?.body ?? data?.message ?? data?.body ?? '';
 
       const clearedtxt = title?.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, '').trim();
-      
+
+      if (clearedtxt === 'wakeupbgservice') return;
     
       if (clearedtxt == 'driver assigned') {
 

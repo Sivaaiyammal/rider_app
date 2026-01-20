@@ -2263,7 +2263,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                                         if (navigationView == null) {
                                             Log.d("TAG", "navigationView: bottomSheet -- 2"+navigationView);
                                         } else {
-                                            Log.d("TAG", "navigationView: bottomSheet -- 2"+navigationView);
+                                            Log.d("TAG", "navigationView: bottomSheet -- 3"+navigationView);
                                             navigationView.isShowTripSummaryView(false);
                                         }
                                     }

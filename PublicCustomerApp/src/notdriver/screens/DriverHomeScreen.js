@@ -301,9 +301,11 @@ const PublicRidesDriverHomeScreen = () => {
   }, []);
 
   useEffect(() => {
+     const screen = stackScreen[stackScreen.length - 1];
      if (currentScreen !== 'Map') return;
- refetch();
-  },[currentScreen])
+     if (screen === 'Home') 
+     refetch();
+  },[currentScreen, stackScreen])
 
   const { data, isLoading, error, refetch, isFetching } = useQuery(
     ['driverDetails'], 

@@ -244,7 +244,7 @@ export default function DriverInitializationScreen() {
     // if (driverDueDate) {
     //   setdriverDueDate(driverDueDate);
     // }
-  }, [tripData, driverConfig]);
+  }, [tripData, driverConfig, userInfo?.token]);
 
   useEffect(() => {
      checkPermissions()

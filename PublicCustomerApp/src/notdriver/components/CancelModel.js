@@ -126,7 +126,7 @@ const CancelRideModal = ({
               <>
                 <TextInput
                   style={[styles.textInput, error && styles.textInputError]}
-                  placeholder={t('other_reason') || 'Other Reason'}
+                  placeholder={t('enter_your_reason') || 'Other Reason'}
                   value={otherReason}
                   onChangeText={handleOtherReasonChange}
                   multiline={true}

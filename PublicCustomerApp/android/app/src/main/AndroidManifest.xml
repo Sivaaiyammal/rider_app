@@ -92,11 +92,23 @@
             android:name="com.virtualmaze.bundle_downloader.receiver.AppUpdateReceiver"
             tools:node="remove" />
 
-              <service
-            android:name="com.virtualmaze.prcustomer.driverTracking.DriverLocationService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="location" />
+
+            <service
+              android:name="com.virtualmaze.prcustomer.driverTracking.DriverLocationService"
+              android:enabled="true"
+              android:exported="false"
+              android:foregroundServiceType="location" />
+
+            <!-- Native FCM Service for background message handling -->
+            <service
+              android:name="com.virtualmaze.prcustomer.serviceWakeUp.FcmServiceWakeUp"
+              android:exported="true"
+              android:permission="com.google.android.c2dm.permission.SEND">
+              <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+              </intent-filter>
+            </service>
+
         <service
             android:name="com.virtualmaze.prcustomer.overlay.OverlayHeadlessService"
             android:exported="false"
