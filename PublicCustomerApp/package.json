@@ -63,6 +63,7 @@
     "react-native-animated-progress": "^1.0.2",
     "react-native-base64": "^0.2.1",
     "react-native-calendars": "^1.1311.1",
+    "react-native-camera-kit": "^17.0.1",
     "react-native-color-matrix-image-filters": "^7.0.2",
     "react-native-config": "^1.5.6",
     "react-native-contacts": "^8.0.7",

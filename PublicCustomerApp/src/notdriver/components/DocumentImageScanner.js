@@ -1,6 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import { Camera } from 'react-native-camera-kit';
+import RNFS from 'react-native-fs';
 import TextRecognition from '@react-native-ml-kit/text-recognition';
 import { Colors, Fonts } from '../../common/constants/constants';
 import { checkCameraPermission, RequestCameraPermission } from '../../common/controllers/PermissionHandler';
@@ -51,11 +53,14 @@ const DocumentImageScanner = ({
   const [imageError, setImageError] = useState(false);
   const [presignedUrl, setPresignedUrl] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [cameraVisible, setCameraVisible] = useState(false);
 
   const {t} = useTranslation()
 
   const {userInfo} = useUserStore();
   const authToken = userInfo?.token;
+  const cameraRef = useRef(null);
+  const normalizedCameraType = useMemo(() => (cameraType === 'front' ? 'front' : 'back'), [cameraType]);
 
   const buildAssetPayload = useCallback(asset => ({
     uri: asset.uri,
@@ -252,25 +257,80 @@ const DocumentImageScanner = ({
     authToken,
   ]);
 
+  const closeCamera = useCallback(() => {
+    setCameraVisible(false);
+    setBusy(false);
+  }, [setBusy]);
+
+  const handleCapture = useCallback(async () => {
+    if (!cameraRef.current) {
+      return;
+    }
+
+    try {
+      const captureResult = await cameraRef.current.capture({
+        flash: 'auto',
+        quality: pickerOptions.quality,
+        imageType: 'jpg',
+        base64: true,
+      });
+
+      if (!captureResult?.uri) {
+        return;
+      }
+
+      const resolvedUri = captureResult.uri.startsWith('file://')
+        ? captureResult.uri
+        : `file://${captureResult.uri}`;
+
+      let base64Payload = captureResult.base64;
+      if (!base64Payload) {
+        try {
+          const fsPath = resolvedUri.replace('file://', '');
+          base64Payload = await RNFS.readFile(fsPath, 'base64');
+        } catch (readError) {
+          console.warn('Camera base64 read failed', readError);
+        }
+      }
+
+      let fileSize = captureResult.size;
+      if (!fileSize) {
+        try {
+          const stat = await RNFS.stat(resolvedUri.replace('file://', ''));
+          fileSize = Number(stat.size);
+        } catch (statError) {
+          fileSize = null;
+        }
+      }
+
+      const assetPayload = {
+        uri: resolvedUri,
+        width: captureResult.width,
+        height: captureResult.height,
+        base64: base64Payload,
+        fileName: captureResult.name || `capture_${Date.now()}.jpg`,
+        fileSize,
+        type: 'image/jpeg',
+      };
+
+      closeCamera();
+      await processAsset(assetPayload);
+    } catch (error) {
+      console.warn('Camera capture failed', error);
+      setErrorMessage('Unable to capture image. Please try again.');
+    }
+  }, [closeCamera, processAsset, setErrorMessage]);
+
   const runImagePicker = useCallback(async source => {
     if (disabled) {
       setErrorMessage(null);
       return;
     }
-    setBusy(true);
+
     setErrorMessage(null);
 
-      const pickAction = source === 'camera' ? launchCamera : launchImageLibrary;
-      const pickerConfig =
-        source === 'camera'
-          ? {
-              ...pickerOptions,
-              cameraType: cameraType === 'front' ? 'front' : 'back',
-            }
-          : {...pickerOptions};
-
-    try {
-      if (source === 'camera') {
+    if (source === 'camera') {
+      try {
         const hasPermission = await checkCameraPermission();
         let permissionGranted = hasPermission;
 
@@ -279,12 +339,23 @@ const DocumentImageScanner = ({
         }
 
         if (!permissionGranted) {
-          setBusy(false);
           return;
         }
-      }
 
-      pickAction(pickerConfig, response => {
+        setCameraVisible(true);
+      } catch (error) {
+        console.warn('Camera permission error', error);
+        setErrorMessage('Unable to open the camera. Please retry.');
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
+    setBusy(true);
+
+    try {
+      launchImageLibrary({ ...pickerOptions }, response => {
         if (response?.didCancel) {
           setBusy(false);
           return;
@@ -311,7 +382,7 @@ const DocumentImageScanner = ({
       setErrorMessage('Something went wrong. Try again.');
       setBusy(false);
     }
-  }, [cameraType, disabled, processAsset]);
+  }, [disabled, processAsset]);
 
   const helper = useMemo(() => helperText?.trim?.(), [helperText]);
   const displayUri = useMemo(() => {
@@ -396,7 +467,35 @@ const DocumentImageScanner = ({
   }, [initialImage, userInfo?.token]);
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <>
+      <Modal
+        visible={cameraVisible}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={closeCamera}
+      >
+        <View style={styles.cameraModal}>
+          <Camera
+            ref={cameraRef}
+            style={styles.cameraPreview}
+            cameraType={normalizedCameraType}
+            focusMode="on"
+            zoomMode="on"
+            flashMode="auto"
+          />
+          <View style={styles.cameraControls}>
+            <TouchableOpacity style={styles.cameraCancelButton} onPress={closeCamera}>
+              <Text style={styles.cameraCancelText}>{t('Cancel')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.captureButtonOuter} onPress={handleCapture}>
+              <View style={styles.captureButtonInner} />
+            </TouchableOpacity>
+            <View style={styles.cameraPlaceholder} />
+          </View>
+        </View>
+      </Modal>
+
+      <View style={[styles.container, containerStyle]}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>{scannerTitle}</Text>
         {isBusy && <ActivityIndicator size="small" color={Colors.periwinkle} />}
@@ -501,7 +600,8 @@ const DocumentImageScanner = ({
           <Text style={styles.actionButtonText}>{cameraLabel}</Text>
         </TouchableOpacity>
       </View>
-    </View>
+      </View>
+    </>
   );
 };
 
@@ -633,6 +733,55 @@ const styles = StyleSheet.create({
   },
   disabledActionButton: {
     opacity: 0.6,
+  },
+  cameraModal: {
+    flex: 1,
+    backgroundColor: Colors.black,
+  },
+  cameraPreview: {
+    flex: 1,
+  },
+  cameraControls: {
+    position: 'absolute',
+    bottom: 36,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cameraCancelButton: {
+    minWidth: 86,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  cameraCancelText: {
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: Colors.white,
+    textAlign: 'center',
+  },
+  captureButtonOuter: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    borderWidth: 4,
+    borderColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  captureButtonInner: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    backgroundColor: Colors.white,
+  },
+  cameraPlaceholder: {
+    width: 86,
   },
   eyeIcon:{
     position:'absolute',

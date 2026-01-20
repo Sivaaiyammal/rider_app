@@ -9,7 +9,7 @@ import APIRequest from '../../common/APIRequest';
 import { DateTimeFormatter } from '../../common/utils/DateTimeFormatter';
 import { Colors, Fonts } from '../../common/constants/constants';
 
-const HomeHeader = () => {
+const HomeHeader = ({shouldShowDueAlert}) => {
   const [summaryModal, setSummaryModal] = useState(false);
   const {userInfo} = useUserStore()
    const [startDate, endDate] = DateTimeFormatter.getTodaysStartEndTime()
@@ -88,7 +88,7 @@ const HomeHeader = () => {
     <>
       <View style={headerStyles.container}>
           <TouchableOpacity
-            style={headerStyles.amntBtn}
+            style={[headerStyles.amntBtn,{marginTop: shouldShowDueAlert ? 150 : 15}]}
             disabled={PaymentsLoading}
             onPress={() => setSummaryModal(true)}>
               {PaymentsLoading ? <ActivityIndicator /> : <Text style={headerStyles.amntBtnTxt}>

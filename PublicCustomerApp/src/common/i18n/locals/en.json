@@ -1081,5 +1081,12 @@
     "passbook_scan_helper": "Upload or capture the front page to auto-detect account details.",
     "upi_verification": "UPI  Verification",
     "upi_updated_successfully": "UPI Updated Successfully",
-    "still_under_review": "Still under review"
+    "still_under_review": "Still under review",
+    "please_enter_a_reason": "Please Enter a Reason",
+    "special_bonus_applied": "Special Bonus Added",
+    "pending_due_amount": "Pending Due Amount",
+    "please_clear_dues_to_resume_trips": "Clear your dues to continue accepting rides.",
+    "payment_due_soon": "Payment due soon",
+    "due_amount_label": "Due amount",
+    "next_due_in_days": "Next due in"
 }

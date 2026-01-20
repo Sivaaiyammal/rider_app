@@ -285,7 +285,7 @@ const TripAccept = () => {
             <View style={{flexDirection:'row', justifyContent:'space-evenly', alignItems:'center', width:'90%', alignSelf:'center'}}>
               <Rupee width={30} height={30}/>
               <View style={styles.bonusContainer}>
-                <Text style={styles.bonusText}>{t('special_bonus_applied') || 'Special bonus applied !!'}</Text>
+                <Text style={styles.bonusText}>{t('special_bonus_applied', {defaultValue : 'Special bonus applied !!'})}</Text>
               </View>
               <Rupee width={30} height={30}/>
             </View>

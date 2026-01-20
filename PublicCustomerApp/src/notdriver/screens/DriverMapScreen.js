@@ -21,6 +21,7 @@ import FloatingButton from '../components/FloatingButton';
 import {useTranslation} from 'react-i18next';
 import usePublicDriverStore from '../store/usePublicDriverStore';
 import useCurrentScreenStore from '../../common/store/useCurrentScreenStore';
+import DueAlert from '../components/DueAlert';
 
 const {NeNativeModule} = NativeModules;
 
@@ -37,8 +38,16 @@ const DriverMapScreen = props => {
   const setCurrentScreen = useCurrentScreenStore(state => state.setCurrentScreen);
 
   const currentTimeMs = new Date().getTime();
+  const DUE_WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
   const pendingDueAmount = Number(driverDue ?? 0);
   const showPendingDue = Boolean(driverDueDate) && driverDueDate < currentTimeMs && pendingDueAmount > 0;
+  const showDueSoon =
+    Boolean(driverDueDate) &&
+    pendingDueAmount > 0 &&
+    driverDueDate >= currentTimeMs &&
+    driverDueDate - currentTimeMs <= DUE_WINDOW_MS;
+  const isBlockingBannerVisible = blocked || !approved || !isBankVerified;
+  const shouldShowDueAlert = showDueSoon && !isBlockingBannerVisible;
 
   useEffect(() => {
     NeNativeModule.clearDirectionPoints();
@@ -152,7 +161,14 @@ const DriverMapScreen = props => {
         <></>
       ) : (
         <>
-          <HomeHeader screen={'drive'} />
+          <HomeHeader screen={'drive'} shouldShowDueAlert={shouldShowDueAlert}/>
+          {shouldShowDueAlert ? (
+            <DueAlert
+              dueAmount={pendingDueAmount}
+              dueDate={driverDueDate}
+              onPressPayNow={() => setCurrentScreen('Devices')}
+            />
+          ) : null}
           <View style={RouteScreenStyles.mapIconContainer}>
             <TrackingMapIcons markersData={[]} ishomeDriver />
           </View>
