@@ -49,11 +49,11 @@ export const firebaselog_tripBooking = (category, action, other = {}) =>
 export const firebaselog_onRide = (category, action, other = {}) =>
   logFirebaseEvent('On_Ride_OR', buildParams(category, action, other));
 
-// export const firebaselog_DRI_onboarding = (category, action, other = {}) =>
-//   logFirebaseEvent('Trip_Payment_TP', buildParams(category, action, other));
+export const firebaselog_tripPayment = (category, action, other = {}) =>
+  logFirebaseEvent('Trip_Payment_TP', buildParams(category, action, other));
 
-// export const firebaselog_DRI_status = (category, action, other = {}) =>
-//   logFirebaseEvent('NOT_DRI_status', buildParams(category, action, other));
+export const firebaselog_tripReview = (category, action, other = {}) =>
+  logFirebaseEvent('Trip_Review_TR', buildParams(category, action, other));
 
 // export const firebaselog_networkevents = (category, action, other = {}) =>
 //   logFirebaseEvent('NOT_networkevents', buildParams(category, action, other));

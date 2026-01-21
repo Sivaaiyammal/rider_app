@@ -21,7 +21,7 @@ import { Colors, Fonts } from '../../common/constants/constants';
 import PublicDriverTripPaymentScreen from './PublicDriverTripPaymentScreen';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 import InputField from '../../common/components/InputField';
-import { firebaselog_onRide } from '../../common/utils/FirebaseAnalytics';
+import { firebaselog_onRide, firebaselog_tripPayment, firebaselog_tripReview } from '../../common/utils/FirebaseAnalytics';
 
 const PublicDriverTrackingScreen = () => {
   const {
@@ -82,12 +82,15 @@ const PublicDriverTrackingScreen = () => {
           setDirectionPoints(null)
           setDisduration(null)
           setStartNavigation(false)
+          firebaselog_tripPayment('TP_Cash(TP_C)', `TP_C:payment_received_by_driver`)
           showNotification(res?.message, res?.message, 'success');
       } else {
+        firebaselog_tripPayment('TP_Cash(TP_C)', `TP_C:payment_received_failed`)
         showNotification(res?.error, res?.message, 'danger');
       }
       setIsLoading(false);
     } catch (error) {
+      firebaselog_tripPayment('TP_Cash(TP_C)', `TP_C:payment_received_failed`)
       showNotification('Something went wrong', '', 'danger');
       setIsLoading(false);
     }
@@ -119,12 +122,15 @@ const PublicDriverTrackingScreen = () => {
       );
       if (res?.success) {
         showNotification(res?.message, res?.message, 'success');
+        firebaselog_tripReview('TR_Rating(TR_R)', `TR_R:submit_driver`)
         onRatingClose()
       } else {
+        firebaselog_tripReview('TR_Rating(TR_R)', `TR_R:failed_driver`)
         showNotification(res?.message, res?.message, 'danger');
       }
       setIsRatingLoading(false);
     } catch (error) {
+      firebaselog_tripReview('TR_Rating(TR_R)', `TR_R:failed_driver`)
       showNotification('Something went wrong', '', 'danger');
       setIsRatingLoading(false);
     }
