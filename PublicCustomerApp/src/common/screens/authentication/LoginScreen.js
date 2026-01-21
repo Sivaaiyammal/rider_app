@@ -17,7 +17,7 @@ import { showPhoneNumberHint } from '@shayrn/react-native-android-phone-number-h
 import useUserStore from '../../store/useUserStore';
 import NavBar from '../../components/NavBar';
 import { phoneNumberPattern, phoneNumberPatternIN } from '../../constants/constants';
-import { firebaselogscreen , firebaseloglogin } from '../../utils/FirebaseAnalytics';
+import { logFirebaseEvent } from '../../utils/FirebaseAnalytics';
 
 
 const LoginScreen = ({ route }) => {
@@ -38,8 +38,10 @@ const LoginScreen = ({ route }) => {
   const [phoneNumErr, setPhoneNumErr] = useState('');
 
   useEffect(() => {
-    let screenName = navRole === 'driver' ? 'driver_login_screen' : 'customer_login_screen';
-    firebaselogscreen(screenName);
+    logFirebaseEvent('NOT_screen_view', {
+      screen: 'login_screen',
+      user_role: navRole,
+    });
   }, [navRole]);
 
   // console.log('Login Screen Role:', navRole, userRole);
@@ -47,7 +49,6 @@ const LoginScreen = ({ route }) => {
   const handleLoginSuccess = async (data) => {
     if (data) {
       // showNotification(t('otp_sent'), t('otp_sent_to_mobile'), 'success');
-      await firebaseloglogin(`NOT_${navRole}_logincall`,`NOT_${navRole}_login_success`);
       console.log('Login data', data);
       navigation.dispatch(
         CommonActions.navigate({
@@ -64,7 +65,7 @@ const LoginScreen = ({ route }) => {
 
   const handleDriverLoginSuccess = async (data) => {
       if (data) {
-       await firebaseloglogin(`NOT_${navRole}_logincall`,`NOT_${navRole}_login_success`);
+     
       navigation.dispatch(
         CommonActions.navigate({
           name: 'OTPScreen',
@@ -116,7 +117,10 @@ const LoginScreen = ({ route }) => {
     } else if (!phoneNumberPatternIN.test(phoneNumber)) {
        setPhoneNumErr(t('valid_phone'));
     } else {
-      
+      await logFirebaseEvent('NOT_login_request_otp', {
+        source_screen: 'login_screen',
+        user_role: navRole,
+      });
   if (navRole === 'customer') {
     DataStore.storeData('login_phoneNumber', phoneNumber);
     requestOTPMutate(payload);

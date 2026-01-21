@@ -11,7 +11,7 @@ import { GlobalContext } from '../../../context/GlobalContext';
 import { Fonts } from '../../../notCustomer/constants/constants';
 import { useStackScreenStore } from '../../../notCustomer/store/useStackScreenStore';
 import NavBar from '../../../notCustomer/components/NavBar';
-import { firebaselogscreen, firebaselog_language} from '../../../common/utils/FirebaseAnalytics';
+import { logFirebaseEvent } from '../../../common/utils/FirebaseAnalytics';
 
 const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   const navigation = useNavigation();
@@ -49,7 +49,10 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   }, []);
 
   useEffect(() => {
-    firebaselogscreen('language_screen');
+    logFirebaseEvent('NOT_screen_view', {
+      screen: 'language_screen',
+      entry_point: entryPoint,
+    });
   }, [entryPoint]);
 
   const changeLanguage = item => {
@@ -65,7 +68,13 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   const onNextPress = async () => {
     // Save the selected language to AsyncStorage
     // Vibration.vibrate(100);
-    await firebaselog_language('language_select',selected.code);
+    await logFirebaseEvent('NOT_language_select', {
+      source_screen: 'language_screen',
+      entry_point: entryPoint,
+      language_code: selected.code,
+      language_name: selected.name,
+      cta_name: fromDrawer || fromDriverStack ? 'done' : 'next',
+    });
     await DataStore.storeData('language', selected.code);
 
     if (fromDriverStack) {
@@ -84,10 +93,15 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
     }
   };
 
-  const handleLanguageChangeInSideApp = async (language) => {
+  const handleLanguageChangeInSideApp = (language) => {
      changeLanguage(language);
     setInsideAppLanguageChange(language);
-    firebaselog_language('language_select',selected.code);
+    logFirebaseEvent('NOT_language_select', {
+      source_screen: 'language_screen',
+      entry_point: entryPoint,
+      language_code: language.code,
+      language_name: language.name,
+    });
   }
 
   return (
