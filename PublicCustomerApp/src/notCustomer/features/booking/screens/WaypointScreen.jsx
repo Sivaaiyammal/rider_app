@@ -29,6 +29,7 @@ import {utils} from '../../../utils/Utils';
 import useRideVehicleStore from '../store/useRideVehicleStore';
 import { from } from '@apollo/client';
 import RouteStatusOverlay from '../../../components/Loaders/RouteStatusOverlay';
+import { firebaselog_onRide, firebaselog_ridePlanning } from '../../../../common/utils/FirebaseAnalytics';
 
 const WaypointScreen = ({ fromDriverArrival = false }) => {
   const {tripId,maxDistanceLimit,tripStatus}=useCurrentRideInfoStore()
@@ -250,6 +251,8 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
   // which uses the store directly
 
   const onConfirmRoute = () => {
+
+    firebaselog_ridePlanning('RP_Stop(RP_S)', `RP_S:stop_added`);
     
     
     if (reOrderWaypoints && reOrderWaypoints.length > 0) {
@@ -437,6 +440,7 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
    if(res && res.success){
     goBack();
     setWaitingForDriverApproval('PENDING')
+    firebaselog_onRide('OR_Edit(OR_E)','OR_E:stops_change')
     setOnGoingRideStops(null)
     setReOrderWaypoints([])
     setReachedStops([])

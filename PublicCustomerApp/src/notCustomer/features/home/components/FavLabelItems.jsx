@@ -11,6 +11,7 @@ import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import AddFavIcon from '../../../assets/icons/AddFavIcon.svg';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { firebaselog_ridePlanning } from '../../../../common/utils/FirebaseAnalytics';
 
 
 const FavLabelItems = React.memo(({onLabelPress,enableAdd=true,onLocationAdd=null}) => {
@@ -57,7 +58,9 @@ const FavLabelItems = React.memo(({onLabelPress,enableAdd=true,onLocationAdd=nul
       ) : (
     
         userFavPlaces?.map((item,index)=>(
-          <TouchableOpacity key={index} style={styles.FavouriteAddressItem} onPress={()=>onLabelPress(item.label,item.locationData)}>
+          <TouchableOpacity key={index} style={styles.FavouriteAddressItem} onPress={()=>{
+            firebaselog_ridePlanning('RP_Place_Select_Method(RP_PSM)', `RP_PSM:fav_places`);
+            onLabelPress(item.label,item.locationData)}}>
             <View style={styles.FavouriteAddressItemIcon}>
               {item.label.toLowerCase() === 'home' ? <HomeIcon width={50} height={50} /> : item.label.toLowerCase() === 'work' ? <WorkIcon width={50} height={50} /> : <View style={{paddingHorizontal:2}}><FavIcon width={45} height={45} /></View>  }
             </View>

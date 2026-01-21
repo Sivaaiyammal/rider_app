@@ -5,6 +5,8 @@ import useUserInfoStore from '../../common/store/useUserInfoStore';
 import { Alert } from 'react-native';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
+import { firebase } from '@react-native-firebase/analytics';
+import { firebaselog_tripBooking } from '../../common/utils/FirebaseAnalytics';
 
 /**
  * Custom hook to manage ride matching status and socket integration
@@ -29,6 +31,10 @@ const useRideMatching = () => {
   const { id: userId } = useUserInfoStore();
   const socketInitializedRef = useRef(false);
   const matchingActiveRef = useRef(false);
+  const startedLoggedRef = useRef(false);
+  const contactingLoggedRef = useRef(false);
+  const matchedLoggedRef = useRef(false);
+  const errorLoggedRef = useRef(false);
   const { goBack,goBackToScreen } = useStackScreenStore();
   const { setTripStatus } = useCurrentRideInfoStore();
   
@@ -58,13 +64,29 @@ const useRideMatching = () => {
         // Set up matching update listener
         rideMatchingSocketService.onMatchingUpdate((matchingData) => {
           console.log('📡 Received matching update:', matchingData);
+          if (matchingData?.status === 'started' && !startedLoggedRef.current) {
+            firebaselog_tripBooking('TB_Ride_Match(TB_RM)','TB_RM:ride_matching_started');
+            startedLoggedRef.current = true;
+          }
+          if (matchingData?.status === 'contacting_driver' && !contactingLoggedRef.current) {
+            firebaselog_tripBooking('TB_Ride_Match(TB_RM)','TB_RM:contacting_driver');
+            contactingLoggedRef.current = true;
+          }
           setRideMatchStatus(matchingData);
           if(matchingData?.status === 'MATCHED'){
+            if (!matchedLoggedRef.current) {
+              firebaselog_tripBooking('TB_Ride_Match(TB_RM)','TB_RM:driver_matched');
+              matchedLoggedRef.current = true;
+            }
             setTimeout(() => {
               setDriverMatched(true);
             }, 10000);
           }
           if(matchingData?.status === 'error'){
+            if (!errorLoggedRef.current) {
+              firebaselog_tripBooking('TB_Ride_Match(TB_RM)','TB_RM:no_available_drivers');
+              errorLoggedRef.current = true;
+            }
             resetSocket();
             setTripStatus(null);
             goBackToScreen('BookRideScreen',{RideMatchDriverNotFound:true});
@@ -92,6 +114,10 @@ const useRideMatching = () => {
     console.log('resetSocket')
     socketInitializedRef.current = false;
     matchingActiveRef.current = false;
+    startedLoggedRef.current = false;
+    contactingLoggedRef.current = false;
+    matchedLoggedRef.current = false;
+    errorLoggedRef.current = false;
     setRideMatchStatus({
       status: null,
       message: null,
@@ -128,6 +154,12 @@ const useRideMatching = () => {
         driver: null
       });
 
+      // Reset one-time log flags for a new matching session
+      startedLoggedRef.current = false;
+      contactingLoggedRef.current = false;
+      matchedLoggedRef.current = false;
+      errorLoggedRef.current = false;
+
       matchingActiveRef.current = true;
 
       // Send find driver request
@@ -151,6 +183,10 @@ const useRideMatching = () => {
   const stopMatching = useCallback((tripId,passengerId) => {
     console.log('🛑 Stopping ride matching');
     matchingActiveRef.current = false;
+    startedLoggedRef.current = false;
+    contactingLoggedRef.current = false;
+    matchedLoggedRef.current = false;
+    errorLoggedRef.current = false;
     rideMatchingSocketService.cancelRide(tripId,passengerId);
     
     setRideMatchStatus({
@@ -183,6 +219,10 @@ const useRideMatching = () => {
   const resetMatching = useCallback(() => {
     console.log('🔄 Resetting ride matching state');
     matchingActiveRef.current = false;
+    startedLoggedRef.current = false;
+    contactingLoggedRef.current = false;
+    matchedLoggedRef.current = false;
+    errorLoggedRef.current = false;
     
     setStatus(null);
     setMessage(null);

@@ -170,13 +170,28 @@ const OTPScreen = ({route}) => {
     }
   } 
 
-  const {mutate: verifyOTPMutate, isLoading: isLoading} = verifyOTPMutation(
+  const {mutate: verifyOTPMutate, isLoading: isLoading, error: verifyOTPError} = verifyOTPMutation(
     handleVerificationSuccess,
   );
 
-  const {mutate: verifyDriverOTPMutate, isLoading: isVerifyOTPLoading} = verifyDriverOTPMutation(
+  const {mutate: verifyDriverOTPMutate, isLoading: isVerifyOTPLoading, error: verifyDriverOTPError} = verifyDriverOTPMutation(
     handleDriverVerificationSuccess,
   );
+
+  // Log errors only when they change
+  useEffect(() => {
+    if (verifyOTPError) {
+      firebaselog_userLogin('UL_Customer(UL_C)', 'UL_C:login_failed')
+      console.error('verifyOTPMutation error:', verifyOTPError);
+    }
+  }, [verifyOTPError]);
+
+  useEffect(() => {
+    if (verifyDriverOTPError) {
+      firebaselog_userLogin('UL_Driver(UL_D)', 'UL_D:login_failed')
+      console.error('verifyDriverOTPMutation error:', verifyDriverOTPError);
+    }
+  }, [verifyDriverOTPError]);
 
   const getFcmToken = async () => {
     try {

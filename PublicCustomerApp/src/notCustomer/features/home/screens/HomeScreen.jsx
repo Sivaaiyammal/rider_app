@@ -41,6 +41,7 @@ import ScheduledTripBanner from '../components/ScheduledTripBanner';
 import DynamicSection from '../components/DynamicSection';
 import useNearbyDrivers from '../../../store/useNearByDrivers';
 import useConfigStore from '../../../store/useConfigStore'; 
+import { firebaselog_ridePlanning } from '../../../../common/utils/FirebaseAnalytics';
 
 
 const BottomSheetHeader = ({ makeRidePlan, style }) => {
@@ -478,21 +479,25 @@ const MapScreen = () => {
 
      
       if(item.key == "schedule_trip"){
+        firebaselog_ridePlanning('RP_Type(RP_T)', `RP_T:scheduled_trip`);
         makeRidePlan({ mode: "SCHEDULE_TRIP" });
         return;
       }
       if(item.key == "female_driver"){
+        firebaselog_ridePlanning('RP_Pref(RP_P)','RP_P:female_driver')
         makeRidePlan({mode: "FEMALE_DRIVER"});
         return;
       }
 
       if(item.key == "night_trip"){
+        firebaselog_ridePlanning('RP_Pref(RP_P)','RP_P:night_ride')
         makeRidePlan({mode: "NIGHT_TRIP"});
         return;
       }
 
 
       if(item.key == "bannerStops"){
+        firebaselog_ridePlanning('RP_Stop(RP_S)', `RP_S:stop_added`);
         setCurrentLoactionPickupLocation();
         setStackScreen("PlanRideScreen",{});
         setStackScreen('WaypointScreen',{fromPlanScreen:true});
@@ -516,6 +521,7 @@ const MapScreen = () => {
         label: vehicleLabel,
         source: "home_services",
       });
+      firebaselog_ridePlanning('RP_Vehicle_Type(RP_VT)', `RP_VT:${item.key}`);
 
       makeRidePlan({ preselectedVehicleType: item.key });
       

@@ -7,6 +7,7 @@ import {rideType} from '../../../../constants/JsonData';
 import { useTranslation } from 'react-i18next'; 
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { firebaselog_ridePlanning } from '../../../../../common/utils/FirebaseAnalytics';
 
 const TripType = props => {
   const {onTripSelect, selectedRide} = props;
@@ -18,6 +19,10 @@ const TripType = props => {
       return;
     }
     onTripSelect(item);
+
+    firebaselog_ridePlanning('RP_Type(RP_T)', `RP_T:${translationKey}`);
+
+    console.log('Selected Trip Type:', item);
   };
 
   return (

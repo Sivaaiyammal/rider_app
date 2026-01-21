@@ -36,6 +36,7 @@ import useWayPointReorderStore from '../booking/store/useWayPointReorderStore';
 import { openFeedback } from '../../utils/feedback';
 import {getCurrentDeviceLocation} from '../../utils/location'
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { firebaselog_onRide } from '../../../common/utils/FirebaseAnalytics';
 
 const RideStatus = () => {
   const { userdetails } = useUserInfoStore();
@@ -212,7 +213,9 @@ const RideStatus = () => {
 
       console.log("payload",payload)
       const response = await CancelRide(payload);
+       firebaselog_onRide('OR_Status(OR_S)','OR_S:cancelled_by_customer_after_pickup')
       if (response.success) {
+       
         setWaitingForDriverApproval(null);
         setShowBottomSheet(false);
         setCancelLoading(false);
@@ -241,6 +244,7 @@ const RideStatus = () => {
       console.log("payload",payload)
 
       await CancelRide(payload);
+      firebaselog_onRide('OR_Status(OR_S)','OR_S:cancelled_by_customer_before_pickup')
       setWaitingForDriverApproval(null);
       setShowBottomSheet(false);
       setCancelLoading(false);

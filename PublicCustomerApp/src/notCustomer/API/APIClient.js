@@ -1,6 +1,7 @@
 import axios from 'axios';
 import Config from "react-native-config";
 import {DataStore} from '../controllers/DataStore';
+import { firebaselog_apicalls } from '../../common/utils/FirebaseAnalytics';
 
 const REQUEST_TIMEOUT_MS = 5000;
 const MAX_RETRY_ATTEMPTS = 1;
@@ -38,6 +39,16 @@ apiClient.interceptors.request.use(
       controller.abort();
     }, REQUEST_TIMEOUT_MS);
 
+    // Mark start time for duration tracking
+    requestConfig.__startTime = Date.now();
+
+    // Log API call start
+    try {
+     
+    } catch (e) {
+      // Swallow analytics errors to avoid affecting request
+    }
+
     return requestConfig;
   },
   error => Promise.reject(error),
@@ -48,6 +59,20 @@ apiClient.interceptors.response.use(
     if (response.config?.__timeoutId) {
       clearTimeout(response.config.__timeoutId);
       delete response.config.__timeoutId;
+    }
+
+    // Log API call success
+    try {
+      const duration = response.config?.__startTime
+        ? Date.now() - response.config.__startTime
+        : undefined;
+      firebaselog_apicalls(
+         'API_call_Customer(API_C)',
+        'API_C:success'
+        
+      );
+    } catch (e) {
+      // Swallow analytics errors
     }
     return response;
   },
@@ -71,6 +96,19 @@ apiClient.interceptors.response.use(
       console.warn(
         `Request timeout retry ${nextAttempt}/${MAX_RETRY_ATTEMPTS} for ${error.config.url}`,
       );
+      // Log API call retry
+      try {
+        const duration = error.config?.__startTime
+          ? Date.now() - error.config.__startTime
+          : undefined;
+        firebaselog_apicalls(
+           'API_call_Customer(API_C)',
+          'API_C:retry',
+         
+        );
+      } catch (e) {
+        // Swallow analytics errors
+      }
       error.config.__retryCount += 1;
       delete error.config.signal;
       return apiClient.request(error.config);
@@ -102,6 +140,20 @@ apiClient.interceptors.response.use(
     } else {
       errorMessage = error.message;
       console.error('Error:', errorMessage);
+    }
+
+    // Log API call failure (no retry or after retries)
+    try {
+      const duration = error.config?.__startTime
+        ? Date.now() - error.config.__startTime
+        : undefined;
+      firebaselog_apicalls(
+        'API_call_Customer(API_C)',
+        'API_C:failed'
+      
+      );
+    } catch (e) {
+      // Swallow analytics errors
     }
 
     return Promise.reject({message: errorMessage, status: statusCode});
