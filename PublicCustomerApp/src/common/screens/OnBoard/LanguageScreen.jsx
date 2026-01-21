@@ -11,7 +11,6 @@ import { GlobalContext } from '../../../context/GlobalContext';
 import { Fonts } from '../../../notCustomer/constants/constants';
 import { useStackScreenStore } from '../../../notCustomer/store/useStackScreenStore';
 import NavBar from '../../../notCustomer/components/NavBar';
-import { firebaselogscreen, firebaselog_language} from '../../../common/utils/FirebaseAnalytics';
 
 const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   const navigation = useNavigation();
@@ -48,9 +47,6 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
     }
   }, []);
 
-  useEffect(() => {
-    firebaselogscreen('language_screen');
-  }, [entryPoint]);
 
   const changeLanguage = item => {
     setSelected(item);
@@ -65,7 +61,6 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   const onNextPress = async () => {
     // Save the selected language to AsyncStorage
     // Vibration.vibrate(100);
-    await firebaselog_language('language_select',selected.code);
     await DataStore.storeData('language', selected.code);
 
     if (fromDriverStack) {
@@ -84,10 +79,9 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
     }
   };
 
-  const handleLanguageChangeInSideApp = async (language) => {
+  const handleLanguageChangeInSideApp = (language) => {
      changeLanguage(language);
     setInsideAppLanguageChange(language);
-    firebaselog_language('language_select',selected.code);
   }
 
   return (

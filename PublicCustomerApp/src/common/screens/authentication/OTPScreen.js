@@ -19,7 +19,6 @@ import OTPInput from '../../../common/components/OTPInput';
 import AdaptiveText from '../../../notCustomer/components/Common/AdaptiveText';
 import { prefetchUserStats } from '../../../notCustomer/controllers/UserStatsPrefetch';
 import useUserStore from '../../store/useUserStore';
-import { firebaselogscreen , firebaseloglogin} from '../../utils/FirebaseAnalytics';
 // Utility function to mask phone number
 const maskPhoneNumber = (phoneNumber) => {
   if (!phoneNumber || phoneNumber.length < 5) return phoneNumber;
@@ -49,7 +48,6 @@ const OTPScreen = ({route}) => {
 
   const [timer, setTimer] = useState(120);
   const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-  const [screenName, setScreenName] = useState('');
   
 
   const {setID, setUserdetails} = useUserInfoStore();
@@ -57,11 +55,7 @@ const OTPScreen = ({route}) => {
   // Add ref for OTP input to enable auto-fill
   const otpRef = useRef(null);
 
-  useEffect(() => {
-      let screenNamef = navRole === 'driver' ? 'driver_otp_screen' : 'customer_otp_screen';
-      firebaselogscreen(screenNamef);
-      setScreenName(screenNamef);
-  }, [navRole]);
+
 
   const formatTime = (totalSeconds) => {
     const minutes = Math.floor(totalSeconds / 60);
@@ -95,7 +89,7 @@ const OTPScreen = ({route}) => {
         addListener(user?.token);
         await DataStore.storeData('userdetails', user);
         // Prefetch user stats after successful login
-        await firebaseloglogin(`NOT_${navRole}_otp_verification`, `NOT_${navRole}_otp_verification_success`);
+
         if (isNewUser) {
           navigation.dispatch(
             CommonActions.navigate({
@@ -111,8 +105,8 @@ const OTPScreen = ({route}) => {
         // showNotification(t('otp_verified'), t('otp_verified_successfully'), 'success');
       } else {
         setOtpError(t('invalid_otp'));
-        await firebaseloglogin(`NOT_${navRole}_otp_verification`, `NOT_${navRole}_otp_verification_failed`);
         console.log('OTP verification failed:', data);
+
         if(typeof data?.message === 'string'){  
           showNotification(t('failed'), t('invalid_otp'), 'danger');
         }else{
@@ -121,7 +115,7 @@ const OTPScreen = ({route}) => {
       }
     } catch (error) {
       console.log('Error in handleVerificationSuccess:', error);
-      await firebaseloglogin(`NOT_${navRole}_otp_verification`, `NOT_${navRole}_otp_verification_failed`);
+
       showNotification(t('failed'), t('something_went_wrong'), 'danger');
     }
   };
@@ -144,7 +138,7 @@ const OTPScreen = ({route}) => {
         await DataStore.storeData('userdetails', user);
         await DataStore.storeData("bg_userToken", user?.token)
         await DataStore.storeData("bg_deviceImei", deviceImei)
-        await firebaseloglogin(`NOT_${navRole}_otp_verification`, `NOT_${navRole}_otp_verification_success`);
+
           navigation.reset({
             index: 0,
             routes: [{ name: 'HomeScreen' }],
@@ -152,7 +146,7 @@ const OTPScreen = ({route}) => {
         // showNotification(t('otp_verified'), t('otp_verified_successfully'), 'success');
       } else {
         setOtpError(t('invalid_otp'));
-        await firebaseloglogin(`NOT_${navRole}_otp_verification`, `NOT_${navRole}_otp_verification_failed`);
+
         if(typeof data?.message === 'string'){  
           showNotification(t('failed'), t('invalid_otp'), 'danger');
         }else{
@@ -162,7 +156,7 @@ const OTPScreen = ({route}) => {
       }
     } catch (error) {
       console.error('Error in handleVerificationSuccess:', error);
-      await firebaseloglogin(`NOT_${navRole}_otp_verification`, `NOT_${navRole}_otp_verification_failed`);
+
       showNotification(t('failed'), t('something_went_wrong'), 'danger');
     }
   } 

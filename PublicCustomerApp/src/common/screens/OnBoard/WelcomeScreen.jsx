@@ -5,7 +5,6 @@ import { colors, Fonts } from '../../../notCustomer/constants/constants';
 import { useTranslation } from 'react-i18next';
 import useUserStore from '../../store/useUserStore';
 import { DataStore } from '../../../notCustomer/controllers/DataStore';
-import { firebaselogscreen,firebaseRoleSelect } from '../../../common/utils/FirebaseAnalytics';
 
 const passengerImage = require('../../../notCustomer/assets/image/ContinueAsPassenger.webp');
 const driverImage = require('../../../notCustomer/assets/image/ContinueAsDriver.webp');
@@ -21,20 +20,17 @@ const WelcomeScreen = ({ navigation }) => {
 
 
 
-  useEffect(() => {   
-    firebaselogscreen('welcome_screen');
-  }, []);
+
 
   const handleCustomerContinue = () => {
-  
-    firebaseRoleSelect('customer');
+ 
     setUserRole('customer');
     DataStore.storeData('userRole', 'customer');
     navigation.navigate('LoginScreen', {navRole: 'customer'});
   };
 
   const handleDriverContinue = () => {
-    firebaseRoleSelect('driver');
+
     setUserRole('driver');
     DataStore.storeData('userRole', 'driver');
     navigation.navigate('LoginScreen', {navRole: 'driver'});
