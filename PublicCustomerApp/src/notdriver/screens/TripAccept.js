@@ -31,6 +31,7 @@ import PushNotifications from '../../common/core/PushNotifications';
 import { useTranslation } from 'react-i18next';
 import APIRequest from '../../common/APIRequest';
 import GlobalContext from '../../context/GlobalContext';
+import { firebaselog_tripBooking } from '../../common/utils/FirebaseAnalytics';
 
 
 const {NeNativeModule} = NativeModules;
@@ -126,7 +127,8 @@ const TripAccept = () => {
       RideMatchWSService.emit('driver_trip_response', acceptData);
       showNotification('Trip has been Cancelled', '', 'success');
       } else {
-        showNotification('Trip Response Timed Out', '', 'success');
+       firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_timeout_inapp');
+       showNotification('Trip Response Timed Out', '', 'success');
       }
       PushNotifications.onClearAllNotifications();
       tripAlert.stopAlertSound();

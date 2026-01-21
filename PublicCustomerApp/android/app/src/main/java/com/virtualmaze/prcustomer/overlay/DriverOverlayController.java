@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
@@ -40,6 +41,7 @@ import com.virtualmaze.prcustomer.tripAlert.PlayTripSoundModule;
 import com.virtualmaze.prcustomer.R;
 
 import androidx.core.app.NotificationCompat;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -195,6 +197,16 @@ public class DriverOverlayController {
                     if (payload instanceof JSONObject) {
                         JSONObject obj = (JSONObject) payload;
                         Log.i(TAG, "Received trip_request for driver=" + driverId + " payload=" + obj);
+                        // Log Firebase analytics for trip request receipt
+                        try {
+                            FirebaseAnalytics analytics = FirebaseAnalytics.getInstance(context);
+                            Bundle params = new Bundle();
+                            params.putString("category", "TB_Driver_Allocation(TB_DA)");
+                            params.putString("action", "TB_DA:trip_request_received");
+                            analytics.logEvent("Trip_Booking_TB", params);
+                        } catch (Exception e) {
+                            Log.w(TAG, "Failed to log Firebase event for trip_request", e);
+                        }
                         // Before showing overlay, verify driver token session status
                         checkDriverTokenAndHandle(obj);
                     } else {

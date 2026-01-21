@@ -12,6 +12,7 @@ import tripAlert from '../TripAlert';
 import { cancelTrip } from '../../../notdriver/components/CancelTripUpdate';
 import APIRequest from '../APIRequest';
 import useUserStore from '../../store/useUserStore';
+import { firebaselog_onBoarding, firebaselog_tripBooking } from '../../utils/FirebaseAnalytics';
 
 const SOCKET_URL = Config.DRIVER_SOCKET_URL;
 const {NeNativeModule} = NativeModules;
@@ -84,6 +85,7 @@ class RideMatchWSService {
         escalationDetails: data?.data?.escalation_details,
       });
       setStackScreen('TripAccept');
+      firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_request_received');
       tripAlert.playAlertSound();
     }
   }
@@ -118,6 +120,8 @@ class RideMatchWSService {
             const tripData = response?.currentTrip;
             tripData.status = 'ACCEPTED';
             useTripsStore.setState({activeTripData: [tripData]});
+            firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_accepted_inapp');
+
             setStackScreen('PublicDriverTrackingScreen');
 
             // Clear trip accept store to prevent loop
@@ -134,6 +138,7 @@ class RideMatchWSService {
               const api = new APIRequest();
               const cancelResp = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:data?.trip_id, reason: cancelReason, isBeforePickup: true}, userInfo?.token);
               if (cancelResp?.success) {
+                firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_cancelled_after_accept_retry');
                 showNotification('Trip Cancelled', cancelResp?.message, 'success');
               } else {
                 showNotification('Failed to Cancel Trip', cancelResp?.message, 'danger');
@@ -159,6 +164,7 @@ class RideMatchWSService {
             setActiveTripData([]);
             DataStore.storeData('activeTripId', null);
             NeNativeModule.clearDirectionPoints();
+            firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_reject_inapp');
           }
           reset();
         }

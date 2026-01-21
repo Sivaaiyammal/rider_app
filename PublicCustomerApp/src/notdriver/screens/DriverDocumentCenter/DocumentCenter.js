@@ -13,6 +13,7 @@ import {useTranslation} from 'react-i18next';
 import {useStackScreenStore} from '../../../common/store/useStackScreenStore';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import {Colors, Fonts} from '../../../common/constants/constants';
+import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
 
 const DocumentCenter = () => {
   const {t} = useTranslation();
@@ -115,6 +116,7 @@ const DocumentCenter = () => {
       // setCurrentScreen('Map');
       goBack();
     } else {
+      firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:onboarding_completed')
       setStackScreen('DriverApprovalScreen')
     }
   };
