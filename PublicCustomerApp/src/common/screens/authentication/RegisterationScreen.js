@@ -8,6 +8,7 @@ import { usePostQuery } from '../../../notCustomer/hooks/useQuery';
 import { CommonActions,useNavigation} from '@react-navigation/native';
 import useUserInfoStore from '../../store/useUserInfoStore';
 import { DataStore } from '../../../notCustomer/controllers/DataStore';
+import { firebaselog_onBoarding } from '../../utils/FirebaseAnalytics';
 
 const RegisterationScreen = () => {
   const { t } = useTranslation();
@@ -118,9 +119,9 @@ const RegisterationScreen = () => {
       setUserdetails(data?.user);
       let {  user} = data;
       setUserdetails(user);
-   
+      
       await DataStore.storeData('userdetails', user);
-  
+      firebaselog_onBoarding('OB_Customer(OB_C)', 'OB_C:registration_completed')
         navigation.reset({
           index: 0,
           routes: [{ name: 'HomeScreen' }],
@@ -143,7 +144,7 @@ const RegisterationScreen = () => {
     } else if (error?.message) {
       errorMessage = error.message;
     }
-    
+     firebaselog_onBoarding('OB_Customer(OB_C)', 'OB_C:registration_failed')
     showNotification(t('registration_failed'), errorMessage, 'danger');
   };
 
