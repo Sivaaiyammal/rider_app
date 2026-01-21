@@ -6,6 +6,7 @@ import {
   Animated,
   Easing,
   NativeModules,
+  AppState,
 } from 'react-native';
 import React, {useEffect, useState, useRef, useCallback, useMemo, useContext} from 'react';
 import { useTripAcceptStore } from '../store/useTripAcceptStore';
@@ -60,6 +61,7 @@ const TripAccept = () => {
 
   // Only start timer after successful trip fetch; null means not started
   const [timeLeft, setTimeLeft] = useState(null);
+  const [appState, setAppState] = useState(AppState.currentState);
   const progressAnim = useRef(new Animated.Value(1)).current;
   const animationRef = useRef(null);
 
@@ -69,6 +71,15 @@ const TripAccept = () => {
   const { t } = useTranslation();
   
   const {setDirectionPoints,setMapBounds} = useMapMarkerStore();
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextState => {
+      setAppState(nextState);
+    });
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   // Normalize stops from socket payload; fallback to pickup/drop if stops missing
   const stopsForDisplay = useMemo(() => {
@@ -98,6 +109,8 @@ const TripAccept = () => {
   useEffect(() => {
     setLoading(true);
     if (tripDetails && (tripDetails?.trip_id || tripId)) {
+      console.log('Remaining time duration:', Math.floor(((alertedAt || 0) + timerDuration * 1000 - Date.now()) / 1000));
+
       const remainingTimeDuration = Math.floor(((alertedAt || 0) + timerDuration * 1000 - Date.now()) / 1000);
       if (remainingTimeDuration <= 0) {
         setTimeLeft(0);
@@ -110,7 +123,7 @@ const TripAccept = () => {
       setTimeLeft(null);
     }
     setLoading(false);
-  }, [tripDetails, tripId, alertedAt, timerDuration, setLoading, setError]);
+  }, [tripDetails, tripId, alertedAt, timerDuration, setLoading, setError, appState]);
 
   const handleDecline = useCallback((isTimerEnd) => {
     // Handle trip decline logic here

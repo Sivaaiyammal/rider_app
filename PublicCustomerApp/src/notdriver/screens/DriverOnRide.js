@@ -737,6 +737,7 @@ const DriverOnRide = () => {
   // }, [navigationError]);
 
     useEffect(() => {
+    if (routeLoading?.loading) return
     if (routeLoading?.error) {
       setOpenRouteRetryModal(true);
     }
