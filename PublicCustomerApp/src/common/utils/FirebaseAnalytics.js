@@ -26,40 +26,37 @@ const buildParams = (category, action, other = {}) => {
 
 // Event functions
 export const firebaselogscreen = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_screen', buildParams(category, action, other));
+  logFirebaseEvent('Screen_View(SV)', buildParams(category, action, other));
 
-export const firebaseloglogin = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_login', buildParams(category, action, other));
+export const firebaselog_userRole = (category, action, other = {}) =>
+  logFirebaseEvent('User_Role(UR)', buildParams(category, action, other));
 
-export const firebaselog_CUS_trip = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_CUS_trip', buildParams(category, action, other));
-
-export const firebaselog_CUS_plantrip = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_CUS_plantrip', buildParams(category, action, other));
-
-export const firebaselog_CUS_trippayment = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_CUS_trippayment', buildParams(category, action, other));
-
-export const firebaselog_DRI_trip = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_DRI_trip', buildParams(category, action, other));
-
-export const firebaselog_DRI_duepay = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_DRI_duepay', buildParams(category, action, other));
-
-export const firebaselog_DRI_onboarding = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_DRI_onboarding', buildParams(category, action, other));
-
-export const firebaselog_DRI_status = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_DRI_status', buildParams(category, action, other));
-
-export const firebaselog_networkevents = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_networkevents', buildParams(category, action, other));
-
-export const firebaselog_routing = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_routing', buildParams(category, action, other));
+export const firebaselog_userLogin = (category, action, other = {}) =>
+  logFirebaseEvent('User_Login(UL)', buildParams(category, action, other));
 
 export const firebaselog_language = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_language', buildParams(category, action, other));
+  logFirebaseEvent('Language(L)', buildParams(category, action, other));
 
-export const firebaseRoleSelect = (category, action, other = {}) =>
-  logFirebaseEvent('NOT_role_select', buildParams(category, action, other));
+export const firebaselog_onBoarding = (category, action, other = {}) =>
+  logFirebaseEvent('Onboarding(OB)', buildParams(category, action, other));
+
+export const firebaselog_DRI_trip = (category, action, other = {}) =>
+  logFirebaseEvent('Trip_Booking(TB)', buildParams(category, action, other));
+
+export const firebaselog_DRI_duepay = (category, action, other = {}) =>
+  logFirebaseEvent('On_Ride(OR)', buildParams(category, action, other));
+
+export const firebaselog_DRI_onboarding = (category, action, other = {}) =>
+  logFirebaseEvent('Trip_Payment(TP)', buildParams(category, action, other));
+
+// export const firebaselog_DRI_status = (category, action, other = {}) =>
+//   logFirebaseEvent('NOT_DRI_status', buildParams(category, action, other));
+
+// export const firebaselog_networkevents = (category, action, other = {}) =>
+//   logFirebaseEvent('NOT_networkevents', buildParams(category, action, other));
+
+// export const firebaselog_routing = (category, action, other = {}) =>
+//   logFirebaseEvent('NOT_routing', buildParams(category, action, other));
+
+// export const firebaseRoleSelect = (category, action, other = {}) =>
+//   logFirebaseEvent('NOT_role_select', buildParams(category, action, other));
