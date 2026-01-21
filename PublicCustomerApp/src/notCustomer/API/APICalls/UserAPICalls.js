@@ -11,6 +11,7 @@ import {
   requestDriverOTP,
   verifyDriverOTP,
 } from '../EndPoints/EndPoints';
+import {firebaseloglogin} from '../../../common/utils/FirebaseAnalytics';
 import {showNotification} from '../../components/NotificationManger';
 import i18n from '../../../common/i18n';
 
@@ -76,8 +77,9 @@ export const verifyOTPMutation = onSuccessCallback => {
         showNotification(i18n.t('verification_failed'), i18n.t('some_error_occurred'), 'danger');
       }
     },
-    onError: error => {
+    onError: async error => {
       console.log('Error during OTP verification:', error);
+      await firebaseloglogin(`NOT_app_otp_verification`, `NOT_app_otp_verification_failed`);
       showNotification(
         i18n.t('verification_failed'),
         i18n.t('some_error_occurred'),
@@ -189,7 +191,8 @@ export const requestDriverOTPMutation = onSuccessCallback => {
         showNotification(i18n.t('login_failed'), i18n.t('something_went_wrong'), 'danger');
       }
     },
-    onError: error => {
+    onError: async error => {
+       await firebaseloglogin(`NOT_logincall`,`NOT_login_failed`);
       showNotification(
         i18n.t('login_failed'),
         i18n.t('something_went_wrong'),

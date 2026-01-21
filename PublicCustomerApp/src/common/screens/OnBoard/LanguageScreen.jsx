@@ -11,7 +11,7 @@ import { GlobalContext } from '../../../context/GlobalContext';
 import { Fonts } from '../../../notCustomer/constants/constants';
 import { useStackScreenStore } from '../../../notCustomer/store/useStackScreenStore';
 import NavBar from '../../../notCustomer/components/NavBar';
-import { logFirebaseEvent } from '../../../common/utils/FirebaseAnalytics';
+import { firebaselogscreen, firebaselog_language} from '../../../common/utils/FirebaseAnalytics';
 
 const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   const navigation = useNavigation();
@@ -49,10 +49,7 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   }, []);
 
   useEffect(() => {
-    logFirebaseEvent('NOT_screen_view', {
-      screen: 'language_screen',
-      entry_point: entryPoint,
-    });
+    firebaselogscreen('language_screen');
   }, [entryPoint]);
 
   const changeLanguage = item => {
@@ -68,13 +65,7 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   const onNextPress = async () => {
     // Save the selected language to AsyncStorage
     // Vibration.vibrate(100);
-    await logFirebaseEvent('NOT_language_select', {
-      source_screen: 'language_screen',
-      entry_point: entryPoint,
-      language_code: selected.code,
-      language_name: selected.name,
-      cta_name: fromDrawer || fromDriverStack ? 'done' : 'next',
-    });
+    await firebaselog_language('language_select',selected.code);
     await DataStore.storeData('language', selected.code);
 
     if (fromDriverStack) {
@@ -93,15 +84,10 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
     }
   };
 
-  const handleLanguageChangeInSideApp = (language) => {
+  const handleLanguageChangeInSideApp = async (language) => {
      changeLanguage(language);
     setInsideAppLanguageChange(language);
-    logFirebaseEvent('NOT_language_select', {
-      source_screen: 'language_screen',
-      entry_point: entryPoint,
-      language_code: language.code,
-      language_name: language.name,
-    });
+    firebaselog_language('language_select',selected.code);
   }
 
   return (
