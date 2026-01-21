@@ -1,5 +1,5 @@
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useEffect, useState, useCallback, useMemo, use, useContext } from 'react';
+import React, {useEffect, useState, useCallback, useMemo, useContext } from 'react';
 import {useQuery} from 'react-query';
 
 import HomeTab from '../../notdriver/assets/icons/homeTab.svg';
@@ -602,7 +602,7 @@ const PublicRidesDriverHomeScreen = () => {
               { id: 1, name: 'Map', icon: <HomeTab />, iconHighlight: <HomeHl />, title: 'home', component: 
               <DriverMapScreen isLoading={isLoading} isPublicRidesDriver={true} approved={approved} blocked={blocked} isBankVerified={isBankVerified} refreshStatus={refreshStatus} /> },
               { id: 9, name: 'Trips', icon: <TripNotSelected/>, iconHighlight: <TripSelected />, title: 'trips', component: <TripHistory />},
-              { id: 2, name: 'Devices', icon: <Tracking />, iconHighlight: <TrackingHl />, title: 'earnings', component: <DriverEarnings />},
+              { id: 2, name: 'Earnings', icon: <Tracking />, iconHighlight: <TrackingHl />, title: 'earnings', component: <DriverEarnings />},
               { id: 5, name: 'Settings', icon: <SettingsTab />, iconHighlight: <SettingTabHi />, title: 'settings', component: <DriverSettingsScreen /> }
             ].filter(item => role === 'salaried' ? item.id !== 2 : true)}
           />
@@ -679,7 +679,7 @@ const PublicRidesDriverHomeScreen = () => {
               return <UPIVerification />;
       case 'DriverProofDoc':
               return <DriverProofDoc/>;  
-               case 'EditDocCenter':
+      case 'EditDocCenter':
               return <EditDocCenter/>;  
       default:
         return <Text>Home</Text>;
