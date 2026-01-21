@@ -17,6 +17,7 @@ import {showNotification} from '../../../common/components/NotificationManger';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import {driverDetailStyles} from '../../styles/DriverDetailsUpload';
 import {Colors, upiIdPattern} from '../../../common/constants/constants';
+import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
 
 const UPIVerification = () => {
    const {setBankInfo, bankInfo, setBankDetailsCompleteStatus} = usePublicDriverStore();
@@ -49,7 +50,6 @@ const UPIVerification = () => {
     };
     try {
       const res = await api.request('/publicrides/driver/verifyUPI','POST',payload,userInfo.token,);
-      console.log('UPI update response==>', res);
       if (res.success) {
         const payload = {
           UPIID: upiId.trim(),
@@ -63,6 +63,7 @@ const UPIVerification = () => {
           'success',
         );
         setBankDetailsCompleteStatus(true)
+        firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:bankdetails_verifiedwith_UPI_completed')
         goBack();
       } else {
         showNotification(

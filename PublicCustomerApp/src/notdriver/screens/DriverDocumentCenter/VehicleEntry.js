@@ -22,6 +22,7 @@ import { Colors, Fonts, vehicleNumberPattern } from '../../../common/constants/c
 import { vehicleList } from '../../../common/constants/jsonData';
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
 import UseBackButton from '../../../common/hooks/UseBackButton';
+import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
 
 const VehicleEntry = ({ onNext }) => {
   const { t } = useTranslation();
@@ -393,6 +394,7 @@ const VehicleEntry = ({ onNext }) => {
         showNotification(response?.message, '', 'success');
         setIsParivahanFailed(false);
         setVehicleDetailsCompleteStatus(true);
+        firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:vehicle_details_entry_manual')
         goBack();
         return;
       }
@@ -469,13 +471,15 @@ const VehicleEntry = ({ onNext }) => {
           );
           setIsParivahanFailed(true);
           setVehicleDetailsCompleteStatus(false);
+          firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:vehicle_details_entry_parivahan_verification_failed')
           return;
         }
-
+        
         showNotification(response?.message, '', 'success');
         setIsParivahanFailed(false);
         setVehicleDetailsCompleteStatus(true);
         setIsApproved(false)
+        firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:vehicle_details_entry_parivahan_verification_completed')
         goBack();
         return;
       } else {

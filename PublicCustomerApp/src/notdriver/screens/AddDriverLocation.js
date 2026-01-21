@@ -34,6 +34,7 @@ import { showNotification } from '../../common/components/Alerts/showNotificatio
 import { useTranslation } from 'react-i18next';
 import useUserStore from '../../common/store/useUserStore';
 import SearchAPI from '../../notCustomer/controllers/NEMap/Search';
+import { firebaselog_onBoarding } from '../../common/utils/FirebaseAnalytics';
 
 const CACHE_EXPIRY = 5 * 60 * 1000;
 const searchCache = new Map();
@@ -484,6 +485,7 @@ const removeStateVecotr = async (item) => {
    if (isPassanger) {
     updatePassangerLocation(updateDriverHomeLocation)
    }else {
+    firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:preferred_work_location')
     updateDriverPrefferedLocation(updateDriverHomeLocation)
    }
  }

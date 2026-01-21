@@ -28,6 +28,7 @@ import NavBar from '../../../notCustomer/components/NavBar';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import APIRequest from '../../../common/controllers/APIRequest';
 import UseBackButton from '../../../common/hooks/UseBackButton';
+import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
 
 const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
   const {t} = useTranslation();
@@ -465,7 +466,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
     try {
       const api = new APIRequest();
       const response = await api.request(`/publicrides/driver/updateDriverInfo`, 'POST', formData, userInfo?.token);
-      console.log('Update Driver Info Response:', response);
+      // console.log('Update Driver Info Response:', response);
       if (response.success) {
         setDriverInfo({
           ...driverInfo,
@@ -480,6 +481,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
         showNotification(response?.message, response?.message, 'success');
         setIsApproved(false)
          setDriverDetailsCompleteStatus(true)
+         firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:driver_details_entry_completed')
         goBack();
       } else {
         showNotification(response?.message, 'Please Contact Support', 'danger');

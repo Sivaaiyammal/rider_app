@@ -11,6 +11,8 @@ import { GlobalContext } from '../../../context/GlobalContext';
 import { Fonts } from '../../../notCustomer/constants/constants';
 import { useStackScreenStore } from '../../../notCustomer/store/useStackScreenStore';
 import NavBar from '../../../notCustomer/components/NavBar';
+import { firebaselog_language } from '../../utils/FirebaseAnalytics';
+import useUserStore from '../../store/useUserStore';
 
 const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
   const navigation = useNavigation();
@@ -22,6 +24,7 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
 
   } = useContext(GlobalContext);
   const {goBack: goBackStack} = useStackScreenStore();
+  const {userRole} = useUserStore()
 
   const [selected, setSelected] = useState(languages[0]);
 
@@ -65,12 +68,24 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
 
     if (fromDriverStack) {
        i18n.changeLanguage(InsideAppLanguageChange.code);
+       if (userRole === 'customer') {
+       firebaselog_language('L_Customer(L_C)', `L_C:${InsideAppLanguageChange.code}`);
+
+        } else {
+           firebaselog_language('L_Driver(L_D)', `L_D:${InsideAppLanguageChange.code}`)
+       }
        goBackStack()
        return
     }
     
     if(fromDrawer){
       i18n.changeLanguage(InsideAppLanguageChange.code);
+       if (userRole === 'customer') {
+       firebaselog_language('L_Customer(L_C)', `L_C:${InsideAppLanguageChange.code}`);
+
+        } else {
+           firebaselog_language('L_Driver(L_D)', `L_D:${InsideAppLanguageChange.code}`)
+       }
       goBack();
     }
     else{

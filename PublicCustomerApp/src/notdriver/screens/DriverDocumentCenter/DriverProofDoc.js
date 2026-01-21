@@ -11,6 +11,7 @@ import publicrideDriverApi from '../../api/publicrideDriverApi';
 import { showNotification } from '../../../common/components/Alerts/showNotification';
 import useUserStore from '../../../common/store/useUserStore';
 import UseBackButton from '../../../common/hooks/UseBackButton';
+import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
 
 const aadhaarPattern = /\b\d{4}\s?\d{4}\s?\d{4}\b/;
 const aadhaarDigitsPattern = /^\d{12}$/;
@@ -187,6 +188,11 @@ const DriverProofDoc = () => {
         setPendingImage(prev => ({ ...prev, [docId]: null }));
         setDocumentsCompleteStatus(true)
         setIsApproved(false)
+        if (docId === 'aadhar') {
+           firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:proof_verification_aadhar_completed')
+        } else {
+           firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:proof_verification_pan_completed')
+        }
         goBack();
         showNotification(
           docLabel,

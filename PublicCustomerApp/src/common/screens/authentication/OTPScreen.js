@@ -19,6 +19,7 @@ import OTPInput from '../../../common/components/OTPInput';
 import AdaptiveText from '../../../notCustomer/components/Common/AdaptiveText';
 import { prefetchUserStats } from '../../../notCustomer/controllers/UserStatsPrefetch';
 import useUserStore from '../../store/useUserStore';
+import { firebaselog_userLogin } from '../../utils/FirebaseAnalytics';
 // Utility function to mask phone number
 const maskPhoneNumber = (phoneNumber) => {
   if (!phoneNumber || phoneNumber.length < 5) return phoneNumber;
@@ -91,12 +92,14 @@ const OTPScreen = ({route}) => {
         // Prefetch user stats after successful login
 
         if (isNewUser) {
+          firebaselog_userLogin('UL_Newuser(UL_New)', 'UL_New:driver');
           navigation.dispatch(
             CommonActions.navigate({
               name: 'RegisterationScreen',
             }),
           );
         } else {
+          firebaselog_userLogin('UL_Customer(UL_C)', 'UL_C:login_success');
           navigation.reset({
             index: 0,
             routes: [{ name: 'HomeScreen' }],
@@ -112,6 +115,7 @@ const OTPScreen = ({route}) => {
         }else{
           showNotification(t('failed'), t('something_went_wrong'), 'danger');
         }
+        firebaselog_userLogin('UL_Customer(UL_C)', 'UL_C:login_failed')
       }
     } catch (error) {
       console.log('Error in handleVerificationSuccess:', error);
@@ -138,10 +142,14 @@ const OTPScreen = ({route}) => {
         await DataStore.storeData('userdetails', user);
         await DataStore.storeData("bg_userToken", user?.token)
         await DataStore.storeData("bg_deviceImei", deviceImei)
-
+          if (user && Object.prototype.hasOwnProperty.call(user, 'isAvailable')) {
+            firebaselog_userLogin('UL_Driver(UL_D)', 'UL_D:login_success');
+          } else {
+            firebaselog_userLogin('UL_Newuser(UL_New)', 'UL_New:driver');
+          }
           navigation.reset({
             index: 0,
-            routes: [{ name: 'HomeScreen' }],
+            routes: [{name: 'HomeScreen'}],
           });
         // showNotification(t('otp_verified'), t('otp_verified_successfully'), 'success');
       } else {
@@ -153,6 +161,7 @@ const OTPScreen = ({route}) => {
           console.log('Driver OTP verification failed:', data);
           showNotification(t('failed'), t('something_went_wrong'), 'danger');
         }
+        firebaselog_userLogin('UL_Driver(UL_D)', 'UL_D:login_failed')
       }
     } catch (error) {
       console.error('Error in handleVerificationSuccess:', error);

@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import NavBar from '../../../common/components/NavBar';
 import UseBackButton from '../../../common/hooks/UseBackButton';
 import APIRequest from '../../../common/APIRequest';
+import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
 
 const styles = StyleSheet.create({
   container: {
@@ -650,7 +651,8 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
             passbookImage: passbookImage
           }      
           setBankInfo(payload);
-          goBack();
+          firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:bankdetails_verifiedwith_razorpay_completed')
+          
           setBankDetailsCompleteStatus(true)
           if (!accountNumber || accountNumber?.length === 0) {
              setRazorpayUpdated(false);
@@ -658,10 +660,13 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
              setRazorpayUpdated(true);
           }
           showNotification(response?.message, '', 'success');
+          goBack();
         }
          else {
           showNotification(response?.message, '', 'danger');
          }
+          
+
       } catch (error) {
         console.error('Error updating bank details:', error);
       } finally {
