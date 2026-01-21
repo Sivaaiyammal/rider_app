@@ -9,6 +9,7 @@ import useCurrentScreenStore from '../../store/useCurrentScreenStore';
 import { DataStore } from '../DataStore';
 import driverWaitingTime from '../../../notdriver/Controller/DriverWaitingTime';
 import usePublicDriverStore from '../../../notdriver/store/usePublicDriverStore';
+import { firebaselog_onRide } from '../../utils/FirebaseAnalytics';
 
 
 const {NeNativeModule} = NativeModules;
@@ -44,6 +45,8 @@ onDriverTripStatus(data) {
           setNewStopData(null)
           useTripsStore.setState({newStopData: null})
           setStackScreen('PublicDriverTrackingScreen')
+          firebaselog_onRide('OR_Status(OR_S)', 'OR_S:cancelled_by_customer_after_pickup')
+          firebaselog_onRide('OR_Status(OR_S)', 'OR_S:dropped')
          } else {
           DataStore.storeData('activeTripId', null);
           DataStore.storeData('isOngoingTrip', null)
@@ -57,6 +60,7 @@ onDriverTripStatus(data) {
           useTripsStore.setState({newStopData: null})
           setStackScreen('Home')
           setCurrentScreen('Map')
+          firebaselog_onRide('OR_Status(OR_S)', 'OR_S:cancelled_by_customer_before_pickup')
       }
   }
 }

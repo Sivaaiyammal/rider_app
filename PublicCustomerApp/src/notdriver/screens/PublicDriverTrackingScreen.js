@@ -21,6 +21,7 @@ import { Colors, Fonts } from '../../common/constants/constants';
 import PublicDriverTripPaymentScreen from './PublicDriverTripPaymentScreen';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 import InputField from '../../common/components/InputField';
+import { firebaselog_onRide } from '../../common/utils/FirebaseAnalytics';
 
 const PublicDriverTrackingScreen = () => {
   const {

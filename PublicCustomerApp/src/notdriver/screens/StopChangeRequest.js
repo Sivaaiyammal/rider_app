@@ -17,6 +17,7 @@ import TotalEarnings from '../../notdriver/assets/icons/totalEarnings.svg'
 import TotalHours from '../../notdriver/assets/icons/totalHours.svg'
 import PushNotifications from '../../common/core/PushNotifications';
 import { useTranslation } from 'react-i18next';
+import { firebaselog_onRide } from '../../common/utils/FirebaseAnalytics';
 
 const StopChangeRequest = () => {
     const {newStopData, setNewStopData, updateNewStopData} = useTripsStore();
@@ -61,6 +62,7 @@ const StopChangeRequest = () => {
                 setNewStopData(null)
                 showNotification('Stops Updated Successfully', '' , 'success')
                 PushNotifications.onClearAllNotifications();
+                firebaselog_onRide('OR_Edit(OR_E)', 'OR_E:driver_accept_edit')
                 setStackScreen('PublicDriverTrackingScreen')
             } else {
                 showNotification(res?.message, '' , 'danger')
@@ -92,6 +94,7 @@ const StopChangeRequest = () => {
                 setNewStopData(null)
                 showNotification('Stops Updated Successfully', '' , 'success')
                 PushNotifications.onClearAllNotifications();
+                firebaselog_onRide('OR_Edit(OR_E)', 'OR_E:driver_reject_edit')
                 setStackScreen('PublicDriverTrackingScreen')
             }else {
                 showNotification(res?.message, '' , 'danger')

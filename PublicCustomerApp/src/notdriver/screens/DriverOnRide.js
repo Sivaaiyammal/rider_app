@@ -37,6 +37,7 @@ import RideMatchWSService from '../../common/controllers/socketServices/RideMatc
 import CancelRideModal from '../components/CancelModel';
 import TripDetails from '../components/TripDetailCom';
 import { useTranslation } from 'react-i18next';
+import { firebaselog_onRide } from '../../common/utils/FirebaseAnalytics';
 
 
 const {NeNativeModule} = NativeModules;
@@ -191,6 +192,7 @@ const DriverOnRide = () => {
         const response = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:activeTripData[0]._id, reason: reason, isBeforePickup: true}, userInfo.token);
         if (response.success) {
           cancelTrip(response)
+          firebaselog_onRide('OR_Status(OR_S)', 'OR_S:cancelled_by_driver_before_pickup')
         } else {
           showNotification(`Failed to Cancel Trip`, response?.message, 'danger')
         }
@@ -238,6 +240,7 @@ const DriverOnRide = () => {
     setDisduration(null);
     driverWaitingTime.stopWaitingTime()
     showNotification(res?.message, res?.message, 'success');
+    firebaselog_onRide('OR_Status(OR_S)', isGetFare ? 'OR_S:dropped' : 'OR_S:cancelled_by_driver_after_pickup')
     } else {
     showNotification(res?.message || 'Something went wrong', res?.message || 'Error Fetching Fare', 'danger');
     }
@@ -395,6 +398,7 @@ const DriverOnRide = () => {
         
         setIsReachedPickup(false);
         setCurrentTripAcceptedTime(new Date().getTime());
+        firebaselog_onRide('OR_Status(OR_S)', 'OR_S:pickedup')
         // updateDirectionsPoints();
       }else{
         showNotification(res?.message, res?.message, 'danger');
@@ -552,6 +556,7 @@ const DriverOnRide = () => {
 
   const handleNavMode = async (mode) => {
     if (mode === 'google') {
+      firebaselog_onRide('OR_Navigation(OR_N)', 'OR_N:navigation_mode_google')
       openGoogleMaps()
     } else {
        if (!directionReadyCallback) {
@@ -563,6 +568,7 @@ const DriverOnRide = () => {
       updateDirectionsPoints();
       return;
     }
+    firebaselog_onRide('OR_Navigation(OR_N)', 'OR_N:navigation_mode_vm')
     setStartNavigation(true);
     setMapMarkers([]);
     setOpenNavChoiceModal(false)

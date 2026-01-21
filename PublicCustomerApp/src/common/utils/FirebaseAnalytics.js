@@ -46,8 +46,8 @@ export const firebaselog_onBoarding = (category, action, other = {}) =>
 export const firebaselog_tripBooking = (category, action, other = {}) =>
   logFirebaseEvent('Trip_Booking_TB', buildParams(category, action, other));
 
-// export const firebaselog_DRI_duepay = (category, action, other = {}) =>
-//   logFirebaseEvent('On_Ride_OR', buildParams(category, action, other));
+export const firebaselog_onRide = (category, action, other = {}) =>
+  logFirebaseEvent('On_Ride_OR', buildParams(category, action, other));
 
 // export const firebaselog_DRI_onboarding = (category, action, other = {}) =>
 //   logFirebaseEvent('Trip_Payment_TP', buildParams(category, action, other));

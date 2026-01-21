@@ -7,6 +7,7 @@ import useTripsStore from '../../notdriver/store/useTripsStore';
 import { useMapMarkerStore } from '../store/useMapMarkerStore';
 import APIRequest from '../APIRequest';
 import TripLocationFetch from './TripLocationFetch';
+import { firebaselog_onRide } from '../utils/FirebaseAnalytics';
 
 const TripFareCalculator = ({ tripData, onDone, setLoading, setError, isGetFare }) => {
   const {userInfo} = useUserStore()
