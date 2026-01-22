@@ -181,9 +181,9 @@ const PublicRidesDriverHomeScreen = () => {
       return;
      }
      const vehicleInfo = response.driver?.ownVehicleInfo;
-     vehicleInfo.vehicleRcDoc = vehicleInfo.documents.vehicleRcDoc|| null;
-     vehicleInfo.insurance = vehicleInfo.documents.insurance|| null;
-     vehicleInfo.permitDoc = vehicleInfo.documents.permitDoc|| null;
+     vehicleInfo.vehicleRcDoc = vehicleInfo?.documents?.vehicleRcDoc|| null;
+     vehicleInfo.insurance = vehicleInfo?.documents?.insurance|| null;
+     vehicleInfo.permitDoc = vehicleInfo?.documents?.permitDoc|| null;
      const parivahan_status = vehicleInfo?.isParivahanFailed;
      setVehicleInfo(vehicleInfo);
       if (parivahan_status) {
