@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-useless-catch */
 import Config from 'react-native-config';
+import { firebaselog_apicalls } from './utils/FirebaseAnalytics';
 
 const DefaultPostHeaders = {
   'Content-Type': 'application/json',
@@ -70,6 +71,7 @@ class APIRequest {
       while (true) {
         if (restTime != this.retryTime) {
           console.log("Retrying ", url)
+          firebaselog_apicalls('API_call_Driver(API_D)', `API_D:retry${url}`)
         }
         try {
           const response = await this.fetcher(url, options)
@@ -97,8 +99,8 @@ class APIRequest {
       const statusCode = response.status
       const data = await response.json();
       data.response_code = statusCode
+      firebaselog_apicalls('API_call_Driver(API_D)', `API_D:${url}-${statusCode}`)
       return data
-
     } catch (error) {
       throw error;
     }
