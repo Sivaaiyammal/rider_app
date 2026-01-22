@@ -28,7 +28,9 @@ export const getTotalDistanceAndTime = async (stops,pickup=false) => {
            
             
             // Call findRoute API
-            const routeData = await findRoute(routePoints);
+            const routeRes = await findRoute(routePoints);
+
+            const routeData = routeRes?.response;
             
             if (routeData && routeData.trip && routeData.trip.summary) {
                 const { length, time } = routeData.trip.summary;

@@ -66,10 +66,10 @@ apiClient.interceptors.response.use(
       const duration = response.config?.__startTime
         ? Date.now() - response.config.__startTime
         : undefined;
+      const statusCode = response.status;
       firebaselog_apicalls(
-         'API_call_Customer(API_C)',
-        'API_C:success'
-        
+        'API_call_Customer(API_C)',
+        `API_C:${statusCode}`
       );
     } catch (e) {
       // Swallow analytics errors
@@ -149,8 +149,7 @@ apiClient.interceptors.response.use(
         : undefined;
       firebaselog_apicalls(
         'API_call_Customer(API_C)',
-        'API_C:failed'
-      
+        `API_C:${statusCode || 0}`
       );
     } catch (e) {
       // Swallow analytics errors

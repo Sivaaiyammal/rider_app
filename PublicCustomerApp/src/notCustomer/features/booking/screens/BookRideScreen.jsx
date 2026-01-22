@@ -63,16 +63,9 @@ const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => 
         setStackScreen('WaypointScreen',{})
     }
     const handleCurrentLocation = async () => {
-        // Set bounds for Chennai (approximate bounding box)
-        // Southwest: 12.834, 80.182 | Northeast: 13.200, 80.322
-        
         const coords = [[rideStartLocation.longitude,rideStartLocation.latitude],[rideEndLocation.longitude,rideEndLocation.latitude],...rideWayPoints.map(waypoint => [waypoint.longitude,waypoint.latitude])]
-        
         const bounds = utils.getBoundingBox(coords)
-       
-        // const margin = [50, 100, 50,height*0.65-availableVehicles?.length*50]
         const margin = [50, 100, 50,height*0.65]
-        // Structure bounds properly: [bounds, margin] where bounds is [minLon, minLat, maxLon, maxLat]
         const finalBounds = [bounds, margin]
         setMapBounds(finalBounds);
     }
@@ -102,7 +95,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const { t } = useTranslation();
     
     const {goBack,goBackToScreen} = useStackScreenStore()
-        const {paymentType,setPaymentType, rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode, updateBookingInfo,scheduleDateTime} = useRideBookingInfo()
+    const {paymentType,setPaymentType, rideDistance,estimatedDuration,couponCode,setRegionOfficeId,setRegionOfficeCode, updateBookingInfo,scheduleDateTime} = useRideBookingInfo()
     const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false)
     const {isPreferenceShow,setIsPreferenceShow} = useUserInfoStore()
     const {setAvailableVehicles,availableVehicles,setSelectedVehicle,selectedVehicle} = useRideVehicleStore()
@@ -111,7 +104,6 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const [bottomSheetHeight,setBottomSheetHeight] = useState(370)
     const [isEstimationError, setIsEstimationError] = useState(false)
     
-    // Use the direction load hook to transform ride locations to direction points
     const { 
         transformRideLocationsToDirectionPoints, 
         isRideLocationsReady,
@@ -152,11 +144,9 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const bookingInfoTimerRef = useRef(null)
     const { appConfig } = useConfigStore();
 
-
-
-    useEffect(() => {   
-        console.log("routeLoadingInMapContainer",routeLoading)
-    }, [routeLoading]);
+    useEffect(() => {
+       DirectionRoute();
+    }, []);
 
 
     const onRetryFetchRoute = () => {  
@@ -205,16 +195,14 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     
 
     const handleDirectionReady = (data) => {
-       // handleCurrentLocation()
-        // Extract distance and duration from direction data
+       
         if (data?.distance && data?.duration) {
-            // Convert raw values to numeric units
-            const distanceKm = Number(data.distance) / 1000; // Distance in kilometers
-            const durationMin = Number(data.duration) / 60;
+            
+            const distanceKm = Number(data.distance) ; 
+            const durationMin = Number(data.duration) ;
 
-            console.log("Direction data received:", data);
             const minDistanceKm = appConfig.MIN_TRIP_DISTANCE_METER ? appConfig.MIN_TRIP_DISTANCE_METER / 1000 : 0;
-            console.log("minDistanceKm", minDistanceKm, distanceKm);
+   
 
             if (Number.isFinite(distanceKm) && distanceKm <= minDistanceKm) {
                 setModalOverrides({
@@ -233,18 +221,18 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
                 rideDistance: Number.isFinite(distanceKm) ? distanceKm.toFixed(1) : null,
                 estimatedDuration: Number.isFinite(durationMin) ? Math.max(1, Math.round(durationMin)) : 1
             });
-            console.log("distanceKm from direction data", distanceKm);
+            
         }
     }
 
     useEffect(() => {
-        setDirectionReady(handleDirectionReady)
-        if(DurationFromAddStopsScreen && DistanceFromAddStopsScreen){
-            updateBookingInfo({
-                rideDistance: DistanceFromAddStopsScreen,
-                estimatedDuration: DurationFromAddStopsScreen || 1
-            });
-        }
+        // setDirectionReady(handleDirectionReady)
+        // if(DurationFromAddStopsScreen && DistanceFromAddStopsScreen){
+            // updateBookingInfo({
+            //     rideDistance: DistanceFromAddStopsScreen,
+            //     estimatedDuration: DurationFromAddStopsScreen || 1
+            // });
+        // }
    
    
         return ()=>{
@@ -264,9 +252,10 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     
     
     const transformEstimateDatStore=(data,rideDistances)=>{
+        console.log("Raw Estimation Data:", directionPoints);
         const distanceNum = rideDistances != null ? Number(rideDistances) : null;
-        console.log(data,"wediw")
-
+        
+      
         if(utils.isEmptyObject(data)){
             setIsNotServingArea(true)
             setAvailableVehicles([])
@@ -275,6 +264,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             
             return;
         }
+
         
         const vehicleList = vehicleType.reduce((acc, spec, index) => {
             const rideTypeData = data?.[spec.type];
@@ -295,15 +285,14 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             return acc;
         }, [])
 
+        console.log("Transformed Vehicle List for Estimation:", vehicleList);
+
         const withinLimit = vehicleList.filter(v => !v.isExceedingMaxDistance);
         const exceedingLimit = vehicleList.filter(v => v.isExceedingMaxDistance);
         const sortedVehicleList = [...withinLimit, ...exceedingLimit];
-         console.log("sortedVehicleList",sortedVehicleList)
+      
         if (selectedVehicle && selectedVehicle?.vehicleType) {
-            console.log("selectedVehicle",vehicleList)
-
             const currentlyselected = vehicleList.find(v => v.type === selectedVehicle.vehicleType);
-            console.log("currentlyselected",currentlyselected)
             if (currentlyselected) {
                 const selected = selectedVehicle;
                 selected['minFare'] = currentlyselected?.minFare || null;
@@ -311,10 +300,6 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
                 setSelectedVehicle(selected);
                
             }
-            console.log("currentlyselected",selectedVehicle)
-            
-
-
         }
 
 
@@ -338,8 +323,6 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     // Ride estimation mutation
     const onEstimationSuccess = (data) => {
-        console.log('Ride estimation data received:', data);
-       
         if (data?.result?.success) {
             setIsEstimationError(false)
             // Handle successful estimation
@@ -419,9 +402,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     }, []);
 
     const getEstimatedFare = async () => {
-        // Build a cache key from route coordinates (start, end, waypoints)
-        console.log("rideStartLocation",rideStartLocation)
-        console.log("rideEndLocation",rideEndLocation)
+    
         const cacheKey = buildEstimationCacheKey({
             start: rideStartLocation,
             end: rideEndLocation,
@@ -432,19 +413,11 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         pruneEstimationCache();
         const cached = getEstimationFromCache(cacheKey);
         if (cached) {
-            console.log('Cached estimation found', cached,cacheKey);
+          
             onEstimationSuccess(cached);
             return;
         }
 
-    //     const payload = {
-    //         distance: rideDistance,
-    //         duration: estimatedDuration,
-    //        coordinates: [
-    //     parseFloat(rideStartLocation.longitude.toFixed(5)), 
-    //     parseFloat(rideStartLocation.latitude.toFixed(5))
-    // ],
-    //     };
         const payload = {
             distance: rideDistance,
             duration: estimatedDuration,
@@ -453,79 +426,66 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         rideStartLocation.latitude
     ],
         };
-//       const payload = {
-//     "distance": "4.9",
-//     "duration": 12,
-//     "coordinates": [
-//         77.0449,
-//         11.03244
-//     ]
-// }
 
-        console.log("payload",payload)
-        
         setIsLongLoad(false)
         debouncedGetRideEstimation(payload,cacheKey);
     };
     // Add effect to trigger estimation when direction data is available
     useEffect(() => {
-        console.log("rideDistance, estimatedDuration",rideDistance, estimatedDuration)
         if (rideDistance && estimatedDuration ) {
             getEstimatedFare();
         }
     }, [rideDistance, estimatedDuration]);
 
-    // Retry and reinitialize logic
-    const handleRetryInitialize = () => {
-        try {
-            setIsLongLoad(false)
-            setIsEstimationError(false)
-            setAvailableVehicles([])
+    // // Retry and reinitialize logic
+    // const handleRetryInitialize = async () => {
+    //     try {
+    //         setIsLongLoad(false)
+    //         setIsEstimationError(false)
+    //         setAvailableVehicles([])
           
-            // re-transform direction points to ensure map/distance refresh
-            if (isRideLocationsReady()) {
-                transformRideLocationsToDirectionPoints({
-                    clearMarkers: true,
-                    vehicleType: 'motorcycle',
-                    padding: [50, 50, 50, height*0.5]
-                })
-            }
-            // re-trigger estimation if we have distance/duration
-            if (rideDistance && estimatedDuration) {
-                getEstimatedFare()
-            }
-        } catch(e) {
-            // no-op
-        }
-    }
+    //         // re-transform direction points to ensure map/distance refresh
+    //         if (isRideLocationsReady()) {
+    //             const res = await  transformRideLocationsToDirectionPoints({
+    //                 clearMarkers: true,
+    //                 vehicleType: 'motorcycle',
+    //                 padding: [50, 50, 50, height*0.5]
+    //             })
+
+    //             console.log("Retry transformRideLocationsToDirectionPoints result", res)
+    //         }
+    //         // re-trigger estimation if we have distance/duration
+    //         if (rideDistance && estimatedDuration) {
+    //             getEstimatedFare()
+    //         }
+    //     } catch(e) {
+    //         // no-op
+    //     }
+    // }
 
 
     
 
   
-    const { setDirectionPoints } = useMapStore();
+    const { setDirectionPoints,directionPoints } = useMapStore();
 
-    const DirectionRoute = () =>{
-         if (isRideLocationsReady()) {
-            console.log("isRideLocationsReadyStarted",isRideLocationsReady())
-            const result = transformRideLocationsToDirectionPoints({
+    const DirectionRoute = async () =>{
+            const result = await transformRideLocationsToDirectionPoints({
                 clearMarkers: true,
                 vehicleType: 'motorcycle',
                 padding:  [50, 50, 50, height*0.5]
             });
-            console.log("directionEnded")
+            
             if (result.success) {
-                console.log('Direction points set successfully:', result.locationCount, 'locations');
+                handleDirectionReady(result)
             } else {
-                console.log('Failed to set direction points:', result.error);
+                
             }
-        }
+        
     }
 
     
-    useEffect(() => {
-       DirectionRoute();
-    }, [rideStartLocation, rideEndLocation, rideWayPoints, isRideLocationsReady, transformRideLocationsToDirectionPoints]);
+    
 
     // Cleanup effect to clear direction points when component unmounts
     useEffect(() => {
@@ -566,7 +526,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             }
 
             const payload = getCurrentBookingPayload();
-            console.log('Booking payload:', payload);
+    
 
             await bookTrip();
             
@@ -604,6 +564,10 @@ const handleServiceAreaModalClose = () => {
                                     } catch (e) {
                                         goBack();
                                     }
+}
+
+const handleRetryInitialize = async () => {
+    DirectionRoute();
 }
 
 
@@ -842,7 +806,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                 </View>
             </Modal>
         )}
-        { showBookingInfoErrorModal && (
+        {/* { showBookingInfoErrorModal && (
             <Modal
                 animationType="fade"
                 transparent
@@ -864,17 +828,19 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                         <View style={styles.modalActions}>
                             <TouchableOpacity
                                 style={[styles.modalButton, styles.primaryActionButton]}
-                                onPress={() => {
+                                onPress={async () => {
                                     setShowBookingInfoErrorModal(false)
                                     bookingInfoAttemptsRef.current = 0
                                     // Force another attempt immediately
                                     try {
                                         if (isRideLocationsReady()) {
-                                            transformRideLocationsToDirectionPoints({
+                                            const res = await transformRideLocationsToDirectionPoints({
                                                 clearMarkers: true,
                                                 vehicleType: 'motorcycle',
                                                 padding: [50, 50, 50, height*0.5]
                                             })
+
+                                            console.log("Retry transformRideLocationsToDirectionPoints result", res)
                                         }
                                     } catch (e) {}
                                 }}
@@ -899,7 +865,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
                     </View>
                 </View>
             </Modal>
-        )}
+        )} */}
    </>
   );
 };

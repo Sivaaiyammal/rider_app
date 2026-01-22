@@ -15,12 +15,14 @@ const useRideBookingLocationStore = create((set, get) => ({
 
     rideStartLocation: null,
     rideEndLocation: null,
+    currentRouteData:null,
     rideWayPoints: [],
 
     /**
      * @param {Location} location
      */
     setRideStartLocation: (location) => set({ rideStartLocation: location }),
+    setCurrentRouteData: (routeData) => set({ currentRouteData: routeData }),
     
     /**
      * @param {Location} location

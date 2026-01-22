@@ -956,26 +956,28 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
 
             
 
-              const routeData = await findRoute(points);
-              const {summary, shape} = await extractRouteSummary(routeData);
-              const lastLatLng = await getLastLatLngfromPolyLine(routeData);
+              // const routeRes = await findRoute(points);
+
+              // const routeData = routeRes?.response || null;
+              // const {summary, shape} = await extractRouteSummary(routeData);
+              // const lastLatLng = await getLastLatLngfromPolyLine(routeData);
     
-              const distanceKm = summary?.length || null;
+              // const distanceKm = summary?.length || null;
             
-              if (distanceKm >= 0) {
+              // if (distanceKm >= 0) {
               
-                if(lastLatLng && locationType == 'DESTINATION_LOCATION'){
-                  pickedLocation.latitude = lastLatLng[0];
-                  pickedLocation.longitude = lastLatLng[1];
-                }
+                // if(lastLatLng && locationType == 'DESTINATION_LOCATION'){
+                //   pickedLocation.latitude = lastLatLng[0];
+                //   pickedLocation.longitude = lastLatLng[1];
+                // }
                 onPickLocationResultCallback(pickedLocation, locationType,index);
                 setPickedLocation(null);
-              } else {
-                // Alert.alert('No route found', 'No route is available to the selected location.');
-                setIsError(true);
-                setIsErrorMessage(t('no_route_found_message', { defaultValue: 'No route is available to the selected location.' }));
+              // } else {
+              //   // Alert.alert('No route found', 'No route is available to the selected location.');
+              //   setIsError(true);
+              //   setIsErrorMessage(t('no_route_found_message', { defaultValue: 'No route is available to the selected location.' }));
                
-              } 
+              // } 
               // else {
               //   const title = t('min_distance_title', { defaultValue: 'Distance too short' });
               //   const message = t('min_distance_message', { defaultValue: 'Ride distance must be at least 200 m' });

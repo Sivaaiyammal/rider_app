@@ -90,8 +90,6 @@ const MapScreen = () => {
   const { appConfig } = useConfigStore();
   
   // useEffect(()=>{
-
-  
   //   if(drivers?.length > 0 && AppConfig.SHOW_NEARBY_DRIVER){
   //     const markers = drivers.map((driver)=>{
 
@@ -308,7 +306,7 @@ const MapScreen = () => {
   };
 
   useEffect(()=>{
-    setDirectionPoints([]);
+    setDirectionPoints(null);
     resetRideBookingLocation()
     if(location && location.length > 0){
       console.log("Setting map bounds and home marker for location:", location);

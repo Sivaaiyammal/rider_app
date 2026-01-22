@@ -103,15 +103,17 @@ class RideMatchingSocketService {
   }
 
   
-  findDriver(tripId, passengerId,vehicleType) {
+  findDriver(tripId, passengerId,vehicleType,routeData) {
     if (this.socket && this.socket.connected) {
-      console.log("🚕 Finding driver for trip:", tripId);
-      console.log("vehicleType",vehicleType);
-      this.socket.emit('findDriver', {
+     
+      const socketData = {
         trip_id: tripId,
         passenger_id: passengerId,
         vehicleType: vehicleType,
-      });
+        passengerTrackData:routeData
+      }
+      console.log("socketData",socketData);
+      this.socket.emit('findDriver', socketData);
     } else {
       console.error('❌ Ride matching socket not connected!');
     }

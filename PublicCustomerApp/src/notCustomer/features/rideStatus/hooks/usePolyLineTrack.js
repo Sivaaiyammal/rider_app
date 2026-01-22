@@ -251,7 +251,8 @@ const usePolyLineTrack = (screenMode = 'arrival') => {
    
 
     try {
-      const routeData = await findRoute(points);
+      const routeRes = await findRoute(points);
+      const routeData = routeRes?.response;
       
       if (!routeData) {
         return null;

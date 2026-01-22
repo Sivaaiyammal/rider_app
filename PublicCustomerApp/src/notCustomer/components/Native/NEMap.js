@@ -244,6 +244,7 @@ class NEMap extends Component {
    
   
     setDirectionPoints(null)
+    setFindRouteWithRequest(null)
   }
 
   getmapReady() {

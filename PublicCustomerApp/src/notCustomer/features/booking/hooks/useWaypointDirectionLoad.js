@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
 import useWayPointReorderStore from '../store/useWayPointReorderStore';
+import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import useMapStore from '../../../features/map/store/useMapStore';
+import { findRoute } from '../../../controllers/NEMap/findRoute';
 
 /**
  * Hook to transform waypoint reorder data into direction points for map display
@@ -9,7 +11,12 @@ import useMapStore from '../../../features/map/store/useMapStore';
 const useWaypointDirectionLoad = () => {
   const { reOrderWaypoints,reachedStops } = useWayPointReorderStore();
   
-  const { setDirectionPoints, setMapMarkers , setVehicleMarkers } = useMapStore();
+  const { setDirectionPoints, setMapMarkers , setVehicleMarkers,setRouteLoading } = useMapStore();
+  const { 
+   
+    setCurrentRouteData
+  } = useRideBookingLocationStore();
+
 
   /**
    * Transforms reOrderWaypoints data into direction points format
@@ -17,7 +24,8 @@ const useWaypointDirectionLoad = () => {
    * @param {boolean} options.clearMarkers - Whether to clear existing map markers
    * @param {string} options.vehicleType - Type of vehicle for direction calculation
    */
-  const transformWaypointsToDirectionPoints = useCallback((options = {}) => {
+  const transformWaypointsToDirectionPoints = useCallback(async(options = {}) => {
+    try{
     const { clearMarkers = true, vehicleType = 'car',padding } = options;
     const updatedReOrderWaypoints = [...reachedStops,...reOrderWaypoints];
     // Filter out valid waypoints with coordinates
@@ -35,41 +43,54 @@ const useWaypointDirectionLoad = () => {
         setVehicleMarkers([]);
       }
 
-      
+      const allLocations = validWaypoints.map(waypoint => ({
+          lat: waypoint.latitude,
+          lon: waypoint.longitude
+        }))
+  
+
+
+      const {response , requests} = await findRoute(allLocations);
       
       // Transform to the format expected by setDirectionPoints
       const directionPoints = {
-        locations: validWaypoints.map(waypoint => ({
-          lat: waypoint.latitude,
-          lon: waypoint.longitude
-        })),
-        type: vehicleType
-
+        requests: JSON.stringify(requests),
+        response: JSON.stringify(response)
       };
+
+
       if (Array.isArray(padding) && padding.length === 4) {
         directionPoints.padding = padding.map(v => parseInt(v, 10));
       }
       
-      console.log('Waypoint direction points-------------------------------:', directionPoints);
+
       setDirectionPoints(directionPoints);
-      
+      setCurrentRouteData(directionPoints)
+
+      setRouteLoading({loading:false})
       return {
         success: true,
         directionPoints,
         waypointCount: validWaypoints.length,
-        waypoints: validWaypoints
+        waypoints: validWaypoints,
+        distance:response.trip.summary.length,
+        duration:response.trip.summary.time
       };
     } else {
       // Clear direction points if not enough waypoints
       setDirectionPoints(null);
-      
+      setRouteLoading({loading:false,error:true})
       return {
         success: false,
         error: 'Insufficient waypoints for route calculation',
         waypointCount: validWaypoints.length
       };
     }
-  }, [reOrderWaypoints, setDirectionPoints, setMapMarkers]);
+  }catch(error){
+    setRouteLoading({loading:false,error:true})
+    console.error('Error in transforming waypoints to direction points:', error);
+  }
+  }, [reOrderWaypoints, setDirectionPoints, setMapMarkers, reachedStops]);
 
   /**
    * Check if waypoints are ready for direction calculation

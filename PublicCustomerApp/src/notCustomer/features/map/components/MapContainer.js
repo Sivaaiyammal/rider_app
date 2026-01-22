@@ -14,6 +14,7 @@ import locationTask from "../../../controllers/GetCurrentLocation";
 import FullScreenLoader from "../../../components/Loaders/FullScreenLoader";
 import CurrentLocationIcon from '../../../assets/icons/CurrentLocationIcon.svg';
 import MapTopOverley from "./MapTopOverley";
+import { dir } from "i18next";
 
 
 const MapContainer = ({ mapStyle }) => {
@@ -34,7 +35,6 @@ const MapContainer = ({ mapStyle }) => {
     mapClickCallback,
     startNavigation,
     mapBounds,
-
     directionReady,
     searchPOI,
     setSearchPOIResults,
@@ -100,10 +100,11 @@ const MapContainer = ({ mapStyle }) => {
         onMapCenterChanged={onMapCenterChanged}
         onMapClick={mapClickCallback}
         geometries={geometries}
-        findRoute={directionPoints}
+        findRoute={[]}
         onMapDblclick={mapDblclickCallback}
         navigation={startNavigation}
         onDirectionReady={directionReady}
+        findRouteWithRequest={directionPoints}
         onUserLocationChange={userLocation}
         distanceListner={setDisduration}
         onSearchPOIError={setSearchPOIError}

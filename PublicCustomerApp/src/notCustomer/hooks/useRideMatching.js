@@ -7,6 +7,7 @@ import { useStackScreenStore } from '../store/useStackScreenStore';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 import { firebase } from '@react-native-firebase/analytics';
 import { firebaselog_tripBooking } from '../../common/utils/FirebaseAnalytics';
+import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore';
 
 /**
  * Custom hook to manage ride matching status and socket integration
@@ -27,6 +28,11 @@ const useRideMatching = () => {
     setCurrentDriverLongitude,
     setDriverMatched
   } = useRideMatchStore();
+
+  const { 
+   currentRouteData
+  } = useRideBookingLocationStore();
+
   
   const { id: userId } = useUserInfoStore();
   const socketInitializedRef = useRef(false);
@@ -37,6 +43,7 @@ const useRideMatching = () => {
   const errorLoggedRef = useRef(false);
   const { goBack,goBackToScreen } = useStackScreenStore();
   const { setTripStatus } = useCurrentRideInfoStore();
+
   
   /**
    * Initialize socket connection for ride matching
@@ -163,7 +170,18 @@ const useRideMatching = () => {
       matchingActiveRef.current = true;
 
       // Send find driver request
-      rideMatchingSocketService.findDriver(tripId, targetPassengerId,vehicleType);
+     
+      if(currentRouteData){
+      
+      
+      const routeData = {
+        request: currentRouteData.requests,
+        response: currentRouteData.response
+      }
+      rideMatchingSocketService.findDriver(tripId, targetPassengerId,vehicleType,routeData);
+      }else{
+        console.log("No direction points available for ride matching");
+      }
       
       return true;
     } catch (error) {
@@ -175,7 +193,7 @@ const useRideMatching = () => {
       });
       return false;
     }
-  }, [userId, initializeSocket]);
+  }, [userId, initializeSocket, currentRouteData]);
 
   /**
    * Stop ride matching process

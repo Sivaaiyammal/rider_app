@@ -192,7 +192,8 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 	}
 
 	const FetchRoute = async (points) => {
-		const routeData = await findRoute(points)
+		const routeRes = await findRoute(points);
+		const routeData = routeRes?.response;
 	 
 		if (!routeData?.trip?.legs || routeData.trip.legs.length === 0) {
 		  return [];

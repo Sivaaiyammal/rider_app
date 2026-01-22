@@ -1,4 +1,5 @@
 import Config from "react-native-config";
+import { buildRouteCacheKey, getCachedRoute, setCachedRoute } from "../../../common/store/RouteCache";
 
 const REQUEST_TIMEOUT_MS = 5000;
 const MAX_RETRY_ATTEMPTS = 1;
@@ -44,9 +45,13 @@ export async function findRoute(points) {
             lon: item.location ? item.location[0] : item.lon,
         };
     });
-    
-    
-    
+  
+    const cacheKey = buildRouteCacheKey(latlngs);
+    const cachedResponse = getCachedRoute(cacheKey);
+    if (cachedResponse) {
+        console.log("Route Response (from cache)");
+        return cachedResponse;
+    }
 
     const jsonObject = {
         costing: 'motorcycle',
@@ -66,7 +71,8 @@ export async function findRoute(points) {
         const response = await fetchWithTimeout(url);
         const routeData = await response.json();
         console.log("Route Response Data:", JSON.stringify(routeData));
-        return routeData;
+        setCachedRoute(cacheKey, jsonObject, routeData);
+        return {requests: jsonObject, response: routeData};
     } catch (error) {
         console.error("Error fetching route:", error);
         return null;

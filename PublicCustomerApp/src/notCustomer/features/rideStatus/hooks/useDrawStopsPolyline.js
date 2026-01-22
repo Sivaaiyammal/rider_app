@@ -25,7 +25,8 @@ const useDrawStopsPolyline = () => {
             return;
         }
         console.log("pointsiii",points);
-        const routeData = await findRoute(points)
+        const routeRes = await findRoute(points);
+        const routeData = routeRes?.response;
         
         if (!routeData?.trip?.legs || routeData.trip.legs.length === 0) {
           setPolyline(null);

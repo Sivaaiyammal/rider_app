@@ -46,6 +46,10 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
   const [enableConfirmButton,setEnableConfirmButton] = React.useState(false)
   const {availableVehicles} = useRideVehicleStore()
   const [maxVehicleDistanceLimit,setMaxVehicleDistanceLimit] = React.useState(false)
+ const { 
+ 
+    currentRouteData
+  } = useRideBookingLocationStore();
 
   
 
@@ -168,10 +172,10 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
     setMaxVehicleDistanceLimit(false)
     // Extract distance and duration from direction data
     if(data?.duration){
-      setDuration(Math.round(data?.duration/60))
+      setDuration(Math.round(data?.duration))
     }
     if(data?.distance){
-      setDistance(data?.distance != null ? (data.distance / 1000).toFixed(1) : null)
+      setDistance(data?.distance != null ? (data.distance).toFixed(1) : null)
 
     }
 
@@ -182,7 +186,7 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
       console.log("data distance",data?.distance)
       if(maxDistanceLimit && data?.distance){
         // Check if the new distance exceeds the max distance limit
-        const distanceInKm = data.distance / 1000;
+        const distanceInKm = data.distance ;
         if (distanceInKm > maxDistanceLimit) {
           Alert.alert(
             t('distance_limit_exceeded') || 'Distance Limit Exceeded',
@@ -198,9 +202,9 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
     
 }
 
-  useEffect(() => {
-  setDirectionReady(handleDirectionReady)
-  }, [])
+  // useEffect(() => {
+  // setDirectionReady(handleDirectionReady)
+  // }, [])
 
   const hasNearbyDuplicateStops = (points, thresholdMeters = 100) => {
     const coords = (points || [])
@@ -219,15 +223,17 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
     return false;
   };
 
-  const waypointRoute =()=>{
+  const waypointRoute =async ()=>{
       if (isWaypointsReady()) {
-      const result = transformWaypointsToDirectionPoints({
+      const result = await transformWaypointsToDirectionPoints({
         clearMarkers: true,
         vehicleType: 'motorcycle',
         padding: [50, height*0.4, 50, 100]
       });
+      console.log("waypointRoute result",result)
       
       if (result.success) {
+        handleDirectionReady(result);
         console.log('Waypoint direction points set successfully:', result.waypointCount, 'waypoints');
       } else {
         console.log('Failed to set waypoint direction points:', result.error);
@@ -423,15 +429,21 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
       };
     });
 
-    console.log("finalWaypoints",finalWaypoints)
+    
+    const routeData = {
+      request: currentRouteData?.requests || null,
+      response: currentRouteData?.response || null
+    }
 
+    
 
     const finalPayload = {
       tripId:tripId,
       distance,
       duration,
       stops:finalWaypoints,
-      fare:fareData.fare
+      fare:fareData.fare,
+      routeData:routeData
     }
     
 

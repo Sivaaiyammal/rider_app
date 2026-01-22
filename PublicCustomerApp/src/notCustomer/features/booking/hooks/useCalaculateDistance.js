@@ -25,7 +25,9 @@ const useCalculateDistance = () => {
     setError(null);
 
     try {
-      const routeData = await findRoute(points);
+      const routeRes = await findRoute(points);
+
+      const routeData = routeRes?.response;
       
       if (!routeData || !routeData.trip) {
         throw new Error('No route data received');

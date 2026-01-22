@@ -69,7 +69,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
   const [notFoundVehicleType, setNotFoundVehicleType] = useState(null);
 
   const handleNavigateToEditPlaces = useCallback(() => {
-    console.log('Navigating back to PlanRideScreen to edit placesrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr');
+    // ...existing code...
     if (typeof goBackToScreen === 'function') {
       goBackToScreen('PlanRideScreen', { focusEditPlaces: true });
       return;
@@ -124,7 +124,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
 
   useEffect(() => {
     setIsFetchDriverLoading(true);
-    console.log(selectedVehicle?"Selected vehicle changed: "+JSON.stringify(selectedVehicle):"No vehicle selected");
+    // ...existing code...
     if (typeof console.time === 'function') {
       console.time('availableVehicles->firstRender');
     } else {
@@ -138,10 +138,10 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
         setVehicleMarkers([]);
         return;
       }
-      console.log('Selected vehicle type for driver filtering:', type);
+      // ...existing code...
       const currentSelectedVehicleDrivers = getDriversByType(type);
     
-      console.log('Current selected vehicle drivers:', currentSelectedVehicleDrivers);
+      // ...existing code...
 
       const markerList = [];
       currentSelectedVehicleDrivers.forEach((driver) => {
@@ -160,7 +160,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
           markerList.push(marker);
         }
       });
-      console.log('Updating vehicle markers on map:', markerList);
+      // ...existing code...
       setVehicleMarkers(markerList);
     },
     [getDriversByType, selectedVehicleType, setVehicleMarkers]
@@ -168,7 +168,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
 
   const syncDriverMarkersWithVehicles = useCallback(
     async (vehicleTypeOverride = null) => {
-      console.log('Syncing driver markers with vehicles');
+      // ...existing code...
       const baseVehicleTypes = (availableVehicles || [])
         .map((v) => v.type)
         .filter(Boolean);
@@ -203,7 +203,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
 
         if( femaleDriverOnly ){
           const isFemaleAvailable = isFemaleDriverAvailable();
-          console.log('Is female driver available:', isFemaleAvailable);
+          // ...existing code...
           if(!isFemaleAvailable){
             setIsNoFemaleDriverModalVisible(true);
            
@@ -222,7 +222,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
         if (vehicleTypeOverride) {
           const overrideDrivers = getDriversByType(vehicleTypeOverride) || [];
           if (overrideDrivers.length === 0) {
-            console.log('Override type has no drivers. Skipping marker update.');
+            // ...existing code...
             return;
           }
         }
@@ -235,14 +235,14 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
 
      
         if (selectedVehicle?.type) {
-          console.log('Verifying selected vehicle drivers for type:', selectedVehicle.type);
+          // ...existing code...
           const currentDriversForSelected = getDriversByType(selectedVehicle.type) || [];
-          console.log('Current drivers for selected vehicle type:', currentDriversForSelected);
+          // ...existing code...
           if (currentDriversForSelected.length === 0) {
             // Recompute a local sorted list (drivers-first) to pick a valid fallback
            
             const firstWithDrivers = sortedVehiclesLocal.find(v => (getDriversByType(v.type) || []).length > 0) || null;
-            console.log('No drivers for selected type. Fallback vehicle:', firstWithDrivers);
+            // ...existing code...
             setNotFoundVehicleType(selectedVehicle.type);
             setSelectedTypeVehicleNotFound(true);
             setSelectedVehicle(firstWithDrivers);
@@ -256,7 +256,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
 
         updateMarkersWithDrivers(vehicleTypeOverride);
       } catch (error) {
-        console.log('Error fetching nearby drivers:', error);
+        // ...existing code...
       }
     },
     [
@@ -289,7 +289,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
   // Update vehicle markers whenever the selected vehicle changes
   useEffect(() => {
     if (selectedVehicleType) {
-      console.log('Selected vehicle changed, updating markers for type..........................:', selectedVehicleType);
+      // ...existing code...
       updateMarkersWithDrivers();
     } else {
       // If no vehicle selected, clear vehicle markers
@@ -356,7 +356,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
       setFemaleDriverOnly(false);
       setIsNoFemaleDriverModalVisible(false);
     }
-    console.log("safeNightRides value:", safeNightRides);
+    // ...existing code...
     if(safeNightRides){ 
         setSafeNightRides(false);
         setIsNoTrustedDriverModalVisible(false);

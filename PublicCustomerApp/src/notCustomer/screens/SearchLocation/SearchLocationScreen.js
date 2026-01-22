@@ -97,7 +97,9 @@ const SearchLocation = () => {
   useEffect(() => {
     const fetchRoute = async () => {
       if (directions) {
-        const response = await findRoute(directions);
+        const res = await findRoute(directions);
+
+        const response = res?.response;
         
         if(response && response?.trip?.summary){
           
