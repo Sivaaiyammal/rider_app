@@ -51,6 +51,7 @@ import useUserInfoStore from '../../common/store/useUserInfoStore.js';
 import { ScrollView } from 'react-native';
 import MapMove from '../assets/image/MapMove.webp';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { firebaselog_ridePlanning } from '../../common/utils/FirebaseAnalytics.js';
 
 
 const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null,buttonLabel=null,isFromContribution=false, focusSearchOnMount=true,isConfirmLocation=false}) => {
@@ -543,6 +544,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
     console.log('onSearchClickResultCallback', updated);
     setShowSearch(false);
     setMapMoving(false);
+    firebaselog_ridePlanning('RP_Place_Select_Method(RP_PSM)', 'RP_PSM:search');
     // Blur / dismiss keyboard after selection
    
     
@@ -855,6 +857,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
             
           ]}
           onPress={async () => {
+               firebaselog_ridePlanning('RP_Place_Select_Method(RP_PSM)', 'RP_PSM:picklocation');
             if (isAddressLoading || isConfirming || !pickedLocation?.placeName) return;
             if(isFromContribution){
               

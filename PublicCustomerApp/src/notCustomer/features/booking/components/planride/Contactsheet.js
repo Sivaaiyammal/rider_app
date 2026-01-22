@@ -11,6 +11,8 @@ import { height } from '../../../../utils/Utils';
 import AdaptiveText from '../../../../components/Common/AdaptiveText';
 import Contacts from 'react-native-contacts';
 import { RequestContactsPermission } from '../../../../controllers/PermissionHandler';
+import { firebase } from '@react-native-firebase/analytics';
+import { firebaselog_ridePlanning } from '../../../../../common/utils/FirebaseAnalytics';
 
 const Contactsheet = ({ onConfirm }) => {
   const { t } = useTranslation();
@@ -182,6 +184,7 @@ const Contactsheet = ({ onConfirm }) => {
     
     setPassangerDetails(contact);
     setRideBookMode('OTHERS');
+    firebaselog_ridePlanning('RP_Book_For(RP_BF)', `RP_BF:others`);
     onConfirm();
   };
 
@@ -198,6 +201,7 @@ const Contactsheet = ({ onConfirm }) => {
 
     setPassangerDetails(contact);
     setRideBookMode('MYSELF');
+    firebaselog_ridePlanning('RP_Book_For(RP_BF)', `RP_BF:myself`);
     onConfirm();
   };
 

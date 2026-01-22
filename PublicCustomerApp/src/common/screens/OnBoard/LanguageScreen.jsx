@@ -65,27 +65,23 @@ const LanguageScreen = ({fromDrawer, fromSettings, fromDriverStack}) => {
     // Save the selected language to AsyncStorage
     // Vibration.vibrate(100);
     await DataStore.storeData('language', selected.code);
+      if (userRole === 'customer') {
+          firebaselog_language('L_Customer(L_C)', `L_C:${selected.code}`);
+
+        } else {
+           firebaselog_language('L_Driver(L_D)', `L_D:${selected.code}`)
+       }
 
     if (fromDriverStack) {
        i18n.changeLanguage(InsideAppLanguageChange.code);
-       if (userRole === 'customer') {
-       firebaselog_language('L_Customer(L_C)', `L_C:${InsideAppLanguageChange.code}`);
-
-        } else {
-           firebaselog_language('L_Driver(L_D)', `L_D:${InsideAppLanguageChange.code}`)
-       }
+     
        goBackStack()
        return
     }
     
     if(fromDrawer){
       i18n.changeLanguage(InsideAppLanguageChange.code);
-       if (userRole === 'customer') {
-       firebaselog_language('L_Customer(L_C)', `L_C:${InsideAppLanguageChange.code}`);
-
-        } else {
-           firebaselog_language('L_Driver(L_D)', `L_D:${InsideAppLanguageChange.code}`)
-       }
+     
       goBack();
     }
     else{

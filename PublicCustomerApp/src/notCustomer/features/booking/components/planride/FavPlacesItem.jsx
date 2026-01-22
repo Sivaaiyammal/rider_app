@@ -5,6 +5,8 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import PropTypes from 'prop-types';
 import { Fonts } from '../../../../constants/constants';
 import { from } from '@apollo/client';
+import { firebase } from '@react-native-firebase/analytics';
+import { firebaselog_ridePlanning } from '../../../../../common/utils/FirebaseAnalytics';
 
 const ICONS = {
   home: {
@@ -46,9 +48,14 @@ const getIcon = (label,type) => {
   const iconColor = dimmed
     ? '#000000ff'
     : (isPickedSelected ? '#fff' : (selected ? '#fff' : '#757575'));
-  
+
+  const handlePress = () => {
+    firebaselog_ridePlanning('RP_Place_Select_Method(RP_PSM)', `RP_PSM:fav_places`);
+    onPress();
+  };
+
   return (
-    <TouchableOpacity style={[styles.container, {backgroundColor:bgColor}, selected && !fromPickScreen && {backgroundColor:'grey',borderWidth:1}, fromPickScreen && {paddingVertical:7},dimmed && {borderWidth:0}]} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity style={[styles.container, {backgroundColor:bgColor}, selected && !fromPickScreen && {backgroundColor:'grey',borderWidth:1}, fromPickScreen && {paddingVertical:7},dimmed && {borderWidth:0}]} onPress={handlePress} activeOpacity={0.7}>
       <View style={styles.iconLabelRow}>
         <MaterialIcons name={getIcon(data?.label,type)} size={20} color={iconColor} style={styles.icon} />
         <Text style={[styles.label,{color: fgColor}, selected && !fromPickScreen && {color:'#fff'}]}>{t(data?.label?.toLowerCase() || 'star')}</Text>

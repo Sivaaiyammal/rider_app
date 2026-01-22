@@ -7,6 +7,7 @@ import { addEmergencyContacts, removeEmergencyContact } from '../services/api';
 import NavBar from '../../../components/NavBar';
 import { useTranslation } from 'react-i18next';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
+import { firebaselog_ridePlanning } from '../../../../common/utils/FirebaseAnalytics';
 
 type PhoneContact = {
   id: string;
@@ -200,6 +201,7 @@ const AddEmergencyContactScreen = ({ onBack }: Props) => {
       }
 
       Alert.alert('Emergency contacts added');
+      firebaselog_ridePlanning('RP_Emergency_Contact(RP_EC)','RP_EC:contact_added')
       setSelectedIds(new Set());
       if (onBack) onBack(); else goBack();
     } catch (err) {

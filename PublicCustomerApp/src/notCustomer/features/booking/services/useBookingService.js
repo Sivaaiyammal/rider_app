@@ -12,6 +12,7 @@ import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoSt
 import { TripStatus } from '../../rideStatus/types/TripStatus';
 import { utils } from '../../../utils/Utils';
 import { DataStore } from '../../../controllers/DataStore';
+import { firebaselog_tripBooking } from '../../../../common/utils/FirebaseAnalytics';
 /**
  * Hook to handle trip booking with API integration
  * @param {Object} options - Configuration options
@@ -263,11 +264,13 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         setTripStatus(TripStatus.PENDING);
         incrementTotalTrips();
         setCurrentRideInfo(response);
+        firebaselog_tripBooking('TB_Booking(TB_B)','TB_B:trip_booking_success')
 
         if (onSuccess) {
           await onSuccess(response);
         }
       } else {
+        firebaselog_tripBooking('TB_Booking(TB_B)','TB_B:trip_booking_failed')
         showNotification(
           t('booking_failed'),
           t('failed_to_book_ride'),

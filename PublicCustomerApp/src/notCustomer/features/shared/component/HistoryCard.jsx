@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import CategoryIcon from '../../../components/Common/CategoryIcon';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import {utils} from '../../../utils/Utils';
+import { firebaselog_ridePlanning } from '../../../../common/utils/FirebaseAnalytics';
 
 
 
@@ -34,6 +35,11 @@ const HistoryCard = React.memo(({ selectCallback, header = true, bottomborder = 
     await DataStore.saveData('recentSearches', { data: updatedItems });
   };
 
+  const handlePress = (item) => {
+    firebaselog_ridePlanning('RP_Place_Select_Method(RP_PSM)', `RP_PSM:history`);
+    selectCallback(item);
+  }
+  
   return (
     <View style={[styles.container, fromHomeScreen && styles.containerInHome]}>
       {(historyItems?.length > 0 && header) && <AdaptiveText style={fromHomeScreen?styles.titleInHome : styles.title}> {t('recent')}</AdaptiveText>}
@@ -41,7 +47,7 @@ const HistoryCard = React.memo(({ selectCallback, header = true, bottomborder = 
         historyItems.map((item, index) => (
           <View key={index}>
             <TouchableOpacity
-              onPress={() => {selectCallback(item); }}
+              onPress={() => {handlePress(item)}}
               onLongPress={() => setShowDeleteIndex(index)}
               delayLongPress={400}
             >

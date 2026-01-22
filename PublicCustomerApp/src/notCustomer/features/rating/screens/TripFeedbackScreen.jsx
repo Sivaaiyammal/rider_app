@@ -26,6 +26,7 @@ import { height ,width } from '../../../utils/Utils';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 // import triggerInAppReview from '../../../utils/inAppReview/triggerInAppReview';
 import InAppReview from 'react-native-in-app-review';
+import { firebaselog_tripReview } from '../../../../common/utils/FirebaseAnalytics';
 export default function TripFeedbackScreen() {
   
     
@@ -145,7 +146,7 @@ export default function TripFeedbackScreen() {
     
    
     if(feedback.success){
-
+      firebaselog_tripReview('Trip_Review_TR','TR_R:submit_customer')
       // showNotification(t('success'),t('feedback_submitted_successfully'),"success")
        if(ratingData.rating >=4){
        triggerInAppReview();
@@ -155,6 +156,7 @@ export default function TripFeedbackScreen() {
      
       
     }else{
+        firebaselog_tripReview('Trip_Review_TR','TR_R:failed_customer')
       showNotification(t('error'),t('something_went_wrong'),"error")
     }
   }catch(e){
@@ -167,6 +169,7 @@ export default function TripFeedbackScreen() {
 
 
   const handleClose = () => {
+      firebaselog_tripReview('Trip_Review_TR','TR_R:skip_customer')
     // Animated.parallel([
     //   Animated.timing(bounceValue, {
     //     toValue: height,

@@ -21,6 +21,7 @@ import useStopsMarkerHook from '../hooks/useStopsMarkerHook';
 import useUserInfoStore from '../../../../common/store/useUserInfoStore';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { getTotalDistanceAndTime } from '../services/getTotalDistanceandTime';
+import { firebaselog_onRide } from '../../../../common/utils/FirebaseAnalytics';
 
 const shallowEqual = (a, b) => {
   if (Object.is(a, b)) {
@@ -173,6 +174,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
         const res = await changeStopLocation(item, updatedDistance, totalDuration);
         if (res.success) {
           // success toast handled elsewhere; keep silent update
+          firebaselog_onRide('OR_Edit(OR_E)','OR_E:pickuppoint_change')
         }
       } catch (error) {
         console.log('error', error);

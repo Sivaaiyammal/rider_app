@@ -8,6 +8,7 @@ import FemaleDriverIcon from "../../../../assets/icons/femaleDriverOnlyIcon.svg"
 import NightDriveIcon from "../../../../assets/icons/nightDriveIcon.svg"
 import CustomSwitch from "../../../../components/Common/SwitchInput"
 import AdaptiveText from "../../../../components/Common/AdaptiveText";
+import { firebaselog_ridePlanning } from "../../../../../common/utils/FirebaseAnalytics";
   
 const RidePreference = () => {
   const { t } = useTranslation();
@@ -28,7 +29,11 @@ const RidePreference = () => {
         </View>
         <CustomSwitch
           value={femaleDriverOnly}
-          onValueChange={()=>setFemaleDriverOnly(!femaleDriverOnly)}
+          onValueChange={()=>{
+            if(!femaleDriverOnly){
+           firebaselog_ridePlanning('RP_Pref(RP_P)', `RP_P:female_driver`)
+            }
+            setFemaleDriverOnly(!femaleDriverOnly)}}
           trackColor={{ false: "#d1d5db", true: "#003988" }}
           thumbColor="#fff"
         />
@@ -47,7 +52,12 @@ const RidePreference = () => {
         </View>
         <CustomSwitch
           value={safeNightRides}
-          onValueChange={()=>setSafeNightRides(!safeNightRides)}
+          onValueChange={()=>{
+            if(!safeNightRides){
+              firebaselog_ridePlanning('RP_Pref(RP_P)', `RP_P:night_ride`)
+            }
+            setSafeNightRides(!safeNightRides)}
+          }
           trackColor={{ false: "#d1d5db", true: "#003988" }}
           thumbColor="#fff"
         />
