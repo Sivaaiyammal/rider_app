@@ -93,6 +93,9 @@ export const useMapMarkerStore = create(set => ({
         return { directionPoints: [...payloadArray, newDirectionKey], directionKey: newDirectionKey };
     }),
 
+  directionResponse: null,
+  setDirectionResponse: (directionResponse) => set({ directionResponse }),
+
   startNavigation: false,
   setStartNavigation: (startNavigation) => set({ startNavigation }),
 

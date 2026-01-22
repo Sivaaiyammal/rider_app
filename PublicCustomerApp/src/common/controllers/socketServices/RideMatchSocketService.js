@@ -97,8 +97,6 @@ class RideMatchWSService {
   }
 
   async onDriverReponseReceived(data) {
-    console.log('Driver Socket - Driver Response received:', data);
-
     const {setStackScreen} = useStackScreenStore.getState();
     const {
       tripCancelReason,

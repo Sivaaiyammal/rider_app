@@ -1482,7 +1482,43 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     public void clearDirectionPoints() {
                     directions.getInstance().clearRoute();
                     routeInstructionsDisplay = null;
-                    directions.getInstance().onDestroy();
+                    // directions.getInstance().onDestroy();
+    }
+
+    @ReactProp(name = "findRouteWithRequest")
+    public void findRouteWithRequest(MapView mapView, ReadableArray routeRequestDataArray){
+
+        if (routeRequestDataArray == null) {
+            directions.getInstance().clearRoute();
+            routeInstructionsDisplay = null;
+            return;
+        }
+
+        try {
+            ReadableMap routeData = routeRequestDataArray.getMap(0);
+            String requests = routeData.getString("requests");
+            String response = routeData.getString("response");
+            if (routeData.hasKey("padding")) {
+                ReadableArray padding = routeData.getArray("padding");
+                if (padding != null && padding.size() == 4) {
+                    routeMargins = new int[]{
+                            padding.getInt(0),
+                            padding.getInt(1),
+                            padding.getInt(2),
+                            padding.getInt(3)
+                    };
+                }
+            }
+            directions.getInstance().setRouteAsync(reactNativeContext, requests, response, 0);
+            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    directions.getInstance().zoomRoute(routeMargins, 0.8f, -1);
+                }
+            }, 1000);
+        }catch (Throwable t) {
+            Log.e("NeNativeModule", "findRoute failed; deferring", t);
+        }
     }
 
     @ReactProp(name = "findRoute")

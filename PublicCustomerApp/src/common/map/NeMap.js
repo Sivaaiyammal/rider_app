@@ -408,6 +408,11 @@ class NEMap extends Component {
               ? this.props.findRoute
               : null
           }
+          findRouteWithRequest={
+            this.state.mapLoaded && this.props.findRouteWithRequest?.length !== 0
+              ? this.props.findRouteWithRequest
+              : null
+          }
           bounds={this.state.mapLoaded? this.props.bounds : null}
           navigation={this.props.navigation}
           settingsProps={this.props.settingsProps }
@@ -460,7 +465,8 @@ NEMap.propTypes = {
   onNativeError: PropsTypes.func,
   onNavigationError: PropsTypes.func,
   settingsProps: PropsTypes.object,
-  vehicleMarkers: PropsTypes.array
+  vehicleMarkers: PropsTypes.array,
+  findRouteWithRequest: PropsTypes.array,
 };
 
 export default NEMap;

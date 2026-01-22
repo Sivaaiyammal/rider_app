@@ -31,7 +31,8 @@ const MapContainer = () => {
     setRouteLoading,
     setNativeError,
     setNavigationError,
-    setRouteNotFound
+    setRouteNotFound,
+    directionResponse
   } = useMapMarkerStore();
    const defaultSettings = {
     "distanceFormate": "Kilometers(km)/ Meters(m)",
@@ -85,6 +86,7 @@ const MapContainer = () => {
         bounds={mapBounds}
         onUserLocationChange={handleUserLocationChange}
         findRoute={directionPoints}
+        findRouteWithRequest={directionResponse}
         navigation={startNavigation}
         onDirectionReady={setDirectionReadyCallback}
         distanceListner={setDisduration} // [lat, lon, remainingDistance, remainingDuration, speed, ldistance, lduration, navLegIndex, bearing]
