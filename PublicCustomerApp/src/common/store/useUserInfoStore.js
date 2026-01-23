@@ -6,6 +6,9 @@ const useUserInfoStore = create(set => ({
   id: null,
   setID: id => set({ id }),
 
+  activeTripId: null,
+  setActiveTripId: activeTripId => set({ activeTripId }),
+
   userdetails: null,
   setUserdetails: userdetails => set({ userdetails }),
 

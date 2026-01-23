@@ -85,6 +85,7 @@ const useDirectionLoad = () => {
       }
  
       const {response , requests} = await findRoute(allLocations);
+      
    
    
       // Transform to the format expected by setDirectionPoints

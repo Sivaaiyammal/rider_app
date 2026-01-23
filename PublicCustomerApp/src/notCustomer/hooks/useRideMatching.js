@@ -34,7 +34,7 @@ const useRideMatching = () => {
   } = useRideBookingLocationStore();
 
   
-  const { id: userId } = useUserInfoStore();
+  const { id: userId , setActiveTripId } = useUserInfoStore();
   const socketInitializedRef = useRef(false);
   const matchingActiveRef = useRef(false);
   const startedLoggedRef = useRef(false);
@@ -43,7 +43,6 @@ const useRideMatching = () => {
   const errorLoggedRef = useRef(false);
   const { goBack,goBackToScreen } = useStackScreenStore();
   const { setTripStatus } = useCurrentRideInfoStore();
-
   
   /**
    * Initialize socket connection for ride matching
@@ -90,6 +89,7 @@ const useRideMatching = () => {
             }, 10000);
           }
           if(matchingData?.status === 'error'){
+            setActiveTripId(null)
             if (!errorLoggedRef.current) {
               firebaselog_tripBooking('TB_Ride_Match(TB_RM)','TB_RM:no_available_drivers');
               errorLoggedRef.current = true;

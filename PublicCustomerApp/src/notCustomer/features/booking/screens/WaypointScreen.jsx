@@ -172,7 +172,8 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
     setMaxVehicleDistanceLimit(false)
     // Extract distance and duration from direction data
     if(data?.duration){
-      setDuration(Math.round(data?.duration))
+      let dur = Math.round(data?.duration)/60
+      setDuration(dur)
     }
     if(data?.distance){
       setDistance(data?.distance != null ? (data.distance).toFixed(1) : null)

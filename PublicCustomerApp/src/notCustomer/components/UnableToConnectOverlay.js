@@ -37,6 +37,7 @@ const UnableToConnectOverlay = ({ onRetry }) => {
           </Text>
         </TouchableOpacity>
       </View>
+      <Text style={styles.descriptiong}>@Namma Ooru Taxi</Text>
     </View>
   );
 };
@@ -89,6 +90,12 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     marginBottom: 40,
     fontFamily: 'Outfit-Regular',
+  },
+  descriptiong: {
+    position: 'absolute',
+    bottom: 20,
+    fontSize: 14,
+    color: '#999999',
   },
   retryButton: {
     backgroundColor: '#007AFF',

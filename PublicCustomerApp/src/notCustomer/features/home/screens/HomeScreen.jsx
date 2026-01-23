@@ -85,7 +85,7 @@ const MapScreen = () => {
   const { setSelectedVehicle } = useRideVehicleStore();
   const { fetchLatestDrivers, driversAll } = useNearbyDrivers();
  
-  const {setMapMarkers,setMapBounds,setVehicleMarkers, setDirectionPoints} = useMapStore();
+  const {setMapMarkers,setMapBounds,setVehicleMarkers, setDirectionPoints , mapReady} = useMapStore();
   const { scheduledTrips } = useScheduleTripStore();
   const { appConfig } = useConfigStore();
   
@@ -195,7 +195,7 @@ const MapScreen = () => {
   const updateMarkersWithDrivers = useCallback((driverList = null, vehicleTypeOverride = null) => {
     try {
       const drivers = Array.isArray(driverList) ? driverList : driversAll;
-      console.log('Updating markers with drivers:', drivers);
+
       if (!Array.isArray(drivers) || drivers.length === 0) {
         setVehicleMarkers([]);
         return;
@@ -226,7 +226,7 @@ const MapScreen = () => {
           return marker;
         })
         .filter(Boolean);
-      console.log('Generated vehicle markers:', markers);
+     
       setVehicleMarkers(markers);
     } catch (error) {
       console.log('Error updating markers with drivers:', error);
@@ -247,7 +247,7 @@ const MapScreen = () => {
           longitude: location[0],
           radius: 10000
         });
-        console.log('Fetched drivers for vehicle markers update:', drivers);
+        
         if (!Array.isArray(drivers) || drivers.length === 0) {
           setVehicleMarkers([]);
           return;
@@ -260,9 +260,9 @@ const MapScreen = () => {
 
   useEffect(()=>{
     
-    console.log('HomeScreen mounted, ride booking location reset',appConfig.SHOW_NEARBY_DRIVER);
+    
     if(appConfig.SHOW_NEARBY_DRIVER){
-      console.log('Fetching and updating vehicle markers with drivers on HomeScreen mount');
+      
       updateVehicleMarkersWithDrivers();
     }
   },[appConfig.SHOW_NEARBY_DRIVER, updateVehicleMarkersWithDrivers])
@@ -309,7 +309,7 @@ const MapScreen = () => {
     setDirectionPoints(null);
     resetRideBookingLocation()
     if(location && location.length > 0){
-      console.log("Setting map bounds and home marker for location:", location);
+      
       const bounds = utils.getBoundingBox([[location[0],location[1]]],1000)
       const margin = [10, 10, 10, 10+height*0.4]
       const finalBounds = [bounds, margin]
@@ -322,7 +322,7 @@ const MapScreen = () => {
       setMapMarkers([])
       setVehicleMarkers([])
     } 
-  },[location])
+  },[location,mapReady])
 
   const handleMenu = useCallback(() => {
     try {
@@ -466,7 +466,7 @@ const MapScreen = () => {
   }, [location, currentLocationName, setRideStartLocation, setStackScreen])
 
     const handleServiceVehicleSelect = useCallback((item) => {
-      console.log("Service vehicle selected:", item);
+   
       if(!item || !item.key){
         return;
       }

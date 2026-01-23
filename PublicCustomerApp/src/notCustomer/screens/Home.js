@@ -1,4 +1,4 @@
-import React, { use, useCallback, useEffect, useRef, useState } from 'react';
+import React, { act, use, useCallback, useEffect, useRef, useState } from 'react';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import Homescreen from '../features/home/screens/HomeScreen.jsx'
 import MapContainer from '../features/map/components/MapContainer.js';
@@ -63,6 +63,7 @@ import { checkUpdateStatus } from '../components/UpdateChecker';
 import UpdateOverlay from '../components/UpdateOverlay';
 import OverdueTripModal from '../components/OverdueTripModal';
 import LocationPermissionOverlay from '../components/LocationPermissionOverlay';
+import UnableToConnectOverlay from '../components/UnableToConnectOverlay';
 import { log } from '@react-native-firebase/crashlytics';
 import ContributionScreen from '../features/contribution/screens/ContributionScreen.jsx';
 import DriverAccessScreen from '../../common/screens/Driver/DriverAccessScreen.jsx';
@@ -70,6 +71,7 @@ import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore.js
 import usePaymentStore from '../features/payment/store/usePaymentStore.js';
 import { consumeUserStatsPrefetch } from '../controllers/UserStatsPrefetch';
 import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore.js';
+import { setActive } from 'react-native-sound';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -140,7 +142,7 @@ const Home = () => {
   const appState = useRef(AppState.currentState);
   const permissionsRequested = useRef(false);
   const [bootLoading, setBootLoading] = useState(true);
-  const [, setConfigError] = useState(false);
+  const [configError, setConfigError] = useState(false);
   const [hasLocationPermission, setHasLocationPermission] = useState(null);
   const [locationCheckComplete, setLocationCheckComplete] = useState(false);
   const [locationBlockReason, setLocationBlockReason] = useState(null);
@@ -163,6 +165,7 @@ const Home = () => {
   const [showemergencyOverlay, setShowEmergencyOverlay] = useState(false);
   const [updateMode, setUpdateMode] = useState('none');
   const [showOverdueModal, setShowOverdueModal] = useState(false);
+  const [showNetworkError, setShowNetworkError] = useState(false);
   // Removed modal flow; PaymentScreen will display details
 
   const hasInitialLocationProcessed = useRef(false);
@@ -171,6 +174,7 @@ const Home = () => {
   const processLocationRef = useRef(null);
   const lastProcessedLocationRef = useRef(null); // Track last processed location to avoid rerenders
   const isCheckingRideRef = useRef(false);
+  const {setActiveTripId ,activeTripId} = useUserInfoStore();
   
  
   const stableDebounceCallback = useRef((lng, lat) => {
@@ -270,7 +274,7 @@ const Home = () => {
   useEffect(() => { 
     const currentScreen = getCurrentScreenName();
     if (driverMatched && currentScreen === 'RideStatus') {  
-      console.log('Driver matched, stopping nearby driver polling');
+    
       checkOnGoingRideAndLog(); 
       setDriverMatched(false);
       
@@ -362,25 +366,35 @@ const Home = () => {
 
   const checkOnGoingRideAndLog = async (update=false) => {
     if (isCheckingRideRef.current) {
-      console.log('checkOnGoingRideAndLog already in progress');
+      
       return;
     }
 
     isCheckingRideRef.current = true;
     const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
     const currentTripId=currentTrip?.data || null
-    console.log("currentTripId......hhdhd",currentTripId)
+   
     try {
       setConfigError(false);
       // Prefer prefetched response if available; fallback to live call
       let Response = await getUserStats(currentTripId);
       
-      console.log("Response------------------",JSON.stringify(Response))
+      if(!Response?.success){
+        setConfigError(true);
+        setShowNetworkError(true);
+        return;
+      }
 
       if(Response?.success ){
+        if (showNetworkError) {
+          setShowNetworkError(false);
+        }
+        if (configError) {
+          setConfigError(false);
+        }
 
         if(Response?.userStats?.fcmToken){
-          console.log("fcmToken",Response?.userStats?.fcmToken)
+          
           const isActiveLogin = await checkDeviceImei(Response?.userStats?.fcmToken);
           if(!isActiveLogin){
             
@@ -398,7 +412,7 @@ const Home = () => {
         }
 
         if(Response?.userStats?.name == ""){
-          console.log("Navigate to Registration Screen")
+          
           navigation.dispatch(
                 CommonActions.reset({
                   index: 0,
@@ -426,24 +440,7 @@ const Home = () => {
         if(Response?.userStats?.favPlaces?.length > 0){
           setUserFavPlaces(Response?.userStats?.favPlaces);
         }
-        // if(Response?.userStats?.stats){
-           
-        //    const stats = Response?.userStats?.stats;
-     
-           
-              
-        //     setTotalSpend(stats?.totalSpends || 0);
-          
-         
-        //     setCancelledTrips(stats?.cancelledTrips || 0);
-          
-  
-        //     setCompletedTrips(stats?.completedTrips || 0);
-          
-          
-        //     setTotalTrips(stats?.totalTrips || 0);
-          
-        // }
+        
         if(Response?.userStats?.rating){
           setRatingData(Response?.userStats?.rating);
         }
@@ -463,6 +460,8 @@ const Home = () => {
         }
       
       if(Response?.trip){
+         const _id = Response?.trip?._id || null;
+         setActiveTripId(_id);
          if(Response?.trip?.status == "PENDING")
         {
           return;
@@ -470,10 +469,11 @@ const Home = () => {
 
         if (Response?.trip?.status == "CANCELLED"|| Response?.trip?.status == "COMPLETED" || Response?.trip?.status == "DIVERGED") {
           await DataStore.clearData(PREF.CURRENT_TRIP)
+          setActiveTripId(null);
           resetCurrentRideInfo();
-           console.log(rideEndLocation,rideStartLocation,"rideEndLocationrideEndLocation____________________")
+         
           const currentScreen = getCurrentScreenName();
-          console.log("currentScreencurrentScreen",currentScreen)
+        
            // Read latest locations from store to avoid stale values
            const { rideStartLocation: latestStart, rideEndLocation: latestEnd } = useRideBookingLocationStore.getState();
            const directionsReady = !!latestStart && !!latestEnd;
@@ -490,6 +490,7 @@ const Home = () => {
         }
        
         setCurrentRideInfo(Response?.trip);
+
         if(Response?.assignDriver){
           setAllocatedDriverInfo(Response?.assignDriver);
         }
@@ -500,7 +501,7 @@ const Home = () => {
           if(Response?.trip?.customerInvoice){
             fareData.customerInvoice = Response?.trip?.customerInvoice;
           }
-           setFareDetails(fareData)
+          setFareDetails(fareData)
         }
         setStackScreen('RideStatus', { });
         // Check if trip has exceeded estimated duration by 10 minutes from pickup context
@@ -513,7 +514,7 @@ const Home = () => {
             Response?.trip?.estimatedDuration,
             90
           );
-          console.log("isOverdue________________________",isOverdue)
+       
           if(isOverdue){
             setShowOverdueModal(true);
           }
@@ -525,15 +526,24 @@ const Home = () => {
       
     } else {
       setConfigError(true);
+      setShowNetworkError(true);
     }
     } catch (error) {
       console.error('Error fetching ongoing ride:', error);
       setConfigError(true);
+      setShowNetworkError(true);
     } finally {
       isCheckingRideRef.current = false;
       setBootLoading(false);
     }
   }
+
+  const retryLoadAppConfig = async () => {
+    setConfigError(false);
+    setShowNetworkError(false);
+    setBootLoading(true);
+    await checkOnGoingRideAndLog(true);
+  };
   // Expose refresh handler globally so other screens can trigger it
   useEffect(() => {
     global.checkOnGoingRideAndLog = checkOnGoingRideAndLog;
@@ -556,7 +566,7 @@ const Home = () => {
 
  const checkForUpdates = async (forceUpdateConfig) => {
    const mode = await checkUpdateStatus(forceUpdateConfig);
-   console.log("Update Mode_____________________________________________",mode)
+   
    const isForce = mode === 'force';
    const isAndroidForce = Platform.OS === 'android' && isForce;
    const isIOSForce = Platform.OS === 'ios' && isForce;
@@ -684,18 +694,20 @@ const Home = () => {
   useEffect(() => {
     const subscription = AppState.addEventListener('change', async nextState => {
       appState.current = nextState;
-      console.log("nextState",nextState)
+  
       if (nextState === 'active') {
         const currentScreen = getCurrentScreenName();
-        if (currentScreen === 'RideStatus' || currentScreen === 'Home' || currentScreen === 'PaymentScreen'){
+        console.log(activeTripId,"activetripid");
+        if (activeTripId && (currentScreen === 'RideStatus' || currentScreen === 'Home' || currentScreen === 'PaymentScreen')){
+        console.log("App has come to the foreground, checking ongoing ride");
         await checkOnGoingRideAndLog(true);
         }
-        console.log("navigate to permission if needed")
+        
         await navigateToPermissionIfNeeded();
       }
     });
     return () => subscription.remove();
-  }, [navigateToPermissionIfNeeded,tripId,getCurrentScreenName]);
+  }, [navigateToPermissionIfNeeded,tripId,getCurrentScreenName,setActiveTripId,activeTripId]);
 
   useCustomBackHandler();
 
@@ -787,10 +799,11 @@ const Home = () => {
   const updateTripStatusApi = async (tripId, status,note) => {
     try {
       const resp = await confirmTripStatus({ tripId, tripStatus: status, passengerFeedBack: note });
-      console.log("updateeeeeeeeeeeeeeeeeeeeeeeeeee",resp)
+ 
       if (resp?.success) {
         // showNotification(t('success'), resp?.message || t('updated_successfully'), 'success');
         await DataStore.clearData(PREF.CURRENT_TRIP)
+        setActiveTripId(null);
         resetCurrentRideInfo();
         clearDriverInfo();
         setShowOverdueModal(false);
@@ -880,10 +893,10 @@ const Home = () => {
            }
          />
        )}
-     
-      {/* {configError && (
+    
+      {showNetworkError && (
         <UnableToConnectOverlay onRetry={retryLoadAppConfig} />
-      )} */}
+      )}
 
       {/* {overlayStatuses.includes(tripStatus) && (
         <TripStatusOverlay status={tripStatus} />

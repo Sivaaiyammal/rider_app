@@ -9,6 +9,7 @@ import { DataStore } from '../controllers/DataStore';
 import PropTypes from 'prop-types';
 import { passengerPaymentIssues } from '../API/EndPoints/EndPoints';
 import { useStackScreenStore } from '../store/useStackScreenStore';
+import { useUserInfoStore } from '../../common/store/useUserInfoStore';
 import PREF from '../storage/PREF';
 
 const PRESET_MESSAGES = [
@@ -57,6 +58,7 @@ const DroppedButPaymentPendingLongtime = ({
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState('');
   const { reset } = useStackScreenStore();
+  const { setActiveTripId } = useUserInfoStore();
 
   useEffect(() => {
     if (!visible) {
@@ -114,6 +116,7 @@ const DroppedButPaymentPendingLongtime = ({
       console.log('passengerPaymentIssues response:', response);
       if (response?.success) {
         await DataStore.clearData(PREF.CURRENT_TRIP);
+        setActiveTripId(null);
         reset();
         onSubmit && onSubmit();
         

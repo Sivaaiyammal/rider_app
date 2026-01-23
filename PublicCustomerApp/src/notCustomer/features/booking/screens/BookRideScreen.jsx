@@ -199,7 +199,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         if (data?.distance && data?.duration) {
             
             const distanceKm = Number(data.distance) ; 
-            const durationMin = Number(data.duration) ;
+            const durationMin = Number(data.duration)/ 60 ;
 
             const minDistanceKm = appConfig.MIN_TRIP_DISTANCE_METER ? appConfig.MIN_TRIP_DISTANCE_METER / 1000 : 0;
    
@@ -252,7 +252,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     
     
     const transformEstimateDatStore=(data,rideDistances)=>{
-        console.log("Raw Estimation Data:", directionPoints);
+        
         const distanceNum = rideDistances != null ? Number(rideDistances) : null;
         
       
@@ -285,7 +285,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             return acc;
         }, [])
 
-        console.log("Transformed Vehicle List for Estimation:", vehicleList);
+        
 
         const withinLimit = vehicleList.filter(v => !v.isExceedingMaxDistance);
         const exceedingLimit = vehicleList.filter(v => v.isExceedingMaxDistance);
@@ -466,10 +466,11 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     
 
-  
+    console.log("BookRideScreen Rendered")
     const { setDirectionPoints,directionPoints } = useMapStore();
 
     const DirectionRoute = async () =>{
+            console.log("DirectionRoute called")
             const result = await transformRideLocationsToDirectionPoints({
                 clearMarkers: true,
                 vehicleType: 'motorcycle',
@@ -477,9 +478,11 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             });
             
             if (result.success) {
+                console.log("DirectionRoute success")
                 handleDirectionReady(result)
+                console.log("setting direction points")
             } else {
-                
+                console.log("DirectionRoute failed", result)
             }
         
     }
@@ -567,7 +570,7 @@ const handleServiceAreaModalClose = () => {
 }
 
 const handleRetryInitialize = async () => {
-    DirectionRoute();
+    // DirectionRoute();
 }
 
 
@@ -711,6 +714,7 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
           <RouteStatusOverlay
         loading={!!routeLoading?.loading}
         error={routeLoading?.error}
+        onBack={handleBackPress}
         onRetry={onRetryFetchRoute}
         top={height * 0.25} // Adjust top position based on NavBar height
     
