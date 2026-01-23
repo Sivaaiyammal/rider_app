@@ -108,7 +108,9 @@ class WSService {
               this.useStackScreenStore.getState().reset();
             }
             this.useCurrentRideInfoStore.getState().setTripStatus(null);
+            this.useUserInfoStore.getState().setActiveTripId(null);
             await this.DataStore.clearData(PREF.CURRENT_TRIP);
+
           }
           
         } catch (error) {

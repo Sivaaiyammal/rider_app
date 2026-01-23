@@ -27,6 +27,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
 // import triggerInAppReview from '../../../utils/inAppReview/triggerInAppReview';
 import InAppReview from 'react-native-in-app-review';
 import { firebaselog_tripReview } from '../../../../common/utils/FirebaseAnalytics';
+import { useUserInfoStore } from '../../../../common/store/useUserInfoStore';
 export default function TripFeedbackScreen() {
   
     
@@ -36,6 +37,7 @@ export default function TripFeedbackScreen() {
     const bounceValue = useRef(new Animated.Value(height)).current;
     const overlayOpacity = useRef(new Animated.Value(0)).current;
     const { reset } = useStackScreenStore();
+    const { setActiveTripId } = useUserInfoStore();
      const {t} = useTranslation();
 
     const [minDelayDone, setMinDelayDone] = useState(false);
@@ -49,6 +51,7 @@ export default function TripFeedbackScreen() {
 
     const OnClose = async () => {
     await DataStore.clearData(PREF.CURRENT_TRIP)
+    setActiveTripId(null);
     reset()
   }
 
@@ -152,6 +155,7 @@ export default function TripFeedbackScreen() {
        triggerInAppReview();
     }
       await DataStore.clearData(PREF.CURRENT_TRIP)
+      setActiveTripId(null);
       reset()
      
       

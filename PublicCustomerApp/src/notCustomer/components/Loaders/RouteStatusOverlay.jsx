@@ -51,6 +51,7 @@ const RouteStatusOverlay = ({
               {t('routeStatus_helper', { defaultValue: 'Ensure your internet is stable and try again.' })}
             </Text>
             {extraContent}
+            <View style={{ flexDirection: 'row-reverse', gap: 10 , marginTop:10}}>
             {onRetry && (
               <TouchableOpacity style={styles.retryBtn} onPress={onRetry}>
                 <Text style={styles.retryText}>{t('routeStatus_retry', { defaultValue: 'Try Again' })}</Text>
@@ -61,6 +62,7 @@ const RouteStatusOverlay = ({
                 <Text style={styles.backText}>{t('routeStatus_back', { defaultValue: 'Back' })}</Text>
               </TouchableOpacity>
             )}
+            </View>
           </View>
         </View>
       </Modal>
@@ -151,11 +153,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   retryBtn: {
-  
     backgroundColor: '#0f223c',
     borderRadius: 8,
-    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
     paddingHorizontal: 12,
+    textAlign: 'center',
   },
   retryText: {
     color: 'white',
@@ -163,13 +167,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   backBtn: {
-    marginTop: 8,
+    minWidth: 90,
     backgroundColor: 'transparent',
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: '#0f223c',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backText: {
     color: '#0f223c',

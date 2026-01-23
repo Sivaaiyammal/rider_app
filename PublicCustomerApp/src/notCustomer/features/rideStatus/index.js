@@ -42,7 +42,7 @@ const RideStatus = () => {
   const { userdetails } = useUserInfoStore();
   const { t } = useTranslation();
   const [showOverlay, setShowOverlay] = useState(false);
-  const {incrementCancelledTrips,} = useUserInfoStore();
+  const {incrementCancelledTrips,setActiveTripId} = useUserInfoStore();
   const {location} = useLocationStore();
   const {
     setGeometries,
@@ -59,6 +59,7 @@ const RideStatus = () => {
   const {setWaitingForDriverApproval} = useWayPointReorderStore();
   const {id:userId} = useUserInfoStore();
   const [isCalculateDistance,setIsCalculateDistance] = useState(false);
+  
   const [cancelReason, setCancelReason] = useState('');
   const {gpsDistance, gpsDuration, loading} = useCalculateDistance({ tripId:tripId , startTime: 1717190400000, endTime: new Date().setHours(23, 59, 59, 999),enabled: isCalculateDistance});
  
@@ -97,8 +98,13 @@ const RideStatus = () => {
           console.log('tripStatus',tripStatus)
           // await DataStore.clearData(PREF.CURRENT_TRIP)
           resetCurrentRideInfo();
+          setActiveTripId(null) 
           goBack();
         } 
+      firebaselog_onRide('OR_Status(OR_S)','OR_S:cancelled_by_customer_before_pickup')
+      setWaitingForDriverApproval(null);
+      setShowBottomSheet(false);
+      setCancelLoading(false);
       }
 
       setCancelLoading(false);
@@ -244,10 +250,7 @@ const RideStatus = () => {
       console.log("payload",payload)
 
       await CancelRide(payload);
-      firebaselog_onRide('OR_Status(OR_S)','OR_S:cancelled_by_customer_before_pickup')
-      setWaitingForDriverApproval(null);
-      setShowBottomSheet(false);
-      setCancelLoading(false);
+     
       return
 
       }

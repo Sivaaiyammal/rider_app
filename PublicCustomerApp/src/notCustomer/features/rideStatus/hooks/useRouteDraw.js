@@ -83,6 +83,7 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 	}
 	
 	function nearestDistanceToPolylineMeters(point, coords) {
+		console.log("coords before slice",coords,point)
         coords=coords.slice(1)
 		if (!coords || coords.length < 2) return Infinity;
 		let minDist = Infinity;
@@ -289,6 +290,7 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 			return true;
 		}
 		const distance = nearestDistanceToPolylineMeters([driverLon, driverLat], current);
+		console.log("diverted distance",distance)
 		const Diverted = distance > 300; // meters
 		return Diverted;
 	}

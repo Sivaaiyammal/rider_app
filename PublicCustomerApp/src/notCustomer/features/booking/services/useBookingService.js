@@ -50,7 +50,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
   // const { initializeSocket, startMatching } = useRideMatching();
   // const { id: userId } = useUserInfoStore();
   const { setCurrentRideInfo,setTripStatus } = useCurrentRideInfoStore();
-  const { incrementTotalTrips } = useUserInfoStore();
+  const { incrementTotalTrips, setActiveTripId } = useUserInfoStore();
   /**
    * Prepare booking payload with dummy values for testing
    * @returns {Object} Formatted payload for booking API
@@ -264,6 +264,8 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         setTripStatus(TripStatus.PENDING);
         incrementTotalTrips();
         setCurrentRideInfo(response);
+        const tripId = response?._id || response.tripId || null;
+        setActiveTripId(tripId);
         firebaselog_tripBooking('TB_Booking(TB_B)','TB_B:trip_booking_success')
 
         if (onSuccess) {

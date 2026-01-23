@@ -110,9 +110,9 @@ class RideMatchingSocketService {
         trip_id: tripId,
         passenger_id: passengerId,
         vehicleType: vehicleType,
-        passengerTrackData:routeData
+        routeData:routeData
       }
-      console.log("socketData",socketData);
+      
       this.socket.emit('findDriver', socketData);
     } else {
       console.error('❌ Ride matching socket not connected!');
