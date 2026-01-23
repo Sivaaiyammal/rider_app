@@ -74,6 +74,9 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReactApplicationContext;
 import java.io.IOException;
+
+import com.nemaps.geojson.Point;
+import com.nenative.services.android.navigation.ui.v5.NavigationViewModel;
 import com.nenative.services.android.navigation.ui.v5.navigationEndView.NavigationTripData;
 import com.virtualmaze.bundle_downloader.NENativeMap;
 import com.virtualmaze.bundle_downloader.listener.NENativeDownloadListener;
@@ -1510,12 +1513,20 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 }
             }
             directions.getInstance().setRouteAsync(reactNativeContext, requests, response, 0);
-            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    directions.getInstance().zoomRoute(routeMargins, 0.8f, -1);
-                }
-            }, 1000);
+//            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                    directions.getInstance().zoomRoute(routeMargins, 0.8f, -1);
+//                }
+//            }, 1000);
+//             new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+//                @Override
+//                public void run() {
+//                 RouteResponse response = Directions.getInstance().getRouteResponse();
+//                    Log.d("TAG", "run: response" + response);
+//                    handleResponse(response);
+//                }
+//            }, 1000);
         }catch (Throwable t) {
             Log.e("NeNativeModule", "findRoute failed; deferring", t);
         }
@@ -1882,6 +1893,38 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
         reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit("navigation", eventData);
         dismissGetRouteProgress();
+    }
+
+    @ReactMethod
+    public void updatePointsOnNavigation(ReadableArray updatedPointsArray) {
+        Activity currentActivity = SharedDirections.getCurrentActivity();
+        if (currentActivity == null) {
+            return;
+        }
+        Log.d("TAG", "updatePointsOnNavigation: " + updatedPointsArray);
+        currentActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                NENativeNavigationFragment navigationFragment = NENativeNavigationFragment.getInstance();
+                if (navigationFragment != null) {
+                    NavigationView navigationView = navigationFragment.getNavigationView();
+                    NavigationViewModel navigationViewModel = navigationView.getNavigationViewModel();
+
+                    List<Point> updatedPoints = new ArrayList<>();
+                    for (int i = 0; i < updatedPointsArray.size(); i++) {
+                        ReadableArray pointArray = updatedPointsArray.getArray(i);
+                        if (pointArray == null || pointArray.size() < 2) continue;
+
+                        double lng = pointArray.getDouble(0); // longitude
+                        double lat = pointArray.getDouble(1); // latitude
+
+                        updatedPoints.add(Point.fromLngLat(lat, lng));
+                    }
+                    Log.d("TAG", "run + updatedPoints: " + updatedPoints);
+                    navigationViewModel.handleUpdatePointsAndReroute(updatedPoints);
+                }
+            }
+        });
     }
 
    @ReactProp(name = "navigation")
