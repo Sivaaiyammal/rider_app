@@ -571,6 +571,10 @@ const handleServiceAreaModalClose = () => {
 
 const handleRetryInitialize = async () => {
     // DirectionRoute();
+
+     if (rideDistance && estimatedDuration ) {
+            getEstimatedFare();
+        }
 }
 
 

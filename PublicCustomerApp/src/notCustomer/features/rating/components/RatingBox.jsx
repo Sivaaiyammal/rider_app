@@ -9,6 +9,7 @@ const RatingBox = ({ onRatingSubmit, title , description, isSubmitting }) => {
   const {t} = useTranslation();
   const [rating, setRating] = useState(0);
   const [comments, setComments] = useState('');
+  const [warning, setWarning] = useState('');
 
   const handleStarPress = (starIndex) => {
     setRating(starIndex + 1);
@@ -21,6 +22,23 @@ const RatingBox = ({ onRatingSubmit, title , description, isSubmitting }) => {
         comment: comments.trim()
       });
     }
+  };
+
+  // Enforce comment length and line count limits before updating state
+  const handleCommentChange = (text) => {
+    const lines = text.split(/\r?\n/);
+    const exceedsLines = lines.length > 40;
+    const limitedLines = exceedsLines ? lines.slice(0, 40) : lines;
+    let nextText = limitedLines.join('\n');
+
+    const sanitizedText = text.replace(/\r/g, '');
+    const exceedsCharacters = sanitizedText.length > 300;
+    if (nextText.length > 300) {
+      nextText = nextText.slice(0, 300);
+    }
+
+    setWarning(exceedsLines || exceedsCharacters ? 'Maximum 300 characters and 40 lines allowed.' : '');
+    setComments(nextText);
   };
 
   const renderStars = () => {
@@ -66,11 +84,14 @@ const RatingBox = ({ onRatingSubmit, title , description, isSubmitting }) => {
           placeholder={t('comments_optional')}
           placeholderTextColor={colors.grey_dark}
           value={comments}
-          onChangeText={setComments}
+          onChangeText={handleCommentChange}
           multiline
           numberOfLines={3}
           textAlignVertical="top"
         />
+        {warning ? (
+          <AdaptiveText style={styles.warningText}>{warning}</AdaptiveText>
+        ) : null}
         
         {/* Submit Button */}
      
@@ -178,6 +199,12 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontFamily:Fonts.medium
+  },
+  warningText: {
+    color: '#E57373',
+    fontSize: 12,
+    marginTop: 8,
+    fontFamily: Fonts.regular,
   },
 });
 

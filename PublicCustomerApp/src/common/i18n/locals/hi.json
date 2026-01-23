@@ -737,6 +737,7 @@
     "max_vehicle_distance_limit_exceeded": "चयनित वाहन अपनी अधिकतम दूरी सीमा से अधिक है। कृपया कोई दूसरा वाहन चुनें या यात्रा की दूरी कम करें।",
     "min": "मिन",
     "minimum_wait_time": "न्यूनतम प्रतीक्षा समय {defaultwaitingTime} मिनट है",
+    "maximum_wait_time": "अधिकतम प्रतीक्षा समय {maxwaitingTime} मिनट है",
     "mins": "मिनट",
     "more_details": "अधिक जानकारी",
     "move_map_to_select_location": "मानचित्र पर स्थान चिह्नित करने के लिए मानचित्र को हिलाएं",

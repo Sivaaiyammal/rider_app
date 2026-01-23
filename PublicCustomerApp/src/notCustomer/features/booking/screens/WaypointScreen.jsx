@@ -413,13 +413,13 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
       let name;
       let waitingTime;
       if (index === 0) {
-        name = t('pickup_point');
+        name = 'Pickup point';
         waitingTime = 0
       } else if (index === updatedRideWayPoints.length - 1) {
-        name = t('drop_point');
+        name = 'Drop point'
         waitingTime = 0
       } else {
-        name = `${t('stop')} ${index}`;
+        name = `Stop ${index}`;
         waitingTime = item.waitingTime
       }
      

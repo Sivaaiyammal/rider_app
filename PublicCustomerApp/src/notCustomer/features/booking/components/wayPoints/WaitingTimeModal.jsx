@@ -30,19 +30,32 @@ const WaitingTimeModal = ({
   const waitingTimeChargesPerMinute = appConfig?.WAIT_TIME_CHARGES_PER_MINUTE;
   const maxwaitingTime = appConfig?.MAX_WAIT_TIME;
   const showWaitPriceInfo = appConfig?.SHOW_WAIT_PRICE_INFO;
+  const defaultWaitTimeValue = Number(defaultwaitingTime);
+  const normalizedDefaultWaitTime = Number.isFinite(defaultWaitTimeValue) && defaultWaitTimeValue > 0
+    ? defaultWaitTimeValue
+    : 5;
+  const normalizedMaxWaitTime = Number(maxwaitingTime) || 60;
+  const defaultWaitThreshold = Math.min(normalizedDefaultWaitTime, normalizedMaxWaitTime);
+  const availablePredefinedTimes = predefinedTimes.filter((time) => time <= normalizedMaxWaitTime);
   
 
 
   useEffect(() => {
     if (waypointData?.item?.waitingTime) {
-      setSelectedTime(waypointData.item.waitingTime);
-      setCustomTime(String(waypointData.item.waitingTime));
+      const initialWaitTime = Math.min(waypointData.item.waitingTime, normalizedMaxWaitTime);
+      setSelectedTime(initialWaitTime);
+      setCustomTime(String(initialWaitTime));
     } else {
-      setSelectedTime(defaultwaitingTime);
+      setSelectedTime(defaultWaitThreshold);
     }
-  }, [waypointData, defaultwaitingTime]);
+  }, [waypointData, defaultWaitThreshold, normalizedMaxWaitTime]);
 
   const handleTimeSelect = (time) => {
+    if (time > normalizedMaxWaitTime) {
+      setSelectedTime(normalizedMaxWaitTime);
+      setCustomTime(String(normalizedMaxWaitTime));
+      return;
+    }
     setSelectedTime(time);
     setCustomTime(String(time));
   };
@@ -51,18 +64,18 @@ const WaitingTimeModal = ({
     const numericValue = text.replace(/[^0-9]/g, '');
     setCustomTime(numericValue);
     if (numericValue) {
-      const timeValue = parseInt(numericValue);
+      const timeValue = parseInt(numericValue, 10);
       setSelectedTime(timeValue); // Allow setting any value for validation
     } else {
-      setSelectedTime(defaultwaitingTime); // Reset to default if empty
+      setSelectedTime(defaultWaitThreshold); // Reset to default if empty
     }
   };
 
   const handleSave = () => {
-    if (onSave && waypointData && !isBelowDefault) {
+    if (onSave && waypointData && !isBelowDefault && !isAboveMax) {
       onSave(waypointData.index, {
         ...waypointData.item,
-        waitingTime: selectedTime
+        waitingTime: Math.min(selectedTime, normalizedMaxWaitTime)
       });
     }
     onClose();
@@ -78,8 +91,10 @@ const WaitingTimeModal = ({
     onClose();
   };
 
-  const isBelowDefault = selectedTime < defaultwaitingTime;
-  const canSave = !isBelowDefault && selectedTime >= defaultwaitingTime;
+  const isBelowDefault = selectedTime < defaultWaitThreshold;
+  const isAboveMax = selectedTime > normalizedMaxWaitTime;
+  const canSave = !isBelowDefault && !isAboveMax && selectedTime >= defaultWaitThreshold;
+  const showInputError = isBelowDefault || isAboveMax;
   const haswaitingTime = waypointData?.item?.waitingTime && waypointData.item.waitingTime > 0;
 
   return (
@@ -111,11 +126,11 @@ const WaitingTimeModal = ({
             
             <View style={[
               styles.timeInputContainer,
-              isBelowDefault && styles.timeInputContainerError
+              showInputError && styles.timeInputContainerError
             ]}>
               <TextInput
                 style={styles.timeInput}
-                placeholder={String(defaultwaitingTime)}
+                placeholder={String(defaultwaitingTime ?? defaultWaitThreshold)}
                 placeholderTextColor="#CCC"
                 value={customTime}
                 onChangeText={handleCustomTimeChange}
@@ -132,6 +147,14 @@ const WaitingTimeModal = ({
                 </Text>
               </View>
             )}
+            {isAboveMax && (
+              <View style={styles.warningContainer}>
+                <MaterialIcons name="warning" size={16} color="#ff6b6b" />
+                <Text style={styles.warningText}>
+                  {t('maximum_wait_time', { maxwaitingTime: normalizedMaxWaitTime })}
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Quick Options */}
@@ -139,21 +162,21 @@ const WaitingTimeModal = ({
           
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View style={styles.timeButtonsContainer}>
-                {predefinedTimes.map((time) => (
+                {availablePredefinedTimes.map((time) => (
                   <TouchableOpacity
                     key={time}
                     style={[
                       styles.timeButton,
                       selectedTime === time && styles.selectedTimeButton,
-                      time < defaultwaitingTime && styles.disabledTimeButton
+                      time < defaultWaitThreshold && styles.disabledTimeButton
                     ]}
                     onPress={() => handleTimeSelect(time)}
-                    disabled={time < defaultwaitingTime}
+                    disabled={time < defaultWaitThreshold}
                   >
                     <AdaptiveText style={[
                       styles.timeButtonText,
                       selectedTime === time && styles.selectedTimeButtonText,
-                      time < defaultwaitingTime && styles.disabledTimeButtonText
+                      time < defaultWaitThreshold && styles.disabledTimeButtonText
                     ]}>
                       {time}
                     </AdaptiveText>

@@ -85,9 +85,17 @@ export const getUserStats = async (currentTripId) => {
   let url = `/publicrides/customer/getUserStats`;
   if (currentTripId !== null && currentTripId !== undefined) {
     url += `?currentTripId=${currentTripId}`;
-  }
+  }  
+  console.log("Fetching user stats from URL:", url);
   const { data } = await apiClient.get(url);
   return data;
+}
+
+export  const getCurrentTrip = async () =>{
+  console.log("Fetching current trip from server")
+  const {data} = await apiClient.get('/publicrides/customer/getTrip')
+  
+  return data
 }
 
 export const getAvalibaleVehiclesType = async (lat,lon) => {

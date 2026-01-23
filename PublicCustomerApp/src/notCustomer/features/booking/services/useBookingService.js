@@ -123,7 +123,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     // Prepare stops array with start, waypoints, and end locations
           const stops = [
         {
-          name: t('pickup_point'),
+          name: 'Pickup Point',
           location: [rideStartLocation.longitude, rideStartLocation.latitude],
           address: utils.formatAddressName(rideStartLocation),
           waitingTime: 0,
@@ -135,7 +135,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     if (rideWayPoints && rideWayPoints.length > 0) {
       rideWayPoints.forEach((waypoint, index) => {
         stops.push({
-          name: `${t('stop')} ${index + 1}`,
+          name: `${'Stop'} ${index + 1}`,
           location: [waypoint.longitude, waypoint.latitude],
           address: utils.formatAddressName(waypoint),
           waitingTime: waypoint.waitingTime || 0,
@@ -146,7 +146,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
 
     // Add end location
     stops.push({
-      name: t('drop_point'),
+      name: 'Drop Point',
       location: [rideEndLocation.longitude, rideEndLocation.latitude],
       address: utils.formatAddressName(rideEndLocation),
       waitingTime: 0,
@@ -265,6 +265,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         incrementTotalTrips();
         setCurrentRideInfo(response);
         const tripId = response?._id || response.tripId || null;
+        console.log("Booked Trip ID:", tripId);
         setActiveTripId(tripId);
         firebaselog_tripBooking('TB_Booking(TB_B)','TB_B:trip_booking_success')
 

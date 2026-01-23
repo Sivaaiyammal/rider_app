@@ -737,6 +737,7 @@
     "max_vehicle_distance_limit_exceeded": "Selected vehicle exceeds its maximum distance limit. Please choose a different vehicle or reduce the trip distance.",
     "min": "min",
     "minimum_wait_time": "Minimum wait time is {defaultwaitingTime} minutes",
+    "maximum_wait_time": "Maximum wait time is {maxwaitingTime} minutes",
     "mins": "Mins",
     "more_details": "MORE DETAILS",
     "move_map_to_select_location": "Move map to mark location on map",

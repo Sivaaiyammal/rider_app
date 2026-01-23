@@ -14,7 +14,7 @@ import PickLocationScreen from './PickLocationScreen';
 import { useCustomBackHandler } from '../hooks/useCustomBackHandler';
 import PlanRideScreen from '../features/booking/screens/PlanRideScreen.jsx';
 import BookRideScreen from '../features/booking/screens/BookRideScreen.jsx';
-import { getUserStats, confirmTripStatus } from '../API/EndPoints/EndPoints';
+import { getUserStats, confirmTripStatus ,getCurrentTrip} from '../API/EndPoints/EndPoints';
 import RideStatus from '../features/rideStatus';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 import PaymentScreen from '../features/payment/screens/PaymentScreen';
@@ -227,6 +227,10 @@ const Home = () => {
     
   };
 
+  useEffect(() => {
+    console.log("activeTripId changed in Home.js",activeTripId);
+  }, [activeTripId]);
+
 
   const checkEmergencyContactSaved = async () => {
     const emergencyContact = await DataStore.loadData('emergency_contact');
@@ -275,7 +279,7 @@ const Home = () => {
     const currentScreen = getCurrentScreenName();
     if (driverMatched && currentScreen === 'RideStatus') {  
     
-      checkOnGoingRideAndLog(); 
+      checkOnGoingRideAndLog(true); 
       setDriverMatched(false);
       
     }
@@ -364,28 +368,102 @@ const Home = () => {
     return false;
   } 
 
-  const checkOnGoingRideAndLog = async (update=false) => {
-    if (isCheckingRideRef.current) {
-      
+  const checkTrip = async (response) => {
+    if(!response?.trip || !response?.success){
       return;
     }
 
-    isCheckingRideRef.current = true;
-    const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
-    const currentTripId=currentTrip?.data || null
-   
-    try {
-      setConfigError(false);
-      // Prefer prefetched response if available; fallback to live call
-      let Response = await getUserStats(currentTripId);
+    if(response?.trip?.status == "DROPPED" || ( response?.trip?.status == "CANCELLED" && response?.trip?.fareDetails)){
+      if(response?.trip?._id){
+        setStackScreen('PaymentScreen', { lastTripId:response?.trip?._id});
+        }
+        return;   
+      }
+      if((response?.trip?.status == "COMPLETED" || response?.trip?.status == "DIVERGED") && currentTripId ){
+        setStackScreen('TripFeedbackScreen', { });
+        return;
+      }
       
-      if(!Response?.success){
+      if(response?.trip){
+        const _id = response?.trip?._id || null;
+        setActiveTripId(_id);
+        if(response?.trip?.status == "PENDING")
+        {
+          return;
+        }
+
+        if(response?.trip?.status == "CANCELLED"|| response?.trip?.status == "COMPLETED" || response?.trip?.status == "DIVERGED") {
+          await DataStore.clearData(PREF.CURRENT_TRIP)
+          setActiveTripId(null);
+          resetCurrentRideInfo();
+         
+          const currentScreen = getCurrentScreenName();
+        
+        
+          const { rideStartLocation: latestStart, rideEndLocation: latestEnd } = useRideBookingLocationStore.getState();
+          const directionsReady = !!latestStart && !!latestEnd;
+        
+          if (currentScreen == 'RideStatus') {
+             if(directionsReady){
+              goBackToScreen('BookRideScreen',{});
+             }else{
+              reset();
+             }
+          }
+          return;
+        }
+       
+        setCurrentRideInfo(response?.trip);
+
+        if(response?.assignDriver){
+          setAllocatedDriverInfo(response?.assignDriver);
+        }
+        if(response?.trip?.fareDetails){
+          const fareData = {
+            fareDetails:response?.trip?.fareDetails,
+          }
+          if(response?.trip?.customerInvoice){
+            fareData.customerInvoice = response?.trip?.customerInvoice;
+          }
+          setFareDetails(fareData)
+        }
+        setStackScreen('RideStatus', { });
+
+
+        // Check if trip has exceeded estimated duration by 10 minutes from pickup context
+        if(response?.trip?.status !== "ACCEPTED"){
+        const pickupArrivalTime = response?.trip?.stops?.[0]?.arrivalTime || null;
+        try{
+          const isOverdue = utils.isTripOverEstimatedDuration(
+            response?.trip?.bookingTime,
+            pickupArrivalTime,
+            response?.trip?.estimatedDuration,
+            90
+          );
+       
+          if(isOverdue){
+            setShowOverdueModal(true);
+          }
+        } catch (e) {
+          console.error('Error checking overdue trip:', e);
+        }
+        
+    }}
+  }
+
+
+  const checkConfig = async (Response) => {
+    try {
+      if (!Response?.success) {
         setConfigError(true);
         setShowNetworkError(true);
         return;
       }
 
-      if(Response?.success ){
+  
+      if (Response?.success) {
+
+
         if (showNetworkError) {
           setShowNetworkError(false);
         }
@@ -393,36 +471,30 @@ const Home = () => {
           setConfigError(false);
         }
 
-        if(Response?.userStats?.fcmToken){
-          
+
+        if (Response?.userStats?.fcmToken) {
           const isActiveLogin = await checkDeviceImei(Response?.userStats?.fcmToken);
-          if(!isActiveLogin){
-            
+          if (!isActiveLogin) {
             logout();
             return;
           }
-          
         }
 
-        if(!(Response?.userStats)){ 
-
+        if (!(Response?.userStats)) {
           logout();
           return;
-
         }
 
-        if(Response?.userStats?.name == ""){
-          
+        if (Response?.userStats?.name == "") {
           navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: 'RegisterationScreen' }],
-                }),
-              );  
-
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'RegisterationScreen' }],
+            }),
+          );
         }
-        
-        if(Response?.scheduleTrips && Response?.scheduleTrips?.length > 0){
+
+        if (Response?.scheduleTrips && Response?.scheduleTrips?.length > 0) {
           setScheduledTrips(Response?.scheduleTrips);
         }
 
@@ -432,106 +504,52 @@ const Home = () => {
           if (Response.appConfig?.FORCE_UPDATE && !currentTripId) {
             checkForUpdates(Response.appConfig.FORCE_UPDATE);
           }
-
         } else {
           setConfigError(true);
         }
 
-        if(Response?.userStats?.favPlaces?.length > 0){
+        if (Response?.userStats?.favPlaces?.length > 0) {
           setUserFavPlaces(Response?.userStats?.favPlaces);
         }
-        
-        if(Response?.userStats?.rating){
+
+        if (Response?.userStats?.rating) {
           setRatingData(Response?.userStats?.rating);
         }
 
-
-
-        if(Response?.trip?.status == "DROPPED" || ( Response?.trip?.status == "CANCELLED" && Response?.trip?.fareDetails)){
-          if(Response?.trip?._id){
-          setStackScreen('PaymentScreen', { lastTripId:Response?.trip?._id});
-          }
-          return;
-          
-        }
-        if((Response?.trip?.status == "COMPLETED" || Response?.trip?.status == "DIVERGED") && currentTripId ){
-          setStackScreen('TripFeedbackScreen', { });
-          return;
-        }
-      
-      if(Response?.trip){
-         const _id = Response?.trip?._id || null;
-         setActiveTripId(_id);
-         if(Response?.trip?.status == "PENDING")
-        {
-          return;
-        }
-
-        if (Response?.trip?.status == "CANCELLED"|| Response?.trip?.status == "COMPLETED" || Response?.trip?.status == "DIVERGED") {
-          await DataStore.clearData(PREF.CURRENT_TRIP)
-          setActiveTripId(null);
-          resetCurrentRideInfo();
-         
-          const currentScreen = getCurrentScreenName();
-        
-           // Read latest locations from store to avoid stale values
-           const { rideStartLocation: latestStart, rideEndLocation: latestEnd } = useRideBookingLocationStore.getState();
-           const directionsReady = !!latestStart && !!latestEnd;
-        
-          if (currentScreen == 'RideStatus') {
-             if(directionsReady){
-              goBackToScreen('BookRideScreen',{});
-             }else{
-              reset();
-             }
-          } 
-          
-          return;
-        }
-       
-        setCurrentRideInfo(Response?.trip);
-
-        if(Response?.assignDriver){
-          setAllocatedDriverInfo(Response?.assignDriver);
-        }
-        if(Response?.trip?.fareDetails){
-          const fareData = {
-            fareDetails:Response?.trip?.fareDetails,
-          }
-          if(Response?.trip?.customerInvoice){
-            fareData.customerInvoice = Response?.trip?.customerInvoice;
-          }
-          setFareDetails(fareData)
-        }
-        setStackScreen('RideStatus', { });
-        // Check if trip has exceeded estimated duration by 10 minutes from pickup context
-        if(Response?.trip?.status !== "ACCEPTED"){
-        const pickupArrivalTime = Response?.trip?.stops?.[0]?.arrivalTime || null;
-        try{
-          const isOverdue = utils.isTripOverEstimatedDuration(
-            Response?.userStats?.bookingTime || Response?.trip?.bookingTime,
-            pickupArrivalTime,
-            Response?.trip?.estimatedDuration,
-            90
-          );
-       
-          if(isOverdue){
-            setShowOverdueModal(true);
-          }
-        } catch (e) {
-          // no-op
-        }
-        }
+      } else {
+        setConfigError(true);
+        setShowNetworkError(true);
       }
-      
-    } else {
-      setConfigError(true);
-      setShowNetworkError(true);
-    }
     } catch (error) {
       console.error('Error fetching ongoing ride:', error);
       setConfigError(true);
       setShowNetworkError(true);
+    }
+
+  }
+
+  const checkOnGoingRideAndLog = async (tripOnly=false) => {
+    console.log("Checking ongoing ride...");
+    console.log("tripOnly flag:", tripOnly);
+    if (isCheckingRideRef.current) {
+      return;
+    }
+    isCheckingRideRef.current = true;
+    try {
+      setConfigError(false);
+      const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
+      const currentTripId = currentTrip?.data || null;
+
+      const response = tripOnly ? await getCurrentTrip() : await getUserStats(currentTripId);
+      console.log('Ongoing ride response:', response);
+
+      if (!tripOnly) {
+        await checkConfig(response);
+      }
+      await checkTrip(response);
+
+    } catch (error) {
+      console.error('Error fetching ongoing ride:', error);
     } finally {
       isCheckingRideRef.current = false;
       setBootLoading(false);
@@ -542,7 +560,7 @@ const Home = () => {
     setConfigError(false);
     setShowNetworkError(false);
     setBootLoading(true);
-    await checkOnGoingRideAndLog(true);
+    await checkOnGoingRideAndLog();
   };
   // Expose refresh handler globally so other screens can trigger it
   useEffect(() => {
@@ -683,6 +701,7 @@ const Home = () => {
     handleReconnect();
   }, [isConnected, id, initializeSocket, resetSocket]);
 
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       navigateToPermissionIfNeeded();
@@ -691,23 +710,26 @@ const Home = () => {
     return unsubscribe;
   }, [navigation, navigateToPermissionIfNeeded]);
 
+
   useEffect(() => {
     const subscription = AppState.addEventListener('change', async nextState => {
       appState.current = nextState;
-  
+
       if (nextState === 'active') {
         const currentScreen = getCurrentScreenName();
-        console.log(activeTripId,"activetripid");
-        if (activeTripId && (currentScreen === 'RideStatus' || currentScreen === 'Home' || currentScreen === 'PaymentScreen')){
-        console.log("App has come to the foreground, checking ongoing ride");
-        await checkOnGoingRideAndLog(true);
+        console.log("App has come to the foreground, current screen:", currentScreen);
+        if (activeTripId && (currentScreen === 'RideStatus' || currentScreen === 'Home' || currentScreen === 'PaymentScreen')) {
+          console.log("Checking ongoing ride due to app foreground and active trip:", activeTripId);
+          await checkOnGoingRideAndLog(true);
+        }else{
+          console.log("No active trip or irrelevant screen, just checking permissions.");
         }
-        
+
         await navigateToPermissionIfNeeded();
       }
     });
     return () => subscription.remove();
-  }, [navigateToPermissionIfNeeded,tripId,getCurrentScreenName,setActiveTripId,activeTripId]);
+  }, [navigateToPermissionIfNeeded, tripId, getCurrentScreenName, setActiveTripId, activeTripId]);
 
   useCustomBackHandler();
 

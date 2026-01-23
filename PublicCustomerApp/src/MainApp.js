@@ -27,6 +27,7 @@ import DriverInitializationScreen from './notdriver/components/DriverInitializat
 import DeviceInfo from 'react-native-device-info';
 import useDeviceAPIStore from './common/store/useDeviceAPIStore';
 import PushNotifications from './common/core/PushNotifications';
+import useTripStatus from './notCustomer/hooks/useTripStatus';
 
 
 
@@ -50,8 +51,7 @@ const MainAppContent = () => {
   const appearance = useColorScheme();
   const { isConnected, checkConnection } = useNetwork();
   const { setUserDeviceId } = useDeviceAPIStore();
- 
-
+  const{ handleTripStatusUpdate} = useTripStatus();
 
   
   const setAppTheme = useCallback(async () => {
@@ -92,6 +92,16 @@ const MainAppContent = () => {
         tripAlert.playDriverAllocatedAlert();
         Vibration.vibrate();
       }
+
+      console.log('Foreground notification data:', data);
+
+      if(data?.tripId && data?.trip_status){
+         handleTripStatusUpdate(data?.tripId, data?.trip_status);
+
+      }
+
+     
+      
       PushNotifications.sendNotification(body, title, data);
     }); 
 

@@ -27,7 +27,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
 // import triggerInAppReview from '../../../utils/inAppReview/triggerInAppReview';
 import InAppReview from 'react-native-in-app-review';
 import { firebaselog_tripReview } from '../../../../common/utils/FirebaseAnalytics';
-import { useUserInfoStore } from '../../../../common/store/useUserInfoStore';
+import  useUserInfoStore  from '../../../../common/store/useUserInfoStore';
 export default function TripFeedbackScreen() {
   
     

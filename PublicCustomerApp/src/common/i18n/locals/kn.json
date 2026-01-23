@@ -737,6 +737,7 @@
     "max_vehicle_distance_limit_exceeded": "ಆಯ್ಕೆಮಾಡಿದ ವಾಹನವು ಅದರ ಗರಿಷ್ಠ ದೂರ ಮಿತಿಯನ್ನು ಮೀರಿದೆ. ದಯವಿಟ್ಟು ಬೇರೆ ವಾಹನವನ್ನು ಆಯ್ಕೆಮಾಡಿ ಅಥವಾ ಪ್ರಯಾಣದ ದೂರವನ್ನು ಕಡಿಮೆ ಮಾಡಿ.",
     "min": "ನಿಮಿಷ",
     "minimum_wait_time": "ಕನಿಷ್ಠ ಕಾಯುವ ಸಮಯ {defaultwaitingTime} ನಿಮಿಷಗಳು",
+    "maximum_wait_time": "ಗರಿಷ್ಠ ಕಾಯುವ ಸಮಯ {maxwaitingTime} ನಿಮಿಷಗಳು",
     "mins": "ನಿಮಿಷಗಳು",
     "more_details": "ಹೆಚ್ಚಿನ ವಿವರಗಳು",
     "move_map_to_select_location": "ನಕ್ಷೆಯಲ್ಲಿ ಸ್ಥಳವನ್ನು ಗುರುತಿಸಲು ನಕ್ಷೆಯನ್ನು ಸರಿಸಿ.",

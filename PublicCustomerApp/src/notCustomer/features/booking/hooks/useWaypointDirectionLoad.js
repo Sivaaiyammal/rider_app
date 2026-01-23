@@ -26,6 +26,7 @@ const useWaypointDirectionLoad = () => {
    */
   const transformWaypointsToDirectionPoints = useCallback(async(options = {}) => {
     try{
+    setRouteLoading({loading:true,error:false})
     const { clearMarkers = true, vehicleType = 'car',padding } = options;
     const updatedReOrderWaypoints = [...reachedStops,...reOrderWaypoints];
     // Filter out valid waypoints with coordinates

@@ -737,6 +737,7 @@
     "max_vehicle_distance_limit_exceeded": "ఎంచుకున్న వాహనం దాని గరిష్ట దూర పరిమితిని మించిపోయింది. దయచేసి వేరే వాహనాన్ని ఎంచుకోండి లేదా ప్రయాణ దూరాన్ని తగ్గించండి.",
     "min": "నిమి",
     "minimum_wait_time": "కనీస నిరీక్షణ సమయం {defaultwaitingTime} నిమిషాలు",
+    "maximum_wait_time": "గరిష్ట నిరీక్షణ సమయం {maxwaitingTime} నిమిషాలు",
     "mins": "నిమిషాలు",
     "more_details": "మరిన్ని వివరాలు",
     "move_map_to_select_location": "మ్యాప్‌లో స్థానాన్ని గుర్తించడానికి మ్యాప్‌ను తరలించండి",
