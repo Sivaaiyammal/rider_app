@@ -19,23 +19,27 @@ const storeFunctione = (set, get) => ({
 
   activeTripData: null,
   updateStopData: (stopName, isReached, newStatus, waitingTime, stopUpdated) => {
+    let updatedTrips;
     set(state => {
-      const updatedTrips = state?.activeTripData?.map(trip => ({
+      updatedTrips = state?.activeTripData?.map(trip => ({
         ...trip,
         status: newStatus,
         stops: trip.stops.map(stop =>
           stop.name === stopName
             ? {
                 ...stop,
-                isReached : isReached,
+                isReached: isReached,
                 driverWaitTime: waitingTime || 0,
-                stopUpdated: stopUpdated
+                stopUpdated: stopUpdated,
               }
             : stop
         )
       }));
       return { activeTripData: updatedTrips };
     });
+    const updatedStop = updatedTrips?.[0]?.stops?.find(s => s.name === stopName);
+    const nonReachedStops = updatedTrips?.[0]?.stops?.filter(stop => !stop.stopUpdated);
+    return { nonReachedStops, updatedStop };
   },
 
   updateNewStopData: (newStopData) => {

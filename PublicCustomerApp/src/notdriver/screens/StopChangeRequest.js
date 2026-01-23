@@ -18,29 +18,17 @@ import TotalHours from '../../notdriver/assets/icons/totalHours.svg'
 import PushNotifications from '../../common/core/PushNotifications';
 import { useTranslation } from 'react-i18next';
 import { firebaselog_onRide } from '../../common/utils/FirebaseAnalytics';
+import { height } from '../../common/utils/scalingutils';
 
 const StopChangeRequest = () => {
     const {newStopData, setNewStopData, updateNewStopData} = useTripsStore();
-    const {setDirectionPoints} = useMapMarkerStore();
+    const {setDirectionPoints, setDirectionResponse} = useMapMarkerStore();
     const {loading} = useTripAcceptStore();
     const {activeTripData, setActiveTripData} = useTripsStore();
     const {userInfo} = useUserStore()
     const {setStackScreen} = useStackScreenStore()
     const {t} = useTranslation()
     const [isLoading, setIsLoading] = useState()
-
-    const updateStopData = (tripData, newStopData) => {
-        const newTripData = tripData.map((trip)=> {
-            return {
-                ...trip,
-                estimatedDuration : newStopData.duration,
-                estimatedDistance : newStopData.distance,
-                estimatedFare : newStopData?.fare,
-                stops: newStopData
-            }
-        })
-        return newTripData
-    }
 
       const onAcceptPress = async () => {
         setIsLoading(true)
@@ -60,6 +48,7 @@ const StopChangeRequest = () => {
             if (res.success) {
                 updateNewStopData(newStopData)
                 setNewStopData(null)
+                setDirectionResponse(null)
                 showNotification('Stops Updated Successfully', '' , 'success')
                 PushNotifications.onClearAllNotifications();
                 firebaselog_onRide('OR_Edit(OR_E)', 'OR_E:driver_accept_edit')
@@ -92,6 +81,7 @@ const StopChangeRequest = () => {
             );
             if (res.success) {
                 setNewStopData(null)
+                setDirectionResponse(null)
                 showNotification('Stops Updated Successfully', '' , 'success')
                 PushNotifications.onClearAllNotifications();
                 firebaselog_onRide('OR_Edit(OR_E)', 'OR_E:driver_reject_edit')
@@ -108,6 +98,14 @@ const StopChangeRequest = () => {
       }
 
       useEffect(()=> {
+        if (newStopData?.routeData) {
+          const request = newStopData?.routeData?.request
+          const response = newStopData?.routeData?.response
+          const padding = [50, 50, 50, height*0.5]
+          const routeID = 1
+          setDirectionResponse([{requests:request, response:response,padding: padding.map(v => parseInt(v, 10)), routeID: routeID}]);
+          return
+        }
         if (newStopData?.stops && newStopData?.stops.length !== 0) {
           const directions = newStopData?.stops?.map((direction)=>{
             return {

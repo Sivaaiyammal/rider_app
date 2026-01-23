@@ -33,6 +33,7 @@ import { useTranslation } from 'react-i18next';
 import APIRequest from '../../common/APIRequest';
 import GlobalContext from '../../context/GlobalContext';
 import { firebaselog_tripBooking } from '../../common/utils/FirebaseAnalytics';
+import findDistance from '../../common/core/FindDistance';
 
 
 const {NeNativeModule} = NativeModules;
@@ -70,7 +71,7 @@ const TripAccept = () => {
 
   const { t } = useTranslation();
   
-  const {setDirectionPoints,setMapBounds} = useMapMarkerStore();
+  const {setDirectionPoints,setDirectionResponse} = useMapMarkerStore();
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextState => {
@@ -104,6 +105,29 @@ const TripAccept = () => {
     }
     return fallback;
   }, [tripDetails]);
+
+  // Derive distance in meters: use estimatedDistance if present; otherwise sum between stops
+  const displayDistance = useMemo(() => {
+    const est = tripDetails?.estimatedDistance;
+    if (typeof est === 'number' && !Number.isNaN(est) && est >= 0) {
+      return est;
+    }
+    if (!Array.isArray(stopsForDisplay) || stopsForDisplay.length < 2) {
+      return 0;
+    }
+    let total = 0;
+    for (let i = 1; i < stopsForDisplay.length; i += 1) {
+      const prev = stopsForDisplay[i - 1]?.location;
+      const curr = stopsForDisplay[i]?.location;
+      if (Array.isArray(prev) && prev.length === 2 && Array.isArray(curr) && curr.length === 2) {
+        const a = { latitude: prev[1], longitude: prev[0] };
+        const b = { latitude: curr[1], longitude: curr[0] };
+        const d = findDistance(b,a, 'km');
+        if (typeof d === 'number' && !Number.isNaN(d)) total += d;
+      }
+    }
+    return total;
+  }, [tripDetails?.estimatedDistance, stopsForDisplay]);
 
   // Use trip details from socket store; compute timer without API
   useEffect(() => {
@@ -152,6 +176,7 @@ const TripAccept = () => {
       DataStore.storeData('activeTripId', null);
       NeNativeModule.clearDirectionPoints()
       setNewStopData(null)
+      setDirectionResponse(null)
       // Reset trip accept store completely
       reset();
       BGLocationTask.hideOverlay();
@@ -239,7 +264,7 @@ const TripAccept = () => {
       return `${kilometers} km`;
     }
 
-    return `${Math.round(distance)} m`;
+    return `${distance ? distance.toFixed(2) : 0} km`;
   };
 
   useEffect(()=> {
@@ -309,7 +334,7 @@ const TripAccept = () => {
             <View style={styles.tripDetailsConatiner}>
               <View style={styles.tripDetailsSubConatiner}>
                 <Text style={styles.tripDetailsSubConatinerTxt}>{t('distance')}</Text>
-                <Text style={styles.tripDetailsSubConatinerSubTxt}>{formatDistance(tripDetails?.estimatedDistance)}</Text>
+                <Text style={styles.tripDetailsSubConatinerSubTxt}>{formatDistance(displayDistance)}</Text>
               </View>
               <View style={styles.tripDetailsSubConatiner}>
                 <Text style={styles.tripDetailsSubConatinerTxt}>{t('booked_at')}</Text>
