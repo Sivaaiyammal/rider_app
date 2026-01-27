@@ -42,6 +42,7 @@ import DynamicSection from '../components/DynamicSection';
 import useNearbyDrivers from '../../../store/useNearByDrivers';
 import useConfigStore from '../../../store/useConfigStore'; 
 import { firebaselog_ridePlanning } from '../../../../common/utils/FirebaseAnalytics';
+import SocialMediaModal from '../../../components/SocialMediaModal';
 
 
 const BottomSheetHeader = ({ makeRidePlan, style }) => {
@@ -79,7 +80,7 @@ const MapScreen = () => {
 
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState(null);
-  const {setStackScreen} = useStackScreenStore();
+  const {setStackScreen , setShowSocialMediaModal , showSocialMediaModal} = useStackScreenStore();
   const {location,currentLocationName} = useLocationStore();
   const {setRideStartLocation,setRideEndLocation,resetRideBookingLocation } = useRideBookingLocationStore()
   const { setSelectedVehicle } = useRideVehicleStore();
@@ -556,9 +557,11 @@ const MapScreen = () => {
          width: 50,
          height: 4,
        }}>
-       
+        
         <View style={{marginTop:60}}>
+        
           {<ScheduledTripBanner/>}
+
           <DynamicSection onSelect={handleServiceVehicleSelect}/>
           <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
           <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false}  fromHomeScreen={true}/>
@@ -568,6 +571,7 @@ const MapScreen = () => {
       </BottomSheetWrapper>
 
       {showMenu && <SideDrawer handleMenu={handleMenu} />}
+      {showSocialMediaModal && <SocialMediaModal onClose={() => setShowSocialMediaModal(false)} visible={showSocialMediaModal} />}
       <ErrorMessage />
     </>
   );

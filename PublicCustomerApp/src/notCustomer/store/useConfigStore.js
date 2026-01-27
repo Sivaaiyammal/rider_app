@@ -21,8 +21,13 @@ const defaultConfig = {
   SHOW_NEARBY_DRIVER_RADIUS: 10000,
   MIN_TRIP_DISTANCE_METER: 100,
   CUSTOMER_CANCEL_PENALTY:true,
-  CUSTOMER_CANCEL_PENALTY_LIMIT: 3
-
+  CUSTOMER_CANCEL_PENALTY_LIMIT: 3,
+  SOCIAL_MEDIA_LINKS: {
+    facebook: 'https://www.facebook.com/nammaoorutaxi',
+    twitter: 'https://twitter.com/nammaoorutaxi',
+    instagram: 'https://www.instagram.com/nammaoorutaxi',
+    linkedin: 'https://www.linkedin.com/company/nammaoorutaxi',
+  }
 };
 
 const useConfigStore = create((set, get) => ({

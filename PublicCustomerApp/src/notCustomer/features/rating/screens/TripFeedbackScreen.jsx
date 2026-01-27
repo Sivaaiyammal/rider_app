@@ -32,12 +32,12 @@ export default function TripFeedbackScreen() {
   
     
   const {tripFare,tripDistance,tripDuration,driverDetails,currentTripId,setTripDetails,isLoading,setIsLoading,tripStatus } = useRatingStore();
-  
+
     
     const bounceValue = useRef(new Animated.Value(height)).current;
     const overlayOpacity = useRef(new Animated.Value(0)).current;
-    const { reset } = useStackScreenStore();
-    const { setActiveTripId,setCancelledTripsOccurance } = useUserInfoStore();
+    const { reset,setShowSocialMediaModal } = useStackScreenStore();
+    const { setActiveTripId } = useUserInfoStore();
      const {t} = useTranslation();
 
     const [minDelayDone, setMinDelayDone] = useState(false);
@@ -49,11 +49,17 @@ export default function TripFeedbackScreen() {
     }, []);
 
 
+    const showsocialMediaModal = () =>{
+      setShowSocialMediaModal(true);
+
+    }
+
+
     const OnClose = async () => {
     await DataStore.clearData(PREF.CURRENT_TRIP)
-    setCancelledTripsOccurance(0)
     setActiveTripId(null);
     reset()
+    // showsocialMediaModal();
   }
 
   const triggerInAppReview = async () => {

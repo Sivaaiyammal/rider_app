@@ -77,6 +77,10 @@ export const useStackScreenStore = create((set, get) => ({
   getCurrentScreen: () => {
     const stack = get().stackScreen;
     return stack[stack.length - 1];
-  }
+  },
+
+  showSocialMediaModal: false,
+  setShowSocialMediaModal: (value) => { set({ showSocialMediaModal: value }); }
+
   
 }));
