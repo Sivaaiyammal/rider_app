@@ -42,7 +42,7 @@ const RideStatus = () => {
   const { userdetails } = useUserInfoStore();
   const { t } = useTranslation();
   const [showOverlay, setShowOverlay] = useState(false);
-  const {incrementCancelledTrips,setActiveTripId} = useUserInfoStore();
+  const {incrementCancelledTrips,setActiveTripId,setIncrementCancelledTripsOccurance} = useUserInfoStore();
   const {location} = useLocationStore();
   const {
     setGeometries,
@@ -59,6 +59,8 @@ const RideStatus = () => {
   const {setWaitingForDriverApproval} = useWayPointReorderStore();
   const {id:userId} = useUserInfoStore();
   const [isCalculateDistance,setIsCalculateDistance] = useState(false);
+  const {cancelTripOccurance} = useUserInfoStore();
+  const [showWarningModal, setShowWarningModal] = useState(false);
   
   const [cancelReason, setCancelReason] = useState('');
   const {gpsDistance, gpsDuration, loading} = useCalculateDistance({ tripId:tripId , startTime: 1717190400000, endTime: new Date().setHours(23, 59, 59, 999),enabled: isCalculateDistance});
@@ -80,6 +82,7 @@ const RideStatus = () => {
     const response = await cancelRide(payload);
     console.log('response',response)
     if (response.success) {
+    setIncrementCancelledTripsOccurance()
       setGeometries([])
       setMapMarkers([])
       setVehicleMarkers([])
@@ -128,6 +131,8 @@ const RideStatus = () => {
       goBack();
       return
     }
+
+   
 
     // if(AppConfig.RIDE_CANCELLED_MIDWAY_FUEL_CHARGE){
     //   const payload = {

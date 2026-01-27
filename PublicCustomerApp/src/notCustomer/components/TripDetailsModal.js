@@ -6,6 +6,10 @@ import AddressContainer from './Trips/AddressContainer';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import AdaptiveText from './Common/AdaptiveText';
+import useUserInfoStore from '../../common/store/useUserInfoStore';
+import WarningModal from './WarningModal';
+import useConfigStore from '../store/useConfigStore';
+import { CUSTOMER_CANCEL_PENALTY_LIMIT } from '../Config/AppConfig';
 
 const TripDetailsModal = ({ 
   visible, 
@@ -21,6 +25,9 @@ const TripDetailsModal = ({
 }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const {t}=useTranslation();
+  const {cancelTripOccurance} = useUserInfoStore();
+  const [showWarningModal, setShowWarningModal] = React.useState(false);
+  const { appConfig } = useConfigStore();
 
   useEffect(() => {
     if (visible) {
@@ -42,6 +49,18 @@ const TripDetailsModal = ({
 
   if (!visible && fadeAnim._value === 0) {
     return null;
+  }
+
+  const handleCancel=()=>{
+    console.log("Cancel Trip pressed, occurance:", cancelTripOccurance);
+    console.log("Penalty limit:", appConfig.CUSTOMER_CANCEL_PENALTY_LIMIT);
+    console.log("Penalty enabled:", appConfig.CUSTOMER_CANCEL_PENALTY);
+    if(cancelTripOccurance >= appConfig.CUSTOMER_CANCEL_PENALTY_LIMIT && appConfig.CUSTOMER_CANCEL_PENALTY){
+     
+      setShowWarningModal(true);
+      return;
+    }
+    onCancel();
   }
 
   return (
@@ -100,13 +119,24 @@ const TripDetailsModal = ({
       </ScrollView>
       <View style={styles.cancelBtnContainer}>  
           <TouchableOpacity style={styles.cancelBtn} onPress={()=>{
-            onCancel();
+            handleCancel();
           }}>
           {/* <Icon name="close" size={25} color={colors.white} /> */}
           <AdaptiveText style={styles.cancelBtnText}>{t('cancel_trip')}</AdaptiveText>
         </TouchableOpacity>
         </View>
-        
+        <WarningModal
+          visible={showWarningModal}
+          onClose={() => setShowWarningModal(false)}
+          onConfirm={() => {
+            setShowWarningModal(false);
+            onCancel();
+          }}
+          title={t('cancel_trip_warning_title')}
+          message={t('cancel_trip_warning_message')}
+          confirmText={t('cancel_anyway')}
+          closeText={t('back')}
+        />
     </Animated.View>
   );
 };

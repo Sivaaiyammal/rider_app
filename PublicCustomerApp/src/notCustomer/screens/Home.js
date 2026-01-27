@@ -154,7 +154,7 @@ const Home = () => {
   const { setStackScreen } = useStackScreenStore();
   const { setCurrentRideInfo , setFareDetails ,tripId,resetCurrentRideInfo} = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo ,clearDriverInfo} = useAssignedDriverInfoStore();
-  const { setUserdetails ,setID,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips,id,resetUserInfo} = useUserInfoStore();
+  const { setUserdetails ,setID,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips,id,resetUserInfo,setCancelledTripsOccurance} = useUserInfoStore();
   const { setMapShown , mapShown, setUserLocation} = useMapStore();
   const { setTarget } = useNearbyPollingControl();
   const { setConfig } = useConfigStore();
@@ -514,6 +514,10 @@ const Home = () => {
 
         if (Response?.userStats?.rating) {
           setRatingData(Response?.userStats?.rating);
+        }
+
+        if(Response?.userStats?.stats?.cancelTripOccurance){
+          setCancelledTripsOccurance(Response?.userStats?.stats?.cancelTripOccurance);
         }
 
       } else {

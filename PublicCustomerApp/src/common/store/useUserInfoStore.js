@@ -30,6 +30,9 @@ const useUserInfoStore = create(set => ({
   userFavPlaces:[],
   setUserFavPlaces: userFavPlaces => set({ userFavPlaces }),
 
+  cancelTripOccurance:0,
+  setCancelledTripsOccurance: cancelTripOccurance => set({ cancelTripOccurance }),
+
   totalSpend: 0,
   totalTrips: 0,
   cancelledTrips: 0,
@@ -44,6 +47,7 @@ const useUserInfoStore = create(set => ({
   incrementCompletedTrips: () => set(state => ({ completedTrips: state.completedTrips + 1 })),
   incrementCancelledTrips: () => set(state => ({ cancelledTrips: state.cancelledTrips + 1 })),
   incrementTotalSpend: (amount) => set(state => ({ totalSpend: state.totalSpend + amount })),
+  setIncrementCancelledTripsOccurance: () => set(state => ({ cancelTripOccurance: state.cancelTripOccurance + 1 })),
 
   resetUserInfo: () => set({
     id: null,
