@@ -40,10 +40,7 @@ const DueAlert = ({dueAmount, dueDate, onPressPayNow}) => {
     <View style={styles.container}>
       <View style={styles.infoColumn}>
         <Text style={styles.subtitle}>
-          {t('due_amount_label', {
-            amount: formattedAmount,
-            defaultValue: `Due amount ₹${formattedAmount}`,
-          })}
+          {t('due_amount_label') + ': ₹' + formattedAmount}
         </Text>
         <Text style={styles.helper}>
           {nextDueText}{' '}

@@ -1918,7 +1918,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                         double lng = pointArray.getDouble(0); // longitude
                         double lat = pointArray.getDouble(1); // latitude
 
-                        updatedPoints.add(Point.fromLngLat(lat, lng));
+                        updatedPoints.add(Point.fromLngLat(lng, lat));
                     }
                     Log.d("TAG", "run + updatedPoints: " + updatedPoints);
                     navigationViewModel.handleUpdatePointsAndReroute(updatedPoints);

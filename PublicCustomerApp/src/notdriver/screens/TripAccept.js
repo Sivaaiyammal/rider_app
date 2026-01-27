@@ -267,25 +267,38 @@ const TripAccept = () => {
     return `${distance ? distance.toFixed(2) : 0} km`;
   };
 
-  useEffect(()=> {
+  useEffect(() => {
+    if (tripDetails?.routeData) {
+      const request = tripDetails?.routeData?.request;
+      const response = tripDetails?.routeData?.response;
+      const padding = [50, 50, 50, height * 0.5];
+      setDirectionResponse([
+        {
+          requests: request,
+          response: response,
+          padding: padding.map(v => parseInt(v, 10)),
+        },
+      ]);
+      return;
+    }
     if (stopsForDisplay && stopsForDisplay.length !== 0) {
-      const directions = stopsForDisplay.map((direction)=>{
+      const directions = stopsForDisplay.map(direction => {
         return {
           lat: direction.location[1],
           lon: direction.location[0],
-        }
-      })
-      const padding = [50, 50, 50, height*0.5]
+        };
+      });
+      const padding = [50, 50, 50, height * 0.5];
       setDirectionPoints({
         locations: directions,
         type: 'car',
-        padding: padding.map(v => parseInt(v, 10))
+        padding: padding.map(v => parseInt(v, 10)),
       });
     }
-     return () => {
+    return () => {
       setDirectionPoints(null);
-     }
-  },[stopsForDisplay])
+    };
+  }, [stopsForDisplay, tripDetails]);
 
   const checkDriverToken = async () => {
      const api = new APIRequest()
