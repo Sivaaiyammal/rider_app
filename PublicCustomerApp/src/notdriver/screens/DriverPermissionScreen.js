@@ -23,7 +23,7 @@ import { useTranslation } from 'react-i18next';
 const DriverPermissionScreen = () => {
   const {t} = useTranslation();
   const {goBack} = useStackScreenStore();
-  const {hasLocationPermission, setHasNotificationPermission, setHasLocationPermission, hasNotificationPermission, hasBackgroundLocationPermission, setHasBackgroundLocationPermission, hasOverlayPermission, setHasOverlayPermission} = useDeviceTokenStore();
+  const {hasLocationPermission, setHasNotificationPermission, setHasLocationPermission, hasNotificationPermission, hasBackgroundLocationPermission, setHasBackgroundLocationPermission, hasOverlayPermission, setHasOverlayPermission, overlayCheckSupported} = useDeviceTokenStore();
 
   const [togglePopup, setTogglePopup] = useState(false);
   const [type, setType] = useState('backgroundLocation');
@@ -99,9 +99,10 @@ const DriverPermissionScreen = () => {
 
   const updateDriverStatus = () => {
     const isAndroidLessThanOrEqual28 = Platform.OS === 'android' && Platform.Version <= 28;
+    const overlayPermOk = overlayCheckSupported ? hasOverlayPermission : true;
     const hasAllRequiredPermissions = isAndroidLessThanOrEqual28 
-      ? (hasLocationPermission && hasNotificationPermission && hasOverlayPermission)
-      : (hasLocationPermission && hasBackgroundLocationPermission && hasNotificationPermission && hasOverlayPermission);
+      ? (hasLocationPermission && hasNotificationPermission && overlayPermOk)
+      : (hasLocationPermission && hasBackgroundLocationPermission && hasNotificationPermission && overlayPermOk);
 
     if (hasAllRequiredPermissions) {
       _updateDriverStatus('online');
@@ -129,10 +130,14 @@ const DriverPermissionScreen = () => {
           setDriverStatus(status)
           if (status === 'online') {
             BGLocationTask.runDriverBgTask();
-            overlayController.startOverlay();
+            if (overlayCheckSupported && hasOverlayPermission) {
+              overlayController.startOverlay();
+            }
           } else {
             BGLocationTask.stopDriverBgTask()
-            overlayController.stopOverlay();
+            if (overlayCheckSupported && hasOverlayPermission) {
+              overlayController.stopOverlay();
+            }
           }
           goBack()
        } else {

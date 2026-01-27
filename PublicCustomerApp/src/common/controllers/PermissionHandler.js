@@ -492,8 +492,17 @@ export const RequestAccessibilityPermission = async () => {
 
 export const ensureOverlayPermission = async () => {
   if (Platform.OS !== 'android') return false;
-  const okay = await OverlayModule.canDrawOverlays();
-  return okay;
+  try {
+    if (!OverlayModule || typeof OverlayModule.canDrawOverlays !== 'function') {
+      // Overlay permission check not accessible on this device
+      return false;
+    }
+    const okay = await OverlayModule.canDrawOverlays();
+    return okay;
+  } catch (e) {
+    console.warn('ensureOverlayPermission: overlay check failed', e);
+    return false;
+  }
 }
 
 export const openOverLaySettings = async () => {
@@ -515,6 +524,16 @@ export const checkOverlayPermission = async () => {
     return await OverlayModule.canDrawOverlays();
   } catch (error) {
     console.error('Error checking overlay permission:', error);
+    return false;
+  }
+}
+
+// Returns whether overlay permission can be checked on this device
+export const isOverlayCheckAccessible = () => {
+  if (Platform.OS !== 'android') return false;
+  try {
+    return !!(OverlayModule && typeof OverlayModule.canDrawOverlays === 'function');
+  } catch (e) {
     return false;
   }
 }

@@ -5,7 +5,7 @@ import useUserStore from "../../common/store/useUserStore";
 import useTripRequestStore from "../store/useTripRequestStore";
 import { useStackScreenStore } from "../../common/store/useStackScreenStore";
 import useDeviceTokenStore from "../../common/store/useDeviceTokenStore";
-import { checkBackgroundLocationPermissions, checkFineLocationPermissions, CheckNotificationPermissions, checkOverlayPermission } from "../../common/controllers/PermissionHandler";
+import { checkBackgroundLocationPermissions, checkFineLocationPermissions, CheckNotificationPermissions, checkOverlayPermission, isOverlayCheckAccessible } from "../../common/controllers/PermissionHandler";
 import BGLocationTask from "../../common/controllers/BGLocationTask";
 import APIRequest from "../../common/APIRequest";
 import { showNotification } from "../../common/components/Alerts/showNotification";
@@ -25,7 +25,8 @@ function DriverLocationHandler() {
     hasLocationPermission, hasNotificationPermission,
     setHasLocationPermission, setHasNotificationPermission,
     hasBackgroundLocationPermission, setHasBackgroundLocationPermission,
-    setHasOverlayPermission, hasOverlayPermission
+    setHasOverlayPermission, hasOverlayPermission,
+    overlayCheckSupported, setOverlayCheckSupported
   } = useDeviceTokenStore()
 
   useEffect(() => {
@@ -39,8 +40,15 @@ function DriverLocationHandler() {
       const hasBackgroundLocationPermissions = await checkBackgroundLocationPermissions();
       setHasBackgroundLocationPermission(hasBackgroundLocationPermissions);
 
-      const overlayPermissionGranted = await checkOverlayPermission();
-      setHasOverlayPermission(overlayPermissionGranted);
+      const overlayAccessible = isOverlayCheckAccessible();
+      setOverlayCheckSupported(overlayAccessible);
+      if (overlayAccessible) {
+        const overlayPermissionGranted = await checkOverlayPermission();
+        setHasOverlayPermission(overlayPermissionGranted);
+      } else {
+        // Bypass overlay check on devices where it's not accessible
+        setHasOverlayPermission(true);
+      }
       // if (driverStatus === "online") {
       //   if (!overlayPermissionGranted) {
       //       setStackScreen('DriverPermissionScreen')
@@ -67,7 +75,7 @@ function DriverLocationHandler() {
         permissionIntervalRef.current = null;
       }
     };
-  }, [driverStatus, hasBackgroundLocationPermission, hasNotificationPermission, hasLocationPermission, hasOverlayPermission]);
+  }, [driverStatus, hasBackgroundLocationPermission, hasNotificationPermission, hasLocationPermission, hasOverlayPermission, overlayCheckSupported]);
 
   const _updateDriverStatus = async (status) => {
     setIsLoading(true)
@@ -87,7 +95,9 @@ function DriverLocationHandler() {
           await DataStore.storeData('userdetails', _newUserInfo);
           setDriverStatus(status)
           BGLocationTask.stopDriverBgTask();
-          overlayController.stopOverlay();
+          if (overlayCheckSupported && hasOverlayPermission) {
+            overlayController.stopOverlay();
+          }
        } else {
         showNotification('Low Network Connection','','danger')
        }
@@ -135,14 +145,18 @@ function DriverLocationHandler() {
       overlayController.stopOverlay().catch(() => {});
       return
     }
-    if (!hasOverlayPermission) return;
+    if (!overlayCheckSupported || !hasOverlayPermission) return;
     overlayController.stopOverlay().catch(() => {});
 
     const subscription = AppState.addEventListener('change', state => {
       if (state === 'active') {
-        overlayController.stopOverlay().catch(() => {});
+        if (overlayCheckSupported && hasOverlayPermission) {
+          overlayController.stopOverlay().catch(() => {});
+        }
       } else if (state === 'background') {
-        overlayController.restartOverlayIfPermitted().catch(() => {});
+        if (overlayCheckSupported && hasOverlayPermission) {
+          overlayController.restartOverlayIfPermitted().catch(() => {});
+        }
       }
     });
 
@@ -162,15 +176,15 @@ function DriverLocationHandler() {
       const isCurrentlyRunning = await BGLocationTask.isRunning();
       if (isCurrentlyRunning) return;
 
-      const overlayPermissionGranted = await checkOverlayPermission();
+      const overlayPermissionGranted = overlayCheckSupported ? await checkOverlayPermission() : true;
       const isAndroidLessThanOrEqual28 =
         Platform.OS === 'android' && Platform.Version <= 28;
       const hasAllRequiredPermissions = isAndroidLessThanOrEqual28
-        ? hasLocationPermission && hasNotificationPermission && overlayPermissionGranted
+        ? hasLocationPermission && hasNotificationPermission && (overlayCheckSupported ? overlayPermissionGranted : true)
         : hasLocationPermission &&
           hasBackgroundLocationPermission &&
           hasNotificationPermission &&
-          overlayPermissionGranted;
+          (overlayCheckSupported ? overlayPermissionGranted : true);
 
       if (userInfo?.driverStatus?.status === 'online') {
         if (!hasAllRequiredPermissions) {
