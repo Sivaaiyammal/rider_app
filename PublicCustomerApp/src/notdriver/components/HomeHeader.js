@@ -1,6 +1,6 @@
 /* eslint-disable react/no-children-prop */
 import {ActivityIndicator, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useContext, useEffect, useState} from 'react';
+import React, { useEffect, useState} from 'react';
 
 import TotalTrips from '../../notdriver/assets/icons/totalTrips.svg';
 import StatusModal from './StatusModal';
@@ -8,6 +8,7 @@ import useUserStore from '../../common/store/useUserStore';
 import APIRequest from '../../common/APIRequest';
 import { DateTimeFormatter } from '../../common/utils/DateTimeFormatter';
 import { Colors, Fonts } from '../../common/constants/constants';
+import TotalEarnings from '../../notdriver/assets/icons/totalEarnings.svg';
 
 const HomeHeader = ({shouldShowDueAlert}) => {
   const [summaryModal, setSummaryModal] = useState(false);
@@ -70,7 +71,7 @@ const HomeHeader = ({shouldShowDueAlert}) => {
                     <Text style={headerStyles.nameTxt}>{'Today Trips'}</Text>
                   </View>
                    <View style={headerStyles.summaryCard}>
-                   <TotalTrips />
+                   <TotalEarnings />
                     <Text style={headerStyles.valueTxt}>{totalEarnings ? totalEarnings?.toFixed(2) : 0}</Text>
                     <Text style={headerStyles.nameTxt}>{'Today Earnings'}</Text>
                   </View>
