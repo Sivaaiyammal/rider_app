@@ -6,13 +6,16 @@ import { useMapMarkerStore } from '../../../common/store/useMapMarkerStore';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import UseBackButton from '../../../common/hooks/UseBackButton';
 import PublicDriverTripPaymentScreen from '../PublicDriverTripPaymentScreen';
+import Polyline from '../../../common/map/Polyline';
+import polyline from '@mapbox/polyline'
+import Marker from '../../../common/map/Marker';
 
 const {NeNativeModule} = NativeModules;
 
 const TripDetailScreen = () => {
     const {selectedTrip, setSelectedTrip} = useSelectedRouteStore();
     const {goBack} = useStackScreenStore();
-    const {setDirectionPoints,setMapBounds} = useMapMarkerStore();
+    const {setDirectionPoints,setMapBounds, setGeometries, setMapMarkers} = useMapMarkerStore();
     const onBackPress = () => {
         goBack('Home')
         setSelectedTrip(null)
@@ -21,6 +24,45 @@ const TripDetailScreen = () => {
     const {driverInfo}= usePublicDriverStore()
 
     useEffect(()=> {
+    //     let polylineData = null;
+    // if (selectedTrip?.encodedPolyline) {
+    //     const decodedData = polyline.decode(selectedTrip?.encodedPolyline, 6);
+    //     const reversedCoordinates = decodedData.map(([lat, lon]) => [lon, lat]);
+    //     polylineData = new Polyline(
+    //       1,
+    //       `routes`,
+    //       reversedCoordinates,
+    //       "#174EA6",
+    //       'small',
+    //     );
+    //     polylineData.setPadding([200, 230, 200, 400]);
+    //     polylineData.setFocus(true);
+    //     setGeometries([polylineData]);
+    //     const startLocation = reversedCoordinates?.[0];
+    //     const endLocation = reversedCoordinates?.[reversedCoordinates?.length - 1];
+    //     // console.log('startLocation', startLocation);
+    //     // console.log('endLocation', endLocation);
+    //     // const startMarker = new Marker(
+    //     //   'startMarker',
+    //     //   'start_marker',
+    //     //   startLocation[0],
+    //     //   startLocation[1],
+    //     //   'pickup_point',
+    //     //   36,
+    //     //   false,
+    //     // );
+    //     // const endMarker = new Marker(
+    //     //   'endMarker',
+    //     //   'endMarker',
+    //     //   endLocation[0],
+    //     //   endLocation[1],
+    //     //   'marker_end',
+    //     //   36,
+    //     //   false
+    //     // );
+    //     // setMapMarkers([startMarker, endMarker])
+    //     return
+    // }
         if (selectedTrip?.stops && selectedTrip?.stops.length !== 0) {
           const directions = selectedTrip?.stops?.map((direction)=>{
             return {

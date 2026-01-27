@@ -72,7 +72,7 @@ const DriverOnRide = () => {
     hasNotificationPermission,
   } = useDeviceTokenStore();
   // const [loading,setLoading] = useState(false)
-  const {loading, setLoading} = useTripAcceptStore()
+  const {loading, setLoading, tripDetails} = useTripAcceptStore()
   const {tripId, requestId, fetchLocationDate, setFetchLocationDate, isGetFare, setIsOnGoing, setIsGetFare } = useTripAcceptStore()
   const {fareBreakDown, setFareBreakDown} = useTripsStore()
 
@@ -171,11 +171,6 @@ const DriverOnRide = () => {
   }
 
   const handleEndTrip = async (reason) => {
-    const haslocationPression = await checkFineLocationPermissions();
-
-    const hasbackgroundPression =Platform.OS === 'android' && Platform.Version <= 28 ? true : await checkBackgroundLocationPermissions();
-    console.log('hari-->>haslocationPression-->>', hasbackgroundPression, haslocationPression);
-
     // if (!hasbackgroundPression || !haslocationPression) {
     //   onNavigationClick()
 
@@ -190,7 +185,10 @@ const DriverOnRide = () => {
       setLoading(true);
       if (tripsStatus === 'ACCEPTED') {
         const api = new APIRequest();
-        const response = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:activeTripData[0]._id, reason: reason, isBeforePickup: true}, userInfo.token);
+        const response = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:activeTripData[0]._id, reason: reason, isBeforePickup: true,  droppedAtLoc: {
+          lat: userLocation?.[0],
+          lon: userLocation?.[1]
+        }}, userInfo.token);
         if (response.success) {
           cancelTrip(response)
           firebaselog_onRide('OR_Status(OR_S)', 'OR_S:cancelled_by_driver_before_pickup')
@@ -400,10 +398,10 @@ const DriverOnRide = () => {
         showNotification(res?.message, res?.message, 'success');
         setModalVisible(!modalVisible);
         setDirectionPoints(null);
+        setDirectionResponse(null);
         setDisduration(null);
         setStartNavigation(false);
         updateStopData(nonreachedStops[0]?.name, true, 'PICKEDUP', 0, true)
-        
         setIsReachedPickup(false);
         setCurrentTripAcceptedTime(new Date().getTime());
         firebaselog_onRide('OR_Status(OR_S)', 'OR_S:pickedup')
@@ -439,6 +437,19 @@ const DriverOnRide = () => {
     if (!userLocation) return;
  
     if (tripsStatus === 'ACCEPTED') {
+      if (tripDetails?.pickUpRoute ) {
+        const request = tripDetails?.pickUpRoute?.request;
+        const response = tripDetails?.pickUpRoute?.response;
+        const padding = [50, 50, 50, height * 0.5];
+        setDirectionResponse([
+                {
+                  requests: request,
+                  response: response,
+                  padding: padding.map(v => parseInt(v, 10)),
+                },
+        ]);
+        return;
+      }
       const directions = [
         {
           lat: activeTripData[0]?.stops[0]?.location[1],
@@ -458,6 +469,19 @@ const DriverOnRide = () => {
     } 
 
     if (tripsStatus === 'PICKEDUP'){
+      if (tripDetails?.routeData) {
+        const request = tripDetails?.routeData?.request;
+        const response = tripDetails?.routeData?.response;
+        const padding = [50, 50, 50, height * 0.5];
+        setDirectionResponse([
+                {
+                  requests: request,
+                  response: response,
+                  padding: padding.map(v => parseInt(v, 10)),
+                },
+        ]);
+        return;
+      }
       nonreachedStops.unshift({
         lat: userLocation[0] || 0,
         lon: userLocation[1] || 0,
@@ -709,13 +733,6 @@ const DriverOnRide = () => {
       </BottomSheetPopup>
     );
   };
-
-  const stopNavigation = () => {
-    updateDirectionsPoints()
-    NeNativeModule.endNavigation();
-    setStartNavigation(false);
-    setDisduration(null);
-  }
 
   const onRecenter = () => {
     NeNativeModule.recenterNavigation();

@@ -66,9 +66,10 @@ onDriverTripStatus(data) {
 }
 
   onStopChangeRequest(data) {
-    const {setStartNavigation, setDisduration} = useMapMarkerStore.getState()
+    const {setStartNavigation, setDisduration, setDirectionResponse} = useMapMarkerStore.getState()
     const {activeTripData} = useTripsStore.getState()
     const {setStackScreen} = useStackScreenStore.getState()
+    const {setTripDetails} = useTripAcceptStore.getState()
   
     if (data.status && data.status === 'ACCEPTED') {
       const activeNewTrip = {...activeTripData[0], stops: data.changeRequestStops}
@@ -76,6 +77,8 @@ onDriverTripStatus(data) {
       NeNativeModule.endNavigation();
       setStartNavigation(false);
       setDisduration(null);
+      setDirectionResponse(null);
+      setTripDetails(null)
     } else {
       useTripsStore.setState({newStopData: data.changeRequestStops})
       NeNativeModule.endNavigation();

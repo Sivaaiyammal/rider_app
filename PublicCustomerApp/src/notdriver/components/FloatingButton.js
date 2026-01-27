@@ -57,7 +57,8 @@ const FloatingButton = ({layOutHeight}) => {
     hasLocationPermission,
     hasBackgroundLocationPermission,
     hasNotificationPermission,
-    hasOverlayPermission
+    hasOverlayPermission,
+    overlayCheckSupported
   } = useDeviceTokenStore();
 
   const resetAnimationValues = () => {
@@ -101,9 +102,10 @@ const FloatingButton = ({layOutHeight}) => {
   const updateDriverStatus = (status) => {  
     if (status === 'online') {
           const isAndroidLessThanOrEqual28 = Platform.OS === 'android' && Platform.Version <= 28;
+          const overlayPermOk = overlayCheckSupported ? hasOverlayPermission : true;
           const hasAllRequiredPermissions = isAndroidLessThanOrEqual28 
-            ? (hasLocationPermission && hasNotificationPermission && hasOverlayPermission)
-            : (hasLocationPermission && hasBackgroundLocationPermission && hasNotificationPermission && hasOverlayPermission);
+            ? (hasLocationPermission && hasNotificationPermission && overlayPermOk)
+            : (hasLocationPermission && hasBackgroundLocationPermission && hasNotificationPermission && overlayPermOk);
       if (!hasAllRequiredPermissions){
         setStackScreen('DriverPermissionScreen')
       } else {
@@ -134,10 +136,14 @@ const FloatingButton = ({layOutHeight}) => {
           // console.log("STATUS UPDATE:", status)
            if (status === 'online') {
             BGLocationTask.runDriverBgTask();
-            overlayController.startOverlay();
+            if (overlayCheckSupported && hasOverlayPermission) {
+              overlayController.startOverlay();
+            }
           } else {
             BGLocationTask.stopDriverBgTask()
-            overlayController.stopOverlay();
+            if (overlayCheckSupported && hasOverlayPermission) {
+              overlayController.stopOverlay();
+            }
           }
           setDriverStatus(status)
        } else {

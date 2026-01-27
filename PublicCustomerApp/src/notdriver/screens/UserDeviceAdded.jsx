@@ -15,13 +15,11 @@ import Popover from 'react-native-popover-view';
 import NotificationPermission from '../../common/assets/icons/notification_per.svg';
 import LocationPermission from '../../common/assets/icons/location_permission.svg';
 import BGLocationPermission from '../../common/assets/icons/bloc_permission.svg';
-import LocTrackingPermission from '../../common/assets/icons/loc_tracking.svg';
 import Overlay from '../../common/assets/icons/Overlay.svg';
 import CustomToggleButton from '../../common/components/ToggleButton';
 import useDeviceTokenStore from '../../common/store/useDeviceTokenStore';
 import WarningMiniText from '../../common/components/WarningMiniText';
 import { Colors, Fonts } from '../../common/constants/constants';
-import BGLocationTask from '../../common/controllers/BGLocationTask';
 import { useTranslation } from 'react-i18next';
 
 const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
@@ -39,6 +37,9 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
 
   const hasOverlayPermission = useDeviceTokenStore(
     state => state.hasOverlayPermission,
+  );
+  const overlayCheckSupported = useDeviceTokenStore(
+    state => state.overlayCheckSupported,
   );
   // const hasUsageStatsPermission = useDeviceTokenStore(
   //   state => state.hasUsageStatsPermission
@@ -137,6 +138,9 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
                <Text style={[userDeviceStyle.title, { width: "100%" }]}>
                  {t('display_over_other_apps')}
                </Text>
+               {!overlayCheckSupported && (
+                 <Text style={userDeviceStyle.optionalTag}>(optional on this device)</Text>
+               )}
                <Popover
                  from={(
                    <TouchableOpacity style={{ right: 10 }}>
@@ -151,7 +155,7 @@ const UserDeviceAdded = ({ screenType, handleToggleButton }) => {
            </View>
            <CustomToggleButton
              isToggled={hasOverlayPermission}
-             setIsToggled={() => handleToggleButton('overlay')}
+             setIsToggled={overlayCheckSupported ? () => handleToggleButton('overlay') : () => {}}
            />
          </View>     
 
@@ -229,5 +233,11 @@ const userDeviceStyle = StyleSheet.create({
     borderRadius: 50,
     elevation: 1,
   },
+  optionalTag: {
+    marginLeft: 6,
+    fontSize: 11,
+    color: Colors.grey_dark,
+    fontFamily: Fonts.light,
+  }
 
 });

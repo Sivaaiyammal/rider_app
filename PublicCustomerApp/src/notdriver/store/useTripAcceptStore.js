@@ -62,5 +62,5 @@ export const useTripAcceptStore = create((set) => ({
   setEscalationDetails: (escalationDetails) => set({ escalationDetails: escalationDetails }),
   
   // Action to reset the store
-  reset: () => set({  tripDetails: null, error: null, escalationDetails: null}),
+  reset: () => set({ error: null, escalationDetails: null}),
 }));

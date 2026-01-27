@@ -42,6 +42,12 @@ const useDeviceTokenStore = create((set) => ({
         set(state => state.hasOverlayPermission !== hasOverlayPermission ? { hasOverlayPermission: hasOverlayPermission } : state)
     },
 
+    // Whether the device supports querying overlay permission
+    overlayCheckSupported: true,
+    setOverlayCheckSupported: overlayCheckSupported => {
+        set(state => state.overlayCheckSupported !== overlayCheckSupported ? { overlayCheckSupported } : state)
+    },
+
     deviceToken: null,
     setDeviceToken: deviceToken => {
         set({ deviceToken: deviceToken })

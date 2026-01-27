@@ -31,6 +31,7 @@ import Polyline from '../../common/map/Polyline';
 import PaymentMethod from '../../notdriver/assets/icons/paymentMethod.svg'
 import InvoiceScreen from './InvoiceScreen';
 import { useTranslation } from 'react-i18next';
+import Marker from '../../common/map/Marker';
 
 const paymentMethods = [
   {
@@ -185,7 +186,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
         // console.log('endLocation', endLocation);
         // const startMarker = new Marker(
         //   'startMarker',
-        //   'startMarker',
+        //   'pickup_point',
         //   startLocation[0],
         //   startLocation[1],
         //   'start_marker',
