@@ -140,7 +140,7 @@ const DriverMapScreen = props => {
             </View>
             <TouchableOpacity
               style={styles.payNowButton}
-              onPress={() => setCurrentScreen('Devices')}
+              onPress={() => setCurrentScreen('Earnings')}
             >
               <Text style={styles.payNowButtonText}>
                 {t('pay_now', {defaultValue: 'Pay Now'})}
@@ -166,7 +166,7 @@ const DriverMapScreen = props => {
             <DueAlert
               dueAmount={pendingDueAmount}
               dueDate={driverDueDate}
-              onPressPayNow={() => setCurrentScreen('Devices')}
+              onPressPayNow={() => setCurrentScreen('Earnings')}
             />
           ) : null}
           <View style={RouteScreenStyles.mapIconContainer}>

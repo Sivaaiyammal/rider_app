@@ -97,11 +97,15 @@ const PublicDriverTrackingScreen = () => {
   }
 
   const onRatingClose = () => {
-    setShowRatingModal(false)
-    setActiveTripData([])
+    if (activeTripData && activeTripData?.[0]?.status === "ACCEPTED") {
+      setShowRatingModal(false)
+    } else {
+      setShowRatingModal(false)
+     setActiveTripData([])
     setHasActiveTrip(null)
     setStackScreen('Home')
     setCurrentScreen('Map')
+    }
   }
 
   const updatePassangerRating= async() => {

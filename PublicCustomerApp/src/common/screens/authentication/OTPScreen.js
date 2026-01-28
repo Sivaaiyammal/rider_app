@@ -248,6 +248,7 @@ const OTPScreen = ({route}) => {
       const sendToServer = {
       otp: otpInput,
       phone: `+${countryCode}${loginPhoneNumber}`,
+      deviceMeta: deviceMeta,
     };
     const tokenCred = {
       token: fcmToken,
