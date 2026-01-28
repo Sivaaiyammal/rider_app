@@ -22,6 +22,8 @@ const defaultConfig = {
   MIN_TRIP_DISTANCE_METER: 100,
   CUSTOMER_CANCEL_PENALTY:true,
   CUSTOMER_CANCEL_PENALTY_LIMIT: 3,
+  IN_APP_REVIEW_ALWAYS: true,
+  IN_APP_REVIEW_REQUIRED_RATING: 3,
   SOCIAL_MEDIA_LINKS: {
     facebook: 'https://www.facebook.com/nammaoorutaxi',
     twitter: 'https://twitter.com/nammaoorutaxi',

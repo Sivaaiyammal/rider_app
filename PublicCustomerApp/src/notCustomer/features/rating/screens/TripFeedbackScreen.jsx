@@ -28,6 +28,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
 import InAppReview from 'react-native-in-app-review';
 import { firebaselog_tripReview } from '../../../../common/utils/FirebaseAnalytics';
 import  useUserInfoStore  from '../../../../common/store/useUserInfoStore';
+import useConfigStore from '../../../store/useConfigStore';
 export default function TripFeedbackScreen() {
   
     
@@ -38,7 +39,8 @@ export default function TripFeedbackScreen() {
     const overlayOpacity = useRef(new Animated.Value(0)).current;
     const { reset,setShowSocialMediaModal } = useStackScreenStore();
     const { setActiveTripId } = useUserInfoStore();
-     const {t} = useTranslation();
+    const {t} = useTranslation();
+    const { appConfig } = useConfigStore();  
 
     const [minDelayDone, setMinDelayDone] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,6 +61,10 @@ export default function TripFeedbackScreen() {
     await DataStore.clearData(PREF.CURRENT_TRIP)
     setActiveTripId(null);
     reset()
+    console.log("appConfig?.IN_APP_REVIEW_ALWAYS",appConfig?.IN_APP_REVIEW_ALWAYS)
+    if(appConfig?.IN_APP_REVIEW_ALWAYS){
+    triggerInAppReview();
+    }
     // showsocialMediaModal();
   }
 
@@ -157,10 +163,14 @@ export default function TripFeedbackScreen() {
    
     if(feedback.success){
       firebaselog_tripReview('Trip_Review_TR','TR_R:submit_customer')
+      console.log("appConfig?.IN_APP_REVIEW_ALWAYS",appConfig?.IN_APP_REVIEW_ALWAYS)
+      console.log("appConfig?.IN_APP_REVIEW_REQUIRED_RATING",appConfig?.IN_APP_REVIEW_REQUIRED_RATING)
       // showNotification(t('success'),t('feedback_submitted_successfully'),"success")
-       if(ratingData.rating >=4){
+       
+      if(!appConfig?.IN_APP_REVIEW_ALWAYS && ratingData.rating >=appConfig?.IN_APP_REVIEW_REQUIRED_RATING){
        triggerInAppReview();
-    }
+      }
+    
       await DataStore.clearData(PREF.CURRENT_TRIP)
       setActiveTripId(null);
       reset()
