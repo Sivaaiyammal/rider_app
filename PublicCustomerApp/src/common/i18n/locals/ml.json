@@ -1089,5 +1089,8 @@
     "please_clear_dues_to_resume_trips": "റൈഡുകൾ സ്വീകരിക്കുന്നത് തുടരാൻ നിങ്ങളുടെ കുടിശ്ശികകൾ അടയ്ക്കുക.",
     "payment_due_soon": "പേയ്‌മെന്റ് ഉടൻ അവസാനിക്കും",
     "due_amount_label": "അടയ്‌ക്കേണ്ട തുക",
-    "next_due_in_days": "അടുത്ത തീയതി"
+    "next_due_in_days": "അടുത്ത തീയതി",
+    "driver_access_ios_alert_title": "iOS-ലെ ഡ്രൈവർ ആപ്പ്",
+    "driver_access_ios_alert_message": "Namma Ooru Taxi ഡ്രൈവർ ആപ്പ് ഇപ്പോൾ iOS-ൽ ലഭ്യമല്ല. ഡ്രൈവർ ആപ്പ് ഉപയോഗിക്കാൻ ദയവായി Android ഉപകരണം ഉപയോഗിക്കുക.",
+    "Sign_Up_to_Become_a_Driver": "ഡ്രൈവർ ആകാൻ സൈൻ അപ്പ് ചെയ്യുക"
 }

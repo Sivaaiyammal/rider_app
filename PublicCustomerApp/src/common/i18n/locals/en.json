@@ -1092,5 +1092,8 @@
     "please_clear_dues_to_resume_trips": "Clear your dues to continue accepting rides.",
     "payment_due_soon": "Payment due soon",
     "due_amount_label": "Due amount",
-    "next_due_in_days": "Next due in"
+    "next_due_in_days": "Next due in",
+    "driver_access_ios_alert_title": "Driver App on iOS",
+    "driver_access_ios_alert_message": "The Namma Ooru Taxi Driver App is not available on iOS at the moment. Please use an Android device to access the Driver App.",
+    "Sign_Up_to_Become_a_Driver": "Sign Up to Become a Driver"
 }

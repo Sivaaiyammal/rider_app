@@ -90,7 +90,7 @@ const MyAccountScreen = () => {
     await removeListener();
     navigation.reset({
       index: 0,
-      routes: [{ name: 'LoginScreen' }],
+      routes: [{ name: 'WelcomeScreen' }],
     });
 
   };

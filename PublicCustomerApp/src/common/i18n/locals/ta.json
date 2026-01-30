@@ -1092,5 +1092,8 @@
     "please_clear_dues_to_resume_trips": "சவாரிகளைத் தொடர்ந்து ஏற்றுக்கொள்ள உங்கள் நிலுவைத் தொகையை செலுத்துங்கள்.",
     "payment_due_soon": "விரைவில் பணம் செலுத்த வேண்டியிருக்கும்",
     "due_amount_label": "நிலுவைத் தொகை",
-    "next_due_in_days": "அடுத்த தேதி"
+    "next_due_in_days": "அடுத்த தேதி",
+    "driver_access_ios_alert_title": "iOS இல் ஓட்டுநர் ஆப்",
+    "driver_access_ios_alert_message": "Namma Ooru Taxi ஓட்டுநர் ஆப் தற்போது iOS இல் கிடைக்கவில்லை. ஓட்டுநர் ஆப்பை அணுக Android சாதனத்தை பயன்படுத்தவும்.",
+    "Sign_Up_to_Become_a_Driver": "ஓட்டுநராக ஆக பதிவு செய்யவும்"
 }
