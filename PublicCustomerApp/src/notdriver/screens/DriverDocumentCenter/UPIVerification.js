@@ -49,7 +49,7 @@ const UPIVerification = () => {
       UPIID: upiId,
     };
     try {
-      const res = await api.request('/publicrides/driver/verifyUPI','POST',payload,userInfo.token,);
+      const res = await api.request('/publicrides/driver/v2/verifyUPI','POST',payload,userInfo.token,);
       if (res.success) {
         const payload = {
           UPIID: upiId.trim(),

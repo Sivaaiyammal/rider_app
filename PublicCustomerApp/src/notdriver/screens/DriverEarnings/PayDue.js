@@ -296,7 +296,7 @@ const PayDue = ({driverDue, driverDueDate , fetchDueDate, driverInfo}) => {
         DueAmount: toNumber(driverDue),
       };
       const response = await api.request(
-        '/publicrides/driver/getDueInvoice',
+        '/publicrides/driver/v2/getDueInvoice',
         'POST',
         payload,
         userInfo?.token,

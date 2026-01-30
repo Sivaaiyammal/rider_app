@@ -35,7 +35,7 @@ const PublicRidesPriceChart = () => {
     const api = new APIRequest();
     try {
       const response = await api.request(
-        '/publicrides/driver/getFareConfigs',
+        '/publicrides/driver/v2/getFareConfigs',
         'GET',
         {},
         userInfo.token,

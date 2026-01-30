@@ -61,7 +61,7 @@ const DeleteAccount = () => {
       const verifyDriverOTP = async () => {
         setIsLoading(true);
         const api = new APIRequest();
-        const url = `/publicrides/driver/driverDeleteAccount`;
+        const url = `/publicrides/driver/v2/driverDeleteAccount`;
         const payload = {
                 phone:'+91'+phone,
                 otp:otp,
@@ -114,7 +114,7 @@ const DeleteAccount = () => {
     const onGetOtp = async () => {
         setIsLoading(true);
         const api = new APIRequest();
-        const url = `/publicrides/driver/sendOTP?platform=${Platform.OS}`;
+        const url = `/publicrides/driver/v2/sendOTP?platform=${Platform.OS}`;
         const payload = {
             phone:'+91'+phone,
         }       

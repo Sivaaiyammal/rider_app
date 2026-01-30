@@ -24,7 +24,7 @@ class PublicrideDriverApi {
   async updateDriverDetails(formData,token=this.token) {
     try {
        const api = new APIRequest(Config.ROOT_API_URL)
-      const response = await api.request(`/publicrides/driver/updateDriverInfo`, 'POST', formData, token);
+      const response = await api.request(`/publicrides/driver/v2/updateDriverInfo`, 'POST', formData, token);
       return response;
     } catch (error) {
       console.error('Error updating driver   details:', error);
@@ -34,7 +34,7 @@ class PublicrideDriverApi {
   async updateDriverProof(formData, token=this.token) {
     try {
       const api = new APIRequest(Config.ROOT_API_URL)
-      const response = await api.request(`/publicrides/driver/updateDriverProof`, 'POST', formData, token);
+      const response = await api.request(`/publicrides/driver/v2/updateDriverProof`, 'POST', formData, token);
       return response;
     } catch (error) {
       console.error('Error updating driver proof documents:', error);
@@ -44,7 +44,7 @@ class PublicrideDriverApi {
   async updateVehicleDetails(payload,token=this.token) {
     try {
        const api = new APIRequest(Config.ROOT_API_URL)
-      const response = await api.request(`/publicrides/driver/updateVehicleInformation`, 'POST', payload, token);
+      const response = await api.request(`/publicrides/driver/v2/updateVehicleInformation`, 'POST', payload, token);
       return response;
     } catch (error) {
       console.error('Error updating vehicle details:', error);
@@ -54,7 +54,7 @@ class PublicrideDriverApi {
   async updateBankDetails(formData,token=this.token) {
     try {
        const api = new APIRequest(Config.ROOT_API_URL)
-      const response = await api.request(`/publicrides/driver/uploadBankDetails`, 'POST', formData, token);
+      const response = await api.request(`/publicrides/driver/v2/uploadBankDetails`, 'POST', formData, token);
       return response;
     } catch (error) {
       console.error('Error updating bank details:', error);
@@ -65,7 +65,7 @@ class PublicrideDriverApi {
   async uploadDriverDocuments(formData,token=this.token) {
     try {
       const api = new APIRequest(Config.ROOT_API_URL)
-      const response = await api.request(`/publicrides/driver/uploadDocs`, 'POST', formData, token);
+      const response = await api.request(`/publicrides/driver/v2/uploadDocs`, 'POST', formData, token);
       return response;
     } catch (error) {
       console.error('Error uploading documents:', error);
@@ -76,7 +76,7 @@ class PublicrideDriverApi {
   async getDriverDetails(token=this.token) {
     try {
        const api = new APIRequest(Config.ROOT_API_URL)
-      const response = await api.request(`/publicrides/driver/getDriverDetails`, 'GET', null, token);
+      const response = await api.request(`/publicrides/driver/v2/getDriverDetails`, 'GET', null, token);
       return response;
     } catch (error) {
       console.error('Error getting driver details:', error);
@@ -87,7 +87,7 @@ class PublicrideDriverApi {
   async getTripDetails(tripId,token=this.token) {
     try {
        const api = new APIRequest(Config.ROOT_API_URL)
-      const response = await api.request(`/publicrides/driver/getTrip?tripId=${tripId}`, 'GET', null, token);
+      const response = await api.request(`/publicrides/driver/v2/getTrip?tripId=${tripId}`, 'GET', null, token);
       return response;
     } catch (error) {
       console.error('Error getting trip details:', error);
@@ -98,7 +98,7 @@ class PublicrideDriverApi {
   async acceptTrip(payload, token=this.token) {
     try {
       const api = new APIRequest(Config.ROOT_API_URL)
-      const response = await api.request(`/publicrides/driver/acceptRide`, 'POST', payload, token);
+      const response = await api.request(`/publicrides/driver/v2/acceptRide`, 'POST', payload, token);
       return response;
     } catch (error) {
       console.error('Error accepting trip:', error);

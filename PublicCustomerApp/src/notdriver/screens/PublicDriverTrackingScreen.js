@@ -50,7 +50,7 @@ const PublicDriverTrackingScreen = () => {
     setIsLoading(true);
     try {
       const api = new APIRequest();
-      const url = `/publicrides/driver/updatePaymentReceive`;
+      const url = `/publicrides/driver/v2/updatePaymentReceive`;
       const payload = {
         tripId: activeTripData[0]?._id,
         fareDetails: fareDetails,
@@ -112,7 +112,7 @@ const PublicDriverTrackingScreen = () => {
     setIsRatingLoading(true);
     try {
       const api = new APIRequest();
-      const url = `/publicrides/driver/driverPassengerRating`;
+      const url = `/publicrides/driver/v2/driverPassengerRating`;
       const payload = {
         tripId:activeTripData[0]._id,
         rating:rating,

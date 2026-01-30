@@ -41,7 +41,7 @@ const DriverAccountRevokeScreen = () => {
   const handleRevokeAccount = async () => {
     setIsRevoking(true)
     const api = new APIRequest()
-    const url = `/publicrides/driver/revokeAccountDeletion`
+    const url = `/publicrides/driver/v2/revokeAccountDeletion`
     
     try {
       const response = await api.request(
@@ -81,7 +81,7 @@ const DriverAccountRevokeScreen = () => {
 
   const handleLogout = async () => {
     setLoading(true)
-    const url = `/publicrides/driver/publicridesdriverLogout?platform=${Platform.OS}`
+    const url = `/publicrides/driver/v2/publicridesdriverLogout?platform=${Platform.OS}`
     const api = new APIRequest()
 
     try {

@@ -185,7 +185,7 @@ const DriverOnRide = () => {
       setLoading(true);
       if (tripsStatus === 'ACCEPTED') {
         const api = new APIRequest();
-        const response = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:activeTripData[0]._id, reason: reason, isBeforePickup: true,  droppedAtLoc: {
+        const response = await api.request(`/publicrides/driver/v2/cancelTrip`, 'POST', {tripId:activeTripData[0]._id, reason: reason, isBeforePickup: true,  droppedAtLoc: {
           lat: userLocation?.[0],
           lon: userLocation?.[1]
         }}, userInfo.token);
@@ -272,7 +272,7 @@ const DriverOnRide = () => {
   const onReachedPickupAlert = async () => {
      try {
         const api = new APIRequest();
-        const url = `/publicrides/driver/alertPassangerPickup`;
+        const url = `/publicrides/driver/v2/alertPassangerPickup`;
         const payload = {
            driverName: driverInfo?.name,
            tripId: activeTripData[0]?._id,
@@ -296,7 +296,7 @@ const DriverOnRide = () => {
     const nextStopNumber = filterStopNumber?.stops?.filter(stop => stop.stopUpdated === true).length;
     try {
       const api = new APIRequest();
-      const url = `/publicrides/driver/updateWaypointsDriverReached`;
+      const url = `/publicrides/driver/v2/updateWaypointsDriverReached`;
       const payload = {
         tripId: activeTripData[0]?._id,
         stopNumber: nextStopNumber,
@@ -340,7 +340,7 @@ const DriverOnRide = () => {
     setIsLoading(true);
     try {
       const api = new APIRequest();
-      const url = `/publicrides/driver/updateWaypointsDriverWaitTime`;
+      const url = `/publicrides/driver/v2/updateWaypointsDriverWaitTime`;
       const payload = {
         tripId: activeTripData[0]?._id,
         stopNumber: nextStopNumber,
@@ -388,7 +388,7 @@ const DriverOnRide = () => {
     setOTPLoading(true)
     try{
       const api = new APIRequest();
-      const url = `/publicrides/driver/verifyTripOtp`;
+      const url = `/publicrides/driver/v2/verifyTripOtp`;
       const payload = {
         otp: otp,
         tripId: activeTripData[0]?._id,

@@ -89,7 +89,7 @@ const TripFareCalculator = ({ tripData, onDone, setLoading, setError, isGetFare 
           lon: userLocation?.[1]
         }
       }
-      const url = `/publicrides/driver/getTotalFare?tripId=${tripData._id}&distance=${totalDistance}&duration=${totalDuration}`;
+      const url = `/publicrides/driver/v2/getTotalFare?tripId=${tripData._id}&distance=${totalDistance}&duration=${totalDuration}`;
       const res = await api.request(url, 'POST', payload, userInfo?.token);
       if (res?.success) {
         return res;
@@ -117,7 +117,7 @@ const TripFareCalculator = ({ tripData, onDone, setLoading, setError, isGetFare 
          }
         }
         const api = new APIRequest();
-        const url = `/publicrides/driver/cancelTrip`;
+        const url = `/publicrides/driver/v2/cancelTrip`;
         const res = await api.request(url, 'POST', payload, userInfo?.token);
         if (res?.success) {
           return res;

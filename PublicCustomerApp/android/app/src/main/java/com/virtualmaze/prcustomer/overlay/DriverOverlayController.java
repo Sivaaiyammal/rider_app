@@ -267,7 +267,7 @@ public class DriverOverlayController {
                 return;
             }
 
-            String url = BuildConfig.ROOT_API_URL + "/publicrides/driver/checkDriverToken";
+            String url = BuildConfig.ROOT_API_URL + "/publicrides/driver/v2/checkDriverToken";
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder()
                     .url(url)

@@ -44,7 +44,7 @@ const DriverVehicleApprovalScreen = ({ vehicleStatus = 'pending' }) => {
 
   const handleLogout = async () => {
     setLoading(true);
-    const url = `/publicrides/driver/publicridesdriverLogout?platform=${Platform.OS}`;
+    const url = `/publicrides/driver/v2/publicridesdriverLogout?platform=${Platform.OS}`;
     const api = new APIRequest();
 
     try {

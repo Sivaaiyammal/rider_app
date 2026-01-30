@@ -34,7 +34,7 @@ const StopChangeRequest = () => {
         setIsLoading(true)
           try {
             const api = new APIRequest();
-            const url = `/publicrides/driver/acceptPassengerStopChangeRequest`;
+            const url = `/publicrides/driver/v2/acceptPassengerStopChangeRequest`;
             const payload = {
               tripId: activeTripData[0]?._id,
               action: 'accept'
@@ -68,7 +68,7 @@ const StopChangeRequest = () => {
         setIsLoading(true)
         try {
             const api = new APIRequest();
-            const url = `/publicrides/driver/acceptPassengerStopChangeRequest`;
+            const url = `/publicrides/driver/v2/acceptPassengerStopChangeRequest`;
             const payload = {
               tripId: activeTripData[0]?._id,
               action: 'reject'

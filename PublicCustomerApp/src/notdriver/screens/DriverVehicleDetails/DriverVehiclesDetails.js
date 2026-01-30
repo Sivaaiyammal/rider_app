@@ -101,7 +101,7 @@ const DriverVehiclesDetails = ({isEdit = false, isEditInfo = false, approved}) =
 
   const handleLogout = async () => {
     setShowLogoutModal(false);
-    const url = `/publicrides/driver/publicridesdriverLogout?platform=${Platform.OS}`;
+    const url = `/publicrides/driver/v2/publicridesdriverLogout?platform=${Platform.OS}`;
     const api = new APIRequest();
 
     try {

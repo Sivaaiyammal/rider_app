@@ -45,7 +45,7 @@ const DriverApprovalScreen = () => {
     if (unBlockRequestSent) return showNotification('Unblock Request Already Sent','', 'success');
     setLoading(true)
     const api = new APIRequest();
-    const url = `/publicrides/driver/sendUnblockRequest`;
+    const url = `/publicrides/driver/v2/sendUnblockRequest`;
     try {
       const res = await api.request(url, 'GET', {}, userInfo?.token);
       if(res.success){
@@ -111,7 +111,7 @@ const DriverApprovalScreen = () => {
   };
 
   const handleLogout = async () => {
-    const url = `/publicrides/driver/publicridesdriverLogout?platform=${Platform.OS}`;
+    const url = `/publicrides/driver/v2/publicridesdriverLogout?platform=${Platform.OS}`;
     const api = new APIRequest();
 
     try {

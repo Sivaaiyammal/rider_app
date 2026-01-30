@@ -304,7 +304,7 @@ const TripAccept = () => {
   const checkDriverToken = async () => {
      const api = new APIRequest()
      try {
-       const response = await api.request('/publicrides/driver/checkDriverToken', "GET", null, userInfo?.token);
+       const response = await api.request('/publicrides/driver/v2/checkDriverToken', "GET", null, userInfo?.token);
         if (response.error === "SESSION_EXPIRED") {
           logout('driver');
            BGLocationTask.stopDriverBgTask();

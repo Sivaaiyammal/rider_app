@@ -465,7 +465,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
     setIsLoading(true);
     try {
       const api = new APIRequest();
-      const response = await api.request(`/publicrides/driver/updateDriverInfo`, 'POST', formData, userInfo?.token);
+      const response = await api.request(`/publicrides/driver/v2/updateDriverInfo`, 'POST', formData, userInfo?.token);
       // console.log('Update Driver Info Response:', response);
       if (response.success) {
         setDriverInfo({

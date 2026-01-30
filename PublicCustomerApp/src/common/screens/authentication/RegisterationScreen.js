@@ -177,7 +177,7 @@ const RegisterationScreen = () => {
 
         RegisterMutate({
           queryKey: 'profileUpdateQuery',
-          url: '/publicrides/customer/updatePassengerProfile',
+          url: '/publicrides/customer/v2/updatePassengerProfile',
           payload: payload
         });
       } catch (error) {

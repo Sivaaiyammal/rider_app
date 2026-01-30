@@ -374,7 +374,7 @@ public class DriverLocationService extends Service {
 
             if (currentTripId == null || currentTripId.isEmpty() || "null".equals(currentTripId)) {
                 foregroundServerUtil.sendDriverLocaitonToServer(
-                        apiUrl + "/publicrides/driver/updateDriverMovements",
+                        apiUrl + "/publicrides/driver/v2/updateDriverMovements",
                         authToken,
                         null,
                         userRole,

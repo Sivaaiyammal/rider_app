@@ -98,7 +98,7 @@ const EarningsTab = () => {
     try {
       setWorkingHoursLoading(true);
       const api = new APIRequest();
-      const response = await api.request(`/publicrides/driver/getDriverWrkHistory`, 'GET', {}, userInfo?.token)
+      const response = await api.request(`/publicrides/driver/v2/getDriverWrkHistory`, 'GET', {}, userInfo?.token)
       if(response.success) {
         const wrkHistory = response?.wrkHistory[0]?.workingHours || []
         const filteredHours = wrkHistory.find((item)=>item.month === DateTimeFormatter.requiredDateFormat(startDate, 'YYYY-MM'))

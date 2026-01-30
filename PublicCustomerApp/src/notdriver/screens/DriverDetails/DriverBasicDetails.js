@@ -42,7 +42,7 @@ const DriverBasicDetails = () => {
     const handleEditDocumentsAPI = async () => {
         setIsLoading(true)
         const api = new APIRequest();
-        const url = `/publicrides/driver/requestEditDocuments`;
+        const url = `/publicrides/driver/v2/requestEditDocuments`;
         try {
             const res = await api.request(url, 'GET', {}, userInfo?.token);
             if(res.success){

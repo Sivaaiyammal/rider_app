@@ -38,7 +38,7 @@ const TripSelectionScreen = ({ onTripSelect, onCancel }) => {
       setLoading(true);
       const api = new APIRequest()
       const response = await api.request(
-        `/publicrides/driver/getTrips?page=${page}&limit=${10}&tripStatus=${'ALL'}&startTime=${startDate}&endTime=${endDate}`, 
+        `/publicrides/driver/v2/getTrips?page=${page}&limit=${10}&tripStatus=${'ALL'}&startTime=${startDate}&endTime=${endDate}`, 
         'POST', 
         {}, 
         userInfo?.token

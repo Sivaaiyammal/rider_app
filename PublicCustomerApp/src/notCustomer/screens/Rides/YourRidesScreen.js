@@ -122,7 +122,7 @@ const YourRidesScreen = () => {
         setIsRefreshing(true);
         await GetRidesMutate({
             queryKey: 'GetRidesQuery',
-            url: '/publicrides/customer/getTrips',
+            url: '/publicrides/customer/v2/getTrips',
             query: payload
         })
 

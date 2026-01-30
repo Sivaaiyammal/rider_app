@@ -49,7 +49,7 @@ class RideMatchWSService {
       console.log(`[DriverWSService] Attempt ${attemptNum}/${maxRetries} - accepting trip ${tripId}`);
       try {
         const api = new APIRequest();
-        const res =  await api.request(`/publicrides/driver/acceptRide`, 'POST', { tripId }, token)
+        const res =  await api.request(`/publicrides/driver/v2/acceptRide`, 'POST', { tripId }, token)
         if (res?.success) {
           console.log(`[DriverWSService] ✅ Accept succeeded on attempt ${attemptNum}`);
           return res;
@@ -142,7 +142,7 @@ class RideMatchWSService {
             try {
               const cancelReason = 'Trip accept failed by tracking engine attempted three times';
               const api = new APIRequest();
-              const cancelResp = await api.request(`/publicrides/driver/cancelTrip`, 'POST', {tripId:data?.trip_id, reason: cancelReason, isBeforePickup: true}, userInfo?.token);
+              const cancelResp = await api.request(`/publicrides/driver/v2/cancelTrip`, 'POST', {tripId:data?.trip_id, reason: cancelReason, isBeforePickup: true}, userInfo?.token);
               if (cancelResp?.success) {
                 firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_cancelled_after_accept_retry');
                 showNotification('Trip Cancelled', cancelResp?.message, 'success');

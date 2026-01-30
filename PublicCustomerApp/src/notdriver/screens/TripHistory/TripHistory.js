@@ -33,7 +33,7 @@ const TripHistory = () => {
       setLoading(true);
       const api = new APIRequest();  
       const response = await api.request(
-        `/publicrides/driver/getTrips?page=${pageNum}&limit=${limit}&tripStatus=${tripStatus}&startTime=${startDate}&endTime=${endDate}`, 
+        `/publicrides/driver/v2/getTrips?page=${pageNum}&limit=${limit}&tripStatus=${tripStatus}&startTime=${startDate}&endTime=${endDate}`, 
         'POST', 
         {}, 
         userInfo?.token

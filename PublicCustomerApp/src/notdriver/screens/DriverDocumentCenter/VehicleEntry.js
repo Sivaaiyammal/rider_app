@@ -68,7 +68,7 @@ const VehicleEntry = ({ onNext }) => {
     try {
       const api = new APIRequest();
       const response = await api.request(
-        '/publicrides/driver/getAvailabelVehicle',
+        '/publicrides/driver/v2/getAvailabelVehicle',
         'GET',
         {},
         userInfo?.token,
@@ -358,7 +358,7 @@ const VehicleEntry = ({ onNext }) => {
         try {
           const api = new APIRequest();
           response = await api.request(
-            `/publicrides/driver/updateDriverVehicleProof`,
+            `/publicrides/driver/v2/updateDriverVehicleProof`,
             'POST',
             formData,
             userInfo?.token,
@@ -445,7 +445,7 @@ const VehicleEntry = ({ onNext }) => {
         try {
           const api = new APIRequest();
           response = await api.request(
-            `/publicrides/driver/updateDriverVehicleInfo`,
+            `/publicrides/driver/v2/updateDriverVehicleInfo`,
             'POST',
             formData,
             userInfo?.token,

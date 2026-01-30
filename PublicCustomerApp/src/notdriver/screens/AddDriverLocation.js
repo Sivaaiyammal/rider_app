@@ -456,7 +456,7 @@ const removeStateVecotr = async (item) => {
    try {
     setIsLocationLoading(true)
      const api = new APIRequest();
-     const url = `/publicrides/driver/updatePreferredWorkLocation`;
+     const url = `/publicrides/driver/v2/updatePreferredWorkLocation`;
      const payload = {
        homeLocation: updateDriverHomeLocation,
        location: userLocation.reverse(),

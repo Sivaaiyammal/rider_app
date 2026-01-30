@@ -4,7 +4,7 @@ import Config from "react-native-config";
 
 // request OTP
 export const requestOTP = async (payload) => {
-   const { data } = await apiClient.post(`/publicrides/customer/login`, payload);
+   const { data } = await apiClient.post(`/publicrides/customer/v2/login`, payload);
   // const data = {
   //   success: true,
   //   message: 'OTP Sent',
@@ -13,19 +13,19 @@ export const requestOTP = async (payload) => {
 };
 
 export const requestDriverOTP = async (payload) => {
-  const { data } = await apiClient.post(`/publicrides/driver/sendOTP?platform=${Platform.OS}`, payload);
+  const { data } = await apiClient.post(`/publicrides/driver/v2/sendOTP?platform=${Platform.OS}`, payload);
   console.log("driver otp data",data)
  return data;
 }
 
 export const verifyDriverOTP = async (payload) => {
-  const { data } = await apiClient.post(`/publicrides/driver/verifyOTP?platform=${Platform.OS}`, payload);
+  const { data } = await apiClient.post(`/publicrides/driver/v2/verifyOTP?platform=${Platform.OS}`, payload);
  return data;
 }
 
 // verify OTP
 export const verifyOTP = async (payload) => {
-  const { data } = await apiClient.post('publicrides/customer/verifyotp', payload);
+  const { data } = await apiClient.post('publicrides/customer/v2/verifyotp', payload);
   return data;
 };
 
@@ -42,31 +42,31 @@ export const getUserDetails = async ()=> {
 }
 
 export const getAvaliableCoupons = async (payload)=> {
-  const {data} = await apiClient.post('/publicrides/customer/getPassengerAvaliableCoupons',payload)
+  const {data} = await apiClient.post('/publicrides/customer/v2/getPassengerAvaliableCoupons',payload)
   return data
 }
 
 // get ride estimate
 export const getRideEstimation = async (payload)=> {
-  const {data} = await apiClient.post('/publicrides/customer/getRideEstimation', payload)
+  const {data} = await apiClient.post('/publicrides/customer/v2/getRideEstimation', payload)
   return data
 }
 
 
 export const updateTripStops = async (payload)=> {
-  const {data} = await apiClient.post('/publicrides/customer/tripStopsChange', payload)
+  const {data} = await apiClient.post('/publicrides/customer/v2/tripStopsChange', payload)
   return data
 }
 
 export const submitTripFeedback = async (payload)=> {
-  const {data} = await apiClient.post('/publicrides/customer/passengerDriverRating',payload)
+  const {data} = await apiClient.post('/publicrides/customer/v2/passengerDriverRating',payload)
   return data
 }
 
 
 // submit general app feedback
 export const submitAppFeedback = async (payload) => {
-  const { data } = await apiClient.post('/publicrides/customer/submitFeedback', payload)
+  const { data } = await apiClient.post('/publicrides/customer/v2/submitFeedback', payload)
   return data
 }
 
@@ -74,7 +74,7 @@ export const submitAppFeedback = async (payload) => {
 
 // Book Ride
 export const bookRide = async (payload)=> {
-  const {data} = await apiClient.post('/publicrides/customer/bookTrip', payload)
+  const {data} = await apiClient.post('/publicrides/customer/v2/bookTrip', payload)
   return data
 }
 
@@ -82,7 +82,7 @@ export const bookRide = async (payload)=> {
 
 
 export const getUserStats = async (currentTripId) => {
-  let url = `/publicrides/customer/getUserStats`;
+  let url = `/publicrides/customer/v2/getUserStats`;
   if (currentTripId !== null && currentTripId !== undefined) {
     url += `?currentTripId=${currentTripId}`;
   }  
@@ -93,39 +93,39 @@ export const getUserStats = async (currentTripId) => {
 
 export  const getCurrentTrip = async () =>{
   console.log("Fetching current trip from server")
-  const {data} = await apiClient.get('/publicrides/customer/getTrip')
+  const {data} = await apiClient.get('/publicrides/customer/v2/getTrip')
   
   return data
 }
 
 export const getAvalibaleVehiclesType = async (lat,lon) => {
-  const { data } = await apiClient.get(`/publicrides/customer/getAvaliableVehicleInfo?latitude=${lat}&longitude=${lon}`)
+  const { data } = await apiClient.get(`/publicrides/customer/v2/getAvaliableVehicleInfo?latitude=${lat}&longitude=${lon}`)
   return data
 }
 
 export const cancelRide = async (payload)=> {
   
-  const {data} = await apiClient.post('publicrides/customer/rideCancelByPassenger', payload)
+  const {data} = await apiClient.post('publicrides/customer/v2/rideCancelByPassenger', payload)
   return data
 }
 
 export const updatePaymentInServer = async (payload) => {
-  const { data } = await apiClient.post('publicrides/customer/paymentStatusUpdate', payload)
+  const { data } = await apiClient.post('publicrides/customer/v2/paymentStatusUpdate', payload)
   return data
 }
 
 // get nearby drivers
 export const getNearByDrivers = async (lat,lon,radius,vehicleTypes) => {
-  const { data } = await apiClient.get(`/publicrides/customer/getNearByDrivers?latitude=${lat}&longitude=${lon}&radius=${radius}&vehicleTypes=${vehicleTypes.join(',')}`)
+  const { data } = await apiClient.get(`/publicrides/customer/v2/getNearByDrivers?latitude=${lat}&longitude=${lon}&radius=${radius}&vehicleTypes=${vehicleTypes.join(',')}`)
   return data
 }
 
 export const getPreFinalFare = async (payload) => {
-  const { data } = await apiClient.post('/publicrides/customer/getPreFinalFare', payload)
+  const { data } = await apiClient.post('/publicrides/customer/v2/getPreFinalFare', payload)
   return data
 }
 export const passangerStopChangeRequest = async (payload) => {
-  const { data } = await apiClient.post('/publicrides/customer/passangerStopChangeRequest', payload)
+  const { data } = await apiClient.post('/publicrides/customer/v2/passangerStopChangeRequest', payload)
   return data
 }
 
@@ -133,17 +133,17 @@ export const passangerStopChangeRequest = async (payload) => {
 export const getCustomerTrips = async (payload) => {
   console.log("payload",payload)
   
-  const { data } = await apiClient.get('/publicrides/customer/getTrips', { params: payload })
+  const { data } = await apiClient.get('/publicrides/customer/v2/getTrips', { params: payload })
   return data
 }
 
 export const addFavoritePlace = async (payload) => {
-  const { data } = await apiClient.post('/publicrides/customer/addFavPlaces', payload)
+  const { data } = await apiClient.post('/publicrides/customer/v2/addFavPlaces', payload)
   return data
 }
 
 export const deleteFavoritePlace = async (payload) => {
-  const { data } = await apiClient.post('/publicrides/customer/deleteFavPlaces', payload)
+  const { data } = await apiClient.post('/publicrides/customer/v2/deleteFavPlaces', payload)
   return data
 }
 
@@ -155,18 +155,18 @@ export const deleteFavoritePlace = async (payload) => {
 
 // get ticket categories
 export const getTicketCategories = async () => {
-  const { data } = await apiClient.get('/publicrides/customer/getTicketCategories')
+  const { data } = await apiClient.get('/publicrides/customer/v2/getTicketCategories')
   return data
 }
 
 // delete account
 export const deleteAccount = async (payload) => {
-  const { data } = await apiClient.post('/publicrides/customer/getPassengerAccountDeletion', payload)
+  const { data } = await apiClient.post('/publicrides/customer/v2/getPassengerAccountDeletion', payload)
   return data
 }
 
   export const getTripDetails = async (tripId) => {
-    const {data} = await apiClient.get(`/publicrides/customer/getTripPaymentDetails?tripId=${tripId}`)
+    const {data} = await apiClient.get(`/publicrides/customer/v2/getTripPaymentDetails?tripId=${tripId}`)
     return data
   }
 
@@ -177,33 +177,33 @@ export const deleteAccount = async (payload) => {
   }
 
   export const makeMaskedCallToDriver = async (payload) => {
-    const {data} = await apiClient.post('/publicrides/customer/makeMaskedCallToDriver', payload)
+    const {data} = await apiClient.post('/publicrides/customer/v2/makeMaskedCallToDriver', payload)
     return data
   }
 
   // report passenger payment issues
   export const passengerPaymentIssues = async (payload) => {
     // expects { tripId, passengerIssues }
-    const { data } = await apiClient.post('/publicrides/customer/passengerPaymentIssues', payload)
+    const { data } = await apiClient.post('/publicrides/customer/v2/passengerPaymentIssues', payload)
     return data
   }
 
   // Trigger SOS
   export const triggerSOS = async (payload) => {
-    const { data } = await apiClient.post('/publicrides/customer/sosTriggered', payload)
+    const { data } = await apiClient.post('/publicrides/customer/v2/sosTriggered', payload)
     return data
   }
 
   // confirm trip status (customer reported)
   export const confirmTripStatus = async (payload) => {
     // expects { tripId, tripStatus }
-    const { data } = await apiClient.post('/publicrides/customer/confirmTripStatus', payload)
+    const { data } = await apiClient.post('/publicrides/customer/v2/confirmTripStatus', payload)
     return data
   }
 
   // get passenger trip stats (totals, spend, etc.)
   export const getPassengerTripStats = async () => {
-    const { data } = await apiClient.get('/publicrides/customer/getPassengerTripStats')
+    const { data } = await apiClient.get('/publicrides/customer/v2/getPassengerTripStats')
     return data
   }
 

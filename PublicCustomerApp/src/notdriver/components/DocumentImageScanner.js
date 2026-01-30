@@ -25,7 +25,7 @@ const pickerOptions = {
   quality: 0.8,
 };
 
-const DEFAULT_PRE_SCAN_ENDPOINT = '/publicrides/driver/scanDoc';
+const DEFAULT_PRE_SCAN_ENDPOINT = '/publicrides/driver/v2/scanDoc';
 
 const DocumentImageScanner = ({
   onScanComplete,

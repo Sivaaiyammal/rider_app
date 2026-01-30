@@ -53,7 +53,7 @@ const VehicleEntry = ({ onNext }) => {
     try {
       const api = new APIRequest();
       const response = await api.request(
-        '/publicrides/driver/getAvailabelVehicle',
+        '/publicrides/driver/v2/getAvailabelVehicle',
         'GET',
         {},
         userInfo?.token,

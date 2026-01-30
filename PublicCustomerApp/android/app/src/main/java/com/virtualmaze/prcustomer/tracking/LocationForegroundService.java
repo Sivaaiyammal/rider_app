@@ -98,7 +98,7 @@ public class LocationForegroundService extends Service {
       // Prefer explicit apiUrl if provided; otherwise, default to SOS tracking endpoint
       apiUrl = intent.getStringExtra("apiUrl");
       if (apiUrl == null || apiUrl.isEmpty()) {
-        apiUrl = BuildConfig.ROOT_API_URL + "/publicrides/customer/sos/tracking/update";
+        apiUrl = BuildConfig.ROOT_API_URL + "/publicrides/customer/v2/sos/tracking/update";
       }
       intervalMs = intent.getLongExtra("intervalMs", 10000L);
       String headersJson = intent.getStringExtra("headersJson");
@@ -141,7 +141,7 @@ public class LocationForegroundService extends Service {
     startForeground(NOTIF_ID, buildNotification());
     // Ensure defaults if restarted by system
     if (apiUrl == null || apiUrl.isEmpty()) {
-      apiUrl = BuildConfig.ROOT_API_URL + "/publicrides/customer/sos/tracking/update";
+      apiUrl = BuildConfig.ROOT_API_URL + "/publicrides/customer/v2/sos/tracking/update";
     }
     if (accessToken == null) {
       try { accessToken = AsyncStorageReader.readValueFromAsyncStorage(getApplicationContext(), "access_token"); accessToken = stripQuotes(accessToken); } catch (Exception ignored) {}
@@ -276,7 +276,7 @@ public class LocationForegroundService extends Service {
       }
       if (sosEventId == null || sosEventId.isEmpty()) return;
 
-      String url = BuildConfig.ROOT_API_URL + "/publicrides/customer/sos/stop";
+      String url = BuildConfig.ROOT_API_URL + "/publicrides/customer/v2/sos/stop";
       Map<String, Object> payload = new HashMap<>();
       payload.put("eventId", sosEventId);
       payload.put("reason", reason != null && !reason.isEmpty() ? reason : "Passenger safe at destination");

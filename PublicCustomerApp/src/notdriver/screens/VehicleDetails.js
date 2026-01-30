@@ -19,7 +19,7 @@ const VehicleDetails = () => {
     
     const handleLogout = async () => {
         setLoading(true)
-        const url = `/publicrides/driver/logoutFromVehicle`
+        const url = `/publicrides/driver/v2/logoutFromVehicle`
         const api = new APIRequest()
 
         try {

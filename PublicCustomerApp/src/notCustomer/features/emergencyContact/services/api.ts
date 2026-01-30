@@ -12,12 +12,12 @@ export type AddEmergencyContactsPayload = {
 };
 
 export async function addEmergencyContacts(payload: AddEmergencyContactsPayload): Promise<any> {
-  const { data } = await apiClient.post('/publicrides/customer/addEmergencyContact', payload);
+  const { data } = await apiClient.post('/publicrides/customer/v2/addEmergencyContact', payload);
   return data;
 }
 
 export async function fetchEmergencyContacts(): Promise<EmergencyContact[]> {
-  const { data } = await apiClient.get('/publicrides/customer/getEmergencyContacts');
+  const { data } = await apiClient.get('/publicrides/customer/v2/getEmergencyContacts');
   // Response shape example:
   // { "success": true, "message": "Emergency Contacts", "emergencyContacts": [{ name, phone }] }
   const list = Array.isArray(data?.emergencyContacts) ? data.emergencyContacts : [];
@@ -31,7 +31,7 @@ export async function fetchEmergencyContacts(): Promise<EmergencyContact[]> {
 
 export async function removeEmergencyContact(phone: string): Promise<{ success: boolean; message?: string }> {
   const payload = { phone };
-  const { data } = await apiClient.post('/publicrides/customer/removeEmergencyContact', payload);
+  const { data } = await apiClient.post('/publicrides/customer/v2/removeEmergencyContact', payload);
   return data;
 }
 

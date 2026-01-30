@@ -90,7 +90,7 @@ export default function DriverInitializationScreen() {
     //   console.error('Trip ID not found for public ride trips')
     //   return []
     // }
-    const url = `/publicrides/driver/getActiveTrip`;
+    const url = `/publicrides/driver/v2/getActiveTrip`;
     const res = await api.request(url, 'GET', {}, token);
 
     if (res.success) {
@@ -103,7 +103,7 @@ export default function DriverInitializationScreen() {
 
   const fetchDriverConfig = async () => {
     const api = new APIRequest();
-    const url = `/publicrides/driver/notDriverAppConfig`;
+    const url = `/publicrides/driver/v2/notDriverAppConfig`;
     const res = await api.request(url, 'POST', {}, token);
     if (res.success) {
       return res?.data;

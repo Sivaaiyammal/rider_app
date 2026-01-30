@@ -231,7 +231,7 @@ const PublicRidesDriverHomeScreen = () => {
     setIsBlockLoading(true)
     try {
       const api = new APIRequest();
-     const response = await api.request(`/publicrides/driver/blockDriver`, 'POST', {driverId: userInfo?._id}, userInfo?.token)
+     const response = await api.request(`/publicrides/driver/v2/blockDriver`, 'POST', {driverId: userInfo?._id}, userInfo?.token)
      if (response?.success) {
       setIsBlocked(true)
       // setStackScreen('DriverApprovalScreen')
@@ -249,7 +249,7 @@ const PublicRidesDriverHomeScreen = () => {
     setIsBlockLoading(true)
     try {
       const api = new APIRequest();
-     const response = await api.request(`/publicrides/driver/updateNextDueDate`, 'POST', {}, userInfo?.token)
+     const response = await api.request(`/publicrides/driver/v2/updateNextDueDate`, 'POST', {}, userInfo?.token)
      if (response?.success) {
        setdriverDueDate(response?.nextDueDate)
      }

@@ -106,7 +106,7 @@ const UpComingTripsList = () => {
         tripIds: tripsIds,
       };
       const response = await API.request(
-        '/publicrides/driver/getMultipleTripsDetail',
+        '/publicrides/driver/v2/getMultipleTripsDetail',
         'POST',
         payload,
         userInfo.token,

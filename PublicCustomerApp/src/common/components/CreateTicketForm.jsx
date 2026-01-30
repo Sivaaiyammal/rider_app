@@ -53,7 +53,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
       try {
         setLoadingCategories(true);
         const api = new APIRequest()
-        const response = await api.request('/publicrides/driver/getTicketCategories', 'GET', {}, userInfo?.token);
+        const response = await api.request('/publicrides/driver/v2/getTicketCategories', 'GET', {}, userInfo?.token);
         if (response.success && response.categories) {
           setCategories(response.categories);
         }

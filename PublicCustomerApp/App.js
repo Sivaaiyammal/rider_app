@@ -16,8 +16,8 @@ import FallbackComponent from './src/common/components/FallbackComponent';
 
 const App = () => {
   const { userRole } = useUserStore();
-const grapqlEndPoint = Config.ROOT_API_URL + '/publicrides/customer/graphql/location';
-const driverGraphqlEndPoint = Config.ROOT_API_URL +'/publicrides/driver/graphql/location';
+const grapqlEndPoint = Config.ROOT_API_URL + '/publicrides/customer/v2/graphql/location';
+const driverGraphqlEndPoint = Config.ROOT_API_URL +'/publicrides/driver/v2/graphql/location';
 
 const httpLink = new HttpLink({
   uri: userRole === 'driver' ? driverGraphqlEndPoint : grapqlEndPoint,

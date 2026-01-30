@@ -84,7 +84,7 @@ function DriverLocationHandler() {
        const payload = {
         status: status
        }
-       const response = await apiRequest.request('/publicrides/driver/updatePublicRidesDriverStatus', "POST", payload, userInfo?.token)
+       const response = await apiRequest.request('/publicrides/driver/v2/updatePublicRidesDriverStatus', "POST", payload, userInfo?.token)
        if (response?.success) {
           showNotification(response?.message,'','success')
           const _newUserInfo = userInfo

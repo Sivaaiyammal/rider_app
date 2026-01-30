@@ -629,7 +629,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
    
       try {
         const api = new APIRequest()
-        const response = await api.request('/publicrides/driver/uploadBankDetails', 'POST', formData, userInfo.token)
+        const response = await api.request('/publicrides/driver/v2/uploadBankDetails', 'POST', formData, userInfo.token)
         if(response.success){
           const payload = {
             accountHolderName: accountHolder.trim(),
