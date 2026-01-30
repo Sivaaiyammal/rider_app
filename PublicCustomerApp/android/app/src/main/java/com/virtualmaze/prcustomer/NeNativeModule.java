@@ -168,6 +168,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
     private ReadableArray pendingBounds = null;
     // Stores a requested route (array: [payloadMap, directionKey]) until the map scene is ready
     private ReadableArray pendingRoute = null;
+    // Stores a requested route via findRouteWithRequest until the map scene is ready
+    private ReadableArray pendingRouteRequest = null;
     // Stores a requested homeLocation until the map scene is ready
     private ReadableArray pendingHomeLocation = null;
 
@@ -246,6 +248,12 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 try { findRoute(mapView, pendingRoute); } catch (Throwable t) {
                     Log.e("NeNativeModule", "Failed to apply pending route on resume", t);
                 } finally { pendingRoute = null; }
+            }
+            // pending route request (requests/response)
+            if (pendingRouteRequest != null) {
+                try { applyRouteRequest(pendingRouteRequest); } catch (Throwable t) {
+                    Log.e("NeNativeModule", "Failed to apply pending routeRequest on resume", t);
+                } finally { pendingRouteRequest = null; }
             }
         }
     }
@@ -480,6 +488,16 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                                         Log.e("NeNativeModule", "Failed to apply pending route", t);
                                     } finally {
                                         pendingRoute = null;
+                                    }
+                                }
+                                // Apply any pending findRouteWithRequest payload
+                                if (pendingRouteRequest != null) {
+                                    try {
+                                        applyRouteRequest(pendingRouteRequest);
+                                    } catch (Throwable t) {
+                                        Log.e("NeNativeModule", "Failed to apply pending routeRequest", t);
+                                    } finally {
+                                        pendingRouteRequest = null;
                                     }
                                 }
                                 reactNativeContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
@@ -1490,13 +1508,22 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
     @ReactProp(name = "findRouteWithRequest")
     public void findRouteWithRequest(MapView mapView, ReadableArray routeRequestDataArray){
-
+        // Defer until controller and scene ready
         if (routeRequestDataArray == null) {
             directions.getInstance().clearRoute();
             routeInstructionsDisplay = null;
             return;
         }
+        if (mapController == null || mapLoaded == 0) {
+            pendingRouteRequest = routeRequestDataArray;
+            return;
+        }
+        applyRouteRequest(routeRequestDataArray);
+    }
 
+    // Helper to apply the findRouteWithRequest payload safely
+    private void applyRouteRequest(ReadableArray routeRequestDataArray) {
+        if (routeRequestDataArray == null) return;
         try {
             ReadableMap routeData = routeRequestDataArray.getMap(0);
             String requests = routeData.getString("requests");
@@ -1512,23 +1539,11 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                     };
                 }
             }
+            Log.d("TAG", "findRouteWithRequest -- >> request: " + requests);
+            Log.d("TAG", "findRouteWithRequest -- >> response: " + response);
             directions.getInstance().setRouteAsync(reactNativeContext, requests, response, 0);
-//            new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                    directions.getInstance().zoomRoute(routeMargins, 0.8f, -1);
-//                }
-//            }, 1000);
-//             new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-//                 RouteResponse response = Directions.getInstance().getRouteResponse();
-//                    Log.d("TAG", "run: response" + response);
-//                    handleResponse(response);
-//                }
-//            }, 1000);
-        }catch (Throwable t) {
-            Log.e("NeNativeModule", "findRoute failed; deferring", t);
+        } catch (Throwable t) {
+            Log.e("NeNativeModule", "applyRouteRequest failed", t);
         }
     }
 
@@ -1840,7 +1855,7 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
 
         @Override
         public void onFailure(RouteResponse routeResponse) {
-
+            Log.e("Failure", "Res Failure message" + routeResponse);
              // Emit loading false on failure
             WritableNativeMap loadingEventData = new WritableNativeMap();
             loadingEventData.putBoolean("loading", false);

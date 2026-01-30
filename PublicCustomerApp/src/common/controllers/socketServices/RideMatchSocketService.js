@@ -104,6 +104,8 @@ class RideMatchWSService {
       setIsGetFare,
       setLoading,
       reset,
+      tripDetails,
+      setTripDetails
     } = useTripAcceptStore.getState();
     const {setDirectionPoints} = useMapMarkerStore.getState();
     const {activeTripData, setActiveTripData} = useTripsStore.getState();
@@ -119,7 +121,11 @@ class RideMatchWSService {
             tripData.status = 'ACCEPTED';
             useTripsStore.setState({activeTripData: [tripData]});
             firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_accepted_inapp');
-
+            tripDetails.pickUpRoute.response = tripDetails?.pickUpRoute?.response
+              .replace(/'/g, '"')
+              .replace(/\bTrue\b/g, 'true')
+              .replace(/\bFalse\b/g, 'false');
+            setTripDetails(tripDetails)
             setStackScreen('PublicDriverTrackingScreen');
 
             // Clear trip accept store to prevent loop

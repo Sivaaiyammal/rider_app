@@ -72,7 +72,7 @@ const DriverOnRide = () => {
     hasNotificationPermission,
   } = useDeviceTokenStore();
   // const [loading,setLoading] = useState(false)
-  const {loading, setLoading, tripDetails} = useTripAcceptStore()
+  const {loading, setLoading, tripDetails, setTripDetails} = useTripAcceptStore()
   const {tripId, requestId, fetchLocationDate, setFetchLocationDate, isGetFare, setIsOnGoing, setIsGetFare } = useTripAcceptStore()
   const {fareBreakDown, setFareBreakDown} = useTripsStore()
 
@@ -405,6 +405,8 @@ const DriverOnRide = () => {
         setIsReachedPickup(false);
         setCurrentTripAcceptedTime(new Date().getTime());
         firebaselog_onRide('OR_Status(OR_S)', 'OR_S:pickedup')
+        setTripDetails(null)
+        setDirectionResponse(null)
         // updateDirectionsPoints();
       }else{
         showNotification(res?.message, res?.message, 'danger');
@@ -426,16 +428,8 @@ const DriverOnRide = () => {
     NeNativeModule.endNavigation();
   }
 
-  // const reqd = {requests: '{"costing":"motorcycle","costing_options":{},"language":"en","locations":[{"lat":11.04743,"lon":77.0428},{"lat":11.02890400240826,"lon":77.02367244597568}],"units":"kilometers"}', response: '{"trip":{"locations":[{"type":"break","lat":11.04743,"lon":77.0428,"original_index":0},{"type":"break","lat":11.028904,"lon":77.023672,"side_of_street":"right","original_index":1}],"legs":[{"maneuvers":[{"type":1,"instruction":"Drive west.","verbal_succinct_transition_instruction":"Drive west.","verbal_pre_transition_instruction":"Drive west.","verbal_post_transition_instruction":"Continue for 300 meters.","bearing_after":263,"time":59.507,"length":0.263,"cost":69.615,"begin_shape_index":0,"end_shape_index":4,"turn_lanes":"","travel_mode":"drive","travel_type":"motorcycle"},{"type":10,"instruction":"Turn right.","verbal_transition_alert_instruction":"Turn right.","verbal_succinct_transition_instruction":"Turn right.","verbal_pre_transition_instruction":"Turn right.","verbal_post_transition_instruction":"Continue for 200 meters.","bearing_before":266,"bearing_after":358,"time":61.439,"length":0.248,"cost":79.402,"begin_shape_index":4,"end_shape_index":8,"turn_lanes":"","travel_mode":"drive","travel_type":"motorcycle"},{"type":15,"instruction":"Turn left onto Sitra - Kurumbapalayam Road/SH233.","verbal_transition_alert_instruction":"Turn left onto Sitra - Kurumbapalayam Road.","verbal_succinct_transition_instruction":"Turn left.","verbal_pre_transition_instruction":"Turn left onto Sitra - Kurumbapalayam Road, SH233.","verbal_post_transition_instruction":"Continue for 800 meters.","street_names":["Sitra - Kurumbapalayam Road","SH233"],"bearing_before":266,"bearing_after":191,"time":102.216,"length":0.842,"cost":133.6,"begin_shape_index":8,"end_shape_index":27,"turn_lanes":"","travel_mode":"drive","travel_type":"motorcycle"},{"type":9,"instruction":"Bear right to stay on Sitra - Kurumbapalayam Road/SH233.","verbal_transition_alert_instruction":"Bear right to stay on Sitra - Kurumbapalayam Road.","verbal_succinct_transition_instruction":"Bear right.","verbal_pre_transition_instruction":"Bear right to stay on Sitra - Kurumbapalayam Road, SH233.","verbal_post_transition_instruction":"Continue for 200 meters.","street_names":["Sitra - Kurumbapalayam Road","SH233"],"bearing_before":183,"bearing_after":199,"time":31.137,"length":0.242,"cost":40.817,"begin_shape_index":27,"end_shape_index":37,"turn_lanes":"","travel_mode":"drive","travel_type":"motorcycle"},{"type":10,"instruction":"Turn right onto Avinashi Road/SHU52. Continue on SHU52.","verbal_transition_alert_instruction":"Turn right onto Avinashi Road.","verbal_succinct_transition_instruction":"Turn right.","verbal_pre_transition_instruction":"Turn right onto Avinashi Road, SHU52.","verbal_post_transition_instruction":"Continue on SHU52 for 2.5 kilometers.","street_names":["SHU52"],"begin_street_names":["Avinashi Road","SHU52"],"bearing_before":174,"bearing_after":236,"time":293.027,"length":2.376,"cost":341.571,"begin_shape_index":37,"end_shape_index":77,"turn_lanes":"","travel_mode":"drive","travel_type":"motorcycle"},{"type":12,"instruction":"Make a right U-turn onto Avinashi Road/SHU52.","verbal_transition_alert_instruction":"Make a right U-turn onto Avinashi Road.","verbal_succinct_transition_instruction":"Make a right U-turn.","verbal_pre_transition_instruction":"Make a right U-turn onto Avinashi Road, SHU52.","verbal_post_transition_instruction":"Continue for 500 meters.","street_names":["Avinashi Road","SHU52"],"bearing_before":258,"bearing_after":78,"time":78.358,"length":0.546,"cost":104.098,"begin_shape_index":77,"end_shape_index":92,"turn_lanes":"","travel_mode":"drive","travel_type":"motorcycle"},{"type":15,"instruction":"Turn left.","verbal_transition_alert_instruction":"Turn left.","verbal_succinct_transition_instruction":"Turn left.","verbal_pre_transition_instruction":"Turn left.","verbal_post_transition_instruction":"Continue for 70 meters.","bearing_before":62,"bearing_after":337,"time":16.798,"length":0.067,"cost":22.336,"begin_shape_index":92,"end_shape_index":94,"turn_lanes":"","travel_mode":"drive","travel_type":"motorcycle"},{"type":15,"instruction":"Turn left.","verbal_transition_alert_instruction":"Turn left.","verbal_succinct_transition_instruction":"Turn left. Then Turn right.","verbal_pre_transition_instruction":"Turn left. Then Turn right.","verbal_post_transition_instruction":"Continue for 50 meters.","bearing_before":330,"bearing_after":235,"time":13.79,"length":0.049,"cost":20.178,"begin_shape_index":94,"end_shape_index":96,"verbal_multi_cue":true,"turn_lanes":"","travel_mode":"drive","travel_type":"motorcycle"},{"type":10,"instruction":"Turn right.","verbal_transition_alert_instruction":"Turn right.","verbal_succinct_transition_instruction":"Turn right. Then Your destination will be on the right.","verbal_pre_transition_instruction":"Turn right. Then Your destination will be on the right.","verbal_post_transition_instruction":"Continue for 50 meters.","bearing_before":243,"bearing_after":328,"time":16.506,"length":0.052,"cost":31.964,"begin_shape_index":96,"end_shape_index":97,"verbal_multi_cue":true,"turn_lanes":"","travel_mode":"drive","travel_type":"motorcycle"},{"type":5,"instruction":"Your destination is on the right.","verbal_transition_alert_instruction":"Your destination will be on the right.","verbal_pre_transition_instruction":"Your destination is on the right.","bearing_before":328,"time":0,"length":0,"cost":0,"begin_shape_index":97,"end_shape_index":97,"turn_lanes":"","travel_mode":"drive","travel_type":"motorcycle"}],"summary":{"has_time_restrictions":false,"has_toll":false,"has_highway":false,"has_ferry":false,"min_lat":11.02615,"min_lon":77.01969,"max_lat":11.047692,"max_lon":77.04276,"time":672.781,"length":4.686,"cost":843.584},"shape":"{_haToci}qCnAhRu@fAaBl@pFz{BoQPuAnAtC|eA`Bxn@zy@rJfS|BzEbAvS~D~u@hKhLf@xQ`AvH`@lBBlUPh_@Vrp@f@f^^pWR|KHpbAdAlEPnIJpABdKhCjEZpg@fChP`AnFQbIe@hBAdQOtGG|H_@zCnEbLtRfJlM`S`ZxKtOpFxGzVd^xEbFl]h`@vY~[ra@vd@fE|HlXp]zXn^hs@ndAbdAtcBx@dAleBb|BvMxSf`@po@`Tx]rTv^v]dg@tQ`^dIfRlApDbGxMfJ|WxG~PX|@lIbW|D`LbHfRdAnCrQ~d@rOze@\\\\`El@bHnLpbAb@dD_En@a@gDsDyZaGof@{AqKcI}XiHiSaNi_@kGoP}AiE_EeLgJ}XmGwPqJ_XcFyLmFdBiX`N`G|JdEdKwW~N","speed_limits_lanes":[0,3,0,1,3,4,0,1,4,8,0,1,8,13,0,2,13,34,0,1,34,35,0,1,35,36,0,1,36,37,0,1,37,59,50,2,59,72,50,2,72,73,0,1,73,77,50,3,77,78,0,1,78,82,50,3,82,83,0,1,83,92,50,2,92,94,0,1,94,96,0,1,96,97,0,1]}],"summary":{"has_time_restrictions":false,"has_toll":false,"has_highway":false,"has_ferry":false,"min_lat":11.02615,"min_lon":77.01969,"max_lat":11.047692,"max_lon":77.04276,"time":672.781,"length":4.686,"cost":843.584,"nevh_version":0},"status_message":"Found route between points","status":0,"units":"kilometers","language":"en"},"numRoutes":1,"routeCallIsOffline":false,"routeError":"Path distance exceeds the max distance limit: 250000 meters","routeSuccess":true,"vehicleInfoState":-1}', padding: Array(4)}
-
-  // useEffect(() => { 
-  //   const padding = [50, 50, 50, height*0.5]
-  //   setDirectionResponse([{requests: reqd.requests, response: reqd.response, padding: padding.map(v => parseInt(v, 10)),}])
-  // },[activeTripData])
-
   const updateDirectionsPoints = () => {
     if (!userLocation) return;
- 
     if (tripsStatus === 'ACCEPTED') {
       if (tripDetails?.pickUpRoute ) {
         const request = tripDetails?.pickUpRoute?.request;
@@ -472,6 +466,7 @@ const DriverOnRide = () => {
       if (tripDetails?.routeData) {
         const request = tripDetails?.routeData?.request;
         const response = tripDetails?.routeData?.response;
+        
         const padding = [50, 50, 50, height * 0.5];
         setDirectionResponse([
                 {
@@ -499,7 +494,7 @@ const DriverOnRide = () => {
     if (!activeTripData || activeTripData?.length === 0) return;
     if (startNavigation) return;
     updateDirectionsPoints();
-  }, [tripsStatus, activeTripData,appStateVisible]);
+  }, [tripsStatus, activeTripData,appStateVisible, tripDetails]);
 
   useEffect(() => {
     if (!disduration?.location) {
@@ -734,6 +729,11 @@ const DriverOnRide = () => {
     );
   };
 
+  const refreshDirections = () => {
+    setTripDetails(null);
+    updateDirectionsPoints();
+  }
+
   const onRecenter = () => {
     NeNativeModule.recenterNavigation();
   }
@@ -817,7 +817,7 @@ const DriverOnRide = () => {
         )}
       {disduration ? null : (
         <View style={RouteScreenStyles.mapIconContainer}>
-          <TrackingMapIcons markersData={directionPoints} refreshDirections={updateDirectionsPoints} />
+          <TrackingMapIcons markersData={directionPoints} refreshDirections={()=>refreshDirections()} />
         </View>
       )}
       {!activeTripData || activeTripData?.length === 0 ? (

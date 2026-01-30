@@ -33,7 +33,6 @@ class InAppUpdates {
    */
   setupStatusListener(inAppUpdates) {
     try {
-      console.log('[InAppUpdates] Setting up status listener to check pending download...');
       
       // Remove existing listener if any
       this.removeUpdateListener();
@@ -43,7 +42,7 @@ class InAppUpdates {
       // Set up new listener
       this.updateListener = inAppUpdates.addStatusUpdateListener((status) => {
         hasReceivedStatus = true;
-        console.log('[InAppUpdates] 📡 Status update received (pending check):', JSON.stringify(status, null, 2));
+        // console.log('[InAppUpdates] 📡 Status update received (pending check):', JSON.stringify(status, null, 2));
         
         const DOWNLOADED = StatusUpdateEvent?.DOWNLOADED ?? 11;
         const DOWNLOADING = StatusUpdateEvent?.DOWNLOADING ?? 2;
@@ -55,7 +54,7 @@ class InAppUpdates {
         switch (statusValue) {
           case DOWNLOADED:
           case 11:
-            console.log('[InAppUpdates] ✅ Update already downloaded!');
+            // console.log('[InAppUpdates] ✅ Update already downloaded!');
             if (this.downloadedCallback) {
               this.downloadedCallback();
             }
@@ -65,14 +64,14 @@ class InAppUpdates {
             const progress = status.totalBytesToDownload > 0 
               ? Math.round((status.bytesDownloaded / status.totalBytesToDownload) * 100)
               : 0;
-            console.log(`[InAppUpdates] ⬇️ Download in progress: ${progress}%`);
+            // console.log(`[InAppUpdates] ⬇️ Download in progress: ${progress}%`);
             if (this.progressCallback) {
               this.progressCallback(progress);
             }
             break;
           case PENDING:
           case 1:
-            console.log('[InAppUpdates] ⏳ Update pending...');
+            // console.log('[InAppUpdates] ⏳ Update pending...');
             // Show 0% progress for pending to indicate something is happening
             if (this.progressCallback) {
               this.progressCallback(0);
@@ -80,14 +79,14 @@ class InAppUpdates {
             break;
           case FAILED:
           case 0:
-            console.log('[InAppUpdates] ❌ Update failed');
+            // console.log('[InAppUpdates] ❌ Update failed');
             if (this.failedCallback) {
               this.failedCallback();
             }
             this.removeUpdateListener();
             break;
           default:
-            console.log('[InAppUpdates] 📊 Unknown status:', statusValue);
+            // console.log('[InAppUpdates] 📊 Unknown status:', statusValue);
             break;
         }
       });
@@ -96,7 +95,7 @@ class InAppUpdates {
       // But if it doesn't fire within 1 second, show a default state
       setTimeout(() => {
         if (!hasReceivedStatus) {
-          console.log('[InAppUpdates] ⚠️ Status listener did not fire immediately, showing default state');
+          // console.log('[InAppUpdates] ⚠️ Status listener did not fire immediately, showing default state');
           // Show 0% progress to indicate we're checking/downloading
           // This will be updated when the listener fires
           if (this.progressCallback) {
@@ -105,9 +104,9 @@ class InAppUpdates {
         }
       }, 1000);
       
-      console.log('[InAppUpdates] Status listener set up, waiting for status updates...');
+      // console.log('[InAppUpdates] Status listener set up, waiting for status updates...');
     } catch (error) {
-      console.error('[InAppUpdates] Error setting up status listener:', error);
+      // console.error('[InAppUpdates] Error setting up status listener:', error);
       // If setting up listener fails, show default state
       if (this.progressCallback) {
         this.progressCallback(0);
@@ -130,7 +129,7 @@ class InAppUpdates {
       
       // Check if there's a pending update
       const updateInfo = await inAppUpdates.checkNeedsUpdate();
-      console.log('[InAppUpdates] Check pending download - updateInfo:', JSON.stringify(updateInfo, null, 2));
+      // console.log('[InAppUpdates] Check pending download - updateInfo:', JSON.stringify(updateInfo, null, 2));
       
       // Check update availability status
       const updateAvailability = updateInfo?.other?.updateAvailability;
@@ -148,20 +147,20 @@ class InAppUpdates {
       // 2. Immediate updates are allowed
       // 3. Store version is actually newer than device version
       if ((updateAvailability === 1 || updateAvailability === 2) && isImmediateAllowed && hasNewerVersion) {
-        console.log('[InAppUpdates] ⚠️ Update available - starting immediate update');
-        console.log('[InAppUpdates] Device version:', currentVersionCode, 'Store version:', storeVersionCode);
+        // console.log('[InAppUpdates] ⚠️ Update available - starting immediate update');
+        // console.log('[InAppUpdates] Device version:', currentVersionCode, 'Store version:', storeVersionCode);
         await this.startDownload(inAppUpdates);
         return true;
       } else {
-        console.log('[InAppUpdates] No update needed or not allowed');
-        console.log('[InAppUpdates] Update availability:', updateAvailability);
-        console.log('[InAppUpdates] Immediate allowed:', isImmediateAllowed);
-        console.log('[InAppUpdates] Has newer version:', hasNewerVersion);
+        // console.log('[InAppUpdates] No update needed or not allowed');
+        // console.log('[InAppUpdates] Update availability:', updateAvailability);
+        // console.log('[InAppUpdates] Immediate allowed:', isImmediateAllowed);
+        // console.log('[InAppUpdates] Has newer version:', hasNewerVersion);
       }
       
       return false;
     } catch (error) {
-      console.log('[InAppUpdates] Error checking pending download:', error);
+      // console.log('[InAppUpdates] Error checking pending download:', error);
       return false;
     }
   }
@@ -174,18 +173,18 @@ class InAppUpdates {
       updateType: IAUUpdateKind.IMMEDIATE, // Use immediate updates (force update)
     };
 
-    console.log('[InAppUpdates] Starting immediate update (force update)...');
-    console.log('[InAppUpdates] Update options:', JSON.stringify(updateOptions, null, 2));
+    // console.log('[InAppUpdates] Starting immediate update (force update)...');
+    // console.log('[InAppUpdates] Update options:', JSON.stringify(updateOptions, null, 2));
     
     try {
       // Start the immediate update - Play Store will handle everything
       // This will show the Play Store dialog and force the user to update
       await inAppUpdates.startUpdate(updateOptions);
-      console.log('[InAppUpdates] ✅ Immediate update started successfully');
-      console.log('[InAppUpdates] Play Store will handle the update process');
+      // console.log('[InAppUpdates] ✅ Immediate update started successfully');
+      // console.log('[InAppUpdates] Play Store will handle the update process');
     } catch (startError) {
-      console.error('[InAppUpdates] ❌ Error starting immediate update:', startError);
-      console.error('[InAppUpdates] Error details:', JSON.stringify(startError, null, 2));
+      // console.error('[InAppUpdates] ❌ Error starting immediate update:', startError);
+      // console.error('[InAppUpdates] Error details:', JSON.stringify(startError, null, 2));
       const errorMessage = startError?.message || startError?.toString() || '';
       
       Alert.alert(
@@ -202,36 +201,36 @@ class InAppUpdates {
   async checkUpdateStatus() {
     // In-app updates are only available on Android
     if (Platform.OS !== 'android') {
-      console.log('[InAppUpdates] In-app updates are only available on Android');
+      // console.log('[InAppUpdates] In-app updates are only available on Android');
       return;
     }
 
     const isDebug = false;
-    console.log('[InAppUpdates] ========================================');
-    console.log('[InAppUpdates] 🔍 Starting update check...');
-    console.log('[InAppUpdates] Debug mode:', isDebug);
-    console.log('[InAppUpdates] Update type: IMMEDIATE (force update)');
-    console.log('[InAppUpdates] ========================================');
+    // console.log('[InAppUpdates] ========================================');
+    // console.log('[InAppUpdates] 🔍 Starting update check...');
+    // console.log('[InAppUpdates] Debug mode:', isDebug);
+    // console.log('[InAppUpdates] Update type: IMMEDIATE (force update)');
+    // console.log('[InAppUpdates] ========================================');
 
     try {
       const inAppUpdates = new SpInAppUpdates(isDebug);
 
       // First, verify app is installed from Play Store
-      console.log('[InAppUpdates] Step 1: Verifying installation source...');
+      // console.log('[InAppUpdates] Step 1: Verifying installation source...');
       try {
         // Quick check - if this fails with "not owned", we know it's not from Play Store
         const quickCheck = await inAppUpdates.checkNeedsUpdate();
-        console.log('[InAppUpdates] ✅ Installation source verified (from Play Store)');
+        // console.log('[InAppUpdates] ✅ Installation source verified (from Play Store)');
         console.log('[InAppUpdates] Quick check result:', JSON.stringify(quickCheck, null, 2));
       } catch (verifyError) {
         const verifyErrorMsg = verifyError?.message || verifyError?.toString() || '';
-        console.log('[InAppUpdates] Verification error:', verifyErrorMsg);
+        // console.log('[InAppUpdates] Verification error:', verifyErrorMsg);
         if (verifyErrorMsg.includes('not owned') || verifyErrorMsg.includes('Install Error(-10)')) {
-          console.error('[InAppUpdates] ❌ CRITICAL: App is NOT installed from Google Play Store');
-          console.error('[InAppUpdates] ❌ In-app updates will NOT work until app is installed from Play Store');
+          // console.error('[InAppUpdates] ❌ CRITICAL: App is NOT installed from Google Play Store');
+          // console.error('[InAppUpdates] ❌ In-app updates will NOT work until app is installed from Play Store');
           // Ensure UI does not show update overlay when Play Store is not available
           useConfigStore.getState().setUpdateAvailable(true);
-          console.error('[InAppUpdates] Please install the app from Google Play Store to enable in-app updates');
+          // console.error('[InAppUpdates] Please install the app from Google Play Store to enable in-app updates');
           // Don't show alert for this in production - it's a development issue
           // if (__DEV__) {
           //   Alert.alert(
@@ -242,26 +241,26 @@ class InAppUpdates {
           // }
           return;
         }
-        console.warn('[InAppUpdates] ⚠️ Verification check had an error, but continuing...', verifyErrorMsg);
+        // console.warn('[InAppUpdates] ⚠️ Verification check had an error, but continuing...', verifyErrorMsg);
       }
 
       // Get current app version info
       const currentVersionName = DeviceInfo.getVersion();
       const currentVersionCode = DeviceInfo.getBuildNumber();
-      console.log('[InAppUpdates] Device Info:');
-      console.log('[InAppUpdates]   Current Version Name:', currentVersionName);
-      console.log('[InAppUpdates]   Current Version Code:', currentVersionCode);
+      // console.log('[InAppUpdates] Device Info:');
+      // console.log('[InAppUpdates]   Current Version Name:', currentVersionName);
+      // console.log('[InAppUpdates]   Current Version Code:', currentVersionCode);
 
       // Check for updates
       console.log('[InAppUpdates] Step 2: Checking for available updates...');
       const result = await inAppUpdates.checkNeedsUpdate();
       
-      console.log('[InAppUpdates] 📊 Update check result:', JSON.stringify(result, null, 2));
-      console.log('[InAppUpdates] Should update?', result?.shouldUpdate);
-      console.log('[InAppUpdates] Store version:', result?.storeVersion);
-      console.log('[InAppUpdates] Current version:', result?.currentVersion);
-      console.log('[InAppUpdates] Is flexible allowed?', result?.other?.isFlexibleUpdateAllowed);
-      console.log('[InAppUpdates] Is immediate allowed?', result?.other?.isImmediateUpdateAllowed);
+      // console.log('[InAppUpdates] 📊 Update check result:', JSON.stringify(result, null, 2));
+      // console.log('[InAppUpdates] Should update?', result?.shouldUpdate);
+      // console.log('[InAppUpdates] Store version:', result?.storeVersion);
+      // console.log('[InAppUpdates] Current version:', result?.currentVersion);
+      // console.log('[InAppUpdates] Is flexible allowed?', result?.other?.isFlexibleUpdateAllowed);
+      // console.log('[InAppUpdates] Is immediate allowed?', result?.other?.isImmediateUpdateAllowed);
       
       // Check update availability from the result
       const updateAvailability = result?.other?.updateAvailability;
@@ -269,18 +268,18 @@ class InAppUpdates {
       const isImmediateAllowed = result?.other?.isImmediateUpdateAllowed === true;
       const storeVersionCode = result?.other?.versionCode || (result?.storeVersion ? parseInt(result.storeVersion) : null);
       
-      console.log('[InAppUpdates] Update Availability Status:', updateAvailability);
-      console.log('[InAppUpdates] Store Version Code:', storeVersionCode);
-      console.log('[InAppUpdates] Device Version Code:', currentVersionCode);
+      // console.log('[InAppUpdates] Update Availability Status:', updateAvailability);
+      // console.log('[InAppUpdates] Store Version Code:', storeVersionCode);
+      // console.log('[InAppUpdates] Device Version Code:', currentVersionCode);
       
       // Additional version comparison
       if (storeVersionCode && currentVersionCode) {
         const deviceVersionCodeNum = parseInt(currentVersionCode) || 0;
         const storeVersionCodeNum = parseInt(storeVersionCode) || 0;
-        console.log('[InAppUpdates] Version Code Comparison:');
-        console.log('[InAppUpdates]   Device:', deviceVersionCodeNum);
-        console.log('[InAppUpdates]   Store:', storeVersionCodeNum);
-        console.log('[InAppUpdates]   Update needed?', storeVersionCodeNum > deviceVersionCodeNum);
+        // console.log('[InAppUpdates] Version Code Comparison:');
+        // console.log('[InAppUpdates]   Device:', deviceVersionCodeNum);
+        // console.log('[InAppUpdates]   Store:', storeVersionCodeNum);
+        // console.log('[InAppUpdates]   Update needed?', storeVersionCodeNum > deviceVersionCodeNum);
         
         // If version codes indicate update needed but shouldUpdate is false
         if (storeVersionCodeNum > deviceVersionCodeNum && !result.shouldUpdate) {
@@ -288,16 +287,16 @@ class InAppUpdates {
           // Status 3 = UPDATE_NOT_AVAILABLE, but version codes suggest otherwise
           // Status 2 = UPDATE_IN_PROGRESS (downloading or downloaded) - don't show "Update Pending"
           if (updateAvailability === 3) {
-            console.warn('[InAppUpdates] ⚠️ WARNING: Version codes indicate update needed, but Play Store says no update available!');
-            console.warn('[InAppUpdates] This might be a timing issue - Play Store may need more time to propagate');
-            console.warn('[InAppUpdates] Try waiting a few minutes and check again');
+            // console.warn('[InAppUpdates] ⚠️ WARNING: Version codes indicate update needed, but Play Store says no update available!');
+            // console.warn('[InAppUpdates] This might be a timing issue - Play Store may need more time to propagate');
+            // console.warn('[InAppUpdates] Try waiting a few minutes and check again');
             // Don't show alert - just log silently
             return;
           } else if (updateAvailability === 2) {
             // Update is in progress - start immediate update
             // setUpdateAvailable is a store action, not on appConfig; call via store
             useConfigStore.getState().setUpdateAvailable(true);
-            console.log('[InAppUpdates] Update is in progress - starting immediate update');
+            // console.log('[InAppUpdates] Update is in progress - starting immediate update');
             this.startDownload(inAppUpdates);
             return;
           }
@@ -308,8 +307,8 @@ class InAppUpdates {
       // Update availability: 1 = UPDATE_AVAILABLE, 2 = UPDATE_IN_PROGRESS, 3 = UPDATE_NOT_AVAILABLE
       // For immediate updates, we don't need to handle status 2 (in progress) - just start the update
       if (updateAvailability === 2) {
-        console.log('[InAppUpdates] ⚠️ Update is already in progress');
-        console.log('[InAppUpdates] Starting immediate update to complete the process...');
+        // console.log('[InAppUpdates] ⚠️ Update is already in progress');
+        // console.log('[InAppUpdates] Starting immediate update to complete the process...');
         // For immediate updates, just start the update - Play Store will handle it
         this.startDownload(inAppUpdates);
         return;
@@ -324,13 +323,13 @@ class InAppUpdates {
       const isUpdateAvailable = updateAvailability === 1 && hasNewerVersion;
       
       if (isUpdateAvailable) {
-        console.log('[InAppUpdates] ✅ UPDATE AVAILABLE!');
-        console.log('[InAppUpdates] Version codes confirm update is needed');
+        // console.log('[InAppUpdates] ✅ UPDATE AVAILABLE!');
+        // console.log('[InAppUpdates] Version codes confirm update is needed');
         
         // Only proceed if immediate updates are allowed
         if (!isImmediateAllowed) {
-          console.log('[InAppUpdates] ⚠️ Update available but immediate updates are not allowed');
-          console.log('[InAppUpdates] User should update from Play Store');
+          // console.log('[InAppUpdates] ⚠️ Update available but immediate updates are not allowed');
+          // console.log('[InAppUpdates] User should update from Play Store');
           Alert.alert(
             'Update Available',
             'A new version is available. Please update from the Play Store.',
@@ -339,41 +338,41 @@ class InAppUpdates {
           return;
         }
         
-        console.log('[InAppUpdates] Starting immediate update process...');
-        console.log('[InAppUpdates] Using IMMEDIATE update (force update)');
+        // console.log('[InAppUpdates] Starting immediate update process...');
+        // console.log('[InAppUpdates] Using IMMEDIATE update (force update)');
         
         // Directly start download - Play Store will show its native dialog and force update
-        console.log('[InAppUpdates] Starting immediate update - Play Store dialog will appear');
+        // console.log('[InAppUpdates] Starting immediate update - Play Store dialog will appear');
         this.startDownload(inAppUpdates);
       } else {
         // No update available
         if (updateAvailability === 3) {
-          console.log('[InAppUpdates] ℹ️ No update available (UPDATE_NOT_AVAILABLE)');
+          // console.log('[InAppUpdates] ℹ️ No update available (UPDATE_NOT_AVAILABLE)');
         } else if (updateAvailability === 1 && !hasNewerVersion) {
-          console.log('[InAppUpdates] ℹ️ Update availability is 1, but version codes show no update needed');
-          console.log('[InAppUpdates] Device version:', currentVersionCode, 'Store version:', storeVersionCode);
+          // console.log('[InAppUpdates] ℹ️ Update availability is 1, but version codes show no update needed');
+          // console.log('[InAppUpdates] Device version:', currentVersionCode, 'Store version:', storeVersionCode);
         } else {
-          console.log('[InAppUpdates] ℹ️ No update available');
+          // console.log('[InAppUpdates] ℹ️ No update available');
         }
-        console.log('[InAppUpdates] App is up to date or update check returned false');
-        console.log('[InAppUpdates] Result details:', {
-          shouldUpdate: result?.shouldUpdate,
-          storeVersion: result?.storeVersion,
-          currentVersion: result?.currentVersion,
-          updateAvailability: updateAvailability,
-          isFlexibleAllowed: isFlexibleAllowed,
-          isImmediateAllowed: isImmediateAllowed
-        });
+        // console.log('[InAppUpdates] App is up to date or update check returned false');
+        // console.log('[InAppUpdates] Result details:', {
+        //   shouldUpdate: result?.shouldUpdate,
+        //   storeVersion: result?.storeVersion,
+        //   currentVersion: result?.currentVersion,
+        //   updateAvailability: updateAvailability,
+        //   isFlexibleAllowed: isFlexibleAllowed,
+        //   isImmediateAllowed: isImmediateAllowed
+        // });
       }
     } catch (error) {
       console.error('[InAppUpdates] ❌❌❌ ERROR in update check:', error);
       
       // Handle specific error cases
       const errorMessage = error?.message || error?.toString() || '';
-      console.error('[InAppUpdates] Error message:', errorMessage);
-      console.error('[InAppUpdates] Full error:', JSON.stringify(error, null, 2));
+      // console.error('[InAppUpdates] Error message:', errorMessage);
+      // console.error('[InAppUpdates] Full error:', JSON.stringify(error, null, 2));
       if (error?.stack) {
-        console.error('[InAppUpdates] Stack trace:', error.stack);
+        // console.error('[InAppUpdates] Stack trace:', error.stack);
       }
       
       if (errorMessage.includes('not owned') || errorMessage.includes('Install Error(-10)')) {
