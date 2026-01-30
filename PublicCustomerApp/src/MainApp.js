@@ -34,18 +34,7 @@ import useTripStatus from './notCustomer/hooks/useTripStatus';
 const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const messagingInstance = getMessaging(firebaseApp);
 
-// Register background message handler at the top level
-setBackgroundMessageHandler(messagingInstance, async remoteMessage => {
-  console.log('Message handled in the background!', remoteMessage);
-  const data = remoteMessage?.data || {};
-  const title = data?.title ?? 'Notification';
-  const clearedtxt = title?.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, '').trim();
-  if (clearedtxt === 'driver assigned') {
-    console.log('Playing trip alert sound');
-    tripAlert.playAlertSound();
-    Vibration.vibrate();
-  }
-});
+
 
 const MainAppContent = () => {
   const appearance = useColorScheme();
@@ -127,7 +116,7 @@ const MainAppContent = () => {
     
       if (clearedtxt == 'driver assigned') {
         console.log('Playing trip alert sound');
-        tripAlert.playAlertSound()
+        tripAlert.playDriverAllocatedAlert();
         Vibration.vibrate();
       }
     })

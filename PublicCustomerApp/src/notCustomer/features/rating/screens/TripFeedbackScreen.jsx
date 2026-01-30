@@ -29,6 +29,7 @@ import InAppReview from 'react-native-in-app-review';
 import { firebaselog_tripReview } from '../../../../common/utils/FirebaseAnalytics';
 import  useUserInfoStore  from '../../../../common/store/useUserInfoStore';
 import useConfigStore from '../../../store/useConfigStore';
+import Social from '../components/Social';
 export default function TripFeedbackScreen() {
   
     
@@ -38,7 +39,7 @@ export default function TripFeedbackScreen() {
     const bounceValue = useRef(new Animated.Value(height)).current;
     const overlayOpacity = useRef(new Animated.Value(0)).current;
     const { reset,setShowSocialMediaModal } = useStackScreenStore();
-    const { setActiveTripId } = useUserInfoStore();
+    const { setActiveTripId ,completedTrips} = useUserInfoStore();
     const {t} = useTranslation();
     const { appConfig } = useConfigStore();  
 
@@ -62,8 +63,10 @@ export default function TripFeedbackScreen() {
     setActiveTripId(null);
     reset()
     console.log("appConfig?.IN_APP_REVIEW_ALWAYS",appConfig?.IN_APP_REVIEW_ALWAYS)
-    if(appConfig?.IN_APP_REVIEW_ALWAYS){
-    triggerInAppReview();
+    console.log("completedTrips",completedTrips)
+    if(appConfig?.IN_APP_REVIEW_ALWAYS && completedTrips >=1){
+      console.log("Triggering In App Review on close")
+      triggerInAppReview();
     }
     // showsocialMediaModal();
   }
@@ -167,7 +170,8 @@ export default function TripFeedbackScreen() {
       console.log("appConfig?.IN_APP_REVIEW_REQUIRED_RATING",appConfig?.IN_APP_REVIEW_REQUIRED_RATING)
       // showNotification(t('success'),t('feedback_submitted_successfully'),"success")
        
-      if(!appConfig?.IN_APP_REVIEW_ALWAYS && ratingData.rating >=appConfig?.IN_APP_REVIEW_REQUIRED_RATING){
+      if(appConfig?.IN_APP_REVIEW_REQUIRED_RATING && ratingData.rating >=appConfig?.IN_APP_REVIEW_REQUIRED_RATING){
+      console.log("Triggering In App Review on 5 star")
        triggerInAppReview();
       }
     
@@ -258,8 +262,9 @@ export default function TripFeedbackScreen() {
             </AdaptiveText>
           )}
         </View>
-        <View style={styles.dottedLine}></View>
-        <View style={styles.Rideisnfo}>   
+
+        {/* <View style={styles.dottedLine}></View> */}
+        {/* <View style={styles.Rideisnfo}>   
             <AdaptiveText style={styles.RideFareText}>
             ₹ {tripFare}
             </AdaptiveText>
@@ -277,10 +282,10 @@ export default function TripFeedbackScreen() {
 
                
             </View>
-        </View>
-      
-          <View style={{marginVertical:10}}>
-            <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={driverDetails?.vehicleType} vehicleBrand={driverDetails?.vehicleBrand} vehicleModel={driverDetails?.vehicleModel} vehicleNumber={driverDetails?.vehicleNumber} layoutStyle={"row"} descriptonSize={12}/>
+        </View> */}
+          <Social/>
+          <View >
+            {/* <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={driverDetails?.vehicleType} vehicleBrand={driverDetails?.vehicleBrand} vehicleModel={driverDetails?.vehicleModel} vehicleNumber={driverDetails?.vehicleNumber} layoutStyle={"row"} descriptonSize={12}/> */}
             </View>
            <RatingBox onRatingSubmit={handleSubmit} isSubmitting={isSubmitting}/>
            <TouchableOpacity onPress={handleClose}>

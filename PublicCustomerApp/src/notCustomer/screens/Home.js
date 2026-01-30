@@ -519,6 +519,9 @@ const Home = () => {
         if(Response?.userStats?.stats?.cancelTripOccurance){
           setCancelledTripsOccurance(Response?.userStats?.stats?.cancelTripOccurance);
         }
+        if (Response?.userStats?.stats?.completedTrips) {
+          setCompletedTrips(Response?.userStats?.stats?.completedTrips);
+        }
 
       } else {
         setConfigError(true);
