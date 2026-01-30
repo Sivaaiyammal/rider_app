@@ -9,7 +9,6 @@ import notwsService from '../common/controllers/socketServices/NOTSocketServices
 import publicrideDriverApi from '../notdriver/api/publicrideDriverApi';
 import RideMatchWSService from '../common/controllers/socketServices/RideMatchSocketService';
 import useUserStore from '../common/store/useUserStore';
-import { showNotification } from '../common/components/Alerts/showNotification';
 import { useNavigation } from '@react-navigation/native';
 import usePublicDriverStore from '../notdriver/store/usePublicDriverStore';
 

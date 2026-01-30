@@ -32,6 +32,7 @@ import { Colors, Fonts } from '../../common/constants/constants';
 import { height } from '../../common/utils/scalingutils';
 import { useTranslation } from 'react-i18next';
 import overlayController from '../../common/controllers/Overlay';
+import rideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
 
 const FloatingButton = ({layOutHeight}) => {
   const {driverStatus, setDriverStatus} = useDriverStatusStore();
@@ -135,6 +136,7 @@ const FloatingButton = ({layOutHeight}) => {
           // BGLocationTask.stopDriverBgTask()
           // console.log("STATUS UPDATE:", status)
            if (status === 'online') {
+            await rideMatchWSService.initDriverRoomSocket(userInfo?._id);
             BGLocationTask.runDriverBgTask();
             if (overlayCheckSupported && hasOverlayPermission) {
               overlayController.startOverlay();

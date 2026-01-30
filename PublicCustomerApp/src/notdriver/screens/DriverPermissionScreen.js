@@ -19,6 +19,7 @@ import BgLocation from '../../notdriver/assets/icons/Location.svg';
 import useDeviceTokenStore from '../../common/store/useDeviceTokenStore';
 import overlayController from '../../common/controllers/Overlay';
 import { useTranslation } from 'react-i18next';
+import rideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
 
 const DriverPermissionScreen = () => {
   const {t} = useTranslation();
@@ -130,6 +131,7 @@ const DriverPermissionScreen = () => {
           setDriverStatus(status)
           if (status === 'online') {
             BGLocationTask.runDriverBgTask();
+            await rideMatchWSService.initDriverRoomSocket(userInfo?._id);
             if (overlayCheckSupported && hasOverlayPermission) {
               overlayController.startOverlay();
             }
