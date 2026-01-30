@@ -1092,5 +1092,8 @@
     "please_clear_dues_to_resume_trips": "ಸವಾರಿಗಳನ್ನು ಸ್ವೀಕರಿಸುವುದನ್ನು ಮುಂದುವರಿಸಲು ನಿಮ್ಮ ಬಾಕಿಗಳನ್ನು ಪಾವತಿಸಿ.",
     "payment_due_soon": "ಪಾವತಿ ಶೀಘ್ರದಲ್ಲೇ ಬಾಕಿ ಇದೆ.",
     "due_amount_label": "ಬಾಕಿ ಮೊತ್ತ",
-    "next_due_in_days": "ಮುಂದಿನ ಬಾಕಿ ಇರುವ ಸಮಯ"
+    "next_due_in_days": "ಮುಂದಿನ ಬಾಕಿ ಇರುವ ಸಮಯ",
+    "driver_access_ios_alert_title": "iOS ನಲ್ಲಿ ಚಾಲಕ ಆಪ್",
+    "driver_access_ios_alert_message": "Namma Ooru Taxi ಚಾಲಕ ಆಪ್ ಈಗ iOS ನಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು ಚಾಲಕ ಆಪ್ ಪ್ರವೇಶಿಸಲು Android ಸಾಧನವನ್ನು ಬಳಸಿ.",
+    "Sign_Up_to_Become_a_Driver": "ಚಾಲಕನಾಗಲು ಸೈನ್ ಅಪ್ ಮಾಡಿ"
 }

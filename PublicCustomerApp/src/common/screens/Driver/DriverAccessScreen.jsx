@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, ScrollView, Dimensions, Linking, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, ScrollView, Dimensions, Linking, Image, Platform, Alert } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import AdaptiveText from '../../../notCustomer/components/Common/AdaptiveText';
@@ -8,10 +8,14 @@ import { colors, Fonts } from '../../../notCustomer/constants/constants';
 import { GlobalContext } from '../../../context/GlobalContext';
 import { useStackScreenStore } from '../../../notCustomer/store/useStackScreenStore';
 import { goBack } from '../../navigation/RootNavigation';
+import { DataStore } from '../../controllers/DataStore';
+import { t } from 'i18next';
+import useUserInfoStore from '../../store/useUserInfoStore';
 const PLAY_STORE_PACKAGE_NAME = 'com.vmtrackers';
 const PLAY_STORE_WEB_URL = `https://play.google.com/store/apps/details?id=${PLAY_STORE_PACKAGE_NAME}`;
 const DRIVER_APP_LOGO = require('../../../notCustomer/assets/image/driverLogo.webp');
 const DRIVER_BANNER = require('../../../notCustomer/assets/image/driverBanner.webp');
+
 
 const FEATURE_CARDS = [
   {
@@ -73,7 +77,10 @@ const DriverAccessScreen = ({fromHome=false}) => {
   const cardTitleColor = colors.white;
   const cardDescriptionColor = 'rgba(255, 255, 255, 0.72)';
   const { setStackScreen , goBack} = useStackScreenStore();
-
+  const { reset } = useStackScreenStore(); 
+  const { resetUserInfo } = useUserInfoStore();   
+  const { removeListener } = useContext(GlobalContext);   
+ 
   useEffect(() => {
     const interval = setInterval(() => {
       const nextIndex = (currentIndexRef.current + 1) % FEATURE_CARDS.length;
@@ -146,6 +153,33 @@ const DriverAccessScreen = ({fromHome=false}) => {
       console.warn('Failed to open Play Store web link', error);
     }
   };
+  const Logout = async () => {
+        await DataStore.storeData('access_token', null);
+        await DataStore.storeData('refresh_token', null);
+        await DataStore.storeData('userdetails', null);
+        reset()
+        resetUserInfo();
+        await removeListener();
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'WelcomeScreen' }],
+        });
+    
+  };
+
+  const handleClick = () => {
+    if(Platform.OS === 'android'){
+      Logout();
+    }
+    if (Platform.OS === 'ios') {
+      Alert.alert(
+        t('driver_access_ios_alert_title'),
+        t('driver_access_ios_alert_message')
+      )
+    }
+     
+    
+  };
 
   return (
     <View style={[styles.container, { backgroundColor:  '#F5F5F5',}] }>
@@ -173,10 +207,11 @@ const DriverAccessScreen = ({fromHome=false}) => {
          
           <TouchableOpacity
             style={[styles.linkButton, { backgroundColor:  colors.blue_xxdark }] }
-             onPress={() => Linking.openURL(PLAY_STORE_WEB_URL)}
+             onPress={handleClick}
           >
             <Text style={[styles.linkButtonText, { color: colors.yellow}] }>
-              {i18n.t('driver_access_download_driver_app')}
+              
+              {Platform.OS === 'ios' ?  i18n.t('driver_access_download_driver_app') : i18n.t('Sign_Up_to_Become_a_Driver') }
             </Text>
           </TouchableOpacity>
 

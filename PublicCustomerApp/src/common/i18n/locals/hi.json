@@ -1092,5 +1092,8 @@
     "please_clear_dues_to_resume_trips": "सवारी स्वीकार करना जारी रखने के लिए अपना बकाया चुका दें।",
     "payment_due_soon": "भुगतान जल्द ही देय है",
     "due_amount_label": "बकाया राशि",
-    "next_due_in_days": "अगली देय तिथि में"
+    "next_due_in_days": "अगली देय तिथि में",
+    "driver_access_ios_alert_title": "iOS पर ड्राइवर ऐप",
+    "driver_access_ios_alert_message": "Namma Ooru Taxi ड्राइवर ऐप फिलहाल iOS पर उपलब्ध नहीं है। कृपया ड्राइवर ऐप का उपयोग करने के लिए Android डिवाइस का उपयोग करें।",
+    "Sign_Up_to_Become_a_Driver": "ड्राइवर बनने के लिए साइन अप करें"
 }
