@@ -12,7 +12,7 @@ import { DataStore } from '../../common/controllers/DataStore';
 import { showNotification } from '../../common/components/Alerts/showNotification';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 import { settingsScreen } from '../styles/SettingsStyles';
-import { Colors, Fonts } from '../../common/constants/constants';
+import { Colors, contactPhone, Fonts } from '../../common/constants/constants';
 import { height } from '../../common/utils/scalingutils';
 import VehicleIcon from '../../notdriver/assets/icons/vehicle.svg'
 import DocWhiteIcon from '../../notdriver/assets/icons/doc_white.svg'

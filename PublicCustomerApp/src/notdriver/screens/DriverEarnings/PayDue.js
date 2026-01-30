@@ -14,7 +14,7 @@ import useTripsStore from '../../store/useTripsStore';
 import APIRequest from '../../../common/APIRequest';
 import { showNotification } from '../../../common/components/Alerts/showNotification';
 import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter';
-import { Colors, Fonts } from '../../../common/constants/constants';
+import { Colors, contactMail, contactPhone, Fonts } from '../../../common/constants/constants';
 import { useTranslation } from 'react-i18next';
 import useUserStore from '../../../common/store/useUserStore';
 
@@ -391,7 +391,7 @@ const PayDue = ({driverDue, driverDueDate , fetchDueDate, driverInfo}) => {
         style={styles.headerContinaerBG}>
         <View style={styles.payDueContainer}>
           <Text style={styles.payDueText}>{t('pay_due_amount')}</Text>
-          <Text style={styles.priceTxt}>₹{driverDue ? driverDue.toFixed(2) : 0}</Text>
+          <Text style={styles.priceTxt}>₹{driverDue ? driverDue?.toFixed(2) : 0}</Text>
           {driverDueDate && (
             <Text style={styles.dueTxt}>
               {t('next_due_date')}:{' '}

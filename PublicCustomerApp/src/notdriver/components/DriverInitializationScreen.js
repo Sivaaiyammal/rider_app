@@ -192,6 +192,19 @@ export default function DriverInitializationScreen() {
   useEffect(() => {
     if (tripData) {
         setTripData(tripData);
+        console.log('Fetched trip data:', tripData[0]?.status);
+        // if (tripData[0]?.status === "MATCHED"){
+        //      useTripAcceptStore.setState({tripDetails: tripData[0]});
+        //      useTripAcceptStore.setState({tripId: tripData[0]?.trip_id});
+        //      useTripAcceptStore.setState({currentFare: tripData[0]?.fare});
+        //      useTripAcceptStore.setState({requestId: tripData[0]?.request_id});
+        //      useTripAcceptStore.setState({timeOutSeconds: tripData[0]?.timeout_seconds});
+        //      useTripAcceptStore.setState({alertedAt: tripData[0]?.alerted_at});
+        //      useTripAcceptStore.setState({
+        //      escalationDetails: tripData[0]?.escalation_details,
+        //     });
+        //    setStackScreen('TripAccept')
+        // }
         if (tripData[0]?.status === "ACCEPTED" || tripData[0]?.status === "PICKEDUP" || tripData[0]?.status === "DROPPED"){
           setActiveTripData(tripData);
            setFareBreakDown(tripData[0]?.paymentDetails)
