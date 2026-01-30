@@ -406,7 +406,6 @@ const DriverOnRide = () => {
         setCurrentTripAcceptedTime(new Date().getTime());
         firebaselog_onRide('OR_Status(OR_S)', 'OR_S:pickedup')
         setTripDetails(null)
-        setDirectionResponse(null)
         // updateDirectionsPoints();
       }else{
         showNotification(res?.message, res?.message, 'danger');
@@ -431,19 +430,19 @@ const DriverOnRide = () => {
   const updateDirectionsPoints = () => {
     if (!userLocation) return;
     if (tripsStatus === 'ACCEPTED') {
-      if (tripDetails?.pickUpRoute ) {
-        const request = tripDetails?.pickUpRoute?.request;
-        const response = tripDetails?.pickUpRoute?.response;
-        const padding = [50, 50, 50, height * 0.5];
-        setDirectionResponse([
-                {
-                  requests: request,
-                  response: response,
-                  padding: padding.map(v => parseInt(v, 10)),
-                },
-        ]);
-        return;
-      }
+      // if (tripDetails?.pickUpRoute ) {
+      //   const request = tripDetails?.pickUpRoute?.request;
+      //   const response = tripDetails?.pickUpRoute?.response;
+      //   const padding = [50, 50, 50, height * 0.5];
+      //   setDirectionResponse([
+      //           {
+      //             requests: request,
+      //             response: response,
+      //             padding: padding.map(v => parseInt(v, 10)),
+      //           },
+      //   ]);
+      //   return;
+      // }
       const directions = [
         {
           lat: activeTripData[0]?.stops[0]?.location[1],
@@ -463,20 +462,20 @@ const DriverOnRide = () => {
     } 
 
     if (tripsStatus === 'PICKEDUP'){
-      if (tripDetails?.routeData) {
-        const request = tripDetails?.routeData?.request;
-        const response = tripDetails?.routeData?.response;
+      // if (tripDetails?.routeData) {
+      //   const request = tripDetails?.routeData?.request;
+      //   const response = tripDetails?.routeData?.response;
         
-        const padding = [50, 50, 50, height * 0.5];
-        setDirectionResponse([
-                {
-                  requests: request,
-                  response: response,
-                  padding: padding.map(v => parseInt(v, 10)),
-                },
-        ]);
-        return;
-      }
+      //   const padding = [50, 50, 50, height * 0.5];
+      //   setDirectionResponse([
+      //           {
+      //             requests: request,
+      //             response: response,
+      //             padding: padding.map(v => parseInt(v, 10)),
+      //           },
+      //   ]);
+      //   return;
+      // }
       nonreachedStops.unshift({
         lat: userLocation[0] || 0,
         lon: userLocation[1] || 0,
