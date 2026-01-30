@@ -297,6 +297,7 @@ const TripAccept = () => {
     }
     return () => {
       setDirectionPoints(null);
+      setDirectionResponse(null);
     };
   }, [stopsForDisplay, tripDetails]);
 

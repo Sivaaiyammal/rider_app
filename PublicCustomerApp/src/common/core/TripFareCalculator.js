@@ -25,36 +25,36 @@ const TripFareCalculator = ({ tripData, onDone, setLoading, setError, isGetFare 
     })) || [];
   };
 
-  // Fetch route data from external API
-  const fetchRouteData = async (driverLoc) => {
-    try {
-      const coordinatesArray = latlngs();
-      if (userLocation) {
-        coordinatesArray.push({
-          lat: userLocation[0],
-          lon: userLocation[1]
-        });
-      }
-      const jsonObject = {
-        costing: 'auto',
-        costing_options: {},
-        language: 'en',
-        locations: coordinatesArray ? coordinatesArray : [],
-        units: 'kilometers',
-      };
-      const jsonString = JSON.stringify(jsonObject);
-      const encodedData = encodeURIComponent(jsonString);
-      const url = `${Config.ROUTE_API_URL}?data=${encodedData}&access_token=${Config.NE_ACCESS_TOKEN}`;
-      const response = await fetch(url, { method: 'GET' });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const routeData = await response.json();
-      // Return only trip info
-      return routeData?.trip || {};
-    } catch (error) {
-      console.error('fetchRouteData error:', error);
-      return {};
-    }
-  };
+  // // Fetch route data from external API
+  // const fetchRouteData = async (driverLoc) => {
+  //   try {
+  //     const coordinatesArray = latlngs();
+  //     if (userLocation) {
+  //       coordinatesArray.push({
+  //         lat: userLocation[0],
+  //         lon: userLocation[1]
+  //       });
+  //     }
+  //     const jsonObject = {
+  //       costing: 'auto',
+  //       costing_options: {},
+  //       language: 'en',
+  //       locations: coordinatesArray ? coordinatesArray : [],
+  //       units: 'kilometers',
+  //     };
+  //     const jsonString = JSON.stringify(jsonObject);
+  //     const encodedData = encodeURIComponent(jsonString);
+  //     const url = `${Config.ROUTE_API_URL}?data=${encodedData}&access_token=${Config.NE_ACCESS_TOKEN}`;
+  //     const response = await fetch(url, { method: 'GET' });
+  //     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+  //     const routeData = await response.json();
+  //     // Return only trip info
+  //     return routeData?.trip || {};
+  //   } catch (error) {
+  //     console.error('fetchRouteData error:', error);
+  //     return {};
+  //   }
+  // };
 
   // Fetch route data from external API
   const fetchMapMatchData = async (driverInitialLatLng) => {
