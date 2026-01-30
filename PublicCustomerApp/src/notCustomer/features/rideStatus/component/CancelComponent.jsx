@@ -42,7 +42,7 @@ const CancelComponent = ({ onClose, onCancel, loading,cancelLoading,rideStatus }
   const {t} = useTranslation();
   const handleSelect = (reason) => {
     setSelected(reason);
-    if (reason !== 'Other') {
+    if (reason !== 'other') {
       setOtherReason('');
     }
   };
@@ -52,7 +52,7 @@ const CancelComponent = ({ onClose, onCancel, loading,cancelLoading,rideStatus }
       setIsLoading(true);
       
       try {
-        if (selected === 'Other') {
+        if (selected === 'other') {
           if(!otherReason.trim()) {
               Alert.alert(t('please_enter_a_reason'));
               setIsLoading(false);
@@ -109,9 +109,9 @@ const CancelComponent = ({ onClose, onCancel, loading,cancelLoading,rideStatus }
           <AdaptiveText style={styles.goBackText}>{t('go_back')}</AdaptiveText>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[  styles.confirmBtn, {opacity: !selected || (selected === 'Other' && !otherReason.trim()) || isLoading ? 0.5 : 1}]}
+          style={[  styles.confirmBtn, {opacity: !selected || (selected === 'other' && !otherReason.trim()) || isLoading ? 0.5 : 1}]}
           onPress={handleConfirm}
-          disabled={!selected || (selected === 'Other' && !otherReason.trim()) || isLoading || cancelLoading || loading}
+          disabled={!selected || (selected === 'other' && !otherReason.trim()) || isLoading || cancelLoading || loading}
         >
           {isLoading || cancelLoading || loading ? (
             <ActivityIndicator size="small" color="#ff4d4f" />
