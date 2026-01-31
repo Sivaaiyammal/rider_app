@@ -207,6 +207,11 @@ export const deleteAccount = async (payload) => {
     return data
   }
 
+  export const updateFcmTokenAPI = async (payload) => {
+    const { data } = await apiClient.post('/publicrides/customer/v2/updateFCMToken', payload)
+    return data
+  }
+
 
 
 
