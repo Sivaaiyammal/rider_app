@@ -185,7 +185,7 @@ const DriverOnRide = () => {
       setLoading(true);
       if (tripsStatus === 'ACCEPTED') {
         const api = new APIRequest();
-        const response = await api.request(`/publicrides/driver/v2/cancelTrip`, 'POST', {tripId:activeTripData[0]._id, reason: reason, isBeforePickup: true,  droppedAtLoc: {
+        const response = await api.request(`/publicrides/driver/v2/cancelTrip`, 'POST', {tripId:activeTripData[0]?._id, reason: reason, isBeforePickup: true,  droppedAtLoc: {
           lat: userLocation?.[0],
           lon: userLocation?.[1]
         }}, userInfo.token);
@@ -206,7 +206,7 @@ const DriverOnRide = () => {
       } else {
         setLoading(true);
         try {
-          const cancelData = {driver_id:userInfo?._id, trip_id:activeTripData[0]._id, response: 'reject'}
+          const cancelData = {driver_id:userInfo?._id, trip_id:activeTripData?.[0]?._id, response: 'reject'}
           RideMatchWSService.emit('driver_trip_response', cancelData)
           setCancelRideModalVisible(false)
           DataStore.storeData('activeTripId', null);

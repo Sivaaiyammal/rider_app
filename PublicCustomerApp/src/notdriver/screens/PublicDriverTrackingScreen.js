@@ -52,7 +52,7 @@ const PublicDriverTrackingScreen = () => {
       const api = new APIRequest();
       const url = `/publicrides/driver/v2/updatePaymentReceive`;
       const payload = {
-        tripId: activeTripData[0]?._id,
+        tripId: activeTripData?.[0]?._id,
         fareDetails: fareDetails,
         status: isOnGoing ? 'DIVERGED' : 'COMPLETED',
         paymentMethod:paymentMethod,
@@ -114,7 +114,7 @@ const PublicDriverTrackingScreen = () => {
       const api = new APIRequest();
       const url = `/publicrides/driver/v2/driverPassengerRating`;
       const payload = {
-        tripId:activeTripData[0]._id,
+        tripId:activeTripData?.[0]?._id,
         rating:rating,
         comment: comments
     };

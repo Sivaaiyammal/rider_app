@@ -12,7 +12,7 @@ import tripAlert from '../TripAlert';
 import { cancelTrip } from '../../../notdriver/components/CancelTripUpdate';
 import APIRequest from '../APIRequest';
 import useUserStore from '../../store/useUserStore';
-import { firebaselog_onBoarding, firebaselog_tripBooking } from '../../utils/FirebaseAnalytics';
+import { firebaselog_tripBooking } from '../../utils/FirebaseAnalytics';
 
 const SOCKET_URL = Config.DRIVER_SOCKET_URL;
 const {NeNativeModule} = NativeModules;
@@ -33,10 +33,10 @@ class RideMatchWSService {
     this.onTripRequest = this.onTripRequest.bind(this);
     this.onHotSpotRegionUpdate = this.onHotSpotRegionUpdate.bind(this);
     this.onDriverReponseReceived = this.onDriverReponseReceived.bind(this);
-    this._onConnect = this._onConnect.bind(this);
-    this._onConnectError = this._onConnectError.bind(this);
-    this._attachListeners = this._attachListeners.bind(this);
-    this._detachListeners = this._detachListeners.bind(this);
+    // this._onConnect = this._onConnect.bind(this);
+    // this._onConnectError = this._onConnectError.bind(this);
+    // this._attachListeners = this._attachListeners.bind(this);
+    // this._detachListeners = this._detachListeners.bind(this);
   }
 
   async _acceptTripWithRetry(tripId, maxRetries = 3, token) {
@@ -73,6 +73,7 @@ class RideMatchWSService {
    * ===== Event handlers =====
    */
   async onTripRequest(data) {
+    console.log('hari-->>trip-->>request',data);
     const {setStackScreen} = useStackScreenStore.getState();
     if (data?.type === 'trip_request') {
       useTripAcceptStore.setState({tripDetails: data.data});
@@ -193,40 +194,40 @@ class RideMatchWSService {
   /**
    * ===== Socket lifecycle helpers =====
    */
-  _onConnect() {
-    if (!this.socket) return;
-    console.log('Driver Socket connected:', SOCKET_URL, this.socket.id);
-    this._attachListeners(); // ensure listeners attached once
-    this._isConnecting = false;
-  }
+  // _onConnect() {
+  //   // if (!this.socket) return;
+  //   console.log('Driver Socket connected:', SOCKET_URL, this.socket.id);
+  //   this._attachListeners(); // ensure listeners attached once
+  //   this._isConnecting = false;
+  // }
 
-  _onConnectError(error) {
-    console.error('Socket error: Failed to connect to socket server', error);
-    this._isConnecting = false;
-  }
+  // _onConnectError(error) {
+  //   console.error('Socket error: Failed to connect to socket server', error);
+  //   this._isConnecting = false;
+  // }
 
-  _attachListeners() {
-    if (!this.socket || this._listenersAttached) return;
+  // _attachListeners() {
+  //   // if (!this.socket || this._listenersAttached) return;
 
-    // Attach with stable function refs (bound in constructor)
-    this.socket.on('trip_request', this.onTripRequest);
-    this.socket.on('hotspot_update', this.onHotSpotRegionUpdate);
-    this.socket.on('driver_response_received', this.onDriverReponseReceived);
-    this.socket.on('cancel_ride_match', this.onRideMatchCancel);
-    // If you want only one driver_response per session, swap to:
-    // this.socket.once('driver_response_received', this.onDriverReponseReceived);
+  //   // Attach with stable function refs (bound in constructor)
+  //   this.socket.on('trip_request', this.onTripRequest);
+  //   this.socket.on('hotspot_update', this.onHotSpotRegionUpdate);
+  //   this.socket.on('driver_response_received', this.onDriverReponseReceived);
+  //   this.socket.on('cancel_ride_match', this.onRideMatchCancel);
+  //   // If you want only one driver_response per session, swap to:
+  //   // this.socket.once('driver_response_received', this.onDriverReponseReceived);
 
-    this._listenersAttached = true;
-  }
+  //   // this._listenersAttached = true;
+  // }
 
   _detachListeners() {
-    if (!this.socket || !this._listenersAttached) return;
+    // if (!this.socket || !this._listenersAttached) return;
 
     this.socket.off('trip_request', this.onTripRequest);
     this.socket.off('hotspot_update', this.onHotSpotRegionUpdate);
     this.socket.off('driver_response_received', this.onDriverReponseReceived);
     this.socket.off('cancel_ride_match', this.onDriverReponseReceived);
-    this._listenersAttached = false;
+    // this._listenersAttached = false;
   }
 
   /**
@@ -237,15 +238,15 @@ class RideMatchWSService {
     return new Promise((resolve, reject) => {
       try {
         // Already connected? Just ensure listeners are attached (idempotent)
-        if (this.socket?.connected) {
-          this._attachListeners();
-          return resolve(true);
-        }
+        // if (this.socket?.connected) {
+        //   this._attachListeners();
+        //   return resolve(true);
+        // }
         // Prevent racing multiple connects
-        if (this._isConnecting) {
-          return resolve(false);
-        }
-        this._isConnecting = true;
+        // if (this._isConnecting) {
+        //   return resolve(false);
+        // }
+        // this._isConnecting = true;
 
         // Build URL and path for custom namespaces/deploys
         const urlParts = String(SOCKET_URL).split('/');
@@ -263,7 +264,15 @@ class RideMatchWSService {
         });
 
         // Core lifecycle
-        this.socket.on('connect', this._onConnect);
+        // this.socket.on('connect', this._onConnect);
+          this.socket.on('connect', () => {
+          console.log("Driver room joined connected ")
+          resolve(true);
+        });
+          this.socket.on('trip_request', this.onTripRequest);
+    this.socket.on('hotspot_update', this.onHotSpotRegionUpdate);
+    this.socket.on('driver_response_received', this.onDriverReponseReceived);
+    this.socket.on('cancel_ride_match', this.onRideMatchCancel);
         this.socket.on('connect_error', error => {
           this._onConnectError(error);
           reject(
@@ -273,8 +282,8 @@ class RideMatchWSService {
           );
         });
 
-        // Resolve after initial connect
-        this.socket.once('connect', () => resolve(true));
+        // // Resolve after initial connect
+        // this.socket.once('connect', () => resolve(true));
       } catch (error) {
         this._isConnecting = false;
         reject(

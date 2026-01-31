@@ -15,7 +15,7 @@ const {activeTripData, setActiveTripData} = useTripsStore.getState();
 const {setFetchLocationDate, setIsGetFare, setHasActiveTrip} =
   useTripAcceptStore.getState();
 const {setFareBreakDown} = useTripsStore.getState();
-const {setStartNavigation, setDisduration, setUserLocation, userLocation,setDirectionPoints} =
+const {setStartNavigation, setDisduration, setUserLocation, userLocation,setDirectionPoints,setDirectionResponse} =
   useMapMarkerStore.getState();
 const {setStackScreen} = useStackScreenStore.getState();
 const {setCurrentScreen} = useCurrentScreenStore.getState();
@@ -36,6 +36,7 @@ export const cancelTrip = res => {
   NeNativeModule.endNavigation();
   setStartNavigation(false);
   setDisduration(null);
+  setDirectionResponse(null)
   // BGLocationTask.stopDriverBgTask();
   showNotification(res?.message, '', 'success');
 };
