@@ -1,12 +1,12 @@
 // firebaseConfig.js
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyBUgp-np9bBxXFlT-w0E-Bl2HuUvZYIPNo",
-  authDomain: "vmtrackers.firebaseapp.com",
-  projectId: "vmtrackers",
-  storageBucket: "vmtrackers.appspot.com",
-  messagingSenderId: "1061496527627",
-  appId: "1:1061496527627:android:fe40420783f61cb810e00e",
+  apiKey: "AIzaSyBPkG69CcLYidOZI6okn_c-osDw0J0QjzQ",
+  authDomain: "vmtaxicustomer.firebaseapp.com",
+  projectId: "vmtaxicustomer",
+  storageBucket: "vmtaxicustomer.appspot.com",
+  messagingSenderId: "587269145565",
+  appId: "1:587269145565:android:ab350b40191a11153cec34",
 };
 export default firebaseConfig
 

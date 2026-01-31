@@ -139,7 +139,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
     },
     {
       id: 'contact-us',
-      name: t('contact_us'),
+      name: t('contact'),
       screen: 'ContactScreen',
       icon: <Ionicons name="headset" size={20} color="black" />,
     },

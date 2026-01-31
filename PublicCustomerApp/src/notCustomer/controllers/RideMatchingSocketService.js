@@ -110,7 +110,8 @@ class RideMatchingSocketService {
         trip_id: tripId,
         passenger_id: passengerId,
         vehicleType: vehicleType,
-        routeData:routeData
+        routeData:routeData,
+        useNOTPushNotification: true
       }
       
       this.socket.emit('findDriver', socketData);
