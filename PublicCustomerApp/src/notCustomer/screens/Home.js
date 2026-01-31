@@ -6,15 +6,16 @@ import { RequestAllPermissions } from '../controllers/PermissionHandler';
 import locationTask from '../controllers/GetCurrentLocation';
 import SearchScreen from '../features/search/screens/SearchScreen';
 import WaypointScreen from '../features/booking/screens/WaypointScreen';
-import { StatusBar, View, StyleSheet, AppState, Platform } from 'react-native';
+import { StatusBar, View, StyleSheet, AppState, Platform, Alert } from 'react-native';
 import LottieView from 'lottie-react-native';
+import messaging from '@react-native-firebase/messaging';
 import useUserInfoStore from '../../common/store/useUserInfoStore.js';
 import { getStoredLocation, getPreferenceShowRideStatus} from '../storage/userLocalStorage';
 import PickLocationScreen from './PickLocationScreen';
 import { useCustomBackHandler } from '../hooks/useCustomBackHandler';
 import PlanRideScreen from '../features/booking/screens/PlanRideScreen.jsx';
 import BookRideScreen from '../features/booking/screens/BookRideScreen.jsx';
-import { getUserStats, confirmTripStatus ,getCurrentTrip} from '../API/EndPoints/EndPoints';
+import { getUserStats, confirmTripStatus ,getCurrentTrip, updateFcmTokenAPI} from '../API/EndPoints/EndPoints';
 import RideStatus from '../features/rideStatus';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 import PaymentScreen from '../features/payment/screens/PaymentScreen';
@@ -451,6 +452,67 @@ const Home = () => {
     }}
   }
 
+  const getFcmToken = async () => {
+    try {
+      const fcmToken = await messaging().getToken();
+      return fcmToken;
+    } catch (error) {
+      console.log('Error getting FCM token: ', error);
+    }
+  };
+
+  const updateFCMToken = async () => {
+    try {
+      const fcmToken = await getFcmToken();
+      const deviceImei = await DeviceInfo.getUniqueId().catch(error => {
+        console.log('Error getting device IMEI: ', error);
+      });
+      const tokenCred = {
+        token: fcmToken,
+        deviceImei: deviceImei,
+      };
+
+      const response = await updateFcmTokenAPI(tokenCred);
+      if (!response?.success) {
+        Alert.alert(
+          t('update_fcm_failed_title', 'Unable to update'),
+          t('update_fcm_failed_message', 'We could not update your notification settings. Please try again.'),
+          [
+            {
+              text: t('retry', 'Retry'),
+              onPress: () => {
+                updateFCMToken();
+              },
+            },
+            {
+              text: t('cancel', 'Cancel'),
+              style: 'cancel',
+            },
+          ],
+        );
+        return;
+      }
+    } catch (error) {
+      console.error('Error updating FCM token:', error);
+      Alert.alert(
+        t('update_fcm_failed_title', 'Unable to update'),
+        t('update_fcm_failed_message', 'Please try again.'),
+        [
+          {
+            text: t('retry', 'Retry'),
+            onPress: () => {
+              updateFCMToken();
+            },
+          },
+          {
+            text: t('cancel', 'Cancel'),
+            style: 'cancel',
+          },
+        ],
+      );
+    }
+  }
+
 
   const checkConfig = async (Response) => {
     try {
@@ -477,6 +539,10 @@ const Home = () => {
           if (!isActiveLogin) {
             logout();
             return;
+          }
+          console.log("FCM Token isUpdated status:",Response?.userStats?.fcmToken?.isUpdated);
+          if(!(Response?.userStats?.fcmToken?.isUpdated)){
+             await updateFCMToken();
           }
         }
 
