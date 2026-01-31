@@ -83,6 +83,7 @@ import LanguageSelectionScreen from './LanguageSelectionScreen';
 import EditDocCenter from './EditDocCenter';
 import tripAlert from '../../common/controllers/TripAlert';
 import rideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
+import messaging from '@react-native-firebase/messaging';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -162,6 +163,37 @@ const PublicRidesDriverHomeScreen = () => {
   const [loading, setLoading] = useState(false)
   const [wsConnected, setWsConnected] = useState(Boolean(rideMatchWSService?.socket?.connected));
   const [wsConnecting, setWsConnecting] = useState(false);
+
+   const getFcmToken = async () => {
+    try {
+      const fcmToken = await messaging().getToken();
+      return fcmToken;
+    } catch (error) {
+      console.log('Error getting FCM token: ', error);
+    }
+  };
+
+  const updateFcmToken = async (fcmData) => {
+      if (fcmData?.isUpdated) return
+      setLoading(true)
+      try {
+        const fcmToken = await getFcmToken();
+        const api = new APIRequest();
+        const fcmPayload = {
+          fcmToken: fcmToken || '',
+        }
+        const response = await api.request(`/publicrides/driver/v2/updateFcmToken`, 'POST', fcmPayload, userInfo?.token)
+        if (response?.success) {
+          console.log('hari-->>fcm token updated successfully', response);
+        } else {
+          console.log('hari-->>fcm token update failed', response);
+        }
+         setLoading(false)
+      } catch (error) {
+        console.log('hari-->>error updating fcm token-->>', error);
+          setLoading(false)
+      }
+  }
 
   const storePublicDriverInfo = (response) => {
     setDriverInfo({
@@ -330,6 +362,7 @@ const PublicRidesDriverHomeScreen = () => {
         setDriverRatings(response?.driver?.ratingData || null)
         setRazorpayLinkedAccountDetails(response?.driver?.razorpayLinkedAccountDetails || null)
         updateDueDuration(response?.driver)
+        updateFcmToken(response?.driver?.fcmToken)
         const lastPaymentID = response?.driver?.lastPaymentID || null;
         const upComingTrips = response?.driver?.upComingTrips || [];
 
@@ -719,7 +752,7 @@ const PublicRidesDriverHomeScreen = () => {
           </TouchableOpacity>
         </View>
       )}
-        {(isLoading )&&
+        {(isLoading || loading)&&
     <View style={{position:'absolute', width:'100%', height:'100%',}}>
     <FullScreenLoader /> 
     </View>
