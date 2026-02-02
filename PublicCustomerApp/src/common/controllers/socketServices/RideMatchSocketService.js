@@ -34,7 +34,7 @@ class RideMatchWSService {
     this.onHotSpotRegionUpdate = this.onHotSpotRegionUpdate.bind(this);
     this.onDriverReponseReceived = this.onDriverReponseReceived.bind(this);
     // this._onConnect = this._onConnect.bind(this);
-    // this._onConnectError = this._onConnectError.bind(this);
+    this._onConnectError = this._onConnectError.bind(this);
     // this._attachListeners = this._attachListeners.bind(this);
     // this._detachListeners = this._detachListeners.bind(this);
   }
@@ -201,10 +201,10 @@ class RideMatchWSService {
   //   this._isConnecting = false;
   // }
 
-  // _onConnectError(error) {
-  //   console.error('Socket error: Failed to connect to socket server', error);
-  //   this._isConnecting = false;
-  // }
+  _onConnectError(error) {
+    console.error('Socket error: Failed to connect to socket server', error);
+    this._isConnecting = false;
+  }
 
   // _attachListeners() {
   //   // if (!this.socket || this._listenersAttached) return;

@@ -94,13 +94,21 @@ public class DriverOverlayController {
 
     public synchronized void start() {
         if (hasStarted) {
-            scheduleSocketHealthCheck();
-            mainHandler.post(this::initDriverSocket);
+            if (isDriverServiceRunning()) {
+                scheduleSocketHealthCheck();
+                mainHandler.post(this::initDriverSocket);
+            } else {
+                Log.d(TAG, "Driver service not running; skip socket init on start()");
+            }
             return;
         }
         hasStarted = true;
-        scheduleSocketHealthCheck();
-        mainHandler.post(this::initDriverSocket);
+        if (isDriverServiceRunning()) {
+            scheduleSocketHealthCheck();
+            mainHandler.post(this::initDriverSocket);
+        } else {
+            Log.d(TAG, "Driver service not running; start() will wait for service");
+        }
     }
 
     public synchronized void stop() {
@@ -124,6 +132,10 @@ public class DriverOverlayController {
 
     private void initDriverSocket() {
         if (!hasStarted) {
+            return;
+        }
+        if (!isDriverServiceRunning()) {
+            Log.d(TAG, "Driver service inactive; skipping socket init");
             return;
         }
         mainHandler.removeCallbacks(socketRetryRunnable);
@@ -393,6 +405,10 @@ public class DriverOverlayController {
         if (!hasStarted) {
             return;
         }
+        if (!isDriverServiceRunning()) {
+            Log.d(TAG, "Driver service not running; skip socket retry");
+            return;
+        }
         mainHandler.removeCallbacks(socketRetryRunnable);
         mainHandler.postDelayed(socketRetryRunnable, SOCKET_RETRY_DELAY_MS);
     }
@@ -401,12 +417,20 @@ public class DriverOverlayController {
         if (!hasStarted) {
             return;
         }
+        if (!isDriverServiceRunning()) {
+            Log.d(TAG, "Driver service not running; skip health check scheduling");
+            return;
+        }
         mainHandler.removeCallbacks(socketHealthCheckRunnable);
         mainHandler.postDelayed(socketHealthCheckRunnable, SOCKET_HEALTH_INTERVAL_MS);
     }
 
     private void runSocketHealthCheck() {
         if (!hasStarted) {
+            return;
+        }
+        if (!isDriverServiceRunning()) {
+            Log.d(TAG, "Driver service not running; cancel socket health check");
             return;
         }
         boolean connected = driverSocket != null && driverSocket.connected();
@@ -686,6 +710,20 @@ public class DriverOverlayController {
         int importance = info.importance;
         return importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
                 || importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
+    }
+
+    /**
+     * Returns true if the background driver tracking service is active.
+     * When the app UI is closed, this remains true if the service keeps running.
+     */
+    private boolean isDriverServiceRunning() {
+        try {
+            DriverLocationService service = DriverLocationService.getInstanceSafe();
+            return service != null;
+        } catch (Exception e) {
+            Log.w(TAG, "Unable to determine DriverLocationService state", e);
+            return false;
+        }
     }
 
     private void stopAlertAudio() {

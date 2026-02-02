@@ -62,6 +62,7 @@ const TripAccept = () => {
 
   // Only start timer after successful trip fetch; null means not started
   const [timeLeft, setTimeLeft] = useState(null);
+  const [timerPaused, setTimerPaused] = useState(false);
   const [appState, setAppState] = useState(AppState.currentState);
   const progressAnim = useRef(new Animated.Value(1)).current;
   const animationRef = useRef(null);
@@ -141,10 +142,12 @@ const TripAccept = () => {
       } else {
         setTimeLeft(remainingTimeDuration);
       }
+      setTimerPaused(false);
       setError(null);
     } else {
       setError('No trip details available');
       setTimeLeft(null);
+      setTimerPaused(false);
     }
     setLoading(false);
   }, [tripDetails, tripId, alertedAt, timerDuration, setLoading, setError, appState]);
@@ -193,7 +196,7 @@ const TripAccept = () => {
   // Start / restart animation only when we have remaining time > 0
   useEffect(() => {
     // Do nothing until we have a numeric timeLeft
-    if (timeLeft == null) return;
+    if (timeLeft == null || timerPaused) return;
     // Adjust starting progress proportionally to remaining time
     const remainingFraction = Math.min(1, timeLeft / timerDuration);
     progressAnim.setValue(remainingFraction);
@@ -210,11 +213,11 @@ const TripAccept = () => {
         animationRef.current.stop();
       }
     };
-  }, [timeLeft, timerDuration, progressAnim]);
+  }, [timeLeft, timerDuration, progressAnim, timerPaused]);
 
   // Handle timer countdown separately, clamped at zero
   useEffect(() => {
-    if (timeLeft == null) return; // not started
+    if (timeLeft == null || timerPaused) return; // not started or paused
     if (timeLeft <= 1) {
       onTimerComplete();
       return;
@@ -223,7 +226,7 @@ const TripAccept = () => {
       setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearTimeout(timerId);
-  }, [timeLeft, onTimerComplete]);
+  }, [timeLeft, onTimerComplete, timerPaused]);
 
   const animatedWidth = progressAnim.interpolate({
     inputRange: [0, 1],
@@ -247,7 +250,7 @@ const TripAccept = () => {
       RideMatchWSService.emit('driver_trip_response', acceptData);
       PushNotifications.onClearAllNotifications();
       tripAlert.stopAlertSound();
-      setTimeLeft(2);
+      setTimerPaused(true);
       setNewStopData(null)
       reset();
     } catch (err) {
@@ -271,6 +274,9 @@ const TripAccept = () => {
     if (tripDetails?.routeData) {
       const request = tripDetails?.routeData?.request;
       const response = tripDetails?.routeData?.response;
+      if (!request || !response) {
+        return;
+      }
       const padding = [50, 50, 50, height * 0.5];
       setDirectionResponse([
         {
