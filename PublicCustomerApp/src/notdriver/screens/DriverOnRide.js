@@ -98,6 +98,8 @@ const DriverOnRide = () => {
   const [openNavChoiceModal, setOpenNavChoiceModal] = useState(false)
   const [openRouteRetryModal, setOpenRouteRetryModal] = useState(false)
 
+  const [pickUpAlertLoading, setPickUpAlertLoading] = useState(false)
+
   const [watingTime, setWaitingTime] = useState(0)
   const [isAlertSent, setIsAlertSent] = useState(false)
 
@@ -270,6 +272,7 @@ const DriverOnRide = () => {
   }
 
   const onReachedPickupAlert = async () => {
+     setPickUpAlertLoading(true)
      try {
         const api = new APIRequest();
         const url = `/publicrides/driver/v2/alertPassangerPickup`;
@@ -281,12 +284,15 @@ const DriverOnRide = () => {
         if(res.success) {
           showNotification('Alert sent', 'Alert sent', 'success');
           setIsAlertSent(true)
+          
         } else {
           showNotification('Something went wrong', res.message, 'danger');
         }
+        setPickUpAlertLoading(false)
      }
      catch (error) {
       showNotification('Something went wrong', '', 'danger');
+      setPickUpAlertLoading(false)
      }
   }
 
@@ -914,8 +920,9 @@ const DriverOnRide = () => {
           <View style={RouteScreenStyles.pickUpLocationContainer}>
             <Text style={RouteScreenStyles.pickUpLocationTxt}>{t('arrived_at_pickup_location')}</Text>
             <View style={RouteScreenStyles.pickUpLocationBtnContainer}>
-            <TouchableOpacity disabled={isAlertSent} onPress={() => onReachedPickupAlert()} style={[RouteScreenStyles.acceptBtn,{backgroundColor:isAlertSent ? Colors.grey : Colors.periwinkle}]}>
-              <Text style={[RouteScreenStyles.stopTxt, {maxWidth:130}]} numberOfLines={2}>{t('alert')}</Text>
+            <TouchableOpacity disabled={isAlertSent || pickUpAlertLoading} onPress={() => onReachedPickupAlert()} style={[RouteScreenStyles.acceptBtn,{backgroundColor:isAlertSent ? Colors.grey : Colors.periwinkle}]}>
+              {pickUpAlertLoading ? <ActivityIndicator size="small" color={Colors.white} /> :
+              <Text style={[RouteScreenStyles.stopTxt, {maxWidth:130}]} numberOfLines={2}>{t('alert')}</Text>}
             </TouchableOpacity>
             <TouchableOpacity onPress={() => onReachedPickup()} style={RouteScreenStyles.acceptBtn}>
               <Text style={RouteScreenStyles.stopTxt}>{t('enter_otp')}</Text>
