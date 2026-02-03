@@ -25,15 +25,15 @@ const TripPersonVehicle = ({
     <View style={[styles.container, layoutStyle==="row" && styles.rowContainer]}>
       <View style={styles.imagesRow}>
         {getVehicleImage(vehicleType, [styles.vehicleImg, driverPhoto && styles.vehicleImgOffset], 'ratingScreen')}
-        <View style={[styles.profileWrapper, usedScreen==="MyRides" && styles.profileWrapperMyRides]}>
+        {driverPhoto && ( <View style={[styles.profileWrapper, usedScreen==="MyRides" && styles.profileWrapperMyRides]}>
          
-          {driverPhoto && (
+         
             <Image
               source={{ uri: driverPhoto }}
               style={[styles.profileImg, usedScreen==="MyRides" && styles.profileImgMyRides]}
             />
-          )}
-        </View>
+       
+        </View>    )}
       </View>
       <View style={[
         layoutStyle==="row" && styles.detailsAlignStart,

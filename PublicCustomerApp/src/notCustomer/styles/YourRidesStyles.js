@@ -54,7 +54,8 @@ export const yourRidesStyles = StyleSheet.create({
     ridesContainerItemRight: {
         flex:1,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+       
     },
     ridesContainerItemImgs: {
         position: 'relative',
