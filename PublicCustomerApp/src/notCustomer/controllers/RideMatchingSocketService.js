@@ -111,8 +111,10 @@ class RideMatchingSocketService {
         passenger_id: passengerId,
         vehicleType: vehicleType,
         routeData:routeData,
-        useNOTPushNotification: true
+        version: 'new',
       }
+
+      console.log("🚕 Finding driver for trip:", tripId, socketData);
       
       this.socket.emit('findDriver', socketData);
     } else {

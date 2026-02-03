@@ -322,7 +322,7 @@ class RideMatchWSService {
     try {
       if (this.socket) {
         this._detachListeners();
-        this.socket.off('connect', this._onConnect); // detach lifecycle as well
+        // this.socket.off('connect', this._onConnect); // detach lifecycle as well
         this.socket.off('connect_error', this._onConnectError);
         this.socket.close();
         clearInterval(this.socketInterval);
