@@ -22,6 +22,11 @@ const useNearbyDrivers = create((set, get) => ({
     driversByType: {},
     lastFetchTimestamp: 0,
     lastFetchParams: null,
+    driverFetchInProgress: false,
+    setDriverFetchInProgress: (inProgress) =>
+        set(() => ({
+            driverFetchInProgress: inProgress,
+        })),
     setDrivers: (newDrivers = []) =>
         set(() => {
             const unique = [];

@@ -51,7 +51,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
   const { setVehicleMarkers } = useMapStore();
   const [modalVehicle, setModalVehicle] = useState(null);
   const [slideAnim] = useState(new Animated.Value(0));
-  const { fetchLatestDrivers, clearDrivers, getDriversByType,isFemaleDriverAvailable, isTrustedDriverAvailable } = useNearbyDrivers();
+  const { fetchLatestDrivers, clearDrivers, getDriversByType,isFemaleDriverAvailable, isTrustedDriverAvailable,  setDriverFetchInProgress} = useNearbyDrivers();
   const [modalTitle, setModalTitle] = useState('');
   const firstRenderStartRef = useRef(null);
   const selectedVehicleType = selectedVehicle?.type;
@@ -255,6 +255,8 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
         }
 
         updateMarkersWithDrivers(vehicleTypeOverride);
+        setDriverFetchInProgress(false);
+        
       } catch (error) {
         // ...existing code...
       }

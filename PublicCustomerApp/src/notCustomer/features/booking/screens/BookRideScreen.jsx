@@ -51,6 +51,7 @@ import PropTypes from 'prop-types';
 import { buildKey as buildEstimationCacheKey, getFromCache as getEstimationFromCache, setInCache as setEstimationInCache, prune as pruneEstimationCache } from '../store/useEstimationCacheStore';
 import { showNotification } from '../../../components/NotificationManger';
 import { openFeedback } from '../../../utils/feedback';
+import useNearbyDrivers from '../../../store/useNearByDrivers';
 
 const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => {
     const {setStackScreen} = useStackScreenStore()
@@ -100,6 +101,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     const {isPreferenceShow,setIsPreferenceShow} = useUserInfoStore()
     const {setAvailableVehicles,availableVehicles,setSelectedVehicle,selectedVehicle} = useRideVehicleStore()
     const [showPreference,setShowPreference] = useState(false)
+    const {setDriverFetchInProgress, driverFetchInProgress} = useNearbyDrivers();
     const [,setScrolledUntillBottom] = useState(false)
     const [bottomSheetHeight,setBottomSheetHeight] = useState(370)
     const [isEstimationError, setIsEstimationError] = useState(false)
@@ -402,6 +404,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
     }, []);
 
     const getEstimatedFare = async () => {
+        setDriverFetchInProgress(true);
     
         const cacheKey = buildEstimationCacheKey({
             start: rideStartLocation,
@@ -703,9 +706,9 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
 
                     <View style={styles.BookingButtonSection}>
                       <TouchableOpacity
-                          style={[styles.BookingButton, availableVehicles?.length === 0 && styles.BookingButtonDisabled,selectedVehicle == null && styles.BookingButtonDisabled, routeLoading?.loading && styles.BookingButtonDisabled,isBookingLoading && {backgroundColor:colors.orange}]}
+                          style={[styles.BookingButton, availableVehicles?.length === 0 && styles.BookingButtonDisabled,selectedVehicle == null && styles.BookingButtonDisabled, driverFetchInProgress && styles.BookingButtonDisabled, routeLoading?.loading && styles.BookingButtonDisabled,isBookingLoading && {backgroundColor:colors.orange}]}
                           onPress={availableVehicles?.length === 0 ? null : handleConfirmRide}
-                          disabled={isBookingLoading || availableVehicles?.length === 0 || routeLoading?.loading || selectedVehicle == null }
+                          disabled={isBookingLoading || availableVehicles?.length === 0 || routeLoading?.loading || selectedVehicle == null || driverFetchInProgress}
                       >
                           <AdaptiveText style={styles.BookingButtonText}>
                               {isBookingLoading ? t('booking') : t('confirm_ride')}
