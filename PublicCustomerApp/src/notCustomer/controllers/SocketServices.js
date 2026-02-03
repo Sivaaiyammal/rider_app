@@ -7,7 +7,7 @@ import useAssignedDriverInfoStore from '../features/rideStatus/store/useAssigned
 import useWayPointReorderStore from '../features/booking/store/useWayPointReorderStore';
 import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore';
  
-import { usePaymentStore } from '../features/payment/store/usePaymentStore';
+import  usePaymentStore  from '../features/payment/store/usePaymentStore';
 import { DataStore } from './DataStore';
 import PREF from '../storage/PREF';
 import useUserInfoStore  from '../../common/store/useUserInfoStore';
