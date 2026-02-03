@@ -192,7 +192,7 @@ export default function DriverInitializationScreen() {
   useEffect(() => {
     if (tripData) {
         setTripData(tripData);
-        console.log('Fetched trip data:', tripData[0]?.status);
+        // console.log('Fetched trip data:', tripData[0]?.status);
         // if (tripData[0]?.status === "MATCHED"){
         //      useTripAcceptStore.setState({tripDetails: tripData[0]});
         //      useTripAcceptStore.setState({tripId: tripData[0]?.trip_id});

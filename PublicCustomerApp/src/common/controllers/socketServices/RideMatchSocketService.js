@@ -1,6 +1,6 @@
 import io from 'socket.io-client';
 import Config from 'react-native-config';
-import { NativeModules } from 'react-native';
+import { NativeModules, AppState } from 'react-native';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
 import { useTripAcceptStore } from '../../../notdriver/store/useTripAcceptStore';
 import useHotSpotStore from '../../../notdriver/store/useHotSpotStore';
@@ -73,7 +73,6 @@ class RideMatchWSService {
    * ===== Event handlers =====
    */
   async onTripRequest(data) {
-    console.log('hari-->>trip-->>request',data);
     const {setStackScreen} = useStackScreenStore.getState();
     if (data?.type === 'trip_request') {
       useTripAcceptStore.setState({tripDetails: data.data});
@@ -87,7 +86,12 @@ class RideMatchWSService {
       });
       setStackScreen('TripAccept');
       firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_request_received');
-      tripAlert.playAlertSound();
+      const isActive = AppState.currentState === 'active';
+      if (isActive) {
+        tripAlert.playAlertSound();
+      } else {
+        console.log('[RideMatchWSService] App in background; skipping alert sound');
+      }
     }
   }
 
