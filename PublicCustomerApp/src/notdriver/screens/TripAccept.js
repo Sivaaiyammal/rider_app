@@ -271,12 +271,9 @@ const TripAccept = () => {
   };
 
   useEffect(() => {
-    if (tripDetails?.routeData) {
-      const request = tripDetails?.routeData?.request;
-      const response = tripDetails?.routeData?.response;
-      if (!request || !response) {
-        return;
-      }
+    const request = tripDetails?.routeData?.request || null;
+    const response = tripDetails?.routeData?.response || null;
+    if (request && response) {
       const padding = [50, 50, 50, height * 0.5];
       setDirectionResponse([
         {

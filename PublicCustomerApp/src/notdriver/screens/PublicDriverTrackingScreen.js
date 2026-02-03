@@ -225,7 +225,7 @@ const PublicDriverTrackingScreen = () => {
       {!activeTripData || activeTripData?.length === 0 ? (
          <View style={RouteScreenStyles.noActiveRouteContainer}>
          <Text style={RouteScreenStyles.noActiveRouteTxt}>
-           No Active Route !!
+           No Active Trip !!
          </Text>
          <TouchableOpacity style={RouteScreenStyles.goHomeBtn} onPress={()=>setStackScreen('Home')}> 
            <Text style={RouteScreenStyles.goHomeBtnTxt}>Go Home</Text>
