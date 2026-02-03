@@ -774,6 +774,8 @@ const DriverOnRide = () => {
   // }, [navigationError]);
 
     useEffect(() => {
+    // console.log('Route Loading Status:', routeLoading);
+    if (routeLoading?.message === 'initialState') return;
     if (routeLoading?.loading) return
     if (routeLoading?.error) {
       setOpenRouteRetryModal(true);
@@ -838,8 +840,8 @@ const DriverOnRide = () => {
             !disduration && tripsStatus !== "COMPLETED" ? 
                 (hasLocationPermission && (Platform.OS === 'android' && Platform.Version <= 28 ? true : hasBackgroundLocationPermission) &&
                 hasNotificationPermission)&& (
-                  <TouchableOpacity disabled={routeLoading.loading} style={RouteScreenStyles.navigationIconContainer} onPress={() => onStartNavigationPress()}>
-                    {routeLoading.loading ? <ActivityIndicator size="small" color={Colors.white} /> : 
+                  <TouchableOpacity disabled={routeLoading?.loading && routeLoading?.message !== 'initialState'} style={RouteScreenStyles.navigationIconContainer} onPress={() => onStartNavigationPress()}>
+                    {routeLoading?.loading && routeLoading?.message !== 'initialState'? <ActivityIndicator size="small" color={Colors.white} /> : 
                     <>
                     <Text style={RouteScreenStyles.navigationIconContainerTxt}>{t('start_navigation')}</Text>
                       <MaterialCommunityIcons

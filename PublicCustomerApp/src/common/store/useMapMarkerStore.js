@@ -111,7 +111,7 @@ export const useMapMarkerStore = create(set => ({
   mapMoving: true,
   setMapMoving: mapMoving => set({ mapMoving }),
 
-  routeLoading: false,
+  routeLoading: {"loading": true, "message": "initialState", "error": false},
   setRouteLoading: routeLoading => set({ routeLoading }),
 
   nativeError: null,
