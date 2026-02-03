@@ -33,10 +33,10 @@ class RideMatchWSService {
     this.onTripRequest = this.onTripRequest.bind(this);
     this.onHotSpotRegionUpdate = this.onHotSpotRegionUpdate.bind(this);
     this.onDriverReponseReceived = this.onDriverReponseReceived.bind(this);
-    // this._onConnect = this._onConnect.bind(this);
+    this._onConnect = this._onConnect.bind(this);
     this._onConnectError = this._onConnectError.bind(this);
-    // this._attachListeners = this._attachListeners.bind(this);
-    // this._detachListeners = this._detachListeners.bind(this);
+    this._attachListeners = this._attachListeners.bind(this);
+    this._detachListeners = this._detachListeners.bind(this);
   }
 
   async _acceptTripWithRetry(tripId, maxRetries = 3, token) {
@@ -109,6 +109,8 @@ class RideMatchWSService {
       setIsGetFare,
       setLoading,
       reset,
+      tripDetails,
+      setTripDetails
     } = useTripAcceptStore.getState();
     const {setDirectionPoints} = useMapMarkerStore.getState();
     const {activeTripData, setActiveTripData} = useTripsStore.getState();
@@ -124,11 +126,11 @@ class RideMatchWSService {
             tripData.status = 'ACCEPTED';
             useTripsStore.setState({activeTripData: [tripData]});
             firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_accepted_inapp');
-            // tripDetails.pickUpRoute.response = tripDetails?.pickUpRoute?.response
-            //   .replace(/'/g, '"')
-            //   .replace(/\bTrue\b/g, 'true')
-            //   .replace(/\bFalse\b/g, 'false');
-            // setTripDetails(tripDetails)
+            tripDetails.pickUpRoute.response = tripDetails?.pickUpRoute?.response
+              .replace(/'/g, '"')
+              .replace(/\bTrue\b/g, 'true')
+              .replace(/\bFalse\b/g, 'false');
+            setTripDetails(tripDetails)
             setStackScreen('PublicDriverTrackingScreen');
 
             // Clear trip accept store to prevent loop
@@ -198,40 +200,40 @@ class RideMatchWSService {
   /**
    * ===== Socket lifecycle helpers =====
    */
-  // _onConnect() {
-  //   // if (!this.socket) return;
-  //   console.log('Driver Socket connected:', SOCKET_URL, this.socket.id);
-  //   this._attachListeners(); // ensure listeners attached once
-  //   this._isConnecting = false;
-  // }
+  _onConnect() {
+    if (!this.socket) return;
+    console.log('Driver Socket connected:', SOCKET_URL, this.socket.id);
+    this._attachListeners(); // ensure listeners attached once
+    this._isConnecting = false;
+  }
 
   _onConnectError(error) {
     console.error('Socket error: Failed to connect to socket server', error);
     this._isConnecting = false;
   }
 
-  // _attachListeners() {
-  //   // if (!this.socket || this._listenersAttached) return;
+  _attachListeners() {
+    if (!this.socket || this._listenersAttached) return;
 
-  //   // Attach with stable function refs (bound in constructor)
-  //   this.socket.on('trip_request', this.onTripRequest);
-  //   this.socket.on('hotspot_update', this.onHotSpotRegionUpdate);
-  //   this.socket.on('driver_response_received', this.onDriverReponseReceived);
-  //   this.socket.on('cancel_ride_match', this.onRideMatchCancel);
-  //   // If you want only one driver_response per session, swap to:
-  //   // this.socket.once('driver_response_received', this.onDriverReponseReceived);
+    // Attach with stable function refs (bound in constructor)
+    this.socket.on('trip_request', this.onTripRequest);
+    this.socket.on('hotspot_update', this.onHotSpotRegionUpdate);
+    this.socket.on('driver_response_received', this.onDriverReponseReceived);
+    this.socket.on('cancel_ride_match', this.onRideMatchCancel);
+    // If you want only one driver_response per session, swap to:
+    // this.socket.once('driver_response_received', this.onDriverReponseReceived);
 
-  //   // this._listenersAttached = true;
-  // }
+    this._listenersAttached = true;
+  }
 
   _detachListeners() {
-    // if (!this.socket || !this._listenersAttached) return;
+    if (!this.socket || !this._listenersAttached) return;
 
     this.socket.off('trip_request', this.onTripRequest);
     this.socket.off('hotspot_update', this.onHotSpotRegionUpdate);
     this.socket.off('driver_response_received', this.onDriverReponseReceived);
     this.socket.off('cancel_ride_match', this.onDriverReponseReceived);
-    // this._listenersAttached = false;
+    this._listenersAttached = false;
   }
 
   /**
@@ -242,15 +244,15 @@ class RideMatchWSService {
     return new Promise((resolve, reject) => {
       try {
         // Already connected? Just ensure listeners are attached (idempotent)
-        // if (this.socket?.connected) {
-        //   this._attachListeners();
-        //   return resolve(true);
-        // }
+        if (this.socket?.connected) {
+          this._attachListeners();
+          return resolve(true);
+        }
         // Prevent racing multiple connects
-        // if (this._isConnecting) {
-        //   return resolve(false);
-        // }
-        // this._isConnecting = true;
+        if (this._isConnecting) {
+          return resolve(false);
+        }
+        this._isConnecting = true;
 
         // Build URL and path for custom namespaces/deploys
         const urlParts = String(SOCKET_URL).split('/');
@@ -268,15 +270,7 @@ class RideMatchWSService {
         });
 
         // Core lifecycle
-        // this.socket.on('connect', this._onConnect);
-          this.socket.on('connect', () => {
-          console.log("Driver room joined connected ")
-          resolve(true);
-        });
-          this.socket.on('trip_request', this.onTripRequest);
-    this.socket.on('hotspot_update', this.onHotSpotRegionUpdate);
-    this.socket.on('driver_response_received', this.onDriverReponseReceived);
-    this.socket.on('cancel_ride_match', this.onRideMatchCancel);
+        this.socket.on('connect', this._onConnect);
         this.socket.on('connect_error', error => {
           this._onConnectError(error);
           reject(
@@ -286,8 +280,8 @@ class RideMatchWSService {
           );
         });
 
-        // // Resolve after initial connect
-        // this.socket.once('connect', () => resolve(true));
+        // Resolve after initial connect
+        this.socket.once('connect', () => resolve(true));
       } catch (error) {
         this._isConnecting = false;
         reject(
@@ -322,7 +316,7 @@ class RideMatchWSService {
     try {
       if (this.socket) {
         this._detachListeners();
-        // this.socket.off('connect', this._onConnect); // detach lifecycle as well
+        this.socket.off('connect', this._onConnect); // detach lifecycle as well
         this.socket.off('connect_error', this._onConnectError);
         this.socket.close();
         clearInterval(this.socketInterval);
@@ -345,6 +339,6 @@ class RideMatchWSService {
  * Make it a resilient singleton across RN Fast Refresh / HMR.
  * This prevents creating new instances (and new listeners) on hot reloads.
  */
-// const instance = global.__rideMatchWSService || 
-// global.__rideMatchWSService = instance;
-export default new RideMatchWSService();
+const instance = global.__rideMatchWSService || new RideMatchWSService();
+global.__rideMatchWSService = instance;
+export default instance;

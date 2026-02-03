@@ -165,6 +165,8 @@ export const ContextProvider = ({children}) => {
       DataStore.clearSession();
       DataStore.clearSession('userdetails');
       DataStore.clearSession('access_token');
+      RideMatchWSService.removeListeners()
+      RideMatchWSService.close()
               navigation.reset({
           index: 0,
           routes: [{ name: 'LoginScreen' }],
