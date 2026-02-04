@@ -72,6 +72,7 @@ export default function TripFeedbackScreen() {
   }
 
   const triggerInAppReview = async () => {
+    firebaselog_tripReview('Trip_IN_APP_Review_TR','Trip_IN_APP_R:triggered')
     if (InAppReview.isAvailable()) {
       console.log('In-App Review is available on this device',InAppReview.isAvailable());
       try { 
