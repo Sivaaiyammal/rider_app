@@ -3,7 +3,7 @@ import Config from "react-native-config";
 import {DataStore} from '../controllers/DataStore';
 import { firebaselog_apicalls } from '../../common/utils/FirebaseAnalytics';
 
-const REQUEST_TIMEOUT_MS = 5000;
+const REQUEST_TIMEOUT_MS = 10000;
 const MAX_RETRY_ATTEMPTS = 1;
 
 const apiClient = axios.create({
