@@ -4,7 +4,12 @@ import Config from "react-native-config";
 const RIDE_MATCHING_SOCKET_URL = Config.DRIVER_SOCKET_URL// Replace with your actual ride matching socket URL
 ;
 class RideMatchingSocketService {
+  static instance = null;
+
   constructor() {
+    if (RideMatchingSocketService.instance) {
+      return RideMatchingSocketService.instance;
+    }
     this.socket = null;
     this.isConnecting = false;
     this.hasAttemptedConnection = false;
@@ -12,9 +17,14 @@ class RideMatchingSocketService {
     this.maxRetries = 3;
     this.initSocket = this.initSocket.bind(this);
     this.joinPassengerRoom = this.joinPassengerRoom.bind(this);
+    RideMatchingSocketService.instance = this;
   }
 
   async initSocket(userId) {
+    if (this.isConnected()) {
+      console.log('Ride matching socket already connected.');
+      return true;
+    }
     // Prevent multiple connection attempts
     if (this.isConnecting) {
       console.log('Ride matching socket connection already in progress');
