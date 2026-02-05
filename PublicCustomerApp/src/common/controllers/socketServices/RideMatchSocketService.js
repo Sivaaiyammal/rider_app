@@ -126,12 +126,13 @@ class RideMatchWSService {
             tripData.status = 'ACCEPTED';
             useTripsStore.setState({activeTripData: [tripData]});
             firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_accepted_inapp');
-            tripDetails.pickUpRoute.response = tripDetails?.pickUpRoute?.response
-              .replace(/'/g, '"')
-              .replace(/\bTrue\b/g, 'true')
-              .replace(/\bFalse\b/g, 'false');
-            setTripDetails(tripDetails)
             setStackScreen('PublicDriverTrackingScreen');
+            //  tripDetails.pickUpRoute.response = tripDetails?.pickUpRoute?.response
+            //   .replace(/'/g, '"')
+            //   .replace(/\bTrue\b/g, 'true')
+            //   .replace(/\bFalse\b/g, 'false');
+            // setTripDetails(tripDetails)
+            // console.log('[RideMatchWSService] Trip accepted successfully via socket');
 
             // Clear trip accept store to prevent loop
             reset();
