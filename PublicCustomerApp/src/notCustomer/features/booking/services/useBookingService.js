@@ -196,7 +196,8 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       regionCode: regionOfficeCode || 'default',
       appVersion: (DeviceInfo.getVersion?.() || ''),
       buildNumber: (DeviceInfo.getBuildNumber?.() || ''),
-      estimatedWaitTime : estimatedWaitTime || 0
+      estimatedWaitTime : estimatedWaitTime || 0,
+      rideMatchVersion : '1.0'
      
       
     };
