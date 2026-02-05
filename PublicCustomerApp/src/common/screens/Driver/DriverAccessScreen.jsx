@@ -9,6 +9,7 @@ import { GlobalContext } from '../../../context/GlobalContext';
 import { useStackScreenStore } from '../../../notCustomer/store/useStackScreenStore';
 import { goBack } from '../../navigation/RootNavigation';
 import { DataStore } from '../../controllers/DataStore';
+import { useTranslation } from 'react-i18next';
 import { t } from 'i18next';
 import useUserInfoStore from '../../store/useUserInfoStore';
 const PLAY_STORE_PACKAGE_NAME = 'com.vmtrackers';
@@ -80,6 +81,7 @@ const DriverAccessScreen = ({fromHome=false}) => {
   const { reset } = useStackScreenStore(); 
   const { resetUserInfo } = useUserInfoStore();   
   const { removeListener } = useContext(GlobalContext);   
+ const {t} = useTranslation();
  
   useEffect(() => {
     const interval = setInterval(() => {
@@ -168,17 +170,32 @@ const DriverAccessScreen = ({fromHome=false}) => {
   };
 
   const handleClick = () => {
-    if(Platform.OS === 'android'){
-      Logout();
+    if (Platform.OS === 'android') {
+      Alert.alert(
+        t('driver_access_logout_confirm_title'),
+        t('driver_access_logout_confirm_message'),
+        [
+          {
+            text: t('driver_access_logout_confirm_cancel_button'),
+            style: 'cancel',
+          },
+          {
+            text: t('driver_access_logout_confirm_confirm_button'),
+            style: 'destructive',
+            onPress: Logout,
+          },
+        ],
+        { cancelable: true }
+      );
+      return;
     }
+
     if (Platform.OS === 'ios') {
       Alert.alert(
         t('driver_access_ios_alert_title'),
         t('driver_access_ios_alert_message')
-      )
+      );
     }
-     
-    
   };
 
   return (

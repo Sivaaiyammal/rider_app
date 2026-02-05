@@ -58,20 +58,7 @@ export default function TripFeedbackScreen() {
     }
 
 
-    const OnClose = async () => {
-    await DataStore.clearData(PREF.CURRENT_TRIP)
-    setActiveTripId(null);
-    reset()
-    console.log("appConfig?.IN_APP_REVIEW_ALWAYS",appConfig?.IN_APP_REVIEW_ALWAYS)
-    console.log("completedTrips",completedTrips)
-    if(appConfig?.IN_APP_REVIEW_ALWAYS && completedTrips >=1){
-      console.log("Triggering In App Review on close")
-      triggerInAppReview();
-    }
-    // showsocialMediaModal();
-  }
-
-  const triggerInAppReview = async () => {
+    const triggerInAppReview = async () => {
     firebaselog_tripReview('Trip_IN_APP_Review_TR','Trip_IN_APP_R:triggered')
     if (InAppReview.isAvailable()) {
       console.log('In-App Review is available on this device',InAppReview.isAvailable());
@@ -88,6 +75,22 @@ export default function TripFeedbackScreen() {
       return false;
     }
   };
+
+
+    const OnClose = async () => {
+    await DataStore.clearData(PREF.CURRENT_TRIP)
+    setActiveTripId(null);
+    reset()
+    console.log("appConfig?.IN_APP_REVIEW_ALWAYS",appConfig?.IN_APP_REVIEW_ALWAYS)
+    console.log("completedTrips",completedTrips)
+    if(appConfig?.IN_APP_REVIEW_ALWAYS && completedTrips >=1){
+      console.log("Triggering In App Review on close")
+      triggerInAppReview();
+    }
+    // showsocialMediaModal();
+  }
+
+  
 
     const fetchTripDetails = async () => {
       const storedTripId = await DataStore.loadData(PREF.CURRENT_TRIP);
@@ -284,7 +287,9 @@ export default function TripFeedbackScreen() {
                
             </View>
         </View> */}
+        {appConfig?.SHOW_SOCIAL_BANNER && 
           <Social/>
+        }
           <View >
             {/* <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={driverDetails?.vehicleType} vehicleBrand={driverDetails?.vehicleBrand} vehicleModel={driverDetails?.vehicleModel} vehicleNumber={driverDetails?.vehicleNumber} layoutStyle={"row"} descriptonSize={12}/> */}
             </View>

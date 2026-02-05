@@ -469,7 +469,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     
 
-    console.log("BookRideScreen Rendered")
+
     const { setDirectionPoints,directionPoints } = useMapStore();
 
     const DirectionRoute = async () =>{

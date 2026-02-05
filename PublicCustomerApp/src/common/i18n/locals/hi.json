@@ -1095,5 +1095,9 @@
     "next_due_in_days": "अगली देय तिथि में",
     "driver_access_ios_alert_title": "iOS पर ड्राइवर ऐप",
     "driver_access_ios_alert_message": "Namma Ooru Taxi ड्राइवर ऐप फिलहाल iOS पर उपलब्ध नहीं है। कृपया ड्राइवर ऐप का उपयोग करने के लिए Android डिवाइस का उपयोग करें।",
+    "driver_access_logout_confirm_title": "ड्राइवर लॉगिन की पुष्टि",
+    "driver_access_logout_confirm_message": "हम आपको कस्टमर ऐप से लॉगआउट करेंगे ताकि आप ड्राइवर के रूप में साइन इन कर सकें। क्या आप जारी रखना चाहते हैं?",
+    "driver_access_logout_confirm_cancel_button": "कस्टमर ऐप में रहें",
+    "driver_access_logout_confirm_confirm_button": "हाँ, लॉगआउट करें",
     "Sign_Up_to_Become_a_Driver": "ड्राइवर बनने के लिए साइन अप करें"
 }

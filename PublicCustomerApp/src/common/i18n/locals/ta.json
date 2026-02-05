@@ -1095,5 +1095,9 @@
     "next_due_in_days": "அடுத்த தேதி",
     "driver_access_ios_alert_title": "iOS இல் ஓட்டுநர் ஆப்",
     "driver_access_ios_alert_message": "Namma Ooru Taxi ஓட்டுநர் ஆப் தற்போது iOS இல் கிடைக்கவில்லை. ஓட்டுநர் ஆப்பை அணுக Android சாதனத்தை பயன்படுத்தவும்.",
+    "driver_access_logout_confirm_title": "டிரைவர் உள்நுழைவை உறுதிப்படுத்தவும்",
+    "driver_access_logout_confirm_message": "டிரைவராக உள்நுழைய உங்கள் வாடிக்கையாளர் பயன்பாட்டிலிருந்து நாங்கள் உங்களை வெளியேற்றுவோம். தொடர வேண்டுமா?",
+    "driver_access_logout_confirm_cancel_button": "வாடிக்கையாளர் பயன்பாட்டில் இருங்கள்",
+    "driver_access_logout_confirm_confirm_button": "ஆம், வெளியேறு",
     "Sign_Up_to_Become_a_Driver": "ஓட்டுநராக ஆக பதிவு செய்யவும்"
 }
