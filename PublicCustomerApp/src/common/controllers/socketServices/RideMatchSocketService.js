@@ -37,34 +37,6 @@ class RideMatchWSService {
     this._onConnectError = this._onConnectError.bind(this);
     this._attachListeners = this._attachListeners.bind(this);
     this._detachListeners = this._detachListeners.bind(this);
-
-    // Lifecycle and engine-level listeners
-    this._onDisconnect = this._onDisconnect.bind(this);
-    this._onReconnectAttempt = this._onReconnectAttempt.bind(this);
-    this._onReconnect = this._onReconnect.bind(this);
-    this._onError = this._onError.bind(this);
-    this._attachEngineListeners = this._attachEngineListeners.bind(this);
-    this._detachEngineListeners = this._detachEngineListeners.bind(this);
-
-    // Debug alerts toggle
-    this._debugAlertsEnabled = true;
-  }
-
-  // Centralized debug alert helper
-  _alert(title, message, type = 'info') {
-    try {
-      const text = typeof message === 'string' ? message : JSON.stringify(message);
-      console.log(`[RideMatchWSService] ${title}:`, text);
-      if (this._debugAlertsEnabled) {
-        showNotification(title, text, type);
-      }
-    } catch (e) {
-      console.log('[RideMatchWSService] alert error', e);
-    }
-  }
-
-  setDebugAlertsEnabled(enabled) {
-    this._debugAlertsEnabled = !!enabled;
   }
 
   async _acceptTripWithRetry(tripId, maxRetries = 3, token) {
@@ -231,31 +203,13 @@ class RideMatchWSService {
   _onConnect() {
     if (!this.socket) return;
     console.log('Driver Socket connected:', SOCKET_URL, this.socket.id);
-    this._alert('socket:connect', { url: SOCKET_URL, id: this.socket.id }, 'success');
     this._attachListeners(); // ensure listeners attached once
     this._isConnecting = false;
   }
 
   _onConnectError(error) {
     console.error('Socket error: Failed to connect to socket server', error);
-    this._alert('socket:connect_error', error?.message || String(error), 'danger');
     this._isConnecting = false;
-  }
-
-  _onDisconnect(reason) {
-    this._alert('socket:disconnect', reason, 'warning');
-  }
-
-  _onReconnectAttempt(attempt) {
-    this._alert('socket:reconnect_attempt', { attempt }, 'info');
-  }
-
-  _onReconnect(attempt) {
-    this._alert('socket:reconnect', { attempt }, 'success');
-  }
-
-  _onError(err) {
-    this._alert('socket:error', err?.message || String(err), 'danger');
   }
 
   _attachListeners() {
@@ -266,14 +220,6 @@ class RideMatchWSService {
     this.socket.on('hotspot_update', this.onHotSpotRegionUpdate);
     this.socket.on('driver_response_received', this.onDriverReponseReceived);
     this.socket.on('cancel_ride_match', this.onRideMatchCancel);
-    // Socket.IO lifecycle
-    this.socket.on('disconnect', this._onDisconnect);
-    this.socket.on('reconnect_attempt', this._onReconnectAttempt);
-    this.socket.on('reconnect', this._onReconnect);
-    this.socket.on('error', this._onError);
-
-    // Engine.IO reserved events (via underlying engine)
-    this._attachEngineListeners();
     // If you want only one driver_response per session, swap to:
     // this.socket.once('driver_response_received', this.onDriverReponseReceived);
 
@@ -286,66 +232,8 @@ class RideMatchWSService {
     this.socket.off('trip_request', this.onTripRequest);
     this.socket.off('hotspot_update', this.onHotSpotRegionUpdate);
     this.socket.off('driver_response_received', this.onDriverReponseReceived);
-    this.socket.off('cancel_ride_match', this.onRideMatchCancel);
-    // Socket.IO lifecycle
-    this.socket.off('disconnect', this._onDisconnect);
-    this.socket.off('reconnect_attempt', this._onReconnectAttempt);
-    this.socket.off('reconnect', this._onReconnect);
-    this.socket.off('error', this._onError);
-
-    // Engine.IO reserved events
-    this._detachEngineListeners();
+    this.socket.off('cancel_ride_match', this.onDriverReponseReceived);
     this._listenersAttached = false;
-  }
-
-  _attachEngineListeners() {
-    const engine = this.socket?.io?.engine;
-    if (!engine) return;
-    try {
-      engine.on('open', () => this._alert('engine:open', 'open', 'success'));
-      engine.on('handshake', (data) => this._alert('engine:handshake', data, 'info'));
-      engine.on('packet', (packet) => this._alert('engine:packet', { type: packet?.type }, 'info'));
-      engine.on('packetCreate', (packet) => this._alert('engine:packetCreate', { type: packet?.type }, 'info'));
-      engine.on('data', (data) => this._alert('engine:data', `${String(data).slice(0,128)}...`, 'info'));
-      engine.on('message', (data) => this._alert('engine:message', `${String(data).slice(0,128)}...`, 'info'));
-      engine.on('drain', () => this._alert('engine:drain', 'drain', 'info'));
-      engine.on('flush', () => this._alert('engine:flush', 'flush', 'info'));
-      engine.on('heartbeat', () => this._alert('engine:heartbeat', 'heartbeat', 'info'));
-      engine.on('ping', () => this._alert('engine:ping', 'ping', 'info'));
-      engine.on('pong', () => this._alert('engine:pong', 'pong', 'info'));
-      engine.on('error', (err) => this._alert('engine:error', err?.message || String(err), 'danger'));
-      engine.on('upgrading', (transport) => this._alert('engine:upgrading', { name: transport?.name }, 'info'));
-      engine.on('upgrade', (transport) => this._alert('engine:upgrade', { name: transport?.name }, 'success'));
-      engine.on('upgradeError', (err) => this._alert('engine:upgradeError', err?.message || String(err), 'danger'));
-      engine.on('close', (reason, description) => this._alert('engine:close', { reason, description: description && (description.message || String(description)) }, 'warning'));
-    } catch (e) {
-      console.log('[RideMatchWSService] engine listeners error', e);
-    }
-  }
-
-  _detachEngineListeners() {
-    const engine = this.socket?.io?.engine;
-    if (!engine) return;
-    try {
-      engine.off('open');
-      engine.off('handshake');
-      engine.off('packet');
-      engine.off('packetCreate');
-      engine.off('data');
-      engine.off('message');
-      engine.off('drain');
-      engine.off('flush');
-      engine.off('heartbeat');
-      engine.off('ping');
-      engine.off('pong');
-      engine.off('error');
-      engine.off('upgrading');
-      engine.off('upgrade');
-      engine.off('upgradeError');
-      engine.off('close');
-    } catch (e) {
-      console.log('[RideMatchWSService] engine detach error', e);
-    }
   }
 
   /**
@@ -378,7 +266,7 @@ class RideMatchWSService {
           query: {driver_id: userId},
           // If server still reads query, you can also pass it (harmless):
           // query: { driver_id: userId },
-          transports: ['polling', 'websocket',], // optional: prefer websocket first
+          // transports: ['websocket'], // optional: prefer websocket first
         });
 
         // Core lifecycle
