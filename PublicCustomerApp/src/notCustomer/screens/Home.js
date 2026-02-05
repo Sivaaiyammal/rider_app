@@ -149,7 +149,7 @@ const Home = () => {
   const [locationBlockReason, setLocationBlockReason] = useState(null);
   const { appConfig ,updateAvailable} = useConfigStore();
   const { driverMatched, setDriverMatched } = useRideMatchStore();
-  const {currentTripId,setCurrentTripId } = usePaymentStore();
+  // /const {currentTripId,setCurrentTripId } = usePaymentStore();
   
   const { setHomelocation, setWorklocation, setIsPreferenceShow} = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
@@ -369,7 +369,7 @@ const Home = () => {
     return false;
   } 
 
-  const checkTrip = async (response) => {
+  const checkTrip = async (response,currentTripId=null) => {
     if(!response?.trip || !response?.success){
       return;
     }
@@ -514,7 +514,8 @@ const Home = () => {
   }
 
 
-  const checkConfig = async (Response) => {
+  const checkConfig = async (Response,currentTripId=null) => {
+    
     try {
       if (!Response?.success) {
         setConfigError(true);
@@ -568,7 +569,10 @@ const Home = () => {
           Response.appConfig['SHOW_NEARBY_DRIVER'] = true;
           setConfig(Response.appConfig);
           if (Response.appConfig?.FORCE_UPDATE && !currentTripId) {
+            console.log("Checking for updates due to app config FORCE_UPDATE");
             checkForUpdates(Response.appConfig.FORCE_UPDATE);
+          }else{
+            console.log("No FORCE_UPDATE flag or active trip, skipping update check.");
           }
         } else {
           setConfigError(true);
@@ -617,9 +621,9 @@ const Home = () => {
       console.log('Ongoing ride response:', response);
 
       if (!tripOnly) {
-        await checkConfig(response);
+        await checkConfig(response, currentTripId);
       }
-      await checkTrip(response);
+      await checkTrip(response,currentTripId);
 
     } catch (error) {
       console.error('Error fetching ongoing ride:', error);
