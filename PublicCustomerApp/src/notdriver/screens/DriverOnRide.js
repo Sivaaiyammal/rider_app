@@ -607,6 +607,11 @@ const DriverOnRide = () => {
       updateDirectionsPoints();
       return;
     }
+     if (routeLoading?.error) {
+      setOpenNavChoiceModal(false);
+      setOpenRouteRetryModal(true);
+      return;
+    }
     firebaselog_onRide('OR_Navigation(OR_N)', 'OR_N:navigation_mode_vm')
     setStartNavigation(true);
     setMapMarkers([]);
@@ -773,14 +778,14 @@ const DriverOnRide = () => {
   //   }
   // }, [navigationError]);
 
-    useEffect(() => {
-    // console.log('Route Loading Status:', routeLoading);
-    if (routeLoading?.message === 'initialState') return;
-    if (routeLoading?.loading) return
-    if (routeLoading?.error) {
-      setOpenRouteRetryModal(true);
-    }
-  }, [routeLoading])
+  //   useEffect(() => {
+  //   // console.log('Route Loading Status:', routeLoading);
+  //   if (routeLoading?.message === 'initialState') return;
+  //   if (routeLoading?.loading) return
+  //   if (routeLoading?.error) {
+  //     setOpenRouteRetryModal(true);
+  //   }
+  // }, [routeLoading])
 
   // Handle Route not found error
    useEffect(() => {
@@ -855,54 +860,6 @@ const DriverOnRide = () => {
                 )
               : null
           }
-           {/* <TouchableOpacity disabled={routeLoading.loading} style={RouteScreenStyles.navigationIconContainer} onPress={() => onStartNavigationPress()}>
-                    {routeLoading.loading ? <ActivityIndicator size="small" color={Colors.white} /> : 
-                    <>
-                    <Text style={RouteScreenStyles.navigationIconContainerTxt}>{t.start_navigation}</Text>
-                      <MaterialCommunityIcons
-                        name="navigation"
-                        size={22}
-                        color={Colors.white}
-                      />
-                    </>}
-                      
-                  </TouchableOpacity>
-                   <TouchableOpacity disabled={routeLoading.loading} style={RouteScreenStyles.navigationIconContainer} onPress={() => onEndNavigationPress()}>
-                    {routeLoading.loading ? <ActivityIndicator size="small" color={Colors.white} /> : 
-                    <>
-                    <Text style={RouteScreenStyles.navigationIconContainerTxt}>{'t.start_navigation'}</Text>
-                      <MaterialCommunityIcons
-                        name="navigation"
-                        size={22}
-                        color={Colors.white}
-                      />
-                    </>}
-                      
-                  </TouchableOpacity> */}
-            {/* <TouchableOpacity disabled={routeLoading.loading} style={RouteScreenStyles.navigationIconContainer} onPress={() => onStartNavigationPress()}>
-                    {routeLoading.loading ? <ActivityIndicator size="small" color={Colors.white} /> : 
-                    <>
-                    <Text style={RouteScreenStyles.navigationIconContainerTxt}>{t.start_navigation}</Text>
-                      <MaterialCommunityIcons
-                        name="navigation"
-                        size={22}
-                        color={Colors.white}
-                      />
-                    </>}
-                      
-                  </TouchableOpacity>
-                    <TouchableOpacity disabled={routeLoading.loading} style={RouteScreenStyles.navigationIconContainer} onPress={() => onENDNavigationPress()}>
-                    {routeLoading.loading ? <ActivityIndicator size="small" color={Colors.white} /> : 
-                    <>
-                    <Text style={RouteScreenStyles.navigationIconContainerTxt}>{'t.start_navigation'}</Text>
-                      <MaterialCommunityIcons
-                        name="navigation"
-                        size={22}
-                        color={Colors.white}
-                      />
-                    </>}
-                      
-                  </TouchableOpacity> */}
           {watingTime > 0 &&
           <View style={RouteScreenStyles.watingTimeContainer}>
            <Text  style={RouteScreenStyles.watingTimeContainerTitle}> <Text style={{fontFamily:Fonts.light, fontSize:12}}>{t('waiting_time')}:{' '}</Text>{DateTimeFormatter.formatSecondsToDuration(watingTime)}</Text>
