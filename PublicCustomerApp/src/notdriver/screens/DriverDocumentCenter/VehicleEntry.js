@@ -23,10 +23,11 @@ import { vehicleList } from '../../../common/constants/jsonData';
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
 import UseBackButton from '../../../common/hooks/UseBackButton';
 import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
+import FullScreenLoader from '../../../common/loaders/FullScreenLoader';
 
 const VehicleEntry = ({ onNext }) => {
   const { t } = useTranslation();
-  const { setVehicleInfo, vehicleInfo } = usePublicDriverStore();
+  const { setVehicleInfo, vehicleInfo, driverInfo } = usePublicDriverStore();
   const { userInfo } = useUserStore();
 
   const [vehicleTypes, setVehicleTypes] = useState([]);
@@ -472,8 +473,8 @@ const VehicleEntry = ({ onNext }) => {
         });
         if (response?.message === 'parivahan_verification_failed') {
           showNotification(
-            t('Vehicle Verification Failed. Please Add Additional Details', {
-              defaultValue: 'Vehicle Verification Failed. Please Add Additional Details',
+            t('please_add_additional_details', {
+              defaultValue: 'Please Add Additional Details',
             }),
             '',
             'success',
@@ -526,6 +527,14 @@ const VehicleEntry = ({ onNext }) => {
       );
     }
 
+    if (!driverInfo.homeLocation) {
+      return (
+         <Text style={styles.typeEmptyText}>
+          {t('please_select_preffered_wrk_location', { defaultValue: 'Please select preferred work location.' })}
+        </Text>
+      )
+    }
+
     if (!vehicleTypes || vehicleTypes.length === 0) {
       return (
         <Text style={styles.typeEmptyText}>
@@ -562,6 +571,7 @@ const VehicleEntry = ({ onNext }) => {
     <View style={styles.container}>
       <NavBar title={t('vehicle_details', { defaultValue: 'Vehicle Details' })} onBackPress={() => goBack()} />
       <UseBackButton onBackPress={() => goBack()} />
+        {isSaving && <FullScreenLoader />}
       <ScrollView contentContainerStyle={styles.scrollContent}>
 
                 <View style={styles.section}>

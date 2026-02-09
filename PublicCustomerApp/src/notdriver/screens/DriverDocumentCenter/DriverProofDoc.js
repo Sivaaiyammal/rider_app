@@ -12,6 +12,7 @@ import { showNotification } from '../../../common/components/Alerts/showNotifica
 import useUserStore from '../../../common/store/useUserStore';
 import UseBackButton from '../../../common/hooks/UseBackButton';
 import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
+import FullScreenLoader from '../../../common/loaders/FullScreenLoader';
 
 const aadhaarPattern = /\b\d{4}\s?\d{4}\s?\d{4}\b/;
 const aadhaarDigitsPattern = /^\d{12}$/;
@@ -396,6 +397,7 @@ const DriverProofDoc = () => {
         onBackPress={() => goBack()}
       />
       <UseBackButton onBackPress={() => goBack()} />
+      {(uploading.panCard || uploading.aadhaarCard) && <FullScreenLoader />}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.switchContainer}>
           {switchOptions.map(option => {
