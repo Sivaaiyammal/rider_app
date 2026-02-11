@@ -13,7 +13,10 @@ import {
   getInitialNotification,
   getMessaging,
   getToken,
+  isDeviceRegisteredForRemoteMessages,
   onMessage,
+  registerDeviceForRemoteMessages,
+  requestPermission,
   setBackgroundMessageHandler,
 } from '@react-native-firebase/messaging';
 import { NetworkProvider, useNetwork } from './context/NetworkContext';
@@ -120,9 +123,25 @@ const MainAppContent = () => {
         Vibration.vibrate();
       }
     })
-    getToken(messagingInstance).catch(error => {
-      console.error('Error getting FCM token:', error);
-    });
+    const registerForMessaging = async () => {
+      try {
+        await requestPermission(messagingInstance);
+
+        const alreadyRegistered = await isDeviceRegisteredForRemoteMessages(
+          messagingInstance,
+        );
+
+        if (!alreadyRegistered) {
+          await registerDeviceForRemoteMessages(messagingInstance);
+        }
+
+        await getToken(messagingInstance);
+      } catch (error) {
+        console.error('Error getting FCM token:', error);
+      }
+    };
+
+    registerForMessaging();
 
     return unsubscribe;
   }, []);

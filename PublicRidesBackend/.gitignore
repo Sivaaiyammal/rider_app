@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.test
+package-lock.json
+target/
+Cargo.lock
+*_test/
+creds/
+
+logs/

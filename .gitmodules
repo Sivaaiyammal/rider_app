@@ -1,0 +1,3 @@
+[submodule "PublicRidesBackend/fareEngine"]
+	path = PublicRidesBackend/fareEngine
+	url = ssh://vmgit@apollo.virtualmaze.in:/home/vmgit/repo/fareEngine

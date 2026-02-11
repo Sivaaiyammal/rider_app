@@ -1,0 +1,1008 @@
+const Driver = require("../../Models/Driver");
+const Trip = require("../../Models/Trip");
+const RideStatus = require('../../Core/PublicRides/RideStatus');
+const Passanger = require("../../Models/Passanger");
+const { getUserSocketIds } = require("../../Services/WebsocketUtilities");
+const OTP = require("../../Controllers/OTP");
+const PushNotifiationService = require("../../Services/PushNotification/PushNotifiationService");
+const NOTPushNotifiationService = require("../../Services/PushNotification/NOTPushNotifiationService");
+const { sendTripCancelledByPassangerMessage, sendTripCancelledByDriverMessage, sendPickupLocationChangeAlert, AcceptedLocationChangeAlert, RejectedLocationChangeAlert } = require("../../Services/PushNotification/Messages");
+const { sendTripDriverAssignedMessage, sendAlertPassangerPickupMessagewithOTP, sendTripDriverAssignedMessageWithOTP } = require("../../Services/PushNotification/publicRideCustomerNotification");
+const GeneratePresignedUrl = require("../../Controllers/GeneratePresignedUrl");
+const FareConfigs = require("../../Models/FareConfigs");    
+// const { getFareAlert } = require("../../Services/PushNotification/Messages");
+const FareService = require("../../fareEngine/services/FareService");
+const Exotel = require("../../Services/exotel");
+const OTP_LENGTH = 4;
+
+async function sendPassangerSocketEvents(type, passangerId, socketService, driver, trip, otp, action) {
+
+    const passangerSocketIds = await getUserSocketIds(passangerId);
+    if(type === "driverAllocated"){
+        const socketData = {
+            _id: trip._id,
+            driver,
+            otp,
+            tripStatus: "ACCEPTED",
+            tripData: trip
+        }
+
+        socketService.customerRideAssignHandler.emitDriverAllocated(passangerSocketIds, socketData)
+    }
+    if (type === "upComingTripDriverAllocated") {
+        const socketData = {
+            _id: trip._id,
+            driver,
+            otp,
+            tripStatus: "DRIVER_ASSIGNED",
+            tripData: trip,
+            upComingTrip: true,
+            message: "upComingTripDriverAllocated"
+        }
+
+        socketService.customerRideAssignHandler.emitDriverAllocated(passangerSocketIds, socketData)
+    }
+    if(type === "tripCancelledByDriver"){
+        const socketData = {
+            _id: trip._id,
+            tripStatus: "CANCELLED",
+            fareDetails: trip?.fareDetails || null,
+            isOnGoingTrip: trip?.fareDetails ? true : false
+        }
+        socketService.customerRideAssignHandler.emitPassangerTripStatus(passangerSocketIds, socketData)
+    }
+    if(type === "acceptedLocationChangeRequest"){
+        const socketData = {
+            _id: trip._id,
+            stops: trip.stops,
+            estimatedDuration: trip.estimatedDuration,
+            estimatedDistance: trip.estimatedDistance,
+            estimatedFare: trip.estimatedFare,
+            action: action
+        }
+        socketService.customerRideAssignHandler.emitPassangerLocationChange(passangerSocketIds, socketData)
+    }
+    if(type === 'WaypointsReached'){
+        const socketData = {
+            _id: trip._id,
+            tripData: trip,
+            tripStatus: "PICKEDUP",
+        }
+        socketService.customerRideAssignHandler.emitPassangerTripStatus(passangerSocketIds, socketData)
+
+    }
+
+}
+async function sendDriverSocketEvents(type, driverId, socketService, tripId, trip, status) {
+
+    const driverSocketIds = await getUserSocketIds(driverId);
+    if(type === "tripCancelledByPassenger"){
+        const socketData = {
+            _id: trip._id,
+            tripStatus: "CANCELLED",
+            totalFare: trip?.fareDetails || null,
+            isOnGoingTrip: trip?.fareDetails ? true : false,
+        }
+       
+        socketService.publicRideDriverHandler.emitDriverTripStatus(driverSocketIds, socketData)
+    }
+
+    if(type === "stopChangeRequest"){
+        const socketData = {
+            _id: tripId,
+            changeRequestStops: trip,
+            status: status
+        }
+        socketService.publicRideDriverHandler.emitStopChangeRequest(driverSocketIds, socketData)
+    }
+}
+
+
+
+module.exports = function (CLASS) {
+
+    CLASS.prototype.acceptRidePublicRides = async function (req, res) {
+        const driverId = req.driver.id;
+        try {
+
+            const tripId = req.body?.tripId;
+            if (!tripId) return res.status(400).json({ success: false, message: 'Trip ID is required' });
+
+            const driver = await Driver.getDriverWithId(driverId);
+            if (!driver) return res.status(400).json({ success: false, message: 'Driver not found' });
+
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
+
+            if (!trip.publicRidesTrip) return res.status(400).json({ success: false, message: 'Trip is not a public rides trip' });
+            if (trip.status === RideStatus.CANCELLED ) return res.status(400).json({ success: true, message: 'Trip is already cancelled', isCancelled: true });
+            
+            if (trip.status !== RideStatus.MATCHED && trip.driverId?.toString() === driverId){
+                console.log("Driver already assigned to this trip, proceeding to accept");
+                return res.status(200).json({ success: true, message: 'Trip is already accepted by another driver' });
+            }
+            const passangerId = trip.passangerId;
+            const otp = OTP.generateOTP(OTP_LENGTH);
+            /* get Passanger FCM tokens and socketIDS */
+            const passanger = await Passanger.getPassangerWithId(passangerId);
+            if (!passanger) return res.status(400).json({ success: false, message: 'Passanger not found' });
+            const tripTimeline = {
+                state: 'ACCEPTED',
+                timestamp: new Date().getTime(),
+            };
+            await Trip.assignDriverToTripwithTimeline(tripId, driverId, otp, tripTimeline);
+
+            const getMaxDistanceLimit = await FareConfigs.getMaxDistanceLimit(trip?.regionCode || 'default', trip?.vehicleType);
+             
+            trip.maxDistanceLimit = getMaxDistanceLimit || null;
+
+            // console.log(getMaxDistanceLimit, "Max Distance Limit for the trip");
+          
+            // await Driver.updateDriver(driverId, { tripStatus: "ONGOING" })
+            const driverInfo = {
+                driverName: driver.name,
+                driverPhone: driver.phone,
+                driverRating: driver.rating || null,
+                vehicleType: driver.ownVehicleInfo.type,
+                vehicleModel: driver.ownVehicleInfo.model,
+                vehicleBrand: driver.ownVehicleInfo.make,
+                vehicleColor: driver.ownVehicleInfo.color,
+                vehicleNumber: driver.ownVehicleInfo.regNo,
+                otp: otp,
+                upiid: driver.bankDetails.UPIID,
+                driverLocaiton: driver.location
+            };
+   
+            if(driver?.documents?.driverPhoto){
+                const ImagePath = driver.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
+                const rjvw = new GeneratePresignedUrl()
+                driverInfo.driverPhoto = await rjvw.generatePresignedImg(ImagePath)
+                driverInfo.driverPhotoImg = ImagePath
+            }
+           
+
+            
+            sendPassangerSocketEvents("driverAllocated", passangerId, req.socketService, driverInfo, trip, otp).catch(err => {
+                console.log(err, "Error sending socket events to passanger")
+            })
+
+            
+            if (passanger?.fcmToken) {
+                if(req.useNotPushNotification){
+                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessageWithOTP(driver.name, otp), null, "high", { tripId: String(trip._id), "trip_status": 'ACCEPTED' });
+                }else{
+                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessageWithOTP(driver.name, otp), null, "high", { tripId: String(trip._id), "trip_status": 'ACCEPTED' });
+
+                }
+               
+            }
+
+            const currentTrip = await Trip.getTripById(tripId);
+            if(!currentTrip) return res.status(400).json({ success: false, message: 'Trip not found' });
+
+
+            
+            currentTrip.maxDistanceLimit = getMaxDistanceLimit || null;
+
+            return res.status(200).json({ success: true, message: 'Trip accepted successfully', currentTrip: currentTrip });
+
+        } catch (error) {
+            return this.handleError(error, res)
+        }
+    }
+
+    CLASS.prototype.cancelTripByDriver = async function (req, res) {
+        try {
+            const driverId = req.driver.id
+            const {tripId, reason, totalDistance, totalDuration, encodedPolyline, droppedAtLoc, isBeforePickup} = req.body
+            const trip =await Trip.getTripById(tripId)
+            const TripPassenger = await Passanger.getPassangerWithId(trip.passangerId);
+            const TripDriver = await Driver.getDriverWithId(trip.driverId);
+            let farecalculationDistance = totalDistance || 0;
+            let farecalculationDuration = totalDuration || 0;
+            // DistanceOffset logic: if totalDistance < estimatedDistance, offset is 4; if more, offset is 1
+            let DistanceOffset = 3; // default, will be set below
+            const DurationOffset = 20;
+            let estimatedDistance = 0;
+            let estimatedDuration = 0;
+            if(trip?.estimatedDistance && trip?.estimatedDuration){
+                estimatedDistance = trip?.estimatedDistance ? Number(trip?.estimatedDistance) : 0;
+                estimatedDuration = trip?.estimatedDuration ? Number(trip?.estimatedDuration) : 0;
+            }
+            if (totalDistance < estimatedDistance) {
+                DistanceOffset = 3;
+            } else {
+                DistanceOffset = 1;
+            }
+            const distanceDiff = Math.abs(totalDistance - estimatedDistance);
+            const durationDiff = Math.abs(totalDuration - estimatedDuration);
+            if (DistanceOffset >= distanceDiff) {
+                farecalculationDistance = estimatedDistance;
+            }
+            if (DurationOffset >= durationDiff) {
+                farecalculationDuration = estimatedDuration;
+            }
+            const driverWaitingTime = trip?.stops?.reduce((sum, stop) => {
+                return sum + (stop.driverWaitTime || 0);
+            }, 0);
+            if (!trip) return res.status(400).json({success: false, message: 'Trip not Found'})
+            const isAccepted = trip.status === RideStatus.ACCEPTED;
+
+         
+
+            // If droppedAtLoc provided, normalize and prepare cancel meta
+            let cancelMeta = null;
+            if (droppedAtLoc) {
+                const src = droppedAtLoc?.location || droppedAtLoc;
+                const lat = Number(src?.latitude ?? src?.lat);
+                const lon = Number(src?.longitude ?? src?.lon ?? src?.lng);
+                if (Number.isFinite(lat) && Number.isFinite(lon)) {
+                    const loc = { lat, lon };
+                    cancelMeta = { cancelledLoc: loc, cancelledAt: Date.now(), droppedAtLoc: loc };
+                }
+            }
+        
+            if (isAccepted || isBeforePickup) {
+                const timeline = {
+                    state: 'CANCELLED_BY_DRIVER_BEFORE_PICKUP',
+                    timestamp: new Date().getTime(),
+                };
+                await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true });
+            
+                await Trip.cancelTripwithTimeline(tripId, reason, 'DRIVER', timeline);
+                if (cancelMeta) {
+                    await Trip.updateCancelledMeta(tripId, cancelMeta);
+                }
+                sendPassangerSocketEvents(
+                    "tripCancelledByDriver",
+                    String(TripPassenger._id),
+                    req.socketService,
+                    null,
+                    trip,
+                    null
+                ).catch(err => console.error("Error sending socket to passenger", err));
+                if (TripPassenger?.fcmToken) {
+                    if(req.useNotPushNotification){
+                        await NOTPushNotifiationService.sendPushNotification(
+                            TripPassenger.fcmToken?.token,
+                            sendTripCancelledByDriverMessage(TripDriver.name),
+                            null,
+                            "high",
+                            { tripId: String(trip._id), "trip_status": 'CANCELLED' }
+                        );
+
+                    }else{
+                        if(req.useNotPushNotification){ 
+                            await PushNotifiationService.sendPushNotification(
+                                TripPassenger.fcmToken?.token,
+                                sendTripCancelledByDriverMessage(TripDriver.name),
+                                null,
+                                "high",
+                                { tripId: String(trip._id), "trip_status": 'CANCELLED' }
+                            );
+                        }else{
+                            await PushNotifiationService.sendPushNotification(  
+                                TripPassenger.fcmToken?.token,
+                                sendTripCancelledByDriverMessage(TripDriver.name),
+                                null,
+                                "high",
+                                { tripId: String(trip._id), "trip_status": 'CANCELLED' }
+                            );
+                        }
+                    }
+                }   
+                return res.json({ success: true, message: "Trip Cancelled Successfully", isOnGoingTrip: false });
+            }
+            const farepayload = {
+                distance: farecalculationDistance,
+                duration: farecalculationDuration,
+                waitTime: driverWaitingTime,
+                zone: 'all',
+                tripId: tripId
+            }
+            const getfinalFare = await FareService.calculateFinalFareFromTrip(farepayload)
+            if (!getfinalFare.success) return res.json({ success: false, message: "Fare Details Fetch Fails" });
+            const finalFare = getfinalFare?.data
+            finalFare.distance = totalDistance
+            finalFare.duration = totalDuration
+            trip.fareDetails = finalFare;
+            const timeline = {
+                state: 'CANCELLED_BY_DRIVER_AFTER_PICKUP',
+                timestamp: new Date().getTime(),
+            };
+            await Trip.updateCancelTripFinalInfo(tripId, RideStatus.CANCELLED, reason, totalDuration, totalDistance, driverWaitingTime, encodedPolyline, 'DRIVER', timeline)
+            if (cancelMeta) {
+                await Trip.updateCancelledMeta(tripId, cancelMeta);
+            }
+            // const updatePaymentsToTrip = await PublicRidesPayment.updatePaymentToTrip(tripId, driverId, passangerId, finalFare)
+            // await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true });
+            // if (!updatePaymentsToTrip.success) return res.json({ success: true, message: "Error updating fare details"});
+            sendPassangerSocketEvents(
+                "tripCancelledByDriver",
+                String(TripPassenger._id),
+                req.socketService,
+                null,
+                trip,
+                null
+            ).catch(err => console.error("Error sending socket to passenger", err));
+
+            if (TripPassenger?.fcmToken) {
+                if(req.useNotPushNotification){
+                    await NOTPushNotifiationService.sendPushNotification(
+                        TripPassenger.fcmToken?.token,
+                        sendTripCancelledByDriverMessage(TripDriver.name),
+                        null,
+                        "high",
+                        { tripId: String(trip._id), "trip_status": 'CANCELLED' }
+                    );
+
+                }else{
+                    await PushNotifiationService.sendPushNotification(
+                        TripPassenger.fcmToken?.token,
+                        sendTripCancelledByDriverMessage(TripDriver.name),
+                        null,
+                        "high",
+                        { tripId: String(trip._id), "trip_status": 'CANCELLED' }
+                    );
+                }
+            }
+            return res.json({ success: true, message: "Trip Cancelled Successfully", isOnGoingTrip: true, totalFare: finalFare,});
+        } catch (e) {
+            return this.handleError(e, res)
+        }
+    }
+    
+    CLASS.prototype.cancelTripByPassenger = async function (req, res) {
+        try {
+            const passengerId = req.passanger.id
+            const {tripId, reason, totalDistance, totalDuration, isNotyetPickedUp} = req.body
+            const trip =await Trip.getTripById(tripId)
+            console.log(trip, "Trip in cancel by passenger");
+            const TripPassenger = await Passanger.getPassangerWithId(passengerId);
+            
+            const TripDriver = await Driver.getDriverWithId(trip.driverId);
+            const driverId = trip.driverId;
+            const driverLocation = await Driver.getDriverLocation(driverId);
+
+
+            let farecalculationDistance = totalDistance || 0;
+            let farecalculationDuration = totalDuration || 0;
+            // DistanceOffset logic: if totalDistance < estimatedDistance, offset is 4; if more, offset is 1
+            let DistanceOffset = 3; // default, will be set below
+            const DurationOffset = 20;
+            let estimatedDistance = 0;
+            let estimatedDuration = 0;
+            if(trip?.estimatedDistance && trip?.estimatedDuration){
+                estimatedDistance = trip?.estimatedDistance ? Number(trip?.estimatedDistance) : 0;
+                estimatedDuration = trip?.estimatedDuration ? Number(trip?.estimatedDuration) : 0;
+            }
+            if (totalDistance < estimatedDistance) {
+                DistanceOffset = 3;
+            } else {
+                DistanceOffset = 1;
+            }
+            const distanceDiff = Math.abs(totalDistance - estimatedDistance);
+            const durationDiff = Math.abs(totalDuration - estimatedDuration);
+            if (DistanceOffset >= distanceDiff) {
+                farecalculationDistance = estimatedDistance;
+            }
+            if (DurationOffset >= durationDiff) {
+                farecalculationDuration = estimatedDuration;
+            }
+            const driverWaitingTime = trip?.stops?.reduce((sum, stop) => {
+                return sum + (stop.driverWaitTime || 0);
+            }, 0);
+            if (!trip) return res.status(400).json({success: false, message: 'Trip not Found'})
+            const isAccepted = trip.status === RideStatus.ACCEPTED;
+            const isPickedUp = trip.status === RideStatus.PICKEDUP;
+            const isScheduled = trip.status === RideStatus.SCHEDULED;
+
+          
+
+            await Passanger.updatePassangerUpdateCancelledTrips(passengerId);
+           
+
+
+            // If droppedAtLoc provided, normalize and store cancel metadata (location + time)
+            let cancelMeta = null;
+            if (
+                driverLocation &&
+                Array.isArray(driverLocation.coordinates) &&
+                driverLocation.coordinates.length >= 2 &&
+                driverLocation.coordinates[0] !== null &&
+                driverLocation.coordinates[1] !== null
+            ) {
+                const src = driverLocation.coordinates;
+                const lat = Number(src[1]);
+                const lon = Number(src[0]);
+                if (Number.isFinite(lat) && Number.isFinite(lon)) {
+                    const loc = { lat, lon };
+                    cancelMeta = { cancelledLoc: loc, cancelledAt: Date.now() };
+                }
+            }
+            if (isAccepted || isScheduled || isNotyetPickedUp) {
+                const timeline = {
+                    state: 'CANCELLED_BY_PASSENGER_BEFORE_PICKUP',
+                    timestamp: new Date().getTime(),
+                };
+                await Trip.cancelTripwithTimeline(tripId, reason, 'PASSENGER', timeline)
+
+                if (cancelMeta) {
+                    await Trip.updateCancelledMeta(tripId, cancelMeta);
+                }
+
+                if(driverId && TripDriver){
+                    await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true });
+                
+                    sendDriverSocketEvents(
+                        "tripCancelledByPassenger",
+                        String(TripDriver._id),
+                        req.socketService,
+                        null,
+                        trip,
+                        null
+                    ).catch(err => console.error("Error sending socket to passenger", err));
+                    if (TripDriver?.fcmToken) {
+                        if(req.useNotPushNotification){
+                            await NOTPushNotifiationService.sendPushNotification(
+                                TripDriver.fcmToken?.token,
+                                sendTripCancelledByPassangerMessage(TripPassenger.name),
+                                null,
+                                "high",
+                                { tripId: String(trip._id), isOnGoingTrip: "false" }
+                            );
+
+                        }else{
+                            await PushNotifiationService.sendPushNotification(
+                                TripDriver.fcmToken?.token,
+                                sendTripCancelledByPassangerMessage(TripPassenger.name),
+                                null,
+                                "high",
+                                { tripId: String(trip._id), isOnGoingTrip: "false" }
+                            );
+                        }
+                    }
+                }   
+                return res.json({ success: true, message: "Trip Cancelled Successfully"});
+            }else if(isPickedUp){
+                const farepayload = {
+                    distance: farecalculationDistance,
+                    duration: farecalculationDuration,
+                    waitTime: driverWaitingTime,
+                    zone: 'all',
+                    tripId: tripId
+                }
+                const getfinalFare = await FareService.calculateFinalFareFromTrip(farepayload)
+                if (!getfinalFare.success) return res.json({ success: false, message: "Fare Details Fetch Fails" });
+                const finalFare = getfinalFare?.data
+                finalFare.distance = totalDistance
+                finalFare.duration = totalDuration
+                trip.fareDetails = finalFare;
+                const timeline = {  
+                    state: 'CANCELLED_BY_PASSENGER_AFTER_PICKUP',       
+                    timestamp: new Date().getTime(),
+                }
+               
+                await Trip.updateCancelTripFinalInfo(tripId, RideStatus.CANCELLED, reason, totalDuration, totalDistance, driverWaitingTime, null, 'PASSENGER', timeline)
+                if (cancelMeta) {
+                    await Trip.updateCancelledMeta(tripId, cancelMeta);
+                }
+                // const updatePaymentsToTrip = await PublicRidesPayment.updatePaymentToTrip(tripId, driverId, passengerId, finalFare)
+                // await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true });
+                // if (!updatePaymentsToTrip.success) return res.json({ success: true, message: "Error updating fare details"});
+                sendDriverSocketEvents(
+                    "tripCancelledByPassenger",
+                    String(TripDriver._id),
+                    req.socketService,
+                    null,
+                    trip,
+                    null,
+                ).catch(err => console.error("Error sending socket to passenger", err));
+
+                if(TripDriver?.fcmToken){
+                    if(req.useNotPushNotification){
+                        await NOTPushNotifiationService.sendPushNotification(
+                            TripDriver.fcmToken?.token,
+                            sendTripCancelledByPassangerMessage(TripPassenger.name),
+                            null,
+                            "high",
+                            { tripId: String(trip._id), isOnGoingTrip: "true", totalFare: JSON.stringify(finalFare)}
+                        );
+
+                    }else{
+                        await PushNotifiationService.sendPushNotification(
+                            TripDriver.fcmToken?.token,
+                            sendTripCancelledByPassangerMessage(TripPassenger.name),
+                            null,
+                            "high",
+                            { tripId: String(trip._id), isOnGoingTrip: "true", totalFare: JSON.stringify(finalFare)}
+                        );
+                    }
+                }
+            
+                return res.json({ success: true, message: "Trip Cancelled Successfully", totalFare: finalFare});
+            }
+            return res.json({ success: false, message: "Not OnGoing Trip"});
+        } catch (e) {
+            return this.handleError(e, res)
+        }
+    }
+
+    CLASS.prototype.TripStopsChange = async function (req, res) {
+        try {
+            const { tripId, stops } = req.body;
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
+            const TripDriver = await Driver.getDriverWithId(trip.driverId);
+            if (!TripDriver) return res.status(400).json({ success: false, message: 'Driver not found' });
+            const result = await Trip.updateTripStops(tripId, stops);
+            if(trip.startLocation[0] !== stops[0]?.location[0] && trip.startLocation[1] !== stops[0]?.location[1] ){
+                await Trip.updateStartLocation(tripId, stops[0]?.location);
+            }
+            if(trip.endLocation[0] !== stops[stops.length - 1]?.location[0] && trip.endLocation[1] !== stops[stops.length - 1]?.location[1]){
+                await Trip.updateEndLocation(tripId, stops[stops.length - 1]?.location);
+            }
+            sendDriverSocketEvents("stopChangeRequest", trip.driverId, req.socketService, tripId, stops, trip.status).catch(err => {
+                console.log(err, "Error sending socket events to driver")
+            })
+            if (TripDriver?.fcmToken) {
+                if(req.useNotPushNotification){
+                    await NOTPushNotifiationService.sendPushNotification(
+                        TripDriver.fcmToken?.token,
+                        sendPickupLocationChangeAlert('pickup'),
+                        null,
+                        "high",
+                        { tripId: String(trip._id), stops: JSON.stringify(stops)}
+                    );
+
+                }else{          
+                    await PushNotifiationService.sendPushNotification(
+                        TripDriver.fcmToken?.token,
+                        sendPickupLocationChangeAlert('pickup'),
+                        null,
+                        "high",
+                        { tripId: String(trip._id), stops: JSON.stringify(stops)}
+                    );
+                }
+            }
+            return res.status(200).json({ success: true, message: 'Trip stops changed successfully', result });
+        } catch (error) {
+            return this.handleError(error, res)
+        }
+    }
+
+    CLASS.prototype.acceptPassengerStopChangeRequest = async function (req, res) {
+        try {
+            const { tripId, action } = req.body;
+            const trip = await Trip.getTripById(tripId);
+
+            const passangerId = trip.passangerId;
+            if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' }); 
+            const stops =trip.stopChangeRequest.stops
+            const passanger = await Passanger.getPassangerWithId(passangerId);
+            if (action === 'accept') {
+                const result = await Trip.updateTripStops(tripId, trip.stopChangeRequest.stops);
+                await Trip.updateTripStopChangesInfo(tripId, action, trip.stopChangeRequest.duration, trip.stopChangeRequest.distance, trip.stopChangeRequest.fare);
+                trip.stops = stops;
+                trip.estimatedDuration = trip.stopChangeRequest.duration;
+                trip.estimatedDistance = trip.stopChangeRequest.distance;    
+                trip.estimatedFare = trip.stopChangeRequest.fare;
+    
+                if(trip.startLocation[0] !== stops[0]?.location[0] && trip.startLocation[1] !== stops[0]?.location[1] ){
+                    await Trip.updateStartLocation(tripId, stops[0]?.location);
+                }
+                if(trip.endLocation[0] !== stops[stops.length - 1]?.location[0] && trip.endLocation[1] !== stops[stops.length - 1]?.location[1]){
+                    await Trip.updateEndLocation(tripId, stops[stops.length - 1]?.location);
+                }
+                if (passanger?.fcmToken) {
+                    if(req.useNotPushNotification){
+                        await NOTPushNotifiationService.sendPushNotification(
+                            passanger.fcmToken?.token,
+                            AcceptedLocationChangeAlert('waypoints'),
+                            null,
+                            "high",
+                            { tripId: String(trip._id), action: action }
+                        );
+
+                    }else{
+                        await PushNotifiationService.sendPushNotification(
+                            passanger.fcmToken?.token,
+                            AcceptedLocationChangeAlert('waypoints'),
+                            null,
+                            "high",
+                            { tripId: String(trip._id), action: action }
+                        );
+                    }
+                }
+                res.status(200).json({ success: true, message: 'Update Stops Accepted By driver', result, trip });
+            } else {
+                const result = await Trip.updateTripStopChangesInfo(tripId, action);
+                if (passanger?.fcmToken) {
+                    if(req.useNotPushNotification){ 
+                        await NOTPushNotifiationService.sendPushNotification(
+                            passanger.fcmToken?.token,
+                            RejectedLocationChangeAlert('waypoints'),
+                            null,
+                            "high",
+                            { tripId: String(trip._id), action: action }
+                        );
+                    }else{  
+                        await PushNotifiationService.sendPushNotification(
+                            passanger.fcmToken?.token,
+                            RejectedLocationChangeAlert('waypoints'),
+                            null,
+                            "high",
+                            { tripId: String(trip._id), action: action }
+                        );
+                    }
+                }
+                res.status(200).json({ success: true, message: 'Update Stops Rejected By driver', result, trip });
+            }
+            sendPassangerSocketEvents("acceptedLocationChangeRequest", passangerId, req.socketService, null, trip, null, action).catch(err => {
+                console.log(err, "Error sending socket events to passanger")
+            })
+
+           
+            
+        } catch (error) {
+            return this.handleError(error, res)
+        }
+    }
+
+    CLASS.prototype.passengerStopChangeRequest = async function (req, res) {
+        try {
+            const { tripId, stops, distance, duration, fare, routeData } = req.body;
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
+            const driverId = trip.driverId.toString()
+            const TripDriver = await Driver.getDriverWithId(trip.driverId);
+            if (!TripDriver) return res.status(400).json({ success: false, message: 'Driver not found' });
+          
+            const requestdata = {
+                stops,
+                distance,
+                duration,
+                fare,
+                status: "PENDING",
+                routeData
+            }
+            console.log(requestdata, "Request Data for stop change");   
+
+            const result = await Trip.updateStopsRequest(tripId, requestdata);
+            sendDriverSocketEvents("stopChangeRequest", driverId, req.socketService, tripId, requestdata).catch(err => {
+                console.log(err, "Error sending socket events to passanger")
+            })
+            if (TripDriver?.fcmToken) {
+                if(req.useNotPushNotification){
+                    await NOTPushNotifiationService.sendPushNotification(
+                        TripDriver.fcmToken?.token,
+                        sendPickupLocationChangeAlert('waypoints'),
+                        null,
+                        "high",
+                        { tripId: String(trip._id), requestdata: JSON.stringify(requestdata)}
+                    );
+
+                }else{
+                    await PushNotifiationService.sendPushNotification(
+                        TripDriver.fcmToken?.token,
+                        sendPickupLocationChangeAlert('waypoints'),
+                        null,
+                        "high",
+                        { tripId: String(trip._id), requestdata: JSON.stringify(requestdata)}
+                    );
+                }
+            }
+            return res.status(200).json({ success: true, message: 'Trip stops changed successfully', result, requestdata });
+        }catch (error) {
+            return this.handleError(error, res)
+        }
+    }
+
+    CLASS.prototype.getpublicRidesTripStatus = async function (req, res) {
+        try {
+            const { tripId } = req.body;
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
+            return res.status(200).json({ success: true, tripStatus: trip.status });
+        } catch (error) {
+            return this.handleError(error, res)
+        }
+    }
+
+    CLASS.prototype.updateWaypointsDriverReached = async function (req, res) {
+        try {
+            const { tripId, isReached, stopNumber } = req.body;
+            let driverWaitTime = 0
+            let stopUpdated = false
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
+            if (stopNumber < 1 || stopNumber > trip.stops.length) {
+                return res.status(400).json({ success: false, message: 'Invalid stop number' });
+            }
+            const waitingTime = trip.stops[stopNumber]?.waitingTime;
+            if (waitingTime === undefined || waitingTime === null || waitingTime <= 0) {
+                driverWaitTime = 0;
+                stopUpdated = true;
+            }
+            await Trip.updateReachedForTrip(tripId, isReached, stopNumber, driverWaitTime, stopUpdated);
+            if(isReached){
+                trip.stops[stopNumber].isReached = true;
+                trip.stops[stopNumber].arrivalTime = new Date().getTime();
+                trip.stops[stopNumber].driverWaitTime = driverWaitTime;
+                trip.stops[stopNumber].stopUpdated = stopUpdated;
+            }
+            sendPassangerSocketEvents("WaypointsReached", trip.passangerId, req.socketService, null, trip, null).catch(err => {
+                console.log(err, "Error sending socket events to passanger")
+            })
+
+            return res.status(200).json({ success: true, message: 'Stop Updated', data: trip.stops[stopNumber] });
+        } catch (error) {
+            return this.handleError(error, res)
+        }
+    }
+
+    CLASS.prototype.updateWaypointsDriverWaitTime = async function (req, res) {
+        try {
+            const { tripId, stopNumber, driverWaitTime, stopUpdated } = req.body;
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
+            if (stopNumber < 1 || stopNumber > trip.stops.length) {
+                return res.status(400).json({ success: false, message: 'Invalid stop number' });
+            }
+            await Trip.updateWaitTimeForTrip(tripId, stopNumber, driverWaitTime, stopUpdated);
+            if(stopUpdated){
+                trip.stops[stopNumber].driverWaitTime = driverWaitTime;
+                trip.stops[stopNumber].stopUpdated = stopUpdated;
+                trip.stops[stopNumber].driverWaitTime = driverWaitTime;
+            }
+            sendPassangerSocketEvents("WaypointsReached", trip.passangerId, req.socketService, null, trip, null).catch(err => {
+                console.log(err, "Error sending socket events to passanger")
+            })
+            return res.status(200).json({ success: true, message: `Wait Time of ${driverWaitTime} updated in stop successfully`, data: trip.stops[stopNumber] });
+        } catch (error) {
+            return this.handleError(error, res)
+        }
+    }
+
+    CLASS.prototype.alertPassangerPickup = async function (req, res) {
+        try {
+            const { tripId, driverName } = req.body;
+            const trip = await Trip.getTripById(tripId);
+            const passangerId = trip?.passangerId?.toString();
+            const passanger = await Passanger.getPassangerWithId(passangerId);
+            if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
+            if (passanger?.fcmToken && trip && trip?.otp) {
+                if(req.useNotPushNotification){
+                    await NOTPushNotifiationService.sendPushNotification(
+                        passanger?.fcmToken?.token,
+                        sendAlertPassangerPickupMessagewithOTP(driverName, trip.otp),
+                        null,
+                        "high",
+                        { tripId: String(trip._id) }
+                    );
+
+                }else{  
+                    await PushNotifiationService.sendPushNotification(
+                        passanger?.fcmToken?.token,
+                        sendAlertPassangerPickupMessagewithOTP(driverName, trip.otp),
+                        null,
+                        "high",
+                        { tripId: String(trip._id) }
+                    );
+                }
+            }
+            return res.status(200).json({ success: true, message: 'Alert Passanger Pickup' });
+        } catch (error) {
+            return this.handleError(error, res)
+        }
+    }
+
+    CLASS.prototype.makeMaskedCall = async function (req, res) {
+        try {
+            const { from, to } = req.body;
+            if(!from || !to) return res.status(400).json({ success: false, message: 'From and To are required' });
+            const exotel = new Exotel();
+            const response = await exotel.makeCall(from, to);
+            return res.status(200).json({ success: true, message: 'Masked Call Made', response });      
+        } catch (error) {
+            return this.handleError(error, res)
+        }
+    }  
+    
+    
+    CLASS.prototype.acceptUpComingRidePublicRides = async function (req, res) {
+        try {
+            const driverId = req.driver.id;
+
+            const tripId = req.body?.tripId;
+            if (!tripId) return res.status(400).json({ success: false, message: 'Trip ID is required' });
+
+            const driver = await Driver.getDriverWithId(driverId);
+            if (!driver) return res.status(400).json({ success: false, message: 'Driver not found' });
+
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
+
+            if (!trip.publicRidesTrip) return res.status(400).json({ success: false, message: 'Trip is not a public rides trip' });
+         
+            if (trip.status !== RideStatus.MATCHED && trip.driverId === driverId) return res.status(400).json({ success: false, message: 'Trip is already accepted by another driver' });
+
+            const passangerId = trip.passangerId;
+            const otp = OTP.generateOTP(OTP_LENGTH);
+            /* get Passanger FCM tokens and socketIDS */
+            const passanger = await Passanger.getPassangerWithId(passangerId);
+            if (!passanger) return res.status(400).json({ success: false, message: 'Passanger not found' });
+            await Trip.assignDriverToTrip(tripId, driverId, otp);
+
+            const getMaxDistanceLimit = await FareConfigs.getMaxDistanceLimit(trip?.regionCode || 'default', trip?.vehicleType);
+             
+            trip.maxDistanceLimit = getMaxDistanceLimit || null;
+
+            // console.log(getMaxDistanceLimit, "Max Distance Limit for the trip");
+          
+            // await Driver.updateDriver(driverId, { tripStatus: "ONGOING" })
+            const driverInfo = {
+                driverName: driver.name,
+                driverPhone: driver.phone,
+                driverRating: driver.rating || null,
+                vehicleType: driver.ownVehicleInfo.type,
+                vehicleModel: driver.ownVehicleInfo.model,
+                vehicleBrand: driver.ownVehicleInfo.make,
+                vehicleColor: driver.ownVehicleInfo.color,
+                vehicleNumber: driver.ownVehicleInfo.regNo,
+                otp: otp,
+                upiid: driver.bankDetails.UPIID,
+                driverLocaiton: driver.location
+            };
+   
+            if(driver?.documents?.driverPhoto){
+                const ImagePath = driver.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
+                const rjvw = new GeneratePresignedUrl()
+                driverInfo.driverPhoto = await rjvw.generatePresignedImg(ImagePath)
+            }
+
+            const updateUpComingTripToDriver = await Driver.updateComingTripToDriver(driverId, tripId)
+            console.log(updateUpComingTripToDriver)
+           
+            sendPassangerSocketEvents("upComingTripDriverAllocated", passangerId, req.socketService, driverInfo, trip, otp).catch(err => {
+                console.log(err, "Error sending socket events to passanger")
+            })
+
+            
+            if (passanger?.fcmToken) {
+                if(req.useNotPushNotification){
+                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", { tripId: String(trip._id) });
+
+                }else{  
+                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", { tripId: String(trip._id) });
+                }
+            }
+
+            trip.maxDistanceLimit = getMaxDistanceLimit || null;
+
+            return res.status(200).json({ success: true, message: 'Trip accepted successfully', currentTrip: trip });
+        } catch (err) {
+            return this.handleError(err, res)
+        }
+    }
+
+    CLASS.prototype.startUpComingRidePublicRides = async function (req, res) {
+        try {
+            const driverId = req.driver.id;
+
+            const tripId = req.body?.tripId;
+            if (!tripId) return res.status(400).json({ success: false, message: 'Trip ID is required' });
+
+            const driver = await Driver.getDriverWithId(driverId);
+            if (!driver) return res.status(400).json({ success: false, message: 'Driver not found' });
+
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
+
+            if (!trip.publicRidesTrip) return res.status(400).json({ success: false, message: 'Trip is not a public rides trip' });
+         
+            if (trip.status !== RideStatus.MATCHED && trip.driverId === driverId) return res.status(400).json({ success: false, message: 'Trip is already accepted by another driver' });
+
+            const passangerId = trip.passangerId;
+            const otp = OTP.generateOTP(OTP_LENGTH);
+            /* get Passanger FCM tokens and socketIDS */
+            const passanger = await Passanger.getPassangerWithId(passangerId);
+            if (!passanger) return res.status(400).json({ success: false, message: 'Passanger not found' });
+            await Trip.assignDriverToTrip(tripId, driverId, otp);
+
+            const getMaxDistanceLimit = await FareConfigs.getMaxDistanceLimit(trip?.regionCode || 'default', trip?.vehicleType);
+             
+            trip.maxDistanceLimit = getMaxDistanceLimit || null;
+
+            // console.log(getMaxDistanceLimit, "Max Distance Limit for the trip");
+          
+            // await Driver.updateDriver(driverId, { tripStatus: "ONGOING" })
+            const driverInfo = {
+                driverName: driver.name,
+                driverPhone: driver.phone,
+                driverRating: driver.rating || null,
+                vehicleType: driver.ownVehicleInfo.type,
+                vehicleModel: driver.ownVehicleInfo.model,
+                vehicleBrand: driver.ownVehicleInfo.make,
+                vehicleColor: driver.ownVehicleInfo.color,
+                vehicleNumber: driver.ownVehicleInfo.regNo,
+                otp: otp,
+                upiid: driver.bankDetails.UPIID,
+                driverLocaiton: driver.location
+            };
+   
+            if(driver?.documents?.driverPhoto){
+                const ImagePath = driver.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
+                const rjvw = new GeneratePresignedUrl()
+                driverInfo.driverPhoto = await rjvw.generatePresignedImg(ImagePath)
+            }
+
+            const updateUpComingTripToDriver = await Driver.updateCurrentTripId(driverId, tripId)
+            console.log(updateUpComingTripToDriver)
+           
+            sendPassangerSocketEvents("upComingTripStarted", passangerId, req.socketService, driverInfo, trip, otp).catch(err => {
+                console.log(err, "Error sending socket events to passanger")
+            })
+
+            
+            if (passanger?.fcmToken) {
+                if(req.useNotPushNotification){
+                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", { tripId: String(trip._id) });
+
+                }else{
+                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", { tripId: String(trip._id) });
+                }
+            }
+
+            trip.maxDistanceLimit = getMaxDistanceLimit || null;
+
+            return res.status(200).json({ success: true, message: 'Trip accepted successfully', currentTrip: trip });
+        } catch (err) {
+            return this.handleError(err, res)
+        }
+    }
+
+    CLASS.prototype.cancelUpComingTrip = async function (req, res) {
+        try {
+            const {tripId, reason} = req.body
+
+            const trip =await Trip.getTripById(tripId)
+            const TripPassenger = await Passanger.getPassangerWithId(trip.passangerId);
+            const TripDriver = await Driver.getDriverWithId(trip.driverId);
+
+            await Driver.updateDriver(TripDriver, { tripStatus: "NOTRIP", isAvailable: true });
+            await Trip.cancelTrip(tripId, reason)
+            sendPassangerSocketEvents(
+                "tripCancelledByDriver",
+                String(TripPassenger._id),
+                req.socketService,
+                null,
+                trip,
+                null
+            ).catch(err => console.error("Error sending socket to passenger", err));
+            if (TripPassenger?.fcmToken) {
+                if(req.useNotPushNotification){
+                    await NOTPushNotifiationService.sendPushNotification(
+                        TripPassenger.fcmToken?.token,
+                        sendTripCancelledByDriverMessage(TripDriver.name),
+                        null,
+                        "high",
+                        { tripId: String(trip._id) }
+                    );
+
+                }else{
+                    await PushNotifiationService.sendPushNotification(
+                        TripPassenger.fcmToken?.token,
+                        sendTripCancelledByDriverMessage(TripDriver.name),
+                        null,
+                        "high",
+                        { tripId: String(trip._id) }
+                    );
+                }
+            }   
+            return res.json({ success: true, message: "Trip Cancelled Successfully", isOnGoingTrip: false });
+        }catch (err) {
+            return this.handleError(err, res)
+        }
+    }
+}
