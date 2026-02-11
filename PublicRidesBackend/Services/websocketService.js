@@ -177,7 +177,7 @@ class SocketIOService {
            
             this.drivingEventsHandler.initializeRealTimeServerListeners(socket)
             this.wireTamperingHandler.initializeRealTimeServerListeners(socket)
-            // this.driverLocationHandler.initializeRealTimeServerListeners(socket)
+            this.driverLocationHandler.initializeRealTimeServerListeners(socket)
         });
     }
 

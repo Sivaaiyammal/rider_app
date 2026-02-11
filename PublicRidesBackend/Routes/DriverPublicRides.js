@@ -10,11 +10,14 @@ const { getRecentLocationsSchema } = require('../graphql/schemas/LocationGetSche
 const { tripLocationResolver } = require('../graphql/resolvers/TripLocationResolver');
 const OCRController = require('../Controllers/OCR/OCR');
 const { withTiming } = require('../Utils/timingLogger');
+const LocationController = require('../Controllers/Location/LocationController');
 
 // const CheckUserAuthenticated = require('../MiddleWares/CheckUserAuthenticated');
 const driverController = new DriverController()
 const tripController = new TripController()
 const ocrController = new OCRController()
+
+const locationController = new LocationController();
 
 Router.post('/signup', withTiming(driverController, driverController.registerPublicRides))
 Router.post('/sendOTP', withTiming(driverController, driverController.loginPublicRides))
@@ -77,6 +80,7 @@ Router.post('/scanDoc', CheckDriverAuthenticated, withTiming(driverController, o
 
 Router.post('/wakeUpBGService', CheckDriverAuthenticated, withTiming(driverController, driverController.wakeUpBGService))
 
+Router.post('/addTripLocation', CheckDriverAuthenticated, locationController.addTripLocationDriver);
 // graphql for publicRidesDriver
 Router.post('/graphql/location', CheckDriverAuthenticated, withTiming(null, createHandler({
     schema: getRecentLocationsSchema,
