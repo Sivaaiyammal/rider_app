@@ -392,7 +392,7 @@ public class DriverLocationService extends Service {
                 );
             } else {
                 foregroundServerUtil.sendToServer(
-                        apiUrl + "/user/trip/driver/addTripLocation",
+                        apiUrl + "/publicrides/driver/v2/addTripLocation",
                         authToken,
                         currentTripId,
                         userRole,
