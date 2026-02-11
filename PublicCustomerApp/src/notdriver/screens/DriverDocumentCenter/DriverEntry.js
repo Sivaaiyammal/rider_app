@@ -29,6 +29,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import APIRequest from '../../../common/controllers/APIRequest';
 import UseBackButton from '../../../common/hooks/UseBackButton';
 import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
+import FullScreenLoader from '../../../common/loaders/FullScreenLoader';
 
 const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
   const {t} = useTranslation();
@@ -576,6 +577,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
     <View style={{flex: 1, backgroundColor: Colors.white}}>
     <NavBar title={t('driver_details',{defaultValue: 'Driver Details'})} onBackPress={() => goBack()} />
       <UseBackButton onBackPress={() => goBack()} />
+        {isLoading && <FullScreenLoader  />}
     <ScrollView contentContainerStyle={{paddingBottom: 32, backgroundColor: Colors.white, alignItems: 'center'}}>
     <View style={{gap: 10, width:'90%'}}>
       <View>

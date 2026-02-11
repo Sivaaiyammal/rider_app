@@ -18,6 +18,7 @@ import usePublicDriverStore from '../../store/usePublicDriverStore';
 import {driverDetailStyles} from '../../styles/DriverDetailsUpload';
 import {Colors, upiIdPattern} from '../../../common/constants/constants';
 import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
+import FullScreenLoader from '../../../common/loaders/FullScreenLoader';
 
 const UPIVerification = () => {
    const {setBankInfo, bankInfo, setBankDetailsCompleteStatus} = usePublicDriverStore();
@@ -84,6 +85,7 @@ const UPIVerification = () => {
     <View style={{flex: 1, backgroundColor: 'white'}}>
       <NavBar title={t('upi_verification')} onBackPress={() => goBack()} />
       <UseBackButton onBackPress={() => goBack()} />
+        {isLoading && <FullScreenLoader />}
       <View style={styles.container}>
         <InputField
           style={styles.textField}

@@ -14,6 +14,7 @@ import NavBar from '../../../common/components/NavBar';
 import UseBackButton from '../../../common/hooks/UseBackButton';
 import APIRequest from '../../../common/APIRequest';
 import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
+import FullScreenLoader from '../../../common/loaders/FullScreenLoader';
 
 const styles = StyleSheet.create({
   container: {
@@ -678,6 +679,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
     <View style={styles.container}>
       <NavBar title="Bank Details" onBackPress={() => goBack('DocumentCenter')} />
         <UseBackButton onBackPress={() => goBack()} />
+           {isLoading && <FullScreenLoader />}
         <View style={{width: '90%', flex: 1, alignSelf: 'center'}}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>
