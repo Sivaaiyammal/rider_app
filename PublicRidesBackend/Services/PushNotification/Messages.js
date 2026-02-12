@@ -33,7 +33,7 @@ const sendTripCancelledMessage = (name) => {
     return { title, body: message }
 }
 const sendTripCancelledByPassangerMessage = (name) => {
-    const title = 'Trip Cancelled By Passanger'
+    const title = 'Trip Cancelled By Passenger'
     const message = `Your trip has been cancelled by ${name}`
     return { title, body: message }
 }
