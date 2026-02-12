@@ -90,10 +90,8 @@ const TripAccept = () => {
     const fetchTripData = async () => {
     try {
       setLoading(true);
-      const response = await publicrideDriverApi.getTripDetails(
-        tripId,
-        userInfo?.user?.token,
-      );
+      const api = new APIRequest();
+      const response = await api.request(`/publicrides/driver/v2/getTrip?tripId=${tripId}`, 'GET', null,  userInfo?.user?.token);
       if (response?.success && response?.trip && response?.trip?.length > 0) {
         // console.log('Fetched trip details successfully:', response.trip[0]);
         setTripDetails(response.trip[0]);
@@ -148,7 +146,6 @@ const TripAccept = () => {
       fetchTripData();
      }
   },[])
-      console.log('is from socket:', dataFromSocket);
 
   // Normalize stops from socket payload; fallback to pickup/drop if stops missing
   

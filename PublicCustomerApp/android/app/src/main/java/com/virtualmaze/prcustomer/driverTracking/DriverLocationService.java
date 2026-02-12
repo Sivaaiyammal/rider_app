@@ -361,6 +361,17 @@ public class DriverLocationService extends Service {
         }
     }
 
+    public void onTripNotification(String tripId, JSONObject notificationData) {
+        if (driverOverlayController == null) {
+            driverOverlayController = new DriverOverlayController(getApplicationContext());
+        }
+        driverOverlayController.onTripNotification(tripId, notificationData);
+    }
+
+    public String getDriverAuthToken() {
+        return storedUserToken;
+    }
+
     private boolean hasOverlayPermission() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             return true;

@@ -49,12 +49,16 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.net.URI;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -68,6 +72,8 @@ public class DriverOverlayController {
     private static final String TAG = "DriverOverlayController";
     private static final long SOCKET_RETRY_DELAY_MS = 10_000L;
     private static final long SOCKET_HEALTH_INTERVAL_MS = 60_000L;
+    private static final long NOTIFICATION_FALLBACK_DELAY_MS = 1_500L;
+    private static final long SOCKET_HANDLED_CACHE_TTL_MS = 120_000L;
     private static final String ADDRESS_FALLBACK = "Address not available";
     private static final String EVENT_TRIP_OVERLAY_VISIBILITY = "driverTripOverlayVisibility";
     private static final String EVENT_TRIP_OVERLAY_RESPONSE = "driverTripOverlayResponse";
@@ -78,8 +84,12 @@ public class DriverOverlayController {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final Runnable socketRetryRunnable = this::initDriverSocket;
     private final Runnable socketHealthCheckRunnable = this::runSocketHealthCheck;
+    private final OkHttpClient httpClient = new OkHttpClient();
+    private final Object tripFallbackLock = new Object();
     private static Typeface lexendBold;
+    private static boolean fontInitAttempted;
     private Runnable overlayDismissRunnable;
+    private Runnable pendingTripFetchRunnable;
     private ValueAnimator progressAnimator;
 
     private WindowManager windowManager;
@@ -87,6 +97,11 @@ public class DriverOverlayController {
     private Socket driverSocket;
     private String cachedDriverId;
     private boolean hasStarted;
+    private String pendingNotificationTripId;
+    private boolean pendingTripHandled;
+    private boolean fallbackFetchInFlight;
+    private JSONObject pendingNotificationPayload;
+    private final LinkedHashMap<String, Long> socketHandledTripCache = new LinkedHashMap<>(32, 0.75f, true);
 
     public DriverOverlayController(Context context) {
         this.context = context.getApplicationContext();
@@ -120,6 +135,7 @@ public class DriverOverlayController {
         mainHandler.removeCallbacks(socketHealthCheckRunnable);
         cancelOverlayAutoDismiss();
         removeOverlay();
+        clearPendingTripFallback();
         stopAlertAudio();
         try {
             if (driverSocket != null) {
@@ -203,30 +219,31 @@ public class DriverOverlayController {
                 scheduleSocketRetry();
             });
 
-            driverSocket.on("trip_request", args -> {
-                if (args != null && args.length > 0) {
-                    Object payload = args[0];
-                    if (payload instanceof JSONObject) {
-                        JSONObject obj = (JSONObject) payload;
-                        Log.i(TAG, "Received trip_request for driver=" + driverId + " payload=" + obj);
-                        // Log Firebase analytics for trip request receipt
-                        try {
-                            FirebaseAnalytics analytics = FirebaseAnalytics.getInstance(context);
-                            Bundle params = new Bundle();
-                            params.putString("category", "TB_Driver_Allocation(TB_DA)");
-                            params.putString("action", "TB_DA:trip_request_received");
-                            analytics.logEvent("Trip_Booking_TB", params);
-                        } catch (Exception e) {
-                            Log.w(TAG, "Failed to log Firebase event for trip_request", e);
-                        }
-                        // Before showing overlay, verify driver token session status
-                        checkDriverTokenAndHandle(obj);
-                    } else {
-                        Log.w(TAG, "Unexpected trip_request payload type: " +
-                                (payload != null ? payload.getClass() : "null"));
-                    }
-                }
-            });
+             driverSocket.on("trip_request", args -> {
+                 if (args != null && args.length > 0) {
+                     Object payload = args[0];
+                     if (payload instanceof JSONObject) {
+                         JSONObject obj = (JSONObject) payload;
+                         Log.i(TAG, "Received trip_request for driver=" + driverId + " payload=" + obj);
+                         markTripRequestDataDelivered(obj);
+                         // Log Firebase analytics for trip request receipt
+                         try {
+                             FirebaseAnalytics analytics = FirebaseAnalytics.getInstance(context);
+                             Bundle params = new Bundle();
+                             params.putString("category", "TB_Driver_Allocation(TB_DA)");
+                             params.putString("action", "TB_DA:trip_request_received");
+                             analytics.logEvent("Trip_Booking_TB", params);
+                         } catch (Exception e) {
+                             Log.w(TAG, "Failed to log Firebase event for trip_request", e);
+                         }
+                         // Before showing overlay, verify driver token session status
+                         checkDriverTokenAndHandle(obj);
+                     } else {
+                         Log.w(TAG, "Unexpected trip_request payload type: " +
+                                 (payload != null ? payload.getClass() : "null"));
+                     }
+                 }
+             });
 
             driverSocket.on("cancel_ride_match", args -> {
                 if (args == null || args.length == 0) {
@@ -264,14 +281,35 @@ public class DriverOverlayController {
      * Calls server to verify the driver's token validity. If session has expired,
      * stops socket, alarm sound and tracking services; otherwise proceeds to show overlay.
      */
-    private void checkDriverTokenAndHandle(JSONObject tripPayload) {
+    private String loadDriverAuthToken() {
         try {
             final String token = stripQuotes(normalizeToken(
                     AsyncStorageReader.readValueFromAsyncStorage(context, "bg_userToken")));
             final String fallbackToken = stripQuotes(normalizeToken(
                     AsyncStorageReader.readValueFromAsyncStorage(context, "access_token")));
-
             String authToken = (token != null && !token.isEmpty()) ? token : fallbackToken;
+            if (authToken == null || authToken.isEmpty()) {
+                DriverLocationService service = DriverLocationService.getInstanceSafe();
+                if (service != null) {
+                    String serviceToken = stripQuotes(normalizeToken(service.getDriverAuthToken()));
+                    if (serviceToken != null && !serviceToken.isEmpty()) {
+                        authToken = serviceToken;
+                    }
+                }
+            }
+            if (authToken == null) {
+                return null;
+            }
+            return authToken;
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to load driver auth token", e);
+            return null;
+        }
+    }
+
+    private void checkDriverTokenAndHandle(JSONObject tripPayload) {
+        try {
+            final String authToken = loadDriverAuthToken();
             if (authToken == null || authToken.isEmpty()) {
                 Log.w(TAG, "Missing auth token; proceeding without session check");
                 stopAlertAudio();
@@ -280,7 +318,7 @@ public class DriverOverlayController {
             }
 
             String url = BuildConfig.ROOT_API_URL + "/publicrides/driver/v2/checkDriverToken";
-            OkHttpClient client = new OkHttpClient();
+            OkHttpClient client = httpClient;
             Request request = new Request.Builder()
                     .url(url)
                     .get()
@@ -339,6 +377,415 @@ public class DriverOverlayController {
         } catch (Exception e) {
             Log.e(TAG, "Failed to handle session expiration", e);
             try { stop(); } catch (Exception ignored) {}
+        }
+    }
+
+    public void onTripNotification(String tripId, JSONObject notificationData) {
+        String normalizedTripId = cleanDisplay(tripId);
+        if (normalizedTripId == null || normalizedTripId.isEmpty()) {
+            Log.w(TAG, "Ignoring trip notification without valid tripId");
+            return;
+        }
+
+        synchronized (tripFallbackLock) {
+            if (wasTripHandledBySocketLocked(normalizedTripId)) {
+                Log.i(TAG, "Trip notification ignored; socket already delivered tripId=" + normalizedTripId);
+                return;
+            }
+        }
+
+        if (notificationData != null) {
+            Log.i(TAG, "Trip notification payload=" + notificationData);
+        } else {
+            Log.w(TAG, "Trip notification received without payload for tripId=" + normalizedTripId);
+        }
+
+        JSONObject extrasCopy = null;
+        if (notificationData != null) {
+            try {
+                extrasCopy = new JSONObject(notificationData.toString());
+            } catch (Exception e) {
+                extrasCopy = notificationData;
+            }
+        }
+
+        Runnable scheduledRunnable;
+        synchronized (tripFallbackLock) {
+            cancelPendingTripFetchLocked();
+            pendingNotificationTripId = normalizedTripId;
+            pendingNotificationPayload = extrasCopy;
+            pendingTripHandled = false;
+            fallbackFetchInFlight = false;
+            Runnable newRunnable = () -> maybeFetchTripDetailsFromApi();
+            pendingTripFetchRunnable = newRunnable;
+            scheduledRunnable = newRunnable;
+        }
+
+        if (scheduledRunnable != null) {
+            Log.i(TAG, "Scheduled trip fallback check for tripId=" + normalizedTripId);
+            mainHandler.postDelayed(scheduledRunnable, NOTIFICATION_FALLBACK_DELAY_MS);
+        }
+    }
+
+    private void maybeFetchTripDetailsFromApi() {
+        String tripId;
+        JSONObject extras;
+        synchronized (tripFallbackLock) {
+            if (pendingTripHandled) {
+                cancelPendingTripFetchLocked();
+                return;
+            }
+            if (pendingNotificationTripId == null || pendingNotificationTripId.isEmpty()) {
+                cancelPendingTripFetchLocked();
+                return;
+            }
+            if (fallbackFetchInFlight) {
+                return;
+            }
+            tripId = pendingNotificationTripId;
+            extras = pendingNotificationPayload;
+            fallbackFetchInFlight = true;
+            pendingTripFetchRunnable = null;
+        }
+
+        fetchTripDetailsFromApi(tripId, extras);
+    }
+
+    private void fetchTripDetailsFromApi(String tripId, JSONObject notificationData) {
+        final String authToken = loadDriverAuthToken();
+        if (authToken == null || authToken.isEmpty()) {
+            Log.w(TAG, "Cannot fetch trip details without auth token");
+            synchronized (tripFallbackLock) {
+                fallbackFetchInFlight = false;
+                cancelPendingTripFetchLocked();
+            }
+            return;
+        }
+
+        HttpUrl baseUrl = HttpUrl.parse(BuildConfig.ROOT_API_URL + "/publicrides/driver/v2/getTrip");
+        if (baseUrl == null) {
+            Log.e(TAG, "Invalid trip detail endpoint URL");
+            synchronized (tripFallbackLock) {
+                fallbackFetchInFlight = false;
+                cancelPendingTripFetchLocked();
+            }
+            return;
+        }
+
+        JSONObject extrasCopy = null;
+        if (notificationData != null) {
+            try {
+                extrasCopy = new JSONObject(notificationData.toString());
+            } catch (Exception ignored) {
+                extrasCopy = notificationData;
+            }
+        }
+
+        final String targetTripId = tripId;
+        final JSONObject extrasForMerge = extrasCopy;
+
+        Request request = new Request.Builder()
+                .url(baseUrl.newBuilder().addQueryParameter("tripId", tripId).build())
+                .get()
+                .addHeader("Authorization", "Bearer " + authToken)
+                .addHeader("x-device-auth", "Bearer " + authToken)
+                .build();
+
+        httpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, java.io.IOException e) {
+                Log.e(TAG, "Trip detail fetch failed for tripId=" + targetTripId, e);
+                synchronized (tripFallbackLock) {
+                    fallbackFetchInFlight = false;
+                    cancelPendingTripFetchLocked();
+                }
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                boolean deliver = false;
+                JSONObject overlayPayload = null;
+                try {
+                    String bodyString = response.body() != null ? response.body().string() : null;
+                    if (!response.isSuccessful()) {
+                        Log.w(TAG, "Trip detail fetch unsuccessful for tripId=" + targetTripId + " status=" + response.code());
+                        return;
+                    }
+
+                    JSONObject payload = bodyString != null ? parseJsonObject(bodyString) : null;
+                    JSONObject tripData = extractTripDataFromApiPayload(payload);
+                    if (tripData == null) {
+                        Log.w(TAG, "Trip detail fetch returned empty payload for tripId=" + targetTripId);
+                        return;
+                    }
+
+                    if (!tripData.has("trip_id")) {
+                        tripData.put("trip_id", targetTripId);
+                    }
+
+                    mergeNotificationHintsIntoTrip(tripData, extrasForMerge);
+
+                    overlayPayload = new JSONObject();
+                    overlayPayload.put("type", "trip_request");
+                    overlayPayload.put("data", tripData);
+                    overlayPayload.put("source", "notification_fallback");
+
+                    synchronized (tripFallbackLock) {
+                        deliver = pendingNotificationTripId != null
+                                && pendingNotificationTripId.equals(targetTripId)
+                                && !pendingTripHandled;
+                        pendingTripHandled = deliver || pendingTripHandled;
+                        if (deliver) {
+                            pendingNotificationTripId = null;
+                            pendingNotificationPayload = null;
+                        }
+                        fallbackFetchInFlight = false;
+                        cancelPendingTripFetchLocked();
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Trip detail fetch parse error for tripId=" + tripId, e);
+                } finally {
+                    try {
+                        response.close();
+                    } catch (Exception ignored) {}
+                    if (!deliver) {
+                        synchronized (tripFallbackLock) {
+                            fallbackFetchInFlight = false;
+                        }
+                    }
+                }
+
+                if (deliver && overlayPayload != null) {
+                    JSONObject finalPayload = overlayPayload;
+                    mainHandler.post(() -> checkDriverTokenAndHandle(finalPayload));
+                } else if (!deliver) {
+                    Log.d(TAG, "Trip detail fetch ignored for tripId=" + targetTripId + " (already handled)");
+                }
+            }
+        });
+    }
+
+    private JSONObject extractTripDataFromApiPayload(JSONObject payload) {
+        if (payload == null) {
+            return null;
+        }
+        JSONObject tripObject = payload.optJSONObject("trip");
+        if (tripObject != null) {
+            return tripObject;
+        }
+        JSONArray tripArray = payload.optJSONArray("trip");
+        if (tripArray != null && tripArray.length() > 0) {
+            JSONObject first = tripArray.optJSONObject(0);
+            if (first != null) {
+                return first;
+            }
+        }
+        JSONObject dataObject = payload.optJSONObject("data");
+        if (dataObject != null) {
+            JSONObject nestedTrip = dataObject.optJSONObject("trip");
+            if (nestedTrip != null) {
+                return nestedTrip;
+            }
+            if (dataObject.has("_id") || dataObject.has("trip_id") || dataObject.has("stops")) {
+                return dataObject;
+            }
+        }
+        if (payload.has("_id") || payload.has("trip_id") || payload.has("stops")) {
+            return payload;
+        }
+        return null;
+    }
+
+    private void mergeNotificationHintsIntoTrip(JSONObject tripData, JSONObject extras) {
+        if (tripData == null) {
+            return;
+        }
+        try {
+            if (extras != null) {
+                String currentFare = cleanDisplay(extras.optString("currentFare", ""));
+                if (currentFare.isEmpty()) {
+                    currentFare = cleanDisplay(extras.optString("current_fare", ""));
+                }
+                if (!currentFare.isEmpty() && !tripData.has("fare")) {
+                    try {
+                        double fareValue = Double.parseDouble(currentFare);
+                        tripData.put("fare", fareValue);
+                    } catch (NumberFormatException nfe) {
+                        tripData.put("fare", currentFare);
+                    }
+                }
+
+                String requestId = cleanDisplay(extras.optString("requestId", ""));
+                if (requestId.isEmpty()) {
+                    requestId = cleanDisplay(extras.optString("request_id", ""));
+                }
+                if (!requestId.isEmpty() && !tripData.has("request_id")) {
+                    tripData.put("request_id", requestId);
+                }
+            }
+
+            if (coerceTimeoutSeconds(tripData) <= 0) {
+                int mergedTimeout = 0;
+                if (extras != null) {
+                    mergedTimeout = coerceTimeoutSeconds(extras);
+                    if (mergedTimeout <= 0) {
+                        mergedTimeout = coerceTimeoutSeconds(extras.optJSONObject("data"));
+                    }
+                }
+                if (mergedTimeout > 0) {
+                    tripData.put("timeout_seconds", mergedTimeout);
+                    tripData.put("timeOutSeconds", mergedTimeout);
+                    tripData.put("timeoutSeconds", mergedTimeout);
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to merge notification hints into trip payload", e);
+        }
+    }
+
+    private int resolveTimeoutSeconds(JSONObject tripData, JSONObject outerPayload) {
+        int timeout = coerceTimeoutSeconds(tripData);
+        if (timeout > 0) {
+            return timeout;
+        }
+        timeout = coerceTimeoutSeconds(outerPayload);
+        if (timeout > 0) {
+            return timeout;
+        }
+        if (outerPayload != null) {
+            timeout = coerceTimeoutSeconds(outerPayload.optJSONObject("data"));
+        }
+        return Math.max(timeout, 0);
+    }
+
+    private int coerceTimeoutSeconds(JSONObject source) {
+        if (source == null) {
+            return 0;
+        }
+        int value = source.optInt("timeout_seconds", -1);
+        if (value <= 0) {
+            value = source.optInt("timeoutSeconds", -1);
+        }
+        if (value <= 0) {
+            value = source.optInt("timeOutSeconds", -1);
+        }
+        if (value <= 0) {
+            value = source.optInt("trip_accept_duration", -1);
+        }
+        if (value <= 0) {
+            value = parseTimeoutString(source.optString("timeout_seconds", null));
+        }
+        if (value <= 0) {
+            value = parseTimeoutString(source.optString("timeoutSeconds", null));
+        }
+        if (value <= 0) {
+            value = parseTimeoutString(source.optString("timeOutSeconds", null));
+        }
+        if (value <= 0) {
+            value = parseTimeoutString(source.optString("trip_accept_duration", null));
+        }
+        return value > 0 ? value : 0;
+    }
+
+    private int parseTimeoutString(String rawValue) {
+        String cleaned = cleanDisplay(rawValue);
+        if (cleaned.isEmpty()) {
+            return 0;
+        }
+        try {
+            double numeric = Double.parseDouble(cleaned);
+            if (numeric > 0) {
+                return (int) Math.round(numeric);
+            }
+        } catch (NumberFormatException ignored) {}
+        return 0;
+    }
+
+    private void markTripRequestDataDelivered(JSONObject payload) {
+        String tripId = extractTripIdFromPayload(payload);
+        if (tripId == null) {
+            return;
+        }
+        synchronized (tripFallbackLock) {
+            if (pendingNotificationTripId != null && pendingNotificationTripId.equals(tripId)) {
+                pendingTripHandled = true;
+                pendingNotificationTripId = null;
+                pendingNotificationPayload = null;
+                fallbackFetchInFlight = false;
+                cancelPendingTripFetchLocked();
+            }
+            recordSocketTripHandledLocked(tripId);
+        }
+    }
+
+    private void recordSocketTripHandledLocked(String tripId) {
+        if (tripId == null || tripId.isEmpty()) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        pruneSocketHandledCacheLocked(now);
+        socketHandledTripCache.put(tripId, now);
+    }
+
+    private boolean wasTripHandledBySocketLocked(String tripId) {
+        if (tripId == null || tripId.isEmpty()) {
+            return false;
+        }
+        long now = System.currentTimeMillis();
+        pruneSocketHandledCacheLocked(now);
+        return socketHandledTripCache.containsKey(tripId);
+    }
+
+    private void pruneSocketHandledCacheLocked(long now) {
+        if (socketHandledTripCache.isEmpty()) {
+            return;
+        }
+        Iterator<Map.Entry<String, Long>> iterator = socketHandledTripCache.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, Long> entry = iterator.next();
+            if (now - entry.getValue() > SOCKET_HANDLED_CACHE_TTL_MS) {
+                iterator.remove();
+            }
+        }
+    }
+
+    private String extractTripIdFromPayload(JSONObject payload) {
+        if (payload == null) {
+            return null;
+        }
+        JSONObject data = payload.optJSONObject("data");
+        String tripId = null;
+        if (data != null) {
+            tripId = cleanDisplay(data.optString("trip_id", ""));
+            if (tripId.isEmpty()) {
+                tripId = cleanDisplay(data.optString("tripId", ""));
+            }
+            if (tripId.isEmpty()) {
+                tripId = cleanDisplay(data.optString("_id", ""));
+            }
+        } else {
+            tripId = cleanDisplay(payload.optString("trip_id", ""));
+            if (tripId.isEmpty()) {
+                tripId = cleanDisplay(payload.optString("tripId", ""));
+            }
+        }
+        return (tripId == null || tripId.isEmpty()) ? null : tripId;
+    }
+
+    private void cancelPendingTripFetchLocked() {
+        if (pendingTripFetchRunnable != null) {
+            mainHandler.removeCallbacks(pendingTripFetchRunnable);
+            pendingTripFetchRunnable = null;
+        }
+    }
+
+    private void clearPendingTripFallback() {
+        synchronized (tripFallbackLock) {
+            pendingNotificationTripId = null;
+            pendingNotificationPayload = null;
+            pendingTripHandled = false;
+            fallbackFetchInFlight = false;
+            cancelPendingTripFetchLocked();
         }
     }
 
@@ -513,10 +960,7 @@ public class DriverOverlayController {
             title.setText("New Trip Request");
 
             JSONObject inner = data.optJSONObject("data");
-            int timeoutSeconds = 0;
-            if (inner != null) {
-                timeoutSeconds = inner.optInt("timeout_seconds", 0);
-            }
+            int timeoutSeconds = resolveTimeoutSeconds(inner, data);
             // Show bonus and distance information if available
             applyBonusAndDistanceUI(bonusText, distanceText, inner);
             bindTripDetails(overlayView, inner);
@@ -818,11 +1262,13 @@ public class DriverOverlayController {
     }
 
     private Typeface getLexendBold() {
-        if (lexendBold == null) {
+        if (lexendBold == null && !fontInitAttempted) {
+            fontInitAttempted = true;
             try {
                 lexendBold = Typeface.createFromAsset(context.getAssets(), "fonts/Lexend-Bold.ttf");
             } catch (Exception e) {
-                Log.e(TAG, "Failed loading Lexend-Bold font", e);
+                Log.e(TAG, "Failed loading Lexend-Bold font; falling back to default", e);
+                lexendBold = Typeface.DEFAULT_BOLD;
             }
         }
         return lexendBold;
