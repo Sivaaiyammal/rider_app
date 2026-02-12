@@ -148,6 +148,7 @@ const TripAccept = () => {
       fetchTripData();
      }
   },[])
+      console.log('is from socket:', dataFromSocket);
 
   // Normalize stops from socket payload; fallback to pickup/drop if stops missing
   
