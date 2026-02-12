@@ -239,6 +239,7 @@ const YourRidesScreen = () => {
                 keysToFetch.map(async key => {
                     try {
                         const url = await getPresignedImageUrl(key, userToken);
+                        console.log(`Fetched presigned URL for key ${key}: ${url}`);
                         return { key, url: url || null };
                     } catch (error) {
                         return { key, url: null };
@@ -354,10 +355,21 @@ const YourRidesScreen = () => {
         );
     }, []);
 
-    const rowRenderer = React.useCallback((type, data, index) => {
-    
-        return <RenderTrip ride={data} Fare={data?.fareDetails?.fare} index={index} />
-    }, []);
+    const rowRenderer = (type, data, index) => (
+        <RenderTrip
+            ride={data}
+            Fare={data?.fareDetails?.fare}
+            index={index}
+        />
+    );
+
+    const extendedState = React.useMemo(
+        () => ({
+            driverPhotoMap,
+            driverPhotoLoadingMap,
+        }),
+        [driverPhotoMap, driverPhotoLoadingMap],
+    );
 
     const renderFooter = React.useCallback(() => {
         if (isLoadMore) {
@@ -584,6 +596,7 @@ const YourRidesScreen = () => {
                                 dataProvider={dataProvider}
                                 layoutProvider={layoutProvider}
                                 rowRenderer={rowRenderer}
+                                extendedState={extendedState}
                                 renderFooter={renderFooter}
                                 canChangeSize={true}
                                 forceNonDeterministicRendering={true}

@@ -197,7 +197,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       appVersion: (DeviceInfo.getVersion?.() || ''),
       buildNumber: (DeviceInfo.getBuildNumber?.() || ''),
       estimatedWaitTime : estimatedWaitTime || 0,
-      rideMatchVersion : '1.0'
+      rideMatchVersion : '2.0'
      
       
     };
