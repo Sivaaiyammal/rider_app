@@ -52,14 +52,17 @@ export const useTripAcceptStore = create((set) => ({
   isOnGoing: false,
   setIsOnGoing: (isOnGoing) => set({isOnGoing: isOnGoing}),
 
-  alertedAd: null,
-  setAlertedAd: (alertedAd) => set({ alertedAd: alertedAd }),
+  alertedAt: null,
+  setAlertedAt: (alertedAt) => set({ alertedAt: alertedAt }),
 
   upComingTripDetails: null,
   setUpComingTripDetails: (upComingTripDetails) => set({ upComingTripDetails: upComingTripDetails }),
 
   escalationDetails: null,
   setEscalationDetails: (escalationDetails) => set({ escalationDetails: escalationDetails }),
+
+  dataFromSocket: false,
+  setDataFromSocket: (dataFromSocket) => set({ dataFromSocket: dataFromSocket }),
   
   // Action to reset the store
   reset: () => set({ error: null, escalationDetails: null}),

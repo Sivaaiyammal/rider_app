@@ -31,6 +31,8 @@ import DeviceInfo from 'react-native-device-info';
 import useDeviceAPIStore from './common/store/useDeviceAPIStore';
 import PushNotifications from './common/core/PushNotifications';
 import useTripStatus from './notCustomer/hooks/useTripStatus';
+import { useStackScreenStore } from './common/store/useStackScreenStore';
+import { useTripAcceptStore } from './notdriver/store/useTripAcceptStore';
 
 
 
@@ -44,6 +46,8 @@ const MainAppContent = () => {
   const { isConnected, checkConnection } = useNetwork();
   const { setUserDeviceId } = useDeviceAPIStore();
   const{ handleTripStatusUpdate} = useTripStatus();
+  const {setStackScreen, stackScreen} = useStackScreenStore()
+  const {setTripId} = useTripAcceptStore()
 
   
   const setAppTheme = useCallback(async () => {
@@ -76,6 +80,18 @@ const MainAppContent = () => {
       const body = notification?.body ?? data?.message ?? data?.body ?? '';
 
       const clearedtxt = title?.toLowerCase().replace(/[^a-zA-Z0-9 ]/g, '').trim();
+
+      if (clearedtxt === 'new trip request') {
+          // console.log('Received New Trip Request notification with data:', stackScreen);
+        setTripId(data?.tripId)
+      useTripAcceptStore.setState({requestId: data?.request_id});
+      useTripAcceptStore.setState({timeOutSeconds: data?.timeout_seconds});
+      useTripAcceptStore.setState({alertedAt: data?.alertedAt});
+      useTripAcceptStore.setState({
+      escalationDetails: data?.escalation_details,
+      });
+        setStackScreen('TripAccept');
+      }
 
       if (clearedtxt === 'wakeupbgservice') return;
     
@@ -142,6 +158,10 @@ const MainAppContent = () => {
     };
 
     registerForMessaging();
+
+        PushNotifications.getAllDeliveredNotifications(async (notifications) => {
+        PushNotifications.loadTripRequestData(notifications)
+      })
 
     return unsubscribe;
   }, []);

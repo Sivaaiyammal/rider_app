@@ -74,9 +74,10 @@ class RideMatchWSService {
    */
   async onTripRequest(data) {
     console.log('[RideMatchWSService] Received trip_request via socket:', data);
-    const {setStackScreen} = useStackScreenStore.getState();
+    const {setStackScreen, stackScreen} = useStackScreenStore.getState();
     if (data?.type === 'trip_request') {
       useTripAcceptStore.setState({tripDetails: data.data});
+      useTripAcceptStore.setState({dataFromSocket: true});
       useTripAcceptStore.setState({tripId: data.data?.trip_id});
       useTripAcceptStore.setState({currentFare: data.data?.fare});
       useTripAcceptStore.setState({requestId: data.data?.request_id});
@@ -85,6 +86,7 @@ class RideMatchWSService {
       useTripAcceptStore.setState({
         escalationDetails: data?.data?.escalation_details,
       });
+      console.log('stackScreen --- >>>', stackScreen)
       setStackScreen('TripAccept');
       firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_request_received');
       const isActive = AppState.currentState === 'active';

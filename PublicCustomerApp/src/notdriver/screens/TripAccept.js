@@ -34,6 +34,8 @@ import APIRequest from '../../common/APIRequest';
 import GlobalContext from '../../context/GlobalContext';
 import { firebaselog_tripBooking } from '../../common/utils/FirebaseAnalytics';
 import findDistance from '../../common/core/FindDistance';
+import overlayController from '../../common/controllers/Overlay';
+import publicrideDriverApi from '../api/publicrideDriverApi';
 
 
 const {NeNativeModule} = NativeModules;
@@ -49,7 +51,9 @@ const TripAccept = () => {
     reset,
     timeOutSeconds,
     alertedAt,
-    escalationDetails
+    escalationDetails,
+    setTripDetails,
+    dataFromSocket
   } = useTripAcceptStore();
   // const {tripRequestData} = useTripRequestStore();
   const {setShowRatingModal, setShowPaymentInitiatedLoader} = usePublicDriverStore();
@@ -61,7 +65,7 @@ const TripAccept = () => {
   const timerDuration = timeOutSeconds || 15;
 
   // Only start timer after successful trip fetch; null means not started
-  const [timeLeft, setTimeLeft] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(timerDuration);
   const [timerPaused, setTimerPaused] = useState(false);
   const [appState, setAppState] = useState(AppState.currentState);
   const progressAnim = useRef(new Animated.Value(1)).current;
@@ -83,7 +87,54 @@ const TripAccept = () => {
     };
   }, []);
 
+    const fetchTripData = async () => {
+    try {
+      setLoading(true);
+      const response = await publicrideDriverApi.getTripDetails(
+        tripId,
+        userInfo?.user?.token,
+      );
+      if (response?.success && response?.trip && response?.trip?.length > 0) {
+        console.log('Fetched trip details successfully:', response.trip[0]);
+        setTripDetails(response.trip[0]);
+        console.log('alertedAt:', alertedAt, 'timerDuration:', timerDuration, 'currentTime:', Date.now());
+        const remainingTimeDuration = Math.floor(((alertedAt || 0) + timerDuration * 1000 - Date.now()) / 1000);
+        console.log('Remaining time duration:', remainingTimeDuration);
+      if (remainingTimeDuration <= 0) {
+        setTimeLeft(0);
+      } else {
+        setTimeLeft(remainingTimeDuration);
+      }
+      } else {
+        setError('Failed to fetch trip data');
+        // Do not start timer on failure
+        setTimeLeft(null);
+         if (response.error === "SESSION_EXPIRED") {
+          logout('driver');
+          tripAlert.stopAlertSound()
+          BGLocationTask.stopDriverBgTask();
+           overlayController.stopOverlay();
+          return
+        }
+      }
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching trip data:', err);
+      setError('An error occurred while fetching trip data');
+      setTimeLeft(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(( ) => {
+     if (!dataFromSocket) {
+      fetchTripData();
+     }
+  },[])
+
   // Normalize stops from socket payload; fallback to pickup/drop if stops missing
+  
   const stopsForDisplay = useMemo(() => {
     const stops = Array.isArray(tripDetails?.stops) ? tripDetails.stops : [];
     if (stops.length > 0) return stops;
@@ -106,6 +157,8 @@ const TripAccept = () => {
     }
     return fallback;
   }, [tripDetails]);
+  
+  // console.log('stopsForDisplay:', timeLeft);
 
   // Derive distance in meters: use estimatedDistance if present; otherwise sum between stops
   const displayDistance = useMemo(() => {
@@ -130,18 +183,27 @@ const TripAccept = () => {
     return total;
   }, [tripDetails?.estimatedDistance, stopsForDisplay]);
 
+
+  console.log('hari-->datafrom socket-->>', dataFromSocket);
   // Use trip details from socket store; compute timer without API
   useEffect(() => {
+    if (!dataFromSocket) return
     setLoading(true);
     if (tripDetails && (tripDetails?.trip_id || tripId)) {
-      console.log('Remaining time duration:', Math.floor(((alertedAt || 0) + timerDuration * 1000 - Date.now()) / 1000));
-
-      const remainingTimeDuration = Math.floor(((alertedAt || 0) + timerDuration * 1000 - Date.now()) / 1000);
-      if (remainingTimeDuration <= 0) {
-        setTimeLeft(0);
-      } else {
-        setTimeLeft(remainingTimeDuration);
+      // Normalize alertedAt to ms and timeout to seconds before computing
+      let alertedAtMs = alertedAt;
+      if (typeof alertedAtMs === 'string') {
+        alertedAtMs = parseInt(alertedAtMs, 10);
       }
+      if (typeof alertedAtMs === 'number' && String(alertedAtMs).length <= 10) {
+        alertedAtMs = alertedAtMs * 1000; // convert seconds to ms
+      }
+      const timeoutSec = typeof timerDuration === 'string' ? parseInt(timerDuration, 10) : Number(timerDuration);
+      const remainingTimeDuration = Math.floor(((alertedAtMs || 0) + (timeoutSec || 15) * 1000 - Date.now()) / 1000);
+      const clamped = Math.max(0, remainingTimeDuration);
+      console.log('Remaining time duration:-->> from socket', clamped, alertedAtMs, timeoutSec);
+
+      setTimeLeft(clamped);
       setTimerPaused(false);
       setError(null);
     } else {
