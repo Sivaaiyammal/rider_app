@@ -1100,5 +1100,7 @@
     "driver_access_logout_confirm_cancel_button": "Stay in Customer App",
     "driver_access_logout_confirm_confirm_button": "Yes, Log Out",
     "Sign_Up_to_Become_a_Driver": "Sign Up to Become a Driver",
-    "refresh_to_get_driver_details": "Refresh to get driver details"
+    "refresh_to_get_driver_details": "Refresh to get driver details",
+    "ride_cancelled_by_driver": "Driver cancelled the ride",
+    "ride_cancelled_by_passenger": "Customer cancelled the ride"
 }

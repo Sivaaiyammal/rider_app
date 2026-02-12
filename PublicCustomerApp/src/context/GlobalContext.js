@@ -9,8 +9,12 @@ import notwsService from '../common/controllers/socketServices/NOTSocketServices
 import publicrideDriverApi from '../notdriver/api/publicrideDriverApi';
 import RideMatchWSService from '../common/controllers/socketServices/RideMatchSocketService';
 import useUserStore from '../common/store/useUserStore';
-import { useNavigation } from '@react-navigation/native';
+import { resetTo } from '../navigation/RootNavigation';
 import usePublicDriverStore from '../notdriver/store/usePublicDriverStore';
+import {
+  registerGlobalModal,
+  unregisterGlobalModal,
+} from '../common/core/GlobalModalService';
 
 export const GlobalContext = createContext();
 
@@ -27,7 +31,30 @@ export const ContextProvider = ({children}) => {
 
   const {resetPublicDriverState} = usePublicDriverStore();
 
-  const navigation = useNavigation();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalType, setModalType] = useState('');
+  const [modalImage, setModalImage] = useState('');
+
+  const showModal = useCallback((title, message, options = {}) => {
+    const isStringOption = typeof options === 'string';
+    const optionObject = isStringOption ? {type: options} : options;
+
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalType(optionObject?.type ?? '');
+    setModalImage(optionObject?.imageName ?? '');
+    setModalVisible(true);
+  }, []);
+
+  const hideModal = useCallback(() => {
+    setModalVisible(false);
+    setModalTitle('');
+    setModalMessage('');
+    setModalType('');
+    setModalImage('');
+  }, []);
 
   const themeOperations = useCallback((mode) => {
     let newTheme;
@@ -165,12 +192,9 @@ export const ContextProvider = ({children}) => {
       DataStore.clearSession();
       DataStore.clearSession('userdetails');
       DataStore.clearSession('access_token');
-      RideMatchWSService.removeListeners()
-      RideMatchWSService.close()
-              navigation.reset({
-          index: 0,
-          routes: [{ name: 'LoginScreen' }],
-        });
+      RideMatchWSService.removeListeners();
+      RideMatchWSService.close();
+      resetTo('LoginScreen');
       // showNotification(
       //   t.logout_success,
       //   t.login_to,
@@ -189,24 +213,45 @@ export const ContextProvider = ({children}) => {
     getAppTheme();
   }, [getAppTheme]);
 
+  useEffect(() => {
+    registerGlobalModal({show: showModal, hide: hideModal});
+
+    return () => {
+      unregisterGlobalModal();
+    };
+  }, [showModal, hideModal]);
+
+  const isDarkMode =
+    themeMode === 'dark' ||
+    (themeMode === 'default' && systemColorScheme === 'dark');
+
+  const contextValue = {
+    theme,
+    themeMode,
+    setTheme: themeOperations,
+    toggleTheme,
+    resetToSystemTheme,
+    getCurrentDeviceTheme,
+    addListener,
+    removeListener,
+    addNOTSocketListener,
+    addRideMatchListener,
+    isDarkMode,
+    systemColorScheme,
+    isInitialized,
+    themeOperations,
+    logout,
+    modalVisible,
+    modalTitle,
+    modalMessage,
+    modalType,
+    modalImage,
+    showModal,
+    hideModal,
+  };
+
   return (
-    <GlobalContext.Provider
-      value={{
-        theme,
-        themeMode,
-        setTheme: themeOperations,
-        toggleTheme,
-        resetToSystemTheme,
-        getCurrentDeviceTheme,
-        addListener,
-        removeListener,
-        isDarkMode: themeMode === 'dark' || (themeMode === 'default' && systemColorScheme === 'dark'),
-        systemColorScheme,
-        isInitialized,
-        addNOTSocketListener,
-        addRideMatchListener,
-        logout
-      }}>
+    <GlobalContext.Provider value={contextValue}>
       {children}
     </GlobalContext.Provider>
   );

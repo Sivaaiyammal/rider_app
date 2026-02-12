@@ -1,5 +1,5 @@
 import {useColorScheme ,StatusBar,Vibration,Linking} from 'react-native';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo } from 'react';
 import { getApp, getApps, initializeApp } from '@react-native-firebase/app';
 import Navigation from './navigation/Navigation';
 import { navigationRef } from './navigation/RootNavigation';
@@ -35,7 +35,8 @@ import { useStackScreenStore } from './common/store/useStackScreenStore';
 import { useTripAcceptStore } from './notdriver/store/useTripAcceptStore';
 import analytics from '@react-native-firebase/analytics';
 import Config from "react-native-config";
-
+import GlobalModal from './common/components/GlobalModal';
+import GlobalContext from './context/GlobalContext';
 
 
 const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
@@ -50,7 +51,7 @@ const MainAppContent = () => {
   const{ handleTripStatusUpdate} = useTripStatus();
   const {setStackScreen, stackScreen} = useStackScreenStore()
   const {setTripId} = useTripAcceptStore()
-
+  const { showModal} = useContext(GlobalContext);
   useEffect(() => {
     if (Config.DEV === 'true') {
       analytics().setAnalyticsCollectionEnabled(false);
@@ -109,6 +110,13 @@ const MainAppContent = () => {
         Vibration.vibrate();
       }
 
+      console.log('clearedtxt',clearedtxt);
+      if(clearedtxt === 'trip cancelled by driver' || clearedtxt === 'trip cancelled by passenger'){
+        const isDriverCancelled = clearedtxt === 'trip cancelled by driver';
+        const modalTitle = isDriverCancelled ? 'ride_cancelled_by_driver' : 'ride_cancelled_by_passenger';
+          showModal(modalTitle, null, {type: 'warning', imageName: isDriverCancelled ? 'cancelled_auto' : 'cancelled_customer'});
+      }
+
       console.log('Foreground notification data:', data);
 
       if(data?.tripId && data?.trip_status){
@@ -145,6 +153,11 @@ const MainAppContent = () => {
         console.log('Playing trip alert sound');
         tripAlert.playDriverAllocatedAlert();
         Vibration.vibrate();
+      }
+       if(clearedtxt === 'trip cancelled by driver' || clearedtxt === 'trip cancelled by passenger'){
+        const isDriverCancelled = clearedtxt === 'trip cancelled by driver';
+        const modalTitle = isDriverCancelled ? 'ride_cancelled_by_driver' : 'ride_cancelled_by_passenger';
+          showModal(modalTitle, null, {type: 'warning', imageName: isDriverCancelled ? 'cancelled_auto' : 'cancelled_customer'});
       }
     })
     const registerForMessaging = async () => {
@@ -272,10 +285,8 @@ const MainAppContent = () => {
         <AlertNotificationRoot theme="light">
           <>
             <NavigationContainer ref={navigationRef}>
-              <ContextProvider>
               {memoizedDriverInitializationHandler}
               <Navigation />
-              </ContextProvider>
             </NavigationContainer>
             <FeedbackBottomSheet />
             {(!isConnected && (
@@ -287,11 +298,19 @@ const MainAppContent = () => {
   );
 };
 
-const MainApp = () => (
-  <NetworkProvider>
-    <StatusBar barStyle="dark-content" backgroundColor={"white"} />
-    <MainAppContent />
-  </NetworkProvider>
-);
+const MainApp = () => {
+  return (
+    <GestureHandlerRootView style={{flex: 1}}>
+      <NetworkProvider>
+        <ContextProvider>
+          <AlertNotificationRoot>
+            <MainAppContent />
+            <GlobalModal />
+          </AlertNotificationRoot>
+        </ContextProvider>
+      </NetworkProvider>
+    </GestureHandlerRootView>
+  );
+};
 
 export default MainApp;

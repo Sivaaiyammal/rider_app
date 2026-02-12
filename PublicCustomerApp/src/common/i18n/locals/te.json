@@ -1100,5 +1100,7 @@
     "driver_access_logout_confirm_cancel_button": "కస్టమర్ యాప్‌లోనే ఉండండి",
     "driver_access_logout_confirm_confirm_button": "అవును, లాగ్ అవుట్ చేయండి",
     "Sign_Up_to_Become_a_Driver": "డ్రైవర్ అయ్యేందుకు సైన్ అప్ చేయండి",
-    "refresh_to_get_driver_details": "డ్రైవర్ వివరాలను పొందడానికి రిఫ్రెష్ చేయండి"
+    "refresh_to_get_driver_details": "డ్రైవర్ వివరాలను పొందడానికి రిఫ్రెష్ చేయండి",
+    "ride_cancelled_by_driver": "డ్రైవర్ సవారి రద్దు చేశారు",
+    "ride_cancelled_by_passenger": "కస్టమర్ సవారి రద్దు చేశారు"
 }

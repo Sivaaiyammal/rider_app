@@ -7,7 +7,7 @@ import {
   View,
   Alert
 } from 'react-native';
-import React, {useEffect, useRef, useState, useCallback} from 'react';
+import React, {useEffect, useRef, useState, useCallback,useContext} from 'react';
 import { useTranslation } from 'react-i18next';
 
 
@@ -43,6 +43,7 @@ import useNearbyDrivers from '../../../store/useNearByDrivers';
 import useConfigStore from '../../../store/useConfigStore'; 
 import { firebaselog_ridePlanning } from '../../../../common/utils/FirebaseAnalytics';
 import SocialMediaModal from '../../../components/SocialMediaModal';
+import { GlobalContext } from '../../../../context/GlobalContext';
 
 
 const BottomSheetHeader = ({ makeRidePlan, style }) => {
@@ -77,7 +78,7 @@ const BottomSheetHeader = ({ makeRidePlan, style }) => {
 
 const MapScreen = () => {
   const { t } = useTranslation();
-
+   const { showModal } = useContext(GlobalContext);
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState(null);
   const {setStackScreen , setShowSocialMediaModal , showSocialMediaModal} = useStackScreenStore();
@@ -561,7 +562,7 @@ const MapScreen = () => {
         <View style={{marginTop:60}}>
         
           {<ScheduledTripBanner/>}
-
+        
           <DynamicSection onSelect={handleServiceVehicleSelect}/>
           <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
           <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false}  fromHomeScreen={true}/>

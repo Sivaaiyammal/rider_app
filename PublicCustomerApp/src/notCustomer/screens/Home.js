@@ -1,4 +1,4 @@
-import React, { act, use, useCallback, useEffect, useRef, useState } from 'react';
+import React, { act, use, useCallback, useEffect, useRef, useState, useContext } from 'react';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import Homescreen from '../features/home/screens/HomeScreen.jsx'
 import MapContainer from '../features/map/components/MapContainer.js';
@@ -73,7 +73,7 @@ import usePaymentStore from '../features/payment/store/usePaymentStore.js';
 import { consumeUserStatsPrefetch } from '../controllers/UserStatsPrefetch';
 import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore.js';
 import { setActive } from 'react-native-sound';
-
+import GlobalContext from '../../context/GlobalContext.js';
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -149,6 +149,7 @@ const Home = () => {
   const [locationBlockReason, setLocationBlockReason] = useState(null);
   const { appConfig ,updateAvailable} = useConfigStore();
   const { driverMatched, setDriverMatched } = useRideMatchStore();
+  const { showModal} = useContext(GlobalContext);
   // /const {currentTripId,setCurrentTripId } = usePaymentStore();
   
   const { setHomelocation, setWorklocation, setIsPreferenceShow} = useUserInfoStore();
@@ -370,8 +371,15 @@ const Home = () => {
   } 
 
   const checkTrip = async (response,currentTripId=null) => {
+    if(response?.trip?.status == "CANCELLED" && !response?.trip?.fareDetails && currentTripId ){
+      showModal('ride_cancelled_by_driver', null, {type: 'warning', imageName: 'cancelled_auto'});
+    }
     if(!response?.trip || !response?.success){
       return;
+    }
+
+    if(response?.trip?.status == "CANCELLED" && !response?.trip?.fareDetails && currentTripId ){
+      showModal('ride_cancelled_by_driver', null, {type: 'warning', imageName: 'cancelled_auto'});
     }
 
     if(response?.trip?.status == "DROPPED" || ( response?.trip?.status == "CANCELLED" && response?.trip?.fareDetails)){

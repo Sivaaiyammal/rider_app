@@ -1100,5 +1100,8 @@
     "driver_access_logout_confirm_cancel_button": "ಗ್ರಾಹಕ ಆಪ್‌ನಲ್ಲೇ ಉಳಿಯಿರಿ",
     "driver_access_logout_confirm_confirm_button": "ಹೌದು, ಲಾಗ್ ಔಟ್ ಮಾಡಿ",
     "Sign_Up_to_Become_a_Driver": "ಚಾಲಕನಾಗಲು ಸೈನ್ ಅಪ್ ಮಾಡಿ",
-    "refresh_to_get_driver_details": "ಚಾಲಕ ವಿವರಗಳನ್ನು ಪಡೆಯಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ"
+    "refresh_to_get_driver_details": "ಚಾಲಕ ವಿವರಗಳನ್ನು ಪಡೆಯಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ",
+    "ride_cancelled_by_driver": "ಡ್ರೈವರ್ ಸವಾರಿಯನ್ನು ರದ್ದುಮಾಡಿದರು",
+    "ride_cancelled_by_passenger": "ಗ್ರಾಹಕ ಸವಾರಿಯನ್ನು ರದ್ದುಮಾಡಿದರು"
+    
 }

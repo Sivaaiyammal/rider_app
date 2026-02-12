@@ -1097,5 +1097,7 @@
     "driver_access_logout_confirm_cancel_button": "കസ്റ്റമർ ആപ്പിൽ തുടരുക",
     "driver_access_logout_confirm_confirm_button": "അതെ, ലോഗൗട്ട് ചെയ്യൂ",
     "Sign_Up_to_Become_a_Driver": "ഡ്രൈവർ ആകാൻ സൈൻ അപ്പ് ചെയ്യുക",
-    "refresh_to_get_driver_details": "ഡ്രൈവർ വിശദാംശങ്ങൾ ലഭിക്കാൻ പുതുക്കുക"
+    "refresh_to_get_driver_details": "ഡ്രൈവർ വിശദാംശങ്ങൾ ലഭിക്കാൻ പുതുക്കുക",
+    "ride_cancelled_by_driver": "ഡ്രൈവർ സവാരി റദ്ദാക്കി",
+    "ride_cancelled_by_passenger": "ഉപഭോക്താവ് സവാരി റദ്ദാക്കി"
 }
