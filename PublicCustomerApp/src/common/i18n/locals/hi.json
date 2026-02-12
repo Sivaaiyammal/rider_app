@@ -1102,5 +1102,7 @@
     "Sign_Up_to_Become_a_Driver": "ड्राइवर बनने के लिए साइन अप करें",
     "refresh_to_get_driver_details": "ड्राइवर का विवरण पाने के लिए रीफ्रेश करें",
     "ride_cancelled_by_driver": "ड्राइवर ने सवारी रद्द कर दी",
-    "ride_cancelled_by_passenger": "ग्राहक ने सवारी रद्द कर दी"
+    "ride_cancelled_by_passenger": "ग्राहक ने सवारी रद्द कर दी",
+    "session_expired": "सत्र समाप्त",
+    "session_expired_message": "आपका सत्र समाप्त हो गया है। कृपया पुनः लॉगिन करें।"
 }

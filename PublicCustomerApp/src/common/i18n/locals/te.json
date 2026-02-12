@@ -1102,5 +1102,7 @@
     "Sign_Up_to_Become_a_Driver": "డ్రైవర్ అయ్యేందుకు సైన్ అప్ చేయండి",
     "refresh_to_get_driver_details": "డ్రైవర్ వివరాలను పొందడానికి రిఫ్రెష్ చేయండి",
     "ride_cancelled_by_driver": "డ్రైవర్ సవారి రద్దు చేశారు",
-    "ride_cancelled_by_passenger": "కస్టమర్ సవారి రద్దు చేశారు"
+    "ride_cancelled_by_passenger": "కస్టమర్ సవారి రద్దు చేశారు",
+    "session_expired": "సెషన్ కాలవుతుంది",
+    "session_expired_message": "మీ సెషన్ కాలవుతుంది. దయచేసి మళ్లీ లాగిన్ అవ్వండి."
 }

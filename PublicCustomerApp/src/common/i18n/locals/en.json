@@ -1102,5 +1102,7 @@
     "Sign_Up_to_Become_a_Driver": "Sign Up to Become a Driver",
     "refresh_to_get_driver_details": "Refresh to get driver details",
     "ride_cancelled_by_driver": "Driver cancelled the ride",
-    "ride_cancelled_by_passenger": "Customer cancelled the ride"
+    "ride_cancelled_by_passenger": "Customer cancelled the ride",
+    "session_expired": "Session Expired",
+    "session_expired_message": "Your session has expired. Please log in again."
 }

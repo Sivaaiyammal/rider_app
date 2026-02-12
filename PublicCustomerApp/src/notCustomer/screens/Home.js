@@ -350,7 +350,7 @@ const Home = () => {
       index: 0,
       routes: [{ name: 'LoginScreen' }],
     });
-    showNotification(t('session_logged_out_title'), t('session_logged_out_other_device_message'), 'warning');
+  
   }
 
 
@@ -543,9 +543,27 @@ const Home = () => {
         }
 
 
+        if(Response?.userStats?.deviceMeta?.buildNumber){
+          const lastBuildNumber = parseInt(Response?.userStats?.deviceMeta?.buildNumber);
+          if(Response?.appConfig?.FORCE_UPDATE){
+            let platform = Platform.OS === 'ios' ? 'IOS' : 'ANDROID';
+            const forceUpdateConfig = Response?.appConfig?.FORCE_UPDATE[platform]?.BUILD_NUMBER
+
+            console.log("Checking for forced update. Last build number:", lastBuildNumber, "Force update config:", forceUpdateConfig);
+            if(forceUpdateConfig && lastBuildNumber < forceUpdateConfig){
+              showNotification(t('session_expired'), t('session_expired_message'), 'warning');
+              logout()
+              return
+            }
+          
+        }
+      }
+
+
         if (Response?.userStats?.fcmToken) {
           const isActiveLogin = await checkDeviceImei(Response?.userStats?.fcmToken);
           if (!isActiveLogin) {
+            showNotification(t('session_logged_out_title'), t('session_logged_out_other_device_message'), 'warning');
             logout();
             return;
           }
