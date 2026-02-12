@@ -25,7 +25,7 @@ const NOTPushNotifiationService = require("../../Services/PushNotification/NOTPu
 const AppConfig = require("../../Models/AppConfig");
 const EmergencyContacts = require("../../Models/EmergencyContacts");
 const { passangerEmergencyContactSchema } = require("../../Schemas/PassangerSchema");
-
+const OTP = require("../../Controllers/OTP");
 
 module.exports = function (CLASS) {
     /**
@@ -395,6 +395,9 @@ module.exports = function (CLASS) {
             payload.userId = passangerId;
             delete payload.offerCoupon;
 
+            const otp = OTP.generateOTP(4);
+            payload.otp = otp;
+
            
             if(payload.regionalOffice){
                 payload.regionalOffice = new ObjectId(payload.regionalOffice);
@@ -467,14 +470,12 @@ module.exports = function (CLASS) {
                         vehicleColor: driver.ownVehicleInfo.color,
                         vehicleNumber: driver.ownVehicleInfo.regNo,
                         upiid: driver.bankDetails.UPIID,
-                        driverLocaiton: driver.location
+                        driverLocation: driver.location
                     };
 
                     if (driver?.documents?.driverPhoto) {
-                        const ImagePath = driver.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
-                        const rjvw = new GeneratePresignedUrl();
-                        driverInfo.driverPhoto = await rjvw.generatePresignedImg(ImagePath);
-                        driverInfo.driverPhotoImg = ImagePath;
+                       
+                        driverInfo.driverPhoto = driver?.documents?.driverPhoto;
                     }
 
                     const paymentdetails = await PublicRidesPayment.getPaymentDetailsByTrip(trip._id);
@@ -596,10 +597,7 @@ module.exports = function (CLASS) {
                         };
                         
                         if (driver?.documents?.driverPhoto) {
-                            const ImagePath = driver.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
-                            const rjvw = new GeneratePresignedUrl();
-                            driverInfo.driverPhoto = await rjvw.generatePresignedImg(ImagePath);
-                            driverInfo.driverPhotoImg = ImagePath;
+                            driverInfo.driverPhoto = driver.documents.driverPhoto;
                         }
                         
                         trip.driverInfo = driverInfo;
@@ -783,10 +781,8 @@ module.exports = function (CLASS) {
                 const driverData = scheduleTrip.driverData;
           
                 if (driverData && driverData.documents?.driverPhoto) {
-                    const imagePath = driverData.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
-                    const rjvw = new GeneratePresignedUrl();
-                    driverData.driverPhoto = await rjvw.generatePresignedImg(imagePath);
-                    driverData.driverPhotoImg = imagePath;
+                    
+                    driverData.driverPhotoImg = driverData.documents.driverPhoto;
                     delete driverData.documents;
                 }
                 
@@ -813,15 +809,13 @@ module.exports = function (CLASS) {
                 vehicleColor: driver.ownVehicleInfo.color,
                 vehicleNumber: driver.ownVehicleInfo.regNo,
                 upiid: driver.bankDetails.UPIID,
-                driverLocaiton: driver.location
+                driverLocation: driver.location
 
             };
              
             if(driver?.documents?.driverPhoto){
-                const ImagePath = driver.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
-                const rjvw = new GeneratePresignedUrl()
-                driverInfo.driverPhoto = await rjvw.generatePresignedImg(ImagePath)
-                driverInfo.driverPhotoImg = ImagePath;
+                
+                driverInfo.driverPhotoImg = driver?.documents?.driverPhoto;
             }
 
           
@@ -1234,10 +1228,8 @@ module.exports = function (CLASS) {
 
                 
                 if (driver?.documents?.driverPhoto) {
-                    const ImagePath = driver.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
-                    const rjvw = new GeneratePresignedUrl();
-                    driverInfo.driverPhoto = await rjvw.generatePresignedImg(ImagePath);
-                    driverInfo.driverPhotoImg = ImagePath;
+                   
+                    driverInfo.driverPhotoImg = driver?.documents?.driverPhoto;
                 }
                 
                 trip.driverInfo = driverInfo;
