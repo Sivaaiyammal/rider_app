@@ -20,7 +20,7 @@ const TripType = props => {
     }
     onTripSelect(item);
 
-    firebaselog_ridePlanning('RP_Type(RP_T)', `RP_T:${translationKey}`);
+    firebaselog_ridePlanning('RP_Type(RP_T)', `RP_T:${item.translationKey}`);
 
     console.log('Selected Trip Type:', item);
   };

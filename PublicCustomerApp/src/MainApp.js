@@ -33,6 +33,8 @@ import PushNotifications from './common/core/PushNotifications';
 import useTripStatus from './notCustomer/hooks/useTripStatus';
 import { useStackScreenStore } from './common/store/useStackScreenStore';
 import { useTripAcceptStore } from './notdriver/store/useTripAcceptStore';
+import analytics from '@react-native-firebase/analytics';
+import Config from "react-native-config";
 
 
 
@@ -49,7 +51,13 @@ const MainAppContent = () => {
   const {setStackScreen, stackScreen} = useStackScreenStore()
   const {setTripId} = useTripAcceptStore()
 
-  
+  useEffect(() => {
+    if (Config.DEV === 'true') {
+      analytics().setAnalyticsCollectionEnabled(false);
+      console.log('Firebase Analytics disabled for DEV environment.');
+    }
+  }, []);
+
   const setAppTheme = useCallback(async () => {
     const IS_FIRST = await DataStore.loadData('IS_FIRST');
     if (IS_FIRST.data === null) {
