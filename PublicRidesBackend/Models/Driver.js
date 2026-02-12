@@ -738,7 +738,7 @@ class Driver {
         const updated = await Mongo.updateOneRaw(
             COLLECTION_NAME,
             { _id: new ObjectId(driverId) },
-            {
+        {
                 $set: { currentTripId: tripID },
                 $pull: { upComingTrips: tripID }
             }
