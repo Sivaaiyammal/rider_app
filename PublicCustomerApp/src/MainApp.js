@@ -31,6 +31,8 @@ import DeviceInfo from 'react-native-device-info';
 import useDeviceAPIStore from './common/store/useDeviceAPIStore';
 import PushNotifications from './common/core/PushNotifications';
 import useTripStatus from './notCustomer/hooks/useTripStatus';
+import analytics from '@react-native-firebase/analytics';
+import Config from "react-native-config";
 
 
 
@@ -45,7 +47,13 @@ const MainAppContent = () => {
   const { setUserDeviceId } = useDeviceAPIStore();
   const{ handleTripStatusUpdate} = useTripStatus();
 
-  
+  useEffect(() => {
+    if (Config.DEV === 'true') {
+      analytics().setAnalyticsCollectionEnabled(false);
+      console.log('Firebase Analytics disabled for DEV environment.');
+    }
+  }, []);
+
   const setAppTheme = useCallback(async () => {
     const IS_FIRST = await DataStore.loadData('IS_FIRST');
     if (IS_FIRST.data === null) {
