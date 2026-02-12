@@ -285,7 +285,7 @@ class WSService {
           resolve(true);
         });
 
-        this.socket.on('driverAllocated', this.driverAllocated);
+        // this.socket.on('driverAllocated', this.driverAllocated);
 
         this.socket.on('driverLocationUpdate', this.driverLocationUpdate);
 

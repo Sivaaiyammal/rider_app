@@ -51,6 +51,8 @@ export const firebaselog_onRide = (category, action, other = {}) =>
 
 export const firebaselog_tripPayment = (category, action, other = {}) =>
   logFirebaseEvent('Trip_Payment_TP', buildParams(category, action, other));
+export const firebaselog_tripCompletion = (category, action, other = {}) =>
+  logFirebaseEvent('Trip_Completion_TC', buildParams(category, action, other));
 
 export const firebaselog_tripReview = (category, action, other = {}) =>
   logFirebaseEvent('Trip_Review_TR', buildParams(category, action, other));

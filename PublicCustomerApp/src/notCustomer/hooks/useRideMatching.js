@@ -8,7 +8,7 @@ import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRide
 import { firebase } from '@react-native-firebase/analytics';
 import { firebaselog_tripBooking } from '../../common/utils/FirebaseAnalytics';
 import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore';
-
+import useAssignedDriverInfoStore from '../features/rideStatus/store/useAssignedDriverInfoStore';
 /**
  * Custom hook to manage ride matching status and socket integration
  * @returns {Object} Ride matching state and methods
@@ -41,8 +41,9 @@ const useRideMatching = () => {
   const contactingLoggedRef = useRef(false);
   const matchedLoggedRef = useRef(false);
   const errorLoggedRef = useRef(false);
-  const { goBack,goBackToScreen } = useStackScreenStore();
-  const { setTripStatus } = useCurrentRideInfoStore();
+  const { goBack,goBackToScreen,setStackScreen } = useStackScreenStore();
+  const { setTripStatus,setOtp,setEstimatedFare } = useCurrentRideInfoStore();
+  const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
   
   /**
    * Initialize socket connection for ride matching
@@ -79,14 +80,37 @@ const useRideMatching = () => {
             contactingLoggedRef.current = true;
           }
           setRideMatchStatus(matchingData);
-          if(matchingData?.status === 'MATCHED'){
+          if(matchingData?.status === 'MATCHED' && matchingData?.trip_detail){
+
+            try{
+
+            if(matchingData?.trip_detail?.driver_info){
+            setAllocatedDriverInfo(matchingData?.trip_detail?.driver_info);
+            }
+          
+            if(matchingData?.trip_detail?.otp){
+            setOtp(matchingData?.trip_detail?.otp);
+            }
+            if(matchingData?.trip_detail?.estimatedFare){
+            setEstimatedFare(matchingData?.trip_detail?.estimatedFare);
+            }
+            setTripStatus('ACCEPTED');
+            setStackScreen('RideStatus',{});
+
+            
             if (!matchedLoggedRef.current) {
-              firebaselog_tripBooking('TB_Ride_Match(TB_RM)','TB_RM:driver_matched');
+              firebaselog_tripBooking('TB_Ride_Match(T B_RM)','TB_RM:driver_matched');
               matchedLoggedRef.current = true;
             }
-            setTimeout(() => {
-              setDriverMatched(true);
-            }, 10000);
+            // if (global.checkOnGoingRideAndLog) {
+            //     global.checkOnGoingRideAndLog(true);
+            // }
+            
+            setDriverMatched(true);
+          }catch(error){
+            console.error('Error processing matched driver data:', error);
+          }
+            
           }
           if(matchingData?.status === 'error'){
             setActiveTripId(null)

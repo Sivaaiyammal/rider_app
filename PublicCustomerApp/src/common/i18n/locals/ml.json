@@ -1096,5 +1096,6 @@
     "driver_access_logout_confirm_message": "ഡ്രൈവർ ആയി സൈൻ ഇൻ ചെയ്യാൻ ഞങ്ങൾ നിങ്ങളെ കസ്റ്റമർ ആപ്പിൽ നിന്ന് ലോഗൗട്ട് ചെയ്യും. തുടരണമോ?",
     "driver_access_logout_confirm_cancel_button": "കസ്റ്റമർ ആപ്പിൽ തുടരുക",
     "driver_access_logout_confirm_confirm_button": "അതെ, ലോഗൗട്ട് ചെയ്യൂ",
-    "Sign_Up_to_Become_a_Driver": "ഡ്രൈവർ ആകാൻ സൈൻ അപ്പ് ചെയ്യുക"
+    "Sign_Up_to_Become_a_Driver": "ഡ്രൈവർ ആകാൻ സൈൻ അപ്പ് ചെയ്യുക",
+    "refresh_to_get_driver_details": "ഡ്രൈവർ വിശദാംശങ്ങൾ ലഭിക്കാൻ പുതുക്കുക"
 }

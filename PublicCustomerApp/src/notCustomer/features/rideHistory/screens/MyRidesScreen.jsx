@@ -1,5 +1,5 @@
 import { Dimensions, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 const { width: windowWidth } = Dimensions.get('window');
 
@@ -23,11 +23,31 @@ import PropTypes from 'prop-types';
 import DatePicker from 'react-native-date-picker';
 import EnhancedDateRangeBottomSheet from '../../shared/component/EnhancedDateRangeBottomSheet';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
+import useUserInfoStore from '../../../../common/store/useUserInfoStore';
+import { getPresignedImageUrl } from '../../../../common/utils/getPresignedImageUrl';
+
+const extractDriverPhotoKey = value => {
+    if (typeof value !== 'string') {
+        return { raw: null, key: null };
+    }
+    const trimmed = value.trim();
+    if (!trimmed) {
+        return { raw: null, key: null };
+    }
+    const strippedDomain = trimmed.replace(/^https?:\/\/[^/]+\/?/, '').replace(/^\//, '');
+    const [normalizedKey] = strippedDomain.split('?');
+    return { raw: trimmed, key: normalizedKey || null };
+};
 
 const YourRidesScreen = () => {
     const { t } = useTranslation();
     const { setStackScreen } = useStackScreenStore();
     const { Rides, setRides } = useRideHistoryStore();
+    const { userdetails } = useUserInfoStore();
+    const userToken = userdetails?.token || null;
+    const driverPhotoCacheRef = useRef({});
+    const [driverPhotoMap, setDriverPhotoMap] = useState({});
+    const [driverPhotoLoadingMap, setDriverPhotoLoadingMap] = useState({});
     
 
     const [FilterStart, setFilterStart] = useState('');
@@ -156,8 +176,110 @@ const YourRidesScreen = () => {
         LoadRides(nextPage, true);
     }
 
+    useEffect(() => {
+        let cancelled = false;
+
+        if (!Array.isArray(Rides) || Rides.length === 0) {
+            setDriverPhotoMap({});
+            setDriverPhotoLoadingMap({});
+            return undefined;
+        }
+
+        const pendingKeys = new Set();
+        const cachedResults = {};
+
+        Rides.forEach(ride => {
+            const { key } = extractDriverPhotoKey(ride?.driverInfo?.driverPhoto);
+            if (!key) {
+                return;
+            }
+            const cached = driverPhotoCacheRef.current[key];
+            if (cached && cached.token === userToken) {
+                cachedResults[key] = cached.url;
+                return;
+            }
+            if (!userToken) {
+                driverPhotoCacheRef.current[key] = { url: null, token: null };
+                cachedResults[key] = null;
+                return;
+            }
+            pendingKeys.add(key);
+        });
+
+        if (Object.keys(cachedResults).length > 0) {
+            setDriverPhotoMap(prev => ({ ...prev, ...cachedResults }));
+        }
+
+        if (!userToken || pendingKeys.size === 0) {
+            if (!userToken) {
+                setDriverPhotoLoadingMap({});
+            } else if (pendingKeys.size === 0 && Object.keys(cachedResults).length > 0) {
+                setDriverPhotoLoadingMap(prev => {
+                    const updated = { ...prev };
+                    Object.keys(cachedResults).forEach(key => {
+                        updated[key] = false;
+                    });
+                    return updated;
+                });
+            }
+            return undefined;
+        }
+
+        const keysToFetch = Array.from(pendingKeys);
+        setDriverPhotoLoadingMap(prev => {
+            const updated = { ...prev };
+            keysToFetch.forEach(key => {
+                updated[key] = true;
+            });
+            return updated;
+        });
+
+        (async () => {
+            const results = await Promise.all(
+                keysToFetch.map(async key => {
+                    try {
+                        const url = await getPresignedImageUrl(key, userToken);
+                        return { key, url: url || null };
+                    } catch (error) {
+                        return { key, url: null };
+                    }
+                })
+            );
+
+            if (cancelled) {
+                return;
+            }
+
+            const resolved = {};
+            results.forEach(({ key, url }) => {
+                driverPhotoCacheRef.current[key] = { url, token: userToken };
+                resolved[key] = url;
+            });
+
+            if (Object.keys(resolved).length > 0) {
+                setDriverPhotoMap(prev => ({ ...prev, ...resolved }));
+            }
+
+            setDriverPhotoLoadingMap(prev => {
+                const updated = { ...prev };
+                keysToFetch.forEach(key => {
+                    updated[key] = false;
+                });
+                return updated;
+            });
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [Rides, userToken]);
+
     const RenderTrip = ({ ride,Fare, index }) => {
-        
+        const { raw: driverPhotoRaw, key: driverPhotoKey } = extractDriverPhotoKey(ride?.driverInfo?.driverPhoto);
+        const driverPhoto = driverPhotoKey ? driverPhotoMap[driverPhotoKey] : driverPhotoRaw;
+        const driverPhotoLoading = driverPhotoKey ? !!driverPhotoLoadingMap[driverPhotoKey] : false;
+        const showDriverPhotoPlaceholder = Boolean(driverPhotoKey || driverPhotoRaw);
+
         return (
             <TouchableOpacity
                 key={`your-ride-${index}`}
@@ -188,7 +310,9 @@ const YourRidesScreen = () => {
                     <TripPersonVehicle 
                         usedScreen={'MyRides'}
                         driverName={ride?.driverInfo?.driverName} 
-                        driverPhoto={ride?.driverInfo?.driverPhoto} 
+                        driverPhoto={driverPhoto || undefined} 
+                        driverPhotoLoading={driverPhotoLoading}
+                        showDriverPhotoPlaceholder={showDriverPhotoPlaceholder}
                         vehicleType={ride?.vehicleType} 
                         vehicleBrand={ride?.driverInfo?.vehicleBrand} 
                         vehicleModel={ride?.driverInfo?.vehicleModel} 

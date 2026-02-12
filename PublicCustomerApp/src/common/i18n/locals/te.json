@@ -1099,5 +1099,6 @@
     "driver_access_logout_confirm_message": "డ్రైవర్‌గా సైన్ ఇన్ చేయడానికి మేము మిమ్మల్ని కస్టమర్ యాప్ నుండి లాగ్ అవుట్ చేస్తాము. కొనసాగాలా?",
     "driver_access_logout_confirm_cancel_button": "కస్టమర్ యాప్‌లోనే ఉండండి",
     "driver_access_logout_confirm_confirm_button": "అవును, లాగ్ అవుట్ చేయండి",
-    "Sign_Up_to_Become_a_Driver": "డ్రైవర్ అయ్యేందుకు సైన్ అప్ చేయండి"
+    "Sign_Up_to_Become_a_Driver": "డ్రైవర్ అయ్యేందుకు సైన్ అప్ చేయండి",
+    "refresh_to_get_driver_details": "డ్రైవర్ వివరాలను పొందడానికి రిఫ్రెష్ చేయండి"
 }

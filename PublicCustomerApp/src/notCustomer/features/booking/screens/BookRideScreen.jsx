@@ -52,6 +52,7 @@ import { buildKey as buildEstimationCacheKey, getFromCache as getEstimationFromC
 import { showNotification } from '../../../components/NotificationManger';
 import { openFeedback } from '../../../utils/feedback';
 import useNearbyDrivers from '../../../store/useNearByDrivers';
+import useRideMatchStore from '../../rideStatus/store/useRideMatchStore';
 
 const BottomSheetHeader = (rideDistance,estimatedDuration,setShowPreference) => {
     const {setStackScreen} = useStackScreenStore()
@@ -113,6 +114,9 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
         rideEndLocation,
         rideWayPoints
     } = useDirectionLoad();
+      const {setDriverMatched} = useRideMatchStore();
+
+
 
     
 
@@ -148,6 +152,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
 
     useEffect(() => {
        DirectionRoute();
+    setDriverMatched(false) // reset driver matched state when booking screen mounts
     }, []);
 
 

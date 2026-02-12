@@ -280,8 +280,8 @@ const Home = () => {
     const currentScreen = getCurrentScreenName();
     if (driverMatched && currentScreen === 'RideStatus') {  
     
-      checkOnGoingRideAndLog(true); 
-      setDriverMatched(false);
+      // checkOnGoingRideAndLog(true); 
+      // setDriverMatched(false);
       
     }
 

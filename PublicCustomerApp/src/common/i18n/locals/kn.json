@@ -1099,5 +1099,6 @@
     "driver_access_logout_confirm_message": "ನಾವು ನಿಮ್ಮನ್ನು ಗ್ರಾಹಕ ಆಪ್‌ನಿಂದ ಲಾಗ್ ಔಟ್ ಮಾಡಿ, ಚಾಲಕರಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡಲು ಸಹಾಯ ಮಾಡುತ್ತೇವೆ. ಮುಂದುವರಿಸಬೇಕೇ?",
     "driver_access_logout_confirm_cancel_button": "ಗ್ರಾಹಕ ಆಪ್‌ನಲ್ಲೇ ಉಳಿಯಿರಿ",
     "driver_access_logout_confirm_confirm_button": "ಹೌದು, ಲಾಗ್ ಔಟ್ ಮಾಡಿ",
-    "Sign_Up_to_Become_a_Driver": "ಚಾಲಕನಾಗಲು ಸೈನ್ ಅಪ್ ಮಾಡಿ"
+    "Sign_Up_to_Become_a_Driver": "ಚಾಲಕನಾಗಲು ಸೈನ್ ಅಪ್ ಮಾಡಿ",
+    "refresh_to_get_driver_details": "ಚಾಲಕ ವಿವರಗಳನ್ನು ಪಡೆಯಲು ರಿಫ್ರೆಶ್ ಮಾಡಿ"
 }

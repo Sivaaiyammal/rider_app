@@ -31,7 +31,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
 import useConfigStore from '../../../store/useConfigStore'; 
 import { openFeedback } from '../../../utils/feedback';
 import DroppedButPaymentPendingLongtime from '../../../components/DroppedButPaymentPendingLongtime';
-import { firebaselog_tripPayment } from '../../../../common/utils/FirebaseAnalytics';
+import { firebaselog_tripCompletion,firebaselog_tripPayment } from '../../../../common/utils/FirebaseAnalytics';
 
 const PaymentScreen = ({lastTripId=null}) => {
 
@@ -248,7 +248,7 @@ const PaymentScreen = ({lastTripId=null}) => {
       console.log(response,"response")
 
       if(response?.success){
-        firebaselog_tripPayment('TP_Razorpay(TP_R)',`TP_R:order_created`);
+        firebaselog_tripCompletion('TP_Razorpay(TP_R)',`TP_R:order_created`);
         const orderId = response?.order?.id;
         const amount = response?.order?.amount;
         if (!orderId) {
@@ -271,8 +271,9 @@ const PaymentScreen = ({lastTripId=null}) => {
 
           RazorpayCheckout.open(options)
             .then((data) => {
-              firebaselog_tripPayment('TP_Method(TP_M)',`TP_M:razorpay`);
-              firebaselog_tripPayment('TP_Razorpay(TP_R)',`TP_R:paid`);
+              firebaselog_tripCompletion('TP_Method(TP_M)',`TP_M:razorpay`);
+              firebaselog_tripCompletion('TP_Razorpay(TP_R)',`TP_R:paid`);
+              firebaselog_tripPayment('TP_complete', `TP_R:TP_complete`)
               console.log(JSON.stringify(data,null,2),"data")
               incrementTotalSpend(totalPayable)
               incrementCompletedTrips()
@@ -284,7 +285,7 @@ const PaymentScreen = ({lastTripId=null}) => {
             })
             .catch((error) => {
               // handle failure
-              firebaselog_tripPayment('TP_Razorpay(TP_R)',`TP_R:failed`);
+              firebaselog_tripCompletion('TP_Razorpay(TP_R)',`TP_R:failed`);
               showNotification(t('payment_failed'),error?.message || t('something_went_wrong'),"error");
               setIsProcessingPayment(false);
               setShowPGConfirm(false);

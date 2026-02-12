@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { getVehicleImage } from '../../rideStatus/types/vehicleImd';
 import { Fonts, colors } from '../../../constants/constants';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const TripPersonVehicle = ({
   driverName,
@@ -14,49 +13,67 @@ const TripPersonVehicle = ({
   vehicleColor,
   isElectricVehicle = false,
   layoutStyle,
-  descriptonSize=16,
-  usedScreen=null
+  descriptonSize = 16,
+  usedScreen = null,
+  driverPhotoLoading = false,
+  showDriverPhotoPlaceholder = false,
 }) => {
-  const vehicleDetails = useMemo(() => (
-    [vehicleBrand, vehicleModel, vehicleColor, vehicleNumber].filter(Boolean)
-  ), [vehicleBrand, vehicleModel, vehicleColor, vehicleNumber]);
+  const vehicleDetails = useMemo(
+    () => [vehicleBrand, vehicleModel, vehicleColor, vehicleNumber].filter(Boolean),
+    [vehicleBrand, vehicleModel, vehicleColor, vehicleNumber],
+  );
+
+  const shouldShowProfileSlot = Boolean(driverPhoto) || showDriverPhotoPlaceholder;
+  const shouldOffsetVehicle = shouldShowProfileSlot;
 
   return (
-    <View style={[styles.container, layoutStyle==="row" && styles.rowContainer]}>
+    <View style={[styles.container, layoutStyle === 'row' && styles.rowContainer]}>
       <View style={styles.imagesRow}>
-        {getVehicleImage(vehicleType, [styles.vehicleImg, driverPhoto && styles.vehicleImgOffset], 'ratingScreen')}
-        {driverPhoto && ( <View style={[styles.profileWrapper, usedScreen==="MyRides" && styles.profileWrapperMyRides]}>
-         
-         
-            <Image
-              source={{ uri: driverPhoto }}
-              style={[styles.profileImg, usedScreen==="MyRides" && styles.profileImgMyRides]}
-            />
-       
-        </View>    )}
+        {getVehicleImage(
+          vehicleType,
+          [styles.vehicleImg, shouldOffsetVehicle && styles.vehicleImgOffset],
+          'ratingScreen',
+        )}
+        {shouldShowProfileSlot && (
+          <View style={[styles.profileWrapper, usedScreen === 'MyRides' && styles.profileWrapperMyRides]}>
+            {driverPhoto ? (
+              <Image
+                source={{ uri: driverPhoto }}
+                style={[styles.profileImg, usedScreen === 'MyRides' && styles.profileImgMyRides]}
+              />
+            ) : (
+              <View
+                style={[
+                  styles.profileImg,
+                  styles.profileImgPlaceholder,
+                  usedScreen === 'MyRides' && styles.profileImgMyRides,
+                ]}
+              >
+                {driverPhotoLoading ? <ActivityIndicator size="small" color="#7c7c7c" /> : null}
+              </View>
+            )}
+          </View>
+        )}
       </View>
-      <View style={[
-        layoutStyle==="row" && styles.detailsAlignStart,
-        usedScreen==="MyRides" && styles.detailsAlignEnd,
-      ]}>
+      <View
+        style={[
+          layoutStyle === 'row' && styles.detailsAlignStart,
+          usedScreen === 'MyRides' && styles.detailsAlignEnd,
+        ]}
+      >
         {usedScreen !== 'MyRides' && driverName && (
-          <Text style={[styles.driverName, usedScreen==="MyRides" && styles.driverNameMyRides]}>
-            {driverName}
-          </Text>
+          <Text style={[styles.driverName, usedScreen === 'MyRides' && styles.driverNameMyRides]}>{driverName}</Text>
         )}
         {usedScreen !== 'MyRides' && vehicleDetails.length > 0 && (
           <View
             style={[
               styles.vehicleDetailsWrap,
-              layoutStyle==="row" && styles.vehicleDetailsWrapRow,
-              usedScreen==="MyRides" && styles.vehicleDetailsWrapEnd,
+              layoutStyle === 'row' && styles.vehicleDetailsWrapRow,
+              usedScreen === 'MyRides' && styles.vehicleDetailsWrapEnd,
             ]}
           >
             {vehicleDetails.map((detail, index) => (
-              <Text
-                key={`${detail}-${index}`}
-                style={[styles.vehicleDesc, { fontSize: descriptonSize }]}
-              >
+              <Text key={`${detail}-${index}`} style={[styles.vehicleDesc, { fontSize: descriptonSize }]}>
                 {detail}
                 {index < vehicleDetails.length - 1 ? ' · ' : ''}
               </Text>
@@ -71,9 +88,7 @@ const TripPersonVehicle = ({
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginTop:20,
-   
-   
+    marginTop: 20,
   },
   rowContainer: {
     flexDirection: 'row',
@@ -83,17 +98,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
- 
-    
   },
   vehicleImg: {
     width: 70,
     height: 70,
     resizeMode: 'contain',
-    
     zIndex: 1,
     transform: [{ scaleX: -1 }],
-    
   },
   vehicleImgOffset: {
     marginRight: -20,
@@ -117,6 +128,10 @@ const styles = StyleSheet.create({
     borderColor: colors.white,
     backgroundColor: colors.grey_xdark,
     zIndex: 2,
+  },
+  profileImgPlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   profileImgMyRides: {
     width: 60,
@@ -145,7 +160,7 @@ const styles = StyleSheet.create({
   },
   detailsAlignStart: {
     alignItems: 'flex-start',
-   maxWidth: 220,
+    maxWidth: 220,
   },
   detailsAlignEnd: {
     alignItems: 'flex-end',
@@ -173,4 +188,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TripPersonVehicle; 
+export default TripPersonVehicle;

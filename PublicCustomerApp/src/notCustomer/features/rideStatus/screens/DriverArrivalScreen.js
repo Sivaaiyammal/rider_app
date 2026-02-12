@@ -22,6 +22,7 @@ import useUserInfoStore from '../../../../common/store/useUserInfoStore';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { getTotalDistanceAndTime } from '../services/getTotalDistanceandTime';
 import { firebaselog_onRide } from '../../../../common/utils/FirebaseAnalytics';
+import { getPresignedImageUrl } from '../../../../common/utils/getPresignedImageUrl';
 
 const shallowEqual = (a, b) => {
   if (Object.is(a, b)) {
@@ -99,24 +100,21 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
   const { t } = useTranslation();
   const { waitingForDriverApproval } = useWayPointReorderStore();
   const { userdetails } = useUserInfoStore();
+  const userToken = userdetails?.token || null;
 
   const [loading] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [isCallingDriver, setIsCallingDriver] = useState(false);
   const [estimatedDuration, setEstimatedDuration] = useState(null);
+  const [driverPhotoUri, setDriverPhotoUri] = useState(null);
+  const [isDriverPhotoLoading, setIsDriverPhotoLoading] = useState(false);
 
+  const driverPhotoCacheRef = useRef({ key: null, url: null, token: null });
   const boundingBoxRef = useRef(null);
 
   const pickupStop = useMemo(() => (stops && stops.length > 0 ? stops[0] : null), [stops]);
   const otpDigits = useMemo(() => (otp ? otp.split('') : []), [otp]);
   const passengerPhone = userdetails?.phone;
-
-  const driverPhotoUri = useMemo(() => {
-    if (driverPhoto && driverPhoto.trim() !== '') {
-      return driverPhoto;
-    }
-    return null;
-  }, [driverPhoto]);
 
   const durationDisplay = useMemo(() => {
     if (estimatedDuration === null || estimatedDuration === undefined) {
@@ -141,6 +139,73 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
   const handleMapIconPress = useCallback(() => {
     boundingBoxRef.current?.();
   }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const resolveDriverPhoto = async () => {
+      const trimmed = driverPhoto?.trim();
+      if (!trimmed) {
+        driverPhotoCacheRef.current = { key: null, url: null, token: null };
+        setDriverPhotoUri(null);
+        return;
+      }
+
+      const normalizedKey = trimmed.replace(/^https?:\/\/[^/]+\/?/, '').replace(/^\//, '');
+
+      if (
+        driverPhotoCacheRef.current.key === normalizedKey &&
+        driverPhotoCacheRef.current.url &&
+        driverPhotoCacheRef.current.token === userToken
+      ) {
+        setDriverPhotoUri(driverPhotoCacheRef.current.url);
+        return;
+      }
+
+      if (!normalizedKey) {
+        driverPhotoCacheRef.current = { key: trimmed, url: null, token: userToken };
+        setDriverPhotoUri(null);
+        return;
+      }
+
+      if (!userToken) {
+        driverPhotoCacheRef.current = { key: normalizedKey, url: null, token: null };
+        setDriverPhotoUri(null);
+        return;
+      }
+
+      try {
+        setIsDriverPhotoLoading(true);
+        const signedUrl = await getPresignedImageUrl(normalizedKey, userToken);
+        if (!isActive) {
+          return;
+        }
+
+        if (signedUrl) {
+          driverPhotoCacheRef.current = { key: normalizedKey, url: signedUrl, token: userToken };
+          setDriverPhotoUri(signedUrl);
+        } else {
+          driverPhotoCacheRef.current = { key: normalizedKey, url: null, token: userToken };
+          setDriverPhotoUri(null);
+        }
+      } catch (error) {
+        if (isActive) {
+          driverPhotoCacheRef.current = { key: normalizedKey, url: null, token: userToken };
+          setDriverPhotoUri(null);
+        }
+      } finally {
+        if (isActive) {
+          setIsDriverPhotoLoading(false);
+        }
+      }
+    };
+
+    resolveDriverPhoto();
+
+    return () => {
+      isActive = false;
+    };
+  }, [driverPhoto, userToken]);
 
   useEffect(() => {
     if (!stops || stops.length === 0) {
@@ -300,7 +365,13 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
 
         <View style={styles.driverRow}>
           <View style={styles.driverProfile}>
-            <Image source={{ uri: driverPhotoUri }} style={styles.driverImg} resizeMode="cover" />
+            {driverPhotoUri ? (
+              <Image source={{ uri: driverPhotoUri }} style={styles.driverImg} resizeMode="cover" />
+            ) : (
+              <View style={[styles.driverImg, styles.driverImgPlaceholder]}>
+                {isDriverPhotoLoading ? <ActivityIndicator size="small" color="#7c7c7c" /> : null}
+              </View>
+            )}
             <View style={styles.ratingRow}>
               <Text style={styles.star}>★</Text>
               {/* <Text style={styles.ratingText}>{rating}</Text> */}
@@ -618,6 +689,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e0e0e0',
     marginBottom: 4,
+  },
+  driverImgPlaceholder: {
+    backgroundColor: '#d9d9d9',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   ratingRow: {
     flexDirection: 'row',

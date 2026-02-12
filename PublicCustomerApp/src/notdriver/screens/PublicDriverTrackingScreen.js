@@ -21,7 +21,7 @@ import { Colors, Fonts } from '../../common/constants/constants';
 import PublicDriverTripPaymentScreen from './PublicDriverTripPaymentScreen';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 import InputField from '../../common/components/InputField';
-import { firebaselog_onRide, firebaselog_tripPayment, firebaselog_tripReview } from '../../common/utils/FirebaseAnalytics';
+import { firebaselog_onRide, firebaselog_tripCompletion, firebaselog_tripReview, firebaselog_tripPayment } from '../../common/utils/FirebaseAnalytics';
 
 const PublicDriverTrackingScreen = () => {
   const {
@@ -79,18 +79,19 @@ const PublicDriverTrackingScreen = () => {
           setIsGetFare(true)
           setIsOnGoing(false)
           setHasActiveTrip(null)
-          setDirectionPoints(null)
+          setDirectionPoints(null) 
           setDisduration(null)
           setStartNavigation(false)
-          firebaselog_tripPayment('TP_Cash(TP_C)', `TP_C:payment_received_by_driver`)
+          firebaselog_tripCompletion('TP_Cash(TP_C)', `TP_C:payment_received_by_driver`)
+             firebaselog_tripPayment('TP_complete', `TP_R:TP_complete`)
           showNotification(res?.message, res?.message, 'success');
       } else {
-        firebaselog_tripPayment('TP_Cash(TP_C)', `TP_C:payment_received_failed`)
+        firebaselog_tripCompletion('TP_Cash(TP_C)', `TP_C:payment_received_failed`)
         showNotification(res?.error, res?.message, 'danger');
       }
       setIsLoading(false);
     } catch (error) {
-      firebaselog_tripPayment('TP_Cash(TP_C)', `TP_C:payment_received_failed`)
+      firebaselog_tripCompletion('TP_Cash(TP_C)', `TP_C:payment_received_failed`)
       showNotification('Something went wrong', '', 'danger');
       setIsLoading(false);
     }

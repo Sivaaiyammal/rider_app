@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ScrollView, View, StyleSheet, Text, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
@@ -18,15 +18,22 @@ import PropTypes from 'prop-types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { openFeedback } from '../../../utils/feedback';
+import useUserInfoStore from '../../../../common/store/useUserInfoStore';
+import { getPresignedImageUrl } from '../../../../common/utils/getPresignedImageUrl';
 
 const RideDetailScreen = ({ TripData }) => {
   console.log("TripData",TripData)
   const { t } = useTranslation();
   const { goBack } = useStackScreenStore();
+  const { userdetails } = useUserInfoStore();
+  const userToken = userdetails?.token || null;
   const [showReceipt, setShowReceipt] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
+  const [driverPhotoUri, setDriverPhotoUri] = useState(null);
+  const [isDriverPhotoLoading, setIsDriverPhotoLoading] = useState(false);
   const screenHeight = Dimensions.get('window').height;
   const overlayAnim = useRef(new Animated.Value(screenHeight)).current;
+  const driverPhotoCacheRef = useRef({ key: null, url: null, token: null });
   
  
   
@@ -139,6 +146,79 @@ const RideDetailScreen = ({ TripData }) => {
   const distance = rideData.finalDistance && rideData?.status != "Failed" ? rideData.finalDistance : rideData.estimatedDistance
   const duration = rideData.finalDuration && rideData?.status != "Failed" ? rideData.finalDuration : rideData.estimatedDuration
 
+  useEffect(() => {
+    let isActive = true;
+
+    const resolveDriverPhoto = async () => {
+      const rawPhoto = rideData?.driverInfo?.driverPhoto;
+      const trimmed = typeof rawPhoto === 'string' ? rawPhoto.trim() : '';
+
+      if (!trimmed) {
+        driverPhotoCacheRef.current = { key: null, url: null, token: null };
+        setDriverPhotoUri(null);
+        setIsDriverPhotoLoading(false);
+        return;
+      }
+
+      const normalizedKey = trimmed.replace(/^https?:\/\/[^/]+\/?/, '').replace(/^\//, '');
+
+      if (
+        driverPhotoCacheRef.current.key === normalizedKey &&
+        driverPhotoCacheRef.current.url &&
+        driverPhotoCacheRef.current.token === userToken
+      ) {
+        setDriverPhotoUri(driverPhotoCacheRef.current.url);
+        setIsDriverPhotoLoading(false);
+        return;
+      }
+
+      if (!normalizedKey) {
+        driverPhotoCacheRef.current = { key: trimmed, url: null, token: userToken };
+        setDriverPhotoUri(null);
+        setIsDriverPhotoLoading(false);
+        return;
+      }
+
+      if (!userToken) {
+        driverPhotoCacheRef.current = { key: normalizedKey, url: null, token: null };
+        setDriverPhotoUri(null);
+        setIsDriverPhotoLoading(false);
+        return;
+      }
+
+      try {
+        setIsDriverPhotoLoading(true);
+        const signedUrl = await getPresignedImageUrl(normalizedKey, userToken);
+        if (!isActive) {
+          return;
+        }
+
+        if (signedUrl) {
+          driverPhotoCacheRef.current = { key: normalizedKey, url: signedUrl, token: userToken };
+          setDriverPhotoUri(signedUrl);
+        } else {
+          driverPhotoCacheRef.current = { key: normalizedKey, url: null, token: userToken };
+          setDriverPhotoUri(null);
+        }
+      } catch (error) {
+        if (isActive) {
+          driverPhotoCacheRef.current = { key: normalizedKey, url: null, token: userToken };
+          setDriverPhotoUri(null);
+        }
+      } finally {
+        if (isActive) {
+          setIsDriverPhotoLoading(false);
+        }
+      }
+    };
+
+    resolveDriverPhoto();
+
+    return () => {
+      isActive = false;
+    };
+  }, [rideData?.driverInfo?.driverPhoto, userToken]);
+
   console.log("rideData",rideData)
   console.log("rideFareDetails",rideData?.status)
   console.log(utils.getRideStatus(rideData?.status),"keb")
@@ -183,7 +263,9 @@ const RideDetailScreen = ({ TripData }) => {
         
         <TripPersonVehicle 
           driverName={rideData.driverInfo?.driverName} 
-          driverPhoto={rideData.driverInfo?.driverPhoto} 
+          driverPhoto={driverPhotoUri || undefined} 
+          driverPhotoLoading={isDriverPhotoLoading}
+          showDriverPhotoPlaceholder
           vehicleType={rideData?.vehicleType} 
           vehicleBrand={rideData.driverInfo?.vehicleBrand} 
           vehicleModel={rideData.driverInfo?.vehicleModel} 

@@ -24,6 +24,8 @@ import { DataStore } from '../../../controllers/DataStore';
 import PREF from '../../../storage/PREF';
 import { RequestBackgroundLocationPermission } from '../../../controllers/PermissionHandler';
 import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
+import useUserInfoStore from '../../../../common/store/useUserInfoStore';
+import { getPresignedImageUrl } from '../../../../common/utils/getPresignedImageUrl';
 
 const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {driverName,vehicleNumber,model,brand,color,driverPhoto,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
@@ -31,6 +33,8 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {waitingForDriverApproval} = useWayPointReorderStore();
   const currentStop = useMemo(() => stops?.find(item => item.isReached === false) || null, [stops]);
   const {t} = useTranslation();
+  const { userdetails } = useUserInfoStore();
+  const userToken = userdetails?.token || null;
   
   const {stopspolyline} = useDrawStopsPolyline();
   useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"drop",driverAngle);
@@ -43,6 +47,9 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const [showSOS, setShowSOS] = useState(false);
   const [showPreInfo, setShowPreInfo] = useState(false);
   const [sosPreset, setSosPreset] = useState(false);
+  const [driverPhotoUri, setDriverPhotoUri] = useState(null);
+  const [isDriverPhotoLoading, setIsDriverPhotoLoading] = useState(false);
+  const driverPhotoCacheRef = useRef({ key: null, url: null, token: null });
   const toggleExpand = () => {
     console.log("toggleExpand",expanded);
     expanded ? handleOverlay('close') : handleOverlay('open');
@@ -86,8 +93,76 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   
   const iswaypoint = stops.length > 2;
 
-  // Check if driver photo URL is valid
-  const driverPhotoUri = driverPhoto && driverPhoto.trim() !== '' ? driverPhoto : null;
+  useEffect(() => {
+    let isActive = true;
+
+    const resolveDriverPhoto = async () => {
+      const trimmed = driverPhoto?.trim();
+      if (!trimmed) {
+        driverPhotoCacheRef.current = { key: null, url: null, token: null };
+        setDriverPhotoUri(null);
+        setIsDriverPhotoLoading(false);
+        return;
+      }
+
+      const normalizedKey = trimmed.replace(/^https?:\/\/[^/]+\/?/, '').replace(/^\//, '');
+
+      if (
+        driverPhotoCacheRef.current.key === normalizedKey &&
+        driverPhotoCacheRef.current.url &&
+        driverPhotoCacheRef.current.token === userToken
+      ) {
+        setDriverPhotoUri(driverPhotoCacheRef.current.url);
+        setIsDriverPhotoLoading(false);
+        return;
+      }
+
+      if (!normalizedKey) {
+        driverPhotoCacheRef.current = { key: trimmed, url: null, token: userToken };
+        setDriverPhotoUri(null);
+        setIsDriverPhotoLoading(false);
+        return;
+      }
+
+      if (!userToken) {
+        driverPhotoCacheRef.current = { key: normalizedKey, url: null, token: null };
+        setDriverPhotoUri(null);
+        setIsDriverPhotoLoading(false);
+        return;
+      }
+
+      try {
+        setIsDriverPhotoLoading(true);
+        const signedUrl = await getPresignedImageUrl(normalizedKey, userToken);
+        if (!isActive) {
+          return;
+        }
+
+        if (signedUrl) {
+          driverPhotoCacheRef.current = { key: normalizedKey, url: signedUrl, token: userToken };
+          setDriverPhotoUri(signedUrl);
+        } else {
+          driverPhotoCacheRef.current = { key: normalizedKey, url: null, token: userToken };
+          setDriverPhotoUri(null);
+        }
+      } catch (error) {
+        if (isActive) {
+          driverPhotoCacheRef.current = { key: normalizedKey, url: null, token: userToken };
+          setDriverPhotoUri(null);
+        }
+      } finally {
+        if (isActive) {
+          setIsDriverPhotoLoading(false);
+        }
+      }
+    };
+
+    resolveDriverPhoto();
+
+    return () => {
+      isActive = false;
+    };
+  }, [driverPhoto, userToken]);
 
 
   const onSOSClick = async () => {
@@ -126,6 +201,8 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
           <TripPersonVehicle
             driverName={driverName}
             driverPhoto={driverPhotoUri || undefined}
+            driverPhotoLoading={isDriverPhotoLoading}
+            showDriverPhotoPlaceholder
             vehicleType={vehicleType}
             vehicleBrand={brand}
             vehicleModel={model}

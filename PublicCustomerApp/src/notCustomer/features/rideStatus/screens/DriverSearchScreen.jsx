@@ -7,13 +7,13 @@ import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 import { showNotification } from '../../../components/NotificationManger';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 
-const DriverSearchScreen = ({onCancel}) => {
+const DriverSearchScreen = ({onCancel,onTripCancel}) => {
   const { tripId } = useCurrentRideInfoStore();
   const { goBack } = useStackScreenStore();
    
   return (
     <>
-      <SearchLoader onCancel={onCancel} />
+      <SearchLoader onCancel={onCancel} onTripCancel={onTripCancel} />
     </>
   );
 };

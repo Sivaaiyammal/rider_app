@@ -1099,5 +1099,6 @@
     "driver_access_logout_confirm_message": "டிரைவராக உள்நுழைய உங்கள் வாடிக்கையாளர் பயன்பாட்டிலிருந்து நாங்கள் உங்களை வெளியேற்றுவோம். தொடர வேண்டுமா?",
     "driver_access_logout_confirm_cancel_button": "வாடிக்கையாளர் பயன்பாட்டில் இருங்கள்",
     "driver_access_logout_confirm_confirm_button": "ஆம், வெளியேறு",
-    "Sign_Up_to_Become_a_Driver": "ஓட்டுநராக ஆக பதிவு செய்யவும்"
+    "Sign_Up_to_Become_a_Driver": "ஓட்டுநராக ஆக பதிவு செய்யவும்",
+    "refresh_to_get_driver_details": "Driver விவரங்களைப் பெற"
 }

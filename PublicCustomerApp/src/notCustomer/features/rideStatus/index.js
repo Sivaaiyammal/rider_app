@@ -277,10 +277,10 @@ const RideStatus = () => {
           return <CompletedRideScreen type={TripStatus.CANCELLED} />;
         }
         else{
-          return <DriverSearchScreen  onCancel={handleCancel} />;
+          return <DriverSearchScreen  onCancel={handleCancel} onTripCancel={()=>{setShowBottomSheet(true)}} />;
         }
       default:
-        return <DriverSearchScreen  onCancel={handleCancel} />;
+        return <DriverSearchScreen  onCancel={handleCancel} onTripCancel={()=>{setShowBottomSheet(true)}}  />;
     }
   };
 

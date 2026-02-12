@@ -32,9 +32,9 @@ const useAssignedDriverInfoStore = create((set) => ({
       model: info.vehicleModel,
       brand: info.vehicleBrand,
       color: info.vehicleColor,
-      driverLatitude: info?.driverLocaiton?.coordinates[1],
-      driverLongitude: info?.driverLocaiton?.coordinates[0],
-      driverUPIId: info?.driverLocaiton?.upiId,
+      driverLatitude: info?.driverLocation?.coordinates[1] || info?.driverLocation[1] || null,
+      driverLongitude: info?.driverLocation?.coordinates[0] || info?.driverLocation[0] || null,
+      driverUPIId: info?.driverLocation?.upiId,
 
     }),
 
