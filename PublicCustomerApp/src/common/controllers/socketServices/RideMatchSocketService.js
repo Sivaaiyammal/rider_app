@@ -7,11 +7,9 @@ import useHotSpotStore from '../../../notdriver/store/useHotSpotStore';
 import { useMapMarkerStore } from '../../store/useMapMarkerStore';
 import useTripsStore from '../../../notdriver/store/useTripsStore';
 import { DataStore } from '../DataStore';
-import { showNotification } from '../../../common/components/NotificationManger';
 import tripAlert from '../TripAlert';
 import { cancelTrip } from '../../../notdriver/components/CancelTripUpdate';
 import APIRequest from '../APIRequest';
-import useUserStore from '../../store/useUserStore';
 import { firebaselog_tripBooking } from '../../utils/FirebaseAnalytics';
 
 const SOCKET_URL = Config.DRIVER_SOCKET_URL;
@@ -80,15 +78,14 @@ class RideMatchWSService {
       useTripAcceptStore.setState({tripDetails: data.data});
       useTripAcceptStore.setState({tripId: data.data?.trip_id});
       useTripAcceptStore.setState({currentFare: data.data?.fare});
-      useTripAcceptStore.setState({requestId: data.data?.request_id});
+      useTripAcceptStore.setState({requestId: data?.request_id});
       useTripAcceptStore.setState({timeOutSeconds: data.data?.timeout_seconds});
       useTripAcceptStore.setState({alertedAt: data?.data?.alerted_at});
       useTripAcceptStore.setState({
         escalationDetails: data?.data?.escalation_details,
       });
-      console.log('stackScreen --- >>>', stackScreen)
-      setStackScreen('TripAccept');
       firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_request_received');
+      setStackScreen('TripAccept');
       const isActive = AppState.currentState === 'active';
       if (isActive) {
         tripAlert.playAlertSound();
@@ -111,23 +108,20 @@ class RideMatchWSService {
       setFetchLocationDate,
       setIsGetFare,
       setLoading,
-      reset,
-      tripDetails,
-      setTripDetails
     } = useTripAcceptStore.getState();
     const {setDirectionPoints} = useMapMarkerStore.getState();
     const {activeTripData, setActiveTripData} = useTripsStore.getState();
-    const {userInfo} = useUserStore.getState();
     try {
       if (data?.status === 'success') {
         setLoading(true);
         if (data?.response === 'accept') {
-          const response = await this._acceptTripWithRetry(data?.trip_id, 3, userInfo?.token);
-          if (response?.success) {
-            DataStore.storeData('activeTripId', data?.trip_id);
-            const tripData = response?.currentTrip;
+          // const response = await this._acceptTripWithRetry(data?.trip_id, 3, userInfo?.token);
+          // if (response?.success) {
+            // DataStore.storeData('activeTripId', data?.trip_id);
+            const tripData = data?.tripDetails;
             tripData.status = 'ACCEPTED';
             useTripsStore.setState({activeTripData: [tripData]});
+            setLoading(false);
             firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_accepted_inapp');
             setStackScreen('PublicDriverTrackingScreen');
             //  tripDetails.pickUpRoute.response = tripDetails?.pickUpRoute?.response
@@ -138,30 +132,30 @@ class RideMatchWSService {
             // console.log('[RideMatchWSService] Trip accepted successfully via socket');
 
             // Clear trip accept store to prevent loop
-            reset();
-          } else {
-            showNotification(
-              `Failed to ${data?.response?.toLowerCase().replace('_', ' ')} Trip after 3 retries`,
-              response?.message,
-              'danger',
-            );
-            // Attempt to cancel the trip after repeated accept failures
-            try {
-              const cancelReason = 'Trip accept failed by tracking engine attempted three times';
-              const api = new APIRequest();
-              const cancelResp = await api.request(`/publicrides/driver/v2/cancelTrip`, 'POST', {tripId:data?.trip_id, reason: cancelReason, isBeforePickup: true}, userInfo?.token);
-              if (cancelResp?.success) {
-                firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_cancelled_after_accept_retry');
-                showNotification('Trip Cancelled', cancelResp?.message, 'success');
-              } else {
-                showNotification('Failed to Cancel Trip', cancelResp?.message, 'danger');
-              }
-            } catch (cancelErr) {
-              showNotification('Failed to Cancel Trip', cancelErr?.message || String(cancelErr), 'danger');
-            }
-            // Reset store on failure too
-            reset();
-          }
+            // reset();
+          // } else {
+          //   showNotification(
+          //     `Failed to ${data?.response?.toLowerCase().replace('_', ' ')} Trip after 3 retries`,
+          //     response?.message,
+          //     'danger',
+          //   );
+          //   // Attempt to cancel the trip after repeated accept failures
+          //   try {
+          //     const cancelReason = 'Trip accept failed by tracking engine attempted three times';
+          //     const api = new APIRequest();
+          //     const cancelResp = await api.request(`/publicrides/driver/v2/cancelTrip`, 'POST', {tripId:data?.trip_id, reason: cancelReason, isBeforePickup: true}, userInfo?.token);
+          //     if (cancelResp?.success) {
+          //       firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_cancelled_after_accept_retry');
+          //       showNotification('Trip Cancelled', cancelResp?.message, 'success');
+          //     } else {
+          //       showNotification('Failed to Cancel Trip', cancelResp?.message, 'danger');
+          //     }
+          //   } catch (cancelErr) {
+          //     showNotification('Failed to Cancel Trip', cancelErr?.message || String(cancelErr), 'danger');
+          //   }
+          //   // Reset store on failure too
+          //   reset();
+          // }
         } else {
           // Handle reject response
           if (tripCancelReason) {
@@ -179,14 +173,14 @@ class RideMatchWSService {
             NeNativeModule.clearDirectionPoints();
             firebaselog_tripBooking('TB_Driver_Allocation(TB_DA)', 'TB_DA:trip_reject_inapp');
           }
-          reset();
+          // reset();
         }
       } else {
-        reset();
+        // reset();
       }
       tripAlert.stopAlertSound();
     } catch (err) {
-      reset();
+      // reset();
       tripAlert.stopAlertSound();
     } finally {
       useTripAcceptStore.getState().setLoading(false);
@@ -219,14 +213,10 @@ class RideMatchWSService {
   _attachListeners() {
     if (!this.socket || this._listenersAttached) return;
 
-    // Attach with stable function refs (bound in constructor)
     this.socket.on('trip_request', this.onTripRequest);
     this.socket.on('hotspot_update', this.onHotSpotRegionUpdate);
     this.socket.on('driver_response_received', this.onDriverReponseReceived);
     this.socket.on('cancel_ride_match', this.onRideMatchCancel);
-    // If you want only one driver_response per session, swap to:
-    // this.socket.once('driver_response_received', this.onDriverReponseReceived);
-
     this._listenersAttached = true;
   }
 

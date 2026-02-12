@@ -91,10 +91,14 @@ const TripAccept = () => {
     try {
       setLoading(true);
       const api = new APIRequest();
-      const response = await api.request(`/publicrides/driver/v2/getTrip?tripId=${tripId}`, 'GET', null,  userInfo?.user?.token);
+      const response = await api.request(`/publicrides/driver/v2/getTrip?tripId=${tripId}`, 'GET', null,  userInfo?.token);
       if (response?.success && response?.trip && response?.trip?.length > 0) {
         // console.log('Fetched trip details successfully:', response.trip[0]);
-        setTripDetails(response.trip[0]);
+        const freshTrip = response.trip[0];
+        setTripDetails(freshTrip);
+        if (!requestId && freshTrip?.request_id) {
+          useTripAcceptStore.setState({requestId: freshTrip.request_id});
+        }
         // console.log('alertedAt:', alertedAt, 'timerDuration:', timerDuration, 'currentTime:', Date.now());
         // const remainingTimeDuration = Math.floor(((alertedAt || 0) + timerDuration * 1000 - Date.now()) / 1000);
         // console.log('Remaining time duration:', remainingTimeDuration);
@@ -136,6 +140,7 @@ const TripAccept = () => {
       console.error('Error fetching trip data:', err);
       setError('An error occurred while fetching trip data');
       setTimeLeft(null);
+      setLoading(false);
     } finally {
       setLoading(false);
     }
@@ -203,6 +208,9 @@ const TripAccept = () => {
     if (!dataFromSocket) return
     setLoading(true);
     if (tripDetails && (tripDetails?.trip_id || tripId)) {
+      if (!requestId && tripDetails?.request_id) {
+        useTripAcceptStore.setState({requestId: tripDetails.request_id});
+      }
       // Normalize alertedAt to ms and timeout to seconds before computing
       let alertedAtMs = alertedAt;
       if (typeof alertedAtMs === 'string') {
@@ -303,8 +311,6 @@ const TripAccept = () => {
     inputRange: [0, 1],
     outputRange: ['0%', '100%'],
   });
-
-
   const handleAccept = async () => {
     setLoading(true);
     setShowRatingModal(false)

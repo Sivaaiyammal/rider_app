@@ -40,6 +40,8 @@ export default function DriverInitializationScreen() {
   const {setStartNavigation, setDisduration, setDirectionPoints} = useMapMarkerStore.getState();
 
   const setDriverConfig = useTripsStore(state => state.setDriverConfig);
+
+  const [appState, setAppState] = useState(AppState.currentState);
   
   const {
     setHasLocationPermission, setHasNotificationPermission,
@@ -139,33 +141,28 @@ export default function DriverInitializationScreen() {
     });
 
   const stateChange = useCallback(
-    nextAppState => {
+    async nextAppState => {
+      console.log('App state changed to:', nextAppState);
+      setAppState(nextAppState);
       if (
         nextAppState === 'active' &&
         token &&
-        isOnline 
+        isOnline
         // &&
         // lastFetchedTimeRef.current &&
         // new Date().getTime() - lastFetchedTimeRef.current > 60000
       ) {
-        refetchTrip();
-        refetchDriverConfig();
+        await Promise.all([refetchTrip(), refetchDriverConfig()]);
+        setLastFetchedTime(Date.now());
       }
     },
-    [token, isOnline, lastFetchedTime],
+    [token, isOnline, refetchTrip, refetchDriverConfig],
   );
 
   useEffect(() => {
-    const handleAppStateChange = nextAppState => {
-      stateChange(nextAppState);
-    };
-
-    // Add the event listener only once
-    const event = AppState.addEventListener('change', handleAppStateChange);
-
+    const subscription = AppState.addEventListener('change', stateChange);
     return () => {
-      // Remove the event listener when the component unmounts
-      event.remove();
+      subscription.remove();
     };
   }, [stateChange]);
 
@@ -175,7 +172,7 @@ export default function DriverInitializationScreen() {
     setTripDataError(tripError);
     setDriverConfigLoading(driverConfigLoading);
     setDriverConfigError(driverConfigError);
-  }, [tripError, tripLoading]);
+  }, [tripError, tripLoading, driverConfigError, driverConfigLoading]);
 
   const checkPermissions = useCallback(async () => {
     const hasNotificationPermissions = await CheckNotificationPermissions();
@@ -190,9 +187,10 @@ export default function DriverInitializationScreen() {
  
   // Update stores with fetched data
   useEffect(() => {
+    console.log('DriverInitializationScreen - tripData updated:', tripData);
     if (tripData) {
         setTripData(tripData);
-        // console.log('Fetched trip data:', tripData[0]?.status);
+        console.log('Fetched trip data:', tripData[0]?.status);
         // if (tripData[0]?.status === "MATCHED"){
         //      useTripAcceptStore.setState({tripDetails: tripData[0]});
         //      useTripAcceptStore.setState({tripId: tripData[0]?.trip_id});
@@ -212,6 +210,7 @@ export default function DriverInitializationScreen() {
             const tripId = tripData[0]._id;
             DataStore.storeData('activeTripId',tripId)
           }
+          setStackScreen('PublicDriverTrackingScreen')
         }  
         if (tripData[0]?.status === "CANCELLED" && tripData[0]?.paymentDetails) { 
          DataStore.storeData('isOngoingTrip', true)
@@ -257,7 +256,7 @@ export default function DriverInitializationScreen() {
     // if (driverDueDate) {
     //   setdriverDueDate(driverDueDate);
     // }
-  }, [tripData, driverConfig, userInfo?.token]);
+  }, [tripData, driverConfig, userInfo?.token, appState]);
 
   useEffect(() => {
      checkPermissions()
