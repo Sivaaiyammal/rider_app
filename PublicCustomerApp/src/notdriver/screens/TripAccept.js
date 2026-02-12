@@ -95,15 +95,31 @@ const TripAccept = () => {
         userInfo?.user?.token,
       );
       if (response?.success && response?.trip && response?.trip?.length > 0) {
-        console.log('Fetched trip details successfully:', response.trip[0]);
+        // console.log('Fetched trip details successfully:', response.trip[0]);
         setTripDetails(response.trip[0]);
-        console.log('alertedAt:', alertedAt, 'timerDuration:', timerDuration, 'currentTime:', Date.now());
-        const remainingTimeDuration = Math.floor(((alertedAt || 0) + timerDuration * 1000 - Date.now()) / 1000);
-        console.log('Remaining time duration:', remainingTimeDuration);
+        // console.log('alertedAt:', alertedAt, 'timerDuration:', timerDuration, 'currentTime:', Date.now());
+        // const remainingTimeDuration = Math.floor(((alertedAt || 0) + timerDuration * 1000 - Date.now()) / 1000);
+        // console.log('Remaining time duration:', remainingTimeDuration);
+          let alertedAtMs = alertedAt;
+      if (typeof alertedAtMs === 'string') {
+        alertedAtMs = parseInt(alertedAtMs, 10);
+      }
+      const timeoutSec = typeof timerDuration === 'string' ? parseInt(timerDuration, 10) : Number(timerDuration);
+      const remainingTimeDuration = Math.floor(((alertedAtMs || 0) + (timeoutSec || 15) * 1000 - Date.now()) / 1000);
+      const clamped = Math.max(0, remainingTimeDuration);
+
+      
+
+      // setTimeLeft(clamped);
       if (remainingTimeDuration <= 0) {
         setTimeLeft(0);
       } else {
-        setTimeLeft(remainingTimeDuration);
+        setTimeLeft(clamped);
+      }
+      if (appState === 'active') {
+        tripAlert.playAlertSound();
+      } else {
+        console.log('[RideMatchWSService] App in background; skipping alert sound');
       }
       } else {
         setError('Failed to fetch trip data');
@@ -184,7 +200,6 @@ const TripAccept = () => {
   }, [tripDetails?.estimatedDistance, stopsForDisplay]);
 
 
-  console.log('hari-->datafrom socket-->>', dataFromSocket);
   // Use trip details from socket store; compute timer without API
   useEffect(() => {
     if (!dataFromSocket) return
@@ -195,13 +210,9 @@ const TripAccept = () => {
       if (typeof alertedAtMs === 'string') {
         alertedAtMs = parseInt(alertedAtMs, 10);
       }
-      if (typeof alertedAtMs === 'number' && String(alertedAtMs).length <= 10) {
-        alertedAtMs = alertedAtMs * 1000; // convert seconds to ms
-      }
       const timeoutSec = typeof timerDuration === 'string' ? parseInt(timerDuration, 10) : Number(timerDuration);
       const remainingTimeDuration = Math.floor(((alertedAtMs || 0) + (timeoutSec || 15) * 1000 - Date.now()) / 1000);
       const clamped = Math.max(0, remainingTimeDuration);
-      console.log('Remaining time duration:-->> from socket', clamped, alertedAtMs, timeoutSec);
 
       setTimeLeft(clamped);
       setTimerPaused(false);
@@ -391,6 +402,20 @@ const TripAccept = () => {
     };
   }, [setLoading, reset]);
 
+
+  const getAlertedAt = () => {
+     if (typeof alertedAt === 'number') {
+      return alertedAt;
+    }
+    if (typeof alertedAt === 'string') {
+      const parsed = parseInt(alertedAt, 10);
+      if (!Number.isNaN(parsed)) {
+        return parsed;
+      }
+    }
+    return 0;
+  } 
+
   return (
     <>
       {loading && (
@@ -417,7 +442,7 @@ const TripAccept = () => {
               </View>
               <View style={styles.tripDetailsSubConatiner}>
                 <Text style={styles.tripDetailsSubConatinerTxt}>{t('booked_at')}</Text>
-                <Text style={styles.tripDetailsSubConatinerSubTxt}>{DateTimeFormatter.requiredDateFormat(bookingTime || alertedAt, 'hh:mm A')}</Text>
+                <Text style={styles.tripDetailsSubConatinerSubTxt}>{DateTimeFormatter.requiredDateFormat(bookingTime || getAlertedAt(), 'hh:mm A')}</Text>
               </View>
             </View>
             <AddressComponent

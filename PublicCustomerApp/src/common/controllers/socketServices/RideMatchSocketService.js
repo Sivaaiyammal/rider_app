@@ -76,8 +76,8 @@ class RideMatchWSService {
     console.log('[RideMatchWSService] Received trip_request via socket:', data);
     const {setStackScreen, stackScreen} = useStackScreenStore.getState();
     if (data?.type === 'trip_request') {
-      useTripAcceptStore.setState({tripDetails: data.data});
       useTripAcceptStore.setState({dataFromSocket: true});
+      useTripAcceptStore.setState({tripDetails: data.data});
       useTripAcceptStore.setState({tripId: data.data?.trip_id});
       useTripAcceptStore.setState({currentFare: data.data?.fare});
       useTripAcceptStore.setState({requestId: data.data?.request_id});
