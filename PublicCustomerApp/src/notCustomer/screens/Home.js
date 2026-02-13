@@ -74,6 +74,7 @@ import { consumeUserStatsPrefetch } from '../controllers/UserStatsPrefetch';
 import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore.js';
 import { setActive } from 'react-native-sound';
 import GlobalContext from '../../context/GlobalContext.js';
+import useUserStore from '../../common/store/useUserStore.js';
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -177,6 +178,7 @@ const Home = () => {
   const lastProcessedLocationRef = useRef(null); // Track last processed location to avoid rerenders
   const isCheckingRideRef = useRef(false);
   const {setActiveTripId ,activeTripId} = useUserInfoStore();
+  const {setIsDev} = useUserStore();
   
  
   const stableDebounceCallback = useRef((lng, lat) => {
@@ -543,6 +545,7 @@ const Home = () => {
         }
 
 
+
         if(Response?.userStats?.deviceMeta?.buildNumber){
           const lastBuildNumber = parseInt(Response?.userStats?.deviceMeta?.buildNumber);
           if(Response?.appConfig?.FORCE_UPDATE){
@@ -557,7 +560,13 @@ const Home = () => {
             }
           
         }
+
+       
       }
+       if(Response?.userStats?.dev){
+          console.log("User is identified as a developer, disabling firebase Events");
+          setIsDev(true);
+        }
 
 
         if (Response?.userStats?.fcmToken) {
