@@ -784,7 +784,7 @@ module.exports = function (CLASS) {
           
                 if (driverData && driverData.documents?.driverPhoto) {
                     
-                    driverData.driverPhotoImg = driverData.documents.driverPhoto;
+                    driverData.driverPhoto= driverData.documents.driverPhoto;
                     delete driverData.documents;
                 }
                 
@@ -817,7 +817,7 @@ module.exports = function (CLASS) {
              
             if(driver?.documents?.driverPhoto){
                 
-                driverInfo.driverPhotoImg = driver?.documents?.driverPhoto;
+                driverInfo.driverPhoto = driver?.documents?.driverPhoto;
             }
 
           
@@ -1231,7 +1231,7 @@ module.exports = function (CLASS) {
                 
                 if (driver?.documents?.driverPhoto) {
                    
-                    driverInfo.driverPhotoImg = driver?.documents?.driverPhoto;
+                    driverInfo.driverPhoto = driver?.documents?.driverPhoto;
                 }
                 
                 trip.driverInfo = driverInfo;
