@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Modal, View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { GlobalContext } from '../../context/GlobalContext';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +23,16 @@ const GlobalModal = () => {
   const imageSource = getImageSource(modalImage);
   const { t  } = useTranslation();
   const textColor = '#111111';
+
+  useEffect(() => {
+    if (!modalVisible) {
+      return undefined;
+    }
+    const timerId = setTimeout(() => {
+      hideModal();
+    }, 3000);
+    return () => clearTimeout(timerId);
+  }, [modalVisible, hideModal]);
 
   return (
     <Modal
