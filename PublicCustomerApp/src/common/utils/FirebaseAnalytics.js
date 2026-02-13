@@ -1,5 +1,6 @@
 // utils/FirebaseAnalytics.js
 import {getAnalytics, logEvent as firebaseLogEvent} from '@react-native-firebase/analytics';
+import useUserStore from '../store/useUserStore';
 
 const analyticsInstance = getAnalytics();
 
@@ -10,6 +11,10 @@ const analyticsInstance = getAnalytics();
  * @returns {Promise<void>}
  */
 export const logFirebaseEvent = async (eventName, params = {}) => {
+  const {isDev} = useUserStore.getState();
+  if (isDev) {
+    return;
+  }
   try {
     await firebaseLogEvent(analyticsInstance, eventName, params);
     // console.log(`Firebase Analytics event logged: ${eventName}`);

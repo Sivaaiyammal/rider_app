@@ -6,6 +6,9 @@ const useUserStore = create(set => ({
 
   userInfo: null,
   setUserInfo: userInfo => set({userInfo}),
+
+  isDev:false,
+  setIsDev: isDev => set({isDev}),
 }));
 
 export default useUserStore;
