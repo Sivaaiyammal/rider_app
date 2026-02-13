@@ -757,7 +757,8 @@ module.exports = function (CLASS) {
             totalRides: PassengerDetails?.stats?.totalTrips || 0,
             favPlaces: PassengerDetails?.favPlaces || [],
             fcmToken: PassengerDetails?.fcmToken || null,
-            deviceMeta: PassengerDetails?.deviceMeta || null
+            deviceMeta: PassengerDetails?.deviceMeta || null,
+            dev:PassengerDetails?.dev || false
         }
 
         const userStatsFromTrip = await Trip.getPassengerStats(passangerId);
