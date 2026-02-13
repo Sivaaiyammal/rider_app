@@ -6,7 +6,7 @@ const { getUserSocketIds } = require("../../Services/WebsocketUtilities");
 const OTP = require("../../Controllers/OTP");
 const PushNotifiationService = require("../../Services/PushNotification/PushNotifiationService");
 const NOTPushNotifiationService = require("../../Services/PushNotification/NOTPushNotifiationService");
-const { sendTripCancelledByPassangerMessage, sendTripCancelledByDriverMessage, sendPickupLocationChangeAlert, AcceptedLocationChangeAlert, RejectedLocationChangeAlert } = require("../../Services/PushNotification/Messages");
+const { sendTripCancelledByPassangerMessage,sendTripCancelledByPassangerMessageafterPickup,sendTripCancelledByDriverMessageafterPickup, sendTripCancelledByDriverMessage, sendPickupLocationChangeAlert, AcceptedLocationChangeAlert, RejectedLocationChangeAlert } = require("../../Services/PushNotification/Messages");
 const { sendTripDriverAssignedMessage, sendAlertPassangerPickupMessagewithOTP, sendTripDriverAssignedMessageWithOTP } = require("../../Services/PushNotification/publicRideCustomerNotification");
 const GeneratePresignedUrl = require("../../Controllers/GeneratePresignedUrl");
 const FareConfigs = require("../../Models/FareConfigs");    
@@ -330,7 +330,7 @@ module.exports = function (CLASS) {
                 if(req.useNotPushNotification){
                     await NOTPushNotifiationService.sendPushNotification(
                         TripPassenger.fcmToken?.token,
-                        sendTripCancelledByDriverMessage(TripDriver.name),
+                        sendTripCancelledByDriverMessageafterPickup(TripDriver.name),
                         null,
                         "high",
                         { tripId: String(trip._id), "trip_status": 'CANCELLED' }
@@ -339,7 +339,7 @@ module.exports = function (CLASS) {
                 }else{
                     await PushNotifiationService.sendPushNotification(
                         TripPassenger.fcmToken?.token,
-                        sendTripCancelledByDriverMessage(TripDriver.name),
+                        sendTripCancelledByDriverMessageafterPickup(TripDriver.name),
                         null,
                         "high",
                         { tripId: String(trip._id), "trip_status": 'CANCELLED' }
@@ -503,7 +503,7 @@ module.exports = function (CLASS) {
                     if(req.useNotPushNotification){
                         await NOTPushNotifiationService.sendPushNotification(
                             TripDriver.fcmToken?.token,
-                            sendTripCancelledByPassangerMessage(TripPassenger.name),
+                            sendTripCancelledByPassangerMessageafterPickup(TripPassenger.name),
                             null,
                             "high",
                             { tripId: String(trip._id), isOnGoingTrip: "true", totalFare: JSON.stringify(finalFare)}
@@ -512,7 +512,7 @@ module.exports = function (CLASS) {
                     }else{
                         await PushNotifiationService.sendPushNotification(
                             TripDriver.fcmToken?.token,
-                            sendTripCancelledByPassangerMessage(TripPassenger.name),
+                            sendTripCancelledByPassangerMessageafterPickup(TripPassenger.name),
                             null,
                             "high",
                             { tripId: String(trip._id), isOnGoingTrip: "true", totalFare: JSON.stringify(finalFare)}
