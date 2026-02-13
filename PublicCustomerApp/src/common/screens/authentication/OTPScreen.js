@@ -17,7 +17,6 @@ import { GlobalContext } from '../../../context/GlobalContext';
 import useRideMatching from '../../../notCustomer/hooks/useRideMatching';
 import OTPInput from '../../../common/components/OTPInput';
 import AdaptiveText from '../../../notCustomer/components/Common/AdaptiveText';
-import { prefetchUserStats } from '../../../notCustomer/controllers/UserStatsPrefetch';
 import useUserStore from '../../store/useUserStore';
 import { firebaselog_userLogin } from '../../utils/FirebaseAnalytics';
 // Utility function to mask phone number
@@ -32,7 +31,7 @@ const maskPhoneNumber = (phoneNumber) => {
 };
 
 const OTPScreen = ({route}) => {
-  const {userRole, setUserInfo} = useUserStore();
+  const {userRole, setUserInfo, setIsDev} = useUserStore();
   const {t} = useTranslation();
   const navigation = useNavigation();
   const {addListener, addRideMatchListener, addNOTSocketListener} = useContext(GlobalContext);
@@ -136,6 +135,7 @@ const OTPScreen = ({route}) => {
         setID(user._id);
         setUserdetails(user);
         setUserInfo(user);
+        setIsDev(data?.user?.dev);
         await DataStore.storeData('access_token', user?.token);
         addNOTSocketListener(user?.token);
         addRideMatchListener(user?._id);

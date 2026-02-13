@@ -142,7 +142,6 @@ export default function DriverInitializationScreen() {
 
   const stateChange = useCallback(
     async nextAppState => {
-      console.log('App state changed to:', nextAppState);
       setAppState(nextAppState);
       if (
         nextAppState === 'active' &&
@@ -187,10 +186,8 @@ export default function DriverInitializationScreen() {
  
   // Update stores with fetched data
   useEffect(() => {
-    console.log('DriverInitializationScreen - tripData updated:', tripData);
     if (tripData) {
         setTripData(tripData);
-        console.log('Fetched trip data:', tripData[0]?.status);
         // if (tripData[0]?.status === "MATCHED"){
         //      useTripAcceptStore.setState({tripDetails: tripData[0]});
         //      useTripAcceptStore.setState({tripId: tripData[0]?.trip_id});

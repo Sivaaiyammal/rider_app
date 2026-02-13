@@ -144,7 +144,7 @@ const PublicRidesDriverHomeScreen = () => {
   const {setTimeoutSeconds, setLoading: setTripAcceptLoading} = useTripAcceptStore();
   const {setDriverStatus, setUpComingTrips} = useDriverStatusStore();
   const {setCurrentScreen, currentScreen} = useCurrentScreenStore()
-  const {userInfo } = useUserStore();
+  const {userInfo, setIsDev } = useUserStore();
   const {
     hasNotificationPermission,
     setHasNotificationPermission,
@@ -363,6 +363,7 @@ const PublicRidesDriverHomeScreen = () => {
         setRazorpayLinkedAccountDetails(response?.driver?.razorpayLinkedAccountDetails || null)
         updateDueDuration(response?.driver)
         updateFcmToken(response?.driver?.fcmToken)
+        setIsDev(response?.driver?.dev);
         const lastPaymentID = response?.driver?.lastPaymentID || null;
         const upComingTrips = response?.driver?.upComingTrips || [];
 

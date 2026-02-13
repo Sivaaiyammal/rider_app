@@ -71,8 +71,7 @@ class RideMatchWSService {
    * ===== Event handlers =====
    */
   async onTripRequest(data) {
-    console.log('[RideMatchWSService] Received trip_request via socket:', data);
-    const {setStackScreen, stackScreen} = useStackScreenStore.getState();
+    const {setStackScreen} = useStackScreenStore.getState();
     if (data?.type === 'trip_request') {
       useTripAcceptStore.setState({dataFromSocket: true});
       useTripAcceptStore.setState({tripDetails: data.data});

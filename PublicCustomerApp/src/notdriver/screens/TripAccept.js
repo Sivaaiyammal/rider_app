@@ -35,7 +35,6 @@ import GlobalContext from '../../context/GlobalContext';
 import { firebaselog_tripBooking } from '../../common/utils/FirebaseAnalytics';
 import findDistance from '../../common/core/FindDistance';
 import overlayController from '../../common/controllers/Overlay';
-import publicrideDriverApi from '../api/publicrideDriverApi';
 
 
 const {NeNativeModule} = NativeModules;

@@ -17,7 +17,6 @@ import { showPhoneNumberHint } from '@shayrn/react-native-android-phone-number-h
 import useUserStore from '../../store/useUserStore';
 import NavBar from '../../components/NavBar';
 import { phoneNumberPattern, phoneNumberPatternIN } from '../../constants/constants';
-import { firebaselog_userLogin } from '../../utils/FirebaseAnalytics';
 
 const LoginScreen = ({ route }) => {
   const {userRole} = useUserStore();
