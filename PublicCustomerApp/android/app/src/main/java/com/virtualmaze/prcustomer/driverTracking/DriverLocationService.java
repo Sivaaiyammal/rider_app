@@ -127,6 +127,13 @@ public class DriverLocationService extends Service {
         super.onCreate();
         instance = this;
 
+        if (!hasLocationRuntimePermission()) {
+            Log.e(TAG, "Location permissions missing; aborting service start");
+            emitServiceError("missing_permissions", "Location permissions are required to start driver tracking");
+            stopSelf();
+            return;
+        }
+
         Notification early = getNotification(
                 "Initializing...", "Please Check GPS...",
                 "0.0 km", "0 mins", Color.GRAY, "unknown"
@@ -134,14 +141,6 @@ public class DriverLocationService extends Service {
         currentNotification = early;
 
         if (!promoteToForeground(early)) {
-            stopSelf();
-            return;
-        }
-
-        if (!hasLocationRuntimePermission()) {
-            Log.e(TAG, "Location permissions missing; aborting service start");
-            emitServiceError("missing_permissions", "Location permissions are required to start driver tracking");
-            stopForegroundSafe();
             stopSelf();
             return;
         }
@@ -231,6 +230,10 @@ public class DriverLocationService extends Service {
                 startForeground(FOREGROUND_NOTIFICATION_ID, notification);
             }
             return true;
+        } catch (SecurityException se) {
+            Log.e(TAG, "FGS start blocked by security exception", se);
+            emitServiceError("start_blocked", "Unable to start foreground service due to missing permission");
+            return false;
         } catch (RuntimeException e) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
                     && e instanceof ForegroundServiceStartNotAllowedException) {
@@ -238,7 +241,9 @@ public class DriverLocationService extends Service {
                 emitServiceError("start_not_allowed", "Unable to promote driver tracking service to foreground");
                 return false;
             }
-            throw e;
+            Log.e(TAG, "Foreground promotion failed", e);
+            emitServiceError("start_failed", "Driver tracking service could not enter foreground");
+            return false;
         }
     }
 

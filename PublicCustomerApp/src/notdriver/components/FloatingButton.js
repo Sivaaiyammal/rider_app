@@ -33,6 +33,7 @@ import { height } from '../../common/utils/scalingutils';
 import { useTranslation } from 'react-i18next';
 import overlayController from '../../common/controllers/Overlay';
 import RideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
+import tripAlert from '../../common/controllers/TripAlert';
 
 const FloatingButton = ({layOutHeight}) => {
   const {driverStatus, setDriverStatus} = useDriverStatusStore();
@@ -150,6 +151,7 @@ const FloatingButton = ({layOutHeight}) => {
             if (overlayCheckSupported && hasOverlayPermission) {
               overlayController.stopOverlay();
             }
+            tripAlert.stopAlertSound()
           }
           setDriverStatus(status)
        } else {
