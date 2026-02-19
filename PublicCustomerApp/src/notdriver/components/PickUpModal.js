@@ -77,12 +77,30 @@ const PickUpModal = ({
             keyboardType={'numeric'}
           /> */}
           <OTPInput
-            inputCount={4}
-            value={otpCode}
-            onChange={handleValueChange}
-            // onComplete={()=>_onConfirmPress(otpCode)}
-            keyboardType={'numeric'}
-          />
+                    inputCount={4}
+                    onChange={handleValueChange}
+                    // onComplete={(code) => setOtpInput(code)}  // your effect will auto-verify when length===6
+                    autoFocus
+                    keyboardType="number-pad"
+                    textContentType="oneTimeCode"
+                    autoComplete="sms-otp"
+                    focusedBorderColor={Colors.blue_xxdark}
+                    tintColor={[
+                      Colors.grey_xdark,
+                      Colors.grey_xdark ,
+                      Colors.grey_xdark,
+                      Colors.grey_xdark,
+                    ]}
+                    inputStyle={{
+                      width: 40,
+                      height: 60,
+                      borderWidth: 1,    
+                      margin: 5,
+                      borderRadius: 5,
+                      color: Colors.black,
+                    }}
+                />
+       
         {(otpCode.length !== 4 && otpError) && <Text style={styles.otpError}>{otpError}</Text>}
         </View>
     
