@@ -195,12 +195,19 @@ class Passanger {
         const result = await Mongo.updateOne(COLLECTION_NAME, { _id: new ObjectId(passangerId) }, { latestTripId: latestTripId });
         return result;
     }
-    static updatePassangerCompletedTripsandTspends = async (passangerId, tripFare) => {
-        // Use updateOneRaw to allow update operators
+    static updatePassangerCompletedTripsandTspends = async (passangerId, tripFare, status) => {
+        console.log({ passangerId, tripFare, status }, "Updating passanger completed trips and total spends")
+        // Update completedTrips if status is 'completed', else update divergedTrips
+        let updateQuery = { $inc: { 'stats.totalSpends': tripFare }, $set: { 'stats.cancelTripOccurance': 0 } };
+        if (status === 'COMPLETED') {
+            updateQuery.$inc['stats.completedTrips'] = 1;
+        } else {
+            updateQuery.$inc['stats.divergedTrips'] = 1;
+        }
         const result = await Mongo.updateOneRaw(
             COLLECTION_NAME,
             { _id: new ObjectId(passangerId) },
-            { $inc: { 'stats.completedTrips': 1, 'stats.totalSpends': tripFare }, $set: { 'stats.cancelTripOccurance': 0 } }
+            updateQuery
         );
         return result;
     }

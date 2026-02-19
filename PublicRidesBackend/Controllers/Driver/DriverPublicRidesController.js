@@ -29,6 +29,7 @@ const RazorPayLinking = require("./RazorPayLinking");
 const FinalDueCalculator = require("../../Scripts/calculateFinalDue");
 const VehicleVerifierMParivahan = require("../Mparivahan/VerifyVehicle");
 const { buildMonthSegments } = require("../../Utils/WorkingHoursUtils");
+const whatsappService = require("../../Services/WhatsApp/WhatsAppService");
 
 async function sendPassangerSocketEvents(passangerId, socketService, trip, fareData) {
     const passangerSocketIds = await getUserSocketIds(passangerId);
@@ -926,7 +927,7 @@ module.exports = function (CLASS) {
             }
             await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true });
             await PublicRidesPayment.updatePassangerPaymentStatus(tripId, paymentMethod);
-            await Passanger.updatePassangerCompletedTripsandTspends(passenger?._id, fareDetails?.fare);
+            await Passanger.updatePassangerCompletedTripsandTspends(passenger?._id, fareDetails?.fare, status);
             trip.status = status;
             trip.tripFare = fareDetails?.fare;
 
@@ -945,6 +946,12 @@ module.exports = function (CLASS) {
                     await PushNotifiationService.sendPushNotification(passenger.fcmToken.token, sendCompletedTripMessagePaymentCompleted(fareDetails?.fare), null, "high", { tripId: String(trip._id), "trip_status": status });
                 }
                 
+            }
+
+            if (status === "COMPLETED" && passenger?.stats?.completedTrips === 1 ) { 
+                whatsappService.sendReviewMessage({ name: passenger.name, phone: passenger.phone, fare: fareDetails?.fare }).catch(err => {
+                    console.log(err, "Error sending WhatsApp review message")
+                })
             }
            
             res.json({ success: true, message: "Trip and Payment Completed", nextDueDate: role === 'dco' ? nextDueDate : null, dueCycle: role === 'dco' ? dueCycle : null });

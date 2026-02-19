@@ -116,11 +116,11 @@ const TripAccept = () => {
         setTimeLeft(0);
       } else {
         setTimeLeft(clamped);
-      }
-      if (appState === 'active') {
+         if (appState === 'active') {
         tripAlert.playAlertSound();
       } else {
         console.log('[RideMatchWSService] App in background; skipping alert sound');
+      }
       }
       } else {
         setError('Failed to fetch trip data');
