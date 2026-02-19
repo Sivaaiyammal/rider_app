@@ -33,13 +33,23 @@ const sendTripCancelledMessage = (name) => {
     return { title, body: message }
 }
 const sendTripCancelledByPassangerMessage = (name) => {
-    const title = 'Trip Cancelled By Passanger'
+    const title = 'Trip Cancelled By Passenger'
     const message = `Your trip has been cancelled by ${name}`
+    return { title, body: message }
+}
+const sendTripCancelledByPassangerMessageafterPickup = (name) => {
+    const title = 'Trip Cancelled By Passenger After Pickup'
+    const message = `Your trip has been cancelled by ${name}. Please contact support for further assistance.`
     return { title, body: message }
 }
 const sendTripCancelledByDriverMessage = (name) => {
     const title = 'Trip Cancelled By Driver'
     const message = `Your trip has been cancelled by ${name}`
+    return { title, body: message }
+}
+const sendTripCancelledByDriverMessageafterPickup = (name) => {
+    const title = 'Trip Cancelled By Driver After Pickup'
+    const message = `Your trip has been cancelled by ${name}. Please contact support for further assistance.`
     return { title, body: message }
 }
 const sendTripDriverAssignedMessage = (name) => {
@@ -248,6 +258,8 @@ module.exports = {
     getSubscriptionActivatedMessage,
     getSubscriptionExpiredMessage,
     getSimExpiredMessage,
-    getAdminExpirySummaryMessage
+    getAdminExpirySummaryMessage,
+    sendTripCancelledByPassangerMessageafterPickup,
+    sendTripCancelledByDriverMessageafterPickup,
 }
 
