@@ -45,7 +45,6 @@ const YourRidesScreen = () => {
     const { Rides, setRides } = useRideHistoryStore();
     const { userdetails } = useUserInfoStore();
     const userToken = userdetails?.token || null;
-    const driverPhotoCacheRef = useRef({});
     const [driverPhotoMap, setDriverPhotoMap] = useState({});
     const [driverPhotoLoadingMap, setDriverPhotoLoadingMap] = useState({});
     
@@ -186,42 +185,13 @@ const YourRidesScreen = () => {
         }
 
         const pendingKeys = new Set();
-        const cachedResults = {};
-
         Rides.forEach(ride => {
             const { key } = extractDriverPhotoKey(ride?.driverInfo?.driverPhoto);
-            if (!key) {
-                return;
-            }
-            const cached = driverPhotoCacheRef.current[key];
-            if (cached && cached.token === userToken) {
-                cachedResults[key] = cached.url;
-                return;
-            }
-            if (!userToken) {
-                driverPhotoCacheRef.current[key] = { url: null, token: null };
-                cachedResults[key] = null;
-                return;
-            }
-            pendingKeys.add(key);
+            if (key) pendingKeys.add(key);
         });
 
-        if (Object.keys(cachedResults).length > 0) {
-            setDriverPhotoMap(prev => ({ ...prev, ...cachedResults }));
-        }
-
         if (!userToken || pendingKeys.size === 0) {
-            if (!userToken) {
-                setDriverPhotoLoadingMap({});
-            } else if (pendingKeys.size === 0 && Object.keys(cachedResults).length > 0) {
-                setDriverPhotoLoadingMap(prev => {
-                    const updated = { ...prev };
-                    Object.keys(cachedResults).forEach(key => {
-                        updated[key] = false;
-                    });
-                    return updated;
-                });
-            }
+            if (!userToken) setDriverPhotoLoadingMap({});
             return undefined;
         }
 
@@ -239,7 +209,6 @@ const YourRidesScreen = () => {
                 keysToFetch.map(async key => {
                     try {
                         const url = await getPresignedImageUrl(key, userToken);
-                        console.log(`Fetched presigned URL for key ${key}: ${url}`);
                         return { key, url: url || null };
                     } catch (error) {
                         return { key, url: null };
@@ -247,13 +216,10 @@ const YourRidesScreen = () => {
                 })
             );
 
-            if (cancelled) {
-                return;
-            }
+            if (cancelled) return;
 
             const resolved = {};
             results.forEach(({ key, url }) => {
-                driverPhotoCacheRef.current[key] = { url, token: userToken };
                 resolved[key] = url;
             });
 

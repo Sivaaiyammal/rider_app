@@ -19,6 +19,7 @@ import SkeletonLoader from '../../../components/Loaders/SkeletonLoader';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import usePaymentStore from '../store/usePaymentStore';
+import { getPresignedImageUrl } from '../../../../common/utils/getPresignedImageUrl';
 import ScrollHintChevron from '../../../components/Common/ScrollHintChevron';
 import { createOrder } from '../../../API/EndPoints/EndPoints';
 import RazorpayCheckout from 'react-native-razorpay';
@@ -37,6 +38,29 @@ const PaymentScreen = ({lastTripId=null}) => {
 
   const {t} = useTranslation();
   const {currentTripId,tripStatus,rideId,tripFare,tripDistance,tripDuration,driverDetails,vehicleDetails,paymentMethod,isLoading,setTripDetails,tripStops,fareDetails,bookingTime,supplierDetails,recipientDetails,adminDetails,paymentStatus,invoiceId, razorPayAccountId } = usePaymentStore();
+  const { userdetails } = useUserInfoStore();
+  const userToken = userdetails?.token || null;
+  const [driverPhotoUri, setDriverPhotoUri] = useState(null);
+
+  useEffect(() => {
+    let isActive = true;
+    const fetchPhoto = async () => {
+      const trimmed = driverDetails?.driverPhoto?.trim();
+      if (!trimmed || !userToken) {
+        setDriverPhotoUri(null);
+        return;
+      }
+      const normalizedKey = trimmed.replace(/^https?:\/\/[^/]+\/?/, '').replace(/^\//, '');
+      try {
+        const signedUrl = await getPresignedImageUrl(normalizedKey, userToken);
+        if (isActive) setDriverPhotoUri(signedUrl || null);
+      } catch {
+        if (isActive) setDriverPhotoUri(null);
+      }
+    };
+    fetchPhoto();
+    return () => { isActive = false; };
+  }, [driverDetails?.driverPhoto, userToken]);
   const [showInvoice, setShowInvoice] = useState(false);
   const screenHeight = Dimensions.get('window').height;
   const overlayAnim = useRef(new Animated.Value(screenHeight)).current;
@@ -361,7 +385,7 @@ const PaymentScreen = ({lastTripId=null}) => {
          
           <TripMetaInfo date={formatDate(bookingTime)} tripId={rideId} />
           <AddressContainer directions={tripStops}  completed={true}/>
-          <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverDetails?.driverPhoto} vehicleType={driverDetails?.vehicleType} vehicleBrand={driverDetails?.vehicleBrand} vehicleModel={driverDetails?.vehicleModel} vehicleNumber={driverDetails?.vehicleNumber} />
+          <TripPersonVehicle driverName={driverDetails?.driverName} driverPhoto={driverPhotoUri} vehicleType={driverDetails?.vehicleType} vehicleBrand={driverDetails?.vehicleBrand} vehicleModel={driverDetails?.vehicleModel} vehicleNumber={driverDetails?.vehicleNumber} />
           <View style={{marginVertical:15}}> 
             <TripStats totalDistance={tripDistance} totalDuration={tripDuration} totalFare={displayedFare} />
           </View>
