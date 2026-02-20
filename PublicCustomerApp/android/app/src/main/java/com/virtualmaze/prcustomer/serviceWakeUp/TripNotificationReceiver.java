@@ -44,8 +44,13 @@ public class TripNotificationReceiver extends BroadcastReceiver {
         }
 
         JSONObject payload = bundleToJson(extras);
-        Log.i(TAG, "Broadcast trip payload for tripId=" + tripId + " -> " + payload);
-        TripNotificationDispatcher.dispatch(context, tripId, payload);
+        String title = payload.optString("title", "");
+        if ("new trip request".equalsIgnoreCase(title)) {
+            Log.i(TAG, "Broadcast trip payload for tripId=" + tripId + " -> " + payload);
+            TripNotificationDispatcher.dispatch(context, tripId, payload);
+        } else {
+            Log.i(TAG, "TripNotificationReceiver ignored broadcast: title is not 'new trip request' (title=" + title + ")");
+        }
     }
 
     private String extractTripId(Bundle extras) {

@@ -20,6 +20,7 @@ public class FcmServiceWakeUp extends FirebaseMessagingService {
 
   private static final String TAG = "FcmServiceWakeUp";
   private static final String TITLE_WAKEUP = "WAKEUP_BG_SERVICE";
+  private static final String TITLE_TRIP_NOTIFICATION = "New Trip Request";
 
   @Override
   public void onMessageReceived(RemoteMessage msg) {
@@ -41,7 +42,7 @@ public class FcmServiceWakeUp extends FirebaseMessagingService {
       return;
     }
 
-    if (data != null) {
+    if (TITLE_TRIP_NOTIFICATION.equals(title)) {
       String tripId = data.get("tripId");
       if (tripId != null && !tripId.trim().isEmpty()) {
         Log.d(TAG, "Dispatching trip notification for tripId=" + tripId);
