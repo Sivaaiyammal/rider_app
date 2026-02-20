@@ -1,5 +1,5 @@
 import {StyleSheet, Text, View, TouchableOpacity, ActivityIndicator} from 'react-native';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {use, useCallback, useEffect, useMemo, useState} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import Marker from '../../map/Marker';
@@ -9,6 +9,8 @@ import { useMapMarkerStore } from '../../store/useMapMarkerStore';
 import { checkFineLocationPermissions, RequestFineLocationPermission } from '../../controllers/PermissionHandler';
 import { showNotification } from './showNotification';
 import { useTranslation } from 'react-i18next';
+import useHotSpotStore from '../../../notdriver/store/useHotSpotStore';
+import { height } from '../../utils/scalingutils';
 
 const mapIconSet = [
   {
@@ -68,10 +70,12 @@ function GetDevicesBoundingBox(devices) {
 }
 
 const TrackingMapIcons = props => {
-  const {markersData, isDriverLocation, currentLocationCallBack, refreshDirections,} = props;
+  const {markersData, isDriverLocation, currentLocationCallBack, refreshDirections, onlyLocation, ishomeDriver} = props;
   const {setMapLocation, setMapBounds, setUserLocation, setMapMarkers,mapMarkers} = useMapMarkerStore();
   const [loading, setLoading] = useState(false)
   const {t} = useTranslation();
+
+  const {hotSportMarkers} = useHotSpotStore()
 
   const setUserMarker  = (latitude, longitude) => {
     setUserLocation([latitude, longitude])
@@ -124,11 +128,43 @@ const TrackingMapIcons = props => {
     getUserLocation();
   };
 
+  const fitToHotSpot = (markers) => {
+   if (!markers || markers?.length === 1) {
+    return null;
+  }
+  let minLat = Number.MAX_VALUE;
+  let maxLat = Number.MIN_VALUE;
+  let minLon = Number.MAX_VALUE;
+  let maxLon = Number.MIN_VALUE;
+
+  markers?.map(marker => {
+    if (!marker) return;
+    if (marker) {
+      const {latitude, longitude} = marker;
+      if (latitude < minLat) minLat = latitude;
+      if (latitude > maxLat) maxLat = latitude;
+      if (longitude < minLon) minLon = longitude;
+      if (longitude > maxLon) maxLon = longitude;
+    }
+  });
+
+  if (
+    minLat === Number.MAX_VALUE ||
+    maxLat === Number.MIN_VALUE ||
+    minLon === Number.MAX_VALUE ||
+    maxLon === Number.MIN_VALUE
+  ) {
+    return null;
+  }
+
+  return [minLon, minLat, maxLon, maxLat];
+  }
+
   const fitToBounds = useCallback(async () => {
-    const bBox = GetDevicesBoundingBox(markersData);
+    const bBox = ishomeDriver? fitToHotSpot(hotSportMarkers) : GetDevicesBoundingBox(markersData);
     if (!bBox) return showNotification(t['unable_to_zoom'], '', 'info');
-    setMapBounds([bBox, [70, 70, 100, 250]]);
-  }, [markersData?.locations]);
+    setMapBounds([bBox, [450, height *0.5, 450, height *0.4]]);
+  }, [markersData?.locations, hotSportMarkers]);
 
   const mapIconsPress = item => {
     if (item.name === 'currentLocation') {
@@ -140,9 +176,19 @@ const TrackingMapIcons = props => {
     }
   };
 
-  const mapSet = !refreshDirections || refreshDirections === null ? mapIconSet.filter(item => item?.name !== 'refreshDirections') : mapIconSet;
+  const mapSet = () => {
+    if (onlyLocation) {
+      // Hide both FitToMarkers and refreshDirections
+      return mapIconSet.filter(item => item?.name !== 'refreshDirections' && item?.name !== 'FitToMarkers')
+    } else if (!refreshDirections || refreshDirections === null) {
+      // Only hide refreshDirections
+      return mapIconSet.filter(item => item?.name !== 'refreshDirections')
+    } else {
+      return mapIconSet
+    }
+  }
 
-  return mapSet.map(item => {
+  return mapSet().map(item => {
     return (
       <TouchableOpacity
         key={item.id}
