@@ -51,10 +51,11 @@ const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,t
     return isCoupon ? `-₹${parseFloat(amount).toFixed(2)}` : `₹${parseFloat(amount).toFixed(2)}`;
   };
 
-  const formatDuration = (minutes) => {
-    if (minutes === null || minutes === undefined || minutes < 0) return '0 Mins';
-    return `${minutes} Mins`;
-  };
+ const formatDuration = (minutes) => {
+  if (minutes === null || minutes === undefined || minutes < 0) return '0 Min';
+  if (minutes < 1) return '1 Min';
+  return `${DateTimeFormatter.formatMinutesToDuration(minutes)}`;
+};
 
   const formatDistance = (km) => {
     if (km === null || km === undefined || km < 0) return '0.00 Km';

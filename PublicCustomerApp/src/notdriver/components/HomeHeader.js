@@ -72,7 +72,7 @@ const HomeHeader = ({shouldShowDueAlert}) => {
                   </View>
                    <View style={headerStyles.summaryCard}>
                    <TotalEarnings />
-                    <Text style={headerStyles.valueTxt}>{totalEarnings ? totalEarnings?.toFixed(2) : 0}</Text>
+                    <Text style={headerStyles.valueTxt}>{'₹'}{totalEarnings ? totalEarnings?.toFixed(2) : 0}</Text>
                     <Text style={headerStyles.nameTxt}>{'Today Earnings'}</Text>
                   </View>
             </View>

@@ -26,9 +26,10 @@ const formatAadhaar = value => {
   return digits.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
 };
 
-const DriverProofDoc = () => {
+const DriverProofDoc = (props) => {
   const { t } = useTranslation();
   const { goBack } = useStackScreenStore();
+  const {isEdit} = props
   const {
     driverInfo,
     setDriverInfo,
@@ -49,6 +50,8 @@ const DriverProofDoc = () => {
       panDocEntry,
     };
   });
+
+  console.log('DriverProofDoc render', isEdit);
   const { userInfo } = useUserStore();
 
   const {setDocumentsCompleteStatus} = usePublicDriverStore();
@@ -290,16 +293,18 @@ const DriverProofDoc = () => {
         scannerTitle={t('upload_aadhaar_card', { defaultValue: 'Upload or capture Aadhaar card' })}
         containerStyle={styles.scannerContainer}
         initialImage={aadhaarInitialImage}
-        disabled={uploading.aadhar}
+        disabled={uploading.aadhar || isEdit}
         disabledMessage={t('document_upload_in_progress', { defaultValue: 'Uploading document. Please wait…' })}
+        disableCamera={isEdit}
+        disableBrowse={isEdit}
       />
       <TouchableOpacity
         style={[
           styles.uploadButton,
-          (!pendingImage.aadhar || uploading.aadhar) && styles.uploadButtonDisabled,
+          (!pendingImage.aadhar || uploading.aadhar || isEdit) && styles.uploadButtonDisabled,
         ]}
         onPress={async () => {
-          if (!pendingImage.aadhar || uploading.aadhar) {
+          if (isEdit || !pendingImage.aadhar || uploading.aadhar) {
             if (!pendingImage.aadhar) {
               showNotification(
                 t('aadhaar_card', { defaultValue: 'Aadhaar Card' }),
@@ -311,7 +316,7 @@ const DriverProofDoc = () => {
           }
           await uploadProofDocument('aadhar', pendingImage.aadhar);
         }}
-        disabled={!pendingImage.aadhar || uploading.aadhar}
+        disabled={isEdit || !pendingImage.aadhar || uploading.aadhar}
       >
         {uploading.aadhar ? (
           <ActivityIndicator color={Colors.white} />
@@ -349,16 +354,18 @@ const DriverProofDoc = () => {
         scannerTitle={t('upload_pan_card', { defaultValue: 'Upload or capture PAN card' })}
         containerStyle={styles.scannerContainer}
         initialImage={panInitialImage}
-        disabled={uploading.panCard}
+        disabled={uploading.panCard || isEdit}
         disabledMessage={t('document_upload_in_progress', { defaultValue: 'Uploading document. Please wait…' })}
+        disableCamera={isEdit}
+        disableBrowse={isEdit}
       />
       <TouchableOpacity
         style={[
           styles.uploadButton,
-          (!pendingImage.panCard || uploading.panCard) && styles.uploadButtonDisabled,
+          (!pendingImage.panCard || uploading.panCard || isEdit) && styles.uploadButtonDisabled,
         ]}
         onPress={async () => {
-          if (!pendingImage.panCard || uploading.panCard) {
+          if (isEdit || !pendingImage.panCard || uploading.panCard) {
             if (!pendingImage.panCard) {
               showNotification(
                 t('pan_card', { defaultValue: 'PAN Card' }),
@@ -370,7 +377,7 @@ const DriverProofDoc = () => {
           }
           await uploadProofDocument('panCard', pendingImage.panCard);
         }}
-        disabled={!pendingImage.panCard || uploading.panCard}
+        disabled={isEdit || !pendingImage.panCard || uploading.panCard}
       >
         {uploading.panCard ? (
           <ActivityIndicator color={Colors.white} />

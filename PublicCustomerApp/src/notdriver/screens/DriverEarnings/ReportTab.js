@@ -149,14 +149,14 @@ const ReportTab = () => {
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>{t('driver_due')}</Text>
           <Text style={[styles.detailValue, { color: Colors.orange }]}>
-            {formatAmount(item.driverDue)}
+            {item.driverDue ? formatAmount(item.driverDue) : '₹0.00'}
           </Text>
         </View>
 
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>{t('vehicle_type')}</Text>
           <Text style={styles.detailValue}>
-            {item.fareDetails?.vehicleType || 'N/A'}
+            {item.fareDetails?.vehicleType?.replace(/_/g, ' ') || 'N/A'}
           </Text>
         </View>
 
@@ -206,19 +206,19 @@ const ReportTab = () => {
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>{t('total_earnings')}</Text>
           <Text style={[styles.summaryValue, { color: Colors.green }]}>
-            {formatAmount(totalEarnings)}
+            {totalEarnings ? formatAmount(totalEarnings) : '₹0.00'}
           </Text>
         </View>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>{t('paid_amount')}</Text>
           <Text style={[styles.summaryValue, { color: Colors.blue }]}>
-            {formatAmount(clearedDue)}
+            {clearedDue ? formatAmount(clearedDue) : '₹0.00'}
           </Text>
         </View>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>{t('due_amount')}</Text>
           <Text style={[styles.summaryValue, { color: Colors.orange }]}>
-            {formatAmount(pendingDue)}
+            {pendingDue ? formatAmount(pendingDue) : '₹0.00'}
           </Text>
         </View>
       </View>

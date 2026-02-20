@@ -374,7 +374,7 @@ export const DateTimeFormatter = {
     if (totalMinutes >= 60) {
       return `${hours}h ${minutes}m`;
     } else {
-      return `${minutes}m`;
+      return `${minutes} mins`;
     }
   },
 

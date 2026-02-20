@@ -52,8 +52,9 @@ const paymentMethods = [
   };
 
 const formatDuration = (minutes) => {
-  if (minutes === null || minutes === undefined || minutes < 0) return '0 Mins';
-  return `${minutes} Mins`;
+  if (minutes === null || minutes === undefined || minutes < 0) return '0 Min';
+  if (minutes < 1) return '1 Min';
+  return `${DateTimeFormatter.formatMinutesToDuration(minutes)}`;
 };
 
 const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetials, isLoading, isDetailsScreen}) => {
@@ -297,7 +298,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
         </View>
          
         <Text style={styles.bookingTime}>
-          {DateTimeFormatter.formatTime(activeTripData?.[0]?.bookingTime || tripDetials?.bookingTime)}
+          {tripDetials?.bookingTime || activeTripData?.[0]?.bookingTime  ? DateTimeFormatter.requiredDateFormat(activeTripData?.[0]?.bookingTime || tripDetials?.bookingTime, 'DD MMM YYYY, hh:mm A') : ''}
         </Text>
         <Text style={styles.bookingId}>Ride ID: {rideId}</Text>
          <TouchableOpacity style={styles.powerOffBtn} onPress={() => setStackScreen('DriverHelpSupport')}>
@@ -332,7 +333,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
               <Feather name="clock" size={24} color="#FFFFFF" />
             </View>
             <Text style={styles.cardValue}>
-              {duration ? formatDuration(duration) : '0 Mins'}
+              {duration ? formatDuration(duration) : '0 Min'}
             </Text>
             <Text style={styles.cardLabel}>{t('duration') || 'Duration'}</Text>
           </View>
