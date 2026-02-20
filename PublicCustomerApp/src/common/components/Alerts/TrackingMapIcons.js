@@ -162,7 +162,7 @@ const TrackingMapIcons = props => {
 
   const fitToBounds = useCallback(async () => {
     const bBox = ishomeDriver? fitToHotSpot(hotSportMarkers) : GetDevicesBoundingBox(markersData);
-    if (!bBox) return showNotification(t['unable_to_zoom'], '', 'info');
+    // if (!bBox) return showNotification(t('unable_to_zoom'), '', 'info');
     setMapBounds([bBox, [450, height *0.5, 450, height *0.4]]);
   }, [markersData?.locations, hotSportMarkers]);
 
