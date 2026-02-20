@@ -127,6 +127,33 @@ class Trip {
         if (queryFilter.status === 'ALL') {
             delete queryFilter.status;
         }
+
+        function buildDriverIdMatch(driverId) {
+            const ids = [];
+          
+            // if coming as ObjectId
+            if (driverId instanceof ObjectId) {
+              ids.push(driverId);
+              ids.push(driverId.toString());
+              return { $in: ids };
+            }
+          
+            // if coming as string
+            if (typeof driverId === "string") {
+              ids.push(driverId); // match string stored docs
+              if (ObjectId.isValid(driverId)) ids.push(new ObjectId(driverId)); // match ObjectId stored docs
+              return { $in: ids };
+            }
+          
+            // fallback
+            return driverId;
+        }
+
+        if (queryFilter.driverId) {
+            queryFilter.driverId = buildDriverIdMatch(queryFilter.driverId);
+        }
+
+        console.log("Initial query filter for getTripsForPassanger", queryFilter);
         
         const pipeline = [
             { $match: queryFilter },
@@ -134,6 +161,8 @@ class Trip {
             { $skip: (page - 1) * limit },
             { $limit: limit },
         ];
+
+        console.log("Query filter for getTripsForPassanger", pipeline);
  
         const result = await Mongo.aggregate(COLLECTION_NAME, pipeline);
         const totalCount = await Mongo.countDocuments(COLLECTION_NAME, queryFilter);

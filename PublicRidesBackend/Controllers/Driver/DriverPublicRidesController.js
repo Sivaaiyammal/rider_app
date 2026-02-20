@@ -973,7 +973,12 @@ module.exports = function (CLASS) {
             }
 
             // Fix: Convert driverId to ObjectId
-            const filter = { driverId: new ObjectId(driverId) };
+            let filter = {};
+            if (ObjectId.isValid(driverId)) {
+                filter.driverId = new ObjectId(driverId);
+            } else {
+                filter.driverId = driverId;
+            }
 
             // Only add bookingTime filter if startTime or endTime is provided
             if (startTime || endTime) {

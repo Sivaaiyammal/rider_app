@@ -117,10 +117,10 @@ module.exports = function (CLASS) {
             if (!trip.publicRidesTrip) return res.status(400).json({ success: false, message: 'Trip is not a public rides trip' });
             if (trip.status === RideStatus.CANCELLED ) return res.status(400).json({ success: true, message: 'Trip is already cancelled', isCancelled: true });
             
-            if (trip.status !== RideStatus.MATCHED && trip.driverId?.toString() === driverId){
-                console.log("Driver already assigned to this trip, proceeding to accept");
-                return res.status(200).json({ success: true, message: 'Trip is already accepted by another driver' });
-            }
+            // if (trip.status !== RideStatus.MATCHED && trip.driverId?.toString() === driverId){
+            //     console.log("Driver already assigned to this trip, proceeding to accept");
+            //     return res.status(200).json({ success: true, message: 'Trip is already accepted by another driver' });
+            // }
             const passangerId = trip.passangerId;
             const otp = OTP.generateOTP(OTP_LENGTH);
             /* get Passanger FCM tokens and socketIDS */
