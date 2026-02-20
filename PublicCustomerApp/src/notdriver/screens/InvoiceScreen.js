@@ -18,19 +18,23 @@ const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,t
     gstin: supplierInfo?.gstNumber || 'N/A',
     panNumber: supplierInfo?.panNumber || 'N/A'
   };
-  
   const defaultCustomerInfo = {
     name:recipient?.name || 'N/A',
     phone:  'N/A',
     address: recipient?.address || 'N/A'
   };
-  
   const defaultDriverInfo = {
     driverName: driverDetails?.driverName || 'N/A',
     driverRating: driverDetails?.driverRating || 'N/A',
     vehicleBrand: vehicleDetails?.vehicleBrand || 'N/A',
     vehicleModel: vehicleDetails?.vehicleModel || 'N/A',
     vehicleNumber: vehicleDetails?.vehicleNumber || 'N/A'
+  };
+
+  // Helper to hide N/A fields
+  const renderIfNotNA = (value, renderFn) => {
+    if (!value || value === 'N/A') return null;
+    return renderFn(value);
   };
   
  
@@ -101,26 +105,35 @@ const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,t
           <View style={styles.infoSection}>
             <View style={styles.companyInfo}>
               <Text style={styles.sectionTitle}>{t('supplier_info')}</Text>
-              <Text style={styles.companyName}>{(mergedRideData.companyInfo && mergedRideData.companyInfo.name) || defaultCompanyInfo.name}</Text>
-              <Text style={styles.companyAddress}>{(mergedRideData.companyInfo && mergedRideData.companyInfo.address) || defaultCompanyInfo.address}</Text>
+              {renderIfNotNA((mergedRideData.companyInfo && mergedRideData.companyInfo.name) || defaultCompanyInfo.name, (val) => (
+                <Text style={styles.companyName}>{val}</Text>
+              ))}
+              {renderIfNotNA((mergedRideData.companyInfo && mergedRideData.companyInfo.address) || defaultCompanyInfo.address, (val) => (
+                <Text style={styles.companyAddress}>{val}</Text>
+              ))}
+              {renderIfNotNA((mergedRideData.companyInfo && mergedRideData.companyInfo.phone) || defaultCompanyInfo.phone, (val) => (
                 <View style={styles.companyContactContainer}>
-                {/* <Ionicons name="call" size={20}color={'black'} /> */}
-                <Text style={styles.companyContact}> {(mergedRideData.companyInfo && mergedRideData.companyInfo.phone) || defaultCompanyInfo.phone}</Text>
+                  <Text style={styles.companyContact}>{val}</Text>
                 </View>
-            
-          
-              <Text style={styles.companyGstin}>GSTIN: {(mergedRideData.companyInfo && mergedRideData.companyInfo.gstin) || defaultCompanyInfo.gstin}</Text>
+              ))}
+              {renderIfNotNA((mergedRideData.companyInfo && mergedRideData.companyInfo.gstin) || defaultCompanyInfo.gstin, (val) => (
+                <Text style={styles.companyGstin}>GSTIN: {val}</Text>
+              ))}
             </View>
             {recipient && (
             <View style={styles.customerInfo}>
               <Text style={styles.sectionTitle}>{'Recipient Info'}</Text>
-              <Text style={styles.customerName}>{(mergedRideData.customerInfo && mergedRideData.customerInfo.name) || defaultCustomerInfo.name}</Text>
-              <Text style={styles.customerAddress}>{(mergedRideData.customerInfo && mergedRideData.customerInfo.address) || defaultCustomerInfo.address}</Text>
-              <View style={styles.customerContactContainer}>
-              <Text style={styles.customerContact}> {(mergedRideData.customerInfo && mergedRideData.customerInfo.phone) || defaultCustomerInfo.phone}</Text>
-              </View>
-              <View style={styles.customerContactContainer}>
-              </View>
+              {renderIfNotNA((mergedRideData.customerInfo && mergedRideData.customerInfo.name) || defaultCustomerInfo.name, (val) => (
+                <Text style={styles.customerName}>{val}</Text>
+              ))}
+              {renderIfNotNA((mergedRideData.customerInfo && mergedRideData.customerInfo.address) || defaultCustomerInfo.address, (val) => (
+                <Text style={styles.customerAddress}>{val}</Text>
+              ))}
+              {renderIfNotNA((mergedRideData.customerInfo && mergedRideData.customerInfo.phone) || defaultCustomerInfo.phone, (val) => (
+                <View style={styles.customerContactContainer}>
+                  <Text style={styles.customerContact}>{val}</Text>
+                </View>
+              ))}
             </View>)}
           </View>
 
@@ -133,15 +146,18 @@ const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,t
               <Text style={styles.detailValue}>{(tripDetials?.vehicleType.split('_').join(' '))}</Text>
             </View>
             
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t('start_location')}</Text>
-              <Text style={styles.detailValue}>{tripDetials?.stops[0]?.address || 'N/A'}</Text>
-            </View> 
-            
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{t('end_location')}</Text>
-              <Text style={styles.detailValue}>{tripDetials?.stops[tripDetials?.stops.length - 1]?.address || 'N/A'}</Text>
-            </View>
+            {renderIfNotNA(tripDetials?.stops[0]?.address, (val) => (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>{t('start_location')}</Text>
+                <Text style={styles.detailValue}>{val}</Text>
+              </View>
+            ))}
+            {renderIfNotNA(tripDetials?.stops[tripDetials?.stops.length - 1]?.address, (val) => (
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>{t('end_location')}</Text>
+                <Text style={styles.detailValue}>{val}</Text>
+              </View>
+            ))}
             
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>{t('distance')}</Text>
