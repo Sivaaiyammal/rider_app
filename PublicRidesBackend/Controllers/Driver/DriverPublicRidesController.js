@@ -29,7 +29,7 @@ const RazorPayLinking = require("./RazorPayLinking");
 const FinalDueCalculator = require("../../Scripts/calculateFinalDue");
 const VehicleVerifierMParivahan = require("../Mparivahan/VerifyVehicle");
 const { buildMonthSegments } = require("../../Utils/WorkingHoursUtils");
-const whatsappService = require("../../Services/WhatsApp/WhatsAppService");
+const whatsappService = require("../../Services/whatsapp/WhatsappService");
 
 async function sendPassangerSocketEvents(passangerId, socketService, trip, fareData) {
     const passangerSocketIds = await getUserSocketIds(passangerId);
@@ -948,12 +948,14 @@ module.exports = function (CLASS) {
                 
             }
 
-            if (status === "COMPLETED" && passenger?.stats?.completedTrips === 1 ) { 
+            if (process.env.WA_ENABLED === "enabled") { 
+              if (status === "COMPLETED" && passenger?.stats?.completedTrips === 1 ) { 
                 whatsappService.sendReviewMessage({ name: passenger.name, phone: passenger.phone, fare: fareDetails?.fare }).catch(err => {
                     console.log(err, "Error sending WhatsApp review message")
                 })
+             }
             }
-           
+            
             res.json({ success: true, message: "Trip and Payment Completed", nextDueDate: role === 'dco' ? nextDueDate : null, dueCycle: role === 'dco' ? dueCycle : null });
         } catch (err) {
             return this.handleError(err, res);

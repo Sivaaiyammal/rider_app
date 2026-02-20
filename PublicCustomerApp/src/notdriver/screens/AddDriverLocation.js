@@ -527,6 +527,7 @@ const removeStateVecotr = async (item) => {
             markersData={[]}
             isDriverLocation={true}
             currentLocationCallBack={currentLocationCallBack}
+            onlyLocation={true}
           />
         </View>
       )}

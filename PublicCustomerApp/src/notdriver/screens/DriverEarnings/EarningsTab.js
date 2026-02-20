@@ -139,7 +139,7 @@ const EarningsTab = () => {
           ) : (
             <Text style={styles.statValueGray}>{totalOnlineHours?.totalHours ? Math.round(totalOnlineHours?.totalHours) : 0}</Text>
           )}
-          <Text style={styles.statLabel}>{t('total_online_hours')}{' '}{DateTimeFormatter.requiredDateFormat(startDate, 'MMM,YYYY')}</Text>
+          <Text style={styles.statLabel}>{t('total_online_hours')}{'\n'}{DateTimeFormatter.requiredDateFormat(startDate, 'MMM,YYYY')}</Text>
         </View>
         {/* <View style={styles.statItem}>
           <Text style={styles.statValueBlue}>100</Text>

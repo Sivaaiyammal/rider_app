@@ -81,7 +81,7 @@ const DriverBasicDetails = () => {
             if (res?.success) {
                 const details = res?.driver?.razorpayLinkedAccountDetails || null;
                 setRazorpayLinkedAccountDetails(details);
-                showNotification(details?.accountDetails?.activation_status, '', 'success');
+                showNotification(details?.accountDetails?.activation_status?.toUpperCase()?.replace('_', ' '), '', 'success');
             } else {
                 showNotification(res?.message || t('something_went_wrong', { defaultValue: 'Something went wrong. Try again.' }), '', 'danger');
             }
@@ -168,10 +168,10 @@ const DriverBasicDetails = () => {
                     
                {razorpayUpdated ? (
                          razorpayLinkedAccountDetails?.accountDetails?.activation_status === 'activated' ? (
-                        <Text style={[styles.VerifyText,{color:'green'}]} capitalize>{razorpayLinkedAccountDetails?.accountDetails?.activation_status?.toUpperCase()}</Text>
+                        <Text style={[styles.VerifyText,{color:'green'}]} capitalize>{razorpayLinkedAccountDetails?.accountDetails?.activation_status?.toUpperCase()?.replace('_', ' ')}</Text>
                     ) : (
                         <View style={styles.statusWithButton}>
-                            <Text style={[styles.VerifyText,{color:'red'}]} capitalize>{razorpayLinkedAccountDetails?.accountDetails?.activation_status?.toUpperCase() || "UNDER VERIFICATION"}</Text>
+                            <Text style={[styles.VerifyText,{color:'red'}]} capitalize>{razorpayLinkedAccountDetails?.accountDetails?.activation_status?.toUpperCase()?.replace('_', ' ') || "UNDER VERIFICATION"}</Text>
                             <TouchableOpacity style={styles.checkStatusInlineBtn} onPress={handleCheckStatus}>
                                 <Text style={styles.checkStatusBtnText}>{t('check_status', { defaultValue: 'Check Status' })}</Text>
                             </TouchableOpacity>
@@ -206,7 +206,7 @@ const DriverBasicDetails = () => {
                     //  starStyle={styles.starRating}
                       /> 
                       <Text style={styles.starRatingText}>{(driverRatings?.currentrating).toFixed(1)}<Text style={styles.starRatingTextSub}>/5</Text></Text>
-                      <Text style={styles.starRatingTextSub}>{t('reviews')}: {driverRatings?.count}</Text>
+                      <Text style={styles.starRatingTextSub}>{t('reviews')} {driverRatings?.count}</Text>
       
                      
             </View>
