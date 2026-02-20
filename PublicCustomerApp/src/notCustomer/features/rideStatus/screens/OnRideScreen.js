@@ -202,7 +202,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
                 <View style={styles.divider}></View>
                 <View style={styles.rideInfoItem}>
                   <AdaptiveText style={styles.rideInfoLabel}>{t('duration')}</AdaptiveText>
-                  <Text style={styles.rideInfoValue}>{duration} Min</Text>
+                  <Text style={styles.rideInfoValue}>{duration} {duration === 1 ? 'Min' : 'Mins'}</Text>
                 </View>
                 <View style={styles.divider}></View>
                 <View style={styles.rideInfoItem}>

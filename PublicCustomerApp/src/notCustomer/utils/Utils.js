@@ -761,6 +761,9 @@ export const utils = {
         return `${hours} hr ${remainingMinutes} Min`;
       }
     } else {
+      if (minutes === 1) {
+        return '1 Min';
+      }
       return `${minutes} Mins`;
     }
   },

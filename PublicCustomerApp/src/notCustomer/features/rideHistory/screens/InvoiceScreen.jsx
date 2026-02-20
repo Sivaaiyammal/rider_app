@@ -327,6 +327,12 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
   };
 
   const formatDuration = (minutes) => {
+    if (minutes == null || isNaN(Number(minutes))) {
+      return '0 Min';
+    }
+    if (minutes == 1 || minutes === 0) {
+      return `${minutes} Min`;
+    }
     return `${minutes} Mins`;
   };
 

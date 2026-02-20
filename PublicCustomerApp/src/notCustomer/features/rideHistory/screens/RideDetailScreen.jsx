@@ -143,8 +143,8 @@ const RideDetailScreen = ({ TripData }) => {
 
   const BreakdownFare = isFareCalculated ? rideData?.customerInvoice? utils.getInvoiceFormat(rideData?.customerInvoice) : utils.getFareBreakdown(rideData?.fareDetails) : null
 
-  const distance = rideData.finalDistance && rideData?.status != "Failed" ? rideData.finalDistance : rideData.estimatedDistance
-  const duration = rideData.finalDuration && rideData?.status != "Failed" ? rideData.finalDuration : rideData.estimatedDuration
+  const distance = rideData?.finalDistance || 0
+  const duration = rideData?.finalDuration  || 0
 
   useEffect(() => {
     let isActive = true;

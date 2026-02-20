@@ -71,6 +71,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
 
   // Helper to limit string length and add ellipsis if needed
   const limitText = (text, max = 10) => {
+    console.log(`Limiting text: "${text}" to max length of ${max}`);
     if (!text) return '';
     return text.length > max ? text.slice(0, max) + '…' : text;
   };
@@ -331,7 +332,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
               ) : null}
               {(model || brand) && color ? <Text style={styles.vehicleDescSeparator}>.</Text> : null}
               {color ? (
-                <Text  numberOfLines={1} ellipsizeMode="tail">
+                <Text  numberOfLines={1} ellipsizeMode="tail" style={[styles.vehicleDesc, { textTransform: 'capitalize' }]}>
                 {limitText(color, 10)}
                 </Text>
               ) : null}
@@ -406,7 +407,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
           <View style={{ flexDirection: 'row', flex: 1, marginBottom: 0 }}>
             <View style={styles.rideInfoItem}>
               <Text style={styles.rideInfoLabel}>{t('duration')}</Text>
-              <Text style={styles.rideInfoValue}>{duration || '--'} Min</Text>
+              <Text style={styles.rideInfoValue}>{duration || '--'} {duration === 1 ? 'Min' : 'Mins'}</Text>
             </View>
             <View style={styles.rideInfoItem}>
               <Text style={styles.rideInfoLabel}>{t('distance')}</Text>

@@ -200,6 +200,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
       
           return;
         }
+        console.log(drivers,'drivers fetched for types: ', vehicleTypesToFetch);
 
         if( femaleDriverOnly ){
           const isFemaleAvailable = isFemaleDriverAvailable();
@@ -232,6 +233,8 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
               if (hasA === hasB) return 0;
               return hasA ? -1 : 1;
             });
+
+          console.log("Sorted Vehicles Local: ", sortedVehiclesLocal);
 
      
         if (selectedVehicle?.type) {
@@ -429,12 +432,13 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
   // Sort vehicles so those with available drivers appear first
   const sortedVehicles = Array.isArray(availableVehicles)
     ? [...availableVehicles].sort((a, b) => {
-        const hasDriverA = (getDriversByType(a.type) || []).length > 0;
-        const hasDriverB = (getDriversByType(b.type) || []).length > 0;
-        if (hasDriverA === hasDriverB) return 0;
-        return hasDriverA ? -1 : 1;
+        const driverCountA = (getDriversByType(a.type) || []).length;
+        const driverCountB = (getDriversByType(b.type) || []).length;
+        return driverCountB - driverCountA;
       })
     : [];
+  console.log("Sorted Vehicles: ", sortedVehicles);
+  
 
 
 
@@ -542,7 +546,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
                 <View style={styles.rowBetween}>
                   <View style={styles.timeRow}>
                     <MaterialCommunityIcons name="clock" size={16} color={"#757575"} />
-                    <AdaptiveText style={[styles.timeText,{fontSize:13}]}>{vehicle.estimatedDuration} {t('min')}</AdaptiveText>
+                    <AdaptiveText style={[styles.timeText,{fontSize:13}]}>{vehicle.estimatedDuration} {vehicle?.estimatedDuration == 1 ? t('min') : t('mins')}</AdaptiveText>
                     {/* <Text style={[styles.dot]}>·</Text>
                     <Text style={[styles.dropTime]}>{vehicle.dropat}</Text> */}
                   </View>

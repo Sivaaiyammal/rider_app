@@ -178,7 +178,7 @@ const PaymentScreen = ({lastTripId=null}) => {
 
       const backHandlerSub = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
       return () => backHandlerSub.remove();
-    }, [showInvoice, handleInvoiceClose]),
+    }, [showInvoice]),
   );
 
   const formatDate = (timestamp) => {
