@@ -34,7 +34,7 @@ const CustomDropdown = ({
   const renderLabel = () => {
     if (value || isFocus) {
       return (
-        <Text style={[styles.label,  { color: isFocus ? 'blue' : 'gray' },{width:'100%', paddingHorizontal:10}]}>
+        <Text style={[styles.label,  { color: isFocus ? 'blue' : 'gray' },{ paddingHorizontal:10}]}>
           {placeholder}
         </Text>
       );

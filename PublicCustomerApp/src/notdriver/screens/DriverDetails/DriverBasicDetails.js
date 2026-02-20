@@ -206,7 +206,7 @@ const DriverBasicDetails = () => {
                     //  starStyle={styles.starRating}
                       /> 
                       <Text style={styles.starRatingText}>{(driverRatings?.currentrating).toFixed(1)}<Text style={styles.starRatingTextSub}>/5</Text></Text>
-                      <Text style={styles.starRatingTextSub}>{t('reviews')}: {driverRatings?.count}</Text>
+                      <Text style={styles.starRatingTextSub}>{t('reviews')} {driverRatings?.count}</Text>
       
                      
             </View>
