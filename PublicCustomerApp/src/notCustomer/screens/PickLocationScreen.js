@@ -54,7 +54,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { firebaselog_ridePlanning } from '../../common/utils/FirebaseAnalytics.js';
 
 
-const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null,buttonLabel=null,isFromContribution=false, focusSearchOnMount=true,isConfirmLocation=false}) => {
+const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defaultLocation=null,label=null,isFromRidePointsSelection=false,limitRadius=null, searchBar=false,index=null,buttonLabel=null,isFromContribution=false, focusSearchOnMount=true,isConfirmLocation=false,isFromwaypointEdit=false}) => {
   const {goBack} = useStackScreenStore();
   const { setOnMapCenterChanged,setMapMarkers,setOnMapRotationChanged,setMapLocation,setGeometries } = useMapStore();
   const [isAddressLoading, setIsAddressLoading] = useState(false);
@@ -938,7 +938,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
               console.log('Calculated distance (meters):', distanceMeters);
 
              
-              const isSameLocation = distanceMeters < 20; // treat <30m as same location
+              const isSameLocation = distanceMeters < 20 && !isFromwaypointEdit; // treat <30m as same location
               if (isSameLocation) {
                 const title = t('same_location_title', { defaultValue: 'Locations too close' });
                 const message = t('same_location_message', { defaultValue: 'Pickup and drop-off locations are very close. Please choose a farther location.' });

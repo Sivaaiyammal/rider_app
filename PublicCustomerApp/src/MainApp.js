@@ -154,11 +154,11 @@ const MainAppContent = () => {
         tripAlert.playDriverAllocatedAlert();
         Vibration.vibrate();
       }
-       if(clearedtxt === 'trip cancelled by driver' || clearedtxt === 'trip cancelled by passenger'){
-        const isDriverCancelled = clearedtxt === 'trip cancelled by driver';
-        const modalTitle = isDriverCancelled ? 'ride_cancelled_by_driver' : 'ride_cancelled_by_passenger';
-          showModal(modalTitle, null, {type: 'warning', imageName: isDriverCancelled ? 'cancelled_auto' : 'cancelled_customer'});
-      }
+      //  if(clearedtxt === 'trip cancelled by driver' || clearedtxt === 'trip cancelled by passenger'){
+      //   const isDriverCancelled = clearedtxt === 'trip cancelled by driver';
+      //   const modalTitle = isDriverCancelled ? 'ride_cancelled_by_driver' : 'ride_cancelled_by_passenger';
+      //     showModal(modalTitle, null, {type: 'warning', imageName: isDriverCancelled ? 'cancelled_auto' : 'cancelled_customer'});
+      // }
     })
     const registerForMessaging = async () => {
       try {

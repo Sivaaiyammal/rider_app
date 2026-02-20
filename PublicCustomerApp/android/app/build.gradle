@@ -61,8 +61,8 @@ android {
         applicationId "com.virtualmaze.prcustomer"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 39
-        versionName "2.4.3.0"
+        versionCode 40
+        versionName "2.5.1.1"
         missingDimensionStrategy 'react-native-camera', 'general' // <-- insert this line
         missingDimensionStrategy 'store', 'play'
         // buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()

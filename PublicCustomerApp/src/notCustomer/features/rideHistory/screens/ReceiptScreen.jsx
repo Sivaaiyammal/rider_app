@@ -21,6 +21,7 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
   const { goBack } = useStackScreenStore();
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [loadingReceipt, setLoadingReceipt] = useState(false);
   const toastTimerRef = useRef(null);
 
   useEffect(() => {
@@ -74,6 +75,7 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
   };
 
   const handleMultiSheetPDF = async () => {
+    setLoadingReceipt(true);
     try {
       const supportUrl = adminInfo?.supportUrl || "https://nammaoorutaxi.com";
       const currency = fareDetails?.currency || "₹";
@@ -144,8 +146,10 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
     } catch (error) {
       console.error('Multi-sheet PDF error:', error);
       Alert.alert('Error', 'Failed to create multi-sheet PDF: ' + error.message, [{ text: 'OK' }]);
+    } finally {
+      setLoadingReceipt(false);
     }
-  };  
+  };
 
   
 
@@ -271,12 +275,20 @@ const ReceiptScreen = ({ rideId,tripFare,tripDistance,tripDuration,driverDetails
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
-          <TouchableOpacity style={styles.downloadButton} onPress={handleMultiSheetPDF}>
-            <MaterialCommunityIcons name="file-download" size={20} color={colors.white} />
-            <Text style={styles.downloadButtonText}>{t('download_pdf')}</Text>
+          <TouchableOpacity
+            style={styles.downloadButton}
+            onPress={handleMultiSheetPDF}
+            disabled={loadingReceipt}
+          >
+            {loadingReceipt ? (
+              <MaterialCommunityIcons name="progress-clock" size={20} color={colors.white} />
+            ) : (
+              <MaterialCommunityIcons name="file-download" size={20} color={colors.white} />
+            )}
+            <Text style={styles.downloadButtonText}>
+              {loadingReceipt ? `${t('downloading')}...` : t('download_pdf')}
+            </Text>
           </TouchableOpacity>
-          
-   
         </View>
       </ScrollView>
 

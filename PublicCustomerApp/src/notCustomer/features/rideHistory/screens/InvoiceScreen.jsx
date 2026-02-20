@@ -23,6 +23,7 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
   const [customFolder] = useState('');
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [loadingInvoice, setLoadingInvoice] = useState(false);
   const toastTimerRef = useRef(null);
   
   useEffect(() => {
@@ -84,6 +85,7 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
   };
 
   const handleMultiSheetPDF = async () => {
+    setLoadingInvoice(true);
     try {
       const supportUrl = adminInfo?.supportUrl || "https://nammaoorutaxi.com";
       const currency = fareDetails?.currency || "₹";
@@ -312,6 +314,8 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
     } catch (error) {
       console.error('Multi-sheet PDF error:', error);
       Alert.alert('Error', 'Failed to create multi-sheet PDF: ' + error.message, [{ text: 'OK' }]);
+    } finally {
+      setLoadingInvoice(false);
     }
   };
 
@@ -388,7 +392,7 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
               {/* <Text style={styles.companyEmail}> {(mergedRideData.companyInfo && mergedRideData.companyInfo.email) || defaultCompanyInfo.email}</Text> */}
               </View>
           
-              <Text style={styles.companyGstin}>{t('gstin')}: {(mergedRideData.companyInfo && mergedRideData.companyInfo.gstin) || defaultCompanyInfo.gstin}</Text>
+              {/* <Text style={styles.companyGstin}>{t('gstin')}: {(mergedRideData.companyInfo && mergedRideData.companyInfo.gstin) || defaultCompanyInfo.gstin}</Text> */}
             </View>
             
             <View style={styles.customerInfo}>
@@ -544,11 +548,20 @@ const InvoiceScreen = ({ rideId,tripDistance,tripDuration,driverDetails,vehicleD
 
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.downloadButton} onPress={handleMultiSheetPDF}>
-            <MaterialIcons name="file-download" size={24} color={colors.white} />
-              <Text style={styles.downloadButtonText}> {t('download_invoice')}</Text>
+            <TouchableOpacity
+              style={styles.downloadButton}
+              onPress={handleMultiSheetPDF}
+              disabled={loadingInvoice}
+            >
+              {loadingInvoice ? (
+                <MaterialIcons name="hourglass-empty" size={24} color={colors.white} />
+              ) : (
+                <MaterialIcons name="file-download" size={24} color={colors.white} />
+              )}
+              <Text style={styles.downloadButtonText}>
+                {loadingInvoice ? ` ${t('downloading')}...` : ` ${t('download_invoice')}`}
+              </Text>
             </TouchableOpacity>
-            
             {/* <TouchableOpacity style={styles.emailButton} onPress={handleEmailInvoice}>
               <Text style={styles.emailButtonText}><MaterialIcons name="email" size={16} color="#2196F3" /> {t('email_invoice')}</Text>
             </TouchableOpacity> */}

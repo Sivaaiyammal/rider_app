@@ -223,6 +223,7 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
       searchBar:true,
       buttonLabel: buttonLabel,
       focusSearchOnMount:true,
+      isFromwaypointEdit:true
     }
 
 
@@ -311,7 +312,8 @@ const WaypointContainer = ({setEnableConfirmButton,editedRoutecheckText,fromDriv
       label:label,
       buttonLabel: buttonLabel,
       searchBar:true,
-      focusSearchOnMount:true,  
+      focusSearchOnMount:true, 
+      isFromwaypointEdit:true
     }
    if(dataIndex == 0 && tripStatus == "ACCEPTED"){
      props.limitRadius=1

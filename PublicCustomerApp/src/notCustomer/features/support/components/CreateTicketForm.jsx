@@ -243,7 +243,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
   const translateCategoryName = (name) => {
     if (name) {
       const keys = name.replaceAll(' ', '_').toLowerCase();
-      return t('support_categories.' + keys + '.name');
+      return t('support_categories_' + keys + '_name');
     }
     return name;
   };
@@ -251,7 +251,7 @@ const CreateTicketForm = ({ onSubmit, onCancel }) => {
   const translateCategoryDescription = (description) => {
     if (description) {
       const keys = description.replaceAll(' ', '_').toLowerCase();
-      return t('support_categories.' + keys + '.description');
+      return t('support_categories_' + keys + '_description');
     }
     return description;
   };

@@ -109,7 +109,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
   const [driverPhotoUri, setDriverPhotoUri] = useState(null);
   const [isDriverPhotoLoading, setIsDriverPhotoLoading] = useState(false);
 
-  const driverPhotoCacheRef = useRef({ key: null, url: null, token: null });
+  // Removed driverPhotoCacheRef: always fetch driver photo via API call
   const boundingBoxRef = useRef(null);
 
   const pickupStop = useMemo(() => (stops && stops.length > 0 ? stops[0] : null), [stops]);
@@ -143,33 +143,17 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
   useEffect(() => {
     let isActive = true;
 
+
     const resolveDriverPhoto = async () => {
       const trimmed = driverPhoto?.trim();
       if (!trimmed) {
-        driverPhotoCacheRef.current = { key: null, url: null, token: null };
         setDriverPhotoUri(null);
         return;
       }
 
       const normalizedKey = trimmed.replace(/^https?:\/\/[^/]+\/?/, '').replace(/^\//, '');
 
-      if (
-        driverPhotoCacheRef.current.key === normalizedKey &&
-        driverPhotoCacheRef.current.url &&
-        driverPhotoCacheRef.current.token === userToken
-      ) {
-        setDriverPhotoUri(driverPhotoCacheRef.current.url);
-        return;
-      }
-
-      if (!normalizedKey) {
-        driverPhotoCacheRef.current = { key: trimmed, url: null, token: userToken };
-        setDriverPhotoUri(null);
-        return;
-      }
-
-      if (!userToken) {
-        driverPhotoCacheRef.current = { key: normalizedKey, url: null, token: null };
+      if (!normalizedKey || !userToken) {
         setDriverPhotoUri(null);
         return;
       }
@@ -180,17 +164,9 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
         if (!isActive) {
           return;
         }
-
-        if (signedUrl) {
-          driverPhotoCacheRef.current = { key: normalizedKey, url: signedUrl, token: userToken };
-          setDriverPhotoUri(signedUrl);
-        } else {
-          driverPhotoCacheRef.current = { key: normalizedKey, url: null, token: userToken };
-          setDriverPhotoUri(null);
-        }
+        setDriverPhotoUri(signedUrl || null);
       } catch (error) {
         if (isActive) {
-          driverPhotoCacheRef.current = { key: normalizedKey, url: null, token: userToken };
           setDriverPhotoUri(null);
         }
       } finally {
