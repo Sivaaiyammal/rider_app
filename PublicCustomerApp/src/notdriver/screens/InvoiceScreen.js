@@ -144,7 +144,7 @@ const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,t
             
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>{t('ride_type')}</Text>
-              <Text style={styles.detailValue}>{(tripDetials?.vehicleType.split('_').join(' '))}</Text>
+              <Text style={styles.detailValue}>{tripDetials?.vehicleType ? (tripDetials?.vehicleType?.split('_').join(' ')) : ''}</Text>
             </View>
             
             {renderIfNotNA(tripDetials?.stops[0]?.address, (val) => (
