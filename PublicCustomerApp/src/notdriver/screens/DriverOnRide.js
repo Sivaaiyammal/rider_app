@@ -315,6 +315,11 @@ const DriverOnRide = () => {
         userInfo?.token,
       );
       if (res?.success) {
+          NeNativeModule.endNavigation();
+          setStartNavigation(false);
+          setDisduration(null);
+        setShowWaypointReached(false);
+        setModalVisible(false);
         if (nonreachedStops[0]?.waitingTime && nonreachedStops[0]?.waitingTime !== 0) {
            updateStopData(nonreachedStops[0].name, true, 'PICKEDUP', 0, false)
            onStartWating()
@@ -322,12 +327,8 @@ const DriverOnRide = () => {
           setCurrentWaypointIndex(prevIndex => prevIndex + 1);
           updateStopData(nonreachedStops[0].name, true, 'PICKEDUP', 0, true)
           // NeNativeModule.moveToNextWaypoint();
-          setStartNavigation(false);
-          setDisduration(null);
-          NeNativeModule.endNavigation();
         }
-        setShowWaypointReached(false);
-        setModalVisible(false);
+       
         showNotification(res?.message, 'Stop Updated', 'success');
         // await DriverAnalytics.triggerDriverTripStatus(`stop_${nextStopNumber}_reached`);
       } else {
@@ -364,13 +365,13 @@ const DriverOnRide = () => {
         setWaitingTime(0)
         setShowWaypointReached(false)
         setShowTimerStartModal(false)
+        NeNativeModule.endNavigation();
         // NeNativeModule.moveToNextWaypoint();
         setStartNavigation(false);
         setDisduration(null);
-        NeNativeModule.endNavigation();
         setCurrentWaypointIndex(prevIndex => prevIndex + 1);
         showNotification(res?.message, 'Pickup Successfully', 'success');
-        await DriverAnalytics.triggerDriverTripStatus(`stop_${nextStopNumber}_reached`);
+        // await DriverAnalytics.triggerDriverTripStatus(`stop_${nextStopNumber}_reached`);
       } else {
         showNotification(res?.message, res?.message, 'danger');
         setModalVisible(false);
@@ -549,8 +550,10 @@ const DriverOnRide = () => {
       }
     }
 
+
     const distanceInMeters = ldistance;
-    if (distanceInMeters < 200 && distanceInMeters >= 0) {
+
+    if (distanceInMeters < 500 && distanceInMeters >= 0) {
       // if (tripsStatus === 'ACCEPTED') {
       //   setIsReachedPickup(true);
       //   return;
@@ -868,7 +871,7 @@ const DriverOnRide = () => {
             </TouchableOpacity>
           </View>
           }
-          {showWaypointReached && watingTime <= 0 &&
+          {tripsStatus !== 'ACCEPTED' && showWaypointReached && watingTime <= 0 &&
           <View>
             <TouchableOpacity style={RouteScreenStyles.reachedWaypointBtn} onPress={()=>onReachedStop()}>
               <Text style={RouteScreenStyles.reachedWaypointBtnTxt}>{t('reached')} {nonreachedStops[0]?.name}{'\n'} {t('press_to_update_status')}</Text>

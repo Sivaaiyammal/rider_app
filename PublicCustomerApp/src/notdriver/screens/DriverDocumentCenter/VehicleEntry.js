@@ -387,7 +387,7 @@ const VehicleEntry = ({ onNext }) => {
           permitDoc,
         });
         showNotification(response?.message, '', 'success');
-        setIsParivahanFailed(false);
+        setIsParivahanFailed(true);
         setVehicleDetailsCompleteStatus(true);
         firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:vehicle_details_entry_manual')
         goBack();
