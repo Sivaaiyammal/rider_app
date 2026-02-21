@@ -52,10 +52,10 @@ const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,t
   };
 
  const formatDuration = (minutes) => {
-  if (minutes === null || minutes === undefined || minutes < 0) return '0 Min';
-  if (minutes < 1) return '1 Min';
+  if (minutes === null || minutes === undefined || minutes <= 0) return '0 Min';
+  if (minutes <= 1 || minutes < 2) return '1 Min';
   return `${DateTimeFormatter.formatMinutesToDuration(minutes)}`;
-};
+ };
 
   const formatDistance = (km) => {
     if (km === null || km === undefined || km < 0) return '0.00 Km';

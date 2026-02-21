@@ -51,12 +51,12 @@ const paymentMethods = [
     return `${parseFloat(km).toFixed(1)} Km`;
   };
 
-const formatDuration = (minutes) => {
-  if (minutes === null || minutes === undefined || minutes < 0) return '0 Min';
-  if (minutes < 1) return '1 Min';
+ const formatDuration = (minutes) => {
+  if (minutes === null || minutes === undefined || minutes <= 0) return '0 Min';
+  if (minutes <= 1 || minutes < 2) return '1 Min';
   return `${DateTimeFormatter.formatMinutesToDuration(minutes)}`;
-};
-
+ };
+ 
 const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetials, isLoading, isDetailsScreen}) => {
   const {activeTripData, setActiveTripData,  fareBreakDown:rideFare } = useTripsStore();
   const {userInfo} = useUserStore()
