@@ -30,12 +30,14 @@ import { firebaselog_tripReview } from '../../../../common/utils/FirebaseAnalyti
 import  useUserInfoStore  from '../../../../common/store/useUserInfoStore';
 import useConfigStore from '../../../store/useConfigStore';
 import Social from '../components/Social';
+import usePaymentStore from '../../payment/store/usePaymentStore';
+
 export default function TripFeedbackScreen() {
   
     
   const {tripFare,tripDistance,tripDuration,driverDetails,currentTripId,setTripDetails,isLoading,setIsLoading,tripStatus } = useRatingStore();
 
-    
+    const { resetEverything } = usePaymentStore();
     const bounceValue = useRef(new Animated.Value(height)).current;
     const overlayOpacity = useRef(new Animated.Value(0)).current;
     const { reset,setShowSocialMediaModal } = useStackScreenStore();
@@ -79,6 +81,7 @@ export default function TripFeedbackScreen() {
 
     const OnClose = async () => {
     await DataStore.clearData(PREF.CURRENT_TRIP)
+    resetEverything()
     setActiveTripId(null);
     reset()
     console.log("appConfig?.IN_APP_REVIEW_ALWAYS",appConfig?.IN_APP_REVIEW_ALWAYS)

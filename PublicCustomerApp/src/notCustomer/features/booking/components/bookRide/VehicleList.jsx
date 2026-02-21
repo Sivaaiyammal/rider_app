@@ -142,7 +142,7 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
       const currentSelectedVehicleDrivers = getDriversByType(type);
     
       // ...existing code...
-
+      setVehicleMarkers([]);
       const markerList = [];
       currentSelectedVehicleDrivers.forEach((driver) => {
         const coords = driver?.location?.coordinates;
@@ -156,11 +156,13 @@ const VehicleList = ({ availableVehicles, isLoading, isEstimationError, distance
             36,
             false,
           );
+          
           marker.setAngle(driver?.location?.heading ?? 0);
           markerList.push(marker);
         }
       });
       // ...existing code...
+      console.log('markerList for type', type, markerList);
       setVehicleMarkers(markerList);
     },
     [getDriversByType, selectedVehicleType, setVehicleMarkers]

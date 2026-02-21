@@ -63,6 +63,29 @@ const usePaymentStore = create((set, get) => ({
     paymentDetails: null,
   }),
 
+  resetEverything: () => set({
+    currentTripId: null,
+    invoiceId: null,
+    razorPayAccountId: null,
+    rideId: null,
+    isLoading: true,
+    bookingTime: null,
+    tripStops: [],
+    tripDistance: null,
+    tripDuration: null,
+    tripFare: null,
+    driverDetails: null,
+    vehicleDetails: null,
+    fareDetails: null,
+    tripStatus: null,
+    supplierDetails: null,
+    adminDetails: null,
+    recipientDetails: null,
+    paymentStatus: null,
+    paymentMethod: null,
+    paymentDetails: null,
+  }),
+
   setTripDetails: (data) => {
     const {
       setTripDistance,
