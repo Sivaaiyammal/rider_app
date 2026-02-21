@@ -569,9 +569,11 @@ const VehicleEntry = ({ onNext }) => {
 
   return (
     <View style={styles.container}>
+      
       <NavBar title={t('vehicle_details', { defaultValue: 'Vehicle Details' })} onBackPress={() => goBack()} />
       <UseBackButton onBackPress={() => goBack()} />
-        {isSaving && <FullScreenLoader />}
+     
+        {/* {isSaving && <FullScreenLoader />} */}
       <ScrollView contentContainerStyle={styles.scrollContent}>
 
                 <View style={styles.section}>
