@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useRef, useEffect } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -50,8 +50,7 @@ const DriverProofDoc = (props) => {
       panDocEntry,
     };
   });
-
-  console.log('DriverProofDoc render', isEdit);
+  
   const { userInfo } = useUserStore();
 
   const {setDocumentsCompleteStatus} = usePublicDriverStore();
@@ -59,6 +58,37 @@ const DriverProofDoc = (props) => {
   const [activeTab, setActiveTab] = useState('aadhaar');
   const [aadhaarNumber, setAadhaarNumber] = useState(driverInfo?.aadharNo || '');
   const [panNumber, setPanNumber] = useState(driverInfo?.panNo || '');
+
+  // Store initial values for change detection
+  const initialProofRef = useRef(null);
+  useEffect(() => {
+    if (!initialProofRef.current) {
+      initialProofRef.current = {
+        aadharNo: driverInfo?.aadharNo || '',
+        panNo: driverInfo?.panNo || '',
+        aadharDocument: driverInfo?.aadharDocument || null,
+        panDocument: driverInfo?.panDocument || null,
+      };
+    }
+  }, [driverInfo]);
+
+  // Helper to compare current values with initial values
+  const isAadhaarChanged = () => {
+    const initial = initialProofRef.current;
+    if (!initial) return false;
+    return (
+      aadhaarNumber !== initial.aadharNo ||
+      (pendingImage.aadhar?.uri || aadharDocument?.uri || '') !== (initial.aadharDocument?.uri || '')
+    );
+  };
+  const isPanChanged = () => {
+    const initial = initialProofRef.current;
+    if (!initial) return false;
+    return (
+      panNumber !== initial.panNo ||
+      (pendingImage.panCard?.uri || panDocument?.uri || '') !== (initial.panDocument?.uri || '')
+    );
+  };
   const [aadhaarScanMessage, setAadhaarScanMessage] = useState('');
   const [panScanMessage, setPanScanMessage] = useState('');
   const [uploading, setUploading] = useState({ aadhar: false, panCard: false });
@@ -165,6 +195,13 @@ const DriverProofDoc = (props) => {
   }, []);
 
   const uploadProofDocument = useCallback(async (docId, image) => {
+    // Only upload if changed
+    const changed = docId === 'aadhar' ? isAadhaarChanged() : isPanChanged();
+    if (!changed) {
+      // showNotification(t('no_changes_to_update', {defaultValue: 'No changes to update.'}), '', 'info');
+      goBack();
+      return;
+    }
     if (!image?.uri) {
       return;
     }
@@ -216,7 +253,7 @@ const DriverProofDoc = (props) => {
     } finally {
       setUploading(prev => ({ ...prev, [docId]: false }));
     }
-  }, [setDocumentFile, setDriverInfo, setPendingImage, t, updateDocumentStatus, userInfo?.token, uploadWithRetry]);
+  }, [setDocumentFile, setDriverInfo, setPendingImage, t, updateDocumentStatus, userInfo?.token, uploadWithRetry, isAadhaarChanged, isPanChanged]);
 
   const handleAadhaarScan = useCallback(result => {
     if (!result) {
@@ -322,7 +359,7 @@ const DriverProofDoc = (props) => {
           <ActivityIndicator color={Colors.white} />
         ) : (
           <Text style={styles.uploadButtonText}>
-            {t('upload_aadhaar_document', { defaultValue: 'Upload Aadhaar Document' })}
+            {isAadhaarChanged() ? t('update', {defaultValue: 'Update'}) : t('back', {defaultValue: 'Back'})}
           </Text>
         )}
       </TouchableOpacity>

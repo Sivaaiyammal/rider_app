@@ -11,6 +11,8 @@ import TotalHours from '../../notdriver/assets/icons/totalHours.svg';
 import TotalEarnings from '../../notdriver/assets/icons/totalEarnings.svg';
 import Userpassenger from '../../notdriver/assets/icons/user_passenger.svg';
 import SosIcon from '../../common/assets/icons/sos_icon.svg';
+import Clipboard from '@react-native-clipboard/clipboard';
+import { showNotification } from '../../common/components/NotificationManger';
 
 const TripDetails = ({ activeTripData, setModalVisible, isPaymentScreen, fareBreakDown, distance, duration, fare }) => {
   const { driverInfo } = usePublicDriverStore();
@@ -45,6 +47,12 @@ const TripDetails = ({ activeTripData, setModalVisible, isPaymentScreen, fareBre
     //   }
   };
 
+    const copyToClipboard = (upiId) => {
+      if (!upiId) return;
+      Clipboard.setString(upiId)
+      showNotification('Copied to clipboard', upiId, 'success');
+    };
+
   return (
     <View style={{ width: '100%',  borderBottomWidth:1,
       borderStyle:"dashed",
@@ -58,6 +66,10 @@ const TripDetails = ({ activeTripData, setModalVisible, isPaymentScreen, fareBre
           </View>
           <View>
           <Text style={styles.passangerName}>{activeTripData[0]?.bookingForName || 'User Name'}</Text>
+          <TouchableOpacity style={{flexDirection:'row', alignItems:'center', gap:5}} onPress={()=>copyToClipboard(activeTripData?.[0]?.bookingForPhone)}>
+          <Text style={styles.passangerPhone}>{activeTripData?.[0]?.bookingForPhone}</Text>
+          <Feather name="copy" size={12} color={Colors.black}/>
+          </TouchableOpacity>
           <Text style={[styles.passangerName,{color:'#FF9900', fontSize:12, fontFamily:Fonts.light}]}>Status: {activeTripData[0]?.status?.toLowerCase()}</Text>
           </View>
         </View>
@@ -198,6 +210,11 @@ const styles = StyleSheet.create({
     // backgroundColor:Colors.white,
     // elevation:4,
     top:4
+  },
+  passangerPhone:{
+    fontFamily:Fonts.regular,
+    fontSize:14,
+    color:Colors.black
   }
 });
 

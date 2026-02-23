@@ -219,31 +219,31 @@ public class DriverOverlayController {
                 scheduleSocketRetry();
             });
 
-             driverSocket.on("trip_request", args -> {
-                 if (args != null && args.length > 0) {
-                     Object payload = args[0];
-                     if (payload instanceof JSONObject) {
-                         JSONObject obj = (JSONObject) payload;
-                         Log.i(TAG, "Received trip_request for driver=" + driverId + " payload=" + obj);
-                         markTripRequestDataDelivered(obj);
-                         // Log Firebase analytics for trip request receipt
-                         try {
-                             FirebaseAnalytics analytics = FirebaseAnalytics.getInstance(context);
-                             Bundle params = new Bundle();
-                             params.putString("category", "TB_Driver_Allocation(TB_DA)");
-                             params.putString("action", "TB_DA:trip_request_received");
-                             analytics.logEvent("Trip_Booking_TB", params);
-                         } catch (Exception e) {
-                             Log.w(TAG, "Failed to log Firebase event for trip_request", e);
-                         }
-                         // Before showing overlay, verify driver token session status
-                         checkDriverTokenAndHandle(obj);
-                     } else {
-                         Log.w(TAG, "Unexpected trip_request payload type: " +
-                                 (payload != null ? payload.getClass() : "null"));
-                     }
-                 }
-             });
+            //  driverSocket.on("trip_request", args -> {
+            //      if (args != null && args.length > 0) {
+            //          Object payload = args[0];
+            //          if (payload instanceof JSONObject) {
+            //              JSONObject obj = (JSONObject) payload;
+            //              Log.i(TAG, "Received trip_request for driver=" + driverId + " payload=" + obj);
+            //              markTripRequestDataDelivered(obj);
+            //              // Log Firebase analytics for trip request receipt
+            //              try {
+            //                  FirebaseAnalytics analytics = FirebaseAnalytics.getInstance(context);
+            //                  Bundle params = new Bundle();
+            //                  params.putString("category", "TB_Driver_Allocation(TB_DA)");
+            //                  params.putString("action", "TB_DA:trip_request_received");
+            //                  analytics.logEvent("Trip_Booking_TB", params);
+            //              } catch (Exception e) {
+            //                  Log.w(TAG, "Failed to log Firebase event for trip_request", e);
+            //              }
+            //              // Before showing overlay, verify driver token session status
+            //              checkDriverTokenAndHandle(obj);
+            //          } else {
+            //              Log.w(TAG, "Unexpected trip_request payload type: " +
+            //                      (payload != null ? payload.getClass() : "null"));
+            //          }
+            //      }
+            //  });
 
             driverSocket.on("cancel_ride_match", args -> {
                 if (args == null || args.length == 0) {
@@ -1285,26 +1285,23 @@ public class DriverOverlayController {
         mainHandler.postDelayed(overlayDismissRunnable, totalDurationMs);
 
         if (progressBar != null) {
-            final int startValue = Math.max(progressBar.getMax(), 1);
-            progressAnimator = ValueAnimator.ofInt(startValue, 0);
-            progressAnimator.setDuration(totalDurationMs);
-            progressAnimator.setInterpolator(new LinearInterpolator());
-            progressAnimator.addUpdateListener(animation -> {
-                if (progressBar.getParent() == null) {
-                    return;
-                }
-                int animatedProgress = (int) animation.getAnimatedValue();
-                progressBar.setProgress(animatedProgress);
-            });
-            progressAnimator.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    if (progressBar.getParent() != null) {
-                        progressBar.setProgress(0);
+            progressBar.post(() -> {
+                final int startValue = Math.max(progressBar.getMax(), 1);
+                progressAnimator = ValueAnimator.ofInt(startValue, 0);
+                progressAnimator.setDuration(totalDurationMs);
+                progressAnimator.setInterpolator(new LinearInterpolator());
+                progressAnimator.addUpdateListener(animation -> {
+                    int value = (int) animation.getAnimatedValue();
+                    progressBar.setProgress(value);
+                });
+                progressAnimator.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        progressAnimator = null;
                     }
-                }
+                });
+                progressAnimator.start();
             });
-            progressAnimator.start();
         }
     }
 

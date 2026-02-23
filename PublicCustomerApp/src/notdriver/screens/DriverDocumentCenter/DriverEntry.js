@@ -42,6 +42,18 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
   const [licenseNum, setLicenseNum] = useState(driverInfo.licenseNo);
   const [gender, setGender] = useState(driverInfo.gender);
   const [dob, setDob] = useState(driverInfo.dob || '');
+
+  // Store initial values for change detection
+  const initialValuesRef = React.useRef({
+    name: driverInfo.name,
+    phone: driverInfo.phone,
+    alternatePhone: driverInfo.alternatePhone,
+    licenseNo: driverInfo.licenseNo,
+    gender: driverInfo.gender,
+    dob: driverInfo.dob || '',
+    driverPhoto: driverInfo.driverPhoto || null,
+    licenseDocument: driverInfo.licenseDocument || null,
+  });
   const [nameErr, setNameErr] = useState('');
   const [phoneErr, setPhoneErr] = useState('');
   const [alternatePhoneErr, setAlternatePhoneErr] = useState('');
@@ -83,6 +95,32 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
   const {setDriverDetailsCompleteStatus} = usePublicDriverStore();
   
   const {goBack} = useStackScreenStore();
+
+  // Utility to check if form values changed (compare to initial values only)
+  const isFormChanged = () => {
+    const initial = initialValuesRef.current;
+    // Compare driverPhoto
+    const getImageUri = img => {
+      if (!img) return '';
+      if (typeof img === 'string') return img;
+      if (typeof img === 'object' && img.uri) return img.uri;
+      return '';
+    };
+    const currentDriverPhotoUri = getImageUri(driverPhoto);
+    const initialDriverPhotoUri = getImageUri(initial.driverPhoto);
+    const currentLicenseDocUri = getImageUri(driverInfo.licenseDocument);
+    const initialLicenseDocUri = getImageUri(initial.licenseDocument);
+    return (
+      name !== initial.name ||
+      phone !== initial.phone ||
+      alternatePhone !== initial.alternatePhone ||
+      licenseNum !== initial.licenseNo ||
+      gender !== initial.gender ||
+      dob !== initial.dob ||
+      currentDriverPhotoUri !== initialDriverPhotoUri ||
+      currentLicenseDocUri !== initialLicenseDocUri
+    );
+  };
 
   const normalizeLicenseNumber = useCallback(value => {
     if (!value) {
@@ -460,6 +498,16 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
     const driverPhotoFile = buildFileParam(resolvedDriverPhoto);
     if (driverPhotoFile) formData.append('driverPhoto', driverPhotoFile);
 
+    // Only proceed if form values changed
+    if (!isFormChanged()) {
+      // showNotification(
+      //   t('no_changes_detected', { defaultValue: 'No changes detected.' }),
+      //   t('no_changes_detected', { defaultValue: 'No changes detected.' }),
+      //   'info'
+      // );
+      goBack()
+      return;
+    }
     const licenseFile = buildFileParam(driverInfo.licenseDocument || null);
     if (licenseFile) formData.append('drivingLicense', licenseFile);
 

@@ -1,5 +1,5 @@
 import {StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, ScrollView, Platform} from 'react-native';
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useRef, useEffect} from 'react';
 import { Colors, emailPattern, Fonts, upiIdPattern } from '../../../common/constants/constants';
 import usePublicDriverStore from '../../store/usePublicDriverStore';
 import useUserStore from '../../../common/store/useUserStore';
@@ -120,6 +120,56 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
   // const [referenceCode, setReferenceCode] = useState(bankInfo?.referenceCode || generateReferenceCode());
 
   const [passbookImage, setPassbookImage] = useState(bankInfo?.passbookImage || null);
+
+  // Store initial values for change detection
+  const initialValuesRef = useRef(null);
+  useEffect(() => {
+    if (!initialValuesRef.current) {
+      initialValuesRef.current = {
+        accountHolderName: bankInfo?.accountHolderName || '',
+        accountNumber: bankInfo?.accountNumber || '',
+        bankName: bankInfo?.bankName || '',
+        ifscCode: bankInfo?.ifscCode || '',
+        branch: bankInfo?.branch || '',
+        UPIID: bankInfo?.UPIID || '',
+        email: bankInfo?.email || '',
+        address: {
+          street1: bankInfo?.address?.street1 || '',
+          street2: bankInfo?.address?.street2 || '',
+          city: bankInfo?.address?.city || '',
+          state: bankInfo?.address?.state || 'TAMIL NADU',
+          postal_code: bankInfo?.address?.postal_code || '',
+          country: bankInfo?.address?.country || 'IN',
+        },
+        passbookImage: bankInfo?.passbookImage || null,
+      };
+    }
+  }, [bankInfo]);
+
+  // Helper to compare current form values with initial values
+  const isFormChanged = () => {
+    const initial = initialValuesRef.current;
+    if (!initial) return false;
+    if (
+      accountHolder !== initial.accountHolderName ||
+      accountNumber !== initial.accountNumber ||
+      bankName !== initial.bankName ||
+      ifscCode !== initial.ifscCode ||
+      branch !== initial.branch ||
+      upiId !== initial.UPIID ||
+      email !== initial.email ||
+      lineOne !== initial.address.street1 ||
+      lineTwo !== initial.address.street2 ||
+      city !== initial.address.city ||
+      state !== initial.address.state ||
+      postalCode !== initial.address.postal_code ||
+      country !== initial.address.country ||
+      (passbookImage?.uri || passbookImage) !== (initial.passbookImage?.uri || initial.passbookImage)
+    ) {
+      return true;
+    }
+    return false;
+  };
   const [passbookScanMessage, setPassbookScanMessage] = useState('');
 
   // Error states
@@ -461,6 +511,12 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
   }, [emailPattern, parsePassbookDetails, setBankInfo, t, upiIdPattern]);
 
   const onNextPress = async () => {
+    // Only proceed if form changed
+    if (!isFormChanged()) {
+      // showNotification(t('no_changes_to_update', {defaultValue: 'No changes to update.'}), '', 'info');
+      goBack();
+      return;
+    }
     let isValid = true;
 
     // Validate Passbook Image
@@ -627,11 +683,10 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
     }
     if (isValid) {
       setIsLoading(true);
-   
       try {
-        const api = new APIRequest()
-        const response = await api.request('/publicrides/driver/v2/uploadBankDetails', 'POST', formData, userInfo.token)
-        if(response.success){
+        const api = new APIRequest();
+        const response = await api.request('/publicrides/driver/v2/uploadBankDetails', 'POST', formData, userInfo.token, {}, {}, null, true);
+        if (response.success) {
           const payload = {
             accountHolderName: accountHolder.trim(),
             accountNumber: accountNumber,
@@ -646,28 +701,23 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
               city: city.trim(),
               state: state.trim(),
               postal_code: postalCode.trim(),
-              country: country.trim()
+              country: country.trim(),
             },
-            // referenceCode: referenceCode.trim(),
-            passbookImage: passbookImage
-          }      
+            passbookImage: passbookImage,
+          };
           setBankInfo(payload);
-          firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:bankdetails_verifiedwith_razorpay_completed')
-          
-          setBankDetailsCompleteStatus(true)
+          firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:bankdetails_verifiedwith_razorpay_completed');
+          setBankDetailsCompleteStatus(true);
           if (!accountNumber || accountNumber?.length === 0) {
-             setRazorpayUpdated(false);
+            setRazorpayUpdated(false);
           } else {
-             setRazorpayUpdated(true);
+            setRazorpayUpdated(true);
           }
           showNotification(response?.message, '', 'success');
           goBack();
-        }
-         else {
+        } else {
           showNotification(response?.message, '', 'danger');
-         }
-          
-
+        }
       } catch (error) {
         console.error('Error updating bank details:', error);
       } finally {
@@ -679,7 +729,7 @@ const BankDetails = ({onNext, isView, isEdit = false}) => {
     <View style={styles.container}>
       <NavBar title="Bank Details" onBackPress={() => goBack('DocumentCenter')} />
         <UseBackButton onBackPress={() => goBack()} />
-           {isLoading && <FullScreenLoader />}
+           {/* {isLoading && <FullScreenLoader />} */}
         <View style={{width: '90%', flex: 1, alignSelf: 'center'}}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.contentContainer}>

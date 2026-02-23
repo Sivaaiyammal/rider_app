@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {debounce} from 'lodash';
 import { useStackScreenStore } from '../../common/store/useStackScreenStore';
@@ -44,11 +44,53 @@ const AddDriverLocation = ({isPassanger, updatePassangerLocation, isGeofenceSear
   const {setMapClickCallback, setMapMarkers, setUserLocation, setMapLocation, setOnMapCenterChanged, setOnMapRotationChanged, mapMoving, setMapMoving, userLocation} =
     useMapMarkerStore();
   const { onSearchResults, setOnSearchResults } = useMapMarkerStore();
-  const { setDriverInfo} = usePublicDriverStore();
+  const { setDriverInfo, driverInfo } = usePublicDriverStore();
 
   const [isLoding, setIsLoading] = useState(false);
   const [addressName, setAddressName] = useState('');
   const [selectedAddress, setSelectedAddress] = useState(null);
+  // Store initial location for change detection
+  const initialLocationRef = useRef(null);
+  useEffect(() => {
+    if (!initialLocationRef.current && driverInfo?.homeLocation) {
+      initialLocationRef.current = {
+        coordinates: driverInfo?.homeLocation?.coordinates || null,
+        addressName: driverInfo?.homeLocation?.addressName || '',
+      };
+    }
+  }, [driverInfo]);
+  // Helper to compare current location with initial
+  const isLocationChanged = () => {
+    const initial = initialLocationRef.current;
+    if (!initial) return !!selectedAddress;
+    if (!selectedAddress) return false;
+    // Check if lat/lng are within 100 meters
+    const prevLat = initial.coordinates?.[0];
+    const prevLng = initial.coordinates?.[1];
+    const currLat = selectedAddress.lat;
+    const currLng = selectedAddress.lng;
+    if (prevLat != null && prevLng != null && currLat != null && currLng != null) {
+      // Haversine formula
+      const toRad = x => x * Math.PI / 180;
+      const R = 6371000; // meters
+      const dLat = toRad(currLat - prevLat);
+      const dLng = toRad(currLng - prevLng);
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(toRad(prevLat)) * Math.cos(toRad(currLat)) *
+                Math.sin(dLng/2) * Math.sin(dLng/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      const distance = R * c;
+      if (distance < 500 && selectedAddress.address === (initial.addressName || '')) {
+        return false;
+      }
+    }
+    return (
+      selectedAddress.lat !== prevLat ||
+      selectedAddress.lng !== prevLng ||
+      selectedAddress.address !== (initial.addressName || '')
+    );
+  };
+
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const {location, setSelectedInput} = useLocationStore();
@@ -453,6 +495,11 @@ const removeStateVecotr = async (item) => {
       setShowLocationModal(true);
       return;
     }
+   // Only proceed if location changed
+   if (!isLocationChanged()) {
+     onGoBack();
+     return;
+   }
    try {
     setIsLocationLoading(true)
      const api = new APIRequest();

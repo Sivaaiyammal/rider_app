@@ -14,6 +14,7 @@ import APIRequest from '../../../common/APIRequest';
 import UseBackButton from '../../../common/hooks/UseBackButton';
 import NavBar from '../../../common/components/NavBar';
 import { Colors, Fonts } from '../../../common/constants/constants';
+import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter';
 
 
 const PublicRidesPriceChart = () => {
@@ -103,8 +104,8 @@ const PublicRidesPriceChart = () => {
       const updatedConfig = {
         vehicle: fareTypeKey,
         rangePricing: surgedRanges,
-fromTime:fromTime,
-toTime:toTime,
+fromTime:DateTimeFormatter.format12Hour(fromTime),
+toTime:DateTimeFormatter.format12Hour(toTime),
       };
 
       setSelectedFare(updatedConfig);
@@ -144,7 +145,7 @@ toTime:toTime,
                     style={styles.surgeItem}
                     onPress={()=> calculateFinalPrice(key, value, surge.value, surge.type, surge?.timeRange?.start, surge?.timeRange?.end)}>
                     <View style={styles.surgeRow}>
-                      <Text style={styles.surgeTime}>From {surge?.timeRange?.start} to {surge?.timeRange?.end}</Text>
+                      <Text style={styles.surgeTime}>From {DateTimeFormatter.format12Hour(surge?.timeRange?.start)} to {DateTimeFormatter.format12Hour(surge?.timeRange?.end)}</Text>
                     </View>
                     <Text style={styles.surgeDays}>
                       {Array.isArray(surge?.days) ? surge.days.join(', ') : ''}
