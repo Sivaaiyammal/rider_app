@@ -300,7 +300,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
         <Text style={styles.bookingTime}>
           {tripDetials?.bookingTime || activeTripData?.[0]?.bookingTime  ? DateTimeFormatter.requiredDateFormat(activeTripData?.[0]?.bookingTime || tripDetials?.bookingTime, 'DD MMM YYYY, hh:mm A') : ''}
         </Text>
-        <Text style={styles.bookingId}>Ride ID: {rideId}</Text>
+        {rideId ? <Text style={styles.bookingId}>Ride ID: {rideId}</Text> : null}
          <TouchableOpacity style={styles.powerOffBtn} onPress={() => setStackScreen('DriverHelpSupport')}>
                   <MaterialIcons name="support-agent" size={24} color={Colors.black} />
                   <Text style={styles.helpText}>HELP</Text>
