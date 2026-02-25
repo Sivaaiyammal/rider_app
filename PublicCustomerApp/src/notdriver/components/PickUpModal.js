@@ -48,7 +48,6 @@ const PickUpModal = ({
       {isPublicRide ?  
       <>
       <Text style={styles.title}>{t('you_have_reached_your_pickup_location')} </Text>
-      <Text style={[styles.title,{marginVertical:10, fontSize:14}]}>{t('please_enter_the_otp')} </Text>
       </>
       : 
       <Text style={styles.title}>
@@ -61,6 +60,8 @@ const PickUpModal = ({
         </View>
         <Text style={styles.address}>{isPublicRide ?  stopsDetails?.stops?.[0]?.address : stopsDetails?.address}</Text>
       </View>
+      <Text style={[styles.title,{marginVertical:10, fontSize:14}]}>{t('please_enter_the_otp')} </Text>
+
         <View style={{width: '80%', alignSelf: 'center', marginVertical: 10}}>
           <TextInput
             value={otpCode}
@@ -77,7 +78,8 @@ const PickUpModal = ({
               textAlign: 'center',
               alignSelf: 'center',
               backgroundColor: '#fff',
-              borderBottomWidth:1
+              borderBottomWidth:1,
+              color:Colors.black
             }}
             placeholder="----"
             autoFocus

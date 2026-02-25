@@ -173,7 +173,7 @@ export default function PublicDriverSettingsScreen() {
       console.log(error, 'Error logging out');
       showNotification(
         error?.message || 'Network request failed',
-        t('pls_try_later'),
+        '',
         'danger',
       );
     }

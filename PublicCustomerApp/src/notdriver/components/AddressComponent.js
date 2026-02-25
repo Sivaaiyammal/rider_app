@@ -7,6 +7,8 @@ import WayPointIndicator from '../Indicators/WayPointIndicator';
 import YellowMarker from '../../notdriver/assets/icons/YellowMarker.svg';
 import StatLocBlue from '../../notdriver/assets/icons/statLocBlue.svg';
 import { useTranslation } from 'react-i18next';
+import { DateTimeFormatter } from '../../common/utils/DateTimeFormatter';
+import Entypo from 'react-native-vector-icons/Entypo';
 
 const AddressComponent = props => {
   const {userInfo} = useUserStore()
@@ -37,6 +39,12 @@ const AddressComponent = props => {
       useNativeDriver: true,
     }).start();
   }, [busPosition, finalPosition]);
+
+   const formatDuration = (minutes) => {
+    if (minutes === null || minutes === undefined || minutes <= 0) return '0 Min';
+    if (minutes <= 1 || minutes < 2) return '1 Min';
+    return `${DateTimeFormatter.formatMinutesToDuration(minutes)}`;
+   };
 
   function isMyStop(name) {
     const result = transformedData.find(stop => 
@@ -78,6 +86,12 @@ const AddressComponent = props => {
                 : t(displayName) || displayName} <Text style={styles.yourStopTxt}>{t(isMyStop(item.name))}</Text>
             </Text>
             <Text style={styles.addTxt}>{item.address}</Text>
+            {item?.waitingTime > 0 && ( 
+              <View style={styles.waitingTimeContainer}>
+              <Entypo name="clock" size={14} color={Colors.periwinkle}/>
+              <Text style={styles.waitingTimeTxt}>{formatDuration(item.waitingTime)}</Text>
+              </View>
+            )}
           </View>
         );
       })}
@@ -136,16 +150,13 @@ const styles = StyleSheet.create({
   },
   waitingTimeContainer:{
     flexDirection:'row',
-    gap:10,
-    alignItems:'center',
-    justifyContent:'space-between',
+    gap:5,
     marginTop:10,
-    borderBottomWidth:0.3,
-    paddingBottom:4
+    alignItems:'center'
   },
   waitingTimeTxt:{
     fontFamily:Fonts.regular,
-    fontSize:10,
+    fontSize:14,
     color:Colors.periwinkle
   }
 });

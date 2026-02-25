@@ -537,21 +537,23 @@ const DocumentImageScanner = ({
       </View>
 
       {/* Modal for full image view */}
-      {showImageModal && displayUri && !imageError ? (
+      {/* Use Modal component for image view to avoid overlay issues */}
+      <Modal
+        visible={showImageModal && !!displayUri && !imageError}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowImageModal(false)}
+      >
         <View style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+          flex: 1,
           backgroundColor: 'rgba(0,0,0,0.9)',
           justifyContent: 'center',
           alignItems: 'center',
-          zIndex: 999,
         }}>
           <TouchableOpacity
             style={{ position: 'absolute', top: 40, right: 20, zIndex: 1000 }}
             onPress={() => setShowImageModal(false)}
+            accessibilityLabel="Close image modal"
           >
             <Entypo name={'cross'} color={'#fff'} size={32} />
           </TouchableOpacity>
@@ -560,7 +562,7 @@ const DocumentImageScanner = ({
             style={{ width: '95%', height: '80%', resizeMode: 'contain', borderRadius: 12 }}
           />
         </View>
-      ) : null}
+      </Modal>
 
       {/* {scanResult?.text ? (
         <View style={styles.resultBox}>
