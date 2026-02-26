@@ -1,5 +1,5 @@
-import {ActivityIndicator, Alert, AppState, FlatList, Linking, KeyboardAvoidingView, NativeModules, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {use, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
+import {ActivityIndicator, AppState,  Linking, KeyboardAvoidingView, NativeModules, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import 'moment-timezone';
 import Feather from 'react-native-vector-icons/Feather';
@@ -16,7 +16,6 @@ import driverWaitingTime from '../Controller/DriverWaitingTime';
 import { showNotification } from '../../common/components/Alerts/showNotification';
 import { DataStore } from '../../common/controllers/DataStore';
 import APIRequest from '../../common/APIRequest';
-import DriverAnalytics from '../../common/Analytics/DriverAnalytics';
 import { height } from '../../common/utils/scalingutils';
 import { Colors, Fonts } from '../../common/constants/constants';
 import { RouteScreenStyles } from '../styles/RouteScreenStyles';

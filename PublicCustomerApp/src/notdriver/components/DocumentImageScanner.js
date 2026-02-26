@@ -496,12 +496,15 @@ const DocumentImageScanner = ({
       </Modal>
 
       <View style={[styles.container, containerStyle]}>
-      <View style={styles.headerRow}>
+        {disabled ? (null):(<>
+         <View style={styles.headerRow}>
         <Text style={styles.title}>{scannerTitle}</Text>
         {isBusy && <ActivityIndicator size="small" color={Colors.periwinkle} />}
       </View>
       {activeDocumentLabel ? <Text style={styles.typeIndicator}>Selected: {activeDocumentLabel}</Text> : null}
       {helper ? <Text style={styles.helper}>{helper}</Text> : null}
+        </>)}
+     
       <View style={styles.previewSurface}>
         <TouchableOpacity style={styles.eyeIcon} onPress={() => displayUri && !imageError && setShowImageModal(true)}>
           <Entypo name={'eye'} color={Colors.black} size={18} />
@@ -510,7 +513,10 @@ const DocumentImageScanner = ({
         {displayUri && !imageError ? (
           <>
             {imageLoading && (
+              <View style={styles.previewOverlay}>
               <ActivityIndicator size="small" color={Colors.periwinkle} style={styles.previewLoader} />
+
+              </View>
             )}
             <Image
               source={{ uri: displayUri }}

@@ -52,15 +52,25 @@ function getTimes(startDate, endDate) {
 const HistoryHeader = ({ onDateRangeSelect, onTripStatusChange, isEarnings }) => {
   const {t} = useTranslation()
   const [selectedTab, setSelectedTab] = useState(1);
+  const [prevSelectedTab, setPrevSelectedTab] = useState(1);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [selectedDates, setSelectedDates] = useState([]);
   const [customDateRange, setCustomDateRange] = useState(null);
 
+  // Centralized function to clear selected dates and related state
+  const clearSelectedDates = () => {
+    setSelectedDates([]);
+    setCustomDateRange(null);
+    setStartDate('');
+    setEndDate('');
+  };
+
   const handleTabPress = (tab) => {
+    setPrevSelectedTab(tab.id);
     setSelectedTab(tab.id);
-    setCustomDateRange(null); // Clear custom date range when tab is selected
+    clearSelectedDates();
     const dateRange = tab.method();
     if (onDateRangeSelect) {
       onDateRangeSelect({ dateRange, maxStats: tab.target });
@@ -119,8 +129,14 @@ const HistoryHeader = ({ onDateRangeSelect, onTripStatusChange, isEarnings }) =>
 
   const closeModal = () => {
     setIsModalVisible(false);
-    // setSelectedDates([]);
-    setCustomDateRange(null);
+    clearSelectedDates();
+    setSelectedTab(prevSelectedTab);
+    // Clear custom date range when tab is selected
+    const prevTab = tabBtns.find(tab => tab.id === prevSelectedTab) || tabBtns[0];
+    const dateRange = prevTab.method();
+    if (onDateRangeSelect) {
+      onDateRangeSelect({ dateRange, maxStats: prevTab.target });
+    }
   };
 
   const formatDateRange = () => {

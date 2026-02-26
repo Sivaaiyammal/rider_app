@@ -34,16 +34,6 @@ const ArrivedPickUpLocation = props => {
 
       {/* Buttons */}
       <View style={styles.buttonRow}>
-        {/* PRIMARY CTA */}
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={onReachedPickup}
-          style={styles.primaryButton}>
-          <Text style={styles.primaryButtonText}>
-            {t('enter_otp')}
-          </Text>
-        </TouchableOpacity>
-
         {/* SECONDARY CTA */}
         <TouchableOpacity
           disabled={isAlertSent || pickUpAlertLoading}
@@ -64,6 +54,16 @@ const ArrivedPickUpLocation = props => {
             </Text>
                </View>
           )}
+        </TouchableOpacity>
+
+        {/* PRIMARY CTA */}
+          <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={onReachedPickup}
+          style={styles.primaryButton}>
+          <Text style={styles.primaryButtonText}>
+            {t('enter_otp')}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

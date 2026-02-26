@@ -26,10 +26,10 @@ import { useTranslation } from 'react-i18next';
 import DocumentImageScanner from '../../components/DocumentImageScanner';
 import NavBar from '../../../notCustomer/components/NavBar';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import APIRequest from '../../../common/controllers/APIRequest';
 import UseBackButton from '../../../common/hooks/UseBackButton';
 import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
 import FullScreenLoader from '../../../common/loaders/FullScreenLoader';
+import APIRequest from '../../../common/APIRequest';
 
 const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
   const {t} = useTranslation();
@@ -514,7 +514,7 @@ const DriverEntry = ({isEdit = false, setLocationPressed = null}) => {
     setIsLoading(true);
     try {
       const api = new APIRequest();
-      const response = await api.request(`/publicrides/driver/v2/updateDriverInfo`, 'POST', formData, userInfo?.token);
+      const response = await api.request(`/publicrides/driver/v2/updateDriverInfo`, 'POST', formData, userInfo?.token, {}, {}, null, true);
       // console.log('Update Driver Info Response:', response);
       if (response.success) {
         setDriverInfo({
