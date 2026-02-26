@@ -163,7 +163,7 @@ const CancelRideModal = ({
                 setError('');
               }}
             >
-              <Text style={styles.modalButtonText}>{t('close') || 'Close'}</Text>
+              <Text style={styles.modalButtonText}>{t('cancel') || 'cancel'}</Text>
             </TouchableOpacity>
           </View>
         </View>
