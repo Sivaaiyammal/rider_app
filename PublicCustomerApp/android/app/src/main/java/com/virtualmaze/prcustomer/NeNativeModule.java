@@ -1813,6 +1813,8 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
                 Log.e("RouteError", "Failed to get route instructions");
                 return;
             }
+            // Null check before calling setRouteCount
+            routeInstructionsDisplay.setRouteCount(routeCount.getRouteCount());
             // Ensure we're not just getting the default toString() representation
             List<RouteElementInstructionsDisplay> routeInstructions = routeInstructionsDisplay
                     .getRouteElementInstructions();

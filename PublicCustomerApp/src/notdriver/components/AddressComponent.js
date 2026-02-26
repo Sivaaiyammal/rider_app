@@ -58,7 +58,7 @@ const AddressComponent = props => {
   }
 
   return (
-    <View style={[styles.mainContainer,{width: screen === 'rideDetails' ? '100%' : '90%',backgroundColor: isPublicRides ? Colors.white : Colors.grey_light},]}>
+    <View style={[styles.mainContainer,{width: screen === 'rideDetails' ? '100%' : '92%',backgroundColor: isPublicRides ? Colors.white : Colors.grey_light},]}>
      
       {transformedData?.map((item, index) => {
         let displayName = item.name;
@@ -105,9 +105,13 @@ const styles = StyleSheet.create({
   mainContainer: {
     backgroundColor: Colors.grey_light,
     alignSelf: 'center',
-    borderRadius: 8,
+    borderRadius: 20,
     overflow: 'hidden',
-    paddingHorizontal: 10,
+    paddingHorizontal: 15,
+    elevation:5,
+    width:'100%',
+    marginVertical:10,
+    paddingVertical:10,
   },
   nameTxt: {
     fontFamily: Fonts.regular,
@@ -123,7 +127,8 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     paddingLeft: 20,
     borderStyle: 'dashed',
-    marginTop:10
+    marginTop:10,
+    width:'100%',
   },
   countTxt: {
     fontFamily: Fonts.regular,

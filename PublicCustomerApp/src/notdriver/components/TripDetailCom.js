@@ -13,11 +13,13 @@ import Userpassenger from '../../notdriver/assets/icons/user_passenger.svg';
 import SosIcon from '../../common/assets/icons/sos_icon.svg';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { showNotification } from '../../common/components/NotificationManger';
+import { useTranslation } from 'react-i18next';
 
 const TripDetails = ({ activeTripData, setModalVisible, isPaymentScreen, fareBreakDown, distance, duration, fare }) => {
   const { driverInfo } = usePublicDriverStore();
   const [loading, setLoading] = useState(false)
   const { setStackScreen } = useStackScreenStore();
+  const {t} = useTranslation();
 
   const callEmergency = async() => {
     await Linking.openURL(`tel:112`);
@@ -54,10 +56,10 @@ const TripDetails = ({ activeTripData, setModalVisible, isPaymentScreen, fareBre
     };
 
   return (
-    <View style={{ width: '100%',  borderBottomWidth:1,
+    <View style={{ width: '92%',  borderBottomWidth:1,
       borderStyle:"dashed",
-      borderColor:Colors.grey,  paddingBottom:10}}>
-        {isPaymentScreen && <Text style={styles.userDetails}>User Details</Text>}
+      borderColor:Colors.grey,  paddingBottom:10, elevation:5, alignSelf:'center', backgroundColor:Colors.white, borderRadius:20, marginVertical:20, }}>
+        {isPaymentScreen && <Text style={styles.userDetails}>{t('user_details')}</Text>}
         {/* <View style={styles.dotSeperator}/> */}
       <View style={styles.tripDetailsContainer}>
         <View style={styles.NameContianer}>
@@ -70,36 +72,37 @@ const TripDetails = ({ activeTripData, setModalVisible, isPaymentScreen, fareBre
           <Text style={styles.passangerPhone}>{activeTripData?.[0]?.bookingForPhone}</Text>
           <Feather name="copy" size={12} color={Colors.black}/>
           </TouchableOpacity>
-          <Text style={[styles.passangerName,{color:'#FF9900', fontSize:12, fontFamily:Fonts.light}]}>Status: {activeTripData[0]?.status?.toLowerCase()}</Text>
+          <Text style={[styles.passangerName,{color:Colors.green, fontSize:12, fontFamily:Fonts.regular}]}>{t('status')}: {activeTripData[0]?.status?.toLowerCase()}</Text>
           </View>
         </View>
         <TouchableOpacity style={{alignItems:'center', gap:10}} onPress={()=>handleCallPassenger(activeTripData[0]?.bookingForPhone)} disabled={loading}>
         <View style={styles.actionBtn} >
-          <Feather name="phone-call" color={Colors.white} size={14}/>
+          <Feather name="phone-call" color={Colors.white} size={20}/>
          </View>
         </TouchableOpacity>
       </View>
       <View style={styles.tripFareContainer}>
   <View style={styles.tripDetailsViewContainer}>
-       <View style={[styles.tripDetailsItem]}>
+       <View style={[styles.tripDetailsItem,{backgroundColor:'#E8F5FF', padding:5, borderRadius:10, elevation:2}]}>
        <TotalDistance/>
           <Text style={styles.tripDetailsItemText}>{(isPaymentScreen ? distance?.toFixed(2) : activeTripData?.[0]?.estimatedDistance)} Km</Text>
         </View>
-        <View style={styles.tripDetailsItem}>
-        <TotalHours/>
+        <View style={[styles.tripDetailsItem,{backgroundColor:Colors.grey, padding:5, borderRadius:10, elevation:2}]}>
+        <TotalHours />
           <Text style={styles.tripDetailsItemText}>{DateTimeFormatter.formatMinutesToDuration(isPaymentScreen ? duration : activeTripData?.[0]?.estimatedDuration)}</Text>
         </View>
-        <View style={[styles.tripDetailsItem]}>
-        <TotalEarnings/>
+        <View style={[styles.tripDetailsItem,{backgroundColor:'#edf5ee', padding:5, borderRadius:10, elevation:2}]}>
+        <TotalEarnings  />
           <Text style={[styles.tripDetailsItemText,{color:Colors.green}]}>₹ {isPaymentScreen ? fareBreakDown?.fare?.toFixed(2) :activeTripData?.[0]?.estimatedFare}</Text>
         </View>
         </View>
         <TouchableOpacity style={styles.HelpBtn} onPress={()=>setStackScreen('DriverHelpSupport')}>
-          <MaterialIcons name="support-agent" size={24} color={Colors.black} />
+          <MaterialIcons name="support-agent" size={18} color={Colors.black} />
+          <Text style={styles.HelpBtnText}>HELP</Text>
         </TouchableOpacity>
-          <TouchableOpacity style={styles.sosBtn} onPress={()=>callEmergency()}>
+          {/* <TouchableOpacity style={styles.sosBtn} onPress={()=>callEmergency()}>
           <SosIcon  width={54} height={54} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );
@@ -108,18 +111,22 @@ const TripDetails = ({ activeTripData, setModalVisible, isPaymentScreen, fareBre
 const styles = StyleSheet.create({
   tripDetailsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
     gap: 20,
     borderRadius: 10,
     marginVertical: 15,
+    width: '100%',
+    borderBottomWidth:0.4,
+    borderBottomColor:Colors.grey_dark,
+    paddingBottom:10
     // marginHorizontal: 20,
   },
   actionBtn:{
     backgroundColor:'#62CC9E',
-    width:40,
-    height:40,
+    width:50,
+    height:50,
     borderRadius:100,
     alignItems:'center',
     justifyContent:'center',
@@ -137,14 +144,13 @@ const styles = StyleSheet.create({
     gap:20,
     alignSelf:'center',
     borderStyle:'dashed',
-    borderColor:Colors.grey_xxdark, 
+    // borderColor:Colors.grey_xxdark, 
     paddingVertical:10,
-    backgroundColor:'#FAFAFA',
+    // backgroundColor:'#FAFAFA',
     paddingHorizontal:10,
     borderRadius:10,
-    elevation:1,
-    // flex:1,
-    flexWrap:'nowrap'
+    // elevation:1,
+    flexWrap:'nowrap',
   },
   tripDetailsItem:{
     alignItems:'center',
@@ -152,7 +158,7 @@ const styles = StyleSheet.create({
     flexDirection:'row'
   },
   tripDetailsItemText:{
-    fontFamily:Fonts.regular,
+    fontFamily:Fonts.medium,
     fontSize:12,
     color:Colors.black
   },
@@ -192,17 +198,25 @@ const styles = StyleSheet.create({
     width:'90%',
     alignSelf:'center',
     alignItems:'center',
-    justifyContent:'center',
+    justifyContent:'space-between',
     gap:10
   },
   HelpBtn:{
     padding:5,
-    borderRadius:100,
+    borderRadius:10,
     alignItems:'center',
     justifyContent:'center',
     backgroundColor:Colors.white,
-    elevation:4
+    elevation:4,
+    flexDirection:'row',
+    gap:5,
+     paddingHorizontal:10
   },
+  HelpBtnText:{
+    fontFamily:Fonts.regular,
+    fontSize:12,
+    color:Colors.black
+  },  
   sosBtn:{
     borderRadius:50,
     alignItems:'center',

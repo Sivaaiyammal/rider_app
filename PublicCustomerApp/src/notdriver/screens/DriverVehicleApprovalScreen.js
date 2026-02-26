@@ -16,23 +16,45 @@ import { Colors, contactPhone, Fonts } from '../../common/constants/constants';
 import { height } from '../../common/utils/scalingutils';
 import VehicleIcon from '../../notdriver/assets/icons/vehicle.svg'
 import DocWhiteIcon from '../../notdriver/assets/icons/doc_white.svg'
+import { useTranslation } from 'react-i18next';
+import { useQuery } from 'react-query';
+import publicrideDriverApi from '../api/publicrideDriverApi';
 
 const DriverVehicleApprovalScreen = ({ vehicleStatus = 'pending' }) => {
   // vehicleStatus can be: 'pending', 'approved', 'blocked', 'deleted'
-  const { vehicleInfo } = usePublicDriverStore();
+  const { setIsApproved} = usePublicDriverStore();
+
+  const { vehicleInfo , setVehicleInfo} = usePublicDriverStore();
   const {setStackScreen} = useStackScreenStore();
-  const {t} = {}
+  const {t} = useTranslation()
   const {setMapMarkers} = useMapMarkerStore();
   // const resetAllStore = useResetStore();
   const {logout} = useContext(GlobalContext);
   const {userInfo} = useUserStore()
   const {userDeviceId} = useDeviceAPIStore();
   const [loading, setLoading] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+
   const vehicleName = vehicleInfo?.type || 'Your Vehicle';
   const vehicleNumber = vehicleInfo?.regNo || 'XX-XX-XXXX';
   const vehicleApproved = vehicleInfo?.isApproved
   const vehicleBlocked = vehicleInfo?.isBlocked
   const vehicleDeleted = vehicleInfo?.isDeleted
+
+    const { data, isLoading, error, refetch, isFetching } = useQuery(
+      ['driverDetails'], 
+      () => publicrideDriverApi.getDriverDetails(userInfo?.token),
+      {
+        enabled: true,
+        onSuccess: (response) => {
+          if(response?.success){
+          setVehicleInfo(response?.driver || {});
+          // setIsApproved(response?.driver?.isApproved || false);
+        }
+        },
+        onError: (error) => {setStackScreen('DriverApprovalScreen')},
+      }
+    );
 
   const handleContactUs = () => {
     Linking.openURL(`tel:${contactPhone}`);
@@ -80,6 +102,27 @@ const DriverVehicleApprovalScreen = ({ vehicleStatus = 'pending' }) => {
     }
   };
 
+
+  const onCheckStatusPress = async () => {
+    if (isChecking) return;
+    setIsChecking(true);
+    try {
+      const result = await refetch();
+      const resp = result?.data;
+      const approved = resp?.driver?.isApproved;
+      if (approved) {
+        setStackScreen('Home');
+        setIsApproved(true)
+      } else {
+        showNotification(t('still_under_review') || 'Still under review', '', 'info');
+      }
+    } catch (e) {
+      showNotification(t('something_went_wrong') || 'Something went wrong', '', 'danger');
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {loading && <FullScreenLoader />}
@@ -89,13 +132,12 @@ const DriverVehicleApprovalScreen = ({ vehicleStatus = 'pending' }) => {
           <VehicleIcon width={80} height={80} />
         </View>
         
-        <Text style={styles.title}>Vehicle Approval</Text>
+        <Text style={styles.title}>{t('vehicle_approval')}</Text>
         
         <View style={styles.separator} />
         
         {/* Vehicle Info */}
         <View style={styles.vehicleContainer}>
-      
           <Text style={styles.vehicleName}>{vehicleName}</Text>
           <Text style={styles.vehicleNumber}>{vehicleNumber}</Text>
         </View>
@@ -105,38 +147,47 @@ const DriverVehicleApprovalScreen = ({ vehicleStatus = 'pending' }) => {
       <View style={styles.body}>
         <View style={styles.body}>
         <Text style={styles.infoText}>
-          We are working hard to verify taxi and approve them. So please understand that approval process will take some time.{"\n"}Thanks for your patience.
+            {t('vehicle_approval_desc')}
         </Text>
         <Text style={styles.infoText}>
-          If you have any queries regarding registration or app, Please{' '}
-          <Text style={styles.contactLink} onPress={handleContactUs}>contact us.</Text>
+          {t('vehicle_approval_desc_info')}
+          <Text style={styles.contactLink} onPress={handleContactUs}>{t('contact_us')}</Text>
         </Text>
       </View>
 
         {vehicleBlocked && (
           <Text style={[styles.infoText, styles.blockedText]}>
-            Your vehicle has been blocked due to some reasons.
+            {t('vehicle_approval_desc_info')}
           </Text>
         )}
         {vehicleDeleted && (
           <Text style={[styles.infoText, styles.blockedText]}>
-            Your vehicle has been deleted.
+            {t('vehicle_deleted')}
           </Text>
         )}
         {!vehicleApproved && (
           <Text style={[styles.infoText, styles.blockedText]}>
-            Your vehicle is still under approval.
+            {t('vehicle_approval_info')}
           </Text>
         )}
       </View>
 
+       <TouchableOpacity
+                style={[styles.checkStatusBtn, (isChecking || isFetching) && styles.checkStatusBtnDisabled]}
+                onPress={onCheckStatusPress}
+                disabled={isChecking || isFetching}
+              >
+                <Text style={styles.checkStatusText}>
+                  {(isChecking || isFetching) ? (t('refreshing') || 'Refreshing...') : (t('check_status') || 'Check Status')}
+                </Text>
+              </TouchableOpacity>
       <View style={styles.footer}>
         <TouchableOpacity 
           style={styles.editBtn} 
           onPress={handleEditDocuments}
         >
           <DocWhiteIcon />
-          <Text style={styles.editBtnText}>Edit Documents</Text>
+          <Text style={styles.editBtnText}>{t('edit_documents')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
         style={[
@@ -149,7 +200,7 @@ const DriverVehicleApprovalScreen = ({ vehicleStatus = 'pending' }) => {
           },
         ]}
         onPress={() => handleLogout()}>
-        <Text style={settingsScreen.logoutButtonText}>{'logout'}</Text>
+        <Text style={settingsScreen.logoutButtonText}>{t('logout')}</Text>
       </TouchableOpacity>
       </View>
     </View>
@@ -316,4 +367,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 8,
   },
+  checkStatusBtn:{
+    backgroundColor: Colors.grey_light,
+    alignItems: 'center',
+    alignSelf: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  checkStatusBtnDisabled:{
+    opacity: 0.6,
+  },
+  checkStatusText:{
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: '#1976D2',
+  }
 });

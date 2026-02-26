@@ -38,6 +38,8 @@ import CancelRideModal from '../components/CancelModel';
 import TripDetails from '../components/TripDetailCom';
 import { useTranslation } from 'react-i18next';
 import { firebaselog_onRide } from '../../common/utils/FirebaseAnalytics';
+import ArrivedPickUpLocation from '../components/ArrivedPickUpLocation';
+import ModalFooter from '../components/ModalFooter';
 
 
 const {NeNativeModule} = NativeModules;
@@ -802,11 +804,6 @@ const DriverOnRide = () => {
 
   return (
     <>
-    {/* {(isLoading || loading) &&
-    <View style={{position:'absolute', width:'100%', height:'100%', zIndex:99999}}>
-    <FullScreenLoader /> 
-    </View>
-    } */}
     <View style={{flex: 1}}>
       <WaitingTime setWaitingTime={setWaitingTime} onFinalTime={(finalTime, sotp, nextStopNumber)=>handleWaypointsWaitTime(finalTime, sotp, nextStopNumber)}/>       
      {fetchLocationDate && (
@@ -878,20 +875,38 @@ const DriverOnRide = () => {
             </TouchableOpacity>
             </View>
            }
+             {disduration && (
+              <View style={styles.DurationContainer}>
+             
+                 <View style={styles.detailsContainer}>
+              <View style={styles.durationContainer}>
+                 <Text style={styles.durationText}>
+                 {disduration?.location[2] < 1000? Math.round(disduration?.location[2]) +' '+'m' : utils.metersToKilometers(disduration?.location[2])?.toFixed(2) + 'km'} .
+                  </Text>
+                  <Text style={styles.durationText}>
+                    {' '}{DateTimeFormatter.convertSecondsToReadable(
+                      disduration?.location[3],true
+                    )}
+                  </Text>
+              </View>
+              </View>
+              {/* <TouchableOpacity style={styles.stopNavigationBtn} onPress={()=>stopNavigation()}> 
+                <Entypo name="cross" size={24} color="white" />
+              </TouchableOpacity> */}
+                 <TouchableOpacity style={styles.stopNavigationBtn} onPress={()=>onRecenter()}> 
+                <Feather name="navigation-2" size={18} color="white" /> 
+                <Text style={styles.stopNavigationBtnTxt}>Re-center</Text>
+              </TouchableOpacity>
+              </View>
+            )}
           {tripsStatus === 'ACCEPTED' && 
-          <View style={RouteScreenStyles.pickUpLocationContainer}>
-            <Text style={RouteScreenStyles.pickUpLocationTxt}>{t('arrived_at_pickup_location')}</Text>
-            <View style={RouteScreenStyles.pickUpLocationBtnContainer}>
-            <TouchableOpacity disabled={isAlertSent || pickUpAlertLoading} onPress={() => onReachedPickupAlert()} style={[RouteScreenStyles.acceptBtn,{backgroundColor:isAlertSent ? Colors.grey : Colors.periwinkle}]}>
-              {pickUpAlertLoading ? <ActivityIndicator size="small" color={Colors.white} /> :
-              <Text style={[RouteScreenStyles.stopTxt, {maxWidth:130}]} numberOfLines={2}>{t('alert')}</Text>}
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => onReachedPickup()} style={RouteScreenStyles.acceptBtn}>
-              <Text style={RouteScreenStyles.stopTxt}>{t('enter_otp')}</Text>
-            </TouchableOpacity>
-            </View>
-          </View>
+          <ArrivedPickUpLocation  
+          pickUpAlertLoading={pickUpAlertLoading}
+          isAlertSent={isAlertSent}
+          onReachedPickupAlert={onReachedPickupAlert}
+           onReachedPickup={onReachedPickup}/>
           }
+          
           {
             isReachedDropoff &&
             <>
@@ -914,6 +929,7 @@ const DriverOnRide = () => {
             </TouchableOpacity>
           </>
           }
+          
           {(!hasLocationPermission ||
             (!hasBackgroundLocationPermission && (Platform.OS === 'android' && Platform.Version > 28)) ||
             !hasNotificationPermission) ? (
@@ -975,30 +991,7 @@ const DriverOnRide = () => {
                 </TouchableOpacity>
               </View>
             ):null}
-            {disduration && (
-              <View style={styles.DurationContainer}>
-             
-                 <View style={styles.detailsContainer}>
-              <View style={styles.durationContainer}>
-                 <Text style={styles.durationText}>
-                 {disduration?.location[2] < 1000? Math.round(disduration?.location[2]) +' '+'m' : utils.metersToKilometers(disduration?.location[2])?.toFixed(2) + 'km'} .
-                  </Text>
-                  <Text style={styles.durationText}>
-                    {' '}{DateTimeFormatter.convertSecondsToReadable(
-                      disduration?.location[3],true
-                    )}
-                  </Text>
-              </View>
-              </View>
-              {/* <TouchableOpacity style={styles.stopNavigationBtn} onPress={()=>stopNavigation()}> 
-                <Entypo name="cross" size={24} color="white" />
-              </TouchableOpacity> */}
-                 <TouchableOpacity style={styles.stopNavigationBtn} onPress={()=>onRecenter()}> 
-                <Feather name="navigation-2" size={18} color="white" /> 
-                <Text style={styles.stopNavigationBtnTxt}>Re-center</Text>
-              </TouchableOpacity>
-              </View>
-            )}
+          
           <TripDetails activeTripData={activeTripData} setModalVisible={setCancelRideModalVisible} />
           <AddressComponent
               percentage={0}
@@ -1009,9 +1002,7 @@ const DriverOnRide = () => {
             {isReachedDropoff? (
              <></>
             ):(
-            <TouchableOpacity style={styles.cancelTripBtn} onPress={()=>setCancelRideModalVisible(true)}>
-              <Text style={styles.cancelTripBtnTxt}>{activeTripData?.[0]?.status === 'PICKEDUP' ? t('end_trip') : t('cancel_trip')}</Text>
-            </TouchableOpacity>
+            <ModalFooter setCancelRideModalVisible={setCancelRideModalVisible} activeTripData={activeTripData} />
             )}
        
         </CustomeBottomSheet>
@@ -1044,18 +1035,6 @@ const styles = StyleSheet.create({
         fontFamily:Fonts.regular,
         fontSize:14,
         color:Colors.black
-    },cancelTripBtn:{
-        backgroundColor:Colors.red,
-        width:'90%',
-        alignSelf:'center',
-        marginTop:30,
-        alignItems:'center',
-        paddingVertical:10,
-        borderRadius:10
-    },cancelTripBtnTxt:{
-        fontFamily:Fonts.regular,
-        fontSize:14,
-        color:Colors.white
     },
     stopNavigationBtn:{
         alignSelf:'center',

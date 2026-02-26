@@ -54,7 +54,7 @@ const RideLocationSetBox = ({
           {rideStartLocation ? <Text style={styles.address} numberOfLines={1}>{pickup}</Text>:<Text style={styles.placeHolder}>{t('search_pickup_location')}</Text>}
         </View>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.stopContainer} onPress={()=>onLocationClick(LocationTypes.WAYPOINT_LOCATION)}>
+      <View style={styles.stopContainer} onPress={()=>onLocationClick(LocationTypes.WAYPOINT_LOCATION)}>
         <View style={styles.iconContainer}>
        {rideWayPoints.length> 0 && <DashedLine color="grey" strokeWidth={1} dashLength={3} dashGap={5} vertical={true} />}
         { rideWayPoints.length > 0 && 
@@ -82,7 +82,7 @@ const RideLocationSetBox = ({
           
          
         
-      </TouchableOpacity>
+      </View>
         <TouchableOpacity style={styles.addStopBtnAbsolute} onPress={()=>onAddWaypoint(LocationTypes.WAYPOINT_LOCATION)}>
             <View style={styles.plusIconBg}>
             {rideWayPoints.length ?<Icon name="edit" size={20} color="white" /> : <Icon name="add" size={20} color="white" />}
