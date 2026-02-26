@@ -2,7 +2,6 @@
 import PushNotification from 'react-native-push-notification';
 import { Alert, Linking, NativeModules, Platform } from 'react-native';
 import { useStackScreenStore } from '../store/useStackScreenStore';
-import useCurrentScreenStore from '../store/useCurrentScreenStore';
 import { useTripAcceptStore } from '../../notdriver/store/useTripAcceptStore';
 import useTripsStore from '../../notdriver/store/useTripsStore';
 import { useMapMarkerStore } from '../store/useMapMarkerStore';
@@ -275,6 +274,12 @@ class PushNotifications {
       vibration: 300,
       details: details
     });
+        if (details.title === '🎉 Account Approved') {
+      const { setStackScreen } = useStackScreenStore.getState();
+       const {setIsApproved} = useTripAcceptStore.getState();
+       setStackScreen('Home');
+       setIsApproved(true)
+    }
   }
   
 }
