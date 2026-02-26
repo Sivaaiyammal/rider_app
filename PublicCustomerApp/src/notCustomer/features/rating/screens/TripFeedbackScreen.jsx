@@ -129,6 +129,7 @@ export default function TripFeedbackScreen() {
   
     useEffect(()=>{
       fetchTripDetails();
+      resetEverything();
       
     },[])
 
