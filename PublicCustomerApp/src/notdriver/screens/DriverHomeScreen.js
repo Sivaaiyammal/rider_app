@@ -255,7 +255,7 @@ const PublicRidesDriverHomeScreen = () => {
       const lastTransactionDate = driver?.lastPaymentInitTime
       const nextDueDate = driver?.nextDueDate
       const startTime = lastTransactionDate ? lastTransactionDate : createdAt
-      const endTime = nextDueDate ? nextDueDate : new Date().getTime()
+      const endTime = nextDueDate ? nextDueDate : null
       setDueDuration({startTime:startTime, endTime: endTime})
   }
   

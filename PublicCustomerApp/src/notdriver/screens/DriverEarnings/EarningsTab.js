@@ -120,8 +120,9 @@ const EarningsTab = () => {
     <View style={styles.screen}>
       {loading && <FullScreenLoader />}
        <PayDue driverDue={driverDue} userInfo={userInfo} driverDueDate={driverDueDate} fetchDueDate={fetchDueDate} driverInfo={driverInfo}/>
-      <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.dateRange}>{dueDuration ? DateTimeFormatter.requiredDateFormat(dueDuration?.startTime, 'D MMM,YYYY') + ' - ' + DateTimeFormatter.requiredDateFormat(dueDuration?.endTime, 'D MMM,YYYY') : ''}</Text>
+       {dueDuration?.endTime ? (
+          <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.dateRange}>{dueDuration ? DateTimeFormatter.requiredDateFormat(dueDuration?.startTime, 'D MMM,YYYY') + (dueDuration?.endTime ? ' - ' + DateTimeFormatter.requiredDateFormat(dueDuration?.endTime, 'D MMM,YYYY') : '') : ''}</Text>
       <Text style={styles.totalEarningsLabel}>{t('total_earnings')}</Text>
       <Text style={styles.totalEarnings}>₹{totalEarnings > 0 ? totalEarnings?.toFixed(2) : 0}</Text>
       <View style={styles.statsRow}>
@@ -141,10 +142,7 @@ const EarningsTab = () => {
           )}
           <Text style={styles.statLabel}>{t('total_online_hours')}{'\n'}{DateTimeFormatter.requiredDateFormat(startDate, 'MMM,YYYY')}</Text>
         </View>
-        {/* <View style={styles.statItem}>
-          <Text style={styles.statValueBlue}>100</Text>
-          <Text style={styles.statLabel}>Total Distance</Text>
-        </View> */}
+ 
       </View>
 
       <View style={styles.amountRow}>
@@ -165,23 +163,10 @@ const EarningsTab = () => {
           )}
         </View>
       </View>
-
-      {/* <View style={styles.slipContainer}>
-        <Text style={styles.slipTitle}>Detailed Slip</Text>
-        <View style={styles.slipRow}>
-          <Text style={styles.slipLabel}>Total Earnings</Text>
-          <Text style={styles.slipValue}>₹10200.70</Text>
-        </View>
-        <View style={styles.slipRow}>
-          <Text style={styles.slipLabel}>Commission</Text>
-          <Text style={styles.slipValueRed}>₹2800.20</Text>
-        </View>
-        <View style={styles.slipRow}>
-          <Text style={styles.slipLabel}>Revenue</Text>
-          <Text style={styles.slipValueGreen}>₹7400.50</Text>
-        </View>
-      </View> */}
     </ScrollView>
+       ) : (<>
+       </>)}
+    
     </View>
   )
 }
