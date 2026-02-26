@@ -26,6 +26,23 @@ import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics'
 import FullScreenLoader from '../../../common/loaders/FullScreenLoader';
 
 const VehicleEntry = ({ onNext }) => {
+
+  // Store initial values for change detection (set only on mount)
+  const initialValuesRef = React.useRef(null);
+  useEffect(() => {
+    if (!initialValuesRef.current) {
+      initialValuesRef.current = {
+        selectedType: vehicleInfo?.type || null,
+        regNo: vehicleInfo?.regNo || '',
+        vehicleRcDoc: vehicleInfo?.vehicleRcDoc || null,
+        insuranceDoc: vehicleInfo?.insurance || null,
+        permitNumber: vehicleInfo?.permitNumber || '',
+        permitDoc: vehicleInfo?.permitDoc || null,
+      };
+    }
+  }, []);
+
+  
   const { t } = useTranslation();
   const { setVehicleInfo, vehicleInfo, driverInfo } = usePublicDriverStore();
   const { userInfo } = useUserStore();
@@ -63,6 +80,25 @@ const VehicleEntry = ({ onNext }) => {
   const {setIsApproved} = usePublicDriverStore();
 
   const shouldShowAdditionalDocs = isParivahanFailed;
+
+    // Utility to check if form values changed (compare to initial values only)
+    const isFormChanged = () => {
+      const initial = initialValuesRef.current;
+      const getImageUri = img => {
+        if (!img) return '';
+        if (typeof img === 'string') return img;
+        if (typeof img === 'object' && img.uri) return img.uri;
+        return '';
+      };
+      return (
+        selectedType !== initial.selectedType ||
+        regNo !== initial.regNo ||
+        getImageUri(vehicleRcDoc) !== getImageUri(initial.vehicleRcDoc) ||
+        getImageUri(insuranceDoc) !== getImageUri(initial.insuranceDoc) ||
+        permitNumber !== initial.permitNumber ||
+        getImageUri(permitDoc) !== getImageUri(initial.permitDoc)
+      );
+    };
 
   const loadVehicleTypes = useCallback(async () => {
     setIsFetchingTypes(true);
@@ -238,7 +274,8 @@ const VehicleEntry = ({ onNext }) => {
     }
 
     if (shouldShowAdditionalDocs) {
-      if (!insuranceDoc) {
+      const hasInsuranceDoc = insuranceDoc || vehicleInfo.insuranceDoc;
+      if (!hasInsuranceDoc) {
         setInsuranceDocError(t('please_upload_insurance_document', { defaultValue: 'Upload the insurance document.' }));
         isValid = false;
       } else {
@@ -252,7 +289,8 @@ const VehicleEntry = ({ onNext }) => {
         setPermitNumberError('');
       }
 
-      if (!permitDoc) {
+      const hasPermitDoc = permitDoc || vehicleInfo.permitDoc;
+      if (!hasPermitDoc) {
         setPermitDocError(t('please_upload_permit_document', { defaultValue: 'Upload the permit document.' }));
         isValid = false;
       } else {
@@ -298,60 +336,72 @@ const VehicleEntry = ({ onNext }) => {
       setRegNoError('');
     }
 
-    if (!insuranceDoc) {
-      setInsuranceDocError(t('please_upload_insurance_document', { defaultValue: 'Upload the insurance document.' }));
-      isValid = false;
+    if (isParivahanFailed) {
+      const hasInsuranceDoc = insuranceDoc || vehicleInfo.insuranceDoc;
+      if (!hasInsuranceDoc) {
+        setInsuranceDocError(t('please_upload_insurance_document', { defaultValue: 'Upload the insurance document.' }));
+        isValid = false;
+      } else {
+        setInsuranceDocError('');
+      }
+
+      // Permit number is now optional, so no validation error if empty
+      setPermitNumberError('');
+
+      const hasPermitDoc = permitDoc || vehicleInfo.permitDoc;
+      if (!hasPermitDoc) {
+        setPermitDocError(t('please_upload_permit_document', { defaultValue: 'Upload the permit document.' }));
+        isValid = false;
+      } else {
+        setPermitDocError('');
+      }
     } else {
       setInsuranceDocError('');
-    }
-
-    // if (!permitNumber?.trim()) {
-    //   setPermitNumberError(t('please_enter_permit_number', { defaultValue: 'Enter the permit number.' }));
-    //   isValid = false;
-    // } else {
-    //   setPermitNumberError('');
-    // }
-
-    if (!permitDoc) {
-      setPermitDocError(t('please_upload_permit_document', { defaultValue: 'Upload the permit document.' }));
-      isValid = false;
-    } else {
+      setPermitNumberError('');
       setPermitDocError('');
     }
 
     return isValid;
-  }, [insuranceDoc, permitDoc, permitNumber, regNo, selectedType, t, vehicleRcDoc]);
+  }, [insuranceDoc, permitDoc, permitNumber, regNo, selectedType, t, vehicleRcDoc, isParivahanFailed]);
 
   // Removed retry helper to make single-attempt API calls for both endpoints
 
   const updateProof = useCallback(async () => {
+ 
     if (!_validateNew()) {
+      return;
+    }
+
+       if (!isFormChanged()) {
+      goBack();
       return;
     }
 
     const formData = new FormData();
     formData.append('type', selectedType);
     formData.append('regNo', regNo.trim());
-    formData.append('permitNumber', permitNumber.trim());
+    if (permitNumber && permitNumber.trim()) {
+      formData.append('permitNumber', permitNumber.trim());
+    }
 
-         if(insuranceDoc?.uri?.includes('file://')){
+    if (isParivahanFailed) {
+      if (insuranceDoc?.uri?.includes('file://')) {
         formData.append('insurance', {
-            uri: Platform.OS === 'android' ? insuranceDoc?.uri : insuranceDoc?.uri?.replace('file://', ''),
-            name: 'vehicle_insurance.jpg',
-        type: 'image/jpeg',
-          });
-        }
-
-             if(permitDoc?.uri?.includes('file://')){
+          uri: Platform.OS === 'android' ? insuranceDoc?.uri : insuranceDoc?.uri?.replace('file://', ''),
+          name: 'vehicle_insurance.jpg',
+          type: 'image/jpeg',
+        });
+      }
+      if (permitDoc?.uri?.includes('file://')) {
         formData.append('permitDoc', {
-            uri: Platform.OS === 'android' ? permitDoc?.uri : permitDoc?.uri?.replace('file://', ''),
-            name: 'vehicle_permit.jpg',
-        type: 'image/jpeg',
-          });
-        }
+          uri: Platform.OS === 'android' ? permitDoc?.uri : permitDoc?.uri?.replace('file://', ''),
+          name: 'vehicle_permit.jpg',
+          type: 'image/jpeg',
+        });
+      }
+    }
 
-    setIsSaving(true);   
-
+    setIsSaving(true);
     try {
       const maxRetries = 3;
       let response = null;
@@ -419,26 +469,32 @@ const VehicleEntry = ({ onNext }) => {
     t,
     userInfo?.token,
     vehicleRcDoc,
+    isFormChanged,
+    isParivahanFailed,
   ]);
    
-
   const onNextPress = useCallback(async () => {
+  
     if (!validate()) {
       return;
     }
- setIsSaving(true);
+      if (!isFormChanged()) {
+      goBack();
+      return;
+    }
+    
+    setIsSaving(true);
     const formData = new FormData();
     formData.append('type', selectedType);
     formData.append('regNo', regNo.trim());
     formData.append('permitNumber', permitNumber.trim());
-        if(vehicleRcDoc?.uri?.includes('file://')){
-        formData.append('vehicleRcDoc', {
-            uri: Platform.OS === 'android' ? vehicleRcDoc?.uri : vehicleRcDoc?.uri?.replace('file://', ''),
-            name: 'vehicle_rc.jpg',
-            type: 'image/jpeg',
-          });
-        }
-      
+    if (vehicleRcDoc?.uri?.includes('file://')) {
+      formData.append('vehicleRcDoc', {
+        uri: Platform.OS === 'android' ? vehicleRcDoc?.uri : vehicleRcDoc?.uri?.replace('file://', ''),
+        name: 'vehicle_rc.jpg',
+        type: 'image/jpeg',
+      });
+    }
     try {
       const maxRetries = 3;
       let response = null;
@@ -467,9 +523,9 @@ const VehicleEntry = ({ onNext }) => {
           type: selectedType,
           regNo: regNo.trim(),
           vehicleRcDoc: vehicleRcDoc,
-          insuranceDoc: insuranceDoc,
+          insuranceDoc: insuranceDoc || vehicleInfo.insuranceDoc || null,
           permitNumber: permitNumber?.trim(),
-          permitDoc: permitDoc,
+          permitDoc: permitDoc || vehicleInfo.permitDoc || null,
         });
         if (response?.message === 'parivahan_verification_failed') {
           showNotification(
@@ -484,7 +540,6 @@ const VehicleEntry = ({ onNext }) => {
           firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:vehicle_details_entry_parivahan_verification_failed')
           return;
         }
-        
         showNotification(response?.message, '', 'success');
         setIsParivahanFailed(false);
         setVehicleDetailsCompleteStatus(true);
@@ -516,6 +571,7 @@ const VehicleEntry = ({ onNext }) => {
     t,
     userInfo?.token,
     vehicleRcDoc,
+    isFormChanged,
   ]);
 
   const renderVehicleTypes = useMemo(() => {

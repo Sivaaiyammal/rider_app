@@ -256,6 +256,8 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 16,
     color: Colors.dark_grey,
+    zIndex:9,
+    opacity:0.8,
   },
   sectionsContainer: {
     gap: 12,
@@ -320,6 +322,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 12,
     marginBottom: 12,
+    opacity: 1,
   },
   statusBadgeComplete: {
     backgroundColor: '#E3F4E6',

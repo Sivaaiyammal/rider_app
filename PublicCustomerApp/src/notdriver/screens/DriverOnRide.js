@@ -802,11 +802,11 @@ const DriverOnRide = () => {
 
   return (
     <>
-    {(isLoading || loading) &&
+    {/* {(isLoading || loading) &&
     <View style={{position:'absolute', width:'100%', height:'100%', zIndex:99999}}>
     <FullScreenLoader /> 
     </View>
-    }
+    } */}
     <View style={{flex: 1}}>
       <WaitingTime setWaitingTime={setWaitingTime} onFinalTime={(finalTime, sotp, nextStopNumber)=>handleWaypointsWaitTime(finalTime, sotp, nextStopNumber)}/>       
      {fetchLocationDate && (

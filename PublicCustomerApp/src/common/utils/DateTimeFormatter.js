@@ -396,4 +396,17 @@ export const DateTimeFormatter = {
   convertToRelativeTime(date) {
     return moment(date).fromNow();
   },
+
+  // Helper to convert 24h time to 12h format
+  format12Hour (timeStr){
+  if (!timeStr) return '';
+  // Accepts HH:mm or HH:mm:ss
+  const [h, m, s] = timeStr.split(':');
+  let hour = parseInt(h, 10);
+  const minute = m || '00';
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+  return `${hour}:${minute}${ampm}`;
+}
 };

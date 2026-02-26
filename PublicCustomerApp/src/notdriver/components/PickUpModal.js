@@ -5,9 +5,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
+  TextInput,
 } from 'react-native';
 import React, {useRef, useState} from 'react'
-import OTPInput from '../../common/components/OTPInput';
 import {  width } from '../../common/utils/scalingutils';
 import { Colors, Fonts } from '../../common/constants/constants';
 import Locgrey from '../../notdriver/assets/icons/loc_grey.svg'
@@ -48,7 +48,6 @@ const PickUpModal = ({
       {isPublicRide ?  
       <>
       <Text style={styles.title}>{t('you_have_reached_your_pickup_location')} </Text>
-      <Text style={[styles.title,{marginVertical:10, fontSize:14}]}>{t('please_enter_the_otp')} </Text>
       </>
       : 
       <Text style={styles.title}>
@@ -61,46 +60,30 @@ const PickUpModal = ({
         </View>
         <Text style={styles.address}>{isPublicRide ?  stopsDetails?.stops?.[0]?.address : stopsDetails?.address}</Text>
       </View>
+      <Text style={[styles.title,{marginVertical:10, fontSize:14}]}>{t('please_enter_the_otp')} </Text>
+
         <View style={{width: '80%', alignSelf: 'center', marginVertical: 10}}>
-          {/* <OTPTextView
-            ref={otpRef}
-            inputCount={4}
-            textInputStyle={{
-              width: 40,
+          <TextInput
+            value={otpCode}
+            onChangeText={value => handleValueChange(value.replace(/[^0-9]/g, '').slice(0, 4))}
+            maxLength={4}
+            keyboardType="numeric"
+            style={{
+              width: 160,
               height: 50,
-              borderWidth: 1,
+              // borderWidth: 1,
               borderRadius: 5,
+              fontSize: 24,
+              letterSpacing: 16,
+              textAlign: 'center',
+              alignSelf: 'center',
+              backgroundColor: '#fff',
+              borderBottomWidth:1,
+              color:Colors.black
             }}
-            tintColor={Colors.periwinkle}
+            placeholder="----"
             autoFocus
-            handleTextChange={value => handleValueChange(value)}
-            keyboardType={'numeric'}
-          /> */}
-          <OTPInput
-                    inputCount={4}
-                    onChange={handleValueChange}
-                    // onComplete={(code) => setOtpInput(code)}  // your effect will auto-verify when length===6
-                    autoFocus
-                    keyboardType="number-pad"
-                    textContentType="oneTimeCode"
-                    autoComplete="sms-otp"
-                    focusedBorderColor={Colors.blue_xxdark}
-                    tintColor={[
-                      Colors.grey_xdark,
-                      Colors.grey_xdark ,
-                      Colors.grey_xdark,
-                      Colors.grey_xdark,
-                    ]}
-                    inputStyle={{
-                      width: 40,
-                      height: 60,
-                      borderWidth: 1,    
-                      margin: 5,
-                      borderRadius: 5,
-                      color: Colors.black,
-                    }}
-                />
-       
+          />
         {(otpCode.length !== 4 && otpError) && <Text style={styles.otpError}>{otpError}</Text>}
         </View>
     

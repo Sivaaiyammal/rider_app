@@ -23,6 +23,17 @@ import FullScreenLoader from '../../../common/loaders/FullScreenLoader';
 const UPIVerification = () => {
    const {setBankInfo, bankInfo, setBankDetailsCompleteStatus} = usePublicDriverStore();
   const [upiId, setUpiId] = React.useState(bankInfo?.UPIID || '');
+  // Store initial UPI value for change detection
+  const initialUPIRef = React.useRef(null);
+  React.useEffect(() => {
+    if (initialUPIRef.current === null) {
+      initialUPIRef.current = bankInfo?.UPIID || '';
+    }
+  }, [bankInfo]);
+
+  const isUPIChanged = () => {
+    return upiId !== (initialUPIRef.current || '');
+  };
   const [upiIdErr, setUpiIdErr] = React.useState('');
   // const [bankInfo, setBankInfo] = React.useState({});
   const {t} = useTranslation();
@@ -33,6 +44,12 @@ const UPIVerification = () => {
   const {userInfo} = useUserStore();
 
   const updateUPIInfo = () => {
+    // Only proceed if UPI changed
+    if (!isUPIChanged()) {
+      // showNotification(t('no_changes_to_update', {defaultValue: 'No changes to update.'}), '', 'info');
+      goBack();
+      return;
+    }
     if (upiId.trim().length === 0) {
       setUpiIdErr(t('please_enter_a_valid_upi_id'));
     } else if (!upiIdPattern.test(upiId.trim())) {
@@ -85,7 +102,7 @@ const UPIVerification = () => {
     <View style={{flex: 1, backgroundColor: 'white'}}>
       <NavBar title={t('upi_verification')} onBackPress={() => goBack()} />
       <UseBackButton onBackPress={() => goBack()} />
-        {isLoading && <FullScreenLoader />}
+        {/* {isLoading && <FullScreenLoader />} */}
       <View style={styles.container}>
         <InputField
           style={styles.textField}

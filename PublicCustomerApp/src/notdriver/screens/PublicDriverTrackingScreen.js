@@ -217,7 +217,7 @@ const PublicDriverTrackingScreen = () => {
 
   return (
     <>
-    {(isLoading || isRatingLoading )&&
+    {(isRatingLoading )&&
     <View style={{position:'absolute', width:'100%', height:'100%', zIndex:99999}}>
     <FullScreenLoader /> 
     </View>
