@@ -1103,5 +1103,14 @@
     "vehicle_approval_desc_info": "If you have any queries regarding registration or app, Please",
     "vehicle_blocked": "Your vehicle has been blocked due to some reasons.",
     "vehicle_deleted": "Your vehicle has been deleted.",
-    "vehicle_approval_info": "Your vehicle is still under approval."
+    "vehicle_approval_info": "Your vehicle is still under approval.",
+    "ride_cancelled_by_driver": "Ride Cancelled By Driver",
+    "ride_cancelled_by_passenger": "Ride Cancelled By Passenger",
+    "refresh_to_get_driver_details": "Refresh to get driver details",
+    "driver_access_logout_confirm_title": "Confirm Driver Login",
+    "driver_access_logout_confirm_message": "We'll log you out of the customer app so you can sign in as a driver. Continue?",
+    "driver_access_logout_confirm_cancel_button": "Stay in Customer App",
+    "driver_access_logout_confirm_confirm_button": "Yes, Log Out",
+    "session_expired": "Session Expired",
+    "session_expired_message": "Your session has expired. Please log in again."
 }
