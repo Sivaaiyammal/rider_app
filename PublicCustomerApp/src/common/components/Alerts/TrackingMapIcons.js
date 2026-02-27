@@ -71,7 +71,7 @@ function GetDevicesBoundingBox(devices) {
 
 const TrackingMapIcons = props => {
   const {markersData, isDriverLocation, currentLocationCallBack, refreshDirections, onlyLocation, ishomeDriver} = props;
-  const {setMapLocation, setMapBounds, setUserLocation, setMapMarkers,mapMarkers} = useMapMarkerStore();
+  const {setMapLocation, setMapBounds, setUserLocation, setMapMarkers,mapMarkers, userLocation} = useMapMarkerStore();
   const [loading, setLoading] = useState(false)
   const {t} = useTranslation();
 
@@ -128,16 +128,54 @@ const TrackingMapIcons = props => {
     getUserLocation();
   };
 
+  const filterMarkersWithin50km = (markers) => {
+    if (!markers || markers.length === 0) return [];
+
+    if (userLocation === null || userLocation.length !== 2) return markers;
+
+    const [currentLat, currentLon] = userLocation;
+
+    // Haversine distance function
+    function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+      const R = 6371; // Radius of the earth in km
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+    
+    // Filter markers within 50km of current location
+    return markers.filter(marker => {
+      if (!marker) return false;
+      // Support both {latitude, longitude} and {lat, lon}
+      let lat = marker.latitude;
+      let lon = marker.longitude;
+      if (typeof lat !== 'number' || typeof lon !== 'number') {
+        lat = marker.lat;
+        lon = marker.lon;
+      }
+      if (typeof lat !== 'number' || typeof lon !== 'number') return false;
+      const dist = getDistanceFromLatLonInKm(currentLat, currentLon, lat, lon);
+      return dist <= 50;
+    });
+  }
+
   const fitToHotSpot = (markers) => {
    if (!markers || markers?.length === 1) {
     return null;
   }
+  const newMarkers = filterMarkersWithin50km(markers);
+
   let minLat = Number.MAX_VALUE;
   let maxLat = Number.MIN_VALUE;
   let minLon = Number.MAX_VALUE;
   let maxLon = Number.MIN_VALUE;
 
-  markers?.map(marker => {
+  newMarkers?.map(marker => {
     if (!marker) return;
     if (marker) {
       const {latitude, longitude} = marker;
@@ -161,9 +199,15 @@ const TrackingMapIcons = props => {
   }
 
   const fitToBounds = useCallback(async () => {
-    const bBox = ishomeDriver? fitToHotSpot(hotSportMarkers) : GetDevicesBoundingBox(markersData);
-    // if (!bBox) return showNotification(t('unable_to_zoom'), '', 'info');
-    setMapBounds([bBox, [450, height *0.5, 450, height *0.4]]);
+    if (ishomeDriver) {
+      const bBox = fitToHotSpot(hotSportMarkers)
+      if (bBox === null || !bBox) return 
+      setMapBounds([bBox, [350, height *0.5, 350, height *0.49]]);
+    } else {
+      const bBox = GetDevicesBoundingBox(markersData);
+      if (bBox === null || !bBox) return 
+      setMapBounds([bBox, [70, 70, 100, 250]])
+    }
   }, [markersData?.locations, hotSportMarkers]);
 
   const mapIconsPress = item => {
