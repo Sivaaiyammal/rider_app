@@ -889,109 +889,116 @@ public class DriverOverlayController {
     }
 
     private void showOverlay(JSONObject data) {
-        if (windowManager == null) {
-            windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        }
-        removeOverlay();
+    if (windowManager == null) {
+        windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    }
+    removeOverlay();
 
-        if (isAppInForeground()) {
-            Log.i(TAG, "App in foreground; skipping overlay banner");
+    if (isAppInForeground()) {
+        Log.i(TAG, "App in foreground; skipping overlay banner");
+        stopAlertAudio();
+        DriverLocationService service = DriverLocationService.getInstanceSafe();
+        if (service != null) {
+            service.setOverlayActive(false);
+        }
+        emitOverlayVisibility(false);
+        return;
+    }
+
+    try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
+            Log.w(TAG, "Overlay permission missing; cannot display trip banner");
             stopAlertAudio();
-            DriverLocationService service = DriverLocationService.getInstanceSafe();
-            if (service != null) {
-                service.setOverlayActive(false);
-            }
+            cancelOverlayAutoDismiss();
             emitOverlayVisibility(false);
             return;
         }
 
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
-                Log.w(TAG, "Overlay permission missing; cannot display trip banner");
-                stopAlertAudio();
-                cancelOverlayAutoDismiss();
-                emitOverlayVisibility(false);
-                return;
-            }
+        LayoutInflater inflater = LayoutInflater.from(context);
+        overlayView = inflater.inflate(R.layout.driver_overlay_banner, null);
 
-            LayoutInflater inflater = LayoutInflater.from(context);
-                overlayView = inflater.inflate(R.layout.driver_overlay_banner, null);
+        DriverLocationService service = DriverLocationService.getInstanceSafe();
+        if (service != null) {
+            service.setOverlayActive(true);
+            service.playAlertSoundWithLoop(1);
+        }
 
-                DriverLocationService service = DriverLocationService.getInstanceSafe();
-                if (service != null) {
-                    service.setOverlayActive(true);
-                    service.playAlertSoundWithLoop(1);
-                }
+        int paramsType;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            paramsType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        } else {
+            //noinspection deprecation
+            paramsType = WindowManager.LayoutParams.TYPE_PHONE;
+        }
 
-            int paramsType;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                paramsType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-            } else {
-                //noinspection deprecation
-                paramsType = WindowManager.LayoutParams.TYPE_PHONE;
-            }
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.WRAP_CONTENT,
+                paramsType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT
+        );
+        params.gravity = Gravity.TOP;
 
-            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                    WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    paramsType,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                            | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                            | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    PixelFormat.TRANSLUCENT
-            );
-            params.gravity = Gravity.TOP;
+        ImageView appIcon = overlayView.findViewById(R.id.overlay_app_icon);
+        if (appIcon != null) {
+            appIcon.setImageResource(R.mipmap.ic_launcher_round);
+        }
 
-            ImageView appIcon = overlayView.findViewById(R.id.overlay_app_icon);
-            if (appIcon != null) {
-                appIcon.setImageResource(R.mipmap.ic_launcher_round);
-            }
+        TextView title = overlayView.findViewById(R.id.overlay_title);
+        ProgressBar timerProgress = overlayView.findViewById(R.id.overlay_timer_progress);
+        Button btnAccept = overlayView.findViewById(R.id.overlay_accept_btn);
+        Button btnReject = overlayView.findViewById(R.id.overlay_reject_btn);
+        TextView bonusText = overlayView.findViewById(R.id.overlay_bonus_text);
+        TextView distanceText = overlayView.findViewById(R.id.overlay_distance_text);
 
-            TextView title = overlayView.findViewById(R.id.overlay_title);
-            ProgressBar timerProgress = overlayView.findViewById(R.id.overlay_timer_progress);
-            Button btnAccept = overlayView.findViewById(R.id.overlay_accept_btn);
-            Button btnReject = overlayView.findViewById(R.id.overlay_reject_btn);
-            TextView bonusText = overlayView.findViewById(R.id.overlay_bonus_text);
-            TextView distanceText = overlayView.findViewById(R.id.overlay_distance_text);
+        applyOverlayTypography(title, btnAccept, btnReject);
 
-            applyOverlayTypography(title, btnAccept, btnReject);
-            initTimerUI(timerProgress);
+        title.setText("New Trip Request");
 
-            title.setText("New Trip Request");
+        JSONObject inner = data.optJSONObject("data");
+        int timeoutSeconds = resolveTimeoutSeconds(inner, data);
 
-            JSONObject inner = data.optJSONObject("data");
-            int timeoutSeconds = resolveTimeoutSeconds(inner, data);
-            // Show bonus and distance information if available
-            applyBonusAndDistanceUI(bonusText, distanceText, inner);
-            bindTripDetails(overlayView, inner);
-            scheduleOverlayAutoDismiss(timerProgress, timeoutSeconds);
+        // Show bonus and distance information if available
+        applyBonusAndDistanceUI(bonusText, distanceText, inner);
+        bindTripDetails(overlayView, inner);
 
-            btnAccept.setOnClickListener(v -> {
-                emitDriverResponse(data, true);
-                clearNotificationTray();
-                removeOverlay();
-                openApp();
-                emitOverlayResponse(true, data);
+        btnAccept.setOnClickListener(v -> {
+            emitDriverResponse(data, true);
+            clearNotificationTray();
+            removeOverlay();
+            openApp();
+            emitOverlayResponse(true, data);
+        });
+
+        btnReject.setOnClickListener(v -> {
+            emitDriverResponse(data, false);
+            clearNotificationTray();
+            removeOverlay();
+            emitOverlayResponse(false, data);
+        });
+
+        if (windowManager != null) {
+            // ✅ IMPORTANT: attach overlay first
+            windowManager.addView(overlayView, params);
+            emitOverlayVisibility(true);
+
+            // ✅ Start progress + auto-dismiss AFTER attach (prevents "starts on click" bug)
+            overlayView.post(() -> {
+                initTimerUI(timerProgress);
+                scheduleOverlayAutoDismiss(timerProgress, timeoutSeconds);
             });
-
-            btnReject.setOnClickListener(v -> {
-                emitDriverResponse(data, false);
-                clearNotificationTray();
-                removeOverlay();
-                emitOverlayResponse(false, data);
-            });
-
-            if (windowManager != null) {
-                windowManager.addView(overlayView, params);
-                emitOverlayVisibility(true);
-            } else {
-                emitOverlayVisibility(false);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to add overlay view", e);
+        } else {
             emitOverlayVisibility(false);
         }
+
+    } catch (Exception e) {
+        Log.e(TAG, "Failed to add overlay view", e);
+        emitOverlayVisibility(false);
     }
+}
 
     private void removeOverlay() {
         if (overlayView != null) {
@@ -1275,35 +1282,54 @@ public class DriverOverlayController {
     }
 
     private void scheduleOverlayAutoDismiss(ProgressBar progressBar, int timeoutSeconds) {
-        cancelOverlayAutoDismiss();
-        if (timeoutSeconds <= 0) {
-            return;
-        }
-        long totalDurationMs = timeoutSeconds * 1000L;
+    cancelOverlayAutoDismiss();
 
-        overlayDismissRunnable = this::removeOverlay;
-        mainHandler.postDelayed(overlayDismissRunnable, totalDurationMs);
-
-        if (progressBar != null) {
-            progressBar.post(() -> {
-                final int startValue = Math.max(progressBar.getMax(), 1);
-                progressAnimator = ValueAnimator.ofInt(startValue, 0);
-                progressAnimator.setDuration(totalDurationMs);
-                progressAnimator.setInterpolator(new LinearInterpolator());
-                progressAnimator.addUpdateListener(animation -> {
-                    int value = (int) animation.getAnimatedValue();
-                    progressBar.setProgress(value);
-                });
-                progressAnimator.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        progressAnimator = null;
-                    }
-                });
-                progressAnimator.start();
-            });
-        }
+    if (timeoutSeconds <= 0) {
+        return;
     }
+
+    long totalDurationMs = timeoutSeconds * 1000L;
+
+    overlayDismissRunnable = this::removeOverlay;
+    mainHandler.postDelayed(overlayDismissRunnable, totalDurationMs);
+
+    if (progressBar != null) {
+        progressBar.post(() -> {
+            // Ensure ProgressBar is ready
+            int max = progressBar.getMax();
+            if (max <= 0) {
+                max = 1000;
+                progressBar.setMax(max);
+            }
+            progressBar.setIndeterminate(false);
+            progressBar.setProgress(max);
+            progressBar.invalidate();
+
+            progressAnimator = ValueAnimator.ofInt(max, 0);
+            progressAnimator.setDuration(totalDurationMs);
+            progressAnimator.setInterpolator(new LinearInterpolator());
+            progressAnimator.addUpdateListener(animation -> {
+                int value = (int) animation.getAnimatedValue();
+                progressBar.setProgress(value);
+
+                // ✅ Force redraw for overlay windows (prevents "only animates after click")
+                progressBar.invalidate();
+            });
+            progressAnimator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    progressAnimator = null;
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    progressAnimator = null;
+                }
+            });
+            progressAnimator.start();
+        });
+    }
+}
 
     private void cancelOverlayAutoDismiss() {
         if (overlayDismissRunnable != null) {
@@ -1312,19 +1338,23 @@ public class DriverOverlayController {
         }
         if (progressAnimator != null) {
             progressAnimator.cancel();
-            progressAnimator.removeAllUpdateListeners();
-            progressAnimator.removeAllListeners();
+            // Defensive null check in case cancel() sets progressAnimator to null
+//            if (progressAnimator != null) {
+                progressAnimator.removeAllUpdateListeners();
+                progressAnimator.removeAllListeners();
+//            }
             progressAnimator = null;
         }
     }
 
-    private void initTimerUI(ProgressBar progressBar) {
-        if (progressBar != null) {
-            progressBar.setIndeterminate(false);
-            progressBar.setMax(1000);
-            progressBar.setProgress(1000);
-        }
+   private void initTimerUI(ProgressBar progressBar) {
+    if (progressBar != null) {
+        progressBar.setIndeterminate(false);
+        progressBar.setMax(1000);
+        progressBar.setProgress(1000);
+        progressBar.invalidate();
     }
+}
 
     public void hideOverlay() {
         mainHandler.post(this::removeOverlay);

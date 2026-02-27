@@ -228,7 +228,7 @@ const WaypointScreen = ({ fromDriverArrival = false }) => {
       if (isWaypointsReady()) {
       const result = await transformWaypointsToDirectionPoints({
         clearMarkers: true,
-        vehicleType: 'motorcycle',
+        vehicleType: 'car',
         padding: [50, height*0.4, 50, 100]
       });
       console.log("waypointRoute result",result)

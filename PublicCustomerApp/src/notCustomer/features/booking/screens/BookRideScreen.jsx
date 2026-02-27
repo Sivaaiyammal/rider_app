@@ -481,7 +481,7 @@ const BookRideScreen = ({DurationFromAddStopsScreen = null,DistanceFromAddStopsS
             console.log("DirectionRoute called")
             const result = await transformRideLocationsToDirectionPoints({
                 clearMarkers: true,
-                vehicleType: 'motorcycle',
+                vehicleType: 'car',
                 padding:  [50, 50, 50, height*0.5]
             });
             

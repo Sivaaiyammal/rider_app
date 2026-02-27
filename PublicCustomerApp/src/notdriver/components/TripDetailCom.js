@@ -140,17 +140,14 @@ const styles = StyleSheet.create({
   tripDetailsViewContainer:{
     flexDirection:'row',
     alignItems:'center',
-    justifyContent:'space-between',
-    gap:20,
+    gap:5,
     alignSelf:'center',
     borderStyle:'dashed',
-    // borderColor:Colors.grey_xxdark, 
     paddingVertical:10,
-    // backgroundColor:'#FAFAFA',
-    paddingHorizontal:10,
+    // backgroundColor:'red',
     borderRadius:10,
-    // elevation:1,
-    flexWrap:'nowrap',
+    flexWrap:'wrap',
+    width:'70%'
   },
   tripDetailsItem:{
     alignItems:'center',
