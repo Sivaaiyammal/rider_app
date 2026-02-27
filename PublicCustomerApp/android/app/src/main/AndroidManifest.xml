@@ -117,6 +117,22 @@
             android:name="com.virtualmaze.prcustomer.overlay.OverlayHeadlessService"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
+     
+     <!-- Razorpay Deeplink Activity -->
+        <activity
+    android:name="com.razorpay.DeeplinkActivity"
+    tools:node="merge">
+
+    <!-- Remove the Razorpay HTTPS app-link mapping -->
+    <intent-filter tools:node="remove">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data android:scheme="https" android:host="pg-router.dev.razorpay.in" />
+    </intent-filter>
+</activity>
+<!--  Razorpay Deeplink Activity -->
 
     </application>
 </manifest>
