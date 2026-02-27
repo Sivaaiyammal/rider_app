@@ -241,7 +241,7 @@ const DriverOnRide = () => {
     setStartNavigation(false);
     setDisduration(null);
     driverWaitingTime.stopWaitingTime()
-    showNotification(res?.message, res?.message, 'success');
+    // showNotification(res?.message, res?.message, 'success');
     firebaselog_onRide('OR_Status(OR_S)', isGetFare ? 'OR_S:dropped' : 'OR_S:cancelled_by_driver_after_pickup')
     } else {
     showNotification(res?.message || 'Something went wrong', res?.message || 'Error Fetching Fare', 'danger');
@@ -283,7 +283,7 @@ const DriverOnRide = () => {
         };
         const res = await api.request(url, 'POST', payload, userInfo.token);
         if(res.success) {
-          showNotification('Alert sent', 'Alert sent', 'success');
+          // showNotification('Alert sent', 'Alert sent', 'success');
           setIsAlertSent(true)
           
         } else {
@@ -330,7 +330,7 @@ const DriverOnRide = () => {
           // NeNativeModule.moveToNextWaypoint();
         }
        
-        showNotification(res?.message, 'Stop Updated', 'success');
+        // showNotification(res?.message, 'Stop Updated', 'success');
         // await DriverAnalytics.triggerDriverTripStatus(`stop_${nextStopNumber}_reached`);
       } else {
         showNotification(res?.message, res?.message, 'danger');
@@ -371,7 +371,7 @@ const DriverOnRide = () => {
         setStartNavigation(false);
         setDisduration(null);
         setCurrentWaypointIndex(prevIndex => prevIndex + 1);
-        showNotification(res?.message, 'Pickup Successfully', 'success');
+        // showNotification(res?.message, 'Pickup Successfully', 'success');
         // await DriverAnalytics.triggerDriverTripStatus(`stop_${nextStopNumber}_reached`);
       } else {
         showNotification(res?.message, res?.message, 'danger');
@@ -403,7 +403,7 @@ const DriverOnRide = () => {
       }
       const res = await api.request(url, 'POST', payload, userInfo?.token);
       if(res?.success){
-        showNotification(res?.message, res?.message, 'success');
+        // showNotification(res?.message, res?.message, 'success');
         setModalVisible(!modalVisible);
         setDirectionPoints(null);
         setDirectionResponse(null);

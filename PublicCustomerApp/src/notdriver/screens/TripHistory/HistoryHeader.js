@@ -28,7 +28,7 @@ const tripStatus = [
   { label: 'All', value: 'ALL' },
   { label: 'Completed', value: 'COMPLETED' },
   { label: 'Cancelled', value: 'CANCELLED' },
-  { label: 'Diverged', value: 'DIVERGED' },
+  // { label: 'Diverged', value: 'DIVERGED' },
 ];
 
 function getTimes(startDate, endDate) {

@@ -126,6 +126,9 @@ class Trip {
         const queryFilter = { ...filter };
         if (queryFilter.status === 'ALL') {
             delete queryFilter.status;
+        } else if (queryFilter.status === 'COMPLETED') {
+            // If status is COMPLETED, match both COMPLETED and DIVERGED
+            queryFilter.status = { $in: ['COMPLETED', 'DIVERGED'] };
         }
 
         function buildDriverIdMatch(driverId) {
