@@ -29,7 +29,7 @@ export default function EnhancedDateRangeBottomSheet({
   statusOptions = [
     { value: '', label: 'all_status' },
     { value: 'COMPLETED', label: 'completed' },
-    { value: 'DIVERGED', label: 'diverged' },
+    // { value: 'DIVERGED', label: 'diverged' },
     { value: 'CANCELLED', label: 'cancelled' }
   ]
 }) {
