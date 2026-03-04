@@ -44,12 +44,6 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
         <!-- UPI Payment Callback -->
-        <intent-filter>
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data android:scheme="your-app-scheme" />
-        </intent-filter>
         <intent-filter android:autoVerify="true">
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.DEFAULT" />
