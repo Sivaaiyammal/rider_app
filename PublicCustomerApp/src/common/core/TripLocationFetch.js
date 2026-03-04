@@ -6,7 +6,6 @@ import processData from "./DataProcessorDriver";
 
 function TripLocationFetch({ startTime, endTime, tripId, setLoading, setError, onDataProcessed }) {
     const { userInfo } = useUserStore()
-    console.log("fetching Trip Duration Distance data", startTime, endTime)
 
     const { data, loading, error } = useQuery(GetLocations(tripId, false, startTime, endTime), {
         context: {

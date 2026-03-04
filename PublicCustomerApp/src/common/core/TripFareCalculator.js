@@ -170,16 +170,20 @@ const TripFareCalculator = ({ tripData, onDone, setLoading, setError, isGetFare 
       //   finalDuration = minutes;
       // }
 
-      console.log('hari-->>finalDistance-->>',finalDistance)
+      const _finalDistance = finalDistance ? finalDistance?.toFixed(2) : 0;
+      const _finalDuration = finalDuration; 
+
+       console.log('hari-->>finalDistance-->>',_finalDistance)
       console.log('hari-->>finalDuration-->>',finalDuration)
+
       const encodedData = otherApiData?.legs?.[0]?.shape || '';
       
       if(isGetFare) {
        // Step 4: Fetch final fare
-       const fareResponse = await fetchFair(tripData, finalDistance, finalDuration, encodedData);
+       const fareResponse = await fetchFair(tripData, _finalDistance, _finalDuration, encodedData);
        if (onDone) return onDone(fareResponse, encodedPloyline);
       } else {
-        const cancelResponse = await cancelOnGoingTrip(tripData, finalDistance, finalDuration, encodedData);
+        const cancelResponse = await cancelOnGoingTrip(tripData, _finalDistance, _finalDuration, encodedData);
         if (onDone) return onDone(cancelResponse, encodedPloyline);
       }
       // if (onDone) return onDone(otherApiData);
