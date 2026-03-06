@@ -37,11 +37,13 @@ const paymentMethods = [
   {
     id: 1,
     name: 'Collected By Driver',
+    key: 'collected_by_driver',
     value: 0
   },
   {
     id: 2,
     name: 'Sent To Vendor',
+    key: 'sent_to_vendor',
     value: 1
   }
 ]
@@ -145,7 +147,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
           {paymentMethods.map((item, index) => (
             <TouchableOpacity key={index} style={styles.paymentMethodContainer} onPress={()=>setSelectedPaymentMethod(item.value)}>
               <Fontisto name={selectedPaymentMethod === item.value ? "radio-btn-active" : "radio-btn-passive"} size={24} color={selectedPaymentMethod === item.value ? Colors.periwinkle : Colors.grey_xdark} />
-              <Text style={{fontFamily: Fonts.medium, fontSize: 16, color:selectedPaymentMethod === item.value ? Colors.periwinkle : Colors.black}}>{item.name}</Text>
+              <Text style={{fontFamily: Fonts.medium, fontSize: 16, color:selectedPaymentMethod === item.value ? Colors.periwinkle : Colors.black}}>{item.key}</Text>
             </TouchableOpacity>
           ))}
           <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%'}}>

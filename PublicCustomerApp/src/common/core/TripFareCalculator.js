@@ -8,6 +8,7 @@ import { useMapMarkerStore } from '../store/useMapMarkerStore';
 import APIRequest from '../APIRequest';
 import TripLocationFetch from './TripLocationFetch';
 import { firebaselog_onRide } from '../utils/FirebaseAnalytics';
+import { useTranslation } from 'react-i18next';
 
 const TripFareCalculator = ({ tripData, onDone, setLoading, setError, isGetFare }) => {
   const {userInfo} = useUserStore()
@@ -16,6 +17,7 @@ const TripFareCalculator = ({ tripData, onDone, setLoading, setError, isGetFare 
   const {getReachedStops, currentTripAcceptedTime} = useTripsStore()
   const reachedStops = getReachedStops();
   const {userLocation} = useMapMarkerStore();
+  const {t} = useTranslation();
 
   // Prepare lat/lng list for route API
   const latlngs = () => {
@@ -106,7 +108,7 @@ const TripFareCalculator = ({ tripData, onDone, setLoading, setError, isGetFare 
       try {
         const payload = {
           "tripId": tripData._id,
-          "reason": tripCancelReason,
+          "reason": t(tripCancelReason) || tripCancelReason,
           "totalDistance": totalDistance,
           "totalDuration": totalDuration,
           "encodedPolyline" : encodedData,

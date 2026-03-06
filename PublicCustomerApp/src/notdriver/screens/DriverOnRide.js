@@ -173,12 +173,14 @@ const DriverOnRide = () => {
     driverWaitingTime.stopWaitingTime()
   }
 
-  const handleEndTrip = async (reason) => {
+  const handleEndTrip = async (reason, translatedReason) => {
     // if (!hasbackgroundPression || !haslocationPression) {
     //   onNavigationClick()
 
     //   return;
     // }
+
+    const _translatedReason = translatedReason || reason;
 
     if (!userLocation) {
       await locationTask.getCurrentLocation();
@@ -188,7 +190,7 @@ const DriverOnRide = () => {
       setLoading(true);
       if (tripsStatus === 'ACCEPTED') {
         const api = new APIRequest();
-        const response = await api.request(`/publicrides/driver/v2/cancelTrip`, 'POST', {tripId:activeTripData[0]?._id, reason: reason, isBeforePickup: true,  droppedAtLoc: {
+        const response = await api.request(`/publicrides/driver/v2/cancelTrip`, 'POST', {tripId:activeTripData[0]?._id, reason: _translatedReason, isBeforePickup: true,  droppedAtLoc: {
           lat: userLocation?.[0],
           lon: userLocation?.[1]
         }}, userInfo.token);

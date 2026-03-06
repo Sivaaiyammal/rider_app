@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Modal } from 'react-native'
 import React, { useState } from 'react'
 import { useStackScreenStore } from '../../common/store/useStackScreenStore'
 import FullScreenLoader from '../../common/loaders/FullScreenLoader'
@@ -16,12 +16,12 @@ const VehicleDetails = () => {
     const { userInfo } = useUserStore()
     const {setStackScreen} = useStackScreenStore()
     const [loading, setLoading] = useState(false)
+    const [showLogoutModal, setShowLogoutModal] = useState(false)
     
     const handleLogout = async () => {
         setLoading(true)
         const url = `/publicrides/driver/v2/logoutFromVehicle`
         const api = new APIRequest()
-
         try {
             const response = await api.request(
                 url,
@@ -35,9 +35,8 @@ const VehicleDetails = () => {
                     t('pls_try_later'),
                     'success',
                 )
-                // todo : remove from local storage userInfo
                 setVehicleInfo(null)
-                setStackScreen('DriverAskVehicle')
+                setStackScreen('DriverAskVehicle') // force to vehicle selection
             } else {
                 showNotification(
                     response?.message || 'Failed to logout from vehicle',
@@ -54,6 +53,11 @@ const VehicleDetails = () => {
             )
         }
         setLoading(false)
+    }
+
+    const confirmLogout = () => {
+        setShowLogoutModal(false)
+        handleLogout()
     }
 
     const vehicleDetails = [
@@ -95,7 +99,7 @@ const VehicleDetails = () => {
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <Text style={styles.headerTitle}>{t('vehicle_information')}</Text>
+                    <Text style={styles.headerTitle}>{t('vehicle_info')}</Text>
                     <Text style={styles.headerSubtitle}>{t('logged_in_vehicle_details')}</Text>
                 </View>
 
@@ -117,13 +121,36 @@ const VehicleDetails = () => {
                 {/* Logout Button */}
                 <TouchableOpacity
                     style={styles.logoutButton}
-                    onPress={handleLogout}
+                    onPress={() => setShowLogoutModal(true)}
                 >   
                     <View style={styles.logoutContent}>
                         {/* <LogoutIcon width={20} height={20} /> */}
                         <Text style={styles.logoutText}>{t('logout_from_vehicle')}</Text>
                     </View>
                 </TouchableOpacity>
+
+                {/* Logout Confirmation Modal */}
+                <Modal
+                    visible={showLogoutModal}
+                    transparent
+                    animationType="fade"
+                    onRequestClose={() => setShowLogoutModal(false)}
+                >
+                    <View style={styles.modalOverlay}>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitle}>{t('are_you_sure')}</Text>
+                            <Text style={styles.modalMessage}>{t('are_you_sure_logout') || 'Are you sure you want to logout from this vehicle? You must login to another available vehicle to take trips.'}</Text>
+                            <View style={styles.modalActions}>
+                                <TouchableOpacity style={styles.modalButtonCancel} onPress={() => setShowLogoutModal(false)}>
+                                    <Text style={styles.modalButtonTextCancel}>{t('cancel')}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.modalButtonConfirm} onPress={confirmLogout}>
+                                    <Text style={styles.modalButtonTextConfirm}>{t('logout')}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
             </ScrollView>
         </View>
     )
@@ -132,6 +159,68 @@ const VehicleDetails = () => {
 export default VehicleDetails
 
 const styles = StyleSheet.create({
+        modalOverlay: {
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        modalContent: {
+            backgroundColor: Colors.white,
+            borderRadius: 12,
+            padding: 24,
+            width: '80%',
+            alignItems: 'center',
+            shadowColor: Colors.black,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 4,
+            elevation: 8,
+        },
+        modalTitle: {
+            fontFamily: Fonts.bold,
+            fontSize: moderateScale(18),
+            color: Colors.black,
+            marginBottom: 12,
+        },
+        modalMessage: {
+            fontFamily: Fonts.regular,
+            fontSize: moderateScale(14),
+            color: Colors.warm_grey,
+            marginBottom: 24,
+            textAlign: 'center',
+        },
+        modalActions: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            width: '100%',
+        },
+        modalButtonCancel: {
+            flex: 1,
+            backgroundColor: Colors.grey_light,
+            paddingVertical: 12,
+            borderRadius: 8,
+            marginRight: 8,
+            alignItems: 'center',
+        },
+        modalButtonConfirm: {
+            flex: 1,
+            backgroundColor: Colors.danger_red,
+            paddingVertical: 12,
+            borderRadius: 8,
+            marginLeft: 8,
+            alignItems: 'center',
+        },
+        modalButtonTextCancel: {
+            color: Colors.black,
+            fontFamily: Fonts.medium,
+            fontSize: moderateScale(16),
+        },
+        modalButtonTextConfirm: {
+            color: Colors.white,
+            fontFamily: Fonts.medium,
+            fontSize: moderateScale(16),
+        },
     container: {
         flex: 1,
         backgroundColor: Colors.white,

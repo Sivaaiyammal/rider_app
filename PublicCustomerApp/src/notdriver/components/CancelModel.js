@@ -78,7 +78,8 @@ const CancelRideModal = ({
 
     setError(''); // Clear any previous errors
     const reason = tripCancelReason === 'other' ? otherReason : tripCancelReason;
-    callCancelRide(reason);
+    const translatedReason = t(reason) || reason; // Translate the reason if possible
+    callCancelRide(reason, translatedReason);
   };
 
   const handleOtherReasonChange = (text) => {
