@@ -1119,5 +1119,6 @@
     "collected_by_driver": "ഡ്രൈവർ ശേഖരിച്ചത്",
     "sent_to_vendor": "വെണ്ടർക്ക് അയച്ചു",
     "no_work_history_found": "ജോലി ചരിത്രമൊന്നും കണ്ടെത്തിയില്ല",
-    "active_days": "സജീവ ദിവസങ്ങൾ"
+    "active_days": "സജീവ ദിവസങ്ങൾ",
+    "select_date": "തീയതി തിരഞ്ഞെടുക്കുക"
 }

@@ -1119,5 +1119,6 @@
     "collected_by_driver": "चालक द्वारा एकत्रित",
     "sent_to_vendor": "विक्रेता को भेजा गया",
     "no_work_history_found": "कोई कार्य अनुभव नहीं मिला",
-    "active_days": "सक्रिय दिन"
+    "active_days": "सक्रिय दिन",
+    "select_date": "तारीख़ चुनें"
 }

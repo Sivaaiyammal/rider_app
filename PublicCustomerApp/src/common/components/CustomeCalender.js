@@ -16,7 +16,7 @@ const getDatesBetween = (startDate, endDate) => {
   return dates;
 };
 
-const CustomeCalender = ({startDate, endDate, onDateChange, isSelectMultipleDates, minDate}) => {
+const CustomeCalender = ({startDate, endDate, onDateChange, isSelectMultipleDates, minDate, maxDate, initialDate}) => {
     
   const handleDayPress = day => {
     onDateChange(day);
@@ -33,6 +33,7 @@ const CustomeCalender = ({startDate, endDate, onDateChange, isSelectMultipleDate
 
   return (
     <Calendar
+      key={initialDate || 'default'}
       onDayPress={handleDayPress}
       markedDates={markedDates}
       theme={{
@@ -47,8 +48,10 @@ const CustomeCalender = ({startDate, endDate, onDateChange, isSelectMultipleDate
         textDayHeaderFontSize: 12,
       }}
       markingType={isSelectMultipleDates ? 'period' : 'dot'}
-      maxDate={new Date().toISOString().slice(0, 10)}
+      maxDate={maxDate || new Date().toISOString().slice(0, 10)}
       minDate={minDate}
+      current={initialDate}
+      hideArrows={!!(minDate && maxDate)}
     />
   );
 };
@@ -60,6 +63,8 @@ CustomeCalender.propTypes = {
   endDate: PropTypes.string,
   onDateChange: PropTypes.func.isRequired,
   minDate: PropTypes.string,
+  maxDate: PropTypes.string,
+  initialDate: PropTypes.string,
   isSelectMultipleDates: PropTypes.bool,
 };
 
@@ -67,5 +72,7 @@ CustomeCalender.defaultProps = {
   startDate: '',
   endDate: '',
   minDate:'',
+  maxDate: '',
+  initialDate: '',
   isSelectMultipleDates: false
 };

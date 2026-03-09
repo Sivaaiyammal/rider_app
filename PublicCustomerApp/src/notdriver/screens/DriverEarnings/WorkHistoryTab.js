@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Modal } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import APIRequest from '../../../common/APIRequest';
 import useUserStore from '../../../common/store/useUserStore';
 import MonthPickerModal from '../../../common/components/MonthPickerModal';
+import CustomeCalender from '../../../common/components/CustomeCalender';
 import { Colors, Fonts } from '../../../common/constants/constants';
 import { useTranslation } from 'react-i18next';
 
@@ -41,6 +42,11 @@ const formatDateLabel = (dateStr) => {
     return `${weekday}, ${day} ${month}`;
 };
 
+const toLocalDateStr = (ts) => {
+    const d = new Date(ts);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 const WorkHistoryTab = () => {
     const { t } = useTranslation();
     const { userInfo } = useUserStore();
@@ -54,6 +60,8 @@ const WorkHistoryTab = () => {
     const [startDate, setStartDate] = useState(defaultStart);
     const [endDate, setEndDate] = useState(defaultEnd);
     const [showMonthPicker, setShowMonthPicker] = useState(false);
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [filterDate, setFilterDate] = useState(null); // 'YYYY-MM-DD' or null
     const [workLog, setWorkLog] = useState(null);
     const [loading, setLoading] = useState(false);
     const [selectedMonth, setSelectedMonth] = useState({
@@ -92,6 +100,12 @@ const WorkHistoryTab = () => {
         setStartDate(month.startTime);
         setEndDate(month.endTime);
         setSelectedMonth({ name: month.name, year: month.year });
+        setFilterDate(null);
+    };
+
+    const handleDateSelect = (day) => {
+        setFilterDate(day.dateString);
+        setShowDatePicker(false);
     };
 
     const formatMinutesDisplay = (mins) => {
@@ -109,7 +123,10 @@ const WorkHistoryTab = () => {
             dailyMap[date] = mins; // minutes take precedence
         });
     }
-    const dailyEntries = Object.entries(dailyMap).sort(([a], [b]) => b.localeCompare(a));
+    const allDailyEntries = Object.entries(dailyMap).sort(([a], [b]) => b.localeCompare(a));
+    const dailyEntries = filterDate
+        ? allDailyEntries.filter(([date]) => date === filterDate)
+        : allDailyEntries;
     const isMinutes = !!workLog?.dailyOnlineMinutes;
 
     const sessionsByDate = {};
@@ -123,13 +140,33 @@ const WorkHistoryTab = () => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.monthSelector} onPress={() => setShowMonthPicker(true)}>
-                <MaterialIcons name="calendar-month" size={20} color={Colors.periwinkle} />
-                <Text style={styles.monthText}>
-                    {selectedMonth.name} {selectedMonth.year}
-                </Text>
-                <MaterialIcons name="arrow-drop-down" size={22} color={Colors.black} />
-            </TouchableOpacity>
+            <View style={styles.filterRow}>
+                <TouchableOpacity style={styles.monthSelector} onPress={() => setShowMonthPicker(true)}>
+                    <MaterialIcons name="calendar-month" size={20} color={Colors.periwinkle} />
+                    <Text style={styles.monthText}>
+                        {selectedMonth.name} {selectedMonth.year}
+                    </Text>
+                    <MaterialIcons name="arrow-drop-down" size={22} color={Colors.black} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.dateFilterBtn, filterDate && styles.dateFilterBtnActive]}
+                    onPress={() => setShowDatePicker(true)}
+                >
+                    <MaterialIcons name="event" size={20} color={filterDate ? Colors.white : Colors.periwinkle} />
+                    {filterDate ? (
+                        <Text style={styles.dateFilterTextActive}>{formatDateLabel(filterDate)}</Text>
+                    ) : (
+                        <Text style={styles.dateFilterText}>{t('select_date') || 'Select Date'}</Text>
+                    )}
+                </TouchableOpacity>
+
+                {filterDate && (
+                    <TouchableOpacity style={styles.clearBtn} onPress={() => setFilterDate(null)}>
+                        <Ionicons name="close-circle" size={22} color={Colors.warm_grey} />
+                    </TouchableOpacity>
+                )}
+            </View>
 
             {loading ? (
                 <ActivityIndicator size="large" color={Colors.periwinkle} style={styles.loader} />
@@ -206,6 +243,30 @@ const WorkHistoryTab = () => {
                 onSelectMonth={handleMonthSelect}
                 selectedMonth={selectedMonth}
             />
+
+            {/* Date Picker Modal */}
+            <Modal visible={showDatePicker} transparent animationType="fade">
+                <TouchableOpacity
+                    style={styles.dateModalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowDatePicker(false)}
+                >
+                    <View style={styles.dateModalContent}>
+                        <TouchableOpacity style={styles.calendarCloseBtn} onPress={() => setShowDatePicker(false)}>
+                            <Ionicons name="close" size={22} color={Colors.black} />
+                        </TouchableOpacity>
+                        <CustomeCalender
+                            startDate={filterDate || ''}
+                            endDate={filterDate || ''}
+                            onDateChange={handleDateSelect}
+                            isSelectMultipleDates={false}
+                            minDate={toLocalDateStr(startDate)}
+                            maxDate={toLocalDateStr(endDate)}
+                            initialDate={toLocalDateStr(startDate)}
+                        />
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </View>
     );
 };
@@ -214,13 +275,19 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
+    filterRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        marginVertical: 10,
+        paddingHorizontal: 14,
+    },
     monthSelector: {
         flexDirection: 'row',
         alignItems: 'center',
-        alignSelf: 'center',
         paddingVertical: 10,
-        paddingHorizontal: 18,
-        marginVertical: 10,
+        paddingHorizontal: 14,
         borderRadius: 12,
         backgroundColor: '#f5f5f5',
         gap: 6,
@@ -229,6 +296,52 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: Fonts.medium,
         color: Colors.black,
+    },
+    dateFilterBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+        backgroundColor: '#f5f5f5',
+        gap: 6,
+    },
+    dateFilterBtnActive: {
+        backgroundColor: Colors.periwinkle,
+    },
+    dateFilterText: {
+        fontSize: 13,
+        fontFamily: Fonts.medium,
+        color: Colors.black,
+    },
+    dateFilterTextActive: {
+        fontSize: 13,
+        fontFamily: Fonts.medium,
+        color: Colors.white,
+    },
+    clearBtn: {
+        padding: 4,
+    },
+    dateModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    dateModalContent: {
+        width: '90%',
+        backgroundColor: Colors.white,
+        borderRadius: 16,
+        padding: 10,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+    },
+    calendarCloseBtn: {
+        alignSelf: 'flex-end',
+        padding: 6,
     },
     loader: {
         marginTop: 40,
@@ -246,7 +359,7 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         paddingHorizontal: 14,
-        paddingBottom: 30,
+        paddingBottom: 100,
     },
     /* Summary */
     summaryCard: {

@@ -1119,5 +1119,6 @@
     "collected_by_driver": "డ్రైవర్ సేకరించినది",
     "sent_to_vendor": "విక్రేతకు పంపబడింది",
     "no_work_history_found": "ఉద్యోగ చరిత్ర కనుగొనబడలేదు",
-    "active_days": "క్రియాశీల రోజులు"
+    "active_days": "క్రియాశీల రోజులు",
+    "select_date": "తేదీని ఎంచుకోండి"
 }

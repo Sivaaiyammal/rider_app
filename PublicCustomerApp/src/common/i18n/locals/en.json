@@ -1119,5 +1119,6 @@
     "collected_by_driver": "Collected By Driver",
     "sent_to_vendor": "Sent To Vendor",
     "no_work_history_found": "No Work History Found",
-    "active_days": "Active Days"
+    "active_days": "Active Days",
+    "select_date": "Select Date"
 }
