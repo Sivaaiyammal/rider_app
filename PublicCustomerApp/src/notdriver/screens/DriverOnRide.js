@@ -846,15 +846,11 @@ const DriverOnRide = () => {
             !disduration && tripsStatus !== "COMPLETED" ? 
                 (hasLocationPermission && (Platform.OS === 'android' && Platform.Version <= 28 ? true : hasBackgroundLocationPermission) &&
                 hasNotificationPermission)&& (
-                  <TouchableOpacity disabled={routeLoading?.loading && routeLoading?.message !== 'initialState'} style={RouteScreenStyles.navigationIconContainer} onPress={() => onStartNavigationPress()}>
+                  <TouchableOpacity disabled={routeLoading?.loading && routeLoading?.message !== 'initialState'} style={styles.navBtn} onPress={() => onStartNavigationPress()}>
                     {routeLoading?.loading && routeLoading?.message !== 'initialState'? <ActivityIndicator size="small" color={Colors.white} /> : 
                     <>
-                    <Text style={RouteScreenStyles.navigationIconContainerTxt}>{t('start_navigation')}</Text>
-                      <MaterialCommunityIcons
-                        name="navigation"
-                        size={22}
-                        color={Colors.white}
-                      />
+                    <MaterialCommunityIcons name="navigation-variant-outline" size={20} color={Colors.white} />
+                    <Text style={styles.navBtnTxt}>{t('start_navigation')}</Text>
                     </>}
                       
                   </TouchableOpacity>
@@ -862,42 +858,53 @@ const DriverOnRide = () => {
               : null
           }
           {watingTime > 0 &&
-          <View style={RouteScreenStyles.watingTimeContainer}>
-           <Text  style={RouteScreenStyles.watingTimeContainerTitle}> <Text style={{fontFamily:Fonts.light, fontSize:12}}>{t('waiting_time')}:{' '}</Text>{DateTimeFormatter.formatSecondsToDuration(watingTime)}</Text>
-            <TouchableOpacity style={RouteScreenStyles.StopwatingTimeBtn} onPress={()=>onStopTimer()}>
-             <Text style={RouteScreenStyles.StopwatingTimeBtnText}>{t('stop_timer')}</Text>
+          <View style={styles.waitingCard}>
+            <View style={styles.waitingTopRow}>
+              <View style={styles.waitingIconCircle}>
+                <MaterialCommunityIcons name="timer-sand" size={18} color={Colors.white} />
+              </View>
+              <View>
+                <Text style={styles.waitingLabel}>{t('waiting_time')}</Text>
+                <Text style={styles.waitingTimer}>{DateTimeFormatter.formatSecondsToDuration(watingTime)}</Text>
+              </View>
+            </View>
+            <TouchableOpacity style={styles.stopTimerBtn} onPress={()=>onStopTimer()}>
+              <Feather name="square" size={14} color={Colors.white} />
+              <Text style={styles.stopTimerBtnTxt}>{t('stop_timer')}</Text>
             </TouchableOpacity>
           </View>
           }
           {tripsStatus !== 'ACCEPTED' && showWaypointReached && watingTime <= 0 &&
-          <View>
-            <TouchableOpacity style={RouteScreenStyles.reachedWaypointBtn} onPress={()=>onReachedStop()}>
-              <Text style={RouteScreenStyles.reachedWaypointBtnTxt}>{t('reached')} {nonreachedStops[0]?.name}{'\n'} {t('press_to_update_status')}</Text>
+          <View style={styles.reachedBtnWrap}>
+            <TouchableOpacity style={styles.reachedBtn} onPress={()=>onReachedStop()}>
+              <MaterialCommunityIcons name="map-marker-check" size={22} color={Colors.white} />
+              <View>
+                <Text style={styles.reachedBtnTitle}>{t('reached')} {nonreachedStops[0]?.name}</Text>
+                <Text style={styles.reachedBtnSub}>{t('press_to_update_status')}</Text>
+              </View>
             </TouchableOpacity>
             </View>
            }
              {disduration && (
-              <View style={styles.DurationContainer}>
-             
-                 <View style={styles.detailsContainer}>
-              <View style={styles.durationContainer}>
-                 <Text style={styles.durationText}>
-                 {disduration?.location[2] < 1000? Math.round(disduration?.location[2]) +' '+'m' : utils.metersToKilometers(disduration?.location[2])?.toFixed(2) + 'km'} .
-                  </Text>
-                  <Text style={styles.durationText}>
-                    {' '}{DateTimeFormatter.convertSecondsToReadable(
-                      disduration?.location[3],true
-                    )}
-                  </Text>
-              </View>
-              </View>
-              {/* <TouchableOpacity style={styles.stopNavigationBtn} onPress={()=>stopNavigation()}> 
-                <Entypo name="cross" size={24} color="white" />
-              </TouchableOpacity> */}
-                 <TouchableOpacity style={styles.stopNavigationBtn} onPress={()=>onRecenter()}> 
-                <Feather name="navigation-2" size={18} color="white" /> 
-                <Text style={styles.stopNavigationBtnTxt}>Re-center</Text>
-              </TouchableOpacity>
+              <View style={styles.durationBar}>
+                <View style={styles.durationInfoWrap}>
+                  <View style={styles.durationChip}>
+                    <Feather name="map-pin" size={13} color={Colors.periwinkle} />
+                    <Text style={styles.durationChipTxt}>
+                      {disduration?.location[2] < 1000 ? Math.round(disduration?.location[2]) + ' m' : utils.metersToKilometers(disduration?.location[2])?.toFixed(2) + ' km'}
+                    </Text>
+                  </View>
+                  <View style={styles.durationChip}>
+                    <Feather name="clock" size={13} color={Colors.periwinkle} />
+                    <Text style={styles.durationChipTxt}>
+                      {DateTimeFormatter.convertSecondsToReadable(disduration?.location[3], true)}
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity style={styles.recenterBtn} onPress={()=>onRecenter()}>
+                  <Feather name="navigation-2" size={16} color={Colors.white} />
+                  <Text style={styles.recenterBtnText}>Re-center</Text>
+                </TouchableOpacity>
               </View>
             )}
           {tripsStatus === 'ACCEPTED' && 
@@ -1021,49 +1028,171 @@ const DriverOnRide = () => {
 export default DriverOnRide;
 
 const styles = StyleSheet.create({
-    detailsContainer:{
-        backgroundColor:'#FFD100',
-        minWidth:'40%',
-        alignSelf:'center',
-        alignItems:'center',
-        borderRadius:8,
-        paddingVertical:5,
-        marginTop:10
+    /* ── Start Navigation Button ── */
+    navBtn:{
+      flexDirection:'row',
+      alignItems:'center',
+      justifyContent:'center',
+      alignSelf:'center',
+      gap:8,
+      backgroundColor:Colors.periwinkle,
+      paddingVertical:12,
+      paddingHorizontal:28,
+      borderRadius:28,
+      marginVertical:10,
+      elevation:4,
+      shadowColor:Colors.periwinkle,
+      shadowOffset:{width:0,height:3},
+      shadowOpacity:0.35,
+      shadowRadius:6,
     },
-    durationContainer:{
-        flexDirection:'row'
-    },durationText:{
-        fontFamily:Fonts.regular,
-        fontSize:14,
-        color:Colors.black
+    navBtnTxt:{
+      fontFamily:Fonts.semi_bold,
+      fontSize:14,
+      color:Colors.white,
     },
-    stopNavigationBtn:{
-        alignSelf:'center',
-        alignItems:'center',
-        borderRadius:10,
-        padding:5,
-        top:5,
-        flexDirection:'row',
-        gap:5,
-        backgroundColor:Colors.grey_dark,
-        justifyContent:'center',
-        paddingVertical:5,
-        paddingHorizontal:10,
-        elevation:2
+    /* ── Waiting Time Card ── */
+    waitingCard:{
+      width:'90%',
+      alignSelf:'center',
+      backgroundColor:'#FFF8E1',
+      borderRadius:14,
+      padding:14,
+      marginVertical:10,
+      elevation:3,
+      shadowColor:'#000',
+      shadowOffset:{width:0,height:1},
+      shadowOpacity:0.1,
+      shadowRadius:4,
+      borderLeftWidth:4,
+      borderLeftColor:'#FFC107',
     },
-    DurationContainer:{
-        flexDirection:'row',
-        alignItems:'center',
-        width:'100%',
-        padding:10,
-        borderRadius:10,
-        justifyContent:'center',
-        gap:10
+    waitingTopRow:{
+      flexDirection:'row',
+      alignItems:'center',
+      gap:12,
+      marginBottom:12,
     },
-    stopNavigationBtnTxt:{
+    waitingIconCircle:{
+      width:36,
+      height:36,
+      borderRadius:18,
+      backgroundColor:'#FFC107',
+      alignItems:'center',
+      justifyContent:'center',
+    },
+    waitingLabel:{
       fontFamily:Fonts.regular,
+      fontSize:11,
+      color:'#9E8600',
+    },
+    waitingTimer:{
+      fontFamily:Fonts.semi_bold,
+      fontSize:20,
+      color:Colors.black,
+    },
+    stopTimerBtn:{
+      flexDirection:'row',
+      alignItems:'center',
+      justifyContent:'center',
+      gap:6,
+      backgroundColor:'#E53935',
+      paddingVertical:8,
+      borderRadius:8,
+    },
+    stopTimerBtnTxt:{
+      fontFamily:Fonts.medium,
+      fontSize:13,
+      color:Colors.white,
+    },
+    /* ── Reached Waypoint ── */
+    reachedBtnWrap:{
+      paddingHorizontal:16,
+      marginVertical:8,
+    },
+    reachedBtn:{
+      flexDirection:'row',
+      alignItems:'center',
+      gap:12,
+      backgroundColor:Colors.periwinkle,
+      paddingVertical:14,
+      paddingHorizontal:18,
+      borderRadius:14,
+      elevation:4,
+      shadowColor:Colors.periwinkle,
+      shadowOffset:{width:0,height:2},
+      shadowOpacity:0.3,
+      shadowRadius:5,
+    },
+    reachedBtnTitle:{
+      fontFamily:Fonts.semi_bold,
+      fontSize:14,
+      color:Colors.white,
+    },
+    reachedBtnSub:{
+      fontFamily:Fonts.regular,
+      fontSize:11,
+      color:'rgba(255,255,255,0.8)',
+      marginTop:2,
+    },
+    /* ── Duration Bar ── */
+    durationBar:{
+      flexDirection:'row',
+      alignItems:'center',
+      justifyContent:'space-between',
+      width:'92%',
+      alignSelf:'center',
+      backgroundColor:'#F5F5FF',
+      borderRadius:14,
+      paddingVertical:10,
+      paddingHorizontal:14,
+      marginVertical:10,
+      elevation:2,
+      shadowColor:'#000',
+      shadowOffset:{width:0,height:1},
+      shadowOpacity:0.06,
+      shadowRadius:3,
+      borderWidth:1,
+      borderColor:'#E8E8F0',
+    },
+    durationInfoWrap:{
+      flexDirection:'row',
+      borderRadius:20
+      // gap:12,
+    },
+    durationChip:{
+      flexDirection:'row',
+      alignItems:'center',
+      gap:5,
+      backgroundColor:Colors.yellow_xlight,
+      paddingVertical:6,
+      paddingHorizontal:10,
+      elevation:2
+      // borderRadius:20,
+
+    },
+    durationChipTxt:{
+      fontFamily:Fonts.medium,
+      fontSize:13,
+      color:Colors.black,
+    },
+    recenterBtn:{
+      // width:36,
+      // height:36,
+      borderRadius:18,
+      backgroundColor:Colors.periwinkle,
+      alignItems:'center',
+      justifyContent:'center',
+      elevation:2,
+      flexDirection:'row',
+      paddingVertical:5,
+      paddingHorizontal:14,
+      gap:4
+    },
+    recenterBtnText:{
       fontSize:12,
-      color:Colors.white
+      fontFamily:Fonts.medium,
+      color:Colors.white,
     },
     /* Navigation Choice Modal Styles */
     navSheetContainer:{

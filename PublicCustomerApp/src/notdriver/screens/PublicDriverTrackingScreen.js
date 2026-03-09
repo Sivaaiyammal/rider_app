@@ -1,8 +1,9 @@
 /* eslint-disable react/no-children-prop */
 /* eslint-disable react/jsx-no-undef */
-import { Text, TouchableOpacity, View} from 'react-native';
+import { ActivityIndicator, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import React, { useEffect, useState }  from 'react';
 import StarRating from 'react-native-star-rating-widget';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import useTripsStore from '../store/useTripsStore';
 import { useTripAcceptStore } from '../store/useTripAcceptStore';
 import useUserStore from '../../common/store/useUserStore';
@@ -13,14 +14,11 @@ import { useMapMarkerStore } from '../../common/store/useMapMarkerStore';
 import APIRequest from '../../common/APIRequest';
 import { DataStore } from '../../common/controllers/DataStore';
 import { showNotification } from '../../common/components/Alerts/showNotification';
-import AlertModal from '../components/AlertModal';
 import { RouteScreenStyles } from '../styles/RouteScreenStyles';
 import DriverOnRide from './DriverOnRide';
-import { driverDetailStyles } from '../styles/DriverDetailsUpload';
 import { Colors, Fonts } from '../../common/constants/constants';
 import PublicDriverTripPaymentScreen from './PublicDriverTripPaymentScreen';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
-import InputField from '../../common/components/InputField';
 import { firebaselog_onRide, firebaselog_tripCompletion, firebaselog_tripReview, firebaselog_tripPayment } from '../../common/utils/FirebaseAnalytics';
 
 const PublicDriverTrackingScreen = () => {
@@ -141,36 +139,60 @@ const PublicDriverTrackingScreen = () => {
     }
   }
 
+  const RATING_LABELS = ['', 'Poor', 'Below Average', 'Average', 'Good', 'Excellent'];
+
   const renderRatingModal = () => (
-    <AlertModal
-    isVisible={showRatingModal}
-    onClose={() => {
-      onRatingClose()
-    }}
-    isLoading={isRatingLoading}
-    rightBtnText={'Submit'}
-    leftBtnTxt={'Skip'}
-    onRightPress={() => updatePassangerRating()}
-    animationType={'slide'}
-    children={
-      <View>
-        <Text style={{fontFamily:Fonts.semi_bold, fontSize:16, textAlign:'center', marginBottom:10, color:Colors.black}}>Rate Passanger</Text>
-        <StarRating
-        rating={rating}
-        onChange={setRating}
-      />
-      <InputField
-        style={driverDetailStyles.textField}
-        value={comments}
-        label="Comments"
-        onChangeText={text => {
-          setcomments(text);
-        }}
-        // icon={<License />}
-      />
+    <Modal visible={showRatingModal} transparent animationType="slide">
+      <View style={ratingStyles.overlay}>
+        <View style={ratingStyles.card}>
+          {/* Close */}
+          <TouchableOpacity style={ratingStyles.closeBtn} onPress={onRatingClose}>
+            <Ionicons name="close" size={22} color={Colors.black} />
+          </TouchableOpacity>
+
+          {/* Emoji */}
+          <View style={ratingStyles.emojiCircle}>
+            <Ionicons name={rating >= 4 ? 'happy' : rating >= 3 ? 'happy-outline' : 'sad-outline'} size={40} color={Colors.periwinkle} />
+          </View>
+
+          <Text style={ratingStyles.title}>Rate Passenger</Text>
+          <Text style={ratingStyles.ratingLabel}>{RATING_LABELS[Math.round(rating)] || ''}</Text>
+
+          <StarRating
+            rating={rating}
+            onChange={setRating}
+            starSize={36}
+            color={Colors.periwinkle}
+            starStyle={{marginHorizontal: 4}}
+          />
+
+          {/* Comment */}
+          <TextInput
+            style={ratingStyles.commentInput}
+            placeholder="Add a comment (optional)"
+            placeholderTextColor="#BDBDBD"
+            value={comments}
+            onChangeText={setcomments}
+            multiline
+            maxLength={200}
+          />
+
+          {/* Buttons */}
+          <View style={ratingStyles.btnRow}>
+            <TouchableOpacity style={ratingStyles.skipBtn} onPress={onRatingClose}>
+              <Text style={ratingStyles.skipBtnTxt}>Skip</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={ratingStyles.submitBtn} disabled={isRatingLoading} onPress={updatePassangerRating}>
+              {isRatingLoading ? (
+                <ActivityIndicator size="small" color={Colors.white} />
+              ) : (
+                <Text style={ratingStyles.submitBtnTxt}>Submit</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
-    }
-    />
+    </Modal>
   )
 
   useEffect(()=> {
@@ -242,3 +264,102 @@ const PublicDriverTrackingScreen = () => {
 };
 
 export default PublicDriverTrackingScreen;
+
+const ratingStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  card: {
+    width: '85%',
+    backgroundColor: Colors.white,
+    borderRadius: 24,
+    paddingVertical: 28,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+  },
+  closeBtn: {
+    position: 'absolute',
+    top: 14,
+    right: 14,
+    padding: 4,
+  },
+  emojiCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#F0ECFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  title: {
+    fontFamily: Fonts.semi_bold,
+    fontSize: 18,
+    color: Colors.black,
+    marginBottom: 4,
+  },
+  ratingLabel: {
+    fontFamily: Fonts.medium,
+    fontSize: 13,
+    color: Colors.periwinkle,
+    marginBottom: 14,
+  },
+  commentInput: {
+    width: '100%',
+    minHeight: 60,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginTop: 18,
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+    color: Colors.black,
+    textAlignVertical: 'top',
+  },
+  btnRow: {
+    flexDirection: 'row',
+    marginTop: 20,
+    gap: 12,
+    width: '100%',
+  },
+  skipBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    alignItems: 'center',
+  },
+  skipBtnTxt: {
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: Colors.black,
+  },
+  submitBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 24,
+    backgroundColor: Colors.periwinkle,
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: Colors.periwinkle,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  submitBtnTxt: {
+    fontFamily: Fonts.semi_bold,
+    fontSize: 14,
+    color: Colors.white,
+  },
+});
