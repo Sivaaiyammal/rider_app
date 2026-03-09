@@ -1,22 +1,79 @@
-import { ImageBackground, NativeModules, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, RefreshControl, Animated } from 'react-native'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
+import Ionicons from 'react-native-vector-icons/Ionicons'
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import useUserStore from '../../../common/store/useUserStore'
 import usePublicDriverStore from '../../store/usePublicDriverStore'
 import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter'
 import APIRequest from '../../../common/APIRequest'
-import { showNotification } from '../../../common/components/Alerts/showNotification'
 import publicrideDriverApi from '../../api/publicrideDriverApi'
 import FullScreenLoader from '../../../common/loaders/FullScreenLoader'
 import PayDue from './PayDue'
 import { Colors, Fonts } from '../../../common/constants/constants'
 import { useTranslation } from 'react-i18next'
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
+
+const AnimatedNumber = ({ value, prefix = '', suffix = '', style, decimals = 2 }) => {
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const [display, setDisplay] = useState(`${prefix}0${suffix}`);
+
+  useEffect(() => {
+    animatedValue.setValue(0);
+    Animated.timing(animatedValue, {
+      toValue: value || 0,
+      duration: 800,
+      useNativeDriver: false,
+    }).start();
+  }, [value]);
+
+  useEffect(() => {
+    const id = animatedValue.addListener(({ value: v }) => {
+      setDisplay(`${prefix}${v.toFixed(decimals)}${suffix}`);
+    });
+    return () => animatedValue.removeListener(id);
+  }, [prefix, suffix, decimals]);
+
+  return <Text style={style}>{display}</Text>;
+};
+
+const StatCard = ({ icon, iconColor, bgColor, label, value, prefix, suffix, loading: isLoading, onPress, decimals = 0 }) => {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, { toValue: 0.95, useNativeDriver: true }).start();
+  };
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, { toValue: 1, friction: 3, useNativeDriver: true }).start();
+  };
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      disabled={!onPress}
+    >
+      <Animated.View style={[styles.statCard, { transform: [{ scale: scaleAnim }] }]}>
+        <View style={[styles.statIconWrap, { backgroundColor: bgColor }]}>
+          {icon}
+        </View>
+        {isLoading ? (
+          <ActivityIndicator size="small" color={iconColor} style={{ marginTop: 8 }} />
+        ) : (
+          <AnimatedNumber value={value} prefix={prefix} suffix={suffix} style={[styles.statValue, { color: iconColor }]} decimals={decimals} />
+        )}
+        <Text style={styles.statLabel}>{label}</Text>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+};
 
 
 const EarningsTab = () => {
   const {t} = useTranslation()
     const {userInfo} = useUserStore()
    const {driverDue, driverEarnings, driverDueDate, setdriverDueDate, driverInfo, setDriverDue, dueDuration} = usePublicDriverStore()
-   const merchantId = 'M2202LBE4KQJX'
    const [payments, setPayments] = useState([])
    const [loading, setLoading] = useState(false)
    const [totalEarnings, setTotalEarnings] = useState(0)
@@ -25,33 +82,11 @@ const EarningsTab = () => {
    const [totalTrips, setTotalTrips] = useState(0)
    const [clearedAmount, setClearedAmount] = useState(0)
    const [pendingAmount, setPendingAmount] = useState(0)
+   const [refreshing, setRefreshing] = useState(false)
    
    // Separate loading states for each section
    const [paymentsLoading, setPaymentsLoading] = useState(false)
    const [workingHoursLoading, setWorkingHoursLoading] = useState(false)
-
-   const checkandUpdatePaymentStatus = async () => {
-     const api = new APIRequest();
-     const response = await api.request(`/publicrides/payments/PhonepayStatusCheck`, 'POST', {}, userInfo?.token)
-     console.log('hari-->>response-->>checkandUpdatePaymentStatus', response)
-     if(response.success) {
-      console.log('hari-->>response-->>checkandUpdatePaymentStatus', response)
-     }
-   }
-
-  //  const handlePayDue = async () => {
-  //   const response = await payDue(merchantId, userInfo?.token, driverDue.toFixed(2), "M2ZmOThkZDQtZDllZS00ZTIyLWI47474fgfxgxchvVkNDkx", true)
-  //   if(response.status === 'COMPLETED') {
-  //       showNotification('Payment Successful', 'Payment successful', 'success')
-  //       await checkandUpdatePaymentStatus()
-  //   }
-  //   if(response.status === 'FAILED') {
-  //       showNotification('Payment Failed', 'Payment failed', 'error')
-  //   }
-  //   if(response.status === 'PENDING') {
-  //     showNotification('Payment Pending', 'Payment pending', 'warning')
-  //   }
-  //  }
 
    const fetchDueDate = async () => {
     setLoading(true);
@@ -111,6 +146,11 @@ const EarningsTab = () => {
     }
   }
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    Promise.all([fetchPayments(), getTotalOnlineHours()]).finally(() => setRefreshing(false));
+  }, [dueDuration]);
+
   useEffect(()=>{
     fetchPayments()
     getTotalOnlineHours()
@@ -121,51 +161,43 @@ const EarningsTab = () => {
       {loading && <FullScreenLoader />}
        <PayDue driverDue={driverDue} userInfo={userInfo} driverDueDate={driverDueDate} fetchDueDate={fetchDueDate} driverInfo={driverInfo}/>
        {dueDuration?.endTime ? (
-          <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.dateRange}>{dueDuration ? DateTimeFormatter.requiredDateFormat(dueDuration?.startTime, 'D MMM,YYYY') + (dueDuration?.endTime ? ' - ' + DateTimeFormatter.requiredDateFormat(dueDuration?.endTime, 'D MMM,YYYY') : '') : ''}</Text>
-      <Text style={styles.totalEarningsLabel}>{t('total_earnings')}</Text>
-      <Text style={styles.totalEarnings}>₹{totalEarnings > 0 ? totalEarnings?.toFixed(2) : 0}</Text>
-      <View style={styles.statsRow}>
-        <View style={styles.statItem}>
-          {paymentsLoading ? (
-            <ActivityIndicator size="small" color="#f79559" />
-          ) : (
-            <Text style={styles.statValueOrange}>{totalTrips}</Text>
-          )}
-          <Text style={styles.statLabel}>{t('total_trips')}</Text>
-        </View>
-        <View style={styles.statItem}>
-          {workingHoursLoading ? (
-            <ActivityIndicator size="small" color="#888" />
-          ) : (
-            <Text style={styles.statValueGray}>{totalOnlineHours?.totalHours ? Math.round(totalOnlineHours?.totalHours) : 0}</Text>
-          )}
-          <Text style={styles.statLabel}>{t('total_online_hours')}{'\n'}{DateTimeFormatter.requiredDateFormat(startDate, 'MMM,YYYY')}</Text>
-        </View>
- 
+          <ScrollView
+            contentContainerStyle={styles.container}
+            showsVerticalScrollIndicator={false}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[Colors.periwinkle]} tintColor={Colors.periwinkle} />}
+          >
+
+      {/* Date Range Chip */}
+      <View style={styles.dateChip}>
+        <MaterialIcons name="date-range" size={16} color={Colors.periwinkle} />
+        <Text style={styles.dateRange}>
+          {DateTimeFormatter.requiredDateFormat(dueDuration?.startTime, 'D MMM, YYYY')}
+          {dueDuration?.endTime ? '  —  ' + DateTimeFormatter.requiredDateFormat(dueDuration?.endTime, 'D MMM, YYYY') : ''}
+        </Text>
       </View>
 
-      <View style={styles.amountRow}>
-        <View style={styles.amountItem}>
-          <Text style={styles.paidLabel}>{t('paid_amount')}</Text>
-          {paymentsLoading ? (
-            <ActivityIndicator size="small" color="#18c1c1" />
-          ) : (
-            <Text style={styles.paidAmount}>₹{clearedAmount > 0 ? clearedAmount?.toFixed(2) : 0}</Text>
-          )}
-        </View>
-        <View style={styles.amountItem}>
-          <Text style={styles.dueLabel}>{t('due_amount')}</Text>
-          {paymentsLoading ? (
-            <ActivityIndicator size="small" color="#f44336" />
-          ) : (
-            <Text style={styles.dueAmount}>₹{ pendingAmount > 0 ? pendingAmount?.toFixed(2) : 0}</Text>
-          )}
-        </View>
+      {/* Stat Cards Row */}
+      <View style={styles.statsRow}>
+        <StatCard
+          icon={<Ionicons name="car-sport" size={20} color="#fff" />}
+          iconColor="#f79559"
+          bgColor="#FFF0E8"
+          label={t('total_trips')}
+          value={totalTrips}
+          loading={paymentsLoading}
+        />
+          <StatCard
+          icon={<FontAwesome5 name="coins" size={20} color="#fff" />}
+          iconColor="#5cf759"
+          bgColor="#e8fff3"
+          label={t('total_earnings')}
+          value={totalEarnings}
+          loading={paymentsLoading}
+        />
       </View>
+
     </ScrollView>
-       ) : (<>
-       </>)}
+       ) : (<View />)}
     
     </View>
   )
@@ -177,178 +209,82 @@ const styles = StyleSheet.create({
         screen: {
             flex: 1,
             backgroundColor: Colors.white,
-          },      
-          headerContinaer:{
-            marginTop:20,
-            width:'90%',
-            alignSelf:'center',
-            height:180,
-            alignItems:'center',
-            justifyContent:'center',
-          },
-          payDueText:{
-            fontFamily:Fonts.regular,
-            color:"#004B49",
-            fontSize:16,
-            marginLeft:20,
-            marginTop:10
-          },
-          priceTxt:{
-            fontFamily:Fonts.medium,
-            color:"#004B49",
-            fontSize:30,
-            marginLeft:20,
-            marginTop:10
-          },
-          dueTxt:{
-            fontFamily:Fonts.light,
-            color:"#004B49",
-            fontSize:12,
-            marginLeft:20,
-            marginTop:10
-          },
-          payNowBtn:{
-            backgroundColor:'#004B49',
-            paddingVertical:10,
-            paddingHorizontal:10,
-            borderRadius:10,
-            width:'30%',
-            alignSelf:'flex-end',
-            marginRight:25,
-            alignItems:'center',
-          },
-          payNowBtnTxt:{
-            fontFamily:Fonts.regular,
-            color:Colors.white,
-            fontSize:14
           },
           container: {
-            padding: 20,
+            paddingHorizontal: 16,
+            paddingTop: 12,
+            paddingBottom: 100,
+          },
+          /* Date chip */
+          dateChip: {
+            flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor: '#fff',
-            paddingBottom:100
+            alignSelf: 'center',
+            backgroundColor: Colors.periwinkle_light,
+            paddingHorizontal: 14,
+            paddingVertical: 6,
+            borderRadius: 20,
+            gap: 6,
+            marginBottom: 16,
           },
           dateRange: {
-            fontSize: 16,
-            color: '#555',
-            marginBottom: 10,
-            fontFamily:Fonts.regular
+            fontSize: 13,
+            color: Colors.periwinkle,
+            fontFamily: Fonts.medium,
+          },
+          /* Earnings hero */
+          earningsHero: {
+            alignItems: 'center',
+            marginBottom: 20,
           },
           totalEarningsLabel: {
-            fontSize: 16,
-            color: '#333',
-            fontFamily:Fonts.regular
+            fontSize: 14,
+            color: Colors.warm_grey,
+            fontFamily: Fonts.regular,
+            marginBottom: 4,
           },
           totalEarnings: {
-            fontSize: 32,
-            color: '#2f7d32',
-            marginVertical: 10,
-            fontFamily:Fonts.semi_bold
+            fontSize: 36,
+            color: Colors.green_online,
+            fontFamily: Fonts.semi_bold,
           },
+          /* Stat cards */
           statsRow: {
             flexDirection: 'row',
-            justifyContent: 'space-between',
-            width: '100%',
-            marginVertical: 20,
+            gap: 12,
+            marginBottom: 20,
+            alignSelf: 'center',
           },
-          statItem: {
-            alignItems: 'center',
+          statCard: {
             flex: 1,
+            backgroundColor: Colors.white,
+            borderRadius: 14,
+            padding: 14,
+            alignItems: 'center',
+            elevation: 2,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.08,
+            shadowRadius: 4,
           },
-          statValueOrange: {
-            color: '#f79559',
-            fontSize: 20,
-            fontFamily:Fonts.semi_bold
+          statIconWrap: {
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            alignItems: 'center',
+            justifyContent: 'center',
           },
-          statValueGray: {
-            color: '#888',
-            fontSize: 20,
-   
-            fontFamily:Fonts.semi_bold
-
-          },
-          statValueBlue: {
-            color: '#34c3eb',
-            fontSize: 20,
-            fontFamily:Fonts.semi_bold
+          statValue: {
+            fontSize: 22,
+            fontFamily: Fonts.semi_bold,
+            marginTop: 8,
           },
           statLabel: {
-            fontSize: 14,
-            color: '#555',
-            fontFamily:Fonts.regular,
-            textAlign:'center'
-          },
-          amountRow: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            width: '100%',
-            marginVertical: 20,
-          },
-          amountItem: {
-            flex: 1,
-            alignItems: 'center',
-          },
-          paidLabel: {
-            color: '#666',
-            fontSize: 14,
-            fontFamily:Fonts.regular
-          },
-          paidAmount: {
-            color: '#18c1c1',
-            fontSize: 18,
-            fontFamily:Fonts.semi_bold
-          },
-          dueLabel: {
-            color: '#666',
-            fontSize: 14,
-            fontFamily:Fonts.regular
-          },
-          dueAmount: {
-            color: '#f44336',
-            fontSize: 18,
-            fontFamily:Fonts.semi_bold
-          },
-          slipContainer: {
-            backgroundColor: '#f9f9f9',
-            width: '100%',
-            padding: 15,
-            borderRadius: 10,
-            marginTop: 20,
-            borderTopWidth: 2,
-            borderColor: '#eee',
-          },
-          slipTitle: {
+            fontSize: 12,
+            color: Colors.warm_grey,
+            fontFamily: Fonts.regular,
+            marginTop: 2,
             textAlign: 'center',
-            fontFamily:Fonts.semi_bold,
-            fontSize: 16,
-            marginBottom: 10,
-            color: '#444',
           },
-          slipRow: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginVertical: 4,
-          },
-          slipLabel: {
-            color: '#444',
-            fontSize: 14,
-            fontFamily:Fonts.regular
-          },
-          slipValue: {
-            color: '#222',
-            fontSize: 14,
-            fontFamily:Fonts.semi_bold,
-          },
-          slipValueRed: {
-            color: '#e53935',
-            fontSize: 14,
-            fontFamily:Fonts.semi_bold,
 
-          },
-          slipValueGreen: {
-            color: '#00a676',
-            fontSize: 14,
-            fontFamily:Fonts.semi_bold,
-          },
-       
 })

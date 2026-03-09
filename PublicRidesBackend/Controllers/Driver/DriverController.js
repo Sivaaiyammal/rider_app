@@ -52,6 +52,7 @@ class DriverController extends Controller {
         this.checkDriverToken = this.checkDriverToken.bind(this)
         this.wakeUpBGService = this.wakeUpBGService.bind(this)
         this.updateFCMToken = this.updateFCMToken.bind(this)
+        this.getWorkLog = this.getWorkLog.bind(this)
     }
 
    

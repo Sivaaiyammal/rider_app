@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-useless-escape */
-const { driverPublicRidesSchema, driverPublicRidesLoginSchema, vehiclePublicRideSchema, driverDetailsUploadSchema, driverPublicRidesVerifyOTPSchema, driverBankDetailsSchema, driverLogoutSchema, driverDeleteAccountSchema} = require("../../Schemas/DriverSchema")
+const { driverPublicRidesSchema, driverPublicRidesLoginSchema, vehiclePublicRideSchema, driverDetailsUploadSchema, driverPublicRidesVerifyOTPSchema, driverBankDetailsSchema, driverLogoutSchema, driverDeleteAccountSchema } = require("../../Schemas/DriverSchema")
 const Driver = require("../../Models/Driver");
 const Password = require("../Users/Password");
 const multer = require('multer');
@@ -12,7 +12,7 @@ const SendSMS = require("../../Core/SMSService/SendSMS");
 const Redis = require("../DB/Redis");
 const Mongo = require("../DB/Mongo");
 const FareService = require("../../fareEngine/services/FareService");
-const { sendCustomerTripStartedMessage, reachedDestinationMessage, sendCompletedTripMessagePaymentCompleted} = require("../../Services/PushNotification/publicRideCustomerNotification");
+const { sendCustomerTripStartedMessage, reachedDestinationMessage, sendCompletedTripMessagePaymentCompleted } = require("../../Services/PushNotification/publicRideCustomerNotification");
 const Passanger = require("../../Models/Passanger");
 const PushNotifiationService = require("../../Services/PushNotification/PushNotifiationService");
 const NOTPushNotifiationService = require("../../Services/PushNotification/NOTPushNotifiationService");
@@ -28,7 +28,7 @@ const GeneratePresignedUrl = require("../GeneratePresignedUrl");
 const RazorPayLinking = require("./RazorPayLinking");
 const FinalDueCalculator = require("../../Scripts/calculateFinalDue");
 const VehicleVerifierMParivahan = require("../Mparivahan/VerifyVehicle");
-const { buildMonthSegments } = require("../../Utils/WorkingHoursUtils");
+
 const whatsappService = require("../../Services/whatsapp/WhatsappService");
 
 async function sendPassangerSocketEvents(passangerId, socketService, trip, fareData) {
@@ -775,8 +775,13 @@ module.exports = function (CLASS) {
             if (!newStatus) {
                 return res.status(400).json({ success: false, message: 'status is required' });
             }
-
             const now = Date.now();
+
+            // const now = new Date();
+            // const nextMonth = new Date();
+            // const now = new Date(nextMonth);
+
+            // now.setMonth(now.getMonth() + 1);
 
             // 1) Load driver
             const driver = await Driver.getDriverWithId(driverId);
@@ -788,25 +793,17 @@ module.exports = function (CLASS) {
             const prevStatus = prev.status;
             const lastUpdatedOn = Number(prev.updatedOn || now);
 
-            // 2) If status changed, close window prevStatus:[lastUpdatedOn → now]
+            // 2) If status changed, close the previous session [lastUpdatedOn → now]
             const changed = !!prevStatus && prevStatus !== newStatus && lastUpdatedOn <= now;
 
-            let closedWindows = null;
             let closedWindowSummary = null;
 
             if (changed) {
-                const segments = buildMonthSegments(lastUpdatedOn, now);
-                if (segments.length) {
-                    closedWindows = segments.map(seg => ({
-                        status: prevStatus,
-                        month: seg.monthKey,
-                        fromTime: seg.fromTime,
-                        toTime: seg.toTime,
-                    }));
-                }
-                closedWindowSummary = { status: prevStatus, fromTime: lastUpdatedOn, toTime: now };
+                closedWindowSummary = { status: prevStatus, from: lastUpdatedOn, to: now };
 
-                // Canonical history (collection)
+                // Log to driverWorkHistory — creates separate doc per month,
+                // pushes { status, from, to } into workingHours array,
+                // and recomputes dailyOnlineHours + totalOnlineHours
                 await DriverWorkHistory.logDriverSessionMonthly(driverId, lastUpdatedOn, now, prevStatus);
             }
 
@@ -826,7 +823,6 @@ module.exports = function (CLASS) {
                     fromStatus: prevStatus || null,
                     toStatus: newStatus,
                     closedWindow: closedWindowSummary,
-                    closedWindows: closedWindows || null,
                     updatedOn: now,
                 },
             });
@@ -2039,6 +2035,21 @@ module.exports = function (CLASS) {
             const result = await Driver.updateDriver(driverId, { "fcmToken.token": fcmToken, "fcmToken.isUpdated": true});
             console.log("Driver Update Result -- >> ", result);
             return res.status(200).json({ success: true, message: 'FCM Token updated successfully' });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
+
+    CLASS.prototype.getWorkLog = async function (req, res) {
+        const driverId = req.driver.id;
+        const from = Number(req.query.from);
+        const to = Number(req.query.to);
+
+        const normalizedFrom = Number.isFinite(from) ? from : undefined;
+        const normalizedTo = Number.isFinite(to) ? to : undefined;
+        try {
+            const workLog = await Driver.getDriverWorkLog(driverId, normalizedFrom, normalizedTo);
+            return res.status(200).json({ success: true, message: 'Work log retrieved successfully', workLog });
         } catch (err) {
             return this.handleError(err, res);
         }

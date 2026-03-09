@@ -65,6 +65,7 @@ Router.get('/getFareConfigs', CheckDriverAuthenticated, driverController.getFare
 Router.post('/acceptUpComingRide', CheckDriverAuthenticated, withTiming(tripController, tripController.acceptUpComingRidePublicRides))
 Router.post('/startUpComingRidePublicRides', CheckDriverAuthenticated, withTiming(tripController, tripController.startUpComingRidePublicRides))
 Router.post('/getMultipleTripsDetail', CheckDriverAuthenticated, withTiming(driverController, driverController.getMultipleTripsDetail))
+Router.post('/getWorkLog', CheckDriverAuthenticated, withTiming(driverController, driverController.getWorkLog))
 
 // new driverEntry Fields
 Router.post('/updatePreferredWorkLocation', CheckDriverAuthenticated, withTiming(driverController, driverController.updatePreferredWorkLocation))

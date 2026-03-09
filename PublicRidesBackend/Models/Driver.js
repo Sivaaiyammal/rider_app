@@ -769,6 +769,28 @@ class Driver {
         );
         return result?.location || null;
     }
+
+    static getDriverWorkLog = async (driverId, from, to) => {
+        const fromTs = Number(from);
+        const toTs = Number(to);
+
+        const conditions = [{ driverId: new ObjectId(driverId) }];
+
+        // Return logs that overlap the requested range.
+        if (Number.isFinite(fromTs) && Number.isFinite(toTs)) {
+            conditions.push({ from: { $lte: toTs } });
+            conditions.push({ to: { $gte: fromTs } });
+        } else if (Number.isFinite(fromTs)) {
+            conditions.push({ to: { $gte: fromTs } });
+        } else if (Number.isFinite(toTs)) {
+            conditions.push({ from: { $lte: toTs } });
+        }
+
+        const query = { $and: conditions };
+
+        const result = await Mongo.find(WRK_HISTORY_COLLECTION, query);
+        return result;
+    }
 }
 
 module.exports = Driver;
