@@ -1112,5 +1112,12 @@
     "driver_access_logout_confirm_cancel_button": "Stay in Customer App",
     "driver_access_logout_confirm_confirm_button": "Yes, Log Out",
     "session_expired": "Session Expired",
-    "session_expired_message": "Your session has expired. Please log in again."
+    "session_expired_message": "Your session has expired. Please log in again.",
+    "are_you_sure": "Are You Sure To Logout ?",
+    "are_you_sure_logout": "Are you sure you want to logout from this vehicle? You must login to another available vehicle to take trips.",
+    "payments": "Payments",
+    "collected_by_driver": "Collected By Driver",
+    "sent_to_vendor": "Sent To Vendor",
+    "no_work_history_found": "No Work History Found",
+    "active_days": "Active Days"
 }
