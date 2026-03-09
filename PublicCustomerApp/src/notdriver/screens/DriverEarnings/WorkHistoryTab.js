@@ -129,6 +129,22 @@ const WorkHistoryTab = () => {
         : allDailyEntries;
     const isMinutes = !!workLog?.dailyOnlineMinutes;
 
+    // Disable future dates & mark past no-data days red
+    const todayStr = toLocalDateStr(Date.now());
+    const monthEndStr = toLocalDateStr(endDate);
+    const calendarMaxStr = monthEndStr > todayStr ? todayStr : monthEndStr;
+    const datesWithData = new Set(Object.keys(dailyMap));
+    const noDataMarks = {};
+    const loopDate = new Date(startDate);
+    while (true) {
+        const ds = toLocalDateStr(loopDate.getTime());
+        if (ds > calendarMaxStr) break;
+        if (!datesWithData.has(ds)) {
+            noDataMarks[ds] = { marked: true, dotColor: '#e74c3c' };
+        }
+        loopDate.setDate(loopDate.getDate() + 1);
+    }
+
     const sessionsByDate = {};
     if (workLog?.workingHours) {
         workLog.workingHours.forEach((session) => {
@@ -261,8 +277,9 @@ const WorkHistoryTab = () => {
                             onDateChange={handleDateSelect}
                             isSelectMultipleDates={false}
                             minDate={toLocalDateStr(startDate)}
-                            maxDate={toLocalDateStr(endDate)}
+                            maxDate={calendarMaxStr}
                             initialDate={toLocalDateStr(startDate)}
+                            extraMarkedDates={noDataMarks}
                         />
                     </View>
                 </TouchableOpacity>

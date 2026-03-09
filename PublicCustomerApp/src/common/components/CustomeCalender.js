@@ -16,13 +16,14 @@ const getDatesBetween = (startDate, endDate) => {
   return dates;
 };
 
-const CustomeCalender = ({startDate, endDate, onDateChange, isSelectMultipleDates, minDate, maxDate, initialDate}) => {
+const CustomeCalender = ({startDate, endDate, onDateChange, isSelectMultipleDates, minDate, maxDate, initialDate, extraMarkedDates}) => {
     
   const handleDayPress = day => {
     onDateChange(day);
   };
 
   const markedDates = {
+    ...(extraMarkedDates || {}),
     [startDate]: {startingDay: true, selected: true, color: Colors.periwinkle, selectedColor: Colors.periwinkle},
     [endDate]: {endingDay: true,selected: true, color: Colors.periwinkle},
     ...getDatesBetween(startDate, endDate).reduce((acc, date) => {
@@ -66,6 +67,7 @@ CustomeCalender.propTypes = {
   maxDate: PropTypes.string,
   initialDate: PropTypes.string,
   isSelectMultipleDates: PropTypes.bool,
+  extraMarkedDates: PropTypes.object,
 };
 
 CustomeCalender.defaultProps = {
@@ -74,5 +76,6 @@ CustomeCalender.defaultProps = {
   minDate:'',
   maxDate: '',
   initialDate: '',
-  isSelectMultipleDates: false
+  isSelectMultipleDates: false,
+  extraMarkedDates: {},
 };
