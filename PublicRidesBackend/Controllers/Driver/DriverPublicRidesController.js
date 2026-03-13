@@ -767,6 +767,7 @@ module.exports = function (CLASS) {
     CLASS.prototype.updatePublicRidesDriverStatus = async function (req, res) {
         const driverId = req.driver?.id;
         const newStatus = String(req.body?.status || '').trim().toLowerCase();
+        const userLocation = req.body?.location;
 
         try {
             if (!driverId) {
@@ -804,7 +805,13 @@ module.exports = function (CLASS) {
                 // Log to driverWorkHistory — creates separate doc per month,
                 // pushes { status, from, to } into workingHours array,
                 // and recomputes dailyOnlineHours + totalOnlineHours
-                await DriverWorkHistory.logDriverSessionMonthly(driverId, lastUpdatedOn, now, prevStatus);
+                await DriverWorkHistory.logDriverSessionMonthly(
+                    driverId,
+                    lastUpdatedOn,
+                    now,
+                    prevStatus,
+                    userLocation || null
+                );
             }
 
             // 3) Update driver doc
@@ -812,6 +819,10 @@ module.exports = function (CLASS) {
                 driverStatus: { status: newStatus, updatedOn: now },
                 isAvailable: newStatus === 'online',
             };
+
+            if (userLocation !== undefined) {
+                update.location = userLocation;
+            }
 
             await Driver.updateDriver(String(driverId), update);
 
@@ -823,6 +834,7 @@ module.exports = function (CLASS) {
                     fromStatus: prevStatus || null,
                     toStatus: newStatus,
                     closedWindow: closedWindowSummary,
+                    location: userLocation || null,
                     updatedOn: now,
                 },
             });

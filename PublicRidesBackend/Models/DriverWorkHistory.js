@@ -90,7 +90,7 @@ function computeMonthlyOnlineMinutes(workingHours) {
  * Each month gets its own document per driver with structure:
  * {
  *   driverId: ObjectId,
- *   workingHours: [ { status, from, to }, ... ],
+ *   workingHours: [ { status, from, to, location? }, ... ],
  *   dailyOnlineMinutes: { "YYYY-MM-DD": minutes, ... },
  *   totalOnlineMinutes: Number,
  *   lastUpdatedAt: Number,
@@ -98,7 +98,7 @@ function computeMonthlyOnlineMinutes(workingHours) {
  *   to: monthEnd (ms)
  * }
  */
-async function logDriverSessionMonthly(driverId, fromTime, toTime, status) {
+async function logDriverSessionMonthly(driverId, fromTime, toTime, status, location = null) {
     // Normalize driverId
     let driverObjectId = driverId;
     if (typeof driverId === 'string' && /^[0-9a-fA-F]{24}$/.test(driverId)) {
@@ -120,6 +120,10 @@ async function logDriverSessionMonthly(driverId, fromTime, toTime, status) {
             from: seg.segFrom,
             to: seg.segTo,
         };
+
+        if (location) {
+            workingHourEntry.location = location;
+        }
 
         // Upsert: create monthly doc if not exists, then push the working hour entry
         await Mongo.updateOneRawUpsert(
