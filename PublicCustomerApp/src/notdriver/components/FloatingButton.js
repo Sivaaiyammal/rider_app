@@ -34,6 +34,8 @@ import { useTranslation } from 'react-i18next';
 import overlayController from '../../common/controllers/Overlay';
 import RideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
 import tripAlert from '../../common/controllers/TripAlert';
+import locationTask from '../../common/controllers/GetCurrentLocation';
+import { useMapMarkerStore } from '../../common/store/useMapMarkerStore';
 
 const FloatingButton = ({layOutHeight}) => {
   const {driverStatus, setDriverStatus} = useDriverStatusStore();
@@ -43,6 +45,7 @@ const FloatingButton = ({layOutHeight}) => {
   const [onOfflineModal, setOfflineModal] = useState(false);
   const [breakModal, setBreakModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false)
+  const {userLocation} = useMapMarkerStore()
 
   const [selectedBreak, setSelectedBreak] = useState(breakData[0]);
   const [remainingTime, setRemainingTime] = useState(0);
@@ -119,11 +122,20 @@ const FloatingButton = ({layOutHeight}) => {
   }
 
   const _updateDriverStatus = async (status) => {
+    if (!userLocation) {
+      await locationTask.getCurrentLocation();
+      showNotification('Fetching Current Location', '', 'info');
+      return;
+    }
     setIsLoading(true)
      try {
        const apiRequest = new APIRequest()
        const payload = {
-        status: status
+        status: status,
+        location: {
+          lat: userLocation?.[0],
+          lon: userLocation?.[1]
+        }
        }
        const response = await apiRequest.request('/publicrides/driver/v2/updatePublicRidesDriverStatus', "POST", payload, userInfo?.token)
        if (response?.success) {

@@ -20,6 +20,8 @@ import useDeviceTokenStore from '../../common/store/useDeviceTokenStore';
 import overlayController from '../../common/controllers/Overlay';
 import { useTranslation } from 'react-i18next';
 import rideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
+import locationTask from '../../common/controllers/GetCurrentLocation';
+import { useMapMarkerStore } from '../../common/store/useMapMarkerStore';
 
 const DriverPermissionScreen = () => {
   const {t} = useTranslation();
@@ -31,6 +33,8 @@ const DriverPermissionScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const {userInfo} = useUserStore()
   const {setDriverStatus} = useDriverStatusStore();
+
+  const {userLocation} = useMapMarkerStore()
 
   const onBackPress = () => {
     goBack();
@@ -113,11 +117,20 @@ const DriverPermissionScreen = () => {
   }
 
   const _updateDriverStatus = async (status) => {
+    if (!userLocation) {
+      await locationTask.getCurrentLocation();
+      showNotification('Fetching Current Location', 'Try Again', 'info');
+      return;
+    }
     setIsLoading(true)
      try {
        const apiRequest = new APIRequest()
-       const payload = {
-        status: status
+           const payload = {
+        status: status,
+        location: {
+          lat: userLocation?.[0],
+          lon: userLocation?.[1]
+        }
        }
        const response = await apiRequest.request('/publicrides/driver/v2/updatePublicRidesDriverStatus', "POST", payload, userInfo?.token)
        if (response?.success) {

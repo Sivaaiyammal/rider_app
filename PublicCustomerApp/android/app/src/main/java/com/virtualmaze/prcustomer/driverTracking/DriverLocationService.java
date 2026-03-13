@@ -129,6 +129,13 @@ public class DriverLocationService extends Service {
 
         if (!hasLocationRuntimePermission()) {
             Log.e(TAG, "Location permissions missing; aborting service start");
+            // Must call startForeground() before stopSelf() to avoid
+            // RemoteServiceException on Android 8+
+            Notification stub = getNotification(
+                    "Stopping...", "Permissions required",
+                    "0.0 km", "0 mins", Color.GRAY, "unknown"
+            );
+            promoteToForeground(stub);
             emitServiceError("missing_permissions", "Location permissions are required to start driver tracking");
             stopSelf();
             return;
@@ -634,6 +641,20 @@ public class DriverLocationService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TAG, "onStartCommand");
+
+        // Re-promote to foreground on every start command to satisfy the
+        // startForegroundService() contract (covers START_STICKY restarts
+        // and rapid stop/start cycles).
+        if (currentNotification != null) {
+            promoteToForeground(currentNotification);
+        } else {
+            Notification fallback = getNotification(
+                    "Driver Tracking", "Initializing...",
+                    "0.0 km", "0 mins", Color.GRAY, "unknown"
+            );
+            promoteToForeground(fallback);
+        }
+
         // DO NOT read storage here; rely on refresher
         updateNotification(currentActivity, "");
         boolean overlayPermitted = hasOverlayPermission();

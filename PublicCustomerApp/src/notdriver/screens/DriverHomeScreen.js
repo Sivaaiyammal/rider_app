@@ -159,7 +159,7 @@ const PublicRidesDriverHomeScreen = () => {
   const [approved, setApproved] = useState(false)
   const [blocked, setBlocked] = useState(false)
   const [isBankVerified, setIsBankVerified] = useState(false)
-  const {setMapLocation, setMapBounds, setUserLocation, setMapMarkers, mapMarkers} = useMapMarkerStore();
+  const {setMapLocation, setMapBounds, setUserLocation, setMapMarkers, mapMarkers, userLocation} = useMapMarkerStore();
   const [loading, setLoading] = useState(false)
   const [wsConnected, setWsConnected] = useState(Boolean(rideMatchWSService?.socket?.connected));
   const [wsConnecting, setWsConnecting] = useState(false);
@@ -529,6 +529,9 @@ const PublicRidesDriverHomeScreen = () => {
     if (geometries){
       setGeometries(null);
     }
+    if (hasLocationPermission && !userLocation) {
+      getUserLocation();
+    }
     if(!hasLocationPermission)return
     getCurrentLocation();
   },[])
@@ -727,7 +730,6 @@ const PublicRidesDriverHomeScreen = () => {
 
   return (
     <>
-   
      <View style={{ flex: 1 }}>
       <MapContainer />
       {/* Socket reconnect banner (only for approved, not blocked) */}

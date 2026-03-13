@@ -181,7 +181,7 @@ const EarningsTab = () => {
         <StatCard
           icon={<Ionicons name="car-sport" size={20} color="#fff" />}
           iconColor="#f79559"
-          bgColor="#FFF0E8"
+          bgColor="#f79559"
           label={t('total_trips')}
           value={totalTrips}
           loading={paymentsLoading}
@@ -189,7 +189,7 @@ const EarningsTab = () => {
           <StatCard
           icon={<FontAwesome5 name="coins" size={20} color="#fff" />}
           iconColor="#5cf759"
-          bgColor="#e8fff3"
+          bgColor="#5cf759"
           label={t('total_earnings')}
           value={totalEarnings}
           loading={paymentsLoading}

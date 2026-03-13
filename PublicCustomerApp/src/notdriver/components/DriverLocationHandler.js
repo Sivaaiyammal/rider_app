@@ -12,6 +12,8 @@ import { showNotification } from "../../common/components/Alerts/showNotificatio
 import { DataStore } from "../../common/controllers/DataStore";
 import { useTripAcceptStore } from "../store/useTripAcceptStore";
 import overlayController from "../../common/controllers/Overlay";
+import locationTask from "../../common/controllers/GetCurrentLocation";
+import { useMapMarkerStore } from "../../common/store/useMapMarkerStore";
 
 function DriverLocationHandler() {
 
@@ -20,6 +22,7 @@ function DriverLocationHandler() {
   const {userInfo} = useUserStore()
   const [isLoading, setIsLoading] = useState(false)
   const {tripRequestData} = useTripRequestStore()
+  const {userLocation} = useMapMarkerStore()
 
   const {
     hasLocationPermission, hasNotificationPermission,
@@ -78,11 +81,20 @@ function DriverLocationHandler() {
   }, [driverStatus, hasBackgroundLocationPermission, hasNotificationPermission, hasLocationPermission, hasOverlayPermission, overlayCheckSupported]);
 
   const _updateDriverStatus = async (status) => {
+    if (!userLocation) {
+      await locationTask.getCurrentLocation();
+      showNotification('Fetching Current Location', 'Try Again', 'info');
+      return;
+    }
     setIsLoading(true)
      try {
        const apiRequest = new APIRequest()
        const payload = {
-        status: status
+        status: status,
+        location: {
+          lat: userLocation?.[0],
+          lon: userLocation?.[1]
+        }
        }
        const response = await apiRequest.request('/publicrides/driver/v2/updatePublicRidesDriverStatus', "POST", payload, userInfo?.token)
        if (response?.success) {
@@ -90,7 +102,7 @@ function DriverLocationHandler() {
           const _newUserInfo = userInfo
           _newUserInfo.driverStatus = {
             status: status,
-            updatedOn: new Date().getTime()
+            updatedOn: new Date().getTime(),
           }
           await DataStore.storeData('userdetails', _newUserInfo);
           setDriverStatus(status)
