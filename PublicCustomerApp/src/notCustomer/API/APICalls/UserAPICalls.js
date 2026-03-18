@@ -10,6 +10,7 @@ import {
   getPassengerTripStats,
   requestDriverOTP,
   verifyDriverOTP,
+  verifyActingDriverOTP,
 } from '../EndPoints/EndPoints';
 import {showNotification} from '../../components/NotificationManger';
 import i18n from '../../../common/i18n';
@@ -61,6 +62,31 @@ export const testLogin = onSuccessCallback => {
   });
 };
 
+
+// verify OTP Mutation
+export const verifyActingDriverOTPMutation = onSuccessCallback => {
+  return useMutation(['verifyActingDriverOTP'], verifyActingDriverOTP, {
+    onSuccess: data => {
+      if (data.success) {
+        if (onSuccessCallback) {
+          queryClient.invalidateQueries('verifyActingDriverOTP');
+          onSuccessCallback(data);
+        }
+      } else {
+        console.log('OTP verification failed:', data);
+        showNotification(i18n.t('verification_failed'), i18n.t('some_error_occurred'), 'danger');
+      }
+    },
+    onError: error => {
+      console.log('Error during OTP verification:', error);
+      showNotification(
+        i18n.t('verification_failed'),
+        i18n.t('some_error_occurred'),
+        'danger',
+      );
+    },
+  });
+};
 
 // verify OTP Mutation
 export const verifyOTPMutation = onSuccessCallback => {

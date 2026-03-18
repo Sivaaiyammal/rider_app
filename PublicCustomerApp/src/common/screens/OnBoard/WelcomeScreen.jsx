@@ -9,6 +9,7 @@ import { firebaselog_userRole } from '../../utils/FirebaseAnalytics';
 
 const passengerImage = require('../../../notCustomer/assets/image/ContinueAsPassenger.webp');
 const driverImage = require('../../../notCustomer/assets/image/ContinueAsDriver.webp');
+const actingDriverImage = require('../../../common/assets/images/acting_driver.webp');
 
 const WelcomeScreen = ({ navigation }) => {
   const { width: screenWidth } = useWindowDimensions();
@@ -37,6 +38,13 @@ const WelcomeScreen = ({ navigation }) => {
     navigation.navigate('LoginScreen', {navRole: 'driver'});
   };
 
+  const handleActingDriverContinue = () => {
+    setUserRole('acting_driver');
+    DataStore.storeData('userRole', 'acting_driver');
+    firebaselog_userRole('UR_Selected(UR_S)', 'UR_S:acting_driver');
+    navigation.navigate('LoginScreen', {navRole: 'acting_driver'});
+  };
+
   return (
     <View style={styles.container}>
       <AdaptiveText style={styles.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.7}>
@@ -47,6 +55,7 @@ const WelcomeScreen = ({ navigation }) => {
       </AdaptiveText>
       <View style={styles.actions}>
 
+        {/* Passenger Card */}
         <TouchableOpacity
           style={[styles.card, styles.passengerCard]}
           activeOpacity={0.85}
@@ -77,7 +86,6 @@ const WelcomeScreen = ({ navigation }) => {
               ]}
             >
               {i18n.language?.startsWith('ta') ? (
-                // Tamil-specific sentence formation: "Customer continue as"
                 <AdaptiveText
                    style={[styles.cardTitlePassenger,{fontSize:20,lineHeight:30,textAlign:'center'}]}
                   numberOfLines={2}
@@ -89,19 +97,20 @@ const WelcomeScreen = ({ navigation }) => {
               ) : (
                 <>
                   <AdaptiveText style={[styles.cardLabel, styles.cardLabelPassenger]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-                    {t('continue_as')}
+                    {t('continue_as', 'Continue as')}
                   </AdaptiveText>
                   <AdaptiveText style={[styles.cardTitle, styles.cardTitlePassenger]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
-                    {t('customer')}
+                    Passenger
                   </AdaptiveText>
                 </>
               )}
             </View>
           </View>
         </TouchableOpacity>
-        <View style={styles.separator}>
 
-        </View>
+       
+
+        {/* Driver Card */}
         <TouchableOpacity
           style={[styles.card, styles.driverCard]}
           activeOpacity={0.85}
@@ -128,13 +137,12 @@ const WelcomeScreen = ({ navigation }) => {
               style={[
                 styles.cardBody,
                 styles.cardBodyDriver,
-                {paddingBottom:15},
-                { width: mediaWidth },
+                { paddingBottom: 15, width: mediaWidth },
               ]}
             >
               {i18n.language?.startsWith('ta') ? (
                 <AdaptiveText
-                  style={[styles.cardTitleDriver,{fontSize:20,lineHeight:30,textAlign:'center'}]}
+                  style={[styles.cardTitleDriver,{fontSize:20,lineHeight:30,textAlign:'left'}]}
                   numberOfLines={2}
                   adjustsFontSizeToFit
                   minimumFontScale={0.7}
@@ -146,16 +154,78 @@ const WelcomeScreen = ({ navigation }) => {
               ) : (
                 <>
                   <AdaptiveText style={[styles.cardLabel, styles.cardLabelDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-                    {t('become_a')}
+                    {t('become_a', 'Become a')}
                   </AdaptiveText>
                   <AdaptiveText style={[styles.cardTitle, styles.cardTitleDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} color={'white'}>
-                    {t('driver')}
+                    {t('driver', 'Driver')}
                   </AdaptiveText>
                   <AdaptiveText style={[styles.cardLabel, styles.cardLabelDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-                    {t('and_earn_money')}
+                    {t('and_earn_money', '& earn money')}
                   </AdaptiveText>
                 </>
               )}
+            </View>
+          </View>
+        </TouchableOpacity>
+
+       {/* Acting Driver Card */}
+        <TouchableOpacity
+          style={[styles.card, styles.actingDriverCard]}
+          activeOpacity={0.85}
+          onPress={handleActingDriverContinue}
+        >
+          <View style={[styles.cardContent, styles.cardContentDriver,]}>
+            <View
+              style={[
+                styles.cardBody,
+                styles.cardBodyDriver,
+                { paddingBottom: 15, width: mediaWidth, right: 15 },
+              ]}
+            >
+              {i18n.language?.startsWith('ta') ? (
+                <AdaptiveText
+                  style={[styles.cardTitleDriver,{fontSize:20,lineHeight:30,textAlign:'left'}]}
+                  numberOfLines={2}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.7}
+                  color={'white'}
+                >
+                  {`${t('become_an', 'Become an')} Acting Driver`}
+                </AdaptiveText>
+              ) : (
+                <>
+                  <AdaptiveText style={[styles.cardLabel, styles.cardLabelDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+                    {t('become_an', 'Become an')}
+                  </AdaptiveText>
+                  <AdaptiveText style={[styles.cardTitle, styles.cardTitleDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} color={'white'}>
+                    Acting Driver
+                  </AdaptiveText>
+                  <AdaptiveText style={[styles.cardLabel, styles.cardLabelDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
+                    and drive any vehicle
+                  </AdaptiveText>
+                </>
+              )}
+            </View>
+             <View
+              style={[
+                styles.cardMedia,
+                styles.cardMediaDriver,
+                { width: mediaWidth * 1.3 },
+              ]}
+            >
+              <Image
+                source={actingDriverImage}
+                style={[
+                  styles.cardImage,
+                  { 
+                    marginTop: cardImageMarginTop + 15, 
+                    aspectRatio: 1.4, 
+                    // right: -10,
+                    position:'absolute',
+                  }
+                ]}
+                resizeMode="cover"
+              />
             </View>
           </View>
         </TouchableOpacity>
@@ -193,13 +263,7 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 10,
   },
-  separator: {
-    marginBottom: 30,
-    width: '90%',
-    height:1,
-    backgroundColor: colors.grey_light,
-    marginHorizontal: 12,
-  },
+
   card: {
     width: '100%',
     borderRadius: 24,
@@ -308,4 +372,9 @@ const styles = StyleSheet.create({
   cardTitlePassenger: {
     textAlign: 'right',
   },
+  actingDriverCard:{
+    backgroundColor: '#9B2423',
+    borderColor: '#7e2c2c',
+    marginTop: 18,
+  }
 });

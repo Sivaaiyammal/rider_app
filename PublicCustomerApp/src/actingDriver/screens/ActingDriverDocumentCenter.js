@@ -12,99 +12,64 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {useTranslation} from 'react-i18next';
 
-import {useStackScreenStore} from '../../../common/store/useStackScreenStore';
-import usePublicDriverStore from '../../store/usePublicDriverStore';
-import useUserStore from '../../../common/store/useUserStore';
-import useDeviceAPIStore from '../../../common/store/useDeviceAPIStore';
-import {useMapMarkerStore} from '../../../common/store/useMapMarkerStore';
-import {Colors, Fonts} from '../../../common/constants/constants';
-import { firebaselog_onBoarding } from '../../../common/utils/FirebaseAnalytics';
-import APIRequest from '../../../common/APIRequest';
-import BGLocationTask from '../../../common/controllers/BGLocationTask';
-import GlobalContext from '../../../context/GlobalContext';
-import FullScreenLoader from '../../../common/loaders/FullScreenLoader';
+import {useStackScreenStore} from '../../common/store/useStackScreenStore';
+import usePublicDriverStore from '../../notdriver/store/usePublicDriverStore';
+import useUserStore from '../../common/store/useUserStore';
+import useDeviceAPIStore from '../../common/store/useDeviceAPIStore';
+import {useMapMarkerStore} from '../../common/store/useMapMarkerStore';
+import {Colors, Fonts} from '../../common/constants/constants';
+import {firebaselog_onBoarding} from '../../common/utils/FirebaseAnalytics';
+import APIRequest from '../../common/APIRequest';
+import BGLocationTask from '../../common/controllers/BGLocationTask';
+import GlobalContext from '../../context/GlobalContext';
+import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 
-const DocumentCenter = () => {
+const ActingDriverDocumentCenter = () => {
   const {t} = useTranslation();
-  const {setStackScreen} = useStackScreenStore();
-  const driverInfo = usePublicDriverStore(state => state.driverInfo);
+  const {setStackScreen, goBack} = useStackScreenStore();
   const [showBankOptions, setShowBankOptions] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const {isApproved} = usePublicDriverStore();
-  const {goBack} = useStackScreenStore();
   const {userInfo} = useUserStore();
   const {logout} = useContext(GlobalContext);
   const {userDeviceId} = useDeviceAPIStore();
   const {setMapMarkers} = useMapMarkerStore();
 
   const {
-    locationCompleteStatus,
     driverDetailsCompleteStatus,
-    vehicleDetailsCompleteStatus,
     bankDetailsCompleteStatus,
     documentsCompleteStatus,
   } = usePublicDriverStore();
 
   const docCompleted =
-    locationCompleteStatus &&
     driverDetailsCompleteStatus &&
-    vehicleDetailsCompleteStatus &&
     bankDetailsCompleteStatus &&
     documentsCompleteStatus;
 
   const sections = [
-      {
-        id: 'preferredLocation',
-        title: t('preferred_work_location'),
-        // description: t('document_center_location_desc', {
-        //   defaultValue: 'Choose your preferred work locations.',
-        // }),
-        icon: 'place',
-        screen: 'AddDriverLocation',
-        complete: locationCompleteStatus,
-      },
-      {
-        id: 'driverDetails',
-        title: t('driver_details'),
-        // description: t('document_center_driver_desc', {
-        //   defaultValue: 'Review and update your personal information.',
-        // }),
-        icon: 'person',
-        screen: 'DriverEntry',
-        complete: driverDetailsCompleteStatus,
-      },
-      {
-        id: 'vehicleDetails',
-        title: t('vehicle_details'),
-        // description: t('document_center_vehicle_desc', {
-        //   defaultValue: 'Confirm your assigned vehicle information.',
-        // }),
-        icon: 'directions-car',
-        screen: 'DriverVehicleEntry',
-        complete: vehicleDetailsCompleteStatus,
-      },
-      {
-        id: 'bankDetails',
-        title: t('bank_details'),
-        // description: t('document_center_bank_desc', {
-        //   defaultValue: 'Verify the bank account for your payouts.',
-        // }),
-        icon: 'account-balance',
-        screen: 'DriverBankDetails',
-        complete: bankDetailsCompleteStatus,
-      },
-      {
-        id: 'proofDocuments',
-        title: t('proof_documents'),
-        // description: t('document_center_proof_desc', {
-        //   defaultValue: 'Upload and check the status of your documents.',
-        // }),
-        icon: 'fact-check',
-        screen: 'DriverProofDoc',
-        complete: documentsCompleteStatus,
-      },
-    ];
+    {
+      id: 'driverDetails',
+      title: t('driver_details', {defaultValue: 'Driver Details'}),
+      icon: 'person',
+      screen: 'DriverEntry',
+      complete: driverDetailsCompleteStatus,
+    },
+    {
+      id: 'bankDetails',
+      title: t('bank_details', {defaultValue: 'Bank Details'}),
+      icon: 'account-balance',
+      screen: 'DriverBankDetails',
+      complete: bankDetailsCompleteStatus,
+    },
+    {
+      id: 'proofDocuments',
+      title: t('proof_documents', {defaultValue: 'Proof Documents'}),
+      icon: 'fact-check',
+      screen: 'DriverProofDoc',
+      complete: documentsCompleteStatus,
+    },
+  ];
 
   const handleSectionPress = section => {
     if (section.id === 'bankDetails') {
@@ -127,12 +92,10 @@ const DocumentCenter = () => {
 
   const onDonePress = () => {
     if (isApproved) {
-      // setStackScreen('Home')
-      // setCurrentScreen('Map');
       goBack();
     } else {
-      firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:onboarding_completed')
-      setStackScreen('DriverApprovalScreen')
+      firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:acting_driver_onboarding_completed');
+      setStackScreen('DriverApprovalScreen');
     }
   };
 
@@ -178,9 +141,7 @@ const DocumentCenter = () => {
           styles.statusText,
           complete ? styles.statusTextComplete : styles.statusTextPending,
         ]}>
-        {complete
-          ? t('complete')
-          : t('pending')}
+        {complete ? t('complete') : t('pending')}
       </Text>
     </View>
   );
@@ -188,21 +149,26 @@ const DocumentCenter = () => {
   return (
     <View style={styles.container}>
       <View style={styles.headerView}>
-      <Text style={styles.title}>{t('document_center')}</Text>
-       <View style={styles.headerActions}>
-         <TouchableOpacity style={styles.headerBtn} onPress={() => setStackScreen('DriverHelpSupport')}>
-          <MaterialIcons name="support-agent" size={24} color={Colors.black} />
-         </TouchableOpacity>
-         <TouchableOpacity style={styles.headerBtn} onPress={confirmLogout}>
-          <MaterialIcons name="power-settings-new" size={24} color={Colors.scarlet} />
-         </TouchableOpacity>
-       </View>
+        <Text style={styles.title}>{t('document_center')}</Text>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={styles.headerBtn}
+            onPress={() => setStackScreen('DriverHelpSupport')}>
+            <MaterialIcons name="support-agent" size={24} color={Colors.black} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.headerBtn} onPress={confirmLogout}>
+            <MaterialIcons
+              name="power-settings-new"
+              size={24}
+              color={Colors.scarlet}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
-      
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}>
-
         <Text style={styles.subtitle}>
           {t('document_center_subtitle')}
         </Text>
@@ -214,11 +180,14 @@ const DocumentCenter = () => {
               style={styles.sectionCard}
               onPress={() => handleSectionPress(section)}>
               <View style={styles.iconWrapper}>
-                <MaterialIcons name={section.icon} size={24} color={Colors.white} />
+                <MaterialIcons
+                  name={section.icon}
+                  size={24}
+                  color={Colors.white}
+                />
               </View>
               <View style={styles.sectionContent}>
                 <Text style={styles.sectionTitle}>{section.title}</Text>
-                {section.id === "preferredLocation" && <Text style={styles.sectionDescription}>{driverInfo?.homeLocation?.addressName}</Text> }
               </View>
               <View style={styles.sectionMeta}>
                 {renderStatus(section.complete)}
@@ -232,6 +201,8 @@ const DocumentCenter = () => {
           ))}
         </View>
       </ScrollView>
+
+      {/* Bank Options Modal */}
       <Modal
         transparent
         visible={showBankOptions}
@@ -276,6 +247,8 @@ const DocumentCenter = () => {
           </View>
         </View>
       </Modal>
+
+      {/* Logout Confirmation Modal */}
       <Modal
         transparent
         visible={showLogoutModal}
@@ -283,12 +256,19 @@ const DocumentCenter = () => {
         onRequestClose={() => setShowLogoutModal(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <MaterialIcons name="logout" size={40} color={Colors.scarlet} style={{alignSelf: 'center'}} />
+            <MaterialIcons
+              name="logout"
+              size={40}
+              color={Colors.scarlet}
+              style={{alignSelf: 'center'}}
+            />
             <Text style={styles.modalTitle}>
               {t('logout', {defaultValue: 'Logout'})}
             </Text>
             <Text style={styles.logoutMessage}>
-              {t('logout_confirm_message', {defaultValue: 'Are you sure you want to logout?'})}
+              {t('logout_confirm_message', {
+                defaultValue: 'Are you sure you want to logout?',
+              })}
             </Text>
             <TouchableOpacity
               style={[styles.logoutConfirmButton, loading && {opacity: 0.7}]}
@@ -314,22 +294,25 @@ const DocumentCenter = () => {
           </View>
         </View>
       </Modal>
+
       {loading && <FullScreenLoader />}
+
       <View style={styles.footer}>
         <TouchableOpacity
           style={[styles.doneButton, !docCompleted && styles.doneButtonDisabled]}
-          onPress={()=> onDonePress()}
+          onPress={() => onDonePress()}
           activeOpacity={0.8}
-          disabled={!docCompleted}
-        >
-          <Text style={styles.doneButtonText}>{t('done', {defaultValue: 'Done'})}</Text>
+          disabled={!docCompleted}>
+          <Text style={styles.doneButtonText}>
+            {t('done', {defaultValue: 'Done'})}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 };
 
-export default DocumentCenter;
+export default ActingDriverDocumentCenter;
 
 const styles = StyleSheet.create({
   container: {
@@ -346,27 +329,11 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     fontSize: 16,
     color: Colors.dark_grey,
-    zIndex:9,
-    opacity:0.8,
+    zIndex: 9,
+    opacity: 0.8,
   },
   sectionsContainer: {
     gap: 12,
-  },
-  approvalBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: Colors.white_dirt,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.periwinkle,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  approvalBannerText: {
-    fontFamily: Fonts.medium,
-    fontSize: 14,
-    color: Colors.periwinkle,
   },
   sectionCard: {
     backgroundColor: Colors.white,
@@ -397,12 +364,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.black,
   },
-  sectionDescription: {
-    fontFamily: Fonts.regular,
-    fontSize: 13,
-    color: Colors.warm_grey,
-    marginTop: 4,
-  },
   sectionMeta: {
     alignItems: 'flex-end',
     justifyContent: 'space-between',
@@ -431,12 +392,10 @@ const styles = StyleSheet.create({
   statusTextPending: {
     color: Colors.scarlet,
   },
-  title:{
+  title: {
     fontFamily: Fonts.semi_bold,
     fontSize: 20,
     color: Colors.black,
-    // marginTop:16,
-    // marginLeft:16,
   },
   footer: {
     borderTopWidth: 1,
@@ -458,20 +417,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.white,
   },
-  headerView:{
-    width:'90%',
-    alignSelf:'center',
-    flexDirection:'row',
-    justifyContent:'space-between',
-    alignItems:'center',
-    marginTop:16,
+  headerView: {
+    width: '90%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 16,
   },
-  headerActions:{
-    flexDirection:'row',
-    alignItems:'center',
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
   },
-  headerBtn:{
+  headerBtn: {
     padding: 4,
   },
   modalOverlay: {
@@ -515,11 +474,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.warm_grey,
   },
-  orText:{
+  orText: {
     fontFamily: Fonts.medium,
     fontSize: 14,
     color: Colors.dark_grey,
-    textAlign:'center',
+    textAlign: 'center',
   },
   logoutMessage: {
     fontFamily: Fonts.regular,
@@ -530,7 +489,7 @@ const styles = StyleSheet.create({
   logoutConfirmButton: {
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: Colors.red,
+    backgroundColor: Colors.scarlet,
     alignItems: 'center',
   },
   logoutConfirmButtonText: {

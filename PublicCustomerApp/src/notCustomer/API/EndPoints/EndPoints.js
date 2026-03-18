@@ -13,13 +13,18 @@ export const requestOTP = async (payload) => {
 };
 
 export const requestDriverOTP = async (payload) => {
-  const { data } = await apiClient.post(`/publicrides/driver/v2/sendOTP?platform=${Platform.OS}`, payload);
+  const { data } = await apiClient.post(`/publicrides/driver/v2/sendOTP?platform=${Platform.OS}&isdev=${true}`, payload);
   console.log("driver otp data",data)
  return data;
 }
 
 export const verifyDriverOTP = async (payload) => {
   const { data } = await apiClient.post(`/publicrides/driver/v2/verifyOTP?platform=${Platform.OS}`, payload);
+ return data;
+}
+
+export const verifyActingDriverOTP = async (payload) => {
+  const { data } = await apiClient.post(`/publicrides/driver/v2/verifyADOTP?platform=${Platform.OS}`, payload);
  return data;
 }
 

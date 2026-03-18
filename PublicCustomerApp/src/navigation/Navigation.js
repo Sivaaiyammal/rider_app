@@ -27,6 +27,7 @@ import InAppUpdates from '../utils/InAppUpdates';
 import ContactScreen from '../notCustomer/features/about/screens/ContactScreen';
 import useUserStore from '../common/store/useUserStore.js';
 import DriverHomeScreen from '../notdriver/screens/DriverHomeScreen.js';
+import ActingDriverHome from '../actingDriver/screens/ActingDriverHome.js';
 
 const Navigation = () => {
   const Stack = createNativeStackNavigator();
@@ -49,7 +50,7 @@ const Navigation = () => {
     if (userRole?.data) {
       setUserRole(userRole.data);
     }
-    if (userRole?.data === 'driver') {
+    if (userRole?.data === 'driver' || userRole?.data === 'acting_driver') {
       if (access_token.data) {
         setInitialRoute('HomeScreen');
         console.log('Driver Access Token:', user_details?.data?._id);
@@ -95,6 +96,10 @@ const Navigation = () => {
       case 'driver':
         return {
           homeScreen: DriverHomeScreen,
+        };
+      case 'acting_driver':
+        return {
+          homeScreen: ActingDriverHome,
         };
       default:
         return {

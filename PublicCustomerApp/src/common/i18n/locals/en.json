@@ -1120,5 +1120,9 @@
     "sent_to_vendor": "Sent To Vendor",
     "no_work_history_found": "No Work History Found",
     "active_days": "Active Days",
-    "select_date": "Select Date"
+    "select_date": "Select Date",
+    "become_an": "Become an",
+    "acting_driver": "Acting Driver",
+    "and_drive_any_vehicle": "and drive any vehicle",
+    "acting_driver_login": "Acting Driver Login"
 }

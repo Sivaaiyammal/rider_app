@@ -1,16 +1,16 @@
-import {Text, TextInput, TouchableOpacity, View, Platform} from 'react-native';
-import React, {useState, useEffect} from 'react';
-import {useTranslation} from 'react-i18next';
+import { Text, TextInput, TouchableOpacity, View, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 
-import {loginStyles} from '../../../notCustomer/styles/UserStyles';
+import { loginStyles } from '../../../notCustomer/styles/UserStyles';
 import Logo from '../../../notCustomer/assets/image/logo.svg';
 import Phone from '../../../notCustomer/assets/image/svgIcons/phone.svg';
-import {CommonActions, useNavigation} from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 
-import {DataStore} from '../../controllers/DataStore';
+import { DataStore } from '../../controllers/DataStore';
 
-import {requestDriverOTPMutation, requestOTPMutation} from '../../../notCustomer/API/APICalls/UserAPICalls';
+import { requestDriverOTPMutation, requestOTPMutation } from '../../../notCustomer/API/APICalls/UserAPICalls';
 import FullScreenLoader from '../../../notCustomer/components/Loaders/FullScreenLoader';
 import { colors } from '../../../notCustomer/constants/constants';
 import { showPhoneNumberHint } from '@shayrn/react-native-android-phone-number-hint';
@@ -19,9 +19,9 @@ import NavBar from '../../components/NavBar';
 import { phoneNumberPattern, phoneNumberPatternIN } from '../../constants/constants';
 
 const LoginScreen = ({ route }) => {
-  const {userRole} = useUserStore();
-  const {navRole = userRole} = route.params || {};
-  const {t} = useTranslation();
+  const { userRole } = useUserStore();
+  const { navRole = userRole } = route.params || {};
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const country = {
     callingCode: ['91'],
@@ -48,7 +48,7 @@ const LoginScreen = ({ route }) => {
           params: {
             countryCode: country.callingCode[0],
             phoneNumber: phoneNumber,
-            navRole:'customer'
+            navRole: 'customer'
           },
         }),
       );
@@ -56,28 +56,28 @@ const LoginScreen = ({ route }) => {
   };
 
   const handleDriverLoginSuccess = async (data) => {
-      if (data) {
-     
+    if (data) {
+
       navigation.dispatch(
         CommonActions.navigate({
           name: 'OTPScreen',
           params: {
             countryCode: country.callingCode[0],
             phoneNumber: phoneNumber,
-            navRole:'driver'
+            navRole: 'driver'
           },
         }),
       );
     }
   }
 
-  const {mutate: requestOTPMutate, isLoading: isLoading} = requestOTPMutation(
+  const { mutate: requestOTPMutate, isLoading: isLoading } = requestOTPMutation(
     handleLoginSuccess,
   );
 
   // requestDriverOTPMutate
 
-  const {mutate: requestDriverOTPMutate, isLoading: isOtpLoading} = requestDriverOTPMutation(
+  const { mutate: requestDriverOTPMutate, isLoading: isOtpLoading } = requestDriverOTPMutation(
     handleDriverLoginSuccess,
   );
 
@@ -92,13 +92,13 @@ const LoginScreen = ({ route }) => {
     </View>
   );
 
- 
+
   const requestOTP = async () => {
     const payload = {
       phone: `+${country.callingCode[0]}${phoneNumber}`,
-     
+
     };
-    
+
     // Update error message based on phone number length
     if (phoneNumber.length === 0) {
       setPhoneNumErr('');
@@ -107,23 +107,23 @@ const LoginScreen = ({ route }) => {
     } else if (phoneNumber.length > 10) {
       setPhoneNumErr(t('phone_number_must_be_10_digits'));
     } else if (!phoneNumberPatternIN.test(phoneNumber)) {
-       setPhoneNumErr(t('valid_phone'));
+      setPhoneNumErr(t('valid_phone'));
     } else {
-  if (navRole === 'customer') {
-    DataStore.storeData('login_phoneNumber', phoneNumber);
-    requestOTPMutate(payload);
-    } else {
-    requestDriverOTPMutate(payload);
+      if (navRole === 'customer') {
+        DataStore.storeData('login_phoneNumber', phoneNumber);
+        requestOTPMutate(payload);
+      } else {
+        requestDriverOTPMutate(payload);
+      }
+
     }
-     
-    }
-  
+
   };
 
   const handleChange = text => {
     const numericValue = text.replace(/[^0-9]/g, '');
     setPhoneNumber(numericValue);
-    
+
     // Update error message based on phone number length
     if (numericValue.length === 0) {
       setPhoneNumErr('');
@@ -132,7 +132,7 @@ const LoginScreen = ({ route }) => {
     } else if (numericValue.length > 10) {
       setPhoneNumErr(t('phone_number_must_be_10_digits'));
     } else if (!phoneNumberPatternIN.test(numericValue)) {
-       setPhoneNumErr(t('valid_phone'));
+      setPhoneNumErr(t('valid_phone'));
     } else {
       setPhoneNumErr('');
     }
@@ -145,7 +145,7 @@ const LoginScreen = ({ route }) => {
     try {
       const hinted = await showPhoneNumberHint(
         {
-        showGuidanceDialog: false,
+          showGuidanceDialog: false,
         }
       );
       if (hinted) {
@@ -169,22 +169,32 @@ const LoginScreen = ({ route }) => {
     }
   };
 
-            
 
-
+  const headerText = () => {
+    switch (navRole) {
+      case 'driver':
+        return t('driver_login');
+      case 'customer':
+        return t('customer_login');
+      case 'acting_driver':
+        return t('acting_driver_login');
+      default:
+        return '';
+    }
+  }
 
   return (
     <>
       {(isLoading || isOtpLoading) && <FullScreenLoader />}
       <View style={loginStyles.screen}>
-        <NavBar onBackPress={() =>navigation.reset({
+        <NavBar onBackPress={() => navigation.reset({
           index: 0,
           routes: [{ name: 'WelcomeScreen' }],
-        })} title={''}/>
+        })} title={''} />
         <View style={loginStyles.header}>
           <Logo />
           <Text style={loginStyles.headerTxt}>
-            Namma Ooru Taxi ® {'\n'} {navRole === 'driver' ? t('driver_login') : t('customer_login')}
+            Namma Ooru Taxi ® {'\n'}{headerText()}
           </Text>
         </View>
         <View style={loginStyles.contectContainer}>
@@ -211,11 +221,11 @@ const LoginScreen = ({ route }) => {
             <Text style={loginStyles.errTxt}>{phoneNumErr}</Text>
           )}
         </View>
-       
+
         <TouchableOpacity
           style={[
             loginStyles.otpBtn,
-            phoneNumber.length !== 10 && {opacity: 0.5}
+            phoneNumber.length !== 10 && { opacity: 0.5 }
           ]}
           onPress={() => requestOTP()}
           disabled={phoneNumber.length !== 10}>
