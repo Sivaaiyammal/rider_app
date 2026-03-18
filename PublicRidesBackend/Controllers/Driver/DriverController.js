@@ -1,5 +1,6 @@
 
 const Controller = require('../Controller');
+const ActingDriverPublicRidesController = require('./ActingDriverPublicRidesController');
 
 const DriverPublicRidesController = require('./DriverPublicRidesController');
 
@@ -53,10 +54,14 @@ class DriverController extends Controller {
         this.wakeUpBGService = this.wakeUpBGService.bind(this)
         this.updateFCMToken = this.updateFCMToken.bind(this)
         this.getWorkLog = this.getWorkLog.bind(this)
+
+        //Acting Driver
+        this.verifyPublicRidesADOTP = this.verifyPublicRidesADOTP.bind(this)
     }
 
    
 }
 
+ActingDriverPublicRidesController(DriverController)
 DriverPublicRidesController(DriverController)
 module.exports = DriverController

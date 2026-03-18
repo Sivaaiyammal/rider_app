@@ -173,6 +173,9 @@ module.exports = function (CLASS) {
                 driverDetails.token = token;
                 driverDetails.driverStatus= {status: 'online', updatedOn: new Date().getTime()} 
                 driverDetails.isAvailable = true
+                if (driverDetails.role === 'acting_driver') {
+                    await Driver.updateDriver(driverCheck._id, { role: driverDetails.vendorId ? 'salaried' : 'dco' });
+                }
                 // Set role based on vendor ID
                 driverDetails.role = driverDetails.vendorId ? 'salaried' : 'dco';
                 if (payload.fcmToken) {

@@ -3,6 +3,7 @@ const Router = express.Router();
 
 const DriverController = require('../Controllers/Driver/DriverController');
 const TripController = require('../Controllers/Trip/TripController');
+const ActingDriverPublicRidesController = require('../Controllers/Driver/ActingDriverPublicRidesController');
 const CheckDriverAuthenticated = require('../MiddleWares/CheckDriverAuthenticated');
 const CheckAdminOrDriverAuthenticated = require('../MiddleWares/CheckAdminOrDriverAuthenticated');
 const { createHandler } = require('graphql-http/lib/use/express');
