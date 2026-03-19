@@ -164,6 +164,25 @@ const ActingDriverHomeScreen = () => {
       driverPhoto : response.driver?.documents?.driverPhoto || null,
       licenseDocument: response.driver?.documents?.drivingLicense || null,
       dob: response.driver?.dob || '',
+      drivingExperience: response.driver?.experience
+        ? {
+            totalExperience: response.driver.experience.totalExperience || '',
+            commercialExperience: response.driver.experience.commercialExperience || '',
+            hasPlatformExperience: response.driver.experience.hasPlatformExperience ?? null,
+            platforms: response.driver.experience.platforms || [],
+            approxTrips: response.driver.experience.approxTrips || '',
+            driverRating: response.driver.experience.driverRating || '',
+          }
+        : null,
+      vehicleHandling: response.driver?.experience
+        ? {
+            vehicleTypes: response.driver.experience.vehicleTypes || [],
+            transmission: response.driver.experience.transmission || '',
+            fuelTypes: response.driver.experience.fuelTypes || [],
+            nightDriving: response.driver.experience.nightDriving ?? false,
+            longDistance: response.driver.experience.longDistance ?? false,
+          }
+        : null,
     });
   }
   const storePublicDriverVehicleInfo = (response) => {
