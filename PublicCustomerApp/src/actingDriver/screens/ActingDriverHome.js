@@ -60,6 +60,7 @@ import DriverApprovalScreen from '../../notdriver/screens/DriverApprovalScreen';
 import DriverAccountRevokeScreen from '../../notdriver/screens/DriverAccountRevokeScreen';
 import DrivingExperienceScreen from './DrivingExperienceScreen';
 import VehicleHandlingScreen from './VehicleHandlingScreen';
+import LanguageScreen from '../../notdriver/screens/LanguageSelectionScreen';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -616,6 +617,8 @@ const ActingDriverHomeScreen = () => {
         return <DrivingExperienceScreen />;
       case 'VehicleHandling':
         return <VehicleHandlingScreen />;
+      case 'LanguageSelectionScreen':
+              return <LanguageScreen />;
       default:
         return <Text>Home</Text>;
     }

@@ -190,7 +190,7 @@ const WelcomeScreen = ({ navigation }) => {
                   minimumFontScale={0.7}
                   color={'white'}
                 >
-                  {`${t('become_an', 'Become an')} Acting Driver`}
+                  {` ${t('acting_driver', 'Acting Driver')} ${t('become_an', 'Become an')}`}
                 </AdaptiveText>
               ) : (
                 <>
@@ -198,10 +198,10 @@ const WelcomeScreen = ({ navigation }) => {
                     {t('become_an', 'Become an')}
                   </AdaptiveText>
                   <AdaptiveText style={[styles.cardTitle, styles.cardTitleDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} color={'white'}>
-                    Acting Driver
+                    {t('acting_driver', 'Acting Driver')}
                   </AdaptiveText>
                   <AdaptiveText style={[styles.cardLabel, styles.cardLabelDriver]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>
-                    and drive any vehicle
+                    {t('and_drive_any_vehicle', 'and drive any vehicle')}
                   </AdaptiveText>
                 </>
               )}
@@ -219,8 +219,7 @@ const WelcomeScreen = ({ navigation }) => {
                   styles.cardImage,
                   { 
                     marginTop: cardImageMarginTop + 15, 
-                    aspectRatio: 1.4, 
-                    // right: -10,
+                    aspectRatio: 1.5, 
                     position:'absolute',
                   }
                 ]}

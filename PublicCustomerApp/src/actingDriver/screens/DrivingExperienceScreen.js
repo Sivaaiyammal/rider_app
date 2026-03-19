@@ -255,7 +255,7 @@ const DrivingExperienceScreen = () => {
             <ActivityIndicator size="small" color={Colors.white} />
           ) : (
             <Text style={styles.saveBtnText}>
-              {t('save_and_continue', {defaultValue: 'Save & Continue'})}
+              {t('next', {defaultValue: 'Next'})}
             </Text>
           )}
         </TouchableOpacity>

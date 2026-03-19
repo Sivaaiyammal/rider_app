@@ -1124,5 +1124,22 @@
     "become_an": "Become an",
     "acting_driver": "Acting Driver",
     "and_drive_any_vehicle": "and drive any vehicle",
-    "acting_driver_login": "Acting Driver Login"
+    "acting_driver_login": "Acting Driver Login",
+    "driving_experience": "Driving Experience",
+    "total_driving_experience": "Total Driving Experience",
+    "commercial_driving_experience": "Commercial Driving Experience",
+    "ride_hailing_experience": "Ride-hailing Platform Experience",
+    "platforms_worked_with": "Platforms Worked With",
+    "approx_completed_trips": "Approx Completed Trips",
+    "driver_rating_range": "Driver Rating",
+    "select_transmission": "Please select transmission type",
+    "select_vehicle_type": "Please select at least one vehicle type",
+    "vehicle_handling": "Vehicle Handling",
+    "vehicle_types_driven": "Vehicle Types Driven",
+    "select_all_that_apply": "Select all that apply",
+    "transmission_type": "Transmission Type",
+    "fuel_types_handled": "Fuel Types Handled",
+    "night_driving_experience": "Night Driving Experience",
+    "long_distance_experience": "Long-distance Trip Experience",
+    "select_total_experience": "Please select your total driving experience"
 }
