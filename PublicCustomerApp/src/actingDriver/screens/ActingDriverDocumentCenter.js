@@ -40,12 +40,21 @@ const ActingDriverDocumentCenter = () => {
     driverDetailsCompleteStatus,
     bankDetailsCompleteStatus,
     documentsCompleteStatus,
+    driverInfo,
   } = usePublicDriverStore();
+
+  const drivingExperienceComplete = Boolean(driverInfo?.drivingExperience?.totalExperience);
+  const vehicleHandlingComplete = Boolean(
+    driverInfo?.vehicleHandling?.vehicleTypes?.length > 0 &&
+    driverInfo?.vehicleHandling?.transmission,
+  );
 
   const docCompleted =
     driverDetailsCompleteStatus &&
     bankDetailsCompleteStatus &&
-    documentsCompleteStatus;
+    documentsCompleteStatus &&
+    drivingExperienceComplete &&
+    vehicleHandlingComplete;
 
   const sections = [
     {
@@ -68,6 +77,20 @@ const ActingDriverDocumentCenter = () => {
       icon: 'fact-check',
       screen: 'DriverProofDoc',
       complete: documentsCompleteStatus,
+    },
+    {
+      id: 'drivingExperience',
+      title: t('driving_experience', {defaultValue: 'Driving Experience'}),
+      icon: 'speed',
+      screen: 'DrivingExperience',
+      complete: drivingExperienceComplete,
+    },
+    {
+      id: 'vehicleHandling',
+      title: t('vehicle_handling', {defaultValue: 'Vehicle Handling'}),
+      icon: 'directions-car',
+      screen: 'VehicleHandling',
+      complete: vehicleHandlingComplete,
     },
   ];
 
@@ -130,18 +153,18 @@ const ActingDriverDocumentCenter = () => {
     setShowLogoutModal(true);
   };
 
-  const renderStatus = complete => (
+  const renderStatus = (complete, optional) => (
     <View
       style={[
         styles.statusBadge,
-        complete ? styles.statusBadgeComplete : styles.statusBadgePending,
+        complete ? styles.statusBadgeComplete : optional ? styles.statusBadgeOptional : styles.statusBadgePending,
       ]}>
       <Text
         style={[
           styles.statusText,
-          complete ? styles.statusTextComplete : styles.statusTextPending,
+          complete ? styles.statusTextComplete : optional ? styles.statusTextOptional : styles.statusTextPending,
         ]}>
-        {complete ? t('complete') : t('pending')}
+        {complete ? t('complete') : optional ? t('optional', {defaultValue: 'Optional'}) : t('pending')}
       </Text>
     </View>
   );
@@ -160,7 +183,7 @@ const ActingDriverDocumentCenter = () => {
             <MaterialIcons
               name="power-settings-new"
               size={24}
-              color={Colors.scarlet}
+              color={Colors.red}
             />
           </TouchableOpacity>
         </View>
@@ -190,7 +213,7 @@ const ActingDriverDocumentCenter = () => {
                 <Text style={styles.sectionTitle}>{section.title}</Text>
               </View>
               <View style={styles.sectionMeta}>
-                {renderStatus(section.complete)}
+                {renderStatus(section.complete, section.optional)}
                 <MaterialIcons
                   name="chevron-right"
                   size={24}
@@ -259,7 +282,7 @@ const ActingDriverDocumentCenter = () => {
             <MaterialIcons
               name="logout"
               size={40}
-              color={Colors.scarlet}
+              color={Colors.red}
               style={{alignSelf: 'center'}}
             />
             <Text style={styles.modalTitle}>
@@ -328,7 +351,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     fontFamily: Fonts.medium,
     fontSize: 16,
-    color: Colors.dark_grey,
+    color: Colors.grey_dark,
     zIndex: 9,
     opacity: 0.8,
   },
@@ -381,6 +404,9 @@ const styles = StyleSheet.create({
   statusBadgePending: {
     backgroundColor: '#FCE6E6',
   },
+  statusBadgeOptional: {
+    backgroundColor: '#E8F0FE',
+  },
   statusText: {
     fontFamily: Fonts.medium,
     fontSize: 12,
@@ -390,7 +416,10 @@ const styles = StyleSheet.create({
     color: Colors.green,
   },
   statusTextPending: {
-    color: Colors.scarlet,
+    color: Colors.red,
+  },
+  statusTextOptional: {
+    color: Colors.periwinkle,
   },
   title: {
     fontFamily: Fonts.semi_bold,
@@ -489,7 +518,7 @@ const styles = StyleSheet.create({
   logoutConfirmButton: {
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: Colors.scarlet,
+    backgroundColor: Colors.red,
     alignItems: 'center',
   },
   logoutConfirmButtonText: {

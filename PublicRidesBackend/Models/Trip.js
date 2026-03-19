@@ -155,8 +155,6 @@ class Trip {
         if (queryFilter.driverId) {
             queryFilter.driverId = buildDriverIdMatch(queryFilter.driverId);
         }
-
-        console.log("Initial query filter for getTripsForPassanger", queryFilter);
         
         const pipeline = [
             { $match: queryFilter },

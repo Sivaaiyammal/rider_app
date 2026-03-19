@@ -58,6 +58,8 @@ import DeleteAccount from '../../notdriver/screens/DeleteAccount';
 import DriverHelpSupport from '../../notdriver/screens/DriverHelpSupport';
 import DriverApprovalScreen from '../../notdriver/screens/DriverApprovalScreen';
 import DriverAccountRevokeScreen from '../../notdriver/screens/DriverAccountRevokeScreen';
+import DrivingExperienceScreen from './DrivingExperienceScreen';
+import VehicleHandlingScreen from './VehicleHandlingScreen';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -610,6 +612,10 @@ const ActingDriverHomeScreen = () => {
         return <DriverApprovalScreen />;
       case 'AccountRevokeScreen':
         return <DriverAccountRevokeScreen />;
+      case 'DrivingExperience':
+        return <DrivingExperienceScreen />;
+      case 'VehicleHandling':
+        return <VehicleHandlingScreen />;
       default:
         return <Text>Home</Text>;
     }

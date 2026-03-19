@@ -57,6 +57,7 @@ class DriverController extends Controller {
 
         //Acting Driver
         this.verifyPublicRidesADOTP = this.verifyPublicRidesADOTP.bind(this)
+        this.updateDrivingExperience = this.updateDrivingExperience.bind(this)
     }
 
    

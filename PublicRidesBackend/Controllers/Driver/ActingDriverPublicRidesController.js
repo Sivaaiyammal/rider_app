@@ -59,4 +59,72 @@ module.exports = function (CLASS) {
             return this.handleError(error, res);
         }
     }
+
+     CLASS.prototype.updateDrivingExperience = async function (req, res) {
+        try {
+            const driverId = req.driver.id;
+            console.log('Updating driving experience for driver ID:', driverId);
+            if (!driverId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+            const {
+                drivingExperience,
+                vehicleHandling,
+            } = req.body;
+
+            const update = {};
+
+            if (drivingExperience && typeof drivingExperience === 'object') {
+                const {
+                    totalExperience,
+                    commercialExperience,
+                    hasPlatformExperience,
+                    platforms,
+                    approxTrips,
+                    driverRating,
+                } = drivingExperience;
+
+                if (!totalExperience) {
+                    return res.status(400).json({ success: false, message: 'totalExperience is required' });
+                }
+
+                update['experience.totalExperience'] = totalExperience;
+                update['experience.commercialExperience'] = commercialExperience ?? '';
+                update['experience.hasPlatformExperience'] = Boolean(hasPlatformExperience);
+                update['experience.platforms'] = hasPlatformExperience && Array.isArray(platforms) ? platforms : [];
+                update['experience.approxTrips'] = hasPlatformExperience ? (approxTrips ?? '') : '';
+                update['experience.driverRating'] = hasPlatformExperience ? (driverRating ?? '') : '';
+            }
+
+            if (vehicleHandling && typeof vehicleHandling === 'object') {
+                const {
+                    vehicleTypes,
+                    transmission,
+                    fuelTypes,
+                    nightDriving,
+                    longDistance,
+                } = vehicleHandling;
+
+                if (!transmission) {
+                    return res.status(400).json({ success: false, message: 'transmission is required' });
+                }
+
+                update['experience.vehicleTypes'] = Array.isArray(vehicleTypes) ? vehicleTypes : [];
+                update['experience.transmission'] = transmission;
+                update['experience.fuelTypes'] = Array.isArray(fuelTypes) ? fuelTypes : [];
+                update['experience.nightDriving'] = Boolean(nightDriving);
+                update['experience.longDistance'] = Boolean(longDistance);
+            }
+
+            if (Object.keys(update).length === 0) {
+                return res.status(400).json({ success: false, message: 'No valid fields provided' });
+            }
+
+            await Driver.updateDriver(driverId, update);
+
+            return res.json({ success: true, message: 'Experience updated successfully' });
+        }
+        catch (error) {
+            return this.handleError(error, res);
+        }
+    }
 }
