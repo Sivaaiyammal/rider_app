@@ -68,6 +68,8 @@ import UnableToConnectOverlay from '../components/UnableToConnectOverlay';
 import { log } from '@react-native-firebase/crashlytics';
 import ContributionScreen from '../features/contribution/screens/ContributionScreen.jsx';
 import DriverAccessScreen from '../../common/screens/Driver/DriverAccessScreen.jsx';
+import ActingDriverVehicleSelectScreen from '../features/home/screens/ActingDriverVehicleSelectScreen.jsx';
+import MyVehiclesScreen from '../features/myVehicles/screens/MyVehiclesScreen.jsx';
 import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore.js';
 import usePaymentStore from '../features/payment/store/usePaymentStore.js';
 import { consumeUserStatsPrefetch } from '../controllers/UserStatsPrefetch';
@@ -925,6 +927,10 @@ const Home = () => {
         return <ContributionScreen {...params} />;
       case 'DriverAccessScreen':
         return <DriverAccessScreen {...params} />;
+      case 'ActingDriverVehicleSelectScreen':
+        return <ActingDriverVehicleSelectScreen {...params} />;
+      case 'MyVehiclesScreen':
+        return <MyVehiclesScreen {...params} />;
       default:
         return null;
     }

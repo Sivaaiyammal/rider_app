@@ -26,6 +26,20 @@ const AppConfig = require("../../Models/AppConfig");
 const EmergencyContacts = require("../../Models/EmergencyContacts");
 const { passangerEmergencyContactSchema } = require("../../Schemas/PassangerSchema");
 const OTP = require("../../Controllers/OTP");
+const VehicleVerifierMParivahan = require("../Mparivahan/VerifyVehicle");
+const Vehicle = require("../../Models/Vehicle");
+
+function mapParivahanVehicleClass(vehicleClassDesc = '') {
+    const desc = vehicleClassDesc.toLowerCase();
+    if (desc.includes('motor cycle') || desc.includes('motorcycle') || desc.includes('two wheeler')) return 'bike';
+    if (desc.includes('auto') || desc.includes('three')) return 'auto';
+    if (desc.includes('suv') || desc.includes('sport utility')) return 'suv';
+    if (desc.includes('muv') || desc.includes('multi utility')) return 'muv';
+    if (desc.includes('luxury') || desc.includes('premium')) return 'luxury';
+    if (desc.includes('sedan')) return 'sedan';
+    if (desc.includes('hatchback') || desc.includes('hatch')) return 'hatchback';
+    return 'sedan';
+}
 
 module.exports = function (CLASS) {
     /**
@@ -1549,6 +1563,143 @@ module.exports = function (CLASS) {
         }
     }
 
-    
+    CLASS.prototype.updatePassangerVehicle = async function (req, res) {
+        try {
+            const { vehicleInfo } = req.body;
+            if (!vehicleInfo || !vehicleInfo.regNo) {
+                return res.status(400).json({ success: false, message: 'Registration number is required' });
+            }
 
+            const passangerId = req.passanger.id;
+            const passanger = await Passanger.getPassangerWithId(passangerId);
+            if (!passanger) return res.status(400).json({ success: false, message: 'Passanger not found' });
+
+            const normalizedRegNo = vehicleInfo.regNo.trim().toUpperCase().replace(/\s+/g, '');
+
+            // Detect if this is a manual re-submission after parivahan failure
+            const isManualSubmit = !!(vehicleInfo.type || vehicleInfo.make || vehicleInfo.model);
+
+            let vehicleDoc = {
+                regNo: normalizedRegNo,
+                passangerId: new ObjectId(passangerId),
+                source: 'passenger_app',
+                addedAt: new Date(),
+            };
+
+            if (!isManualSubmit) {
+                // Step 1: attempt Parivahan verification
+                let isParivahanFailed = false;
+                try {
+                    const parivahanResult = await VehicleVerifierMParivahan.verfiyRC(normalizedRegNo);
+                    if (parivahanResult.valid && parivahanResult.data) {
+                        const d = parivahanResult.data;
+                        vehicleDoc.make = d.maker_desc || d.maker || '';
+                        vehicleDoc.model = d.model || d.vehicle_class_desc || '';
+                        vehicleDoc.type = mapParivahanVehicleClass(d.vehicle_class_desc || '');
+                        vehicleDoc.year = d.manufacturing_yr || d.reg_yr || '';
+                        vehicleDoc.fuelType = d.fuel_desc || '';
+                        vehicleDoc.color = d.color || '';
+                        vehicleDoc.ownerName = d.owner_name || '';
+                        vehicleDoc.verified = true;
+                        vehicleDoc.parivahanData = d;
+                    } else {
+                        isParivahanFailed = true;
+                    }
+                } catch (parivahanErr) {
+                    console.error('Parivahan verification error:', parivahanErr?.message || parivahanErr);
+                    isParivahanFailed = true;
+                }
+
+                if (isParivahanFailed) {
+                    return res.json({ success: true, isParivahanFailed: true, message: 'parivahan_verification_failed', regNo: normalizedRegNo });
+                }
+            } else {
+                // Manual fields provided after parivahan failure
+                vehicleDoc.type = vehicleInfo.type || '';
+                vehicleDoc.make = vehicleInfo.make || '';
+                vehicleDoc.model = vehicleInfo.model || '';
+                vehicleDoc.year = vehicleInfo.year || '';
+                vehicleDoc.fuelType = vehicleInfo.fuelType || '';
+                vehicleDoc.color = vehicleInfo.color || '';
+                vehicleDoc.verified = false;
+            }
+
+            // Save to vehicles collection (upsert by regNo + passangerId)
+            const existingVehicle = await Vehicle.getVehicleByVehicleNumber(normalizedRegNo);
+            let vehicleId;
+
+            if (existingVehicle) {
+                vehicleId = existingVehicle._id.toString();
+                await Vehicle.updatePassangerVehicleById(vehicleId, vehicleDoc);
+            } else {
+                const insertResult = await Vehicle.addPassangerVehicle(vehicleDoc);
+                vehicleId = insertResult.insertedId.toString();
+            }
+
+            // Link vehicleId to passenger (set-based, no duplicates)
+            await Passanger.addPassangerVehicleId(passangerId, vehicleId);
+
+            return res.json({
+                success: true,
+                isParivahanFailed: false,
+                message: 'Vehicle added successfully',
+                vehicle: { ...vehicleDoc, _id: vehicleId },
+            });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
+
+    CLASS.prototype.getPassangerVehicles = async function (req, res) {
+        try {
+            const passangerId = req.passanger.id;
+            const vehicles = await Vehicle.getPassangerVehicles(passangerId);
+            return res.json({ success: true, vehicles: vehicles || [] });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
+
+    CLASS.prototype.editPassangerVehicle = async function (req, res) {
+        try {
+            const { vehicleId, vehicleInfo } = req.body;
+            if (!vehicleId) return res.status(400).json({ success: false, message: 'vehicleId is required' });
+            if (!vehicleInfo || Object.keys(vehicleInfo).length === 0) {
+                return res.status(400).json({ success: false, message: 'vehicleInfo is required' });
+            }
+            const passangerId = req.passanger.id;
+            // Ensure the vehicle belongs to this passenger
+            const vehicles = await Vehicle.getPassangerVehicles(passangerId);
+            const owned = vehicles.some(v => v._id.toString() === vehicleId);
+            if (!owned) return res.status(403).json({ success: false, message: 'Vehicle not found for this passenger' });
+
+            const allowedFields = ['type', 'make', 'model', 'year', 'fuelType', 'transmission', 'features', 'additionalInfo'];
+            const updateDoc = {};
+            for (const key of allowedFields) {
+                if (vehicleInfo[key] !== undefined) updateDoc[key] = vehicleInfo[key];
+            }
+            await Vehicle.updatePassangerVehicleById(vehicleId, updateDoc);
+            return res.json({ success: true, message: 'Vehicle updated successfully' });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
+
+    CLASS.prototype.deletePassangerVehicle = async function (req, res) {
+        try {
+            const { vehicleId } = req.body;
+            if (!vehicleId) return res.status(400).json({ success: false, message: 'vehicleId is required' });
+            const passangerId = req.passanger.id;
+            // Ensure the vehicle belongs to this passenger
+            const vehicles = await Vehicle.getPassangerVehicles(passangerId);
+            const owned = vehicles.some(v => v._id.toString() === vehicleId);
+            if (!owned) return res.status(403).json({ success: false, message: 'Vehicle not found for this passenger' });
+
+            await Vehicle.deletePassangerVehicle(vehicleId);
+            await Passanger.removePassangerVehicleId(passangerId, vehicleId);
+            return res.json({ success: true, message: 'Vehicle deleted successfully' });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
 }

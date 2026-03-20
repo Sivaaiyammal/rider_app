@@ -24,11 +24,13 @@ import LinearGradient from 'react-native-linear-gradient';
 import {colors} from '../../constants/constants';
 import FemaleAvatar from '../../assets/image/femaleAvatar.svg';
 import { openFeedbackSheet } from '../../store/useFeedbackSheetStore';
+import useConfigStore from '../../store/useConfigStore';
 const SideDrawerV2 = ({ handleMenu }) => {
   const { t } = useTranslation();
   const { userdetails,ratingData } = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
   const { unreadCount } = useSupportStore();
+  const { appConfig } = useConfigStore();
 
   const navigation = useNavigation();
   const slideAnim = useRef(new Animated.Value(-300)).current;
@@ -82,6 +84,14 @@ const SideDrawerV2 = ({ handleMenu }) => {
       screen: 'MyRidesScreen',
       icon: <Ionicons name="car" size={20} color="black" />,
     },
+     appConfig?.actingDriverEnabled
+      ? {
+        id: 'my-vehicles',
+        name: t('my_vehicles', 'My Vehicles'),
+        screen: 'MyVehiclesScreen',
+        icon: <Ionicons name="car-sport-outline" size={20} color="black" />,
+      }
+      : null,
     {
       id: 'saved-places',
       name: t('saved_places'),
@@ -174,7 +184,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
     //   screen: 'ScheduleScreen',
     //   icon: <Ionicons name="flask" size={20} color="black" />,
     // },
-  ];
+  ].filter(Boolean);
 
 
 

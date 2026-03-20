@@ -83,6 +83,27 @@ class Vehicles {
         else throw new DatabaseDeleteFailed('Failed to delete vehicle from databse -- Delete Failed');
     }
     //SYNC with VMFleets End
+
+    static addPassangerVehicle = async (vehicleDoc) => {
+        const result = await Mongo.insertOne(COLLECTION_NAME, vehicleDoc);
+        if (result.acknowledged) return result;
+        else throw new DatabaseInsertFailed('Failed to add passenger vehicle -- Insert Failed');
+    }
+
+    static getPassangerVehicles = async (passangerId) => {
+        const { ObjectId } = require('mongodb');
+        return Mongo.find(COLLECTION_NAME, { passangerId: new ObjectId(passangerId), isDeleted: { $ne: true } });
+    }
+
+    static updatePassangerVehicleById = async (vehicleId, updateDoc) => {
+        const { ObjectId } = require('mongodb');
+        return Mongo.updateOneRaw(COLLECTION_NAME, { _id: new ObjectId(vehicleId) }, { $set: updateDoc });
+    }
+
+    static deletePassangerVehicle = async (vehicleId) => {
+        const { ObjectId } = require('mongodb');
+        return Mongo.updateOneRaw(COLLECTION_NAME, { _id: new ObjectId(vehicleId) }, { $set: { isDeleted: true, deletedAt: new Date() } });
+    }
 }
 
 module.exports = Vehicles;

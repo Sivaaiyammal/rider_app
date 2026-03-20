@@ -63,5 +63,9 @@ Router.get('/sos/details', withTiming(sosController, sosController.getSosEventDe
 Router.post('/sos/stop', CheckPassangerAuthenticated, withTiming(sosController, sosController.stopSosTracking))
 Router.post('/confirmTripStatus', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.confirmTripStatusByPassanger))
 Router.get('/getPassengerTripStats', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.getPassengerTripStats))
+Router.post('/updatePassangerVehicle', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.updatePassangerVehicle))
+Router.get('/getPassangerVehicles', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.getPassangerVehicles))
+Router.post('/editPassangerVehicle', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.editPassangerVehicle))
+Router.post('/deletePassangerVehicle', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.deletePassangerVehicle))
 
 module.exports = Router

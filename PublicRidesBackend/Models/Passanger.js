@@ -227,6 +227,16 @@ class Passanger {
         const result = await Mongo.updateOne(COLLECTION_NAME, { _id: new ObjectId(passangerId) }, { fcmToken: fcmToken });
         return result;
     }
+
+    static addPassangerVehicleId = async (passangerId, vehicleId) => {
+        const result = await Mongo.updateOneAddToSet(COLLECTION_NAME, { _id: new ObjectId(passangerId) }, { vehicles: vehicleId });
+        return result;
+    }
+
+    static removePassangerVehicleId = async (passangerId, vehicleId) => {
+        const result = await Mongo.updateOnePull(COLLECTION_NAME, { _id: new ObjectId(passangerId) }, { vehicles: vehicleId });
+        return result;
+    }
 }
 
 module.exports = Passanger;

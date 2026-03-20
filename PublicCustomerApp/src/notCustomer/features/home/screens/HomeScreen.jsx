@@ -513,6 +513,12 @@ const MapScreen = () => {
         return;
       }
 
+      if(item.key == "acting_driver"){
+        setCurrentLoactionPickupLocation();
+        setStackScreen('ActingDriverVehicleSelectScreen', {});
+        return;
+      }
+
       
       setSelectedVehicle({
         id: item.key,
@@ -525,7 +531,7 @@ const MapScreen = () => {
 
       makeRidePlan({ preselectedVehicleType: item.key });
       
-    }, [setSelectedVehicle, makeRidePlan])
+    }, [setSelectedVehicle, makeRidePlan, setCurrentLoactionPickupLocation, setStackScreen])
 
     const renderBottomSheetHandle = useCallback((handleProps) => (
       <BottomSheetHeader {...handleProps} makeRidePlan={makeRidePlan} />

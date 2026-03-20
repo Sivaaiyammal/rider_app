@@ -179,7 +179,7 @@ const WelcomeScreen = ({ navigation }) => {
               style={[
                 styles.cardBody,
                 styles.cardBodyDriver,
-                { paddingBottom: 15, width: mediaWidth, right: 15 },
+                { paddingBottom: 10, width: mediaWidth,  },
               ]}
             >
               {i18n.language?.startsWith('ta') ? (
@@ -210,7 +210,7 @@ const WelcomeScreen = ({ navigation }) => {
               style={[
                 styles.cardMedia,
                 styles.cardMediaDriver,
-                { width: mediaWidth * 1.3 },
+                {  paddingBottom: 15, width: mediaWidth, left: 15 },
               ]}
             >
               <Image
@@ -218,12 +218,11 @@ const WelcomeScreen = ({ navigation }) => {
                 style={[
                   styles.cardImage,
                   { 
-                    marginTop: cardImageMarginTop + 15, 
-                    aspectRatio: 1.5, 
+                    marginTop: cardImageMarginTop, 
                     position:'absolute',
                   }
                 ]}
-                resizeMode="cover"
+                resizeMode="contain"
               />
             </View>
           </View>
