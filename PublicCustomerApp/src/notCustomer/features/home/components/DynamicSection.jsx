@@ -10,6 +10,8 @@ import { useTranslation } from "react-i18next";
 import BannerFamily from '../../../assets/image/banners/bannerFamily.webp';
 import AdaptiveText from "../../../components/Common/AdaptiveText";
 
+const ActingDriverImage = require("../../../../common/assets/images/acting_driver.webp");
+
 /* ------------------------------------------------------------------
    ASSET MAP: Service images keyed by item key
 -------------------------------------------------------------------*/
@@ -339,7 +341,7 @@ const getHorizontalTextAlignment = (placement = DEFAULT_HORIZONTAL_TEXT_PLACEMEN
 -------------------------------------------------------------------*/
 const DynamicSection = ({ title = "Dynamic Section", onSelect = () => {} }) => {
     const { appConfig } = useConfigStore();
-    const { i18n } = useTranslation();
+    const { i18n, t } = useTranslation();
     const rawSectionConfig = Array.isArray(appConfig?.HOME_SCREEN_CONFIG)
         ? appConfig.HOME_SCREEN_CONFIG
         : [];
@@ -697,17 +699,62 @@ const DynamicSection = ({ title = "Dynamic Section", onSelect = () => {} }) => {
     );
 
     const renderersByKey = {
-        horizontal_banners: renderHorizontalBannerList,
         services: renderServices,
+        horizontal_banners: renderHorizontalBannerList,
         offers_banner: renderBanner,
         local_events: renderBanner,
     };
+
+    const renderActingDriverBanner = () => (
+        appConfig.actingDriverEnabled ? (
+            <TouchableOpacity
+                style={styles.actingDriverBanner}
+                activeOpacity={0.85}
+                onPress={() => onSelect({ key: "acting_driver" })}
+            >
+                <LinearGradient
+                    colors={["#9B2423", "#6B1A19"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.actingDriverGradient}
+                >
+                     <Image
+                        source={ActingDriverImage}
+                        style={styles.actingDriverImage}
+                        resizeMode="contain"
+                    />
+                    <View style={styles.actingDriverTextContainer}>
+                        <Text style={styles.actingDriverTitle}>
+                            {t("hire_acting_driver", "Hire an Acting Driver")}
+                        </Text>
+                        <Text style={styles.actingDriverSubtitle}>
+                            {t("hire_acting_driver_desc", "Need a driver? Book a verified driver for your vehicle")}
+                        </Text>
+                        <View style={styles.actingDriverCta}>
+                            <Text style={styles.actingDriverCtaText}>
+                                {t("book_now", "Book Now")}
+                            </Text>
+                        </View>
+                    </View>
+                   
+                </LinearGradient>
+            </TouchableOpacity>
+        ) : null
+    );
 
     return (
         <View>
             {ENHANCED_SECTION_CONFIG.map((section) => {
                 const renderer = renderersByKey[section.key];
-                return renderer ? renderer(section) : null;
+                if (!renderer) {
+                    return null;
+                }
+                return (
+                    <React.Fragment key={section.key}>
+                        {renderer(section)}
+                        {section.key === "services" && renderActingDriverBanner()}
+                    </React.Fragment>
+                );
             })}
         </View>
     );
@@ -868,6 +915,54 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.medium,
         color: "#ffffff",
         letterSpacing: 0.3,
+    },
+    actingDriverBanner: {
+        marginHorizontal: 12,
+        marginVertical: 10,
+        borderRadius: 12,
+        overflow: "hidden",
+    },
+    actingDriverGradient: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingLeft: 20,
+        paddingVertical: 18,
+        minHeight: 130,
+    },
+    actingDriverTextContainer: {
+        flex: 1,
+        justifyContent: "center",
+    },
+    actingDriverTitle: {
+        fontSize: 20,
+        fontFamily: Fonts.medium,
+        color: "#ffffff",
+        lineHeight: 26,
+    },
+    actingDriverSubtitle: {
+        fontSize: 12,
+        fontFamily: Fonts.regular,
+        color: "#EAF2FF",
+        marginTop: 4,
+        lineHeight: 17,
+    },
+    actingDriverCta: {
+        marginTop: 12,
+        backgroundColor: "#ffffff",
+        alignSelf: "flex-start",
+        paddingHorizontal: 18,
+        paddingVertical: 8,
+        borderRadius: 20,
+    },
+    actingDriverCtaText: {
+        fontSize: 13,
+        fontFamily: Fonts.medium,
+        color: "#9B2423",
+    },
+    actingDriverImage: {
+        width: 110,
+        height: 100,
+        marginRight: 10,
     },
 });
 
