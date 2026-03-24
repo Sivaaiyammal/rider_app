@@ -12,6 +12,9 @@ const useUserStore = create(set => ({
 
   driverMode: 'driver',
   setDriverMode: driverMode => set({driverMode}),
+
+  pendingDriverMode: null,
+  setPendingDriverMode: pendingDriverMode => set({pendingDriverMode}),
 }));
 
 export default useUserStore;

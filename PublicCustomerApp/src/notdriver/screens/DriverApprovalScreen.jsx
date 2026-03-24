@@ -69,7 +69,9 @@ const DriverApprovalScreen = () => {
       panNo: response.driver?.panNo || '',
       licenseNo: response.driver?.licenseNo || '',
       gender: response.driver?.gender || '',
-      homeLocation: response.driver?.homeLocation || null
+      homeLocation: response.driver?.homeLocation || null,
+      drivingExperience: response.driver?.drivingExperience || null,
+      vehicleHandling: response.driver?.vehicleHandling || null,
     });
   }
 

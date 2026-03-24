@@ -9,22 +9,24 @@
  *   values      – { vehicleType, make, model, year, fuelType, transmission, features, additionalInfo }
  *   onChange    – (field, value) => void
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../../constants/constants';
 import {
-  VEHICLE_TYPE_OPTIONS,
-  FUEL_TYPE_OPTIONS,
-  TRANSMISSION_OPTIONS,
-  MAKES_IN_INDIA,
-  MODELS_BY_MAKE,
+  VEHICLE_TYPE_OPTIONS as LOCAL_VEHICLE_TYPES,
+  FUEL_TYPE_OPTIONS as LOCAL_FUEL_TYPES,
+  TRANSMISSION_OPTIONS as LOCAL_TRANSMISSION,
+  MAKES_IN_INDIA as LOCAL_MAKES,
+  MODELS_BY_MAKE as LOCAL_MODELS,
   YEAR_OPTIONS,
-  ADVANCED_FEATURES,
+  ADVANCED_FEATURES as LOCAL_FEATURES,
 } from '../constants/vehicleData';
 import SearchablePickerModal from './SearchablePickerModal';
 import styles from '../styles/vehicleStyles';
+import useOnboardingConfigStore from '../../../../common/store/useOnboardingConfigStore';
+import useUserStore from '../../../../common/store/useUserStore';
 
 const ChipRow = ({ options, selected, onSelect }) => (
   <View style={styles.typeChipsRow}>
@@ -82,6 +84,19 @@ const VehicleFormFields = ({ values, onChange }) => {
   const [makeVisible, setMakeVisible] = useState(false);
   const [modelVisible, setModelVisible] = useState(false);
   const [yearVisible, setYearVisible] = useState(false);
+  const { config, fetchConfig } = useOnboardingConfigStore();
+  const { userInfo, userRole } = useUserStore();
+
+  useEffect(() => {
+    fetchConfig(userInfo?.token, userRole);
+  }, []);
+
+  const VEHICLE_TYPE_OPTIONS = config?.VEHICLE_TYPE_OPTIONS ?? LOCAL_VEHICLE_TYPES;
+  const FUEL_TYPE_OPTIONS = config?.FUEL_TYPE_OPTIONS ?? LOCAL_FUEL_TYPES;
+  const TRANSMISSION_OPTIONS = config?.TRANSMISSION_OPTIONS ?? LOCAL_TRANSMISSION;
+  const MAKES_IN_INDIA = config?.MAKES_IN_INDIA ?? LOCAL_MAKES;
+  const MODELS_BY_MAKE = config?.MODELS_BY_MAKE ?? LOCAL_MODELS;
+  const ADVANCED_FEATURES = config?.ADVANCED_FEATURES ?? LOCAL_FEATURES;
 
   const { vehicleType, make, model, year, fuelType, transmission, features, additionalInfo } = values;
 
@@ -91,6 +106,14 @@ const VehicleFormFields = ({ values, onChange }) => {
       ? current.filter((f) => f !== val)
       : [...current, val];
     onChange('features', updated);
+  };
+
+  const toggleTransmission = (val) => {
+    const current = Array.isArray(transmission) ? transmission : [];
+    const updated = current.includes(val)
+      ? current.filter((t) => t !== val)
+      : [...current, val];
+    onChange('transmission', updated);
   };
 
   return (
@@ -131,10 +154,10 @@ const VehicleFormFields = ({ values, onChange }) => {
       />
 
       <Text style={styles.inputLabel}>{t('transmission', 'Transmission')}</Text>
-      <ChipRow
+      <MultiChipRow
         options={TRANSMISSION_OPTIONS}
-        selected={transmission}
-        onSelect={(v) => onChange('transmission', v)}
+        selected={Array.isArray(transmission) ? transmission : []}
+        onToggle={toggleTransmission}
       />
 
       <Text style={styles.inputLabel}>{t('advanced_features', 'Advanced Features')}</Text>

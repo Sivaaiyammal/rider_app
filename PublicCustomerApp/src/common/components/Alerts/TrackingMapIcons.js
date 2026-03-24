@@ -1,6 +1,9 @@
 import {StyleSheet, Text, View, TouchableOpacity, ActivityIndicator} from 'react-native';
 import React, {use, useCallback, useEffect, useMemo, useState} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import NetInfo from '@react-native-community/netinfo';
+import DriverModeModal from '../../../notdriver/components/DriverModeModal';
 
 import Marker from '../../map/Marker';
 import locationTask from '../../controllers/GetCurrentLocation';
@@ -10,6 +13,7 @@ import { checkFineLocationPermissions, RequestFineLocationPermission } from '../
 import { showNotification } from './showNotification';
 import { useTranslation } from 'react-i18next';
 import useHotSpotStore from '../../../notdriver/store/useHotSpotStore';
+import useUserStore from '../../store/useUserStore';
 import { height } from '../../utils/scalingutils';
 
 const mapIconSet = [
@@ -74,8 +78,40 @@ const TrackingMapIcons = props => {
   const {setMapLocation, setMapBounds, setUserLocation, setMapMarkers,mapMarkers, userLocation} = useMapMarkerStore();
   const [loading, setLoading] = useState(false)
   const {t} = useTranslation();
+  const {driverMode} = useUserStore();
+  const [netInfo, setNetInfo] = useState({type: 'unknown', isConnected: true});
+  const [modeModalVisible, setModeModalVisible] = useState(false);
 
   const {hotSportMarkers} = useHotSpotStore()
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setNetInfo({type: state.type, isConnected: state.isConnected, details: state.details});
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const getNetIcon = () => {
+    if (!netInfo.isConnected) return <MaterialIcons name="signal-wifi-off" size={22} color="#e53935" />;
+    if (netInfo.type === 'wifi') return <MaterialIcons name="wifi" size={22} color="#43a047" />;
+    if (netInfo.type === 'cellular') {
+      const gen = netInfo.details?.cellularGeneration;
+      if (gen === '5g') return <MaterialIcons name="network-cell" size={22} color="#1e88e5" />;
+      if (gen === '4g') return <MaterialIcons name="network-cell" size={22} color="#43a047" />;
+      if (gen === '3g') return <MaterialIcons name="network-cell" size={22} color="#fb8c00" />;
+      return <MaterialIcons name="network-cell" size={22} color="#9e9e9e" />;
+    }
+    return <MaterialIcons name="network-check" size={22} color="#9e9e9e" />;
+  };
+
+  const getDriverModeIcon = () => {
+    if (driverMode === 'acting') return <MaterialIcons name="swap-horiz" size={22} color="#7b1fa2" />;
+    return <MaterialIcons name="drive-eta" size={22} color={Colors.black} />;
+  };
+
+  const toggleDriverMode = () => {
+    setModeModalVisible(true);
+  };
 
   const setUserMarker  = (latitude, longitude) => {
     setUserLocation([latitude, longitude])
@@ -232,16 +268,52 @@ const TrackingMapIcons = props => {
     }
   }
 
-  return mapSet().map(item => {
-    return (
-      <TouchableOpacity
-        key={item.id}
-        style={styles.mapIconBtns}
-        onPress={() => mapIconsPress(item)}>
-        {(item.id === 1 && loading) ? <ActivityIndicator /> : item.icon}
-      </TouchableOpacity>
-    );
-  });
+  return (
+    <>
+      {ishomeDriver && (
+        <>
+          {/* Driver mode toggle — top of the stack */}
+          <TouchableOpacity
+            style={[styles.mapIconBtns, styles.modeBtnWrapper]}
+            onPress={toggleDriverMode}
+            activeOpacity={0.8}>
+            <MaterialIcons
+              name={driverMode === 'acting_driver' ? 'swap-horiz' : 'drive-eta'}
+              size={22}
+              color={driverMode === 'acting_driver' ? '#7b1fa2' : Colors.black}
+            />
+            <Text
+              style={[
+                styles.modeLabel,
+                driverMode === 'acting_driver' && styles.modeLabelActing,
+              ]}
+              numberOfLines={1}>
+              {driverMode === 'acting_driver' ? 'Acting' : 'Driver'}
+            </Text>
+          </TouchableOpacity>
+          <DriverModeModal
+            visible={modeModalVisible}
+            onClose={() => setModeModalVisible(false)}
+          />
+        </>
+      )}
+      {mapSet().map(item => (
+        <TouchableOpacity
+          key={item.id}
+          style={styles.mapIconBtns}
+          onPress={() => mapIconsPress(item)}>
+          {(item.id === 1 && loading) ? <ActivityIndicator /> : item.icon}
+        </TouchableOpacity>
+      ))}
+      {ishomeDriver && (
+        <TouchableOpacity
+          style={[styles.mapIconBtns, styles.netIconBtn]}
+          activeOpacity={1}>
+          {getNetIcon()}
+        </TouchableOpacity>
+      )}
+    </>
+  );
 };
 
 export default TrackingMapIcons;
@@ -250,7 +322,7 @@ const styles = StyleSheet.create({
   mapIconBtns: {
     backgroundColor: Colors.white,
     borderRadius: 50,
-    padding: 10,
+    padding: 14,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
@@ -260,6 +332,29 @@ const styles = StyleSheet.create({
     shadowRadius: 1,
     elevation: 5,
     zIndex:9
+  },
+  netIconBtn: {
+    opacity: 1,
+  },
+  modeBtnWrapper: {
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    flexDirection: 'column',
+    gap: 2,
+    minWidth: 52,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+  },
+  modeLabel: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: Colors.black,
+    textAlign: 'center',
+    letterSpacing: 0.3,
+  },
+  modeLabelActing: {
+    color: '#7b1fa2',
   },
   SOSBtn: {
     backgroundColor: Colors.red,

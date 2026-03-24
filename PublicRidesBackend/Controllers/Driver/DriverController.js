@@ -40,6 +40,7 @@ class DriverController extends Controller {
         this.revokeAccountDeletion = this.revokeAccountDeletion.bind(this)
         this.driverAppConfig = this.driverAppConfig.bind(this)
         this.notDriverAppConfig = this.notDriverAppConfig.bind(this)
+        this.getOnboardingConfig = this.getOnboardingConfig.bind(this)
         this.getDueInvoice = this.getDueInvoice.bind(this)
         this.updateNextDueDate = this.updateNextDueDate.bind(this)
         this.getFareConfigs = this.getFareConfigs.bind(this)

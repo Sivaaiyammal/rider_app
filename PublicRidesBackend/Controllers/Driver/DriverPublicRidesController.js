@@ -28,6 +28,7 @@ const GeneratePresignedUrl = require("../GeneratePresignedUrl");
 const RazorPayLinking = require("./RazorPayLinking");
 const FinalDueCalculator = require("../../Scripts/calculateFinalDue");
 const VehicleVerifierMParivahan = require("../Mparivahan/VerifyVehicle");
+const AppConfig = require("../../Models/AppConfig");
 
 const whatsappService = require("../../Services/whatsapp/WhatsappService");
 
@@ -1373,6 +1374,17 @@ module.exports = function (CLASS) {
         } catch (err) {
             return this.handleError(err, res);
         }   
+    }
+
+    CLASS.prototype.getOnboardingConfig = async function (req, res) {
+        try {
+            const config = await AppConfig.getOnboardingConfig();
+            if (!config) return res.status(404).json({ success: false, message: 'Onboarding config not found' });
+            const { VEHICLE_TYPE_OPTIONS, FUEL_TYPE_OPTIONS, MAKES_IN_INDIA, MODELS_BY_MAKE, ADVANCED_FEATURES, TRANSMISSION_OPTIONS } = config;
+            return res.json({ success: true, data: { VEHICLE_TYPE_OPTIONS, FUEL_TYPE_OPTIONS, MAKES_IN_INDIA, MODELS_BY_MAKE, ADVANCED_FEATURES, TRANSMISSION_OPTIONS } });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
     }
 
     CLASS.prototype.getDueInvoice = async function (req, res) { 

@@ -82,6 +82,7 @@ Router.post('/scanDoc', CheckDriverAuthenticated, withTiming(driverController, o
 
 Router.post('/wakeUpBGService', CheckDriverAuthenticated, withTiming(driverController, driverController.wakeUpBGService))
 
+Router.get('/getOnboardingConfig', CheckDriverAuthenticated, withTiming(driverController, driverController.getOnboardingConfig))
 Router.post('/addTripLocation', CheckDriverAuthenticated, locationController.addTripLocationDriver);
 // graphql for publicRidesDriver
 Router.post('/graphql/location', CheckDriverAuthenticated, withTiming(null, createHandler({

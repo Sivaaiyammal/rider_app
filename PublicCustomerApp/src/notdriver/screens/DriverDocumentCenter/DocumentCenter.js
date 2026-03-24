@@ -42,7 +42,6 @@ const DocumentCenter = ({ isEditMode = false }) => {
   const {logout} = useContext(GlobalContext);
   const {userDeviceId} = useDeviceAPIStore();
   const {setMapMarkers} = useMapMarkerStore();
-  const {setDriverMode} = useUserStore();
 
   const {
     driverRole,
@@ -53,31 +52,17 @@ const DocumentCenter = ({ isEditMode = false }) => {
     documentsCompleteStatus,
   } = usePublicDriverStore();
 
-  const defaultMode = driverRole === 'acting_driver' ? 'acting_driver' : 'driver';
-  const [selectedMode, setSelectedMode] = useState(defaultMode);
+  // const defaultMode = driverRole === 'acting_driver' ? 'acting_driver' : 'driver';
+  const {driverMode, setDriverMode, pendingDriverMode, setPendingDriverMode} = useUserStore();
   const [modeLoading, setModeLoading] = useState(false);
+  const [initialMode] = useState(driverMode);
+  const [selectedMode, setSelectedMode] = useState(pendingDriverMode ?? driverMode);
   const isActingDriverMode = selectedMode === 'acting_driver';
 
-  const handleModeChange = async (mode) => {
-    if (mode === selectedMode || modeLoading) return;
-    setModeLoading(true);
-    try {
-      const api = new APIRequest();
-      const res = await api.request(
-        '/publicrides/actingDriver/v2/updateDriverMode',
-        'POST',
-        {mode},
-        userInfo?.token,
-      );
-      if (res?.success) {
-        setSelectedMode(mode);
-        setDriverMode(mode);
-      }
-    } catch (err) {
-      console.log('Error updating driver mode:', err);
-    } finally {
-      setModeLoading(false);
-    }
+  const handleModeChange = (mode) => {
+    if (mode === selectedMode) return;
+    setSelectedMode(mode);
+    setPendingDriverMode(mode);
   };
 
   const drivingExperienceComplete = Boolean(driverInfo?.drivingExperience?.totalExperience);
@@ -203,14 +188,33 @@ const DocumentCenter = ({ isEditMode = false }) => {
     setTimeout(() => setStackScreen(screen), 200);
   };
 
-  const onDonePress = () => {
+  const onDonePress = async () => {
+    setPendingDriverMode(null);
+    if (selectedMode !== initialMode) {
+      setDriverMode(selectedMode);
+      setLoading(true);
+      try {
+        const api = new APIRequest();
+        const res = await api.request(
+          '/publicrides/actingDriver/v2/updateDriverMode',
+          'POST',
+          {mode: selectedMode},
+          userInfo?.token,
+        );
+        if (!res?.success) {
+          console.log('Error updating driver mode on done:', res?.message);
+        }
+      } catch (err) {
+        console.log('Error updating driver mode on done:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
     if (isApproved) {
-      // setStackScreen('Home')
-      // setCurrentScreen('Map');
       goBack();
     } else {
-      firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:onboarding_completed')
-      setStackScreen('DriverApprovalScreen')
+      firebaselog_onBoarding('OB_Driver(OB_D)', 'OB_D:onboarding_completed');
+      setStackScreen('DriverApprovalScreen');
     }
   };
 
@@ -298,17 +302,13 @@ const DocumentCenter = ({ isEditMode = false }) => {
               activeOpacity={0.8}
               disabled={modeLoading}
               onPress={() => handleModeChange(mode.key)}>
-              {modeLoading && selectedMode !== mode.key ? (
-                <ActivityIndicator size="small" color={Colors.warm_grey} />
-              ) : (
-                <Text
+              <Text
                   style={[
                     styles.modeTabText,
                     selectedMode === mode.key && styles.modeTabTextActive,
                   ]}>
                   {mode.label}
                 </Text>
-              )}
             </TouchableOpacity>
           ))}
         </View>

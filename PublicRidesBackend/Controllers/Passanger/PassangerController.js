@@ -41,6 +41,7 @@ class PassangerController extends Controller {
         this.publicridesSubmitFeedback = this.publicridesSubmitFeedback.bind(this);
         this.passengerPaymentIssues = this.passengerPaymentIssues.bind(this);
         this.updatePassangerFCMToken = this.updatePassangerFCMToken.bind(this);
+        this.getOnboardingConfig = this.getOnboardingConfig.bind(this);
     }
 
 }

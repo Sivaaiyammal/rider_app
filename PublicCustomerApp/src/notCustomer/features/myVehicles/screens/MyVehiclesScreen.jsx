@@ -32,7 +32,7 @@ const EMPTY_FIELDS = {
   model: '',
   year: '',
   fuelType: '',
-  transmission: '',  features: [],  additionalInfo: ''
+  transmission: [],  features: [],  additionalInfo: ''
 };
 
 const fieldsFromVehicle = (v) => ({
@@ -41,7 +41,7 @@ const fieldsFromVehicle = (v) => ({
   model: v.model || '',
   year: v.year ? String(v.year) : '',
   fuelType: v.fuelType || '',
-  transmission: v.transmission || '',  features: Array.isArray(v.features) ? v.features : [],  additionalInfo: v.additionalInfo || ''
+  transmission: Array.isArray(v.transmission) ? v.transmission : (v.transmission ? [v.transmission] : []),  features: Array.isArray(v.features) ? v.features : [],  additionalInfo: v.additionalInfo || ''
 });
 
 // ─── Step 1: Registration number ─────────────────────────────────────────────

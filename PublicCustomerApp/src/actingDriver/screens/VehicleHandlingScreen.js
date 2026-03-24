@@ -1,4 +1,4 @@
-import React, {useState, useCallback} from 'react';
+import React, {useState, useCallback, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -18,8 +18,9 @@ import {showNotification} from '../../common/components/Alerts/showNotification'
 import NavBar from '../../notCustomer/components/NavBar';
 import UseBackButton from '../../common/hooks/UseBackButton';
 import APIRequest from '../../common/APIRequest';
+import useOnboardingConfigStore from '../../common/store/useOnboardingConfigStore';
 
-const VEHICLE_TYPES = [
+const FALLBACK_VEHICLE_TYPES = [
   {label: 'Hatchback', value: 'hatchback'},
   {label: 'Sedan', value: 'sedan'},
   {label: 'SUV', value: 'suv'},
@@ -29,7 +30,7 @@ const VEHICLE_TYPES = [
   {label: 'Tempo', value: 'tempo'},
 ];
 
-const TRANSMISSION_TYPES = [
+const FALLBACK_TRANSMISSION_TYPES = [
   {label: 'Manual', value: 'manual'},
   {label: 'Automatic', value: 'automatic'},
   {label: 'AMT', value: 'amt'},
@@ -39,7 +40,7 @@ const TRANSMISSION_TYPES = [
   {label: 'Both (M & A)', value: 'both'},
 ];
 
-const FUEL_TYPES = [
+const FALLBACK_FUEL_TYPES = [
   {label: 'Petrol', value: 'petrol'},
   {label: 'Diesel', value: 'diesel'},
   {label: 'CNG', value: 'cng'},
@@ -50,13 +51,26 @@ const FUEL_TYPES = [
 const VehicleHandlingScreen = () => {
   const {t} = useTranslation();
   const {goBack} = useStackScreenStore();
-  const {userInfo} = useUserStore();
+  const {userInfo, userRole} = useUserStore();
   const {driverInfo, setDriverInfo} = usePublicDriverStore();
+  const {config, fetchConfig} = useOnboardingConfigStore();
+
+  useEffect(() => {
+    fetchConfig(userInfo?.token, userRole);
+  }, []);
+
+  const VEHICLE_TYPES = config?.VEHICLE_TYPE_OPTIONS ?? FALLBACK_VEHICLE_TYPES;
+  const TRANSMISSION_TYPES = config?.TRANSMISSION_OPTIONS ?? FALLBACK_TRANSMISSION_TYPES;
+  const FUEL_TYPES = config?.FUEL_TYPE_OPTIONS ?? FALLBACK_FUEL_TYPES;
 
   const existing = driverInfo?.vehicleHandling || {};
 
   const [vehicleTypes, setVehicleTypes] = useState(existing.vehicleTypes || []);
-  const [transmission, setTransmission] = useState(existing.transmission || '');
+  const [transmission, setTransmission] = useState(
+    Array.isArray(existing.transmission)
+      ? existing.transmission
+      : existing.transmission ? [existing.transmission] : []
+  );
   const [fuelTypes, setFuelTypes] = useState(existing.fuelTypes || []);
   const [nightDriving, setNightDriving] = useState(existing.nightDriving ?? false);
   const [longDistance, setLongDistance] = useState(existing.longDistance ?? false);
@@ -79,7 +93,7 @@ const VehicleHandlingScreen = () => {
       );
       return;
     }
-    if (!transmission) {
+    if (transmission.length === 0) {
       showNotification(
         t('select_transmission', {defaultValue: 'Please select transmission type'}),
         '',
@@ -203,7 +217,10 @@ const VehicleHandlingScreen = () => {
           {t('transmission_type', {defaultValue: 'Transmission Type'})}
           <Text style={styles.required}> *</Text>
         </Text>
-        {renderSingleChips(TRANSMISSION_TYPES, transmission, setTransmission)}
+        <Text style={styles.hint}>
+          {t('select_all_that_apply', {defaultValue: 'Select all that apply'})}
+        </Text>
+        {renderMultiChips(TRANSMISSION_TYPES, transmission, (val) => toggleItem(transmission, setTransmission, val))}
 
         {/* Fuel Types Handled */}
         <Text style={styles.sectionTitle}>

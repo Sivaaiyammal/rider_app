@@ -208,6 +208,8 @@ const PublicRidesDriverHomeScreen = () => {
       driverPhoto : response.driver?.documents?.driverPhoto || null,
       licenseDocument: response.driver?.documents?.drivingLicense || null,
       dob: response.driver?.dob || '',
+      drivingExperience: response.driver?.experience || null,
+      vehicleHandling: response.driver?.experience || null,
     });
   }
   const storePublicDriverVehicleInfo = (response) => {

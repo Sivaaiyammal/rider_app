@@ -27,6 +27,7 @@ const DriverBasicDetails = () => {
    const [isModalVisible, setIsModalVisible] = useState(false);
    const {userInfo} = useUserStore()
    const [isLoading, setIsLoading] = useState(false)
+   const {userRole} = useUserStore();
    const { driverRatings, razorpayLinkedAccountDetails, setRazorpayLinkedAccountDetails, razorpayUpdated} = usePublicDriverStore();
    
     const onBackPress = () => {
@@ -212,15 +213,13 @@ const DriverBasicDetails = () => {
             </View>
                   )}
             {/* Vehicle Card */}
+            {userRole ==='driver' && 
             <View style={styles.vehicleCard}>
                 <View style={styles.vehicleCardLeft}>
                     <Text style={styles.vehicleName}>{vehicleInfo?.make} - {vehicleInfo?.model}</Text>
                     <Text style={styles.vehicleNumber}>{vehicleInfo?.regNo}</Text>
-                    <Text style={styles.vehicleNumber}>{(vehicleInfo?.type).replaceAll('_', ' ')}</Text>
-                    {/* <View style={styles.statusContainer}>
-                        <MaterialIcons name="check-circle" size={16} color={Colors.green} />
-                        <Text style={styles.statusText}>{t.active}</Text>
-                    </View> */}
+                    <Text style={styles.vehicleNumber}>{vehicleInfo?.type ? (vehicleInfo?.type).replaceAll('_', ' ') : ''}</Text>
+                   
                 </View>
                 <View style={styles.vehicleCardRight}>
                     <View style={styles.vehicleImageContainer}>
@@ -230,7 +229,7 @@ const DriverBasicDetails = () => {
                 </View>
                     </View>
                 </View>
-            </View>
+            </View> }
             {/* Menu Items */}
             <View style={styles.menuContainer}>
                 {menuItems.map(renderMenuItem)}

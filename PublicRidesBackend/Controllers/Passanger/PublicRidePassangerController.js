@@ -1685,6 +1685,17 @@ module.exports = function (CLASS) {
         }
     }
 
+    CLASS.prototype.getOnboardingConfig = async function (req, res) {
+        try {
+            const config = await AppConfig.getOnboardingConfig();
+            if (!config) return res.status(404).json({ success: false, message: 'Onboarding config not found' });
+            const { VEHICLE_TYPE_OPTIONS, FUEL_TYPE_OPTIONS, MAKES_IN_INDIA, MODELS_BY_MAKE, ADVANCED_FEATURES, TRANSMISSION_OPTIONS } = config;
+            return res.json({ success: true, data: { VEHICLE_TYPE_OPTIONS, FUEL_TYPE_OPTIONS, MAKES_IN_INDIA, MODELS_BY_MAKE, ADVANCED_FEATURES, TRANSMISSION_OPTIONS } });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
+
     CLASS.prototype.deletePassangerVehicle = async function (req, res) {
         try {
             const { vehicleId } = req.body;

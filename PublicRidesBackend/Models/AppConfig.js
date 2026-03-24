@@ -8,6 +8,12 @@ class AppConfig {
         const result = await Mongo.findOne(COLLECTION_NAME, query);
         return result;
     }
+
+    static async getOnboardingConfig() {
+        const query = { type: 'ONBOARDING_CONFIG' };
+        const result = await Mongo.findOne(COLLECTION_NAME, query);
+        return result;
+    }
 }
 
 module.exports = AppConfig;

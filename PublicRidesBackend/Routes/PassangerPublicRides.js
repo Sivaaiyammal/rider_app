@@ -67,5 +67,6 @@ Router.post('/updatePassangerVehicle', CheckPassangerAuthenticated, withTiming(p
 Router.get('/getPassangerVehicles', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.getPassangerVehicles))
 Router.post('/editPassangerVehicle', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.editPassangerVehicle))
 Router.post('/deletePassangerVehicle', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.deletePassangerVehicle))
+Router.get('/getOnboardingConfig', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.getOnboardingConfig))
 
 module.exports = Router
