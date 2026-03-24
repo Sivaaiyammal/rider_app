@@ -26,7 +26,10 @@ export const useStackScreenStore = create((set, get) => ({
     const stack = get().stackScreen;
     if(stack.length > 1){
       const arr = stack.slice(0, -1);
-      arr[arr.length-1].params={fromBack:true};
+      arr[arr.length-1] = {
+        ...arr[arr.length-1],
+        params: { ...(arr[arr.length-1].params || {}), fromBack: true },
+      };
 
       
       set({stackScreen: arr});

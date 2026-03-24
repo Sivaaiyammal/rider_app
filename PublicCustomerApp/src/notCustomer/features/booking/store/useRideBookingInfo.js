@@ -37,6 +37,12 @@ const useRideBookingInfo = create(set => ({
   isScheduledTrip: false,
   setIsScheduledTrip: (isScheduledTrip) => set({ isScheduledTrip }),
 
+  actingDriverVehicle: null,
+  setActingDriverVehicle: (actingDriverVehicle) => set({ actingDriverVehicle }),
+
+  actingDriverHours: null,
+  setActingDriverHours: (actingDriverHours) => set({ actingDriverHours }),
+
 
   couponCode: null,
   setCouponCode: (couponCode) => set({ couponCode }),
@@ -54,6 +60,8 @@ const useRideBookingInfo = create(set => ({
     estimatedDuration: null,
     paymentType: "CASH",
     couponCode: null,
+    actingDriverVehicle: null,
+    actingDriverHours: null,
   }),
 
   

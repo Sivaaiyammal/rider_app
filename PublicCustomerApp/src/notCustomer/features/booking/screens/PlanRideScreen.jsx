@@ -6,6 +6,7 @@ import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import {addLocation} from '../../../styles/AddLocationStyles';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
+import { VEHICLE_TYPE_OPTIONS, VEHICLE_TYPE_ICON } from '../../myVehicles/constants/vehicleData';
 
 
 import Schdule from '../../../assets/image/svgIcons/schdule.svg';
@@ -33,7 +34,7 @@ import { Fonts } from '../../../constants/constants';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { openFeedback } from '../../../utils/feedback';
 
-const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mode}) => {
+const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mode,vehicle}) => {
   const { t } = useTranslation();
   const {userdetails,userFavPlaces} = useUserInfoStore();
   const {goBack,setStackScreen} = useStackScreenStore();
@@ -41,7 +42,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
 
   const {selectedRide, setSelectedRide } =
     useRideSelectionStore();
-  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,femaleDriverOnly,setFemaleDriverOnly,safeNightRides,setSafeNightRides} = useRideBookingInfo()
+  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,femaleDriverOnly,setFemaleDriverOnly,safeNightRides,setSafeNightRides,actingDriverVehicle,setActingDriverVehicle,actingDriverHours,setActingDriverHours} = useRideBookingInfo()
 
   const [showBottomSheet, setShowBottomSheet] = useState(false);
   const [showTripFor, setShowTripFor] = useState(false);
@@ -49,6 +50,27 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   const [selectedFavPlace, setSelectedFavPlace] = useState(null);
   const isContinueButtonVisible = rideStartLocation && rideEndLocation
   const [isContinuing, setIsContinuing] = useState(false);
+  const [durationUnit, setDurationUnit] = useState('hr'); // '30min' | 'hr' | 'day'
+  const [durationValue, setDurationValue] = useState(null);
+
+  const DURATION_UNITS = [
+    { key: '30min', label: '30 Min' },
+    { key: 'hr',    label: 'Hours'  },
+    { key: 'day',   label: 'Days'   },
+  ];
+  const HOUR_OPTIONS = [1, 2, 3, 4, 6, 8, 12];
+  const DAY_OPTIONS  = [1, 2, 3, 7, 14];
+
+  const onDurationUnitChange = (unit) => {
+    setDurationUnit(unit);
+    setDurationValue(null);
+    setActingDriverHours(unit === '30min' ? 0.5 : null);
+  };
+
+  const onDurationValueChange = (val) => {
+    setDurationValue(val);
+    setActingDriverHours(durationUnit === 'day' ? val * 24 : val);
+  };
 
   // Handle selectedDestination from SavedPlacesScreen
   useEffect(() => {
@@ -69,6 +91,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     setIsScheduledTrip(false)
     setFemaleDriverOnly(false)
     setSafeNightRides(false)
+    setActingDriverVehicle(null)
+    setActingDriverHours(null)
     goBack();
   };
 
@@ -101,6 +125,9 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
  
 
   useEffect(() => {
+    if(mode == 'ACTING_DRIVER' && vehicle){
+      setActingDriverVehicle(vehicle);
+    }
     if(mode == 'SCHEDULE_TRIP'){
       console.log("Schedule ride mode detected");
       setShowScheduleContainer(true)
@@ -324,6 +351,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
         defaultLocation:rideStartLocation,
         focusSearchOnMount:false,
         isConfirmLocation:true,
+        isActingDriver: mode === 'ACTING_DRIVER',
+        selectedVehicle: actingDriverVehicle,
       }
       setStackScreen('PickLocationScreen', props);
       return;
@@ -353,7 +382,6 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
           onrightIconPress={onFeedbackPress}
         />
 
-
         <View style={addLocation.rideSelectionContainer}>
           <TouchableOpacity
             style={[addLocation.rideSelection,scheduleDateLabel&&{flex:2}]}
@@ -376,6 +404,9 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
         onLocationClick={handleLocationClick}
         
         />
+
+      
+
         <ScrollView 
           horizontal 
           showsHorizontalScrollIndicator={false}
@@ -393,6 +424,76 @@ const scheduleTime = scheduleDateTime?.time ? utils.timestampTo12HourFormat(sche
         </ScrollView>
         <DashedLine style={styles.dottedLine} />
         <ScrollView style={{ flex: 1}} contentContainerStyle={{paddingBottom: height*0.2}}>
+            {/* Acting Driver: selected vehicle + duration */}
+        {mode === 'ACTING_DRIVER' && actingDriverVehicle && (
+          <View style={styles.actingDriverPanel}>
+            {/* Vehicle row */}
+            <View style={styles.actingVehicleRow}>
+              <Ionicons
+                name={VEHICLE_TYPE_ICON[actingDriverVehicle.type] || 'car-outline'}
+                size={22}
+                color={colors.black}
+              />
+              <View style={styles.actingVehicleInfo}>
+                <Text style={styles.actingVehicleReg}>{actingDriverVehicle.regNo}</Text>
+                <Text style={styles.actingVehicleMeta}>
+                  {[
+                    VEHICLE_TYPE_OPTIONS.find(o => o.value === actingDriverVehicle.type)?.label,
+                    actingDriverVehicle.make,
+                    actingDriverVehicle.model,
+                    actingDriverVehicle.year,
+                  ].filter(Boolean).join(' · ')}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.changeVehicleBtn}
+                onPress={() => { setActingDriverVehicle(null); setActingDriverHours(null); goBack(); }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.changeVehicleText}>{t('change', 'Change')}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Duration selector */}
+            <View style={styles.durationSection}>
+              <Text style={styles.durationLabel}>{t('duration', 'Duration')}</Text>
+              <View style={styles.durationUnitRow}>
+                {DURATION_UNITS.map(u => (
+                  <TouchableOpacity
+                    key={u.key}
+                    style={[styles.durationUnitBtn, durationUnit === u.key && styles.durationUnitBtnSelected]}
+                    onPress={() => onDurationUnitChange(u.key)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.durationUnitText, durationUnit === u.key && styles.durationUnitTextSelected]}>
+                      {u.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              {durationUnit !== '30min' && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.durationChipsRow}
+                >
+                  {(durationUnit === 'hr' ? HOUR_OPTIONS : DAY_OPTIONS).map(v => (
+                    <TouchableOpacity
+                      key={v}
+                      style={[styles.durationChip, durationValue === v && styles.durationChipSelected]}
+                      onPress={() => onDurationValueChange(v)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[styles.durationChipText, durationValue === v && styles.durationChipTextSelected]}>
+                        {durationUnit === 'hr' ? `${v}h` : `${v}d`}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
+          </View>
+        )}
         <HistoryContainer selectCallback={handleHistoryLocationClick} bottomborder = {false} fromSearchScreen={true}/>
         </ScrollView>
 
@@ -452,6 +553,107 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     paddingHorizontal: 10,
    
+  },
+  actingDriverPanel: {
+    marginHorizontal: 4,
+    marginTop: 10,
+    marginBottom: 2,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#FAFAFA',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  actingVehicleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  actingVehicleInfo: {
+    flex: 1,
+  },
+  actingVehicleReg: {
+    fontSize: 14,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.black,
+  },
+  actingVehicleMeta: {
+    fontSize: 12,
+    fontFamily: Fonts.regular,
+    color: colors.grey_xxdark,
+    marginTop: 2,
+  },
+  changeVehicleBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: colors.black,
+  },
+  changeVehicleText: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: colors.black,
+  },
+  durationSection: {
+    gap: 8,
+  },
+  durationLabel: {
+    fontSize: 13,
+    fontFamily: Fonts.medium,
+    color: colors.black,
+  },
+  durationUnitRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  durationUnitBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#F5F5F5',
+    alignItems: 'center',
+  },
+  durationUnitBtnSelected: {
+    borderColor: colors.black,
+    backgroundColor: colors.black,
+  },
+  durationUnitText: {
+    fontSize: 13,
+    fontFamily: Fonts.medium,
+    color: colors.black,
+  },
+  durationUnitTextSelected: {
+    color: colors.white,
+  },
+  durationChipsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingVertical: 2,
+  },
+  durationChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#F5F5F5',
+  },
+  durationChipSelected: {
+    borderColor: colors.black,
+    backgroundColor: colors.black,
+  },
+  durationChipText: {
+    fontSize: 13,
+    fontFamily: Fonts.medium,
+    color: colors.black,
+  },
+  durationChipTextSelected: {
+    color: colors.white,
   },
   favPlacesContainer: {
     flexDirection: 'row',
