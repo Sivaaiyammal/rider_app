@@ -18,7 +18,6 @@ import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import LocationHeader from '../components/LocationHeader';
 import HistoryCard from '../../shared/component/HistoryCard';
 import { useBottomSheetSpringConfigs } from "@gorhom/bottom-sheet";
-import LinearGradient from 'react-native-linear-gradient';
 import SearchIcon from '../../../assets/icons/SearchIcon.svg';
 import MapIcon from '../../../components/Map/MapIcon';
 import FavLabelItems from '../components/FavLabelItems';

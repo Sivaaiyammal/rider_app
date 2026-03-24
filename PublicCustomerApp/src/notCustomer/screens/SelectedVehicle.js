@@ -7,11 +7,8 @@ import useLocationStore from '../store/useLocationStore';
 import useRideSelectionStore from '../store/useRideSelectionStore';
 import useMapStore from '../features/map/store/useMapStore';
 
-import BottomSheet from '../components/BottomSheet';
-import {vehicleDetailsStyles} from '../styles/VehicleDetails';
-import {CommonActions, useNavigation} from '@react-navigation/native';
+
 import {showNotification} from '../components/NotificationManger';
-import {usePostQuery} from '../hooks/useQuery';
 import locationTask from '../controllers/GetCurrentLocation';
 
 import SearchLoader from '../components/Loaders/SearchLoader';

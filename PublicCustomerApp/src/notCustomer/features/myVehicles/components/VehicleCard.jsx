@@ -14,7 +14,7 @@ const VehicleCard = ({ vehicle, onEdit, onDelete }) => {
   return (
     <View style={styles.card}>
       <View style={styles.cardIconContainer}>
-        <Ionicons name={iconName} size={28} color={colors.violet} />
+        <Ionicons name={iconName} size={28} color={colors.black} />
       </View>
       <View style={styles.cardInfo}>
         <Text style={styles.cardRegNo}>{vehicle.regNo}</Text>
@@ -28,7 +28,7 @@ const VehicleCard = ({ vehicle, onEdit, onDelete }) => {
       </View>
       <View style={styles.cardActions}>
         <TouchableOpacity onPress={() => onEdit(vehicle)} style={styles.cardActionBtn} activeOpacity={0.7}>
-          <Ionicons name="create-outline" size={20} color={colors.violet} />
+          <Ionicons name="create-outline" size={20} color={colors.black} />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => onDelete(vehicle)} style={styles.cardActionBtn} activeOpacity={0.7}>
           <Ionicons name="trash-outline" size={20} color={colors.danger_red} />

@@ -81,6 +81,8 @@ import UPIVerification from './DriverDocumentCenter/UPIVerification';
 import DriverProofDoc from './DriverDocumentCenter/DriverProofDoc';
 import LanguageSelectionScreen from './LanguageSelectionScreen';
 import EditDocCenter from './EditDocCenter';
+import DrivingExperienceScreen from '../../actingDriver/screens/DrivingExperienceScreen';
+import VehicleHandlingScreen from '../../actingDriver/screens/VehicleHandlingScreen';
 import tripAlert from '../../common/controllers/TripAlert';
 import rideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
 import messaging from '@react-native-firebase/messaging';
@@ -660,6 +662,12 @@ const PublicRidesDriverHomeScreen = () => {
         return <TripAccept />
       case 'AddDriverLocation':
           return <AddDriverLocation isPassanger={false} updatePassangerLocation={null}/>
+      case 'AddDriverLocationActing':
+          return <AddDriverLocation isPassanger={false} updatePassangerLocation={null} isActingDriver={true}/>
+      case 'DrivingExperience':
+          return <DrivingExperienceScreen />;
+      case 'VehicleHandling':
+          return <VehicleHandlingScreen />;
       case 'PublicDriverTrackingScreen':
           return <PublicDriverTrackingScreen />
       case 'StopChangeRequest':

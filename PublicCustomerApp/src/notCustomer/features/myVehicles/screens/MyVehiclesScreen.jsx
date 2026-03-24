@@ -369,7 +369,7 @@ const MyVehiclesScreen = () => {
       <View style={styles.content}>
         {loadingVehicles ? (
           <View style={styles.emptyContainer}>
-            <ActivityIndicator size="large" color={colors.violet} />
+            <ActivityIndicator size="large" color={colors.black} />
           </View>
         ) : vehicles.length === 0 ? (
           <View style={styles.emptyContainer}>

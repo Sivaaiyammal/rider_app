@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { View } from 'react-native'
 import React from 'react'
 import DocumentCenter from './DriverDocumentCenter/DocumentCenter'
 import NavBar from '../../common/components/NavBar'
@@ -22,7 +22,7 @@ const EditDocCenter = () => {
     <View style={{flex:1, backgroundColor:'white'}}>
         <NavBar title="Document Center" onBackPress={() => onBackPress()} />
             <UseBackButton onBackPress={() => onBackPress()} />
-      <DocumentCenter />
+      <DocumentCenter isEditMode />
     </View>
   )
 }

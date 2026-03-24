@@ -38,7 +38,7 @@ const VehicleItem = ({ vehicle, selected, onPress }) => {
         <Ionicons
           name={iconName}
           size={28}
-          color={selected ? colors.violet : colors.grey_xxdark}
+          color={selected ? colors.black : colors.grey_xxdark}
         />
       </View>
       <View style={styles.cardInfo}>
@@ -115,7 +115,7 @@ const ActingDriverVehicleSelectScreen = () => {
 
         {loading ? (
           <View style={styles.centered}>
-            <ActivityIndicator size="large" color={colors.violet} />
+            <ActivityIndicator size="large" color={colors.black} />
           </View>
         ) : vehicles.length === 0 ? (
           <View style={styles.centered}>
@@ -164,7 +164,7 @@ const ActingDriverVehicleSelectScreen = () => {
                 <Ionicons
                   name="add-circle-outline"
                   size={20}
-                  color={colors.violet}
+                  color={colors.black}
                 />
                 <Text style={styles.addMoreBtnText}>
                   {t('add_another_vehicle', 'Add Another Vehicle')}
@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: colors.violet,
+    backgroundColor: colors.black,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 28,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   cardSelected: {
-    borderColor: colors.violet,
+    borderColor: colors.black,
     backgroundColor: '#F0EFFF',
   },
   cardIcon: {
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     color: colors.black,
   },
   cardRegNoSelected: {
-    color: colors.violet,
+    color: colors.black,
   },
   cardMeta: {
     fontFamily: Fonts.regular,
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: colors.violet,
+    borderColor: colors.black,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: colors.violet,
+    backgroundColor: colors.black,
   },
   addMoreBtn: {
     flexDirection: 'row',
@@ -330,10 +330,10 @@ const styles = StyleSheet.create({
   addMoreBtnText: {
     fontFamily: Fonts.medium,
     fontSize: 14,
-    color: colors.violet,
+    color: colors.black,
   },
   continueButton: {
-    backgroundColor: colors.violet,
+    backgroundColor: colors.black,
     marginHorizontal: 16,
     marginBottom: 24,
     paddingVertical: 16,

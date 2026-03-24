@@ -168,52 +168,52 @@ const OTPScreen = ({route}) => {
     }
   } 
 
-    const handleActingDriverVerificationSuccess = async (data) => {
-    try {
-      if (data.success) {
-        setOtpError('');
+  //   const handleActingDriverVerificationSuccess = async (data) => {
+  //   try {
+  //     if (data.success) {
+  //       setOtpError('');
        
-        let { user } = data;
-          const deviceImei = await DeviceInfo.getUniqueId().catch(error => {
-        console.log('Error getting device IMEI: ', error);
-        });
-        setID(user._id);
-        setUserdetails(user);
-        setUserInfo(user);
-        setIsDev(data?.user?.dev);
-        await DataStore.storeData('access_token', user?.token);
-        addNOTSocketListener(user?.token);
-        addRideMatchListener(user?._id);
-        await DataStore.storeData('userdetails', user);
-        await DataStore.storeData("bg_userToken", user?.token)
-        await DataStore.storeData("bg_deviceImei", deviceImei)
-          if (user && Object.prototype.hasOwnProperty.call(user, 'isAvailable')) {
-            firebaselog_userLogin('UL_Driver(UL_D)', 'UL_D:login_success');
-          } else {
-            firebaselog_userLogin('UL_Newuser(UL_New)', 'UL_New:driver');
-          }
-          navigation.reset({
-            index: 0,
-            routes: [{name: 'HomeScreen'}],
-          });
-        // showNotification(t('otp_verified'), t('otp_verified_successfully'), 'success');
-      } else {
-        setOtpError(t('invalid_otp'));
+  //       let { user } = data;
+  //         const deviceImei = await DeviceInfo.getUniqueId().catch(error => {
+  //       console.log('Error getting device IMEI: ', error);
+  //       });
+  //       setID(user._id);
+  //       setUserdetails(user);
+  //       setUserInfo(user);
+  //       setIsDev(data?.user?.dev);
+  //       await DataStore.storeData('access_token', user?.token);
+  //       addNOTSocketListener(user?.token);
+  //       addRideMatchListener(user?._id);
+  //       await DataStore.storeData('userdetails', user);
+  //       await DataStore.storeData("bg_userToken", user?.token)
+  //       await DataStore.storeData("bg_deviceImei", deviceImei)
+  //         if (user && Object.prototype.hasOwnProperty.call(user, 'isAvailable')) {
+  //           firebaselog_userLogin('UL_Driver(UL_D)', 'UL_D:login_success');
+  //         } else {
+  //           firebaselog_userLogin('UL_Newuser(UL_New)', 'UL_New:driver');
+  //         }
+  //         navigation.reset({
+  //           index: 0,
+  //           routes: [{name: 'HomeScreen'}],
+  //         });
+  //       // showNotification(t('otp_verified'), t('otp_verified_successfully'), 'success');
+  //     } else {
+  //       setOtpError(t('invalid_otp'));
 
-        if(typeof data?.message === 'string'){  
-          showNotification(t('failed'), t('invalid_otp'), 'danger');
-        }else{
-          console.log('Driver OTP verification failed:', data);
-          showNotification(t('failed'), t('something_went_wrong'), 'danger');
-        }
-        firebaselog_userLogin('UL_Driver(UL_D)', 'UL_D:login_failed')
-      }
-    } catch (error) {
-      console.error('Error in handleVerificationSuccess:', error);
+  //       if(typeof data?.message === 'string'){  
+  //         showNotification(t('failed'), t('invalid_otp'), 'danger');
+  //       }else{
+  //         console.log('Driver OTP verification failed:', data);
+  //         showNotification(t('failed'), t('something_went_wrong'), 'danger');
+  //       }
+  //       firebaselog_userLogin('UL_Driver(UL_D)', 'UL_D:login_failed')
+  //     }
+  //   } catch (error) {
+  //     console.error('Error in handleVerificationSuccess:', error);
 
-      showNotification(t('failed'), t('something_went_wrong'), 'danger');
-    }
-  } 
+  //     showNotification(t('failed'), t('something_went_wrong'), 'danger');
+  //   }
+  // } 
 
   const {mutate: verifyOTPMutate, isLoading: isLoading, error: verifyOTPError} = verifyOTPMutation(
     handleVerificationSuccess,
@@ -223,9 +223,9 @@ const OTPScreen = ({route}) => {
     handleDriverVerificationSuccess,
   );
 
-  const {mutate: verifyActingDriverOTPMutate, isLoading: isVerifyActingOTPLoading, error: verifyActingDriverOTPError} = verifyActingDriverOTPMutation(
-    handleActingDriverVerificationSuccess,
-  );
+  // const {mutate: verifyActingDriverOTPMutate, isLoading: isVerifyActingOTPLoading, error: verifyActingDriverOTPError} = verifyActingDriverOTPMutation(
+  //   handleActingDriverVerificationSuccess,
+  // );
 
   // Log errors only when they change
   useEffect(() => {
@@ -251,6 +251,7 @@ const OTPScreen = ({route}) => {
     }
   };
 
+   console.log('Payload for OTP verification:', navRole);
 
   const verifyOtp = async () => {
     if (otpInput.length === 0) {
@@ -305,6 +306,7 @@ const OTPScreen = ({route}) => {
     };
 
     if (fcmToken) sendToServer.fcmToken = tokenCred;
+   
     if (navRole === 'acting_driver') {
       verifyActingDriverOTPMutate(sendToServer);
     } else {

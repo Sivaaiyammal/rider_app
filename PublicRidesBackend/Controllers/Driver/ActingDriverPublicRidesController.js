@@ -1,8 +1,10 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-useless-escape */
-const { driverPublicRidesVerifyOTPSchema  } = require("../../Schemas/DriverSchema")
+const { driverPublicRidesVerifyOTPSchema, driverDetailsUploadSchema } = require("../../Schemas/DriverSchema")
 const Driver = require("../../Models/Driver");
 const Redis = require("../DB/Redis");
+const { ObjectId } = require('mongodb');
+const PublicRideRegionalOffices = require("../RegionalOffices/publicRideRegionalOffices");
 
 module.exports = function (CLASS) {
      CLASS.prototype.verifyPublicRidesADOTP = async function (req, res) {
@@ -16,6 +18,7 @@ module.exports = function (CLASS) {
             if (!otp) return res.status(400).json({ success: false, message: 'OTP expired' });
             if (Number(otp) !== payload.otp) return res.status(400).json({ success: false, message: 'Invalid OTP' });
             await Redis.removeKey(payload.phone);
+            console.log('OTP verified successfully for phone:', driverCheck);
             if (driverCheck) {
                 const driverDetails = await Driver.getDriverWithId(driverCheck._id);
                 if (!driverDetails?.publicRidesDriver) return res.status(400).json({ success: false, message: 'Your Account Has Not Registered For Public Rides' });
@@ -125,6 +128,45 @@ module.exports = function (CLASS) {
         }
         catch (error) {
             return this.handleError(error, res);
+        }
+    }
+
+    CLASS.prototype.updateActingDriverPreferredWorkLocation = async function (req, res) {
+        try {
+            const driverId = req.driver.id;
+            const [payload, errRes] = await this.validate(req.body, driverDetailsUploadSchema);
+            if (!payload) return res.status(400).json(errRes);
+            const driver = await Driver.getDriverWithId(driverId);
+            if (!driver) return res.status(400).json({ success: false, message: 'Driver not found' });
+            if (!driver.publicRidesDriver) return res.status(400).json({ success: false, message: 'Driver is not a public rides driver' });
+            payload.location = { type: "Point", coordinates: [Number(payload?.location[0]), Number(payload?.location[1])] };
+            const regionalOfficeData = await PublicRideRegionalOffices.getRegionalOffices(payload.homeLocation.coordinates);
+            if (regionalOfficeData) {
+                payload.regionalOffice = new ObjectId(regionalOfficeData.regionOfficeId);
+            } else {
+                payload.regionalOffice = null;
+            }
+            // Acting drivers retain their approval status when updating location
+            const updatedDriver = await Driver.updateDriverInformation(driverId, payload);
+            return res.json({ success: true, message: 'Preferred work location updated successfully', driver: updatedDriver });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
+
+    CLASS.prototype.updateDriverMode = async function (req, res) { 
+        try {
+            const driverId = req.driver.id;
+            const { mode } = req.body;
+            if (!mode || !['driver', 'acting_driver'].includes(mode)) {
+                return res.status(400).json({ success: false, message: 'Invalid mode. Must be either "driver" or "acting_driver".' });
+            }
+            const driver = await Driver.getDriverWithId(driverId);
+            if (!driver) return res.status(400).json({ success: false, message: 'Driver not found' });
+            await Driver.updateDriver(driverId, { mode: mode });
+            return res.json({ success: true, message: `Driver mode updated to ${mode} successfully` });
+        } catch (err) {
+            return this.handleError(err, res);
         }
     }
 }

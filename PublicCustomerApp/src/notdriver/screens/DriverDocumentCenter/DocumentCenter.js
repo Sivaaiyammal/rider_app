@@ -24,7 +24,12 @@ import BGLocationTask from '../../../common/controllers/BGLocationTask';
 import GlobalContext from '../../../context/GlobalContext';
 import FullScreenLoader from '../../../common/loaders/FullScreenLoader';
 
-const DocumentCenter = () => {
+const MODES = [
+  {key: 'driver', label: 'Driver'},
+  {key: 'acting_driver', label: 'Acting Driver'},
+];
+
+const DocumentCenter = ({ isEditMode = false }) => {
   const {t} = useTranslation();
   const {setStackScreen} = useStackScreenStore();
   const driverInfo = usePublicDriverStore(state => state.driverInfo);
@@ -37,8 +42,10 @@ const DocumentCenter = () => {
   const {logout} = useContext(GlobalContext);
   const {userDeviceId} = useDeviceAPIStore();
   const {setMapMarkers} = useMapMarkerStore();
+  const {setDriverMode} = useUserStore();
 
   const {
+    driverRole,
     locationCompleteStatus,
     driverDetailsCompleteStatus,
     vehicleDetailsCompleteStatus,
@@ -46,65 +53,136 @@ const DocumentCenter = () => {
     documentsCompleteStatus,
   } = usePublicDriverStore();
 
-  const docCompleted =
-    locationCompleteStatus &&
-    driverDetailsCompleteStatus &&
-    vehicleDetailsCompleteStatus &&
-    bankDetailsCompleteStatus &&
-    documentsCompleteStatus;
+  const defaultMode = driverRole === 'acting_driver' ? 'acting_driver' : 'driver';
+  const [selectedMode, setSelectedMode] = useState(defaultMode);
+  const [modeLoading, setModeLoading] = useState(false);
+  const isActingDriverMode = selectedMode === 'acting_driver';
 
-  const sections = [
-      {
-        id: 'preferredLocation',
-        title: t('preferred_work_location'),
-        // description: t('document_center_location_desc', {
-        //   defaultValue: 'Choose your preferred work locations.',
-        // }),
-        icon: 'place',
-        screen: 'AddDriverLocation',
-        complete: locationCompleteStatus,
-      },
-      {
-        id: 'driverDetails',
-        title: t('driver_details'),
-        // description: t('document_center_driver_desc', {
-        //   defaultValue: 'Review and update your personal information.',
-        // }),
-        icon: 'person',
-        screen: 'DriverEntry',
-        complete: driverDetailsCompleteStatus,
-      },
-      {
-        id: 'vehicleDetails',
-        title: t('vehicle_details'),
-        // description: t('document_center_vehicle_desc', {
-        //   defaultValue: 'Confirm your assigned vehicle information.',
-        // }),
-        icon: 'directions-car',
-        screen: 'DriverVehicleEntry',
-        complete: vehicleDetailsCompleteStatus,
-      },
-      {
-        id: 'bankDetails',
-        title: t('bank_details'),
-        // description: t('document_center_bank_desc', {
-        //   defaultValue: 'Verify the bank account for your payouts.',
-        // }),
-        icon: 'account-balance',
-        screen: 'DriverBankDetails',
-        complete: bankDetailsCompleteStatus,
-      },
-      {
-        id: 'proofDocuments',
-        title: t('proof_documents'),
-        // description: t('document_center_proof_desc', {
-        //   defaultValue: 'Upload and check the status of your documents.',
-        // }),
-        icon: 'fact-check',
-        screen: 'DriverProofDoc',
-        complete: documentsCompleteStatus,
-      },
-    ];
+  const handleModeChange = async (mode) => {
+    if (mode === selectedMode || modeLoading) return;
+    setModeLoading(true);
+    try {
+      const api = new APIRequest();
+      const res = await api.request(
+        '/publicrides/actingDriver/v2/updateDriverMode',
+        'POST',
+        {mode},
+        userInfo?.token,
+      );
+      if (res?.success) {
+        setSelectedMode(mode);
+        setDriverMode(mode);
+      }
+    } catch (err) {
+      console.log('Error updating driver mode:', err);
+    } finally {
+      setModeLoading(false);
+    }
+  };
+
+  const drivingExperienceComplete = Boolean(driverInfo?.drivingExperience?.totalExperience);
+  const vehicleHandlingComplete = Boolean(
+    driverInfo?.vehicleHandling?.vehicleTypes?.length > 0 &&
+    driverInfo?.vehicleHandling?.transmission,
+  );
+
+  const driverSections = [
+    {
+      id: 'preferredLocation',
+      title: t('preferred_work_location'),
+      icon: 'place',
+      screen: 'AddDriverLocation',
+      complete: locationCompleteStatus,
+    },
+    {
+      id: 'driverDetails',
+      title: t('driver_details'),
+      icon: 'person',
+      screen: 'DriverEntry',
+      complete: driverDetailsCompleteStatus,
+    },
+    {
+      id: 'vehicleDetails',
+      title: t('vehicle_details'),
+      icon: 'directions-car',
+      screen: 'DriverVehicleEntry',
+      complete: vehicleDetailsCompleteStatus,
+    },
+    {
+      id: 'bankDetails',
+      title: t('bank_details'),
+      icon: 'account-balance',
+      screen: 'DriverBankDetails',
+      complete: bankDetailsCompleteStatus,
+    },
+    {
+      id: 'proofDocuments',
+      title: t('proof_documents'),
+      icon: 'fact-check',
+      screen: 'DriverProofDoc',
+      complete: documentsCompleteStatus,
+    },
+  ];
+
+  const actingDriverSections = [
+    {
+      id: 'preferredLocation',
+      title: t('preferred_work_location'),
+      icon: 'place',
+      screen: 'AddDriverLocationActing',
+      complete: locationCompleteStatus,
+    },
+    {
+      id: 'driverDetails',
+      title: t('driver_details'),
+      icon: 'person',
+      screen: 'DriverEntry',
+      complete: driverDetailsCompleteStatus,
+    },
+    {
+      id: 'bankDetails',
+      title: t('bank_details'),
+      icon: 'account-balance',
+      screen: 'DriverBankDetails',
+      complete: bankDetailsCompleteStatus,
+    },
+    {
+      id: 'proofDocuments',
+      title: t('proof_documents'),
+      icon: 'fact-check',
+      screen: 'DriverProofDoc',
+      complete: documentsCompleteStatus,
+    },
+    {
+      id: 'drivingExperience',
+      title: t('driving_experience', {defaultValue: 'Driving Experience'}),
+      icon: 'speed',
+      screen: 'DrivingExperience',
+      complete: drivingExperienceComplete,
+    },
+    {
+      id: 'vehicleHandling',
+      title: t('vehicle_handling', {defaultValue: 'Vehicle Handling'}),
+      icon: 'directions-car',
+      screen: 'VehicleHandling',
+      complete: vehicleHandlingComplete,
+    },
+  ];
+
+  const sections = isActingDriverMode ? actingDriverSections : driverSections;
+
+  const docCompleted = isActingDriverMode
+    ? locationCompleteStatus &&
+      driverDetailsCompleteStatus &&
+      bankDetailsCompleteStatus &&
+      documentsCompleteStatus &&
+      drivingExperienceComplete &&
+      vehicleHandlingComplete
+    : locationCompleteStatus &&
+      driverDetailsCompleteStatus &&
+      vehicleDetailsCompleteStatus &&
+      bankDetailsCompleteStatus &&
+      documentsCompleteStatus;
 
   const handleSectionPress = section => {
     if (section.id === 'bankDetails') {
@@ -187,17 +265,19 @@ const DocumentCenter = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerView}>
-      <Text style={styles.title}>{t('document_center')}</Text>
-       <View style={styles.headerActions}>
-         <TouchableOpacity style={styles.headerBtn} onPress={() => setStackScreen('DriverHelpSupport')}>
-          <MaterialIcons name="support-agent" size={24} color={Colors.black} />
-         </TouchableOpacity>
-         <TouchableOpacity style={styles.headerBtn} onPress={confirmLogout}>
-          <MaterialIcons name="power-settings-new" size={24} color={Colors.scarlet} />
-         </TouchableOpacity>
-       </View>
-      </View>
+      {!isEditMode && (
+        <View style={styles.headerView}>
+        <Text style={styles.title}>{t('document_center')}</Text>
+         <View style={styles.headerActions}>
+           <TouchableOpacity style={styles.headerBtn} onPress={() => setStackScreen('DriverHelpSupport')}>
+            <MaterialIcons name="support-agent" size={24} color={Colors.black} />
+           </TouchableOpacity>
+           <TouchableOpacity style={styles.headerBtn} onPress={confirmLogout}>
+            <MaterialIcons name="power-settings-new" size={24} color={Colors.scarlet} />
+           </TouchableOpacity>
+         </View>
+        </View>
+      )}
       
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -206,6 +286,33 @@ const DocumentCenter = () => {
         <Text style={styles.subtitle}>
           {t('document_center_subtitle')}
         </Text>
+
+        <View style={styles.modeSelector}>
+          {MODES.map(mode => (
+            <TouchableOpacity
+              key={mode.key}
+              style={[
+                styles.modeTab,
+                selectedMode === mode.key && styles.modeTabActive,
+              ]}
+              activeOpacity={0.8}
+              disabled={modeLoading}
+              onPress={() => handleModeChange(mode.key)}>
+              {modeLoading && selectedMode !== mode.key ? (
+                <ActivityIndicator size="small" color={Colors.warm_grey} />
+              ) : (
+                <Text
+                  style={[
+                    styles.modeTabText,
+                    selectedMode === mode.key && styles.modeTabTextActive,
+                  ]}>
+                  {mode.label}
+                </Text>
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+
         <View style={styles.sectionsContainer}>
           {sections.map(section => (
             <TouchableOpacity
@@ -430,6 +537,37 @@ const styles = StyleSheet.create({
   },
   statusTextPending: {
     color: Colors.scarlet,
+  },
+  modeSelector: {
+    flexDirection: 'row',
+    backgroundColor: '#f0f0f5',
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 20,
+  },
+  modeTab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modeTabActive: {
+    backgroundColor: Colors.periwinkle,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.12,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  modeTabText: {
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: Colors.warm_grey,
+  },
+  modeTabTextActive: {
+    color: Colors.white,
+    fontFamily: Fonts.semi_bold,
   },
   title:{
     fontFamily: Fonts.semi_bold,

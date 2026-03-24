@@ -584,7 +584,7 @@ class Driver {
 
     static deleteDriver = async (driverId, role, vehicleId) => {
         // Handle vehicle updates based on role
-        if (role === 'doc' && vehicleId) {
+        if (role === 'dco' && vehicleId) {
             // For DCO drivers, mark vehicle as deleted
             await Mongo.updateOne('vehicles', 
                 { _id: new ObjectId(vehicleId) },

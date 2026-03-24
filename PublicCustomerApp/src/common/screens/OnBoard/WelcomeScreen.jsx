@@ -20,10 +20,6 @@ const WelcomeScreen = ({ navigation }) => {
   // Keep illustration offset proportional while splitting space evenly with copy.
   const cardImageMarginTop = -mediaWidth * 0.45;
 
-
-
-
-
   const handleCustomerContinue = () => {
     setUserRole('customer');
     DataStore.storeData('userRole', 'customer');
@@ -38,12 +34,12 @@ const WelcomeScreen = ({ navigation }) => {
     navigation.navigate('LoginScreen', {navRole: 'driver'});
   };
 
-  const handleActingDriverContinue = () => {
-    setUserRole('acting_driver');
-    DataStore.storeData('userRole', 'acting_driver');
-    firebaselog_userRole('UR_Selected(UR_S)', 'UR_S:acting_driver');
-    navigation.navigate('LoginScreen', {navRole: 'acting_driver'});
-  };
+  // const handleActingDriverContinue = () => {
+  //   setUserRole('acting_driver');
+  //   DataStore.storeData('userRole', 'acting_driver');
+  //   firebaselog_userRole('UR_Selected(UR_S)', 'UR_S:acting_driver');
+  //   navigation.navigate('LoginScreen', {navRole: 'acting_driver'});
+  // };
 
   return (
     <View style={styles.container}>
@@ -169,7 +165,7 @@ const WelcomeScreen = ({ navigation }) => {
         </TouchableOpacity>
 
        {/* Acting Driver Card */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={[styles.card, styles.actingDriverCard]}
           activeOpacity={0.85}
           onPress={handleActingDriverContinue}
@@ -226,7 +222,7 @@ const WelcomeScreen = ({ navigation }) => {
               />
             </View>
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );

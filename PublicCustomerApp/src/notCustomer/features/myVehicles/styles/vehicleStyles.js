@@ -92,7 +92,7 @@ const vehicleStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: colors.violet,
+    backgroundColor: colors.black,
     borderRadius: 12,
     paddingVertical: 16,
     marginBottom: 24,
@@ -177,7 +177,7 @@ const vehicleStyles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   typeChipSelected: {
-    borderColor: colors.violet,
+    borderColor: colors.black,
     backgroundColor: '#F0EFFF',
   },
   typeChipText: {
@@ -186,7 +186,7 @@ const vehicleStyles = StyleSheet.create({
     color: colors.black,
   },
   typeChipTextSelected: {
-    color: colors.violet,
+    color: colors.black,
   },
   // ─── Form action row ─────────────────────────────────────────────────────
   formActions: {
@@ -209,7 +209,7 @@ const vehicleStyles = StyleSheet.create({
   },
   addBtn: {
     flex: 1,
-    backgroundColor: colors.violet,
+    backgroundColor: colors.black,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',

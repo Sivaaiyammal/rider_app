@@ -50,7 +50,7 @@ const Navigation = () => {
     if (userRole?.data) {
       setUserRole(userRole.data);
     }
-    if (userRole?.data === 'driver' || userRole?.data === 'acting_driver') {
+    if (userRole?.data === 'driver') {
       if (access_token.data) {
         setInitialRoute('HomeScreen');
         console.log('Driver Access Token:', user_details?.data?._id);
@@ -96,10 +96,6 @@ const Navigation = () => {
       case 'driver':
         return {
           homeScreen: DriverHomeScreen,
-        };
-      case 'acting_driver':
-        return {
-          homeScreen: ActingDriverHome,
         };
       default:
         return {
