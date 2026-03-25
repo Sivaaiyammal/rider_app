@@ -84,6 +84,7 @@ Router.post('/wakeUpBGService', CheckDriverAuthenticated, withTiming(driverContr
 
 Router.get('/getOnboardingConfig', CheckDriverAuthenticated, withTiming(driverController, driverController.getOnboardingConfig))
 Router.post('/uploadTripMedia', CheckDriverAuthenticated, withTiming(tripController, tripController.uploadTripMedia));
+Router.post('/deleteTripBill', CheckDriverAuthenticated, withTiming(tripController, tripController.deleteTripBill));
 Router.post('/addTripLocation', CheckDriverAuthenticated, locationController.addTripLocationDriver);
 // graphql for publicRidesDriver
 Router.post('/graphql/location', CheckDriverAuthenticated, withTiming(null, createHandler({

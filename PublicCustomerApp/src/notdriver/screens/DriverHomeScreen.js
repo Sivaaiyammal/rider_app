@@ -83,6 +83,8 @@ import LanguageSelectionScreen from './LanguageSelectionScreen';
 import EditDocCenter from './EditDocCenter';
 import ActingDriverPreTripScreen from './ActingDriverPreTripScreen';
 import ActingDriverPostTripScreen from './ActingDriverPostTripScreen';
+import DriverVehiclePhotosScreen from './DriverVehiclePhotosScreen';
+import DriverBillsExpensesScreen from './DriverBillsExpensesScreen';
 import DrivingExperienceScreen from '../../actingDriver/screens/DrivingExperienceScreen';
 import VehicleHandlingScreen from '../../actingDriver/screens/VehicleHandlingScreen';
 import tripAlert from '../../common/controllers/TripAlert';
@@ -734,6 +736,10 @@ const PublicRidesDriverHomeScreen = () => {
               return <ActingDriverPreTripScreen />;
       case 'ActingDriverPostTripScreen':
               return <ActingDriverPostTripScreen />;
+      case 'DriverVehiclePhotosScreen':
+              return <DriverVehiclePhotosScreen />;
+      case 'DriverBillsExpensesScreen':
+              return <DriverBillsExpensesScreen />;
       default:
         return <Text>Home</Text>;
     }

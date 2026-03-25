@@ -89,7 +89,19 @@ class CustomerRideAssignHandler {
         }
     }
 
-     
+    emitNewBillRequest(socketIds, data) {
+        try {
+            socketIds.forEach(socketId => {
+                const socket = this.publicRidesCustomerNamespace.sockets.get(socketId);
+                if (socket && socket.connected) {
+                    console.log("Emitting new bill request to passenger", socketId);
+                    socket.emit('newBillRequest', data);
+                }
+            });
+        } catch (err) {
+            console.log(err, "err");
+        }
+    }
 
 }
 

@@ -120,7 +120,7 @@ const PublicDriverTripPaymentScreen = ({onPaymentReceive, fareDetails, tripDetia
       }}
       driverStyles>
       <View style={styles.centeredView}>
-       <InvoiceScreen fareDetails={fareBreakDown} onClose={()=>setIsInvoiceModalVisible(false)} distance={distance} duration={duration} tripDetials={tripDetials} supplierInfo={supplierInfo} recipient={recipient}/>
+       <InvoiceScreen fareDetails={fareBreakDown} onClose={()=>setIsInvoiceModalVisible(false)} distance={distance} duration={duration} tripDetials={tripDetials} supplierInfo={supplierInfo} recipient={recipient} tripBills={tripDetials?.bills}/>
       </View>
       </BottomSheetPopup>
     )

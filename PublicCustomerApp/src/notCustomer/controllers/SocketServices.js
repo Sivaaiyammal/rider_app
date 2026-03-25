@@ -30,6 +30,7 @@ class WSService {
     this.driverTestSimulation = this.driverTestSimulation.bind(this)
     this.passangerLocationChange = this.passangerLocationChange.bind(this)
     this.passangerAccount = this.passangerAccount.bind(this)
+    this.newBillRequest = this.newBillRequest.bind(this)
     this.useWayPointReorderStore = useWayPointReorderStore
     // this.driverFareUpdate = this.driverFareUpdate.bind(this)
     this.useStackScreenStore = useStackScreenStore
@@ -206,6 +207,27 @@ class WSService {
     }
   
   }
+
+  newBillRequest(data) {
+    try {
+      console.log('newBillRequest', JSON.stringify(data));
+      const bills = data?.bills?.bills || [];
+      if (bills.length === 0) return;
+      const total = bills
+        .reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0)
+        .toFixed(2);
+      const count = bills.length;
+      showNotification(
+        'New Bill Request 🧾',
+        count === 1
+          ? `Driver added a bill of ₹${total}. Review in Bills & Photos.`
+          : `Driver added ${count} bills totalling ₹${total}. Review in Bills & Photos.`,
+        'info'
+      );
+    } catch (error) {
+      console.error('Error handling newBillRequest:', error);
+    }
+  }
  
   
   driverLocationUpdate(data){
@@ -296,6 +318,8 @@ class WSService {
         this.socket.on('passangerLocationChange', this.passangerLocationChange);
 
         this.socket.on('passangerAccount', this.passangerAccount);
+
+        this.socket.on('newBillRequest', this.newBillRequest);
 
         // this.socket.on('passangerTripFareUpdate', this.driverFareUpdate);
 

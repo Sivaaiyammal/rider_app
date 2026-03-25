@@ -195,6 +195,17 @@ const e2eS3File = async (method = 'upload', file, fileName, filePath, oldFilePat
         }
     }
 
+    case 'deleteByKey': {
+        // filePath param is used as the full object key
+        const objectKey = filePath;
+        try {
+            await s3.removeObject(bucket, objectKey);
+            return { completed: true };
+        } catch (err) {
+            return { completed: false, message: err.message };
+        }
+    }
+
     default:
         return await uploadToS3();
     }

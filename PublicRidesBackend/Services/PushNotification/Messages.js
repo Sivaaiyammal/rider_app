@@ -47,6 +47,13 @@ const sendTripCancelledByDriverMessage = (name) => {
     const message = `Your trip has been cancelled by ${name}`
     return { title, body: message }
 }
+const sendNewBillRequestMessage = (count, total) => {
+    const title = 'New Bill Request 🧾';
+    const body = count === 1
+        ? `Your driver has added a bill of ₹${total}. Please review and respond.`
+        : `Your driver has added ${count} bills totalling ₹${total}. Please review and respond.`;
+    return { title, body };
+}
 const sendTripCancelledByDriverMessageafterPickup = (name) => {
     const title = 'Trip Cancelled By Driver After Pickup'
     const message = `Your trip has been cancelled by ${name}. Please contact support for further assistance.`
@@ -248,6 +255,7 @@ module.exports = {
     sendTripRequestMessage,
     sendTripCancelledMessage,
     sendTripCancelledByDriverMessage,
+    sendNewBillRequestMessage,
     sendTripCancelledByPassangerMessage,
     sendTripDriverAssignedMessage,
     getDeviceUsageAlert,

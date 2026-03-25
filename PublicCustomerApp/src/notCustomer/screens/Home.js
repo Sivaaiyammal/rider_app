@@ -70,6 +70,7 @@ import ContributionScreen from '../features/contribution/screens/ContributionScr
 import DriverAccessScreen from '../../common/screens/Driver/DriverAccessScreen.jsx';
 import ActingDriverVehicleSelectScreen from '../features/home/screens/ActingDriverVehicleSelectScreen.jsx';
 import MyVehiclesScreen from '../features/myVehicles/screens/MyVehiclesScreen.jsx';
+import BillsAndPhotosScreen from '../features/rideStatus/screens/BillsAndPhotosScreen';
 import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore.js';
 import usePaymentStore from '../features/payment/store/usePaymentStore.js';
 import { consumeUserStatsPrefetch } from '../controllers/UserStatsPrefetch';
@@ -931,6 +932,8 @@ const Home = () => {
         return <ActingDriverVehicleSelectScreen {...params} />;
       case 'MyVehiclesScreen':
         return <MyVehiclesScreen {...params} />;
+      case 'BillsAndPhotosScreen':
+        return <BillsAndPhotosScreen {...params} />;
       default:
         return null;
     }

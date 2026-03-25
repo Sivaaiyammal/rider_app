@@ -111,10 +111,16 @@ const DriverOnRide = () => {
   const tripsStatus = activeTripData && activeTripData[0]?.status ? activeTripData[0]?.status : "";
 
   const isActingDriverTrip = true;
-  const { preTripDone, pendingNavOpen, setPendingNavOpen } = useActingDriverMediaStore();
-  // Fallback: if store was cleared but photos are already on server, treat pre-trip as done
-  const preTripUploadedOnServer = !!(activeTripData?.[0]?.bills?.preTripVehiclePhotos?.front);
+  const { preTripDone, postTripDone, pendingNavOpen, setPendingNavOpen } = useActingDriverMediaStore();
+  // Fallback: if store was cleared but photos are already on server, treat as done
+  const _prePhotos = activeTripData?.[0]?.bills?.preTripVehiclePhotos;
+  const preTripUploadedOnServer = !!(_prePhotos?.front && _prePhotos?.rear && _prePhotos?.leftSide && _prePhotos?.rightSide);
+  const _postPhotos = activeTripData?.[0]?.bills?.postTripVehiclePhotos;
+  const postTripUploadedOnServer = !!(_postPhotos?.front && _postPhotos?.rear && _postPhotos?.leftSide && _postPhotos?.rightSide);
+  const postTripReady = postTripDone || postTripUploadedOnServer;
+
   const [showPreTripWarning, setShowPreTripWarning] = useState(false);
+  const [showPostTripWarning, setShowPostTripWarning] = useState(false);
 
   // Auto-open nav choice modal after driver returns from pre-trip photo screen
   useEffect(() => {
@@ -155,7 +161,7 @@ const DriverOnRide = () => {
     // Set pendingNavOpen so the nav modal auto-opens when the driver returns.
     if (isActingDriverTrip && !preTripDone && !preTripUploadedOnServer) {
       setPendingNavOpen(true);
-      setStackScreen('ActingDriverPreTripScreen');
+      setStackScreen('DriverVehiclePhotosScreen');
       return;
     }
     setOpenNavChoiceModal(true);
@@ -228,6 +234,12 @@ const DriverOnRide = () => {
         DataStore.storeData('isOngoingTrip', true)
         setIsOnGoing(true)
       } else if (tripsStatus === 'PICKEDUP' && reason === 'reached_destination')  {
+        // Acting driver: gate end-trip behind post-trip photo check
+        if (isActingDriverTrip && !postTripReady) {
+          setLoading(false);
+          setShowPostTripWarning(true);
+          return;
+        }
         endTrip();
       } else {
         setLoading(true);
@@ -287,11 +299,13 @@ const DriverOnRide = () => {
       showNotification('Fetching Current Location', 'Try Again', 'info');
       return;
     }
-    // Acting driver: go to post-trip screen to collect photos + bills,
-    // which will then trigger setFetchLocationDate(true) / setLoading(true) itself
+    // Acting driver: gate end-trip behind post-trip photo check
     if (isActingDriverTrip) {
-      setStackScreen('ActingDriverPostTripScreen');
-      return;
+      if (!postTripReady) {
+        setShowPostTripWarning(true);
+        return;
+      }
+      // Photos already uploaded — fall through to end the trip normally
     }
     setFetchLocationDate(true)
     setLoading(true)
@@ -1067,7 +1081,7 @@ const DriverOnRide = () => {
                 activeOpacity={0.8}
                 onPress={() => {
                   setShowPreTripWarning(false);
-                  setStackScreen('ActingDriverPreTripScreen');
+                  setStackScreen('DriverVehiclePhotosScreen');
                 }}>
                 <MaterialCommunityIcons name="camera-plus-outline" size={18} color={Colors.white} />
                 <Text style={styles.preTripUploadBtnTxt}>Upload Photos Now</Text>
@@ -1080,6 +1094,33 @@ const DriverOnRide = () => {
                   setModalVisible(true);
                 }}>
                 <Text style={styles.preTripSkipTxt}>Skip & Enter OTP Anyway</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+        <Modal transparent animationType="fade" visible={showPostTripWarning} onRequestClose={() => setShowPostTripWarning(false)}>
+          <View style={styles.preTripOverlay}>
+            <View style={styles.preTripWarningBox}>
+              <MaterialCommunityIcons name="camera-alert" size={48} color="#E65100" style={{ alignSelf: 'center', marginBottom: 10 }} />
+              <Text style={styles.preTripWarningTitle}>Post-Trip Photos Required</Text>
+              <Text style={styles.preTripWarningMsg}>
+                Please upload the 4 post-trip vehicle condition photos before ending the ride. This helps record the vehicle's condition at trip end.
+              </Text>
+              <TouchableOpacity
+                style={styles.preTripUploadBtn}
+                activeOpacity={0.8}
+                onPress={() => {
+                  setShowPostTripWarning(false);
+                  setStackScreen('DriverVehiclePhotosScreen');
+                }}>
+                <MaterialCommunityIcons name="camera-plus-outline" size={18} color={Colors.white} />
+                <Text style={styles.preTripUploadBtnTxt}>Upload Photos Now</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.preTripSkipBtn}
+                activeOpacity={0.8}
+                onPress={() => setShowPostTripWarning(false)}>
+                <Text style={styles.preTripSkipTxt}>Skip for Now</Text>
               </TouchableOpacity>
             </View>
           </View>

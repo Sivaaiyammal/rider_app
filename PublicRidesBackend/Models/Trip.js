@@ -198,6 +198,24 @@ class Trip {
         return result;
     }
 
+    static pushBillToTrip = async (tripId, bill) => {
+        const result = await Mongo.updateOneRaw(
+            COLLECTION_NAME,
+            { _id: new ObjectId(tripId) },
+            { $push: { 'bills.bills': bill } }
+        );
+        return result;
+    }
+
+    static removeBillFromTrip = async (tripId, billId) => {
+        const result = await Mongo.updateOneRaw(
+            COLLECTION_NAME,
+            { _id: new ObjectId(tripId) },
+            { $pull: { 'bills.bills': { billId } } }
+        );
+        return result;
+    }
+
     static getTripWithPassangerDetails = async (tripId) => {
         const groupQuery = [
             {$match: { '_id': new ObjectId(tripId)} },

@@ -1,120 +1,133 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Colors, Fonts } from '../../common/constants/constants';
 import { useStackScreenStore } from '../../common/store/useStackScreenStore';
 import useActingDriverMediaStore from '../store/useActingDriverMediaStore';
 import useTripsStore from '../store/useTripsStore';
 
+const MENU_ITEMS = [
+  {
+    key: 'DriverVehiclePhotosScreen',
+    label: 'Upload Vehicle Photos',
+    icon: 'car-outline',
+    doneKey: 'photos',
+  },
+  {
+    key: 'DriverBillsExpensesScreen',
+    label: 'Upload Bills and Expenses',
+    icon: 'receipt-outline',
+    doneKey: 'bills',
+  },
+];
+
 const ActingDriverMediaButtons = () => {
   const setStackScreen = useStackScreenStore(state => state.setStackScreen);
-  const { preTripDone, postTripDone } = useActingDriverMediaStore();
+  const { preTripDone, postTripDone, bills } = useActingDriverMediaStore();
   const { activeTripData } = useTripsStore();
 
-  // Check server data as fallback when store is cleared
   const serverBills = activeTripData?.[0]?.bills;
-  const preUploaded = preTripDone || !!(serverBills?.preTripVehiclePhotos?.front);
-  const postUploaded = postTripDone || !!(serverBills?.postTripVehiclePhotos?.front);
+  const photosUploaded = preTripDone || postTripDone || !!(serverBills?.preTripVehiclePhotos?.front) || !!(serverBills?.postTripVehiclePhotos?.front);
+  const billsUploaded = bills.length > 0 || !!(serverBills?.bills?.length);
+
+  const isDone = { photos: photosUploaded, bills: billsUploaded };
 
   return (
-    <>
-     <Text style={styles.headerText}>Upload Photos and Bills</Text>
-    <View style={styles.mediaUploadRow}>
-      <TouchableOpacity
-        style={[styles.mediaBtn, preUploaded && styles.mediaBtnDone]}
-        onPress={() => setStackScreen('ActingDriverPreTripScreen')}
-        activeOpacity={0.8}
-      >
-        <AntDesign
-          name={preUploaded ? 'checkcircle' : 'pluscircleo'}
-          size={18}
-          color={preUploaded ? Colors.white : Colors.periwinkle}
-        />
-        <View style={styles.mediaBtnTexts}>
-          <Text style={[styles.mediaBtnTitle, preUploaded && styles.mediaBtnTitleDone]}>
-            Before Trip Photos
-          </Text>
-          <Text style={[styles.mediaBtnSub, preUploaded && styles.mediaBtnSubDone]}>
-            {preUploaded ? 'Uploaded ✓' : 'Tap to upload 4 photos'}
-          </Text>
-        </View>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.mediaBtn, postUploaded && styles.mediaBtnDone]}
-        onPress={() => setStackScreen('ActingDriverPostTripScreen')}
-        activeOpacity={0.8}
-      >
-        <MaterialCommunityIcons
-          name={postUploaded ? 'check-circle' : 'receipt'}
-          size={18}
-          color={postUploaded ? Colors.white : Colors.periwinkle}
-        />
-        <View style={styles.mediaBtnTexts}>
-          <Text style={[styles.mediaBtnTitle, postUploaded && styles.mediaBtnTitleDone]}>
-            After Photos & Bills
-          </Text>
-          <Text style={[styles.mediaBtnSub, postUploaded && styles.mediaBtnSubDone]}>
-            {postUploaded ? 'Uploaded ✓' : 'Photos · expenses · receipts'}
-          </Text>
-        </View>
-      </TouchableOpacity>
+    <View style={styles.container}>
+      <Text style={styles.headerText}>Upload Photos and Bills</Text>
+      <View style={styles.menuList}>
+        {MENU_ITEMS.map((item, idx) => {
+          const done = isDone[item.doneKey];
+          return (
+            <TouchableOpacity
+              key={item.key}
+              style={[styles.menuRow, idx < MENU_ITEMS.length - 1 && styles.menuRowBorder]}
+              onPress={() => setStackScreen(item.key)}
+              activeOpacity={0.7}>
+              <View style={[styles.iconWrap, done && styles.iconWrapDone]}>
+                <Ionicons name={item.icon} size={20} color={done ? Colors.white : Colors.periwinkle} />
+              </View>
+              <Text style={styles.menuLabel}>{item.label}</Text>
+              {/* {done && (
+                <View style={styles.doneBadge}>
+                  <MaterialCommunityIcons name="check-circle" size={13} color="#43A047" />
+                  <Text style={styles.doneTxt}>Done</Text>
+                </View>
+              )} */}
+              <MaterialCommunityIcons name="chevron-right" size={20} color="#BDBDBD" />
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
-      </>
   );
 };
 
 export default ActingDriverMediaButtons;
 
 const styles = StyleSheet.create({
-  mediaUploadRow: {
-    flexDirection: 'row',
-    gap: 10,
+  container: {
     marginHorizontal: 12,
-    marginVertical: 10,
+    marginTop: 16,
   },
-  mediaBtn: {
-    flex: 1,
+  headerText: {
+    fontFamily: Fonts.semi_bold,
+    fontSize: 14,
+    color: Colors.black,
+    marginBottom: 10,
+  },
+  menuList: {
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#EBEBEB',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+  },
+  menuRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: Colors.periwinkle + '66',
-    backgroundColor: '#F0F0FF',
+    paddingHorizontal: 14,
+    paddingVertical: 16,
+    gap: 12,
   },
-  mediaBtnDone: {
+  menuRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  iconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: '#EEF0FB',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconWrapDone: {
     backgroundColor: Colors.periwinkle,
-    borderColor: Colors.periwinkle,
   },
-  mediaBtnTexts: {
+  menuLabel: {
     flex: 1,
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: Colors.black,
   },
-  mediaBtnTitle: {
-    fontSize: 12,
-    fontFamily: Fonts.semi_bold,
-    color: Colors.periwinkle,
+  doneBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#E8F5E9',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 20,
   },
-  mediaBtnTitleDone: {
-    color: Colors.white,
+  doneTxt: {
+    fontSize: 11,
+    fontFamily: Fonts.medium,
+    color: '#43A047',
   },
-  mediaBtnSub: {
-    fontSize: 10,
-    fontFamily: Fonts.regular,
-    color: Colors.grey_dark,
-    marginTop: 2,
-  },
-  mediaBtnSubDone: {
-    color: 'rgba(255,255,255,0.85)',
-  },
-  headerText:{
-    fontFamily  :Fonts.semi_bold,
-    fontSize    :14,
-    color       :Colors.black,
-    marginLeft  :12,
-    marginTop   :16
-  }
 });

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ScrollView, View, StyleSheet, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, View, StyleSheet, Text, Image, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
 import PropTypes from 'prop-types';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import UseBackButton from '../../common/hooks/UseBackButton';
@@ -7,9 +7,59 @@ import NavBar from '../../common/components/NavBar';
 import { DateTimeFormatter } from '../../common/utils/DateTimeFormatter';
 import { Colors, Fonts } from '../../common/constants/constants';
 import { useTranslation } from 'react-i18next';
+import { getPresignedImageUrl } from '../../common/utils/getPresignedImageUrl';
+import useUserStore from '../../common/store/useUserStore';
 
-const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails, onClose, tripDetials, supplierInfo, recipient }) => {
+const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,tripStops,bookingTime,fareDetails, onClose, tripDetials, supplierInfo, recipient, tripBills }) => {
   const {t} = useTranslation()
+  const [lightboxUri, setLightboxUri] = useState(null);
+  const [resolvedUrls, setResolvedUrls] = useState({});
+  const [urlsLoading, setUrlsLoading] = useState(false);
+  const { userInfo } = useUserStore();
+
+  const toObjectKey = (url) => {
+    if (!url) return null;
+    try { return decodeURIComponent(new URL(url).pathname.replace(/^\//, '')); }
+    catch { return url.replace(/^https?:\/\/[^/]+\//, ''); }
+  };
+
+  useEffect(() => {
+    if (!tripBills || !userInfo?.token) return;
+    const resolve = async () => {
+      setUrlsLoading(true);
+      const urls = {};
+      const sides = ['front', 'rear', 'leftSide', 'rightSide'];
+      // pre-trip
+      for (const side of sides) {
+        const raw = tripBills.preTripVehiclePhotos?.[side];
+        if (raw) {
+          const key = toObjectKey(raw);
+          urls[`pre_${side}`] = key ? (await getPresignedImageUrl(key, userInfo.token)) || raw : raw;
+        }
+      }
+      // post-trip
+      for (const side of sides) {
+        const raw = tripBills.postTripVehiclePhotos?.[side];
+        if (raw) {
+          const key = toObjectKey(raw);
+          urls[`post_${side}`] = key ? (await getPresignedImageUrl(key, userInfo.token)) || raw : raw;
+        }
+      }
+      // bills receipts
+      if (tripBills.bills) {
+        for (let i = 0; i < tripBills.bills.length; i++) {
+          const raw = tripBills.bills[i]?.receiptPhoto;
+          if (raw) {
+            const key = toObjectKey(raw);
+            urls[`bill_${i}_receipt`] = key ? (await getPresignedImageUrl(key, userInfo.token)) || raw : raw;
+          }
+        }
+      }
+      setResolvedUrls(urls);
+      setUrlsLoading(false);
+    };
+    resolve();
+  }, [tripBills, userInfo?.token]);
   const defaultCompanyInfo = {  
     name: supplierInfo?.name || 'N/A', 
     address: supplierInfo?.address || 'N/A',
@@ -256,7 +306,88 @@ const InvoiceScreen = ({ rideId,distance,duration,driverDetails,vehicleDetails,t
             </View>
           </View>
 
-     
+          {/* Pre-Trip Vehicle Photos */}
+          {tripBills?.preTripVehiclePhotos && (
+            <View style={styles.photosSection}>
+              <Text style={styles.sectionTitle}>Pre-Trip Vehicle Photos</Text>
+              {urlsLoading ? <ActivityIndicator color={Colors.periwinkle} style={{ marginVertical: 12 }} /> : (
+                <View style={styles.photosGrid}>
+                  {['front', 'rear', 'leftSide', 'rightSide'].map((side) => {
+                    const uri = resolvedUrls[`pre_${side}`];
+                    if (!uri) return null;
+                    return (
+                      <TouchableOpacity key={side} style={styles.photoCell} onPress={() => setLightboxUri(uri)}>
+                        <Image source={{ uri }} style={styles.photoThumb} resizeMode="cover" />
+                        <Text style={styles.photoLabel}>{side.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Post-Trip Vehicle Photos */}
+          {tripBills?.postTripVehiclePhotos && (
+            <View style={styles.photosSection}>
+              <Text style={styles.sectionTitle}>Post-Trip Vehicle Photos</Text>
+              {urlsLoading ? <ActivityIndicator color={Colors.periwinkle} style={{ marginVertical: 12 }} /> : (
+                <View style={styles.photosGrid}>
+                  {['front', 'rear', 'leftSide', 'rightSide'].map((side) => {
+                    const uri = resolvedUrls[`post_${side}`];
+                    if (!uri) return null;
+                    return (
+                      <TouchableOpacity key={side} style={styles.photoCell} onPress={() => setLightboxUri(uri)}>
+                        <Image source={{ uri }} style={styles.photoThumb} resizeMode="cover" />
+                        <Text style={styles.photoLabel}>{side.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase())}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Bills & Expenses */}
+          {tripBills?.bills && tripBills.bills.length > 0 && (
+            <View style={styles.billsSection}>
+              <Text style={styles.sectionTitle}>Bills & Expenses</Text>
+              {tripBills.bills.map((bill, idx) => (
+                <View key={bill.billId || idx} style={styles.billRow}>
+                  <View style={styles.billInfo}>
+                    <Text style={styles.billDesc}>{bill.description || 'Expense'}</Text>
+                    <View style={styles.billMeta}>
+                      <Text style={styles.billAmount}>₹{parseFloat(bill.amount || 0).toFixed(2)}</Text>
+                      <View style={[styles.billApprovalBadge, bill.approval === 'approved' ? styles.approvedBadge : bill.approval === 'rejected' ? styles.rejectedBadge : styles.pendingBadge]}>
+                        <Text style={styles.billApprovalText}>{bill.approval || 'pending'}</Text>
+                      </View>
+                    </View>
+                  </View>
+                  {resolvedUrls[`bill_${idx}_receipt`] ? (
+                    <TouchableOpacity onPress={() => setLightboxUri(resolvedUrls[`bill_${idx}_receipt`])}>
+                      <Image source={{ uri: resolvedUrls[`bill_${idx}_receipt`] }} style={styles.receiptThumb} resizeMode="cover" />
+                    </TouchableOpacity>
+                  ) : bill.receiptPhoto && urlsLoading ? (
+                    <ActivityIndicator color={Colors.periwinkle} />
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Lightbox */}
+          <Modal visible={!!lightboxUri} transparent animationType="fade" onRequestClose={() => setLightboxUri(null)} statusBarTranslucent>
+            <View style={styles.lightboxOverlay}>
+              <TouchableOpacity style={StyleSheet.absoluteFill} activeOpacity={1} onPress={() => setLightboxUri(null)} />
+              <View style={styles.lightboxHeader}>
+                <TouchableOpacity style={styles.lightboxCloseBtn} onPress={() => setLightboxUri(null)}>
+                  <MaterialCommunityIcons name="close" size={24} color="#fff" />
+                </TouchableOpacity>
+              </View>
+              <Image source={{ uri: lightboxUri }} style={styles.lightboxImage} resizeMode="contain" />
+            </View>
+          </Modal>
+
         </ScrollView>
       </View>
   );
@@ -570,7 +701,131 @@ const styles = StyleSheet.create({
     color: Colors.grey_xxdark,
     textAlign: 'right',
     flex: 1,
-  }
+  },
+  /* Photos */
+  photosSection: {
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: Colors.black,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  photosGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  photoCell: {
+    width: '47%',
+    alignItems: 'center',
+    gap: 4,
+  },
+  photoThumb: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    backgroundColor: '#E0E0E0',
+  },
+  photoLabel: {
+    fontFamily: Fonts.medium,
+    fontSize: 12,
+    color: Colors.grey_xxdark,
+    textAlign: 'center',
+  },
+  /* Bills */
+  billsSection: {
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: Colors.black,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  billRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.grey_light,
+    gap: 10,
+  },
+  billInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  billDesc: {
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: Colors.black,
+  },
+  billMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  billAmount: {
+    fontFamily: Fonts.semi_bold,
+    fontSize: 15,
+    color: Colors.periwinkle,
+  },
+  billApprovalBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  approvedBadge: { backgroundColor: '#E8F5E9' },
+  rejectedBadge: { backgroundColor: '#FFEBEE' },
+  pendingBadge: { backgroundColor: '#FFF8E1' },
+  billApprovalText: {
+    fontFamily: Fonts.medium,
+    fontSize: 11,
+    color: Colors.black,
+    textTransform: 'capitalize',
+  },
+  receiptThumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    backgroundColor: '#E0E0E0',
+  },
+  /* Lightbox */
+  lightboxOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lightboxHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    paddingTop: 44,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    zIndex: 10,
+  },
+  lightboxCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lightboxImage: {
+    width: '95%',
+    height: '80%',
+  },
 });
 
 InvoiceScreen.propTypes = {

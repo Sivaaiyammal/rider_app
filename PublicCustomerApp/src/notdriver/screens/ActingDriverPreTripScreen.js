@@ -296,7 +296,7 @@ const ActingDriverPreTripScreen = () => {
 
       {/* footer */}
       <View style={styles.footer}>
-        {uploaded ? (
+        {/* {uploaded ? (
           <TouchableOpacity
             style={styles.confirmBtn}
             onPress={onConfirm}
@@ -315,7 +315,17 @@ const ActingDriverPreTripScreen = () => {
               : <MaterialCommunityIcons name="cloud-upload-outline" size={18} color={Colors.white} />}
             <Text style={styles.confirmTxt}>{uploading ? 'Uploading...' : 'Upload Photos'}</Text>
           </TouchableOpacity>
-        )}
+        )} */}
+         <TouchableOpacity
+            style={[styles.confirmBtn, (!allDone || uploading) && styles.confirmBtnDisabled]}
+            onPress={onUpload}
+            disabled={!allDone || uploading}
+            activeOpacity={0.8}>
+            {uploading
+              ? <ActivityIndicator size="small" color={Colors.white} />
+              : <MaterialCommunityIcons name="cloud-upload-outline" size={18} color={Colors.white} />}
+            <Text style={styles.confirmTxt}>{uploading ? 'Uploading...' : 'Upload Photos'}</Text>
+          </TouchableOpacity>
       </View>
     </View>
   );

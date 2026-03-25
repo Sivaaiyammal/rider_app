@@ -26,11 +26,13 @@ import { RequestBackgroundLocationPermission } from '../../../controllers/Permis
 import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
 import useUserInfoStore from '../../../../common/store/useUserInfoStore';
 import { getPresignedImageUrl } from '../../../../common/utils/getPresignedImageUrl';
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
 
 const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {driverName,vehicleNumber,model,brand,color,driverPhoto,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
-  const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare} = useCurrentRideInfoStore();
+  const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare,tripId} = useCurrentRideInfoStore();
   const {waitingForDriverApproval} = useWayPointReorderStore();
+  const { setStackScreen } = useStackScreenStore();
   const currentStop = useMemo(() => stops?.find(item => item.isReached === false) || null, [stops]);
   const {t} = useTranslation();
   const { userdetails } = useUserInfoStore();
@@ -232,6 +234,15 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
             <Icon name="keyboard-arrow-right" size={25} color="#000" />
           </Animated.View>
           </View>
+        </TouchableOpacity>
+
+        {/* Bills & Photos row */}
+        <TouchableOpacity
+          style={styles.tripDetailsRow}
+          onPress={() => setStackScreen('BillsAndPhotosScreen', { tripId })}
+          activeOpacity={0.7}>
+          <AdaptiveText style={styles.tripDetailsLabel}>Bills & Photos</AdaptiveText>
+          <Icon name="keyboard-arrow-right" size={25} color="#000" />
         </TouchableOpacity>
 
        

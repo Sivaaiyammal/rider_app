@@ -1,6 +1,7 @@
 const Driver = require("../../Models/Driver");
 const Trip = require("../../Models/Trip");
 const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
 const { e2eS3File } = require("../../Models/e2eS3File");
 const RideStatus = require('../../Core/PublicRides/RideStatus');
 const Passanger = require("../../Models/Passanger");
@@ -8,7 +9,7 @@ const { getUserSocketIds } = require("../../Services/WebsocketUtilities");
 const OTP = require("../../Controllers/OTP");
 const PushNotifiationService = require("../../Services/PushNotification/PushNotifiationService");
 const NOTPushNotifiationService = require("../../Services/PushNotification/NOTPushNotifiationService");
-const { sendTripCancelledByPassangerMessage,sendTripCancelledByPassangerMessageafterPickup,sendTripCancelledByDriverMessageafterPickup, sendTripCancelledByDriverMessage, sendPickupLocationChangeAlert, AcceptedLocationChangeAlert, RejectedLocationChangeAlert } = require("../../Services/PushNotification/Messages");
+const { sendTripCancelledByPassangerMessage,sendTripCancelledByPassangerMessageafterPickup,sendTripCancelledByDriverMessageafterPickup, sendTripCancelledByDriverMessage, sendPickupLocationChangeAlert, AcceptedLocationChangeAlert, RejectedLocationChangeAlert, sendNewBillRequestMessage } = require("../../Services/PushNotification/Messages");
 const { sendTripDriverAssignedMessage, sendAlertPassangerPickupMessagewithOTP, sendTripDriverAssignedMessageWithOTP } = require("../../Services/PushNotification/publicRideCustomerNotification");
 const GeneratePresignedUrl = require("../../Controllers/GeneratePresignedUrl");
 const FareConfigs = require("../../Models/FareConfigs");    
@@ -71,7 +72,14 @@ async function sendPassangerSocketEvents(type, passangerId, socketService, drive
             tripStatus: "PICKEDUP",
         }
         socketService.customerRideAssignHandler.emitPassangerTripStatus(passangerSocketIds, socketData)
-
+    }
+    if(type === 'newBillRequest'){
+        const socketData = {
+            _id: trip._id,
+            bills: trip.bills,
+            tripStatus: trip.status,
+        }
+        socketService.customerRideAssignHandler.emitNewBillRequest(passangerSocketIds, socketData)
     }
 
 }
@@ -1042,8 +1050,8 @@ module.exports = function (CLASS) {
 
                 if (!tripId) return res.status(400).json({ success: false, message: 'tripId is required' });
                 if (!/^[a-f\d]{24}$/i.test(tripId)) return res.status(400).json({ success: false, message: 'tripId is not a valid ObjectId' });
-                if (!phase || !['pre', 'post'].includes(phase)) {
-                    return res.status(400).json({ success: false, message: "phase must be 'pre' or 'post'" });
+                if (!phase || !['pre', 'post', 'bills'].includes(phase)) {
+                    return res.status(400).json({ success: false, message: "phase must be 'pre', 'post', or 'bills'" });
                 }
 
                 const trip = await Trip.getTripById(tripId);
@@ -1084,8 +1092,9 @@ module.exports = function (CLASS) {
                     }
 
                     setPayload['bills.preTripVehiclePhotos'] = photos;
+                    await Trip.updateTripMediaData(tripId, setPayload);
 
-                } else {
+                } else if (phase === 'post') {
                     // ── post-trip photos ───────────────────────────────────
                     const front     = await uploadFile('postFront',     `${tripId}_postFront`);
                     const rear      = await uploadFile('postRear',      `${tripId}_postRear`);
@@ -1127,9 +1136,123 @@ module.exports = function (CLASS) {
 
                         setPayload['bills.bills'] = billsWithPhotos;
                     }
+
+                    await Trip.updateTripMediaData(tripId, setPayload);
                 }
 
-                await Trip.updateTripMediaData(tripId, setPayload);
+                // ── bills-only phase ──────────────────────────────────
+                if (phase === 'bills') {
+                    if (!billsJson) {
+                        return res.status(400).json({ success: false, message: 'bills JSON is required for bills phase' });
+                    }
+                    let parsedBills;
+                    try { parsedBills = JSON.parse(billsJson); } catch (_) {
+                        return res.status(400).json({ success: false, message: 'bills must be valid JSON' });
+                    }
+
+                    // Build bill objects with unique billId, upload receipts
+                    const billsWithPhotos = await Promise.all(
+                        parsedBills.map(async (bill, idx) => {
+                            const receiptPhoto = await uploadFile(
+                                `bill_receipt_${idx}`,
+                                `${tripId}_bill_receipt_${idx}_${Date.now()}`
+                            );
+                            return {
+                                billId:       uuidv4(),
+                                description:  bill.description  || '',
+                                amount:       parseFloat(bill.amount) || 0,
+                                receiptPhoto: receiptPhoto || '',
+                                approval:     'pending',
+                            };
+                        })
+                    );
+
+                    // Push each bill individually (preserves existing bills)
+                    await Promise.all(billsWithPhotos.map(b => Trip.pushBillToTrip(tripId, b)));
+
+                    // Notify passenger
+                    const billCount = billsWithPhotos.length;
+                    const billTotal = billsWithPhotos
+                        .reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0)
+                        .toFixed(2);
+
+                    const passangerId = trip.passangerId?.toString();
+                    const passanger = await Passanger.getPassangerWithId(passangerId);
+                    trip.bills = { ...existingBills, bills: [...(existingBills.bills || []), ...billsWithPhotos] };
+
+                    sendPassangerSocketEvents(
+                        'newBillRequest',
+                        passangerId,
+                        req.socketService,
+                        null,
+                        trip,
+                        null
+                    ).catch(err => console.error('Error sending newBillRequest socket:', err));
+
+                    if (passanger?.fcmToken?.token) {
+                        const msg = sendNewBillRequestMessage(billCount, billTotal);
+                        if (req.useNotPushNotification) {
+                            NOTPushNotifiationService.sendPushNotification(
+                                passanger.fcmToken.token, msg, null, 'high',
+                                { tripId: String(trip._id), trip_status: 'BILL_REQUEST' }
+                            );
+                        } else {
+                            PushNotifiationService.sendPushNotification(
+                                passanger.fcmToken.token, msg, null, 'high',
+                                { tripId: String(trip._id), trip_status: 'BILL_REQUEST' }
+                            );
+                        }
+                    }
+
+                    // Return billId(s) so client can store them for deletion
+                    const returnedBills = billsWithPhotos.map(b => ({ billId: b.billId, description: b.description, amount: b.amount }));
+                    return res.json({ success: true, message: 'Bills uploaded successfully', bills: returnedBills });
+                }
+
+                // Notify passenger when driver uploads bills (post phase only)
+                if (phase === 'post' && setPayload['bills.bills']?.length > 0) {
+                    const uploadedBills = setPayload['bills.bills'];
+                    const billCount = uploadedBills.length;
+                    const billTotal = uploadedBills
+                        .reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0)
+                        .toFixed(2);
+
+                    const passangerId = trip.passangerId?.toString();
+                    const passanger = await Passanger.getPassangerWithId(passangerId);
+
+                    // Attach bills to trip object for socket payload
+                    trip.bills = { ...existingBills, bills: uploadedBills };
+
+                    sendPassangerSocketEvents(
+                        'newBillRequest',
+                        passangerId,
+                        req.socketService,
+                        null,
+                        trip,
+                        null
+                    ).catch(err => console.error('Error sending newBillRequest socket:', err));
+
+                    if (passanger?.fcmToken?.token) {
+                        const msg = sendNewBillRequestMessage(billCount, billTotal);
+                        if (req.useNotPushNotification) {
+                            NOTPushNotifiationService.sendPushNotification(
+                                passanger.fcmToken.token,
+                                msg,
+                                null,
+                                'high',
+                                { tripId: String(trip._id), trip_status: 'BILL_REQUEST' }
+                            );
+                        } else {
+                            PushNotifiationService.sendPushNotification(
+                                passanger.fcmToken.token,
+                                msg,
+                                null,
+                                'high',
+                                { tripId: String(trip._id), trip_status: 'BILL_REQUEST' }
+                            );
+                        }
+                    }
+                }
 
                 return res.json({ success: true, message: `Trip ${phase}-trip media uploaded successfully` });
 
@@ -1137,5 +1260,43 @@ module.exports = function (CLASS) {
                 return this.handleError(err, res);
             }
         });
+    }
+
+    CLASS.prototype.deleteTripBill = async function (req, res) {
+        try {
+            const { tripId: rawTripId, billId } = req.body || {};
+            const tripId = typeof rawTripId === 'string' ? rawTripId.trim() : rawTripId;
+
+            if (!tripId) return res.status(400).json({ success: false, message: 'tripId is required' });
+            if (!/^[a-f\d]{24}$/i.test(tripId)) return res.status(400).json({ success: false, message: 'tripId is not a valid ObjectId' });
+            if (!billId) return res.status(400).json({ success: false, message: 'billId is required' });
+
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
+
+            // Find the bill to get its receipt photo URL before deleting
+            const bill = (trip.bills?.bills || []).find(b => b.billId === billId);
+
+            // Delete receipt from S3 if it exists
+            if (bill?.receiptPhoto) {
+                try {
+                    // Extract object key from URL: strip "https://bucket.host/" prefix
+                    const receiptUrl = bill.receiptPhoto;
+                    const keyMatch = receiptUrl.match(/^https?:\/\/[^/]+\/(.+)$/);
+                    if (keyMatch?.[1]) {
+                        await e2eS3File('deleteByKey', null, null, keyMatch[1]);
+                    }
+                } catch (s3Err) {
+                    console.error('Failed to delete receipt from S3:', s3Err);
+                    // Non-fatal — continue with DB deletion
+                }
+            }
+
+            await Trip.removeBillFromTrip(tripId, billId);
+
+            return res.json({ success: true, message: 'Bill deleted successfully' });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
     }
 }

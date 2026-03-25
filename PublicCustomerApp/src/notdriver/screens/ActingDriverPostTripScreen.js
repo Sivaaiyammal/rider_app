@@ -479,7 +479,7 @@ const ActingDriverPostTripScreen = () => {
 
       {/* footer */}
       <View style={styles.footer}>
-        {uploaded ? (
+        {/* {uploaded ? (
           <TouchableOpacity
             style={styles.doneBtn}
             onPress={onConfirm}
@@ -488,7 +488,9 @@ const ActingDriverPostTripScreen = () => {
             <Text style={styles.doneTxt}>Confirm & End Trip</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity
+       
+        )} */}
+           <TouchableOpacity
             style={[styles.doneBtn, uploading && { backgroundColor: '#81C784', elevation: 0 }]}
             onPress={onUpload}
             disabled={uploading}
@@ -498,7 +500,6 @@ const ActingDriverPostTripScreen = () => {
               : <MaterialCommunityIcons name="cloud-upload-outline" size={18} color={Colors.white} />}
             <Text style={styles.doneTxt}>{uploading ? 'Uploading...' : 'Upload'}</Text>
           </TouchableOpacity>
-        )}
       </View>
     </View>
   );
