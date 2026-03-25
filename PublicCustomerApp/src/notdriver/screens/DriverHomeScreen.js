@@ -81,6 +81,8 @@ import UPIVerification from './DriverDocumentCenter/UPIVerification';
 import DriverProofDoc from './DriverDocumentCenter/DriverProofDoc';
 import LanguageSelectionScreen from './LanguageSelectionScreen';
 import EditDocCenter from './EditDocCenter';
+import ActingDriverPreTripScreen from './ActingDriverPreTripScreen';
+import ActingDriverPostTripScreen from './ActingDriverPostTripScreen';
 import DrivingExperienceScreen from '../../actingDriver/screens/DrivingExperienceScreen';
 import VehicleHandlingScreen from '../../actingDriver/screens/VehicleHandlingScreen';
 import tripAlert from '../../common/controllers/TripAlert';
@@ -728,6 +730,10 @@ const PublicRidesDriverHomeScreen = () => {
               return <DriverProofDoc/>;  
       case 'EditDocCenter':
               return <EditDocCenter/>;  
+      case 'ActingDriverPreTripScreen':
+              return <ActingDriverPreTripScreen />;
+      case 'ActingDriverPostTripScreen':
+              return <ActingDriverPostTripScreen />;
       default:
         return <Text>Home</Text>;
     }

@@ -1,12 +1,16 @@
 import {
+  ActivityIndicator,
+  Alert,
   ImageBackground,
   Text,
   TextInput,
   TouchableOpacity,
   View,
   ScrollView,
+  StyleSheet,
 } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
+import { approveBill } from '../API/EndPoints/EndPoints';
 import {vehicleDetailsStyles} from '../styles/VehicleDetails';
 import useLocationStore from '../store/useLocationStore';
 import DistanceBlue from '../assets/image/svgIcons/distanceBlue.svg';
@@ -36,6 +40,30 @@ const RideSummary = () => {
   const {resetMapStyle} = useMapStyleStore();
 
   const isCompleted = false;
+
+  // Per-bill loading state for approve/reject actions
+  const [billLoadingIdx, setBillLoadingIdx] = useState(null);
+  const [billApprovals, setBillApprovals] = useState({});
+
+  const driverBills = bookingDetails?.bills?.bills || [];
+
+  const handleBillApproval = async (idx, approval) => {
+    const tripId = bookingDetails?._id;
+    if (!tripId) return;
+    setBillLoadingIdx(idx);
+    try {
+      const res = await approveBill(String(tripId), idx, approval);
+      if (res?.success) {
+        setBillApprovals(prev => ({ ...prev, [idx]: approval }));
+      } else {
+        Alert.alert('Error', res?.message || 'Could not update bill approval.');
+      }
+    } catch {
+      Alert.alert('Error', 'Something went wrong.');
+    } finally {
+      setBillLoadingIdx(null);
+    }
+  };
 
   const handleGoToHome = async () => {
     // Reset all ride-related data
@@ -188,6 +216,62 @@ const RideSummary = () => {
           </Text>
           <Support />
         </TouchableOpacity>
+
+        {/* ── Driver submitted bills ── */}
+        {driverBills.length > 0 && (
+          <View style={billStyles.section}>
+            <Text style={billStyles.sectionTitle}>Driver Bills / Expenses</Text>
+            {driverBills.map((bill, idx) => {
+              const effective = billApprovals[idx] || bill.approval || 'pending';
+              const isLoading = billLoadingIdx === idx;
+              return (
+                <View key={idx} style={billStyles.card}>
+                  <View style={billStyles.cardTop}>
+                    <Text style={billStyles.desc}>{bill.description || 'Expense'}</Text>
+                    <Text style={billStyles.amount}>₹{parseFloat(bill.amount || 0).toFixed(2)}</Text>
+                  </View>
+                  {effective !== 'pending' ? (
+                    <View style={[billStyles.badge,
+                      effective === 'approved' ? billStyles.badgeApproved : billStyles.badgeRejected]}>
+                      <Ionicons
+                        name={effective === 'approved' ? 'checkmark-circle' : 'close-circle'}
+                        size={13}
+                        color={effective === 'approved' ? '#43A047' : '#E53935'}
+                      />
+                      <Text style={[billStyles.badgeTxt,
+                        effective === 'approved' ? billStyles.badgeTxtApproved : billStyles.badgeTxtRejected]}>
+                        {effective === 'approved' ? 'You Approved' : 'You Rejected'}
+                      </Text>
+                    </View>
+                  ) : (
+                    <View style={billStyles.actions}>
+                      {isLoading ? (
+                        <ActivityIndicator size="small" color={colors.primary || '#5C6BC0'} />
+                      ) : (
+                        <>
+                          <TouchableOpacity
+                            style={[billStyles.actionBtn, billStyles.approveBtn]}
+                            onPress={() => handleBillApproval(idx, 'approved')}
+                            activeOpacity={0.8}>
+                            <Ionicons name="checkmark" size={14} color="#fff" />
+                            <Text style={billStyles.actionTxt}>Approve</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={[billStyles.actionBtn, billStyles.rejectBtn]}
+                            onPress={() => handleBillApproval(idx, 'rejected')}
+                            activeOpacity={0.8}>
+                            <Ionicons name="close" size={14} color="#fff" />
+                            <Text style={billStyles.actionTxt}>Reject</Text>
+                          </TouchableOpacity>
+                        </>
+                      )}
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        )}
       </ScrollView>
       
       {isCompleted ? (
@@ -208,3 +292,32 @@ const RideSummary = () => {
 };
 
 export default RideSummary;
+
+const billStyles = StyleSheet.create({
+  section: { marginHorizontal: 16, marginTop: 16, marginBottom: 8 },
+  sectionTitle: { fontSize: 15, fontFamily: Fonts.semi_bold || Fonts.medium, color: '#212121', marginBottom: 10 },
+  card: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#FAFAFA',
+    padding: 12,
+    marginBottom: 10,
+    gap: 8,
+  },
+  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  desc: { fontSize: 13, fontFamily: Fonts.medium, color: '#212121', flex: 1 },
+  amount: { fontSize: 14, fontFamily: Fonts.semi_bold || Fonts.medium, color: '#212121' },
+  actions: { flexDirection: 'row', gap: 10 },
+  actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: 8, borderRadius: 8 },
+  approveBtn: { backgroundColor: '#43A047' },
+  rejectBtn:  { backgroundColor: '#E53935' },
+  actionTxt: { fontSize: 13, fontFamily: Fonts.medium, color: '#fff' },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  badgeApproved: { backgroundColor: '#E8F5E9' },
+  badgeRejected: { backgroundColor: '#FFEBEE' },
+  badgeTxt: { fontSize: 12, fontFamily: Fonts.medium },
+  badgeTxtApproved: { color: '#43A047' },
+  badgeTxtRejected: { color: '#E53935' },
+});
+

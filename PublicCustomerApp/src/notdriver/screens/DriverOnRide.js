@@ -1,4 +1,4 @@
-import {ActivityIndicator, AppState,  Linking, KeyboardAvoidingView, NativeModules, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {ActivityIndicator, AppState, Linking, KeyboardAvoidingView, Modal, NativeModules, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import 'moment-timezone';
@@ -39,7 +39,9 @@ import { useTranslation } from 'react-i18next';
 import { firebaselog_onRide } from '../../common/utils/FirebaseAnalytics';
 import ArrivedPickUpLocation from '../components/ArrivedPickUpLocation';
 import ModalFooter from '../components/ModalFooter';
-
+import useActingDriverMediaStore from '../store/useActingDriverMediaStore';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import ActingDriverMediaButtons from '../components/ActingDriverMediaButtons';
 
 const {NeNativeModule} = NativeModules;
 
@@ -108,6 +110,20 @@ const DriverOnRide = () => {
 
   const tripsStatus = activeTripData && activeTripData[0]?.status ? activeTripData[0]?.status : "";
 
+  const isActingDriverTrip = true;
+  const { preTripDone, pendingNavOpen, setPendingNavOpen } = useActingDriverMediaStore();
+  // Fallback: if store was cleared but photos are already on server, treat pre-trip as done
+  const preTripUploadedOnServer = !!(activeTripData?.[0]?.bills?.preTripVehiclePhotos?.front);
+  const [showPreTripWarning, setShowPreTripWarning] = useState(false);
+
+  // Auto-open nav choice modal after driver returns from pre-trip photo screen
+  useEffect(() => {
+    if (pendingNavOpen && preTripDone) {
+      setPendingNavOpen(false);
+      setOpenNavChoiceModal(true);
+    }
+  }, [preTripDone, pendingNavOpen]);
+
   const getNonreachedStops = useTripsStore.getState().getNonreachedStops;
   const nonreachedStops = getNonreachedStops();
 
@@ -135,9 +151,14 @@ const DriverOnRide = () => {
   }, []);
 
   const onStartNavigationPress = async () => {
-   
-    // await DriverAnalytics.triggerDriverTripStatus('trip_start');
-    setOpenNavChoiceModal(true)
+    // If acting driver trip and pre-trip photos not yet done, go to pre-trip screen first.
+    // Set pendingNavOpen so the nav modal auto-opens when the driver returns.
+    if (isActingDriverTrip && !preTripDone && !preTripUploadedOnServer) {
+      setPendingNavOpen(true);
+      setStackScreen('ActingDriverPreTripScreen');
+      return;
+    }
+    setOpenNavChoiceModal(true);
   };
 
   const onNavigationClick = async () => {
@@ -266,11 +287,22 @@ const DriverOnRide = () => {
       showNotification('Fetching Current Location', 'Try Again', 'info');
       return;
     }
+    // Acting driver: go to post-trip screen to collect photos + bills,
+    // which will then trigger setFetchLocationDate(true) / setLoading(true) itself
+    if (isActingDriverTrip) {
+      setStackScreen('ActingDriverPostTripScreen');
+      return;
+    }
     setFetchLocationDate(true)
     setLoading(true)
   }
 
   const onReachedPickup = () => {
+    // If acting driver and pre-trip photos not yet uploaded, warn before opening OTP
+    if (isActingDriverTrip && !preTripDone && !preTripUploadedOnServer) {
+      setShowPreTripWarning(true);
+      return;
+    }
     setModalVisible(true);
   }
 
@@ -999,14 +1031,19 @@ const DriverOnRide = () => {
                 </TouchableOpacity>
               </View>
             ):null}
-          
+          {isActingDriverTrip && <ActingDriverMediaButtons />}
           <TripDetails activeTripData={activeTripData} setModalVisible={setCancelRideModalVisible} />
+            {/* Acting driver: quick-access media upload button */}
+          
           <AddressComponent
               percentage={0}
               waypoints={activeTripData[0]?.stops}
               deviceLocation={null}
               isPublicRides={true}
             />
+
+        
+
             {isReachedDropoff? (
              <></>
             ):(
@@ -1017,6 +1054,36 @@ const DriverOnRide = () => {
       )}
       {cancelRideModalVisible && <CancelRideModal modalVisible={cancelRideModalVisible} setModalVisible={setCancelRideModalVisible} callCancelRide={handleEndTrip} loading={loading} tripData={activeTripData?.[0]}/>}
         {modalVisible && renderPickUpModal()}
+        <Modal transparent animationType="fade" visible={showPreTripWarning} onRequestClose={() => setShowPreTripWarning(false)}>
+          <View style={styles.preTripOverlay}>
+            <View style={styles.preTripWarningBox}>
+              <MaterialCommunityIcons name="camera-alert" size={48} color="#E65100" style={{ alignSelf: 'center', marginBottom: 10 }} />
+              <Text style={styles.preTripWarningTitle}>Vehicle Photos Required</Text>
+              <Text style={styles.preTripWarningMsg}>
+                Please upload the 4 vehicle condition photos before starting the ride. This helps record the vehicle's condition at trip start.
+              </Text>
+              <TouchableOpacity
+                style={styles.preTripUploadBtn}
+                activeOpacity={0.8}
+                onPress={() => {
+                  setShowPreTripWarning(false);
+                  setStackScreen('ActingDriverPreTripScreen');
+                }}>
+                <MaterialCommunityIcons name="camera-plus-outline" size={18} color={Colors.white} />
+                <Text style={styles.preTripUploadBtnTxt}>Upload Photos Now</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.preTripSkipBtn}
+                activeOpacity={0.8}
+                onPress={() => {
+                  setShowPreTripWarning(false);
+                  setModalVisible(true);
+                }}>
+                <Text style={styles.preTripSkipTxt}>Skip & Enter OTP Anyway</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
         {/* {showTimeStartModal && renderWaitTimeModal()} */}
         {openNavChoiceModal && renderOpenNavChoiceModal()}
         {openRouteRetryModal && renderRouteRetryModal()}
@@ -1028,6 +1095,51 @@ const DriverOnRide = () => {
 export default DriverOnRide;
 
 const styles = StyleSheet.create({
+    /* ── Pre-trip warning modal ── */
+    preTripOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.55)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 24,
+    },
+    preTripWarningBox: {
+      backgroundColor: Colors.white,
+      borderRadius: 16,
+      padding: 24,
+      width: '100%',
+      maxWidth: 360,
+      gap: 10,
+    },
+    preTripWarningTitle: {
+      fontSize: 17,
+      fontFamily: Fonts.semi_bold,
+      color: '#BF360C',
+      textAlign: 'center',
+    },
+    preTripWarningMsg: {
+      fontSize: 13,
+      fontFamily: Fonts.regular,
+      color: '#555',
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    preTripUploadBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      backgroundColor: Colors.periwinkle,
+      paddingVertical: 13,
+      borderRadius: 10,
+      marginTop: 6,
+    },
+    preTripUploadBtnTxt: { fontSize: 14, fontFamily: Fonts.semi_bold, color: Colors.white },
+    preTripSkipBtn: {
+      alignItems: 'center',
+      paddingVertical: 10,
+    },
+    preTripSkipTxt: { fontSize: 13, fontFamily: Fonts.medium, color: '#999' },
     /* ── Start Navigation Button ── */
     navBtn:{
       flexDirection:'row',
@@ -1157,18 +1269,20 @@ const styles = StyleSheet.create({
     },
     durationInfoWrap:{
       flexDirection:'row',
-      borderRadius:20
-      // gap:12,
+      backgroundColor:Colors.yellow_xlight,
+      elevation:2,
+      borderRadius:20,
+      gap:5,
     },
     durationChip:{
       flexDirection:'row',
       alignItems:'center',
-      gap:5,
-      backgroundColor:Colors.yellow_xlight,
-      paddingVertical:6,
-      paddingHorizontal:10,
-      elevation:2
-      // borderRadius:20,
+      gap:3,
+      borderColor:Colors.black,
+      paddingVertical:2,
+      paddingHorizontal:6,
+      borderRadius:20,
+      borderLeftWidth:1
 
     },
     durationChipTxt:{
@@ -1338,4 +1452,5 @@ const styles = StyleSheet.create({
       fontSize: 14,
       fontFamily:Fonts.semi_bold
     },
+    /* ── Acting driver media upload row ── */
 })

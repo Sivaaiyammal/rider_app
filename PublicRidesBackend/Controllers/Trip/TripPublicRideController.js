@@ -1,5 +1,7 @@
 const Driver = require("../../Models/Driver");
 const Trip = require("../../Models/Trip");
+const multer = require('multer');
+const { e2eS3File } = require("../../Models/e2eS3File");
 const RideStatus = require('../../Core/PublicRides/RideStatus');
 const Passanger = require("../../Models/Passanger");
 const { getUserSocketIds } = require("../../Services/WebsocketUtilities");
@@ -1004,5 +1006,136 @@ module.exports = function (CLASS) {
         }catch (err) {
             return this.handleError(err, res)
         }
+    }
+
+    /**
+     * POST /publicrides/driver/v2/uploadTripMedia
+     * Uploads before/after vehicle photos and bill receipt images for an
+     * acting-driver trip.  Stores URLs on the trip document under:
+     *
+     *   trip.bills = {
+     *     preTripVehiclePhotos:  { front, rear, leftSide, rightSide },
+     *     postTripVehiclePhotos: { front, rear, leftSide, rightSide },
+     *     bills: [{ description, amount, receiptPhoto }]
+     *   }
+     *
+     * Body (multipart/form-data):
+     *   tripId          – required
+     *   phase           – 'pre' | 'post'
+     *   bills           – JSON string  (post phase only)
+     *   preFront, preRear, preLeftSide, preRightSide   (pre phase)
+     *   postFront, postRear, postLeftSide, postRightSide (post phase)
+     *   bill_receipt_<idx>   – receipt image for bill[idx] (post phase, optional)
+     */
+    CLASS.prototype.uploadTripMedia = async function (req, res) {
+        const storage = multer.memoryStorage();
+        // multer.any() accepts all field names — supports unlimited bill receipts
+        const mediaUpload = multer({ storage }).any();
+
+        mediaUpload(req, res, async (err) => {
+            if (err) {
+                return res.status(400).json({ success: false, message: 'File parse error', error: err.message });
+            }
+            try {
+                const { tripId: rawTripId, phase, bills: billsJson } = req.body || {};
+                const tripId = typeof rawTripId === 'string' ? rawTripId.trim() : rawTripId;
+
+                if (!tripId) return res.status(400).json({ success: false, message: 'tripId is required' });
+                if (!/^[a-f\d]{24}$/i.test(tripId)) return res.status(400).json({ success: false, message: 'tripId is not a valid ObjectId' });
+                if (!phase || !['pre', 'post'].includes(phase)) {
+                    return res.status(400).json({ success: false, message: "phase must be 'pre' or 'post'" });
+                }
+
+                const trip = await Trip.getTripById(tripId);
+                if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
+
+                // multer.any() puts files in req.files as a flat array
+                const filesArray = req.files || [];
+                const fileMap = {};
+                filesArray.forEach(f => { fileMap[f.fieldname] = f; });
+
+                // ── helper: upload one file to S3 ──────────────────────────
+                const uploadFile = async (fieldName, s3Key) => {
+                    const file = fileMap[fieldName];
+                    if (!file) return null;
+                    const result = await e2eS3File('upload', file, s3Key, `trips/${tripId}/media/`);
+                    return result?.completed ? result.url : null;
+                };
+
+                // Read existing bills object (may already have data from the other phase)
+                const existingBills = trip.bills || {};
+                const setPayload = {};
+
+                if (phase === 'pre') {
+                    const front     = await uploadFile('preFront',     `${tripId}_preFront`);
+                    const rear      = await uploadFile('preRear',      `${tripId}_preRear`);
+                    const leftSide  = await uploadFile('preLeftSide',  `${tripId}_preLeftSide`);
+                    const rightSide = await uploadFile('preRightSide', `${tripId}_preRightSide`);
+
+                    const photos = {
+                        front:     front     || existingBills.preTripVehiclePhotos?.front     || '',
+                        rear:      rear      || existingBills.preTripVehiclePhotos?.rear      || '',
+                        leftSide:  leftSide  || existingBills.preTripVehiclePhotos?.leftSide  || '',
+                        rightSide: rightSide || existingBills.preTripVehiclePhotos?.rightSide || '',
+                    };
+
+                    if (!front && !rear && !leftSide && !rightSide) {
+                        return res.status(400).json({ success: false, message: 'No pre-trip photos provided' });
+                    }
+
+                    setPayload['bills.preTripVehiclePhotos'] = photos;
+
+                } else {
+                    // ── post-trip photos ───────────────────────────────────
+                    const front     = await uploadFile('postFront',     `${tripId}_postFront`);
+                    const rear      = await uploadFile('postRear',      `${tripId}_postRear`);
+                    const leftSide  = await uploadFile('postLeftSide',  `${tripId}_postLeftSide`);
+                    const rightSide = await uploadFile('postRightSide', `${tripId}_postRightSide`);
+
+                    if (!front && !rear && !leftSide && !rightSide) {
+                        return res.status(400).json({ success: false, message: 'No post-trip photos provided' });
+                    }
+
+                    setPayload['bills.postTripVehiclePhotos'] = {
+                        front:     front     || existingBills.postTripVehiclePhotos?.front     || '',
+                        rear:      rear      || existingBills.postTripVehiclePhotos?.rear      || '',
+                        leftSide:  leftSide  || existingBills.postTripVehiclePhotos?.leftSide  || '',
+                        rightSide: rightSide || existingBills.postTripVehiclePhotos?.rightSide || '',
+                    };
+
+                    // ── bills array with optional receipt photos ───────────
+                    if (billsJson) {
+                        let parsedBills;
+                        try { parsedBills = JSON.parse(billsJson); } catch (_) {
+                            return res.status(400).json({ success: false, message: 'bills must be valid JSON' });
+                        }
+
+                        const billsWithPhotos = await Promise.all(
+                            parsedBills.map(async (bill, idx) => {
+                                const receiptPhoto = await uploadFile(
+                                    `bill_receipt_${idx}`,
+                                    `${tripId}_bill_receipt_${idx}`
+                                );
+                                return {
+                                    description:  bill.description  || '',
+                                    amount:       parseFloat(bill.amount) || 0,
+                                    receiptPhoto: receiptPhoto || '',
+                                    approval:     'pending',
+                                };
+                            })
+                        );
+
+                        setPayload['bills.bills'] = billsWithPhotos;
+                    }
+                }
+
+                await Trip.updateTripMediaData(tripId, setPayload);
+
+                return res.json({ success: true, message: `Trip ${phase}-trip media uploaded successfully` });
+
+            } catch (err) {
+                return this.handleError(err, res);
+            }
+        });
     }
 }

@@ -42,6 +42,7 @@ class PassangerController extends Controller {
         this.passengerPaymentIssues = this.passengerPaymentIssues.bind(this);
         this.updatePassangerFCMToken = this.updatePassangerFCMToken.bind(this);
         this.getOnboardingConfig = this.getOnboardingConfig.bind(this);
+        this.approveBill = this.approveBill.bind(this);
     }
 
 }

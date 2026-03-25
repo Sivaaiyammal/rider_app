@@ -180,6 +180,24 @@ class Trip {
         return result;
     }
 
+    static updateTripMediaData = async (tripId, setFields) => {
+        const result = await Mongo.updateOneRaw(
+            COLLECTION_NAME,
+            { _id: new ObjectId(tripId) },
+            { $set: setFields }
+        );
+        return result;
+    }
+
+    static updateBillApproval = async (tripId, billIndex, approval) => {
+        const result = await Mongo.updateOneRaw(
+            COLLECTION_NAME,
+            { _id: new ObjectId(tripId) },
+            { $set: { [`bills.bills.${billIndex}.approval`]: approval } }
+        );
+        return result;
+    }
+
     static getTripWithPassangerDetails = async (tripId) => {
         const groupQuery = [
             {$match: { '_id': new ObjectId(tripId)} },

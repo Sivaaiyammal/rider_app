@@ -1696,6 +1696,37 @@ module.exports = function (CLASS) {
         }
     }
 
+    CLASS.prototype.approveBill = async function (req, res) {
+        try {
+            const { tripId, billIndex, approval } = req.body;
+            const passangerId = req.passanger.id;
+
+            if (!tripId || billIndex === undefined || billIndex === null) {
+                return res.status(400).json({ success: false, message: 'tripId and billIndex are required' });
+            }
+            if (!['approved', 'rejected'].includes(approval)) {
+                return res.status(400).json({ success: false, message: "approval must be 'approved' or 'rejected'" });
+            }
+
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
+            if (trip.passangerId?.toString() !== passangerId.toString()) {
+                return res.status(403).json({ success: false, message: 'Not authorised to approve bills for this trip' });
+            }
+
+            const bills = trip.bills?.bills || [];
+            const idx = parseInt(billIndex, 10);
+            if (isNaN(idx) || idx < 0 || idx >= bills.length) {
+                return res.status(400).json({ success: false, message: 'Invalid billIndex' });
+            }
+
+            await Trip.updateBillApproval(tripId, idx, approval);
+            return res.json({ success: true, message: `Bill ${approval} successfully` });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
+
     CLASS.prototype.deletePassangerVehicle = async function (req, res) {
         try {
             const { vehicleId } = req.body;

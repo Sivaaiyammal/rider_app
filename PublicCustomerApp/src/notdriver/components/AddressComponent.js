@@ -1,4 +1,4 @@
-import {Animated, StyleSheet, Text, View} from 'react-native';
+import {Animated, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useUserStore from '../../common/store/useUserStore';
@@ -19,7 +19,14 @@ const AddressComponent = props => {
   const [finalPosition, setFinalPosition] = useState(0);
 
   const transformedData = waypoints;
+  const [modalVisible, setModalVisible] = useState(false);
 
+  // Waypoints are the stops between pickup and drop (indices 1..length-2)
+  const hasWaypoints = transformedData?.length > 2;
+  // Always render only pickup (index 0) and drop (last index); waypoints shown in modal
+  const visibleStops = transformedData
+    ? [transformedData[0], transformedData[transformedData.length - 1]].filter(Boolean)
+    : [];
   const handleBusLayout = (event, index) => {
     if (index === transformedData.length - 1) {
       const {y} = event.nativeEvent.layout;
@@ -59,42 +66,105 @@ const AddressComponent = props => {
 
   return (
     <View style={[styles.mainContainer,{width: screen === 'rideDetails' ? '100%' : '92%',backgroundColor: isPublicRides ? Colors.white : Colors.grey_light},]}>
-     
-      {transformedData?.map((item, index) => {
+
+      {/* ── Pickup & Drop only ── */}
+      {visibleStops.map((item, rawIndex) => {
+        // rawIndex 0 = pickup, 1 = drop (actual indices 0 and last)
+        const actualIndex = rawIndex === 0 ? 0 : transformedData.length - 1;
         let displayName = item.name;
         let displayIcon = item.icon;
 
-        if (index === 0) {
-          displayName =isPublicRides? 'pick_up_location' : 'start_loc';
-          displayIcon = isPublicRides? <StatLocBlue/> : <YellowMarker />;
-        } else if (index === transformedData.length - 1) {
-          displayName = isPublicRides? 'drop_location' : 'end_loc';
-          displayIcon = <Ionicons name={isPublicRides? 'location-outline' : 'flag'} color={'red'} size={18} />;
+        if (actualIndex === 0) {
+          displayName = isPublicRides ? 'pick_up_location' : 'start_loc';
+          displayIcon = isPublicRides ? <StatLocBlue /> : <YellowMarker />;
         } else {
-          displayName = `stop`;
-          displayIcon = <WayPointIndicator waypoints={index}/>;
+          displayName = isPublicRides ? 'drop_location' : 'end_loc';
+          displayIcon = <Ionicons name={isPublicRides ? 'location-outline' : 'flag'} color={'red'} size={18} />;
         }
+
         return (
           <View
             style={styles.addContainer}
-            key={index}
-            onLayout={event => handleBusLayout(event, index)}>
-            <View style={[styles.markerIcons,{backgroundColor:isPublicRides ? Colors.white : Colors.grey_light}]}>{displayIcon}</View>
+            key={actualIndex}
+            onLayout={event => handleBusLayout(event, actualIndex)}>
+            <View style={[styles.markerIcons, {backgroundColor: isPublicRides ? Colors.white : Colors.grey_light}]}>{displayIcon}</View>
             <Text style={styles.nameTxt}>
-              {displayName === 'stop'
-                ? t(displayName) + ' ' + index
-                : t(displayName) || displayName} <Text style={styles.yourStopTxt}>{t(isMyStop(item.name))}</Text>
+              {t(displayName) || displayName}{' '}
+              <Text style={styles.yourStopTxt}>{t(isMyStop(item.name))}</Text>
             </Text>
-            <Text style={styles.addTxt}>{item.address}</Text>
-            {item?.waitingTime > 0 && ( 
+            <Text style={styles.addTxt}>{item.address.length > 30 ? item.address.substring(0, 30) + '...' : item.address}</Text>
+            {item?.waitingTime > 0 && (
               <View style={styles.waitingTimeContainer}>
-              <Entypo name="clock" size={14} color={Colors.periwinkle}/>
-              <Text style={styles.waitingTimeTxt}>{formatDuration(item.waitingTime)}</Text>
+                <Entypo name="clock" size={14} color={Colors.periwinkle} />
+                <Text style={styles.waitingTimeTxt}>{formatDuration(item.waitingTime)}</Text>
               </View>
             )}
           </View>
         );
       })}
+
+      {/* ── View more button ── */}
+      <TouchableOpacity style={styles.viewMoreBtn} onPress={() => setModalVisible(true)} activeOpacity={0.8}>
+        <Ionicons name="map-outline" size={14} color={Colors.periwinkle} />
+        <Text style={styles.viewMoreTxt}>
+          {hasWaypoints ? `View full route · ${transformedData.length - 2} stop${transformedData.length - 2 > 1 ? 's' : ''}` : 'View full address'}
+        </Text>
+        <Ionicons name="chevron-forward" size={14} color={Colors.periwinkle} />
+      </TouchableOpacity>
+
+      {/* ── Full route modal ── */}
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalSheet}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Full Route</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)} activeOpacity={0.8}>
+                <Ionicons name="close" size={22} color={Colors.black} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+              {transformedData?.map((item, index) => {
+                let displayName;
+                let displayIcon;
+
+                if (index === 0) {
+                  displayName = isPublicRides ? 'pick_up_location' : 'start_loc';
+                  displayIcon = isPublicRides ? <StatLocBlue /> : <YellowMarker />;
+                } else if (index === transformedData.length - 1) {
+                  displayName = isPublicRides ? 'drop_location' : 'end_loc';
+                  displayIcon = <Ionicons name={isPublicRides ? 'location-outline' : 'flag'} color={'red'} size={18} />;
+                } else {
+                  displayName = `stop`;
+                  displayIcon = <WayPointIndicator waypoints={index} />;
+                }
+
+                return (
+                  <View style={styles.addContainer} key={index}>
+                    <View style={[styles.markerIcons, { backgroundColor: Colors.white }]}>{displayIcon}</View>
+                    <Text style={styles.nameTxt}>
+                      {displayName === 'stop'
+                        ? t(displayName) + ' ' + index
+                        : t(displayName) || displayName}{' '}
+                      <Text style={styles.yourStopTxt}>{t(isMyStop(item.name))}</Text>
+                    </Text>
+                    <Text style={styles.addTxt}>{item.address}</Text>
+                    {item?.waitingTime > 0 && (
+                      <View style={styles.waitingTimeContainer}>
+                        <Entypo name="clock" size={14} color={Colors.periwinkle} />
+                        <Text style={styles.waitingTimeTxt}>{formatDuration(item.waitingTime)}</Text>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -163,5 +233,47 @@ const styles = StyleSheet.create({
     fontFamily:Fonts.regular,
     fontSize:14,
     color:Colors.periwinkle
-  }
+  },
+  viewMoreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.periwinkle + '55',
+    backgroundColor: Colors.periwinkle + '11',
+    alignSelf: 'flex-start',
+  },
+  viewMoreTxt: {
+    fontFamily: Fonts.medium,
+    fontSize: 12,
+    color: Colors.periwinkle,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  modalSheet: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    maxHeight: '75%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  modalTitle: {
+    fontFamily: Fonts.semi_bold,
+    fontSize: 16,
+    color: Colors.black,
+  },
 });

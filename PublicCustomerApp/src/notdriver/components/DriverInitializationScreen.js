@@ -207,7 +207,14 @@ export default function DriverInitializationScreen() {
             const tripId = tripData[0]._id;
             DataStore.storeData('activeTripId',tripId)
           }
-          setStackScreen('PublicDriverTrackingScreen')
+          // Don't navigate away if driver is currently on an acting-driver photo/bill screen.
+          // Camera/gallery return triggers an appState change that re-fires this effect.
+          const _currentStack = useStackScreenStore.getState().stackScreen;
+          const _topScreen = _currentStack[_currentStack.length - 1];
+          const _actingScreens = ['ActingDriverPreTripScreen', 'ActingDriverPostTripScreen'];
+          if (!_actingScreens.includes(_topScreen) && _topScreen !== 'PublicDriverTrackingScreen') {
+            setStackScreen('PublicDriverTrackingScreen')
+          }
         }  
         if (tripData[0]?.status === "CANCELLED" && tripData[0]?.paymentDetails) { 
          DataStore.storeData('isOngoingTrip', true)
@@ -225,7 +232,12 @@ export default function DriverInitializationScreen() {
          setStartNavigation(false);
          driverWaitingTime.stopWaitingTime();
          setTimeout(() => {
-           setStackScreen('PublicDriverTrackingScreen')
+           const _currentStack = useStackScreenStore.getState().stackScreen;
+           const _topScreen = _currentStack[_currentStack.length - 1];
+           const _actingScreens = ['ActingDriverPreTripScreen', 'ActingDriverPostTripScreen'];
+           if (!_actingScreens.includes(_topScreen) && _topScreen !== 'PublicDriverTrackingScreen') {
+             setStackScreen('PublicDriverTrackingScreen')
+           }
          }, 3000);
         } 
         if (tripData[0]?.status === "CANCELLED" && (!tripData[0]?.paymentDetails || tripData[0]?.paymentDetails === null)) {
