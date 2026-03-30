@@ -1294,6 +1294,14 @@ module.exports = function (CLASS) {
 
             await Trip.removeBillFromTrip(tripId, billId);
 
+            // Emit socket update to passenger with the refreshed bills
+            const updatedTrip = await Trip.getTripById(tripId);
+            if (updatedTrip?.passangerId) {
+                sendPassangerSocketEvents('newBillRequest', String(updatedTrip.passangerId), req.socketService, null, updatedTrip).catch(err => {
+                    console.error('Error emitting bill-delete socket to passenger:', err);
+                });
+            }
+
             return res.json({ success: true, message: 'Bill deleted successfully' });
         } catch (err) {
             return this.handleError(err, res);

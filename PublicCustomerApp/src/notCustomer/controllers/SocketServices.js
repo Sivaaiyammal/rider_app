@@ -16,6 +16,7 @@ import useMapStore from '../features/map/store/useMapStore';
 import { resetTo } from '../../navigation/RootNavigation';
 import { showNotification } from '../components/NotificationManger';
 import i18n from '../../common/i18n';
+import useRideSelectionStore from '../store/useRideSelectionStore';
 const SOCKET_URL = Config.ROOT_API_URL;
 
 
@@ -41,6 +42,7 @@ class WSService {
     this.usePaymentStore = usePaymentStore
     this.useUserInfoStore = useUserInfoStore
     this.useMapStore = useMapStore
+    this.useRideSelectionStore = useRideSelectionStore
     this.DataStore = DataStore
   }
 
@@ -211,6 +213,16 @@ class WSService {
   newBillRequest(data) {
     try {
       console.log('newBillRequest', JSON.stringify(data));
+      // Always refresh bills in bookingDetails so the passenger UI stays in sync
+      if (data?.bills !== undefined) {
+        const currentBookingDetails = this.useRideSelectionStore.getState().bookingDetails;
+        if (currentBookingDetails) {
+          this.useRideSelectionStore.getState().setBookingDetails({
+            ...currentBookingDetails,
+            bills: data.bills,
+          });
+        }
+      }
       const bills = data?.bills?.bills || [];
       if (bills.length === 0) return;
       const total = bills
