@@ -2,7 +2,7 @@
  * DriverBillsExpensesScreen
  * Driver uploads bills/expenses one by one via a modal.
  */
-import React, { use, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -84,8 +84,28 @@ const DeleteConfirmModal = ({ visible, bill, onClose, onConfirm, deleting }) => 
 );
 
 
+/* ─── full-screen photo preview modal ────────────────────── */
+const PhotoPreviewModal = ({ uri, onClose }) => (
+  <Modal visible={!!uri} transparent animationType="fade" onRequestClose={onClose}>
+    <View style={pp.overlay}>
+      <TouchableOpacity style={pp.closeBtn} onPress={onClose} activeOpacity={0.8}>
+        <MaterialCommunityIcons name="close" size={26} color={Colors.white} />
+      </TouchableOpacity>
+      <Image source={{ uri }} style={pp.image} resizeMode="contain" />
+    </View>
+  </Modal>
+);
+
+const pp = StyleSheet.create({
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.92)', justifyContent: 'center', alignItems: 'center' },
+  image: { width: '100%', height: '80%' },
+  closeBtn: { position: 'absolute', top: 44, right: 16, zIndex: 10, padding: 6, backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 20 },
+});
+
 /* ─── read-only bill card ─────────────────────────────────── */
-const BillCard = ({ bill, index, onRemove, onEdit }) => (
+const BillCard = ({ bill, index, onRemove, onEdit }) => {
+  const [previewUri, setPreviewUri] = React.useState(null);
+  return (
   <View style={bc.wrap}>
     <View style={bc.topRow}>
       <View style={bc.indexCircle}>
@@ -117,10 +137,17 @@ const BillCard = ({ bill, index, onRemove, onEdit }) => (
       )}
     </View>
     {bill.receipt && (
-      <Image source={{ uri: bill.receipt.uri }} style={bc.receiptThumb} resizeMode="cover" />
+      <TouchableOpacity onPress={() => setPreviewUri(bill.receipt.uri)} activeOpacity={0.85}>
+        <Image source={{ uri: bill.receipt.uri }} style={bc.receiptThumb} resizeMode="cover" />
+        <View style={bc.receiptOverlay}>
+          <MaterialCommunityIcons name="eye" size={20} color={Colors.black} />
+        </View>
+      </TouchableOpacity>
     )}
+    <PhotoPreviewModal uri={previewUri} onClose={() => setPreviewUri(null)} />
   </View>
-);
+  );
+};
 
 /* ─── edit bill modal ─────────────────────────────────────── */
 const EditBillModal = ({ visible, bill, onClose, onSave, tripId, token }) => {
@@ -282,7 +309,7 @@ const EditBillModal = ({ visible, bill, onClose, onSave, tripId, token }) => {
 };
 
 /* ─── add bill modal ──────────────────────────────────────── */
-const AddBillModal = ({ visible, onClose, onAdd, tripId, token }) => {
+const AddBillModal = ({ visible, onClose, onAdd, tripId, token, t }) => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [receipt, setReceipt] = useState(null);
@@ -348,7 +375,7 @@ const AddBillModal = ({ visible, onClose, onAdd, tripId, token }) => {
             <View style={ms.handle} />
 
             <View style={ms.modalHeader}>
-              <Text style={ms.modalTitle}>Add Bill / Expense</Text>
+              <Text style={ms.modalTitle}>{t('add_bill_expense')}</Text>
               <TouchableOpacity onPress={handleClose} activeOpacity={0.8}>
                 <MaterialCommunityIcons name="close" size={22} color={Colors.grey_dark} />
               </TouchableOpacity>
@@ -356,10 +383,10 @@ const AddBillModal = ({ visible, onClose, onAdd, tripId, token }) => {
 
             {/* Description */}
             <View style={ms.fieldWrap}>
-              <Text style={ms.label}>Description <Text style={ms.required}>*</Text></Text>
+              <Text style={ms.label}>{t('description')} <Text style={ms.required}>*</Text></Text>
               <TextInput
                 style={[ms.input, errors.description && ms.inputError]}
-                placeholder="e.g. Fuel, Toll, Parking"
+                placeholder={t('description_placeholder')}
                 placeholderTextColor={Colors.grey_dark}
                 value={description}
                 onChangeText={v => { setDescription(v); if (errors.description) setErrors(e => ({ ...e, description: null })); }}
@@ -371,13 +398,13 @@ const AddBillModal = ({ visible, onClose, onAdd, tripId, token }) => {
 
             {/* Amount */}
             <View style={ms.fieldWrap}>
-              <Text style={ms.label}>Amount (₹) <Text style={ms.required}>*</Text></Text>
+              <Text style={ms.label}>{t('amount')} (₹) <Text style={ms.required}>*</Text></Text>
               <View style={[ms.amountWrap, errors.amount && ms.inputError]}>
                 <Text style={ms.rupee}>₹</Text>
                 <TextInput
                   ref={amountRef}
                   style={ms.amountInput}
-                  placeholder="0.00"
+                  placeholder={'00.00'}
                   placeholderTextColor={Colors.grey_dark}
                   keyboardType="decimal-pad"
                   value={amount}
@@ -389,13 +416,13 @@ const AddBillModal = ({ visible, onClose, onAdd, tripId, token }) => {
 
             {/* Receipt photo */}
             <View style={ms.fieldWrap}>
-              <Text style={ms.label}>Receipt Photo <Text style={ms.optional}>(optional)</Text></Text>
+              <Text style={ms.label}>{t('receipt_photo')} <Text style={ms.optional}>({t('optional')})</Text></Text>
               {receipt ? (
                 <View style={ms.receiptPreviewRow}>
                   <Image source={{ uri: receipt.uri }} style={ms.receiptPreview} resizeMode="cover" />
                   <TouchableOpacity style={ms.changeBtn} onPress={() => handlePickReceipt('gallery')} activeOpacity={0.8}>
                     <Feather name="refresh-cw" size={12} color={Colors.white} />
-                    <Text style={ms.changeTxt}>Change</Text>
+                    <Text style={ms.changeTxt}>{t('change')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={ms.removeReceiptBtn} onPress={() => setReceipt(null)} activeOpacity={0.8}>
                     <MaterialCommunityIcons name="close" size={16} color="#E53935" />
@@ -410,7 +437,7 @@ const AddBillModal = ({ visible, onClose, onAdd, tripId, token }) => {
                   </TouchableOpacity>
                   <TouchableOpacity style={ms.pickerBtn} onPress={() => handlePickReceipt('gallery')} disabled={receiptBusy} activeOpacity={0.8}>
                     <MaterialCommunityIcons name="image-outline" size={16} color={Colors.periwinkle} />
-                    <Text style={ms.pickerTxt}>Gallery</Text>
+                    <Text style={ms.pickerTxt}>{t('gallery')}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -421,7 +448,7 @@ const AddBillModal = ({ visible, onClose, onAdd, tripId, token }) => {
               {submitting
                 ? <ActivityIndicator size="small" color={Colors.white} />
                 : <></>}
-              <Text style={ms.addBtnTxt}>{submitting ? 'Adding...' : 'Add Bill'}</Text>
+              <Text style={ms.addBtnTxt}>{submitting ? t('adding') : t('add_bill')}</Text>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -606,8 +633,8 @@ const DriverBillsExpensesScreen = () => {
           <Text style={styles.addBillTxt}>{t('add_bill')}</Text>
         </TouchableOpacity>
       </View>
-
-      <AddBillModal
+      {modalVisible && (
+       <AddBillModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onAdd={handleAddBill}
@@ -615,6 +642,8 @@ const DriverBillsExpensesScreen = () => {
         token={userInfo?.token}
         t={t}
       />
+      )}
+      
 
       <DeleteConfirmModal
         visible={!!deleteTarget}
@@ -771,6 +800,11 @@ const bc = StyleSheet.create({
   editBtn: { padding: 2 },
   removeBtn: { padding: 2 },
   receiptThumb: { width: '100%', height: 100, borderRadius: 8, backgroundColor: '#eee' },
+  receiptOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    borderRadius: 8, backgroundColor: 'rgba(0,0,0,0.18)',
+    justifyContent: 'center', alignItems: 'center',
+  },
 });
 
 
