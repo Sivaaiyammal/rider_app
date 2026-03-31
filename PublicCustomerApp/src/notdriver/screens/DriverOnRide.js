@@ -1074,9 +1074,9 @@ const DriverOnRide = () => {
           <View style={styles.preTripOverlay}>
             <View style={styles.preTripWarningBox}>
               {/* <MaterialCommunityIcons name="camera-alert" size={48} color="#E65100" style={{ alignSelf: 'center', marginBottom: 10 }} /> */}
-              <Text style={styles.preTripWarningTitle}>Vehicle Photos Required</Text>
+              <Text style={styles.preTripWarningTitle}>{t('vehicle_photos_required')}</Text>
               <Text style={styles.preTripWarningMsg}>
-                Please upload the 4 vehicle condition photos before starting the ride. This helps record the vehicle's condition at trip start.
+                {t('please_upload_pre_trip_photos_before_entering_otp', { defaultValue: 'Please upload the 4 pre-trip vehicle condition photos before entering the OTP. This helps record the vehicle\'s condition at trip start.' })}
               </Text>
               <TouchableOpacity
                 style={styles.preTripUploadBtn}
@@ -1086,9 +1086,9 @@ const DriverOnRide = () => {
                   setStackScreen('DriverVehiclePhotosScreen');
                 }}>
                 <MaterialCommunityIcons name="camera-plus-outline" size={18} color={Colors.white} />
-                <Text style={styles.preTripUploadBtnTxt}>Upload Photos Now</Text>
+                <Text style={styles.preTripUploadBtnTxt}>{t('upload_photos_now')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.preTripSkipBtn}
                 activeOpacity={0.8}
                 onPress={() => {
@@ -1096,16 +1096,16 @@ const DriverOnRide = () => {
                   setModalVisible(true);
                 }}>
                 <Text style={styles.preTripSkipTxt}>Skip & Enter OTP Anyway</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
         </Modal>
         <Modal transparent animationType="fade" visible={showPostTripWarning} onRequestClose={() => setShowPostTripWarning(false)}>
           <View style={styles.preTripOverlay}>
             <View style={styles.preTripWarningBox}>
-              <Text style={styles.preTripWarningTitle}>Post-Trip Photos Required</Text>
+              <Text style={styles.preTripWarningTitle}>{t('post_trip_photos_required')}</Text>
               <Text style={styles.preTripWarningMsg}>
-                Please upload the 4 post-trip vehicle condition photos before ending the ride. This helps record the vehicle's condition at trip end.
+                {t('please_upload_post_trip_photos_before_ending_ride', { defaultValue: 'Please upload the 4 post-trip vehicle condition photos before ending the ride. This helps record the vehicle\'s condition at trip end.' })}
               </Text>
               <TouchableOpacity
                 style={styles.preTripUploadBtn}
@@ -1115,7 +1115,7 @@ const DriverOnRide = () => {
                   setStackScreen('DriverVehiclePhotosScreen');
                 }}>
                 <MaterialCommunityIcons name="camera-plus-outline" size={18} color={Colors.white} />
-                <Text style={styles.preTripUploadBtnTxt}>Upload Photos Now</Text>
+                <Text style={styles.preTripUploadBtnTxt}>{t('upload_photos_now')}</Text>
               </TouchableOpacity>
               {/* <TouchableOpacity
                 style={styles.preTripSkipBtn}

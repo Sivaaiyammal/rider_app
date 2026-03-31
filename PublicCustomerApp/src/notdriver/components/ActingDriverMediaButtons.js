@@ -6,17 +6,18 @@ import { Colors, Fonts } from '../../common/constants/constants';
 import { useStackScreenStore } from '../../common/store/useStackScreenStore';
 import useActingDriverMediaStore from '../store/useActingDriverMediaStore';
 import useTripsStore from '../store/useTripsStore';
+import { useTranslation } from 'react-i18next';
 
 const MENU_ITEMS = [
   {
     key: 'DriverVehiclePhotosScreen',
-    label: 'Upload Vehicle Photos',
+    label: 'upload_vehicle_photos',
     icon: 'car-outline',
     doneKey: 'photos',
   },
   {
     key: 'DriverBillsExpensesScreen',
-    label: 'Upload Bills and Expenses',
+    label: 'upload_bills_and_expenses',
     icon: 'receipt-outline',
     doneKey: 'bills',
   },
@@ -26,6 +27,7 @@ const ActingDriverMediaButtons = () => {
   const setStackScreen = useStackScreenStore(state => state.setStackScreen);
   const { preTripDone, postTripDone, bills } = useActingDriverMediaStore();
   const { activeTripData } = useTripsStore();
+  const {t} = useTranslation()
 
   const serverBills = activeTripData?.[0]?.bills;
   const photosUploaded = preTripDone || postTripDone || !!(serverBills?.preTripVehiclePhotos?.front) || !!(serverBills?.postTripVehiclePhotos?.front);
@@ -35,7 +37,7 @@ const ActingDriverMediaButtons = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headerText}>Upload Photos and Bills</Text>
+      <Text style={styles.headerText}>{t('upload_photos_and_bills')}</Text>
       <View style={styles.menuList}>
         {MENU_ITEMS.map((item, idx) => {
           const done = isDone[item.doneKey];
@@ -48,7 +50,7 @@ const ActingDriverMediaButtons = () => {
               <View style={[styles.iconWrap, done && styles.iconWrapDone]}>
                 <Ionicons name={item.icon} size={20} color={done ? Colors.white : Colors.periwinkle} />
               </View>
-              <Text style={styles.menuLabel}>{item.label}</Text>
+              <Text style={styles.menuLabel}>{t(item.label)}</Text>
               {/* {done && (
                 <View style={styles.doneBadge}>
                   <MaterialCommunityIcons name="check-circle" size={13} color="#43A047" />

@@ -107,7 +107,7 @@ const AddressComponent = props => {
       <TouchableOpacity style={styles.viewMoreBtn} onPress={() => setModalVisible(true)} activeOpacity={0.8}>
         <Ionicons name="map-outline" size={14} color={Colors.periwinkle} />
         <Text style={styles.viewMoreTxt}>
-          {hasWaypoints ? `View full route · ${transformedData.length - 2} stop${transformedData.length - 2 > 1 ? 's' : ''}` : 'View full address'}
+          {hasWaypoints ? `${t('view_full_address')} · ${transformedData.length - 2} ${t('stop')}${transformedData.length - 2 > 1 ? 's' : ''}` : t('view_full_address')}
         </Text>
         <Ionicons name="chevron-forward" size={14} color={Colors.periwinkle} />
       </TouchableOpacity>
@@ -121,7 +121,9 @@ const AddressComponent = props => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Full Route</Text>
+              <Text style={styles.modalTitle}>{t('full_route')}
+
+              </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)} activeOpacity={0.8}>
                 <Ionicons name="close" size={22} color={Colors.black} />
               </TouchableOpacity>

@@ -518,6 +518,11 @@ const MapScreen = () => {
         return;
       }
 
+      if(item.key == "mygarage"){
+        setStackScreen('MyVehiclesScreen', {});
+        return;
+      }
+
       
       setSelectedVehicle({
         id: item.key,

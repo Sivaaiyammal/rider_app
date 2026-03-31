@@ -2,7 +2,7 @@
  * DriverBillsExpensesScreen
  * Driver uploads bills/expenses one by one via a modal.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { use, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -32,6 +32,7 @@ import APIRequest from '../../common/APIRequest';
 import useTripsStore from '../store/useTripsStore';
 import { getPresignedImageUrl } from '../../common/utils/getPresignedImageUrl';
 import UseBackButton from '../../common/hooks/UseBackButton';
+import { useTranslation } from 'react-i18next';
 
 const uid = () => `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
@@ -120,35 +121,6 @@ const BillCard = ({ bill, index, onRemove, onEdit }) => (
     )}
   </View>
 );
-
-const bc = StyleSheet.create({
-  wrap: {
-    backgroundColor: '#FAFAFA',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E8E8E8',
-    padding: 12,
-    gap: 8,
-  },
-  topRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  indexCircle: {
-    width: 28, height: 28, borderRadius: 14,
-    backgroundColor: Colors.periwinkle + '22',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  indexTxt: { fontSize: 12, fontFamily: Fonts.semi_bold, color: Colors.periwinkle },
-  info: { flex: 1 },
-  desc: { fontSize: 13, fontFamily: Fonts.medium, color: Colors.black },
-  amount: { fontSize: 13, fontFamily: Fonts.semi_bold, color: Colors.periwinkle, marginTop: 2 },
-  badge: {
-    flexDirection: 'row', alignItems: 'center', gap: 3,
-    paddingHorizontal: 7, paddingVertical: 3, borderRadius: 20,
-  },
-  badgeTxt: { fontSize: 10, fontFamily: Fonts.medium },
-  editBtn: { padding: 2 },
-  removeBtn: { padding: 2 },
-  receiptThumb: { width: '100%', height: 100, borderRadius: 8, backgroundColor: '#eee' },
-});
 
 /* ─── edit bill modal ─────────────────────────────────────── */
 const EditBillModal = ({ visible, bill, onClose, onSave, tripId, token }) => {
@@ -465,6 +437,8 @@ const DriverBillsExpensesScreen = () => {
   const { userInfo } = useUserStore();
   const { activeTripData, setActiveTripData } = useTripsStore();
 
+  const {t} = useTranslation();
+
   const [bills, setBillsLocal] = useState(storedBills.length > 0 ? storedBills : []);
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null); // bill to confirm delete
@@ -594,8 +568,8 @@ const DriverBillsExpensesScreen = () => {
           <MaterialCommunityIcons name="arrow-left" size={22} color={Colors.black} />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
-          <Text style={styles.title}>Bills & Expenses</Text>
-          <Text style={styles.subtitle}>Add trip expenses and receipts</Text>
+          <Text style={styles.title}>{t('bills_expenses')}</Text>
+          <Text style={styles.subtitle}>{t('add_trip_expenses_and_receipts')}</Text>
         </View>
         {bills.length > 0 && (
           <Text style={styles.totalText}>₹{totalAmount.toFixed(2)}</Text>
@@ -606,12 +580,12 @@ const DriverBillsExpensesScreen = () => {
         {bills.length === 0 ? (
           <View style={styles.emptyState}>
             {/* <MaterialCommunityIcons name="receipt-text-outline" size={52} color="#C0C0C0" /> */}
-            <Text style={styles.emptyTxt}>No bills added yet</Text>
-            <Text style={styles.emptySubTxt}>Tap "Add Bill" below to record an expense</Text>
+            <Text style={styles.emptyTxt}>{t('no_bills_added_yet')}</Text>
+            <Text style={styles.emptySubTxt}>{t('tap_add_bill_below_to_record_an_expense')}</Text>
           </View>
         ) : (
           <View style={styles.billsList}>
-            <Text style={styles.billsCountTxt}>{bills.length} bill{bills.length > 1 ? 's' : ''} added</Text>
+            <Text style={styles.billsCountTxt}>{bills.length} {t('bill', { count: bills.length })} {t('added')}</Text>
             {bills.map((bill, idx) => (
               <BillCard
                 key={bill.id}
@@ -629,7 +603,7 @@ const DriverBillsExpensesScreen = () => {
       <View style={styles.footer}>
         <TouchableOpacity style={styles.addBillBtn} onPress={() => setModalVisible(true)} activeOpacity={0.8}>
           <MaterialCommunityIcons name="plus-circle-outline" size={18} color={Colors.periwinkle} />
-          <Text style={styles.addBillTxt}>Add Bill</Text>
+          <Text style={styles.addBillTxt}>{t('add_bill')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -639,6 +613,7 @@ const DriverBillsExpensesScreen = () => {
         onAdd={handleAddBill}
         tripId={activeTripData?.[0]?._id}
         token={userInfo?.token}
+        t={t}
       />
 
       <DeleteConfirmModal
@@ -647,6 +622,7 @@ const DriverBillsExpensesScreen = () => {
         onClose={() => setDeleteTarget(null)}
         onConfirm={removeBill}
         deleting={deleting}
+         t={t}
       />
 
       <EditBillModal
@@ -656,6 +632,7 @@ const DriverBillsExpensesScreen = () => {
         onSave={handleEditBill}
         tripId={activeTripData?.[0]?._id}
         token={userInfo?.token}
+         t={t}
       />
     </View>
   );
@@ -765,6 +742,35 @@ const ms = StyleSheet.create({
   },
   addBtnTxt: { fontSize: 14, fontFamily: Fonts.semi_bold, color: Colors.white },
   addBtnDisabled: { backgroundColor: '#BDBDBD' },
+});
+
+const bc = StyleSheet.create({
+  wrap: {
+    backgroundColor: '#FAFAFA',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+    padding: 12,
+    gap: 8,
+  },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  indexCircle: {
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: Colors.periwinkle + '22',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  indexTxt: { fontSize: 12, fontFamily: Fonts.semi_bold, color: Colors.periwinkle },
+  info: { flex: 1 },
+  desc: { fontSize: 13, fontFamily: Fonts.medium, color: Colors.black },
+  amount: { fontSize: 13, fontFamily: Fonts.semi_bold, color: Colors.periwinkle, marginTop: 2 },
+  badge: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    paddingHorizontal: 7, paddingVertical: 3, borderRadius: 20,
+  },
+  badgeTxt: { fontSize: 10, fontFamily: Fonts.medium },
+  editBtn: { padding: 2 },
+  removeBtn: { padding: 2 },
+  receiptThumb: { width: '100%', height: 100, borderRadius: 8, backgroundColor: '#eee' },
 });
 
 

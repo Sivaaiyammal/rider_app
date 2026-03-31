@@ -27,12 +27,13 @@ import useTripsStore from '../store/useTripsStore';
 import APIRequest from '../../common/APIRequest';
 import { getPresignedImageUrl } from '../../common/utils/getPresignedImageUrl';
 import UseBackButton from '../../common/hooks/UseBackButton';
+import { useTranslation } from 'react-i18next';
 
 const PHOTO_SLOTS = [
-  { key: 'front',     label: 'Front',      icon: 'car-back' },
-  { key: 'rear',      label: 'Rear',       icon: 'car' },
-  { key: 'leftSide',  label: 'Left Side',  icon: 'car-side' },
-  { key: 'rightSide', label: 'Right Side', icon: 'car-side' },
+  { key: 'front',     label: 'front',      icon: 'car-back' },
+  { key: 'rear',      label: 'rear',       icon: 'car' },
+  { key: 'leftSide',  label: 'left_side',  icon: 'car-side' },
+  { key: 'rightSide', label: 'right_side', icon: 'car-side' },
 ];
 
 const pickImage = async (source, callback) => {
@@ -51,7 +52,7 @@ const pickImage = async (source, callback) => {
   }
 };
 
-const PhotoSlot = ({ slotKey, label, icon, image, onPick, loading }) => {
+const PhotoSlot = ({ slotKey, label, icon, image, onPick, loading, t }) => {
   const [busy, setBusy] = useState(false);
   const [imgError, setImgError] = useState(false);
   const handle = async src => { setBusy(true); await pickImage(src, img => onPick(slotKey, img)); setBusy(false); };
@@ -82,10 +83,10 @@ const PhotoSlot = ({ slotKey, label, icon, image, onPick, loading }) => {
             )}
           </View>
           <View style={ps.footer}>
-            <Text style={ps.label}>{label}</Text>
+            <Text style={ps.label}>{t(label)}</Text>
             <TouchableOpacity style={ps.reBtn} onPress={() => handle('camera')} activeOpacity={0.8}>
               <MaterialCommunityIcons name="camera-retake-outline" size={13} color={Colors.white} />
-              <Text style={ps.reTxt}>Retake</Text>
+              <Text style={ps.reTxt}>{t('retake')}</Text>
             </TouchableOpacity>
           </View>
         </>
@@ -94,16 +95,16 @@ const PhotoSlot = ({ slotKey, label, icon, image, onPick, loading }) => {
           <View style={ps.emptyThumb}>
             <MaterialCommunityIcons name={icon} size={30} color="#C0C0C0" />
           </View>
-          <Text style={ps.label}>{label}</Text>
+          <Text style={ps.label}>{t(label)}</Text>
           <View style={ps.pickRow}>
             <TouchableOpacity style={ps.pickBtn} onPress={() => handle('camera')} disabled={busy} activeOpacity={0.8}>
               {busy
                 ? <ActivityIndicator size="small" color={Colors.periwinkle} />
-                : <><MaterialCommunityIcons name="camera-outline" size={14} color={Colors.periwinkle} /><Text style={ps.pickTxt}>Camera</Text></>}
+                : <><MaterialCommunityIcons name="camera-outline" size={14} color={Colors.periwinkle} /><Text style={ps.pickTxt}>{t('camera')}</Text></>}
             </TouchableOpacity>
             <TouchableOpacity style={ps.pickBtn} onPress={() => handle('gallery')} disabled={busy} activeOpacity={0.8}>
               <MaterialCommunityIcons name="image-outline" size={14} color={Colors.periwinkle} />
-              <Text style={ps.pickTxt}>Gallery</Text>
+              <Text style={ps.pickTxt}>{t('gallery')}</Text>
             </TouchableOpacity>
           </View>
         </>
@@ -142,6 +143,8 @@ const DriverVehiclePhotosScreen = () => {
   const [uploadingPost, setUploadingPost] = useState(false);
   const [preUploaded, setPreUploaded] = useState(false);
   const [postUploaded, setPostUploaded] = useState(false);
+
+  const { t } = useTranslation();
 
   const toObjectKey = url => {
     if (!url) return null;
@@ -207,7 +210,7 @@ const DriverVehiclePhotosScreen = () => {
   const onPickPost = (key, img) => { setPostTripPhotos({ ...postTripPhotos, [key]: img }); setPostUploaded(false); };
 
   const uploadPre = async () => {
-    if (!preAllDone) { Alert.alert('Photos Required', 'Please capture all 4 pre-trip photos.'); return; }
+    if (!preAllDone) { Alert.alert(t('photos_required'), t('please_capture_all_4_pre_trip_photos')); return; }
     try {
       setUploadingPre(true);
       const formData = new FormData();
@@ -226,7 +229,7 @@ const DriverVehiclePhotosScreen = () => {
   };
 
   const uploadPost = async () => {
-    if (!postAllDone) { Alert.alert('Photos Required', 'Please capture all 4 post-trip photos.'); return; }
+    if (!postAllDone) { Alert.alert(t('photos_required'), t('please_capture_all_4_post_trip_photos')); return; }
     try {
       setUploadingPost(true);
       const formData = new FormData();
@@ -252,8 +255,8 @@ const DriverVehiclePhotosScreen = () => {
           <MaterialCommunityIcons name="arrow-left" size={22} color={Colors.black} />
         </TouchableOpacity>
         <View style={styles.headerInfo}>
-          <Text style={styles.title}>Vehicle Photos</Text>
-          <Text style={styles.subtitle}>Upload before & after trip photos</Text>
+          <Text style={styles.title}>{t('vehicle_photos')}</Text>
+          <Text style={styles.subtitle}>{t('upload_before_after_trip_photos')}</Text>
         </View>
       </View>
 
@@ -262,12 +265,12 @@ const DriverVehiclePhotosScreen = () => {
         <View style={styles.section}>
           <TouchableOpacity style={styles.sectionHeaderRow} onPress={() => setPreExpanded(v => !v)} activeOpacity={0.8}>
             <MaterialCommunityIcons name="car-back" size={18} color={Colors.periwinkle} />
-            <Text style={styles.sectionTitle}>Pre-Trip Photos</Text>
+            <Text style={styles.sectionTitle}>{t('pre_trip_photos')}</Text>
             <Text style={styles.progressTxt}>{preDoneCount}/4</Text>
             {preUploaded && (
               <View style={styles.uploadedBadge}>
                 <MaterialCommunityIcons name="check-circle" size={13} color="#43A047" />
-                <Text style={styles.uploadedTxt}>Uploaded</Text>
+                <Text style={styles.uploadedTxt}>{t('uploaded')}</Text>
               </View>
             )}
             <MaterialCommunityIcons
@@ -279,7 +282,7 @@ const DriverVehiclePhotosScreen = () => {
             <>
               <View style={styles.grid}>
                 {PHOTO_SLOTS.map(s => (
-                  <PhotoSlot key={s.key} slotKey={s.key} label={s.label} icon={s.icon}
+                  <PhotoSlot key={s.key} slotKey={s.key} label={s.label} icon={s.icon} t={t}
                     image={preTripPhotos[s.key]} onPick={onPickPre} loading={loadingFromServer} />
                 ))}
               </View>
@@ -291,7 +294,7 @@ const DriverVehiclePhotosScreen = () => {
                 {uploadingPre
                   ? <ActivityIndicator size="small" color={Colors.white} />
                   : <MaterialCommunityIcons name="cloud-upload-outline" size={16} color={Colors.white} />}
-                <Text style={styles.uploadBtnTxt}>{uploadingPre ? 'Uploading...' : preUploaded ? 'Re-upload Pre-Trip' : 'Upload Pre-Trip Photos'}</Text>
+                <Text style={styles.uploadBtnTxt}>{uploadingPre ? t('uploading') : preUploaded ? t('reupload_pre_trip') : t('upload_pre_trip_photos')}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -302,12 +305,12 @@ const DriverVehiclePhotosScreen = () => {
         <View style={styles.section}>
           <TouchableOpacity style={styles.sectionHeaderRow} onPress={() => setPostExpanded(v => !v)} activeOpacity={0.8}>
             <MaterialCommunityIcons name="car" size={18} color={Colors.periwinkle} />
-            <Text style={styles.sectionTitle}>Post-Trip Photos</Text>
+            <Text style={styles.sectionTitle}>{t('post_trip_photos')}</Text>
             <Text style={styles.progressTxt}>{postDoneCount}/4</Text>
             {postUploaded && (
               <View style={styles.uploadedBadge}>
                 <MaterialCommunityIcons name="check-circle" size={13} color="#43A047" />
-                <Text style={styles.uploadedTxt}>Uploaded</Text>
+                <Text style={styles.uploadedTxt}>{t('uploaded')}</Text>
               </View>
             )}
             <MaterialCommunityIcons
@@ -319,7 +322,7 @@ const DriverVehiclePhotosScreen = () => {
             <>
               <View style={styles.grid}>
                 {PHOTO_SLOTS.map(s => (
-                  <PhotoSlot key={s.key} slotKey={s.key} label={s.label} icon={s.icon}
+                  <PhotoSlot key={s.key} slotKey={s.key} label={s.label} icon={s.icon} t={t}
                     image={postTripPhotos[s.key]} onPick={onPickPost} loading={loadingFromServer} />
                 ))}
               </View>
@@ -331,7 +334,7 @@ const DriverVehiclePhotosScreen = () => {
                 {uploadingPost
                   ? <ActivityIndicator size="small" color={Colors.white} />
                   : <MaterialCommunityIcons name="cloud-upload-outline" size={16} color={Colors.white} />}
-                <Text style={styles.uploadBtnTxt}>{uploadingPost ? 'Uploading...' : postUploaded ? 'Re-upload Post-Trip' : 'Upload Post-Trip Photos'}</Text>
+                <Text style={styles.uploadBtnTxt}>{uploadingPost ? t('uploading') : postUploaded ? t('reupload_post_trip') : t('upload_post_trip_photos')}</Text>
               </TouchableOpacity>
             </>
           )}
