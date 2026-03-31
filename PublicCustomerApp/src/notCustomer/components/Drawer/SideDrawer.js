@@ -87,7 +87,7 @@ const SideDrawerV2 = ({ handleMenu }) => {
      appConfig?.actingDriverEnabled
       ? {
         id: 'my-vehicles',
-        name: t('my_vehicles', 'My Vehicles'),
+        name: t('mygarage', 'My Garage'),
         screen: 'MyVehiclesScreen',
         icon: <Ionicons name="car-sport-outline" size={20} color="black" />,
       }

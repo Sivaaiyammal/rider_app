@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -19,6 +19,7 @@ import { getPresignedImageUrl } from '../../../../common/utils/getPresignedImage
 import { colors, Fonts } from '../../../constants/constants';
 import useUserInfoStore from '../../../../common/store/useUserInfoStore';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
+import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 
 const PHOTO_LABELS = {
   front: 'Front',
@@ -35,8 +36,15 @@ const BillsAndPhotosScreen = ({ tripId }) => {
   const { userdetails } = useUserInfoStore();
   const token = userdetails?.token || null;
 
+  const { bills: socketBills } = useCurrentRideInfoStore();
+  // Track the last socketBills reference we processed so we only react to genuine changes
+  const socketBillsRef = useRef(socketBills);
+
   const [loading, setLoading] = useState(true);
   const [bills, setBills] = useState([]);
+  // Keep a stable ref to bills so the socket sync effect can read it without being a dep
+  const billsRef = useRef(bills);
+  useEffect(() => { billsRef.current = bills; }, [bills]);
   const [driverInfo, setDriverInfo] = useState({});
   const [preTripPhotos, setPreTripPhotos] = useState({});
   const [postTripPhotos, setPostTripPhotos] = useState({});
@@ -152,6 +160,50 @@ const BillsAndPhotosScreen = ({ tripId }) => {
     };
   }, [tripId, resolveUrl]);
 
+  // Sync bills from socket store when driver adds or deletes a bill in real-time
+  useEffect(() => {
+    // Skip if no change in the socket store reference (same object = no new socket event)
+    if (socketBills === socketBillsRef.current) return;
+    socketBillsRef.current = socketBills;
+    // Don't update while the initial API fetch is still running (it will set bills itself)
+    if (loading) return;
+    if (!socketBills?.bills) return;
+
+    let active = true;
+    (async () => {
+      try {
+        const tripBills = socketBills.bills;
+        const billsWithUrls = await Promise.all(
+          tripBills.map(async (bill) => {
+            // Reuse an already-resolved URL for the same receipt photo key
+            const existing = billsRef.current.find(b => b.receiptPhoto && b.receiptPhoto === bill.receiptPhoto);
+            return {
+              ...bill,
+              receiptPhotoUri:
+                existing?.receiptPhotoUri ||
+                (bill.receiptPhoto ? await resolveUrl(bill.receiptPhoto) : null),
+            };
+          }),
+        );
+        if (!active) return;
+        setBills(billsWithUrls);
+        // Re-seed bill action states from approval values
+        const newActions = {};
+        billsWithUrls.forEach((bill, idx) => {
+          if (bill.approval === 'approved') newActions[idx] = 'payNow';
+          if (bill.approval === 'rejected') newActions[idx] = 'rejected';
+        });
+        setBillActions(newActions);
+      } catch {
+        // silently handle
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [socketBills, loading, resolveUrl, bills]);
+
   const hasPrePhotos = Object.values(preTripPhotos).some(Boolean);
   const hasPostPhotos = Object.values(postTripPhotos).some(Boolean);
   const isEmpty = !loading && bills.length === 0 && !hasPrePhotos && !hasPostPhotos;
@@ -166,6 +218,8 @@ const BillsAndPhotosScreen = ({ tripId }) => {
       });
       if (!opened) return;
     }
+
+    if (action === 'approved') return
 
     const approval = action === 'rejected' ? 'rejected' : 'approved';
     setBillLoadingIdx(idx);
@@ -246,13 +300,13 @@ const BillsAndPhotosScreen = ({ tripId }) => {
                       <ActivityIndicator size="small" color={colors.primary || '#5C6BC0'} style={{ alignSelf: 'center', marginTop: 8 }} />
                     ) : (
                       <View style={styles.actionRow}>
-                        <TouchableOpacity
+                        {/* <TouchableOpacity
                           style={[styles.actionBtn, styles.payNowBtn]}
                           onPress={() => handleBillAction(idx, 'payNow')}
                           activeOpacity={0.8}>
                           <Ionicons name="checkmark" size={13} color="#fff" />
                           <Text style={styles.actionTxt}>Make Payment</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                         <TouchableOpacity
                           style={[styles.actionBtn, styles.rejectBtn]}
                           onPress={() => handleBillAction(idx, 'rejected')}

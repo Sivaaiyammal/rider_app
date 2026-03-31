@@ -61,6 +61,20 @@ class PublicRideDriverHandler {
         }
     }   
 
+    emitBillApprovalStatus(socketIds, data) {
+        try {
+            socketIds.forEach(socketId => {
+                const socket = this.publicRidesDriverNamespace.sockets.get(socketId);
+                if (socket && socket.connected) {
+                    console.log("Emitting bill approval status to driver", socketId);
+                    socket.emit('billApprovalStatus', data);
+                }
+            });
+        } catch (err) {
+            console.log(err, "err");
+        }
+    }
+
 }
 
 module.exports = PublicRideDriverHandler

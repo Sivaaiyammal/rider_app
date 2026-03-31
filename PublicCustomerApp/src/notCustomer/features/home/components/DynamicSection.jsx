@@ -16,6 +16,7 @@ const ActingDriverImage = require("../../../../common/assets/images/acting_drive
    ASSET MAP: Service images keyed by item key
 -------------------------------------------------------------------*/
 const SERVICE_IMAGES = {
+    mygarage: require("../../../assets/vehicle/garage.webp"),
     auto: require("../../../assets/vehicle/AUTO.webp"),
     electric_auto: require("../../../assets/vehicle/ELECTRIC_AUTO.webp"),
     schedule_trip: require("../../../assets/vehicle/SCHDULED.webp"),

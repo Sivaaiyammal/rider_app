@@ -31,6 +31,7 @@ import useMapStore from '../features/map/store/useMapStore';
 import useMapStyleStore from '../store/useMapStyleStore';
 import locationTask from '../controllers/GetCurrentLocation';
 import DriverProfileImage from '../assets/image/driver.png';
+import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 
 const RideSummary = () => {
   const {directions, setDirections} = useLocationStore();
@@ -38,6 +39,7 @@ const RideSummary = () => {
   const {reset: resetStackScreen} = useStackScreenStore();
   const {setOnSearchResults, setMapMarkers, setDirectionPoints, setSearchUnit} = useMapStore();
   const {resetMapStyle} = useMapStyleStore();
+  const { bills: rideInfoBills, tripId: rideInfoTripId } = useCurrentRideInfoStore();
 
   const isCompleted = false;
 
@@ -45,10 +47,11 @@ const RideSummary = () => {
   const [billLoadingIdx, setBillLoadingIdx] = useState(null);
   const [billApprovals, setBillApprovals] = useState({});
 
-  const driverBills = bookingDetails?.bills?.bills || [];
+  // Use bills from bookingDetails if available, fall back to currentRideInfoStore
+  const driverBills = (bookingDetails?.bills?.bills ?? rideInfoBills?.bills) || [];
 
   const handleBillApproval = async (idx, approval) => {
-    const tripId = bookingDetails?._id;
+    const tripId = bookingDetails?._id || rideInfoTripId;
     if (!tripId) return;
     setBillLoadingIdx(idx);
     try {

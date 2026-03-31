@@ -54,6 +54,13 @@ const sendNewBillRequestMessage = (count, total) => {
         : `Your driver has added ${count} bills totalling ₹${total}. Please review and respond.`;
     return { title, body };
 }
+const sendBillRejectedDriverMessage = (description, amount) => {
+    const title = 'Bill Rejected ❌';
+    const body = description
+        ? `Your bill "${description}" (₹${amount}) was rejected by the passenger.`
+        : `Your bill of ₹${amount} was rejected by the passenger.`;
+    return { title, body };
+}
 const sendTripCancelledByDriverMessageafterPickup = (name) => {
     const title = 'Trip Cancelled By Driver After Pickup'
     const message = `Your trip has been cancelled by ${name}. Please contact support for further assistance.`
@@ -256,6 +263,7 @@ module.exports = {
     sendTripCancelledMessage,
     sendTripCancelledByDriverMessage,
     sendNewBillRequestMessage,
+    sendBillRejectedDriverMessage,
     sendTripCancelledByPassangerMessage,
     sendTripDriverAssignedMessage,
     getDeviceUsageAlert,

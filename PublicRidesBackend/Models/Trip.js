@@ -216,6 +216,32 @@ class Trip {
         return result;
     }
 
+    static updateBillByIndex = async (tripId, billIndex, fields) => {
+        const setObj = {};
+        Object.keys(fields).forEach(k => {
+            setObj[`bills.bills.${billIndex}.${k}`] = fields[k];
+        });
+        return Mongo.updateOneRaw(
+            COLLECTION_NAME,
+            { _id: new ObjectId(tripId) },
+            { $set: setObj }
+        );
+    }
+
+    static removeBillFromTripByIndex = async (tripId, idx) => {
+        const unsetField = `bills.bills.${idx}`;
+        await Mongo.updateOneRaw(
+            COLLECTION_NAME,
+            { _id: new ObjectId(tripId) },
+            { $unset: { [unsetField]: 1 } }
+        );
+        return Mongo.updateOneRaw(
+            COLLECTION_NAME,
+            { _id: new ObjectId(tripId) },
+            { $pull: { 'bills.bills': null } }
+        );
+    }
+
     static getTripWithPassangerDetails = async (tripId) => {
         const groupQuery = [
             {$match: { '_id': new ObjectId(tripId)} },

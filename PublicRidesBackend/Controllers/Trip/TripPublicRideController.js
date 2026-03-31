@@ -1126,6 +1126,7 @@ module.exports = function (CLASS) {
                                     `${tripId}_bill_receipt_${idx}`
                                 );
                                 return {
+                                    billId:       uuidv4(),
                                     description:  bill.description  || '',
                                     amount:       parseFloat(bill.amount) || 0,
                                     receiptPhoto: receiptPhoto || '',
@@ -1194,12 +1195,12 @@ module.exports = function (CLASS) {
                         if (req.useNotPushNotification) {
                             NOTPushNotifiationService.sendPushNotification(
                                 passanger.fcmToken.token, msg, null, 'high',
-                                { tripId: String(trip._id), trip_status: 'BILL_REQUEST' }
+                                { tripId: String(trip._id) }
                             );
                         } else {
                             PushNotifiationService.sendPushNotification(
                                 passanger.fcmToken.token, msg, null, 'high',
-                                { tripId: String(trip._id), trip_status: 'BILL_REQUEST' }
+                                { tripId: String(trip._id) }
                             );
                         }
                     }
@@ -1240,7 +1241,7 @@ module.exports = function (CLASS) {
                                 msg,
                                 null,
                                 'high',
-                                { tripId: String(trip._id), trip_status: 'BILL_REQUEST' }
+                                { tripId: String(trip._id) }
                             );
                         } else {
                             PushNotifiationService.sendPushNotification(
@@ -1248,7 +1249,7 @@ module.exports = function (CLASS) {
                                 msg,
                                 null,
                                 'high',
-                                { tripId: String(trip._id), trip_status: 'BILL_REQUEST' }
+                                { tripId: String(trip._id) }
                             );
                         }
                     }
@@ -1264,23 +1265,35 @@ module.exports = function (CLASS) {
 
     CLASS.prototype.deleteTripBill = async function (req, res) {
         try {
-            const { tripId: rawTripId, billId } = req.body || {};
+            const { tripId: rawTripId, billId, billIndex } = req.body || {};
             const tripId = typeof rawTripId === 'string' ? rawTripId.trim() : rawTripId;
 
             if (!tripId) return res.status(400).json({ success: false, message: 'tripId is required' });
             if (!/^[a-f\d]{24}$/i.test(tripId)) return res.status(400).json({ success: false, message: 'tripId is not a valid ObjectId' });
-            if (!billId) return res.status(400).json({ success: false, message: 'billId is required' });
+            if (!billId && billIndex === undefined) return res.status(400).json({ success: false, message: 'billId or billIndex is required' });
 
             const trip = await Trip.getTripById(tripId);
             if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
 
-            // Find the bill to get its receipt photo URL before deleting
-            const bill = (trip.bills?.bills || []).find(b => b.billId === billId);
+            // Resolve the bill — by billId or by index
+            const allBills = trip.bills?.bills || [];
+            let bill;
+            let resolvedIndex;
+            if (billId) {
+                resolvedIndex = allBills.findIndex(b => b.billId === billId);
+                bill = resolvedIndex !== -1 ? allBills[resolvedIndex] : null;
+            } else {
+                resolvedIndex = parseInt(billIndex, 10);
+                bill = (!isNaN(resolvedIndex) && resolvedIndex >= 0 && resolvedIndex < allBills.length)
+                    ? allBills[resolvedIndex]
+                    : null;
+            }
+
+            if (!bill) return res.status(404).json({ success: false, message: 'Bill not found' });
 
             // Delete receipt from S3 if it exists
             if (bill?.receiptPhoto) {
                 try {
-                    // Extract object key from URL: strip "https://bucket.host/" prefix
                     const receiptUrl = bill.receiptPhoto;
                     const keyMatch = receiptUrl.match(/^https?:\/\/[^/]+\/(.+)$/);
                     if (keyMatch?.[1]) {
@@ -1288,11 +1301,14 @@ module.exports = function (CLASS) {
                     }
                 } catch (s3Err) {
                     console.error('Failed to delete receipt from S3:', s3Err);
-                    // Non-fatal — continue with DB deletion
                 }
             }
 
-            await Trip.removeBillFromTrip(tripId, billId);
+            if (billId) {
+                await Trip.removeBillFromTrip(tripId, billId);
+            } else {
+                await Trip.removeBillFromTripByIndex(tripId, resolvedIndex);
+            }
 
             // Emit socket update to passenger with the refreshed bills
             const updatedTrip = await Trip.getTripById(tripId);
@@ -1306,5 +1322,118 @@ module.exports = function (CLASS) {
         } catch (err) {
             return this.handleError(err, res);
         }
+    }
+
+    /**
+     * POST /publicrides/driver/v2/editTripBill
+     * Body (multipart/form-data):
+     *   tripId       – required
+     *   billId       – preferred identifier (or billIndex)
+     *   billIndex    – fallback identifier
+     *   description  – new description
+     *   amount       – new amount
+     *   bill_receipt – optional new receipt image file
+     *   removeReceipt – 'true' to delete existing receipt without replacing
+     */
+    CLASS.prototype.editTripBill = async function (req, res) {
+        const storage = multer.memoryStorage();
+        const mediaUpload = multer({ storage }).any();
+
+        mediaUpload(req, res, async (err) => {
+            if (err) {
+                return res.status(400).json({ success: false, message: 'File parse error', error: err.message });
+            }
+            try {
+                const { tripId: rawTripId, billId, billIndex, description, amount, removeReceipt } = req.body || {};
+                const tripId = typeof rawTripId === 'string' ? rawTripId.trim() : rawTripId;
+
+                if (!tripId) return res.status(400).json({ success: false, message: 'tripId is required' });
+                if (!/^[a-f\d]{24}$/i.test(tripId)) return res.status(400).json({ success: false, message: 'tripId is not a valid ObjectId' });
+                if (!billId && billIndex === undefined) return res.status(400).json({ success: false, message: 'billId or billIndex is required' });
+
+                const trip = await Trip.getTripById(tripId);
+                if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
+
+                const allBills = trip.bills?.bills || [];
+                let resolvedIndex;
+                let bill;
+                if (billId) {
+                    resolvedIndex = allBills.findIndex(b => b.billId === billId);
+                    bill = resolvedIndex !== -1 ? allBills[resolvedIndex] : null;
+                } else {
+                    resolvedIndex = parseInt(billIndex, 10);
+                    bill = (!isNaN(resolvedIndex) && resolvedIndex >= 0 && resolvedIndex < allBills.length)
+                        ? allBills[resolvedIndex]
+                        : null;
+                }
+
+                if (!bill) return res.status(404).json({ success: false, message: 'Bill not found' });
+                if (bill.approval === 'approved') {
+                    return res.status(400).json({ success: false, message: 'Approved bills cannot be edited' });
+                }
+
+                // Build update fields — always reset approval to pending on edit
+                const updateFields = { approval: 'pending' };
+                if (description?.trim()) updateFields.description = description.trim();
+                if (amount !== undefined && amount !== '') {
+                    const parsed = parseFloat(amount);
+                    if (isNaN(parsed) || parsed <= 0) {
+                        return res.status(400).json({ success: false, message: 'amount must be a positive number' });
+                    }
+                    updateFields.amount = parsed;
+                }
+
+                // Handle receipt
+                const filesArray = req.files || [];
+                const fileMap = {};
+                filesArray.forEach(f => { fileMap[f.fieldname] = f; });
+
+                const uploadFile = async (fieldName, s3Key) => {
+                    const file = fileMap[fieldName];
+                    if (!file) return null;
+                    const result = await e2eS3File('upload', file, s3Key, `trips/${tripId}/media/`);
+                    return result?.completed ? result.url : null;
+                };
+
+                if (fileMap['bill_receipt']) {
+                    // Delete old receipt from S3 if it exists
+                    if (bill.receiptPhoto) {
+                        try {
+                            const keyMatch = bill.receiptPhoto.match(/^https?:\/\/[^/]+\/(.+)$/);
+                            if (keyMatch?.[1]) await e2eS3File('deleteByKey', null, null, keyMatch[1]);
+                        } catch (s3Err) {
+                            console.error('Failed to delete old receipt from S3:', s3Err);
+                        }
+                    }
+                    const newReceiptUrl = await uploadFile('bill_receipt', `${tripId}_bill_receipt_${resolvedIndex}_${Date.now()}`);
+                    if (newReceiptUrl) updateFields.receiptPhoto = newReceiptUrl;
+                } else if (removeReceipt === 'true' || removeReceipt === true) {
+                    if (bill.receiptPhoto) {
+                        try {
+                            const keyMatch = bill.receiptPhoto.match(/^https?:\/\/[^/]+\/(.+)$/);
+                            if (keyMatch?.[1]) await e2eS3File('deleteByKey', null, null, keyMatch[1]);
+                        } catch (s3Err) {
+                            console.error('Failed to delete receipt from S3:', s3Err);
+                        }
+                    }
+                    updateFields.receiptPhoto = '';
+                }
+
+                await Trip.updateBillByIndex(tripId, resolvedIndex, updateFields);
+
+                // Emit updated bill list to passenger via socket
+                const updatedTrip = await Trip.getTripById(tripId);
+                if (updatedTrip?.passangerId) {
+                    sendPassangerSocketEvents('newBillRequest', String(updatedTrip.passangerId), req.socketService, null, updatedTrip).catch(err => {
+                        console.error('editTripBill socket error:', err);
+                    });
+                }
+
+                const updatedBill = updatedTrip?.bills?.bills?.[resolvedIndex];
+                return res.json({ success: true, message: 'Bill updated', bill: updatedBill });
+            } catch (err) {
+                return this.handleError(err, res);
+            }
+        });
     }
 }

@@ -14,7 +14,7 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
             const filtered = prevMarkers.filter(marker => marker.id !== 'driver');
             if (!driverLatitude || !driverLongitude) return filtered;
             const driverMarker = new Marker(`marker-driver-${markerType}`,'driver', driverLongitude, driverLatitude, vehicleType?.toLowerCase(), 36);
-            console.log("driverMarker",driverMarker)
+            // console.log("driverMarker",driverMarker)
             if(driverAngle){
                 driverMarker.setAngle(driverAngle);
             }
@@ -36,7 +36,7 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
         if(driverAngle){
             driverMarker.setAngle(driverAngle);
         }
-        console.log("driverMarker2",driverMarker)
+        // console.log("driverMarker2",driverMarker)
 
         if(markerType === "pickup"){  
             setMarkersList(prevMarkers => {
@@ -55,7 +55,7 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
             const stopMarkers = stops.filter((stop)=>stop.isReached === false).map((stop,index) => {
                 let markerName = index == stops?.length - 1 ? 'drop_point' : stop?.name?.toLowerCase().replace(' ','_');
                 let markerSize = markerName.includes('stop') ? 24 : 64;
-                console.log("markerName",markerName)
+                // console.log("markerName",markerName)
                 return new Marker(`${index}-stop${markerType}`, stop.name, stop.location[0], stop.location[1], markerName, markerSize);
             });
             if(driverLatitude && driverLongitude){

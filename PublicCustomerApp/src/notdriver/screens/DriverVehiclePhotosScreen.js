@@ -26,6 +26,7 @@ import useUserStore from '../../common/store/useUserStore';
 import useTripsStore from '../store/useTripsStore';
 import APIRequest from '../../common/APIRequest';
 import { getPresignedImageUrl } from '../../common/utils/getPresignedImageUrl';
+import UseBackButton from '../../common/hooks/UseBackButton';
 
 const PHOTO_SLOTS = [
   { key: 'front',     label: 'Front',      icon: 'car-back' },
@@ -246,6 +247,7 @@ const DriverVehiclePhotosScreen = () => {
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
+        <UseBackButton onBackPress={goBack} />
         <TouchableOpacity style={styles.backBtn} onPress={() => goBack()} activeOpacity={0.8}>
           <MaterialCommunityIcons name="arrow-left" size={22} color={Colors.black} />
         </TouchableOpacity>

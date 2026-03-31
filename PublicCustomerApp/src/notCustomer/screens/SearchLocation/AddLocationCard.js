@@ -151,8 +151,9 @@ const AddLocationCard = () => {
       })).filter(point => point.lat !== undefined && point.lon !== undefined);  ;
       setDirectionPoints({ locations: routeData, type: 'car' });
       const directions = new Directions();
-      const response = await directions.findRoute(routeData);
-      console.log(response, 'routeData')
+      // const response = 
+      await directions.findRoute(routeData);
+      // console.log(response, 'routeData')
     },
     [directions],
   );

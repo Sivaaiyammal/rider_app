@@ -213,29 +213,16 @@ class WSService {
   newBillRequest(data) {
     try {
       console.log('newBillRequest', JSON.stringify(data));
-      // Always refresh bills in bookingDetails so the passenger UI stays in sync
+      // Always refresh bills regardless of whether bookingDetails is already populated
       if (data?.bills !== undefined) {
         const currentBookingDetails = this.useRideSelectionStore.getState().bookingDetails;
-        if (currentBookingDetails) {
-          this.useRideSelectionStore.getState().setBookingDetails({
-            ...currentBookingDetails,
-            bills: data.bills,
-          });
-        }
+        this.useRideSelectionStore.getState().setBookingDetails({
+          ...(currentBookingDetails || {}),
+          bills: data.bills,
+        });
+        // Also keep currentRideInfo in sync (covers app-restart scenario)
+        this.useCurrentRideInfoStore.getState().setBills(data.bills);
       }
-      const bills = data?.bills?.bills || [];
-      if (bills.length === 0) return;
-      const total = bills
-        .reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0)
-        .toFixed(2);
-      const count = bills.length;
-      showNotification(
-        'New Bill Request 🧾',
-        count === 1
-          ? `Driver added a bill of ₹${total}. Review in Bills & Photos.`
-          : `Driver added ${count} bills totalling ₹${total}. Review in Bills & Photos.`,
-        'info'
-      );
     } catch (error) {
       console.error('Error handling newBillRequest:', error);
     }
@@ -243,7 +230,6 @@ class WSService {
  
   
   driverLocationUpdate(data){
-    console.log("driverLocationUpdate",JSON.stringify(data))
     if(data){
       try {
         this.useAssignedDriverInfoStore.getState().setDriverLatitude(data?.data?.location?.coordinates[1]);

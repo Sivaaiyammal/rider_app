@@ -36,6 +36,7 @@ const useCurrentRideInfoStore = create((set) => ({
   finalDuration:"",
   finalDistance:"",
   onGoingTripCancelled:null,
+  bills: null,
 
 
   setTripId: (tripId) => set({ tripId }),
@@ -68,6 +69,7 @@ const useCurrentRideInfoStore = create((set) => ({
   setOngoingingTripCancelled: (onGoingTripCancelled) => {
     set({onGoingTripCancelled})
   },
+  setBills: (bills) => set({ bills }),
 
   setFareDetails: (fareData) => {
  
@@ -121,6 +123,7 @@ const useCurrentRideInfoStore = create((set) => ({
     estimatedFare:info.estimatedFare || null,
     onGoingTripCancelled:info.onGoingTripCancelled || null,
     maxDistanceLimit: info.maxDistanceLimit || null,
+    bills: info.bills || null,
    
   }),
 

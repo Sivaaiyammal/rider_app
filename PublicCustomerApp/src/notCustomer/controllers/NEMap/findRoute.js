@@ -60,17 +60,15 @@ export async function findRoute(points) {
         locations: latlngs,
         units: 'kilometers',
     };
-    console.log("Route Request Object:", jsonObject);
+    // console.log("Route Request Object:", jsonObject);
     
     try {
         const jsonString = JSON.stringify(jsonObject);
         const encodedData = encodeURIComponent(jsonString);
         const url = `${Config.ROUTE_API_URL}?data=${encodedData}&access_token=${Config.NE_ACCESS_TOKEN}`;
-        console.log("Route Request URL:", url);
 
         const response = await fetchWithTimeout(url);
         const routeData = await response.json();
-        console.log("Route Response Data:", JSON.stringify(routeData));
         setCachedRoute(cacheKey, jsonObject, routeData);
         return {requests: jsonObject, response: routeData};
     } catch (error) {

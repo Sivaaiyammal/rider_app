@@ -2,6 +2,7 @@ import io from 'socket.io-client';
 import Config from 'react-native-config';
 import { NativeModules } from 'react-native';
 import useTripsStore from '../../../notdriver/store/useTripsStore';
+import useActingDriverMediaStore from '../../../notdriver/store/useActingDriverMediaStore';
 import { useMapMarkerStore } from '../../store/useMapMarkerStore';
 import { useTripAcceptStore } from '../../../notdriver/store/useTripAcceptStore';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
@@ -95,6 +96,40 @@ onDriverTripStatus(data) {
     }
   }
 
+  billApprovalStatus(data) {
+    console.log("billApprovalStatus", JSON.stringify(data))
+    const idx = data?.billIndex;
+    const approval = data?.approval;
+    if (idx === undefined || idx === null || idx < 0 || !approval) return;
+
+    // Update activeTripData if it has bills at that index
+    const { activeTripData, setActiveTripData } = useTripsStore.getState();
+    if (activeTripData?.[0]?.bills?.bills?.length > idx) {
+      const bills = activeTripData[0].bills.bills;
+      const updatedBills = bills.map((b, i) =>
+        i === idx ? { ...b, approval } : b
+      );
+      const updatedTrip = {
+        ...activeTripData[0],
+        bills: { ...activeTripData[0].bills, bills: updatedBills },
+      };
+      setActiveTripData([updatedTrip]);
+    }
+
+    // Always update media store — this drives the screen UI
+    const { bills: storedBills, setBills } = useActingDriverMediaStore.getState();
+    if (storedBills?.length) {
+      const serverBillId = data?.bill?.billId;
+      const updatedStored = storedBills.map(b => {
+        const matchById = serverBillId && b.serverId === serverBillId;
+        const matchByIndex = !matchById && b.serverIndex !== undefined && b.serverIndex === idx;
+        if (!matchById && !matchByIndex) return b;
+        return { ...b, approval };
+      });
+      setBills(updatedStored);
+    }
+  }
+
   driverPaymentCompleted(data) {
     const {setStartNavigation, setDisduration, setDirectionPoints} = useMapMarkerStore.getState()
     const {activeTripData, setActiveTripData} = useTripsStore.getState()
@@ -160,6 +195,7 @@ onDriverTripStatus(data) {
         this.socket.on('stopChangeRequest', this.onStopChangeRequest);
         this.socket.on('driverPaymentCompleted', this.driverPaymentCompleted);
         this.socket.on('passangerPaymentInitiated', this.paymentInitiated);
+        this.socket.on('billApprovalStatus', data => this.billApprovalStatus(data));
       
         this.socket.on('connect_error', error => {
           console.error(

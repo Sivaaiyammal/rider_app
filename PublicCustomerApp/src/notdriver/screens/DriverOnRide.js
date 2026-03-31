@@ -111,7 +111,7 @@ const DriverOnRide = () => {
   const tripsStatus = activeTripData && activeTripData[0]?.status ? activeTripData[0]?.status : "";
 
   const isActingDriverTrip = true;
-  const { preTripDone, postTripDone, pendingNavOpen, setPendingNavOpen } = useActingDriverMediaStore();
+  const { preTripDone, postTripDone, pendingNavOpen, setPendingNavOpen, reset: resetDriverMedia } = useActingDriverMediaStore();
   // Fallback: if store was cleared but photos are already on server, treat as done
   const _prePhotos = activeTripData?.[0]?.bills?.preTripVehiclePhotos;
   const preTripUploadedOnServer = !!(_prePhotos?.front && _prePhotos?.rear && _prePhotos?.leftSide && _prePhotos?.rightSide);
@@ -222,6 +222,7 @@ const DriverOnRide = () => {
           lon: userLocation?.[1]
         }}, userInfo.token);
         if (response.success) {
+          resetDriverMedia();
           cancelTrip(response)
           firebaselog_onRide('OR_Status(OR_S)', 'OR_S:cancelled_by_driver_before_pickup')
         } else {
@@ -277,6 +278,7 @@ const DriverOnRide = () => {
     setDisduration(null);
     driverWaitingTime.stopWaitingTime()
     // showNotification(res?.message, res?.message, 'success');
+    resetDriverMedia();
     firebaselog_onRide('OR_Status(OR_S)', isGetFare ? 'OR_S:dropped' : 'OR_S:cancelled_by_driver_after_pickup')
     } else {
     showNotification(res?.message || 'Something went wrong', res?.message || 'Error Fetching Fare', 'danger');
@@ -1071,7 +1073,7 @@ const DriverOnRide = () => {
         <Modal transparent animationType="fade" visible={showPreTripWarning} onRequestClose={() => setShowPreTripWarning(false)}>
           <View style={styles.preTripOverlay}>
             <View style={styles.preTripWarningBox}>
-              <MaterialCommunityIcons name="camera-alert" size={48} color="#E65100" style={{ alignSelf: 'center', marginBottom: 10 }} />
+              {/* <MaterialCommunityIcons name="camera-alert" size={48} color="#E65100" style={{ alignSelf: 'center', marginBottom: 10 }} /> */}
               <Text style={styles.preTripWarningTitle}>Vehicle Photos Required</Text>
               <Text style={styles.preTripWarningMsg}>
                 Please upload the 4 vehicle condition photos before starting the ride. This helps record the vehicle's condition at trip start.
@@ -1101,7 +1103,6 @@ const DriverOnRide = () => {
         <Modal transparent animationType="fade" visible={showPostTripWarning} onRequestClose={() => setShowPostTripWarning(false)}>
           <View style={styles.preTripOverlay}>
             <View style={styles.preTripWarningBox}>
-              <MaterialCommunityIcons name="camera-alert" size={48} color="#E65100" style={{ alignSelf: 'center', marginBottom: 10 }} />
               <Text style={styles.preTripWarningTitle}>Post-Trip Photos Required</Text>
               <Text style={styles.preTripWarningMsg}>
                 Please upload the 4 post-trip vehicle condition photos before ending the ride. This helps record the vehicle's condition at trip end.
@@ -1116,12 +1117,12 @@ const DriverOnRide = () => {
                 <MaterialCommunityIcons name="camera-plus-outline" size={18} color={Colors.white} />
                 <Text style={styles.preTripUploadBtnTxt}>Upload Photos Now</Text>
               </TouchableOpacity>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.preTripSkipBtn}
                 activeOpacity={0.8}
                 onPress={() => setShowPostTripWarning(false)}>
                 <Text style={styles.preTripSkipTxt}>Skip for Now</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
         </Modal>

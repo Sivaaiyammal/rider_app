@@ -217,6 +217,28 @@ export const deleteAccount = async (payload) => {
     return data
   }
 
+  export const updatePassangerVehicle = async (vehicleInfo) => {
+    const { data } = await apiClient.post('/publicrides/customer/v2/updatePassangerVehicle', { vehicleInfo })
+    return data
+  }
 
+  export const getPassangerVehicles = async () => {
+    const { data } = await apiClient.get('/publicrides/customer/v2/getPassangerVehicles')
+    return data
+  }
 
+  export const editPassangerVehicle = async (vehicleId, vehicleInfo) => {
+    const { data } = await apiClient.post('/publicrides/customer/v2/editPassangerVehicle', { vehicleId, vehicleInfo })
+    return data
+  }
+
+  export const deletePassangerVehicle = async (vehicleId) => {
+    const { data } = await apiClient.post('/publicrides/customer/v2/deletePassangerVehicle', { vehicleId })
+    return data
+  }
+
+export const approveBill = async (tripId, billIndex, approval) => {
+  const { data } = await apiClient.post('/publicrides/customer/v2/approveBill', { tripId, billIndex, approval });
+  return data;
+};
 

@@ -83,7 +83,6 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 	}
 	
 	function nearestDistanceToPolylineMeters(point, coords) {
-		console.log("coords before slice",coords,point)
         coords=coords.slice(1)
 		if (!coords || coords.length < 2) return Infinity;
 		let minDist = Infinity;
@@ -209,8 +208,8 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 		//   return decoded.map(([lat, lon]) => [lon, lat]);
 		// }).flat();
 
-		console.log("routeData",routeData?.trip?.legs[0]?.shape)
-		console.log("decoded",polyline.decode(routeData.trip.legs[0].shape, 6))
+		// console.log("routeData",routeData?.trip?.legs[0]?.shape)
+		// console.log("decoded",polyline.decode(routeData.trip.legs[0].shape, 6))
 
 		const coordinates = routeData?.trip?.legs[0]?.shape ? polyline.decode(routeData.trip.legs[0].shape, 6).map(([lat, lon]) => [lon, lat]) : [];
 
@@ -251,7 +250,6 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
         const margin = [50,100,50,500]
         // Structure bounds properly: [bounds, margin] where bounds is [minLon, minLat, maxLon, maxLat]
         const finalBounds = [bounds, margin]
-		console.log("finalBounds",finalBounds)
         setMapBounds(finalBounds);
 		
     }
@@ -290,14 +288,14 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 			return true;
 		}
 		const distance = nearestDistanceToPolylineMeters([driverLon, driverLat], current);
-		console.log("diverted distance",distance)
+		// console.log("diverted distance",distance)
 		const Diverted = distance > 300; // meters
 		return Diverted;
 	}
 
 	const DrawRoute = async (driverLat,driverLon) => {
 		const isDiverted = checkRouteDiverted(driverLat,driverLon)
-        console.log("isDiverted",isDiverted)
+        // console.log("isDiverted",isDiverted)
 		const polylineArray = []
 		if (isDiverted) {
             let points = [

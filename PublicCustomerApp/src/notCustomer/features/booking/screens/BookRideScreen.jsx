@@ -4,7 +4,6 @@ import {
     StyleSheet,
     TouchableOpacity,
     Modal,
-    Alert
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import NavBar from '../../../components/NavBar';
