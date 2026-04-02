@@ -941,6 +941,26 @@ class Trip {
             throw new Error(`Failed to update payment issues: ${err.message}`);
         }
     }   
+
+    static updateHarshDrivingStats = async (tripId, harshBreaking, harshAcceleration, harshCornering) => {
+        const pushFields = {};
+        if (harshBreaking && harshBreaking.length > 0) {
+            pushFields["harshDriving.harshBreaking"] = { $each: harshBreaking };
+        }
+        if (harshAcceleration && harshAcceleration.length > 0) {
+            pushFields["harshDriving.harshAcceleration"] = { $each: harshAcceleration };
+        }
+        if (harshCornering && harshCornering.length > 0) {
+            pushFields["harshDriving.harshCornering"] = { $each: harshCornering };
+        }
+        if (Object.keys(pushFields).length === 0) return { acknowledged: true, matchedCount: 0, modifiedCount: 0 };
+        const result = await Mongo.updateOneRaw(
+            COLLECTION_NAME,
+            { _id: new ObjectId(tripId) },
+            { $push: pushFields }
+        );
+        return result;
+    }
 }
 
 module.exports = Trip;

@@ -28,7 +28,6 @@ const ScheduledTripBanner = () => {
   const { setStackScreen } = useStackScreenStore();
 
   const trips = scheduledTrips || [];
-  console.log("trips------------------",JSON.stringify(trips))
   const handleViewAll = useCallback(() => {
     setStackScreen('MyRidesScreen', {setScreen:'upcoming'});
   }, [setStackScreen]);
@@ -53,7 +52,7 @@ const ScheduledTripBanner = () => {
     // driver photo may be in primaryTrip.driverData or primaryTrip.driver; it might be a local require or a remote URL string
     const driverPhoto = primaryTrip?.driverData?.driverPhoto || primaryTrip?.driver?.photo || null;
 
-    console.log("driverPhoto",driverPhoto)
+    // console.log("driverPhoto",driverPhoto)
     const DriverImageSource = driverPhoto
       ? (typeof driverPhoto === 'string' ? { uri: driverPhoto } : driverPhoto)
       : null;

@@ -100,6 +100,28 @@ public class DriverLocationService extends Service {
     private static final float WALKING_SPEED_THRESHOLD = 2.0f;
     private static final float RUNNING_SPEED_THRESHOLD = 5.0f;
 
+    // Harsh braking detection
+    private static final float HARSH_BRAKING_THRESHOLD = 3.0f;   // m/s² deceleration
+    private static final float MIN_SPEED_FOR_BRAKING = 2.78f;    // ~10 km/h
+    private static final long  HARSH_BRAKING_COOLDOWN = 10000;   // 10s between events
+    private float previousSpeed = 0.0f;
+    private long previousSpeedTime = 0;
+    private long lastHarshBrakingTime = 0;
+
+    // Hard acceleration detection
+    private static final float HARD_ACCELERATION_THRESHOLD = 3.0f;  // m/s² acceleration
+    private static final float MIN_SPEED_FOR_ACCEL = 0.5f;          // ~1.8 km/h
+    private static final long  HARD_ACCELERATION_COOLDOWN = 10000;  // 10s between events
+    private long lastHardAccelerationTime = 0;
+
+    // Hard cornering detection
+    private static final float HARD_CORNERING_THRESHOLD = 30.0f;    // degrees/sec bearing change
+    private static final float MIN_SPEED_FOR_CORNERING = 2.78f;     // ~10 km/h
+    private static final long  HARD_CORNERING_COOLDOWN = 10000;     // 10s between events
+    private float previousBearing = -1f;
+    private long previousBearingTime = 0;
+    private long lastHardCorneringTime = 0;
+
     // State for speed/distance
     private float currentSpeed = 0.0f;
     private long lastSpeedUpdateTime = 0;
@@ -194,6 +216,10 @@ public class DriverLocationService extends Service {
 
                             for (Location location : locationResult.getLocations()) {
                                 updateSpeedAndIntervals(location);
+                                checkHarshBraking(location);
+                                checkHardAcceleration(location);
+                                checkHardCornering(location);
+                                updatePreviousSpeedState(location);
                                 int battery = ForegroundServerUtils.getBatteryLevel(DriverLocationService.this);
                                 foregroundServerUtil.addLocation(location, battery, currentActivity);
                                 updateDistanceAndDuration(location);
@@ -509,6 +535,110 @@ public class DriverLocationService extends Service {
             // IMPORTANT: no storage reads here; use cached tripId
             updateLocationRequest(tripId);
         }
+    }
+
+    private void checkHarshBraking(Location location) {
+        long now = System.currentTimeMillis();
+        float speed = location.hasSpeed() ? location.getSpeed() : currentSpeed;
+
+        if (previousSpeedTime > 0 && previousSpeed >= MIN_SPEED_FOR_BRAKING) {
+            float timeDeltaSec = (now - previousSpeedTime) / 1000f;
+            if (timeDeltaSec > 0 && timeDeltaSec <= 15) {
+                float deceleration = (previousSpeed - speed) / timeDeltaSec;
+                if (deceleration >= HARSH_BRAKING_THRESHOLD && (now - lastHarshBrakingTime) > HARSH_BRAKING_COOLDOWN) {
+                    lastHarshBrakingTime = now;
+                    Log.w(TAG, "Harsh braking detected! deceleration=" + deceleration + " m/s²"
+                            + " from=" + previousSpeed + " to=" + speed + " m/s");
+                    try {
+                        JSONObject event = new JSONObject();
+                        event.put("details", String.format("Deceleration %.2f m/s² (from %.1f to %.1f m/s)", deceleration, previousSpeed, speed));
+                        JSONObject loc = new JSONObject();
+                        loc.put("lat", location.getLatitude());
+                        loc.put("lon", location.getLongitude());
+                        event.put("location", loc);
+                        event.put("time", java.time.Instant.ofEpochMilli(now).toString());
+                        foregroundServerUtil.addHarshBrakingEvent(event);
+                    } catch (JSONException e) {
+                        Log.e(TAG, "Error building harsh braking event", e);
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void checkHardAcceleration(Location location) {
+        long now = System.currentTimeMillis();
+        float speed = location.hasSpeed() ? location.getSpeed() : currentSpeed;
+
+        if (previousSpeedTime > 0 && speed >= MIN_SPEED_FOR_ACCEL) {
+            float timeDeltaSec = (now - previousSpeedTime) / 1000f;
+            if (timeDeltaSec > 0 && timeDeltaSec <= 15) {
+                float acceleration = (speed - previousSpeed) / timeDeltaSec;
+                if (acceleration >= HARD_ACCELERATION_THRESHOLD && (now - lastHardAccelerationTime) > HARD_ACCELERATION_COOLDOWN) {
+                    lastHardAccelerationTime = now;
+                    Log.w(TAG, "Hard acceleration detected! acceleration=" + acceleration + " m/s²"
+                            + " from=" + previousSpeed + " to=" + speed + " m/s");
+                    try {
+                        JSONObject event = new JSONObject();
+                        event.put("details", String.format("Acceleration %.2f m/s² (from %.1f to %.1f m/s)", acceleration, previousSpeed, speed));
+                        JSONObject loc = new JSONObject();
+                        loc.put("lat", location.getLatitude());
+                        loc.put("lon", location.getLongitude());
+                        event.put("location", loc);
+                        event.put("time", java.time.Instant.ofEpochMilli(now).toString());
+                        foregroundServerUtil.addHardAccelerationEvent(event);
+                    } catch (JSONException e) {
+                        Log.e(TAG, "Error building hard acceleration event", e);
+                    }
+                }
+            }
+        }
+    }
+
+    private void checkHardCornering(Location location) {
+        long now = System.currentTimeMillis();
+        float speed = location.hasSpeed() ? location.getSpeed() : currentSpeed;
+
+        if (!location.hasBearing()) return;
+        float bearing = location.getBearing();
+
+        if (previousBearingTime > 0 && speed >= MIN_SPEED_FOR_CORNERING) {
+            float timeDeltaSec = (now - previousBearingTime) / 1000f;
+            if (timeDeltaSec > 0 && timeDeltaSec <= 15) {
+                float bearingDelta = Math.abs(bearing - previousBearing);
+                // Normalize to [0, 180] to handle wraparound (e.g. 350° -> 10°)
+                if (bearingDelta > 180f) bearingDelta = 360f - bearingDelta;
+                float bearingRate = bearingDelta / timeDeltaSec;
+
+                if (bearingRate >= HARD_CORNERING_THRESHOLD && (now - lastHardCorneringTime) > HARD_CORNERING_COOLDOWN) {
+                    lastHardCorneringTime = now;
+                    Log.w(TAG, "Hard cornering detected! bearingRate=" + bearingRate + " °/s"
+                            + " from=" + previousBearing + "° to=" + bearing + "° speed=" + speed + " m/s");
+                    try {
+                        JSONObject event = new JSONObject();
+                        event.put("details", String.format("Bearing change %.1f°/s (from %.1f° to %.1f°) at %.1f m/s", bearingRate, previousBearing, bearing, speed));
+                        JSONObject loc = new JSONObject();
+                        loc.put("lat", location.getLatitude());
+                        loc.put("lon", location.getLongitude());
+                        event.put("location", loc);
+                        event.put("time", java.time.Instant.ofEpochMilli(now).toString());
+                        foregroundServerUtil.addHardCorneringEvent(event);
+                    } catch (JSONException e) {
+                        Log.e(TAG, "Error building hard cornering event", e);
+                    }
+                }
+            }
+        }
+
+        previousBearing = bearing;
+        previousBearingTime = now;
+    }
+
+    private void updatePreviousSpeedState(Location location) {
+        float speed = location.hasSpeed() ? location.getSpeed() : currentSpeed;
+        previousSpeed = speed;
+        previousSpeedTime = System.currentTimeMillis();
     }
 
     // ===== Notification =====

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Marker from "../../../controllers/NEMap/Marker";
 import useMapStore from "../../map/store/useMapStore";
 
-const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,markerType="default",driverAngle=0) => {
+const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,markerType="default",driverAngle=0, isActingDriverTrip ) => {
     const { setMapMarkers } = useMapStore();    
     const [markersList, setMarkersList] = useState([]);
     const markerId = ``;
@@ -18,7 +18,11 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
             if(driverAngle){
                 driverMarker.setAngle(driverAngle);
             }
+            if (isActingDriverTrip && markerType === "pickup") {
+            return [...filtered];
+            } else {
             return [...filtered, driverMarker];
+            }
         });
     }, [driverLatitude, driverLongitude, driverAngle]);
 
@@ -36,13 +40,13 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
         if(driverAngle){
             driverMarker.setAngle(driverAngle);
         }
-        // console.log("driverMarker2",driverMarker)
+        console.log("driverMarker2",driverMarker)
 
         if(markerType === "pickup"){  
             setMarkersList(prevMarkers => {
                 // Remove all stop markers (keep only driver marker)
                 const stopMarker0 = new Marker(`${0}-stop${markerType}`, stops[0].name, stops[0].location[0], stops[0].location[1], 'home', 36 )
-                if(driverLatitude && driverLongitude){
+                if(driverLatitude && driverLongitude && !isActingDriverTrip){
                     return [driverMarker, stopMarker0];
                 }else{
                     return [stopMarker0];

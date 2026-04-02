@@ -35,7 +35,10 @@ module.exports = function (CLASS) {
                 deviceType: payload.deviceType,
                 deviceName: '',
                 status: payload.completed ? 'completed' : 'live',
-                sessionType: "REAL"
+                sessionType: "REAL",
+                harshBreaking: payload.harsh_braking || null,
+                harshAcceleration: payload.hard_acceleration || null,
+                harshCornering: payload.hard_cornering || null,
             }
 
             const driverLastCoordinate = payload.locations[payload.locations.length - 1]
@@ -53,6 +56,9 @@ module.exports = function (CLASS) {
                     lastLocationUpdatedOn: new Date(driverLastCoordinate.time).getTime(),
                     course: driverLastCoordinate.heading,
                     activity: driverLastCoordinate.activity,
+                    harshBreaking: payload.harsh_braking || null,
+                    harshAcceleration: payload.hard_acceleration || null,
+                    harshCornering: payload.hard_cornering || null,
                 },
                 status: "online",
             }
@@ -71,6 +77,9 @@ module.exports = function (CLASS) {
             if (existingSession) {
                 await LiveLocation.addLocations(payload.locations, payload.sessionId, payload.id);
                 await Driver.updateLiveStatsAndLocation(driverId, driverLastLocationDetail.location, driverLastLocationDetail.liveStats);
+                if (payload.harsh_braking || payload.hard_acceleration || payload.hard_cornering) {
+                await Trip.updateHarshDrivingStats(tripId, driverLastLocationDetail.liveStats.harshBreaking, driverLastLocationDetail.liveStats.harshAcceleration, driverLastLocationDetail.liveStats.harshCornering);
+                }
                 if (payload.completed) {
                     sessionData.endTime = new Date(payload.locations[payload.locations.length - 1].time);
                     await Session.updateStatus(payload.sessionId, 'completed', sessionData.endTime)
@@ -85,6 +94,9 @@ module.exports = function (CLASS) {
             await Session.createSession(sessionData)
             await LiveLocation.addLocations(payload.locations, payload.sessionId, payload.id);
             await Driver.updateLiveStatsAndLocation(driverId, driverLastLocationDetail.location, driverLastLocationDetail.liveStats);
+            if (payload.harsh_braking || payload.hard_acceleration || payload.hard_cornering) {
+                await Trip.updateHarshDrivingStats(tripId, driverLastLocationDetail.liveStats.harshBreaking, driverLastLocationDetail.liveStats.harshAcceleration, driverLastLocationDetail.liveStats.harshCornering);
+            }
             return res.status(200).json({ success: true, message: 'Locations added', details: [] });
 
         } catch (err) {

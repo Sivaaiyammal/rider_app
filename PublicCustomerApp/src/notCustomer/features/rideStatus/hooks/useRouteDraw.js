@@ -6,7 +6,7 @@ import useMapStore from '../../map/store/useMapStore';
 import {utils} from '../../../utils/Utils';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 
-export default function useRouteDraw({ destinationlat,destinationlon, driverLat, driverLon,remainingStops }) {
+export default function useRouteDraw({ destinationlat,destinationlon, driverLat, driverLon,remainingStops, isActingDriverTrip }) {
 	const [estimatedDuration, setEstimatedDuration] = useState(1);
 	const currentPolylineRef = useRef([]);
 	const [isDiverted, setIsDiverted] = useState(true);
@@ -15,6 +15,8 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
     const [originalDuration, setOriginalDuration] = useState(0);
 	const { setGeometries, setMapBounds } = useMapStore();
 	const{getCurrentScreenName}=useStackScreenStore();
+
+	
 	useEffect(() => {
 		if (destinationlat == null || destinationlon == null) return;
 		setIsDiverted(true);
@@ -337,11 +339,12 @@ export default function useRouteDraw({ destinationlat,destinationlon, driverLat,
 	useEffect(() => {
 		if (!driverLat || !driverLon) return;
 		if (destinationlat == null || destinationlon == null) return;
+		if (isActingDriverTrip) return;
 		DrawRoute(driverLat, driverLon);
 		return () => {
 			setGeometries([]);
 		}
-	}, [destinationlat, destinationlon, remainingStops, driverLat, driverLon]);
+	}, [destinationlat, destinationlon, remainingStops, driverLat, driverLon, isActingDriverTrip]);
 	return {estimatedDuration,remainingDistance,SetViewBoundingBox}
   
 }

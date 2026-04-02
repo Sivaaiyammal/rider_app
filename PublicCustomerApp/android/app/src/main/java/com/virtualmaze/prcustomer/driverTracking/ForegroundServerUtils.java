@@ -45,6 +45,18 @@ public class ForegroundServerUtils {
     private final AtomicBoolean isRequestInProgress;
     private final AtomicBoolean sessionExpiredHandled;
 
+    // Harsh braking events queue
+    private final JSONArray harshBrakingEvents = new JSONArray();
+    private final Object harshBrakingLock = new Object();
+
+    // Hard acceleration events queue
+    private final JSONArray hardAccelerationEvents = new JSONArray();
+    private final Object hardAccelerationLock = new Object();
+
+    // Hard cornering events queue
+    private final JSONArray hardCorneringEvents = new JSONArray();
+    private final Object hardCorneringLock = new Object();
+
     public ForegroundServerUtils(Context context) {
         this.appContext = context.getApplicationContext();
         this.dbHelper = new SQLiteOpenHelper(appContext, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -136,6 +148,70 @@ public class ForegroundServerUtils {
             Log.d(TAG, "New location added with ID: " + newRowId);
         } else {
             Log.e(TAG, "Error adding new location");
+        }
+    }
+
+    public void addHarshBrakingEvent(JSONObject event) {
+        synchronized (harshBrakingLock) {
+            harshBrakingEvents.put(event);
+            Log.d(TAG, "Harsh braking event queued. Total pending: " + harshBrakingEvents.length());
+        }
+    }
+
+    private JSONArray drainHarshBrakingEvents() {
+        synchronized (harshBrakingLock) {
+            if (harshBrakingEvents.length() == 0) return null;
+            JSONArray copy = new JSONArray();
+            for (int i = 0; i < harshBrakingEvents.length(); i++) {
+                try { copy.put(harshBrakingEvents.getJSONObject(i)); } catch (JSONException ignored) {}
+            }
+            // Clear after copying
+            while (harshBrakingEvents.length() > 0) {
+                harshBrakingEvents.remove(0);
+            }
+            return copy;
+        }
+    }
+
+    public void addHardAccelerationEvent(JSONObject event) {
+        synchronized (hardAccelerationLock) {
+            hardAccelerationEvents.put(event);
+            Log.d(TAG, "Hard acceleration event queued. Total pending: " + hardAccelerationEvents.length());
+        }
+    }
+
+    private JSONArray drainHardAccelerationEvents() {
+        synchronized (hardAccelerationLock) {
+            if (hardAccelerationEvents.length() == 0) return null;
+            JSONArray copy = new JSONArray();
+            for (int i = 0; i < hardAccelerationEvents.length(); i++) {
+                try { copy.put(hardAccelerationEvents.getJSONObject(i)); } catch (JSONException ignored) {}
+            }
+            while (hardAccelerationEvents.length() > 0) {
+                hardAccelerationEvents.remove(0);
+            }
+            return copy;
+        }
+    }
+
+    public void addHardCorneringEvent(JSONObject event) {
+        synchronized (hardCorneringLock) {
+            hardCorneringEvents.put(event);
+            Log.d(TAG, "Hard cornering event queued. Total pending: " + hardCorneringEvents.length());
+        }
+    }
+
+    private JSONArray drainHardCorneringEvents() {
+        synchronized (hardCorneringLock) {
+            if (hardCorneringEvents.length() == 0) return null;
+            JSONArray copy = new JSONArray();
+            for (int i = 0; i < hardCorneringEvents.length(); i++) {
+                try { copy.put(hardCorneringEvents.getJSONObject(i)); } catch (JSONException ignored) {}
+            }
+            while (hardCorneringEvents.length() > 0) {
+                hardCorneringEvents.remove(0);
+            }
+            return copy;
         }
     }
 
@@ -254,6 +330,21 @@ public class ForegroundServerUtils {
                     requestBody.put("id", deviceId);
                     requestBody.put("deviceType", "mobile");
                     requestBody.put("locations", locationsWithoutId);
+
+                    JSONArray brakingEvents = drainHarshBrakingEvents();
+                    if (brakingEvents != null) {
+                        requestBody.put("harsh_braking", brakingEvents);
+                    }
+
+                    JSONArray accelEvents = drainHardAccelerationEvents();
+                    if (accelEvents != null) {
+                        requestBody.put("hard_acceleration", accelEvents);
+                    }
+
+                    JSONArray cornerEvents = drainHardCorneringEvents();
+                    if (cornerEvents != null) {
+                        requestBody.put("hard_cornering", cornerEvents);
+                    }
                 } catch (JSONException e) {
                     Log.e(TAG, "Error creating request body", e);
                     isRequestInProgress.set(false);
@@ -345,6 +436,21 @@ public class ForegroundServerUtils {
 //                    requestBody.put("id", deviceId);
                     requestBody.put("deviceType", "mobile");
                     requestBody.put("locations", locationsWithoutId);
+
+                    JSONArray brakingEvents = drainHarshBrakingEvents();
+                    if (brakingEvents != null) {
+                        requestBody.put("harsh_braking", brakingEvents);
+                    }
+
+                    JSONArray accelEvents = drainHardAccelerationEvents();
+                    if (accelEvents != null) {
+                        requestBody.put("hard_acceleration", accelEvents);
+                    }
+
+                    JSONArray cornerEvents = drainHardCorneringEvents();
+                    if (cornerEvents != null) {
+                        requestBody.put("hard_cornering", cornerEvents);
+                    }
                 } catch (JSONException e) {
                     Log.e(TAG, "Error creating request body", e);
                     isRequestInProgress.set(false);

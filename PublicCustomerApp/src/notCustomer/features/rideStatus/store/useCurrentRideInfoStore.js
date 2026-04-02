@@ -37,7 +37,7 @@ const useCurrentRideInfoStore = create((set) => ({
   finalDistance:"",
   onGoingTripCancelled:null,
   bills: null,
-
+  isActingDriverTrip: null,
 
   setTripId: (tripId) => set({ tripId }),
   setTripStatus: (tripStatus) => set({ tripStatus }),
@@ -124,7 +124,7 @@ const useCurrentRideInfoStore = create((set) => ({
     onGoingTripCancelled:info.onGoingTripCancelled || null,
     maxDistanceLimit: info.maxDistanceLimit || null,
     bills: info.bills || null,
-   
+    isActingDriverTrip: info.isActingDriverTrip || null,
   }),
 
   resetCurrentRideInfo: () => set({
@@ -155,6 +155,7 @@ const useCurrentRideInfoStore = create((set) => ({
     estimatedArrivalMins:null,
     onGoingTripCancelled:null,
     maxDistanceLimit:null,
+    isActingDriverTrip: null,
   }),
 }));
 

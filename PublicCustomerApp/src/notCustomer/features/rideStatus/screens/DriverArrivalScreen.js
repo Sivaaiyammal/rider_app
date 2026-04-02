@@ -84,6 +84,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
     vehicleType,
     estimatedFare,
     paymentMethod,
+    isActingDriverTrip
   } = useCurrentRideInfoStore(
     state => ({
       stops: state.stops,
@@ -93,6 +94,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
       vehicleType: state.vehicleType,
       estimatedFare: state.estimatedFare,
       paymentMethod: state.paymentMethod,
+      isActingDriverTrip : state.isActingDriverTrip,
     }),
     shallowEqual,
   );
@@ -301,8 +303,14 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
         vehicleType={vehicleType}
         onEstimatedDurationChange={handleEstimatedDurationChange}
         onBoundingBoxReady={handleBoundingBoxReady}
-      />
+        isActingDriverTrip={isActingDriverTrip}
 
+      />
+      {isActingDriverTrip ? (
+      <View style={styles.containerTop}>
+        <AdaptiveText style={styles.topBarText}>{t('your_driver_is_on_the_way')}</AdaptiveText>
+      </View>
+      ):(
       <View style={styles.containerTop}>
         <AdaptiveText style={styles.topBarText}>{t('your_driver_will_arrive_in')}</AdaptiveText>
         <View style={styles.timeBox}>
@@ -312,6 +320,8 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
           </AdaptiveText>
         </View>
       </View>
+      )}
+     
 
       <View style={[styles.root, { backgroundColor: 'white' }]}>
         <View style={styles.vehicleCard}>
@@ -442,7 +452,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
 };
 
 const DriverLocationEffects = React.memo(
-  ({ stops, vehicleType, onBoundingBoxReady, onEstimatedDurationChange }) => {
+  ({ stops, vehicleType, onBoundingBoxReady, onEstimatedDurationChange, isActingDriverTrip }) => {
     const { driverLatitude, driverLongitude, driverAngle } = useAssignedDriverInfoStore(
       state => ({
         driverLatitude: state.driverLatitude,
@@ -461,9 +471,10 @@ const DriverLocationEffects = React.memo(
       destinationlon: destinationLon,
       driverLat: driverLatitude,
       driverLon: driverLongitude,
+      isActingDriverTrip: isActingDriverTrip,
     });
 
-    useStopsMarkerHook(stops, driverLatitude, driverLongitude, vehicleType, 'pickup', driverAngle);
+    useStopsMarkerHook(stops, driverLatitude, driverLongitude, vehicleType, 'pickup', driverAngle, isActingDriverTrip);
 
     useEffect(() => {
       if (onBoundingBoxReady) {
