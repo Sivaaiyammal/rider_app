@@ -1,12 +1,10 @@
 import { StyleSheet, Text, Touchable, TouchableOpacity, View } from 'react-native'
 import React from 'react'
-
 import Feather from 'react-native-vector-icons/Feather';
 import useDriverStatusStore from '../../store/useDriverStatusStore';
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
 import { Colors, Fonts } from '../../../common/constants/constants';
 import { height } from '../../../common/utils/scalingutils';
-
 
 const UpComingTrips = (props) => {
     const {onLayout} = props;
@@ -66,6 +64,7 @@ const styles = StyleSheet.create({
     upComingTripsLength:{
         fontSize:20,
         fontFamily:Fonts.medium,
+        color:Colors.white,
         backgroundColor:Colors.periwinkle,
         borderRadius:50,
         height:40,
@@ -74,7 +73,6 @@ const styles = StyleSheet.create({
         justifyContent:'center',
         textAlign:'center',
         textAlignVertical:'center',
-        color:Colors.white
      
     }
 })

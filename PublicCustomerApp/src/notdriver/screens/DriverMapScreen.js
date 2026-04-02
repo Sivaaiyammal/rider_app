@@ -22,6 +22,7 @@ import {useTranslation} from 'react-i18next';
 import usePublicDriverStore from '../store/usePublicDriverStore';
 import useCurrentScreenStore from '../../common/store/useCurrentScreenStore';
 import DueAlert from '../components/DueAlert';
+import UpComingTrips from './UpComingTrips/UpComingTrips';
 
 const {NeNativeModule} = NativeModules;
 
@@ -239,6 +240,8 @@ const DriverMapScreen = props => {
           )}
         </>
       )}
+         <UpComingTrips onLayout={(width, height) => setLayoutHeight(height)}/> 
+
     </>
   );
 };

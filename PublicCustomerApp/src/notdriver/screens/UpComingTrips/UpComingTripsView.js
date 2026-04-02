@@ -1,20 +1,30 @@
-import {Linking, NativeModules, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Linking,
+  NativeModules,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Feather from 'react-native-vector-icons/Feather';
+
 import moment from 'moment';
-import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter';
-import { useTripAcceptStore } from '../../store/useTripAcceptStore';
-import { useMapMarkerStore } from '../../../common/store/useMapMarkerStore';
-import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
-import { height } from '../../../common/utils/scalingutils';
+import {useTripAcceptStore} from '../../store/useTripAcceptStore';
+import {useMapMarkerStore} from '../../../common/store/useMapMarkerStore';
+import {useStackScreenStore} from '../../../common/store/useStackScreenStore';
+import {useTranslation} from 'react-i18next';
+import {Colors, Fonts} from '../../../common/constants/constants';
+import {height} from '../../../common/utils/scalingutils';
 import UseBackButton from '../../../common/hooks/UseBackButton';
 import CustomeBottomSheet from '../../../common/components/CustomeBottomSheet';
-import { Colors, Fonts } from '../../../common/constants/constants';
 import AddressComponent from '../../components/AddressComponent';
 import CancelRideModal from '../../components/CancelModel';
-import { useTranslation } from 'react-i18next';
-
+import {firebaselog_tripBooking} from '../../../common/utils/FirebaseAnalytics';
+import useTripsStore from '../../store/useTripsStore';
+import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter';
+import NavBar from '../../../common/components/NavBar';
 
 const {NeNativeModule} = NativeModules;
 
@@ -99,13 +109,12 @@ const formatScheduledAt = scheduleDateTime => {
 const UpComingTripsView = () => {
   const {upComingTripDetails, loading, setLoading} = useTripAcceptStore();
   const {setDirectionPoints, routeLoading} = useMapMarkerStore();
-  const {t} = useTranslation()
-  const {goBack} = useStackScreenStore();
-  const countdownMeta = getCountdownMeta(
-    upComingTripDetails?.scheduleDateTime,
-  );
+  const {t} = useTranslation();
+  const {goBack, setStackScreen} = useStackScreenStore();
+  const countdownMeta = getCountdownMeta(upComingTripDetails?.scheduleDateTime);
+  const {setActiveTripData} = useTripsStore();
   const scheduledAt = formatScheduledAt(upComingTripDetails?.scheduleDateTime);
-  const[cancelRideModalVisible, setCancelRideModalVisible] = useState(false);
+  const [cancelRideModalVisible, setCancelRideModalVisible] = useState(false);
 
   const passengerPhoneRaw = upComingTripDetails?.bookingForPhone || '';
   const passengerPhone = passengerPhoneRaw.replace(/\s|-/g, '');
@@ -154,12 +163,12 @@ const UpComingTripsView = () => {
         padding: padding.map(v => parseInt(v, 10)),
       });
     }
-  }, [upComingTripDetails, routeLoading, height]);
+  }, [upComingTripDetails]);
 
   const onGoBack = () => {
-    NeNativeModule.clearDirectionPoints()
-    goBack()
-  }
+    NeNativeModule.clearDirectionPoints();
+    goBack();
+  };
 
   const handleCallPassenger = () => {
     if (!passengerPhone) {
@@ -170,149 +179,172 @@ const UpComingTripsView = () => {
     });
   };
 
-   const handleEndTrip = async (reason) => {
-      setLoading(true)
-      setCancelRideModalVisible(false)
-      setLoading(false)
-    }
+  const handleEndTrip = async reason => {
+    setLoading(true);
+    setCancelRideModalVisible(false);
+    setLoading(false);
+  };
+
+  const onAcceptRide = () => {
+    const tripData = upComingTripDetails;
+    tripData.status = 'ACCEPTED';
+    setActiveTripData([tripData]);
+    setLoading(false);
+    firebaselog_tripBooking(
+      'TB_Driver_Allocation(TB_DA)',
+      'TB_DA:trip_accepted_inapp',
+    );
+    setStackScreen('PublicDriverTrackingScreen');
+  };
 
   return (
     <>
-    <UseBackButton onBackPress={()=>onGoBack()}/>
-    <CustomeBottomSheet useScrollView>
-      <View style={styles.sectionCard}>
-        <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionHeading}>Passenger Details</Text>
-          <View style={badgeContainerStyle}>
-            <Feather name="clock" size={16} color={badgeIconColor} />
-            <Text style={badgeTextStyle}>{countdownMeta.label}</Text>
+      <NavBar onBackPress={() => onGoBack()}/>
+      <UseBackButton onBackPress={() => onGoBack()} />
+      <CustomeBottomSheet useScrollView>
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionHeading}>Passenger Details</Text>
+            <View style={badgeContainerStyle}>
+              <Feather name="clock" size={16} color={badgeIconColor} />
+              <Text style={badgeTextStyle}>{countdownMeta.label}</Text>
+            </View>
           </View>
-        </View>
-        <View style={styles.passengerRow}>
-          <View style={styles.passengerInfo}>
-            <Text style={styles.passengerName}>
-              {upComingTripDetails?.bookingForName || 'Passenger'}
-            </Text>
-            <Text style={styles.passengerMeta}>
-              {upComingTripDetails?.bookingFor || 'MYSELF'}
-            </Text>
-            <Text style={styles.passengerMeta}>
-              {passengerPhoneRaw || 'Phone not available'}
-            </Text>
-            {/* <Text style={styles.passengerMeta}>
+          <View style={styles.passengerRow}>
+            <View style={styles.passengerInfo}>
+              <Text style={styles.passengerName}>
+                {upComingTripDetails?.bookingForName || 'Passenger'}
+              </Text>
+              <Text style={styles.passengerMeta}>
+                {upComingTripDetails?.bookingFor || 'MYSELF'}
+              </Text>
+              <Text style={styles.passengerMeta}>
+                {passengerPhoneRaw || 'Phone not available'}
+              </Text>
+              {/* <Text style={styles.passengerMeta}>
               {`Vehicle: ${upComingTripDetails?.vehicleType || '-'}`}
             </Text> */}
-            <Text style={styles.passengerMeta}>
-              {`Payment: ${upComingTripDetails?.paymentMethod || '-'}`}
-            </Text>
+              <Text style={styles.passengerMeta}>
+                {`Payment: ${upComingTripDetails?.paymentMethod || '-'}`}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={[
+                styles.contactButton,
+                !passengerPhone && styles.contactButtonDisabled,
+              ]}
+              activeOpacity={0.85}
+              onPress={handleCallPassenger}
+              disabled={!passengerPhone}>
+              <Feather
+                name="phone"
+                size={18}
+                color={passengerPhone ? '#FFFFFF' : '#9CA3AF'}
+              />
+              <Text
+                style={[
+                  styles.contactButtonText,
+                  !passengerPhone && styles.contactButtonTextDisabled,
+                ]}>
+                {passengerPhone ? 'Call' : 'No Number'}
+              </Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={[styles.contactButton, !passengerPhone && styles.contactButtonDisabled]}
-            activeOpacity={0.85}
-            onPress={handleCallPassenger}
-            disabled={!passengerPhone}>
-            <Feather
-              name="phone"
-              size={18}
-              color={passengerPhone ? '#FFFFFF' : '#9CA3AF'}
-            />
-            <Text
-              style={[styles.contactButtonText, !passengerPhone && styles.contactButtonTextDisabled]}>
-              {passengerPhone ? 'Call' : 'No Number'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.scheduleSection}>
-          <View style={styles.scheduleRow}>
-            <Feather
-              name="calendar"
-              size={18}
-              color={Colors.periwinkle}
-              style={styles.scheduleIcon}
-            />
-            <View>
-              <Text style={styles.scheduleLabel}>Scheduled Time</Text>
-              <Text style={styles.scheduleValue}>{scheduledAt}</Text>
+          <View style={styles.scheduleSection}>
+            <View style={styles.scheduleRow}>
+              <Feather
+                name="calendar"
+                size={18}
+                color={Colors.periwinkle}
+                style={styles.scheduleIcon}
+              />
+              <View>
+                <Text style={styles.scheduleLabel}>Scheduled Time</Text>
+                <Text style={styles.scheduleValue}>{scheduledAt}</Text>
+              </View>
             </View>
           </View>
         </View>
-      </View>
 
-      <AddressComponent
-        percentage={0}
-        waypoints={upComingTripDetails?.stops || []}
-        deviceLocation={null}
-        isPublicRides={true}
-      />
-          <View style={styles.cardsContainer}>
-                    <View style={[styles.infoCard, styles.distanceCard]}>
-                      <View style={styles.cardIconContainer}>
-                        <Feather name="map-pin" size={16} color="#FFFFFF" />
-                      </View>
-                      <Text style={styles.cardValue}>
-                        {upComingTripDetails?.estimatedDistance
-                          ? formatDistance(upComingTripDetails?.estimatedDistance)
-                          : '0.00 km'}
-                      </Text>
-                      <Text style={styles.cardLabel}>
-                        {t('distance') || 'Distance'}
-                      </Text>
-                    </View>
-
-                    <View style={[styles.infoCard, styles.durationCard]}>
-                      <View style={styles.cardIconContainer}>
-                        <Feather name="clock" size={16} color="#FFFFFF" />
-                      </View>
-                      <Text style={styles.cardValue}>
-                        {upComingTripDetails?.estimatedDuration
-                          ? formatDuration(upComingTripDetails.estimatedDuration)
-                          : '0 Mins'}
-                      </Text>
-                      <Text style={styles.cardLabel}>
-                        {t('duration') || 'Duration'}
-                      </Text>
-                    </View>
-
-                    <View style={[styles.infoCard, styles.fareCard]}>
-                      <View style={styles.cardIconContainer}>
-                        <FontAwesome name="rupee" size={16} color="#FFFFFF" />
-                      </View>
-                      <Text style={styles.cardValue}>
-                        ₹
-                        {upComingTripDetails?.minFare
-                          ? parseFloat(upComingTripDetails.minFare).toFixed(2)
-                          : '0.00'}
-                      </Text>
-                      <Text style={styles.cardLabel}>{t('fare') || 'Fare'}</Text>
-                    </View>
-                  </View>
-      <TouchableOpacity
-        style={[styles.actionButton, styles.primaryButton]}
-        activeOpacity={0.85}
-        onPress={() => {}}>
-        <Text style={styles.actionButtonText}>Start Ride</Text>
-        <FontAwesome
-          name="road"
-          size={18}
-          color="#FFFFFF"
-          style={styles.actionButtonIcon}
+        <AddressComponent
+          percentage={0}
+          waypoints={upComingTripDetails?.stops || []}
+          deviceLocation={null}
+          isPublicRides={true}
         />
-      </TouchableOpacity>
+        <View style={styles.cardsContainer}>
+          <View style={[styles.infoCard, styles.distanceCard]}>
+            <View style={styles.cardIconContainer}>
+              <Feather name="map-pin" size={16} color="#FFFFFF" />
+            </View>
+            <Text style={styles.cardValue}>
+              {upComingTripDetails?.estimatedDistance
+                ? formatDistance(upComingTripDetails?.estimatedDistance)
+                : '0.00 km'}
+            </Text>
+            <Text style={styles.cardLabel}>{t.distance || 'Distance'}</Text>
+          </View>
+
+          <View style={[styles.infoCard, styles.durationCard]}>
+            <View style={styles.cardIconContainer}>
+              <Feather name="clock" size={16} color="#FFFFFF" />
+            </View>
+            <Text style={styles.cardValue}>
+              {upComingTripDetails?.estimatedDuration
+                ? formatDuration(upComingTripDetails.estimatedDuration)
+                : '0 Mins'}
+            </Text>
+            <Text style={styles.cardLabel}>{t.duration || 'Duration'}</Text>
+          </View>
+
+          <View style={[styles.infoCard, styles.fareCard]}>
+            <View style={styles.cardIconContainer}>
+              <FontAwesome name="rupee" size={16} color="#FFFFFF" />
+            </View>
+            <Text style={styles.cardValue}>
+              ₹
+              {upComingTripDetails?.minFare
+                ? parseFloat(upComingTripDetails.minFare).toFixed(2)
+                : '0.00'}
+            </Text>
+            <Text style={styles.cardLabel}>{t.fare || 'Fare'}</Text>
+          </View>
+        </View>
         <TouchableOpacity
-        style={[styles.actionButton,{backgroundColor:Colors.red} ]}
-        activeOpacity={0.85}
-        onPress={() => setCancelRideModalVisible(true)}>
-        <Text style={styles.actionButtonText}>Cancel Ride</Text>
-        {/* <FontAwesome
+          style={[styles.actionButton, styles.primaryButton]}
+          activeOpacity={0.85}
+          onPress={() => onAcceptRide()}>
+          <Text style={styles.actionButtonText}>Start Ride</Text>
+          <FontAwesome
+            name="road"
+            size={18}
+            color="#FFFFFF"
+            style={styles.actionButtonIcon}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.actionButton, {backgroundColor: Colors.red}]}
+          activeOpacity={0.85}
+          onPress={() => setCancelRideModalVisible(true)}>
+          <Text style={styles.actionButtonText}>Cancel Ride</Text>
+          {/* <FontAwesome
           name="road"
           size={18}
           color="#FFFFFF"
           style={styles.actionButtonIcon}
         /> */}
-      </TouchableOpacity>
-    </CustomeBottomSheet>
-       {cancelRideModalVisible && <CancelRideModal modalVisible={cancelRideModalVisible} setModalVisible={setCancelRideModalVisible} callCancelRide={handleEndTrip} loading={loading} tripData={upComingTripDetails}/>}
-     </>
+        </TouchableOpacity>
+      </CustomeBottomSheet>
+      {cancelRideModalVisible && (
+        <CancelRideModal
+          modalVisible={cancelRideModalVisible}
+          setModalVisible={setCancelRideModalVisible}
+          callCancelRide={handleEndTrip}
+          loading={loading}
+          tripData={upComingTripDetails}
+        />
+      )}
+    </>
   );
 };
 
@@ -467,7 +499,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.periwinkle,
     width: '90%',
     alignSelf: 'center',
-    marginVertical:10,
+    marginVertical: 10,
   },
   primaryButton: {
     backgroundColor: Colors.bright_orange,
@@ -486,9 +518,9 @@ const styles = StyleSheet.create({
   cardsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical:20,
-    width:'90%',
-    alignSelf:'center'
+    marginVertical: 20,
+    width: '90%',
+    alignSelf: 'center',
   },
   infoCard: {
     flex: 1,
@@ -517,7 +549,7 @@ const styles = StyleSheet.create({
   fareCard: {
     backgroundColor: '#FF6B6B', // Red/Coral
   },
-   cardIconContainer: {
+  cardIconContainer: {
     width: 28,
     height: 28,
     borderRadius: 24,
@@ -540,5 +572,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-  }
+  },
 });

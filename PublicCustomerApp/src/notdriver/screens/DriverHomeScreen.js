@@ -449,12 +449,15 @@ const PublicRidesDriverHomeScreen = () => {
         } else {
           setIsBankVerified(true)
         }
-
-        if(response?.driver?.role === 'dco' && (!vehicleApproved || vehicleBlocked || vehicleDeleted)){
+        
+        if (response?.driver?.mode !== "acting_driver") {
+          if(response?.driver?.role === 'dco' && (!vehicleApproved || vehicleBlocked || vehicleDeleted)){
           setStackScreen('DriverVehicleApprovalScreen');
           BGLocationTask.stopDriverBgTask();
           return
+         }
         }
+       
 
         if (isBlocked) {
           // setIsBlocked(true)
@@ -464,7 +467,8 @@ const PublicRidesDriverHomeScreen = () => {
 
         if (upComingTrips && upComingTrips.length > 0) {
            setUpComingTrips(upComingTrips);
-          return
+        } else {
+          setUpComingTrips([]);
         }
       }
       else {

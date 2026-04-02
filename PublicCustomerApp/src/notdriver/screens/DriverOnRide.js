@@ -110,7 +110,8 @@ const DriverOnRide = () => {
 
   const tripsStatus = activeTripData && activeTripData[0]?.status ? activeTripData[0]?.status : "";
 
-  const isActingDriverTrip = true;
+  const isActingDriverTrip = activeTripData[0]?.isActingDriverTrip ? activeTripData[0]?.isActingDriverTrip : false;
+  
   const { preTripDone, postTripDone, pendingNavOpen, setPendingNavOpen, reset: resetDriverMedia } = useActingDriverMediaStore();
   // Fallback: if store was cleared but photos are already on server, treat as done
   const _prePhotos = activeTripData?.[0]?.bills?.preTripVehiclePhotos;
