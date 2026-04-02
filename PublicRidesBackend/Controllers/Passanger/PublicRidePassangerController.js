@@ -1,4 +1,4 @@
-const { passangerSchemaPublicrides, passangerLoginSchemaPublicrides, tripDataSchemaPublicrides, rideEstimationSchemaPublicrides, passangerVerifyOTPSchemaPublicrides } = require("../../Schemas/PassangerSchema");
+const { passangerSchemaPublicrides, passangerLoginSchemaPublicrides, tripDataSchemaPublicrides, rideEstimationSchemaPublicrides, passangerVerifyOTPSchemaPublicrides, actingDriverTripSchemaPublicrides } = require("../../Schemas/PassangerSchema");
 const { publicridesFeedbackSchema } = require("../../Schemas/FeedbackSchema");
 const Feedback = require("../../Models/Feedback");
 const Passanger = require("../../Models/Passanger");
@@ -454,6 +454,67 @@ module.exports = function (CLASS) {
             return this.handleError(err, res);
         }
 
+    }
+
+
+    CLASS.prototype.publicridesBookActingDriverTrip = async function (req, res) {
+
+        const [payload, error] = await this.validate(req.body, actingDriverTripSchemaPublicrides);
+        if (!payload) return res.status(400).json({ success: false, message: error });
+
+        try {
+            const passangerId = req.passanger.id;
+            const regionalCode = payload?.regionCode === 'default' ? 'NOT' : payload?.regionCode;
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = String(now.getFullYear()).slice(-2);
+            const currentdate = `${day}${month}${year}`;
+            const random5digits = Math.floor(10000 + Math.random() * 90000);
+            const TripId = `AD${regionalCode}${currentdate}${random5digits}`;
+            payload.rideId = TripId;
+
+            const OfferCoupon = payload?.offerCoupon || null;
+            payload.bookingTime = new Date().getTime();
+            payload.status = RideStatus.PENDING;
+            payload.publicRidesTrip = true;
+            payload.passangerId = new ObjectId(passangerId);
+            payload.createdBy = passangerId;
+            payload.userId = passangerId;
+            delete payload.offerCoupon;
+
+            if (payload.regionalOffice) {
+                payload.regionalOffice = new ObjectId(payload.regionalOffice);
+            }
+
+            const passanger = await Passanger.getPassangerWithId(passangerId);
+            if (!passanger) return res.status(400).json({ success: false, message: 'Passanger does not exists' });
+
+            const otp = OTP.generateOTP(4);
+            payload.otp = otp;
+
+            const trip = await Trip.addTrip(payload);
+            const TripDetails = await Trip.getTripById(trip?.insertedId);
+
+            if (trip?.insertedId) {
+                await Passanger.updatePassangerLatestTripId(passangerId, trip?.insertedId);
+            }
+
+            if (OfferCoupon) {
+                const { fareService } = FareEngineInterface.getServices();
+                const coupon = await fareService.verifyAndApplyCoupon({
+                    tripId: String(trip?.insertedId),
+                    couponCode: OfferCoupon,
+                    fare: TripDetails?.minFare || 0,
+                    regionCode: payload?.regionCode,
+                });
+                if (!coupon?.success) console.error('Acting driver coupon not applied');
+            }
+
+            return res.json({ success: true, message: 'Acting driver trip booked successfully', tripId: trip?.insertedId, trip: TripDetails });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
     }
 
 
@@ -1622,6 +1683,9 @@ module.exports = function (CLASS) {
                 vehicleDoc.year = vehicleInfo.year || '';
                 vehicleDoc.fuelType = vehicleInfo.fuelType || '';
                 vehicleDoc.color = vehicleInfo.color || '';
+                if (vehicleInfo.maxSpeed !== undefined && vehicleInfo.maxSpeed !== null) {
+                    vehicleDoc.maxSpeed = Number(vehicleInfo.maxSpeed);
+                }
                 vehicleDoc.verified = false;
             }
 
@@ -1674,7 +1738,7 @@ module.exports = function (CLASS) {
             const owned = vehicles.some(v => v._id.toString() === vehicleId);
             if (!owned) return res.status(403).json({ success: false, message: 'Vehicle not found for this passenger' });
 
-            const allowedFields = ['type', 'make', 'model', 'year', 'fuelType', 'transmission', 'features', 'additionalInfo'];
+            const allowedFields = ['type', 'make', 'model', 'year', 'fuelType', 'transmission', 'features', 'additionalInfo', 'maxSpeed'];
             const updateDoc = {};
             for (const key of allowedFields) {
                 if (vehicleInfo[key] !== undefined) updateDoc[key] = vehicleInfo[key];

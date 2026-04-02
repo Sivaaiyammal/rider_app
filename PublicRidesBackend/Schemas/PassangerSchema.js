@@ -175,6 +175,44 @@ const rideEstimationSchemaPublicrides = Joi.object({
 })
 
 
+const actingDriverTripSchemaPublicrides = Joi.object({
+    startLocation: Joi.array().items(Joi.number().min(-180).max(180), Joi.number().min(-90).max(90)).length(2).required(),
+    endLocation: Joi.array().items(Joi.number().min(-180).max(180), Joi.number().min(-90).max(90)).length(2).required(),
+    stops: Joi.array().items(Joi.object({
+        name: Joi.string().required(),
+        address: Joi.string().required(),
+        location: Joi.array().items(Joi.number().min(-180).max(180), Joi.number().min(-90).max(90)).length(2).required(),
+        waitingTime: Joi.number().required(),
+        isReached: Joi.boolean().required()
+    })).min(2).required(),
+    vehicleType: Joi
+        .string()
+        .optional(),
+    pickupTime: Joi.number(),
+    passangerCount: Joi.number().required(),
+    estimatedDistance: Joi.number().required(),
+    estimatedDuration: Joi.number().required(),
+    // Acting driver specifics
+    isActingDriverTrip: Joi.boolean().valid(true).required(),
+    actingDriverHours: Joi.number().allow(null).optional(),
+    passangerVehicleId: Joi.string().required(),
+    passangerVehicleType: Joi.string().required(),
+    // Booking details
+    bookingFor: Joi.string().valid('MYSELF', 'OTHERS').required(),
+    bookingForName: Joi.string().allow('').optional(),
+    bookingForPhone: Joi.string().allow('').optional(),
+    paymentMethod: Joi.string().required(),
+    nightRide: Joi.boolean().required(),
+    femaleOnly: Joi.boolean().required(),
+    offerCoupon: Joi.string().optional(),
+    regionCode: Joi.string().optional(),
+    regionalOffice: Joi.string().allow(null).optional(),
+    appVersion: Joi.string().optional(),
+    buildNumber: Joi.string().optional(),
+    estimatedWaitTime: Joi.number().optional(),
+    rideMatchVersion: Joi.string().optional(),
+})
+
 module.exports = {
     passangerSchema, bulkPassangersSchema,
     passangerUpdateSchema, passangerLoginSchema,
@@ -182,5 +220,6 @@ module.exports = {
     tripDataSchemaPublicrides, passangerLoginSchemaPublicrides,
     rideEstimationSchemaPublicrides,
     passangerVerifyOTPSchemaPublicrides,
-    passangerEmergencyContactSchema
+    passangerEmergencyContactSchema,
+    actingDriverTripSchemaPublicrides
 }

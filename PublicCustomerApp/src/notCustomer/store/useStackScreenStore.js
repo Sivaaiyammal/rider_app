@@ -22,7 +22,7 @@ export const useStackScreenStore = create((set, get) => ({
   
   goBack: (params) => {
 
-    console.log('goBack..............................',params);
+    // console.log('goBack..............................',params);
     const stack = get().stackScreen;
     if(stack.length > 1){
       const arr = stack.slice(0, -1);

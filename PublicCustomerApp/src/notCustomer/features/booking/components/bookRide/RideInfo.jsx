@@ -11,7 +11,7 @@ import useRideBookingInfo from "../../store/useRideBookingInfo"
 const RideInfo = ({
   distance = '30',
   showPreference =null,
-  
+  hidePreference = false,
 }) => {
   const { t } = useTranslation();
   const [hasAnyPreference,setHasAnyPreference] = useState(false)
@@ -40,10 +40,12 @@ const RideInfo = ({
                         <RupeeIcon width={16} height={16}/>
             <Text style={[styles.infoText, textStyle]}>₹{minFare} - ₹{maxFare}</Text>
       </View> */}
-      <TouchableOpacity style={styles.preferenceContainer} onPress={()=>{showPreference(true)}}> 
-        {hasAnyPreference && <View style={styles.preferenceIconContainer}/>}
-            <PreferenceIcon width={35} height={35}/>
-      </TouchableOpacity>
+      {hidePreference ? null : (
+        <TouchableOpacity style={styles.preferenceContainer} onPress={()=>{showPreference(true)}}> 
+          {hasAnyPreference && <View style={styles.preferenceIconContainer}/>}
+              <PreferenceIcon width={35} height={35}/>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

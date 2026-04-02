@@ -60,9 +60,6 @@ import TextTicker from 'react-native-text-ticker'
     // Calculate responsive maxWidth (70% of screen width)
     const responsiveMaxWidth = width * 0.7;
   
-   
-   console.log("userdetails",userdetails)
-
     return (
       <View style={styles.headerWrapper}>
       <View style={styles.addressContainer}>

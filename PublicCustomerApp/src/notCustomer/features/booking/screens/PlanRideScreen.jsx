@@ -257,7 +257,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     // // If we have both start & end after this selection and it's not a start selection, go straight to booking
     if ( nextStartLocation && nextEndLocation && !nextStartLocation?.currentLocation) {
       goBack()
-      setStackScreen('BookRideScreen', {});
+      setStackScreen(mode === 'ACTING_DRIVER' ? 'BookActingDriverScreen' : 'BookRideScreen', {});
       return; // Skip going back, we are moving forward
     }
 
@@ -314,7 +314,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   const handleHistoryLocationClick=(item)=>{
     debouncedHistoryCallback(item)
     if(rideStartLocation && rideEndLocation){
-    setStackScreen('BookRideScreen',{})
+    setStackScreen(mode === 'ACTING_DRIVER' ? 'BookActingDriverScreen' : 'BookRideScreen',{})
     }
 
   }
@@ -357,7 +357,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
       setStackScreen('PickLocationScreen', props);
       return;
      }
-     setStackScreen("BookRideScreen",{});
+     setStackScreen(mode === 'ACTING_DRIVER' ? 'BookActingDriverScreen' : 'BookRideScreen', {});
     //  Vibration.vibrate(100);
   }
 

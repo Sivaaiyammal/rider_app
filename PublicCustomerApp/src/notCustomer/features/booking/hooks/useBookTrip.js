@@ -57,6 +57,8 @@ const useBookTrip = () => {
     try {
       setLoading(true);
       Vibration.vibrate();
+
+      // console.log('Booking payload:', customData || bookingService.prepareBookingPayload());
     
       const result = await bookingService.bookTrip(customData);
       

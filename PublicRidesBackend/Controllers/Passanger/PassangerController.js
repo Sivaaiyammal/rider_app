@@ -14,6 +14,7 @@ class PassangerController extends Controller {
         this.publicridesResendOTP = this.publicridesResendOTP.bind(this);
         this.publicridesGetRideEstimations = this.publicridesGetRideEstimations.bind(this);
         this.publicridesBookTrip = this.publicridesBookTrip.bind(this);
+        this.publicridesBookActingDriverTrip = this.publicridesBookActingDriverTrip.bind(this);
         this.publicridesGetTrip = this.publicridesGetTrip.bind(this);
         this.publicridesGetTrips = this.publicridesGetTrips.bind(this);
         this.publicridesGetUserStats = this.publicridesGetUserStats.bind(this);

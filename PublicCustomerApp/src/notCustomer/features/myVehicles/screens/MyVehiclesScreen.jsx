@@ -32,7 +32,8 @@ const EMPTY_FIELDS = {
   model: '',
   year: '',
   fuelType: '',
-  transmission: [],  features: [],  additionalInfo: ''
+  transmission: [],  features: [],  additionalInfo: '',
+  maxSpeed: '',
 };
 
 const fieldsFromVehicle = (v) => ({
@@ -41,7 +42,8 @@ const fieldsFromVehicle = (v) => ({
   model: v.model || '',
   year: v.year ? String(v.year) : '',
   fuelType: v.fuelType || '',
-  transmission: Array.isArray(v.transmission) ? v.transmission : (v.transmission ? [v.transmission] : []),  features: Array.isArray(v.features) ? v.features : [],  additionalInfo: v.additionalInfo || ''
+  transmission: Array.isArray(v.transmission) ? v.transmission : (v.transmission ? [v.transmission] : []),  features: Array.isArray(v.features) ? v.features : [],  additionalInfo: v.additionalInfo || '',
+  maxSpeed: v.maxSpeed ? String(v.maxSpeed) : '',
 });
 
 // ─── Step 1: Registration number ─────────────────────────────────────────────
@@ -119,6 +121,10 @@ const ManualForm = ({ regNo, onAdd, onCancel }) => {
       Alert.alert(t('error'), t('vehicle_type_required', 'Please select a vehicle type'));
       return;
     }
+    if (fields.maxSpeed && Number(fields.maxSpeed) < 40) {
+      Alert.alert(t('error'), t('max_speed_min_error', 'Minimum allowed max speed is 40 km/h'));
+      return;
+    }
     setLoading(true);
     try {
       const response = await updatePassangerVehicle({
@@ -131,6 +137,7 @@ const ManualForm = ({ regNo, onAdd, onCancel }) => {
         transmission: fields.transmission,
         features: fields.features,
         additionalInfo: fields.additionalInfo.trim(),
+        maxSpeed: fields.maxSpeed ? Number(fields.maxSpeed) : undefined,
       });
       if (response.success) {
         onAdd(response.vehicle || { regNo, ...fields, type: fields.vehicleType });
@@ -192,6 +199,10 @@ const EditForm = ({ vehicle, onSave, onCancel }) => {
       Alert.alert(t('error'), t('vehicle_type_required', 'Please select a vehicle type'));
       return;
     }
+    if (fields.maxSpeed && Number(fields.maxSpeed) < 40) {
+      Alert.alert(t('error'), t('max_speed_min_error', 'Minimum allowed max speed is 40 km/h'));
+      return;
+    }
     const updated = {
       type: fields.vehicleType,
       make: fields.make.trim(),
@@ -201,6 +212,7 @@ const EditForm = ({ vehicle, onSave, onCancel }) => {
       transmission: fields.transmission,
       features: fields.features,
       additionalInfo: fields.additionalInfo.trim(),
+      maxSpeed: fields.maxSpeed ? Number(fields.maxSpeed) : undefined,
     };
     setLoading(true);
     try {

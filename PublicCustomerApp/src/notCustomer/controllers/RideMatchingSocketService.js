@@ -122,6 +122,7 @@ class RideMatchingSocketService {
         vehicleType: vehicleType,
         routeData:routeData,
         version: 'new',
+        passangerVehicleId: routeData?.passangerVehicleId || null,
       }
 
       console.log("🚕 Finding driver for trip:", tripId, socketData);

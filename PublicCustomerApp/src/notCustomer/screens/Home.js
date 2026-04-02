@@ -15,6 +15,7 @@ import PickLocationScreen from './PickLocationScreen';
 import { useCustomBackHandler } from '../hooks/useCustomBackHandler';
 import PlanRideScreen from '../features/booking/screens/PlanRideScreen.jsx';
 import BookRideScreen from '../features/booking/screens/BookRideScreen.jsx';
+import BookActingDriverScreen from '../features/booking/screens/BookActingDriverScreen.jsx';
 import { getUserStats, confirmTripStatus ,getCurrentTrip, updateFcmTokenAPI} from '../API/EndPoints/EndPoints';
 import RideStatus from '../features/rideStatus';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
@@ -879,6 +880,8 @@ const Home = () => {
         return <SearchScreen {...params} />;
       case 'BookRideScreen':
         return <BookRideScreen {...params} />;
+      case 'BookActingDriverScreen':
+        return <BookActingDriverScreen {...params} />;
       case 'RideStatus':
         return <RideStatus {...params} />;
       case 'WaypointScreen':

@@ -40,7 +40,9 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
     regionOfficeId,
     regionOfficeCode,
     isScheduledTrip,
-    scheduleDateTime
+    scheduleDateTime,
+    actingDriverHours,
+    actingDriverVehicle,
   } = useRideBookingInfo();
 
   
@@ -62,7 +64,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         try {
           if(!item) return;
 
-          console.log("Item to store in recent trips:", item);
+          // console.log("Item to store in recent trips:", item);
 
           if( (item?.name && item?.name == "Unnamed Location") || (item?.placeName && item?.placeName == "Unnamed Location") ) {
            
@@ -82,7 +84,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
           console.log("Storing in recent trips:", item);
           const recentSearches = await DataStore.loadData('recentSearches');
           let updatedSearches = [];
-          console.log("Loaded recent searches:", recentSearches);
+          // console.log("Loaded recent searches:", recentSearches);
     
           if (recentSearches && recentSearches.data) {
             // Check if item already exists
@@ -114,9 +116,10 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       throw new Error(t('start_end_locations_required'));
     }
 
-    console.log("selectedVehicle",selectedVehicle)
+    // console.log("selectedVehicle",selectedVehicle)
 
-    if (!selectedVehicle) {
+    const isActingDriver = actingDriverVehicle != null;
+    if (!selectedVehicle && !isActingDriver) {
       throw new Error(t('vehicle_selection_required'));
     }
 
@@ -175,13 +178,13 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
       isScheduledTrip: isScheduledTrip,
 
       // Vehicle and trip data
-      vehicleType: selectedVehicle.type || 'AUTO',
+      vehicleType: (actingDriverVehicle != null ? actingDriverVehicle?.type : selectedVehicle?.type) || 'AUTO',
       passangerCount: 1, 
       // Pricing data
-      minFare: selectedVehicle.minFare, 
+      minFare: actingDriverVehicle != null ? undefined : selectedVehicle?.minFare, 
       estimatedDistance: rideDistance,
       estimatedDuration: estimatedDuration, 
-      maxFare: selectedVehicle.maxFare, 
+      maxFare: actingDriverVehicle != null ? undefined : selectedVehicle?.maxFare, 
       
       // Booking details
       bookingFor: rideBookMode, // Dummy value
@@ -201,6 +204,15 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
      
       
     };
+
+    if (actingDriverVehicle != null) {
+      payload.actingDriverHours = actingDriverHours;
+      payload.isActingDriverTrip = true;
+      if (actingDriverVehicle) {
+        payload.passangerVehicleId = actingDriverVehicle._id;
+        payload.passangerVehicleType = actingDriverVehicle.type;
+      }
+    }
 
     if (isScheduledTrip) {
       if (scheduleDateTime?.date && scheduleDateTime?.time) {
@@ -243,7 +255,7 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
         throw new Error(t('please_select_start_end_locations'));
       }
 
-      if (!selectedVehicle) {
+      if (!selectedVehicle && actingDriverVehicle == null) {
         throw new Error(t('please_select_vehicle'));
       }
 
@@ -304,10 +316,11 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
    * @returns {boolean} Whether booking can proceed
    */
   const isBookingReady = () => {
+    const isActingDriver = actingDriverVehicle != null;
     return !!(
       rideStartLocation && 
       rideEndLocation && 
-      selectedVehicle && 
+      (selectedVehicle || isActingDriver) && 
       paymentType
     );
   };
@@ -318,10 +331,11 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
    */
   const getBookingValidationErrors = () => {
     const errors = [];
-    console.log("selectedVehicle",selectedVehicle)
+    // console.log("selectedVehicle",selectedVehicle)
+    const isActingDriver = actingDriverVehicle != null;
     if (!rideStartLocation) errors.push(t('start_location_required'));
     if (!rideEndLocation) errors.push(t('end_location_required'));
-    if (!selectedVehicle) errors.push(t('vehicle_selection_required'));
+    if (!selectedVehicle && !isActingDriver) errors.push(t('vehicle_selection_required'));
     if (!paymentType) errors.push(t('payment_method_required'));
     
     return errors;
