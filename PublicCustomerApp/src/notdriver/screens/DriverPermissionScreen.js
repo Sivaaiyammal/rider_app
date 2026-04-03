@@ -119,7 +119,7 @@ const DriverPermissionScreen = () => {
   const _updateDriverStatus = async (status) => {
     if (!userLocation) {
       await locationTask.getCurrentLocation();
-      showNotification('Fetching Current Location', 'Try Again', 'info');
+      showNotification('Fetching Current Location', '', 'info');
       return;
     }
     setIsLoading(true)

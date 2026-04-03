@@ -305,13 +305,13 @@ const TrackingMapIcons = props => {
           {(item.id === 1 && loading) ? <ActivityIndicator /> : item.icon}
         </TouchableOpacity>
       ))}
-      {ishomeDriver && (
+      {/* {ishomeDriver && (
         <TouchableOpacity
           style={[styles.mapIconBtns, styles.netIconBtn]}
           activeOpacity={1}>
           {getNetIcon()}
         </TouchableOpacity>
-      )}
+      )} */}
     </>
   );
 };

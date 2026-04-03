@@ -163,8 +163,23 @@ module.exports = function (CLASS) {
             }
             const driver = await Driver.getDriverWithId(driverId);
             if (!driver) return res.status(400).json({ success: false, message: 'Driver not found' });
-            await Driver.updateDriver(driverId, { mode: mode });
-            return res.json({ success: true, message: `Driver mode updated to ${mode} successfully` });
+
+            // 'driver' maps to ['dco'], 'acting_driver' maps to ['dco', 'acting_driver']
+            const targetModes = mode === 'acting_driver' ? ['dco', 'acting_driver'] : ['dco'];
+            const primaryMode = mode === 'acting_driver' ? 'acting_driver' : 'dco';
+
+            const currentModes = Array.isArray(driver.mode) ? driver.mode : [];
+            let updatedModes;
+            if (currentModes.includes(primaryMode)) {
+                // Toggle off: remove all target modes
+                updatedModes = currentModes.filter(m => !targetModes.includes(m));
+            } else {
+                // Toggle on: add target modes (deduplicated)
+                updatedModes = [...new Set([...currentModes, ...targetModes])];
+            }
+
+            await Driver.updateDriver(driverId, { mode: updatedModes });
+            return res.json({ success: true, message: `Driver modes updated successfully`, modes: updatedModes });
         } catch (err) {
             return this.handleError(err, res);
         }
