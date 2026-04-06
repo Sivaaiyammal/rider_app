@@ -237,6 +237,11 @@ class Passanger {
         const result = await Mongo.updateOnePull(COLLECTION_NAME, { _id: new ObjectId(passangerId) }, { vehicles: vehicleId });
         return result;
     }
+
+    static updateNotificationPreferences = async (passangerId, notificationPreferences) => {
+        const result = await Mongo.updateOne(COLLECTION_NAME, { _id: new ObjectId(passangerId) }, { notificationPreferences });
+        return result;
+    }
 }
 
 module.exports = Passanger;

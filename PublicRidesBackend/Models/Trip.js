@@ -961,6 +961,16 @@ class Trip {
         );
         return result;
     }
+
+    static updatePassengerNotificationPreferences = async (tripId, notificationPreferences) => {
+        const result = await Mongo.updateOne(COLLECTION_NAME, { _id: new ObjectId(tripId) }, { passengerNotificationPreferences: notificationPreferences });
+        return result;
+    }
+
+    static updateLastSpeedAlertTime = async (tripId, timestamp) => {
+        const result = await Mongo.updateOne(COLLECTION_NAME, { _id: new ObjectId(tripId) }, { lastSpeedAlertTime: timestamp });
+        return result;
+    }
 }
 
 module.exports = Trip;

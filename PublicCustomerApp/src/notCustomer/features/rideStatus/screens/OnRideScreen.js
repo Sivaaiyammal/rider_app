@@ -30,7 +30,7 @@ import { useStackScreenStore } from '../../../store/useStackScreenStore';
 
 const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
   const {driverName,vehicleNumber,model,brand,color,driverPhoto,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
-  const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare,tripId} = useCurrentRideInfoStore();
+  const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare,tripId,passengerNotificationPreferences} = useCurrentRideInfoStore();
   const {waitingForDriverApproval} = useWayPointReorderStore();
   const { setStackScreen } = useStackScreenStore();
   const currentStop = useMemo(() => stops?.find(item => item.isReached === false) || null, [stops]);
@@ -262,6 +262,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
       onCancel={onCancel}
       onPaymentMethodChange={onPaymentMethodChange}
       paymentMethod={paymentMethod}
+      notificationPreferences={passengerNotificationPreferences}
       t={t}
     />
     }

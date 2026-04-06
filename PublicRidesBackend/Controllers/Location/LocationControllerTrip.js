@@ -81,16 +81,19 @@ module.exports = function (CLASS) {
                     if (!isOverSpeeding || !data?.validFcmTokens?.length) {
                         return;
                     }
+                    const overspeedPref = trip?.passengerNotificationPreferences?.find(p => p.type === 'overspeedalert');
+                    if (overspeedPref?.disabled) {
+                        return;
+                    }
+
+                    const speedAlertCooldownMs = 1000 * 60 * 3;
+                    const lastAlertTime = trip?.lastSpeedAlertTime;
+                    if (lastAlertTime && (Date.now() - lastAlertTime) < speedAlertCooldownMs) {
+                        return;
+                    }
 
                     const message = { title: 'Overspeeding Alert', body: `Vehicle is overspeeding at ${Math.round(speedinKm)} km/h. Limit is ${trip.maxSpeed} km/h.` }
                     const pushService = req.useNotPushNotification ? NOTPushNotifiationService : PushNotifiationService;
-
-                    // console.log("Overspeeding detected. Sending notifications.", {
-                    //     speedinKm,
-                    //     maxSpeed: trip.maxSpeed,
-                    //     tokenCount: data.validFcmTokens.length,
-                    //     pushService: req.useNotPushNotification ? 'NOTPushNotifiationService' : 'PushNotifiationService'
-                    // })
 
                     await Promise.all(
                         data.validFcmTokens.map(async (fcmToken) => {
@@ -100,6 +103,7 @@ module.exports = function (CLASS) {
                             }
                         })
                     );
+                    await Trip.updateLastSpeedAlertTime(tripId, Date.now());
                 })
                 .catch(err => {
                     console.error('Speed alert notification failed:', err)

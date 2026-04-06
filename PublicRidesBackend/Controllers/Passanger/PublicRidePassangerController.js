@@ -490,6 +490,10 @@ module.exports = function (CLASS) {
             const passanger = await Passanger.getPassangerWithId(passangerId);
             if (!passanger) return res.status(400).json({ success: false, message: 'Passanger does not exists' });
 
+            if (Array.isArray(passanger.notificationPreferences) && passanger.notificationPreferences.length > 0) {
+                payload.passengerNotificationPreferences = passanger.notificationPreferences;
+            }
+
             const otp = OTP.generateOTP(4);
             payload.otp = otp;
 
@@ -1816,6 +1820,25 @@ module.exports = function (CLASS) {
             }
 
             return res.json({ success: true, message: `Bill ${approval} successfully` });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
+
+    CLASS.prototype.updateNotificationPreferences = async function (req, res) {
+        try {
+            const passangerId = req.passanger.id;
+            const { notificationPreferences, tripId } = req.body;
+            if (!Array.isArray(notificationPreferences)) {
+                return res.status(400).json({ success: false, message: 'notificationPreferences must be an array' });
+            }
+            const updatePromises = [Passanger.updateNotificationPreferences(passangerId, notificationPreferences)];
+            if (tripId) {
+                updatePromises.push(Trip.updatePassengerNotificationPreferences(tripId, notificationPreferences));
+            }
+            await Promise.all(updatePromises);
+            const updatedPassanger = await Passanger.getPassangerWithId(passangerId);
+            return res.json({ success: true, message: 'Notification preferences updated', user: updatedPassanger });
         } catch (err) {
             return this.handleError(err, res);
         }

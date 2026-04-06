@@ -38,6 +38,7 @@ const useCurrentRideInfoStore = create((set) => ({
   onGoingTripCancelled:null,
   bills: null,
   isActingDriverTrip: null,
+  passengerNotificationPreferences: null,
 
   setTripId: (tripId) => set({ tripId }),
   setTripStatus: (tripStatus) => set({ tripStatus }),
@@ -70,6 +71,7 @@ const useCurrentRideInfoStore = create((set) => ({
     set({onGoingTripCancelled})
   },
   setBills: (bills) => set({ bills }),
+  setPassengerNotificationPreferences: (passengerNotificationPreferences) => set({ passengerNotificationPreferences }),
 
   setFareDetails: (fareData) => {
  
@@ -125,6 +127,7 @@ const useCurrentRideInfoStore = create((set) => ({
     maxDistanceLimit: info.maxDistanceLimit || null,
     bills: info.bills || null,
     isActingDriverTrip: info.isActingDriverTrip || null,
+    passengerNotificationPreferences: info.passengerNotificationPreferences || null,
   }),
 
   resetCurrentRideInfo: () => set({
@@ -156,6 +159,7 @@ const useCurrentRideInfoStore = create((set) => ({
     onGoingTripCancelled:null,
     maxDistanceLimit:null,
     isActingDriverTrip: null,
+    passengerNotificationPreferences: null,
   }),
 }));
 

@@ -1,7 +1,8 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, ScrollView } from 'react-native';
+import React, { useRef, useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, ScrollView, Switch } from 'react-native';
 import { Fonts, colors } from '../constants/constants';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import AddressContainer from './Trips/AddressContainer';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +10,8 @@ import AdaptiveText from './Common/AdaptiveText';
 import useUserInfoStore from '../../common/store/useUserInfoStore';
 import WarningModal from './WarningModal';
 import useConfigStore from '../store/useConfigStore';
-import { CUSTOMER_CANCEL_PENALTY_LIMIT } from '../Config/AppConfig';
+import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
+import { updateNotificationPreferences } from '../API/EndPoints/EndPoints';
 
 const TripDetailsModal = ({ 
   visible, 
@@ -21,13 +23,34 @@ const TripDetailsModal = ({
   onCancel,
   onPaymentMethodChange,
   paymentMethod,
- 
+  notificationPreferences,
 }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const {t}=useTranslation();
   const {cancelTripOccurance} = useUserInfoStore();
   const [showWarningModal, setShowWarningModal] = React.useState(false);
+  const [showNotifSettings, setShowNotifSettings] = useState(false);
+  const [localPrefs, setLocalPrefs] = useState(notificationPreferences || []);
   const { appConfig } = useConfigStore();
+  const setPassengerNotificationPreferences = useCurrentRideInfoStore(s => s.setPassengerNotificationPreferences);
+  const tripId = useCurrentRideInfoStore(s => s.tripId);
+
+  useEffect(() => {
+    if (notificationPreferences) setLocalPrefs(notificationPreferences);
+  }, [notificationPreferences]);
+
+  const handlePrefToggle = async (type) => {
+    const updated = localPrefs.map(p => p.type === type ? { ...p, disabled: !p.disabled } : p);
+    setLocalPrefs(updated);
+    setPassengerNotificationPreferences(updated);
+    try {
+      await updateNotificationPreferences(updated, tripId);
+    } catch (e) {
+      console.log('Failed to update notification preferences:', e);
+      setLocalPrefs(localPrefs);
+      setPassengerNotificationPreferences(localPrefs);
+    }
+  };
 
   useEffect(() => {
     if (visible) {
@@ -114,8 +137,48 @@ const TripDetailsModal = ({
           <AdaptiveText style={styles.paymentLabel}>{t('payment_method_label')}</AdaptiveText>
           <AdaptiveText style={styles.paymentValue}>{paymentMethod}</AdaptiveText>
         </View>
-     
-       
+
+        {/* Notification Preferences */}
+        {Array.isArray(localPrefs) && localPrefs.length > 0 && (
+          <View style={styles.notifSection}>
+            <TouchableOpacity
+              style={styles.notifHeader}
+              onPress={() => setShowNotifSettings(v => !v)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.notifHeaderLeft}>
+                <Ionicons name="notifications-outline" size={18} color={colors.black} />
+                <AdaptiveText style={styles.notifHeaderText}>Alert Settings</AdaptiveText>
+              </View>
+              <Ionicons
+                name={showNotifSettings ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color={colors.grey_xxdark}
+              />
+            </TouchableOpacity>
+            {showNotifSettings && (
+              <View style={styles.notifList}>
+                {localPrefs.map((pref, idx) => (
+                  <View
+                    key={pref.type ?? idx}
+                    style={[
+                      styles.notifRow,
+                      idx < localPrefs.length - 1 && styles.notifRowBorder,
+                    ]}
+                  >
+                    <AdaptiveText style={styles.notifName}>{pref.name}</AdaptiveText>
+                    <Switch
+                      value={!pref.disabled}
+                      onValueChange={() => handlePrefToggle(pref.type)}
+                      trackColor={{ false: colors.grey_light, true: colors.green }}
+                      thumbColor={colors.white}
+                    />
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
       </ScrollView>
       <View style={styles.cancelBtnContainer}>  
           <TouchableOpacity style={styles.cancelBtn} onPress={()=>{
@@ -279,6 +342,52 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: -2,
   },
+  notifSection: {
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.grey_light,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  notifHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: colors.grey_xxlight ?? '#fafafa',
+  },
+  notifHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  notifHeaderText: {
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: colors.black,
+  },
+  notifList: {
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+  },
+  notifRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+  },
+  notifRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: colors.grey_light,
+  },
+  notifName: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: colors.black,
+    flex: 1,
+  },
+
 });
 
 TripDetailsModal.propTypes = {
@@ -289,9 +398,9 @@ TripDetailsModal.propTypes = {
   children: PropTypes.node,
   height: PropTypes.number.isRequired,
   onCancel: PropTypes.func.isRequired,
-  onPaymentMethodChange: PropTypes.func.isRequired,
+  onPaymentMethodChange: PropTypes.func,
   paymentMethod: PropTypes.string.isRequired,
-  
+  notificationPreferences: PropTypes.array,
 };
 
 export default TripDetailsModal; 

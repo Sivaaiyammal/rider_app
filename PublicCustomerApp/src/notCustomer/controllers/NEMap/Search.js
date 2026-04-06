@@ -39,7 +39,7 @@ class SearchAPI {
             try {
                 const nativeResponse = await NeNativeModule.reverseGeocode(latitude, longitude)
                 const nativeResult = {}
-                console.log("Native reverseGeocode response:", nativeResponse)
+                // console.log("Native reverseGeocode response:", nativeResponse)
 
                 if (Array.isArray(nativeResponse?.address) && nativeResponse.address.some(item => typeof item === "string" && item.trim() !== "")) {
                     nativeResult.address = nativeResponse.address

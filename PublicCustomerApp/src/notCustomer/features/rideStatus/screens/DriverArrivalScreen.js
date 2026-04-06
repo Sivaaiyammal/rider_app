@@ -84,7 +84,8 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
     vehicleType,
     estimatedFare,
     paymentMethod,
-    isActingDriverTrip
+    isActingDriverTrip,
+    passengerNotificationPreferences,
   } = useCurrentRideInfoStore(
     state => ({
       stops: state.stops,
@@ -95,6 +96,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
       estimatedFare: state.estimatedFare,
       paymentMethod: state.paymentMethod,
       isActingDriverTrip : state.isActingDriverTrip,
+      passengerNotificationPreferences: state.passengerNotificationPreferences,
     }),
     shallowEqual,
   );
@@ -413,7 +415,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
           height={height}
           onCancel={onCancel}
           paymentMethod={paymentMethod}
-        >
+          notificationPreferences={passengerNotificationPreferences}>
           <View style={{ flexDirection: 'row', flex: 1, marginBottom: 0 }}>
             <View style={styles.rideInfoItem}>
               <Text style={styles.rideInfoLabel}>{t('duration')}</Text>

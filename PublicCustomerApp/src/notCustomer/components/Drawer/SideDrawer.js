@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useRef, useEffect } from 'react';
 import {
   Text,
@@ -12,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { drawerStyles } from '../../styles/DrawerStyles';
 import { useStackScreenStore } from '../../store/useStackScreenStore';  
 
-import { CommonActions, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
 
@@ -110,12 +109,12 @@ const SideDrawerV2 = ({ handleMenu }) => {
     //   screen: 'ReceiptsScreen',
     //   icon: <Ionicons name="receipt" size={24} color="#1e3a8a" />,
     // },
-    // {
-    //   id: 'notification',
-    //   name: t('notification'),
-    //   screen: 'NotificationScreen',
-    //   icon: <Ionicons name="notifications" size={20} color="black" />,
-    // },
+    {
+      id: 'notification',
+      name: t('notification'),
+      screen: 'NotificationSettingsScreen',
+      icon: <Ionicons name="notifications" size={20} color="black" />,
+    },
     {
       id: 'language',
       name: t('language'),

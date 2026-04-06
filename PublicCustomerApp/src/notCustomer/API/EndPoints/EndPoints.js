@@ -247,3 +247,8 @@ export const approveBill = async (tripId, billIndex, approval) => {
   return data;
 };
 
+export const updateNotificationPreferences = async (notificationPreferences, tripId) => {
+  const { data } = await apiClient.post('/publicrides/customer/v2/updateNotificationPreferences', { notificationPreferences, ...(tripId ? { tripId } : {}) });
+  return data;
+};
+

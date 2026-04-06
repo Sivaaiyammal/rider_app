@@ -9,8 +9,8 @@ import { DataStore } from '../controllers/DataStore';
 import PropTypes from 'prop-types';
 import { passengerPaymentIssues } from '../API/EndPoints/EndPoints';
 import { useStackScreenStore } from '../store/useStackScreenStore';
-import { useUserInfoStore } from '../../common/store/useUserInfoStore';
 import PREF from '../storage/PREF';
+import useUserInfoStore from '../../common/store/useUserInfoStore';
 
 const PRESET_MESSAGES = [
   'Yes, I paid the driver in cash',
