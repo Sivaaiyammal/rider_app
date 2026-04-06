@@ -26,9 +26,9 @@ import UpComingTrips from './UpComingTrips/UpComingTrips';
 
 const {NeNativeModule} = NativeModules;
 
-const DriverMapScreen = props => {
+const DriverMapScreenV3 = props => {
   const {setStackScreen} = useStackScreenStore();
-  const {approved, blocked, isBankVerified, refreshStatus, isLoading, modes, role} = props;
+  const {approved, blocked, isBankVerified, refreshStatus, isLoading} = props;
   const {directionPoints, setDirectionPoints} = useMapMarkerStore();
   const [layOutHeight, setLayoutHeight] = useState(null);
   const {t} = useTranslation();
@@ -171,7 +171,7 @@ const DriverMapScreen = props => {
             />
           ) : null}
           <View style={RouteScreenStyles.mapIconContainer}>
-            <TrackingMapIcons markersData={[]} ishomeDriver modes={modes} role={role}/>
+            <TrackingMapIcons markersData={[]} ishomeDriver />
           </View>
           {isLoading && <ActivityIndicator size="large" color="#0000ff" />}
           {blocked ? (
@@ -246,7 +246,7 @@ const DriverMapScreen = props => {
   );
 };
 
-export default DriverMapScreen;
+export default DriverMapScreenV3;
 
 const styles = StyleSheet.create({
   animatedStyles: {

@@ -90,6 +90,8 @@ import VehicleHandlingScreen from '../../actingDriver/screens/VehicleHandlingScr
 import tripAlert from '../../common/controllers/TripAlert';
 import rideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
 import messaging from '@react-native-firebase/messaging';
+import DriverMapScreenV2 from './DriverMapScreenV2';
+import DriverMapScreenV3 from './DriverMapScreenV3';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -169,6 +171,7 @@ const PublicRidesDriverHomeScreen = () => {
   const [loading, setLoading] = useState(false)
   const [wsConnected, setWsConnected] = useState(Boolean(rideMatchWSService?.socket?.connected));
   const [wsConnecting, setWsConnecting] = useState(false);
+  const [driverModes, setDriverModes] = useState([]);
 
    const getFcmToken = async () => {
     try {
@@ -403,6 +406,9 @@ const PublicRidesDriverHomeScreen = () => {
         const vehicleBlocked = response?.driver?.ownVehicleInfo?.isBlocked
         const vehicleDeleted = response?.driver?.ownVehicleInfo?.isDeleted
 
+        const modes = response?.driver?.mode || []
+        setDriverModes(modes)
+
         setTimeoutSeconds(timeoutSeconds)
         setApproved(isApproved)
         setBlocked(isBlocked)
@@ -450,7 +456,7 @@ const PublicRidesDriverHomeScreen = () => {
           setIsBankVerified(true)
         }
         
-        if (response?.driver?.mode !== "acting_driver") {
+        if (response?.driver?.mode.includes('dco')) {
           if(response?.driver?.role === 'dco' && (!vehicleApproved || vehicleBlocked || vehicleDeleted)){
           setStackScreen('DriverVehicleApprovalScreen');
           BGLocationTask.stopDriverBgTask();
@@ -649,7 +655,7 @@ const PublicRidesDriverHomeScreen = () => {
           <DriverTabBar
             menus={[
               { id: 1, name: 'Map', icon: <HomeTab />, iconHighlight: <HomeHl />, title: 'home', component: 
-              <DriverMapScreen isLoading={isLoading} isPublicRidesDriver={true} approved={approved} blocked={blocked} isBankVerified={isBankVerified} refreshStatus={refreshStatus} /> },
+              <DriverMapScreen isLoading={isLoading} isPublicRidesDriver={true} approved={approved} blocked={blocked} isBankVerified={isBankVerified} refreshStatus={refreshStatus} modes={driverModes} role={role}/> },
               { id: 9, name: 'Trips', icon: <TripNotSelected/>, iconHighlight: <TripSelected />, title: 'trips', component: <TripHistory />},
               { id: 2, name: 'Earnings', icon: <Tracking />, iconHighlight: <TrackingHl />, title: 'earnings', component: <DriverEarnings />},
               { id: 5, name: 'Settings', icon: <SettingsTab />, iconHighlight: <SettingTabHi />, title: 'settings', component: <DriverSettingsScreen /> }

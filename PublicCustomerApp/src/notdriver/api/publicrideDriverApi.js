@@ -105,6 +105,17 @@ class PublicrideDriverApi {
       throw error;
     }
   }
+
+  async startUpComingRide(payload, token=this.token) {
+    try {
+      const api = new APIRequest(Config.ROOT_API_URL);
+      const response = await api.request(`/publicrides/driver/v2/startUpComingRidePublicRides`, 'POST', payload, token);
+      return response;
+    } catch (error) {
+      console.error('Error starting upcoming ride:', error);
+      throw error;
+    }
+  }
 }
 
 export default new PublicrideDriverApi();

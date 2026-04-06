@@ -405,15 +405,16 @@ class LocationController extends Controller{
         }
     
         getValidSocketIdsForTrip = async (socketService, tripId, lastCoordinateDetails, driverLastLocationDetail) => {
-            this._getValidSocketIdsForTrip(tripId)
+            return this._getValidSocketIdsForTrip(tripId)
                 .then((data) => {
-                    const validSocketIds = data
+                    const { validSocketIds, validFcmTokens } = data
                     this.#emitDriverSocketLocation(
                         tripId,
                         { location: lastCoordinateDetails, liveStats: driverLastLocationDetail.liveStats },
                         socketService,
                         validSocketIds
                     )
+                    return { validSocketIds, validFcmTokens }
                 }
                 )
                 .catch(err => {
@@ -423,11 +424,11 @@ class LocationController extends Controller{
          
         _getValidSocketIdsForTrip = async (tripId) => {
             try {
-                const validSocketIds = await getUserWhoHaveAccessToTrip(tripId)
-                return validSocketIds
+                const { validSocketIds, validFcmTokens } = await getUserWhoHaveAccessToTrip(tripId)
+                return { validSocketIds, validFcmTokens }
             } catch (err) {
                 console.log(err)
-                return false
+                return { validSocketIds: [], validFcmTokens: [] }
             }
         }
     

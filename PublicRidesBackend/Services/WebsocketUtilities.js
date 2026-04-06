@@ -2,6 +2,7 @@ const Redis = require("../Controllers/DB/Redis")
 const RideStatus = require("../Core/PublicRides/RideStatus")
 const Device = require("../Models/Device")
 const Trip = require("../Models/Trip")
+const Passanger = require("../Models/Passanger")
 
 
 
@@ -24,8 +25,13 @@ async function getUserWhoHaveAccessToTrip(tripId) {
         console.log("socketIds", socketIds,)
         const updatedSocketIds = socketIds.flatMap(ids => ids ? ids.split(',') : []);
         const validSocketIds = updatedSocketIds.filter(id => id !== null && id !== '');
-        return validSocketIds
+
+        const passanger = await Passanger.getPassangerWithId(passangerId);
+        const validFcmTokens = passanger?.fcmToken?.token ? [passanger.fcmToken.token] : [];
+
+        return { validSocketIds, validFcmTokens }
     }
+    return { validSocketIds: [], validFcmTokens: [] }
 }
 
 

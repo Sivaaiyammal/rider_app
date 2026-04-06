@@ -25,6 +25,10 @@ import {firebaselog_tripBooking} from '../../../common/utils/FirebaseAnalytics';
 import useTripsStore from '../../store/useTripsStore';
 import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter';
 import NavBar from '../../../common/components/NavBar';
+import useUserStore from '../../../common/store/useUserStore';
+import useDriverStatusStore from '../../store/useDriverStatusStore';
+import publicrideDriverApi from '../../api/publicrideDriverApi';
+import NOTWSService from '../../../common/controllers/socketServices/NOTSocketServices';
 
 const {NeNativeModule} = NativeModules;
 
@@ -107,12 +111,14 @@ const formatScheduledAt = scheduleDateTime => {
 };
 
 const UpComingTripsView = () => {
-  const {upComingTripDetails, loading, setLoading} = useTripAcceptStore();
+  const {upComingTripDetails, loading, setLoading, setTripId} = useTripAcceptStore();
   const {setDirectionPoints, routeLoading} = useMapMarkerStore();
   const {t} = useTranslation();
   const {goBack, setStackScreen} = useStackScreenStore();
   const countdownMeta = getCountdownMeta(upComingTripDetails?.scheduleDateTime);
   const {setActiveTripData} = useTripsStore();
+  const {userInfo} = useUserStore();
+  const {upComingTrips, setUpComingTrips} = useDriverStatusStore();
   const scheduledAt = formatScheduledAt(upComingTripDetails?.scheduleDateTime);
   const [cancelRideModalVisible, setCancelRideModalVisible] = useState(false);
 
@@ -185,16 +191,47 @@ const UpComingTripsView = () => {
     setLoading(false);
   };
 
-  const onAcceptRide = () => {
-    const tripData = upComingTripDetails;
-    tripData.status = 'ACCEPTED';
-    setActiveTripData([tripData]);
-    setLoading(false);
-    firebaselog_tripBooking(
-      'TB_Driver_Allocation(TB_DA)',
-      'TB_DA:trip_accepted_inapp',
-    );
-    setStackScreen('PublicDriverTrackingScreen');
+  const onAcceptRide = async () => {
+    setLoading(true);
+    try {
+      const tripId = upComingTripDetails?._id;
+      const response = await publicrideDriverApi.startUpComingRide(
+        {tripId},
+        userInfo?.token,
+      );
+
+      if (response?.success) {
+        const tripData = response.currentTrip || upComingTripDetails;
+
+        // Update current trip in stores
+        setTripId(tripId);
+        setActiveTripData([{...tripData, status: 'ACCEPTED'}]);
+
+        // Remove this trip from the upcoming trips list
+        setUpComingTrips(
+          (upComingTrips || []).filter(
+            t => String(t._id) !== String(tripId),
+          ),
+        );
+
+        // Notify backend socket layer that driver has started the trip
+        // NOTWSService.emit('upComingTripStarted', {
+        //   tripId,
+        //   passangerId: upComingTripDetails?.passangerId,
+        //   driverId: userInfo?._id,
+        // });
+
+        firebaselog_tripBooking(
+          'TB_Driver_Allocation(TB_DA)',
+          'TB_DA:trip_accepted_inapp',
+        );
+        setStackScreen('PublicDriverTrackingScreen');
+      }
+    } catch (error) {
+      console.error('Error starting upcoming ride:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
