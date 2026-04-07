@@ -75,6 +75,20 @@ class PublicRideDriverHandler {
         }
     }
 
+    emitPassengerReceiptUploaded(socketIds, data) {
+        try {
+            socketIds.forEach(socketId => {
+                const socket = this.publicRidesDriverNamespace.sockets.get(socketId);
+                if (socket && socket.connected) {
+                    console.log("Emitting passenger receipt uploaded to driver", socketId);
+                    socket.emit('passengerReceiptUploaded', data);
+                }
+            });
+        } catch (err) {
+            console.log(err, "err");
+        }
+    }
+
 }
 
 module.exports = PublicRideDriverHandler

@@ -634,11 +634,11 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1E3A8A',
+    backgroundColor: 'black',
     paddingHorizontal: 16,
     paddingVertical: 16,
     elevation: 6,
-    shadowColor: '#1E3A8A',
+    shadowColor: 'black',
     shadowOpacity: 0.35,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },

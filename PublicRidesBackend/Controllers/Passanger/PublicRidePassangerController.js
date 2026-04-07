@@ -1923,6 +1923,19 @@ module.exports = function (CLASS) {
 
                 await Trip.updateBillByIndex(tripId, idx, { paymentReceiptPhoto: result.url });
 
+                // Notify driver in real-time
+                if (trip.driverId) {
+                    getUserSocketIds(String(trip.driverId)).then(driverSocketIds => {
+                        if (driverSocketIds && driverSocketIds.length > 0) {
+                            req.socketService.publicRideDriverHandler.emitPassengerReceiptUploaded(driverSocketIds, {
+                                tripId,
+                                billIndex: idx,
+                                receiptUrl: result.url,
+                            });
+                        }
+                    }).catch(err => console.error('Error emitting passengerReceiptUploaded to driver:', err));
+                }
+
                 return res.json({ success: true, message: 'Payment receipt uploaded', url: result.url });
             } catch (err) {
                 return this.handleError(err, res);

@@ -452,6 +452,8 @@ const Home = () => {
         // Check if trip has exceeded estimated duration by 10 minutes from pickup context
         if(response?.trip?.status !== "ACCEPTED"){
         const pickupArrivalTime = response?.trip?.stops?.[0]?.arrivalTime || null;
+        const isActingDriverTrip = response?.trip?.isActingDriverTrip || null;
+        if (isActingDriverTrip) return; // Skip overdue check for acting driver trips as they may have different rules
         try{
           const isOverdue = utils.isTripOverEstimatedDuration(
             response?.trip?.bookingTime,

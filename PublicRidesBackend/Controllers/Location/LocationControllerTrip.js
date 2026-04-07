@@ -50,6 +50,16 @@ module.exports = function (CLASS) {
                 tripId: tripId,
                 updatedAt: new Date(driverLastCoordinate.time).getTime() || new Date().getTime(),
             }
+            // Normalise harsh event location from array [lon,lat] → {lat, lon} for socket consumers
+            const normaliseHarshEvent = (event) => {
+                if (!event) return null;
+                const e = { ...event };
+                if (Array.isArray(e.location)) {
+                    e.location = { lon: e.location[0], lat: e.location[1] };
+                }
+                return e;
+            };
+
             const driverLastLocationDetail = {
                 location: lastCoordinateDetails,
                 liveStats: {
@@ -58,9 +68,12 @@ module.exports = function (CLASS) {
                     lastLocationUpdatedOn: new Date(driverLastCoordinate.time).getTime(),
                     course: driverLastCoordinate.heading,
                     activity: driverLastCoordinate.activity,
-                    harshBreaking: payload.harsh_braking || null,
-                    harshAcceleration: payload.hard_acceleration || null,
-                    harshCornering: payload.hard_cornering || null,
+                    harshBreaking: normaliseHarshEvent(payload.harsh_braking) || null,
+                    harshAcceleration: Array.isArray(payload.hard_acceleration)
+                        ? payload.hard_acceleration.map(normaliseHarshEvent)
+                        : normaliseHarshEvent(payload.hard_acceleration) || null,
+                    harshCornering: normaliseHarshEvent(payload.hard_cornering) || null,
+                    overspeeding: null, // filled in after overspeed check below
                 },
                 status: "online",
             }
@@ -84,6 +97,9 @@ module.exports = function (CLASS) {
                 time: new Date(driverLastCoordinate.time).toISOString(),
             }] : null;
             // console.log("Speed Check:", { speedinKm, maxSpeed: trip?.maxSpeed, isOverSpeeding })
+            if (isOverSpeeding && overspeedingEntry?.length) {
+                driverLastLocationDetail.liveStats.overspeeding = overspeedingEntry[0];
+            }
             driverLastLocationDetail.liveStats.harshDrivingStats = {
                 harshBreaking: (trip.harshDriving?.harshBreaking?.length || 0) + (payload.harsh_braking ? 1 : 0),
                 harshAcceleration: (trip.harshDriving?.harshAcceleration?.length || 0) + (payload.hard_acceleration ? 1 : 0),

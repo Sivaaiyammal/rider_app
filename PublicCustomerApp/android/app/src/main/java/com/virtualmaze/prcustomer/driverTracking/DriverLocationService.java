@@ -548,10 +548,10 @@ public class DriverLocationService extends Service {
                 if (deceleration >= HARSH_BRAKING_THRESHOLD && (now - lastHarshBrakingTime) > HARSH_BRAKING_COOLDOWN) {
                     lastHarshBrakingTime = now;
                     Log.w(TAG, "Harsh braking detected! deceleration=" + deceleration + " m/s²"
-                            + " from=" + previousSpeed + " to=" + speed + " m/s");
+                            + " from=" + (previousSpeed * 3.6f) + " to=" + (speed * 3.6f) + " km/h");
                     try {
                         JSONObject event = new JSONObject();
-                        event.put("details", String.format("Deceleration %.2f m/s² (from %.1f to %.1f m/s)", deceleration, previousSpeed, speed));
+                        event.put("details", String.format("Hard Brake: %.1f → %.1f km/h", previousSpeed * 3.6f, speed * 3.6f));
                         JSONObject loc = new JSONObject();
                         loc.put("lat", location.getLatitude());
                         loc.put("lon", location.getLongitude());
@@ -578,10 +578,10 @@ public class DriverLocationService extends Service {
                 if (acceleration >= HARD_ACCELERATION_THRESHOLD && (now - lastHardAccelerationTime) > HARD_ACCELERATION_COOLDOWN) {
                     lastHardAccelerationTime = now;
                     Log.w(TAG, "Hard acceleration detected! acceleration=" + acceleration + " m/s²"
-                            + " from=" + previousSpeed + " to=" + speed + " m/s");
+                            + " from=" + (previousSpeed * 3.6f) + " to=" + (speed * 3.6f) + " km/h");
                     try {
                         JSONObject event = new JSONObject();
-                        event.put("details", String.format("Acceleration %.2f m/s² (from %.1f to %.1f m/s)", acceleration, previousSpeed, speed));
+                        event.put("details", String.format("Hard Accel: %.1f → %.1f km/h", previousSpeed * 3.6f, speed * 3.6f));
                         JSONObject loc = new JSONObject();
                         loc.put("lat", location.getLatitude());
                         loc.put("lon", location.getLongitude());
@@ -614,10 +614,10 @@ public class DriverLocationService extends Service {
                 if (bearingRate >= HARD_CORNERING_THRESHOLD && (now - lastHardCorneringTime) > HARD_CORNERING_COOLDOWN) {
                     lastHardCorneringTime = now;
                     Log.w(TAG, "Hard cornering detected! bearingRate=" + bearingRate + " °/s"
-                            + " from=" + previousBearing + "° to=" + bearing + "° speed=" + speed + " m/s");
+                            + " from=" + previousBearing + "° to=" + bearing + "° speed=" + (speed * 3.6f) + " km/h");
                     try {
                         JSONObject event = new JSONObject();
-                        event.put("details", String.format("Bearing change %.1f°/s (from %.1f° to %.1f°) at %.1f m/s", bearingRate, previousBearing, bearing, speed));
+                        event.put("details", String.format("Hard Corner: %.0f° turn at %.1f km/h", bearingDelta, speed * 3.6f));
                         JSONObject loc = new JSONObject();
                         loc.put("lat", location.getLatitude());
                         loc.put("lon", location.getLongitude());

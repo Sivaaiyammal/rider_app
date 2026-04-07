@@ -103,8 +103,22 @@ const pp = StyleSheet.create({
 });
 
 /* ─── read-only bill card ─────────────────────────────────── */
-const BillCard = ({ bill, index, onRemove, onEdit }) => {
+const BillCard = ({ bill, index, onRemove, onEdit, token }) => {
   const [previewUri, setPreviewUri] = React.useState(null);
+  const [paymentReceiptUri, setPaymentReceiptUri] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!bill.paymentReceiptPhoto || !token) return;
+    let cancelled = false;
+    const key = bill.paymentReceiptPhoto
+      .replace(/^https?:\/\/[^/]+\/?/, '')
+      .replace(/^\//, '');
+    getPresignedImageUrl(key, token).then(url => {
+      if (!cancelled && url) setPaymentReceiptUri(url);
+    });
+    return () => { cancelled = true; };
+  }, [bill.paymentReceiptPhoto, token]);
+
   return (
   <View style={bc.wrap}>
     <View style={bc.topRow}>
@@ -143,6 +157,20 @@ const BillCard = ({ bill, index, onRemove, onEdit }) => {
           <MaterialCommunityIcons name="eye" size={20} color={Colors.black} />
         </View>
       </TouchableOpacity>
+    )}
+    {paymentReceiptUri && (
+      <View style={bc.paymentReceiptWrap}>
+        <View style={bc.paymentReceiptHeader}>
+          <MaterialCommunityIcons name="check-circle" size={14} color="#16A34A" />
+          <Text style={bc.paymentReceiptLabel}>Payment Receipt from Passenger</Text>
+        </View>
+        <TouchableOpacity onPress={() => setPreviewUri(paymentReceiptUri)} activeOpacity={0.85}>
+          <Image source={{ uri: paymentReceiptUri }} style={bc.receiptThumb} resizeMode="cover" />
+          <View style={bc.receiptOverlay}>
+            <MaterialCommunityIcons name="eye" size={20} color={Colors.black} />
+          </View>
+        </TouchableOpacity>
+      </View>
     )}
     <PhotoPreviewModal uri={previewUri} onClose={() => setPreviewUri(null)} />
   </View>
@@ -472,7 +500,7 @@ const DriverBillsExpensesScreen = () => {
   const [deleting, setDeleting] = useState(false);
   const [editTarget, setEditTarget] = useState(null); // bill being edited
 
-  // Sync approval status from media store whenever storedBills changes (e.g. socket update)
+  // Sync approval status and payment receipt from media store whenever storedBills changes (e.g. socket update)
   useEffect(() => {
     if (!storedBills?.length) return;
     setBillsLocal(prev => {
@@ -481,8 +509,11 @@ const DriverBillsExpensesScreen = () => {
         const stored = storedBills.find(
           s => s.id === b.id || (s.serverId && s.serverId === b.serverId),
         );
-        if (!stored || stored.approval === b.approval) return b;
-        return { ...b, approval: stored.approval };
+        if (!stored) return b;
+        const approvalChanged = stored.approval !== b.approval;
+        const receiptChanged = stored.paymentReceiptPhoto !== b.paymentReceiptPhoto;
+        if (!approvalChanged && !receiptChanged) return b;
+        return { ...b, approval: stored.approval, paymentReceiptPhoto: stored.paymentReceiptPhoto };
       });
       const changed = next.some((b, i) => b !== prev[i]);
       return changed ? next : prev;
@@ -509,7 +540,7 @@ const DriverBillsExpensesScreen = () => {
             const presigned = key ? await getPresignedImageUrl(key, userInfo?.token) : null;
             receipt = { uri: presigned || b.receiptPhoto, type: 'image/jpeg', name: 'receipt.jpg' };
           }
-          return { id: uid(), serverId: b.billId || null, serverIndex: idx, description: b.description || '', amount: String(b.amount || ''), receipt, approval: b.approval || 'pending' };
+          return { id: uid(), serverId: b.billId || null, serverIndex: idx, description: b.description || '', amount: String(b.amount || ''), receipt, approval: b.approval || 'pending', paymentReceiptPhoto: b.paymentReceiptPhoto || null };
         })
       );
       setBillsLocal(resolved);
@@ -620,6 +651,7 @@ const DriverBillsExpensesScreen = () => {
                 index={idx}
                 onEdit={() => setEditTarget(bill)}
                 onRemove={() => setDeleteTarget(bill)}
+                token={userInfo?.token}
               />
             ))}
           </View>
@@ -805,6 +837,9 @@ const bc = StyleSheet.create({
     borderRadius: 8, backgroundColor: 'rgba(0,0,0,0.18)',
     justifyContent: 'center', alignItems: 'center',
   },
+  paymentReceiptWrap: { gap: 6, marginTop: 2 },
+  paymentReceiptHeader: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  paymentReceiptLabel: { fontSize: 11, fontFamily: Fonts.medium, color: '#16A34A' },
 });
 
 

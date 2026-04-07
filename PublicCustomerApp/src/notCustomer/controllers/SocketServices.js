@@ -240,6 +240,17 @@ class WSService {
         if (data?.data?.liveStats?.harshDrivingStats) {
           this.useAssignedDriverInfoStore.getState().setHarshDrivingStats(data.data.liveStats.harshDrivingStats);
         }
+        const ls = data?.data?.liveStats;
+
+        // console.log("Live Stats Update:",ls )
+        if (ls?.harshBreaking || ls?.harshAcceleration || ls?.harshCornering || ls?.overspeeding) {
+          this.useCurrentRideInfoStore.getState().appendHarshDrivingEvents({
+            harshBreaking:     ls.harshBreaking     || null,
+            harshAcceleration: ls.harshAcceleration || null,
+            harshCornering:    ls.harshCornering    || null,
+            overspeeding:      ls.overspeeding      || null,
+          });
+        }
       } catch (error) {
         console.error('Error updating driver location:', error);
       }

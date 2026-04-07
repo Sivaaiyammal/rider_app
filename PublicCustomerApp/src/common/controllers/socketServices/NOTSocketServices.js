@@ -21,6 +21,7 @@ class NOTWSService {
     this.fastSocket = null;
     this.onDriverTripStatus = this.onDriverTripStatus.bind(this)
     this.initSocket = this.initSocket.bind(this)
+    this.passengerReceiptUploaded = this.passengerReceiptUploaded.bind(this)
   }
 
 onDriverTripStatus(data) {
@@ -130,6 +131,34 @@ onDriverTripStatus(data) {
     }
   }
 
+  passengerReceiptUploaded(data) {
+    const idx = data?.billIndex;
+    const receiptUrl = data?.receiptUrl;
+    if (idx === undefined || idx === null || idx < 0 || !receiptUrl) return;
+
+    // Update activeTripData
+    const { activeTripData, setActiveTripData } = useTripsStore.getState();
+    if (activeTripData?.[0]?.bills?.bills?.length > idx) {
+      const bills = activeTripData[0].bills.bills;
+      const updatedBills = bills.map((b, i) =>
+        i === idx ? { ...b, paymentReceiptPhoto: receiptUrl } : b
+      );
+      setActiveTripData([{
+        ...activeTripData[0],
+        bills: { ...activeTripData[0].bills, bills: updatedBills },
+      }]);
+    }
+
+    // Update media store (drives screen UI)
+    const { bills: storedBills, setBills } = useActingDriverMediaStore.getState();
+    if (storedBills?.length) {
+      const updatedStored = storedBills.map(b =>
+        b.serverIndex === idx ? { ...b, paymentReceiptPhoto: receiptUrl } : b
+      );
+      setBills(updatedStored);
+    }
+  }
+
   driverPaymentCompleted(data) {
     const {setStartNavigation, setDisduration, setDirectionPoints} = useMapMarkerStore.getState()
     const {activeTripData, setActiveTripData} = useTripsStore.getState()
@@ -196,6 +225,7 @@ onDriverTripStatus(data) {
         this.socket.on('driverPaymentCompleted', this.driverPaymentCompleted);
         this.socket.on('passangerPaymentInitiated', this.paymentInitiated);
         this.socket.on('billApprovalStatus', data => this.billApprovalStatus(data));
+        this.socket.on('passengerReceiptUploaded', data => this.passengerReceiptUploaded(data));
       
         this.socket.on('connect_error', error => {
           console.error(

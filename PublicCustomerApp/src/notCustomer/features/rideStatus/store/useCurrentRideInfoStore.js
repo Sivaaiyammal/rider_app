@@ -74,6 +74,23 @@ const useCurrentRideInfoStore = create((set) => ({
   setBills: (bills) => set({ bills }),
   setPassengerNotificationPreferences: (passengerNotificationPreferences) => set({ passengerNotificationPreferences }),
 
+  appendHarshDrivingEvents: (events) => set(state => {
+    const current = state.harshDriving || { harshBreaking: [], harshAcceleration: [], harshCornering: [], overspeeding: [] };
+    // Normalize: incoming value can be a single object or an array — always spread into the existing array
+    const toArray = (v) => {
+      if (!v) return [];
+      return Array.isArray(v) ? v : [v];
+    };
+    return {
+      harshDriving: {
+        harshBreaking:     [...(current.harshBreaking     || []), ...toArray(events.harshBreaking)],
+        harshAcceleration: [...(current.harshAcceleration || []), ...toArray(events.harshAcceleration)],
+        harshCornering:    [...(current.harshCornering    || []), ...toArray(events.harshCornering)],
+        overspeeding:      [...(current.overspeeding      || []), ...toArray(events.overspeeding)],
+      },
+    };
+  }),
+
   setFareDetails: (fareData) => {
  
     if (fareData?.fareDetails?.fare != null) {

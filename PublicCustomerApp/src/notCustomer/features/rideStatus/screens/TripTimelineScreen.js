@@ -4,7 +4,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import NavBar from '../../../components/NavBar';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
-import { colors, Fonts } from '../../../constants/constants';
+import { Fonts } from '../../../constants/constants';
 import useCurrentRideInfoStore from '../store/useCurrentRideInfoStore';
 import SearchAPI from '../../../controllers/NEMap/Search';
 
@@ -72,33 +72,50 @@ const TripTimelineScreen = () => {
     return all;
   }, [harshDriving]);
 
-//   useEffect(() => {
-//     if (events.length === 0) return;
-//     const pending = events.filter(e => {
-//       if (!e.location) return false;
-//       const key = `${e.location.lat},${e.location.lon}`;
-//       return !(key in locationNames);
-//     });
-//     if (pending.length === 0) return;
+  useEffect(() => {
+    if (events.length === 0) return;
 
-//     // Mark all as loading
-//     const loading = {};
-//     pending.forEach(e => { loading[`${e.location.lat},${e.location.lon}`] = null; });
-//     setLocationNames(prev => ({ ...prev, ...loading }));
+    let cancelled = false;
 
-//     // Fetch unique locations
-//     const uniqueKeys = [...new Set(pending.map(e => `${e.location.lat},${e.location.lon}`))];
-//     uniqueKeys.forEach(async key => {
-//       const [lat, lon] = key.split(',').map(Number);
-//       try {
-//         const result = await searchRef.current.reverseGeocode(lon, lat);
-//         const name = result?.placeName || (result?.address?.length > 0 ? result.address[0] : null);
-//         setLocationNames(prev => ({ ...prev, [key]: name || `${lat.toFixed(5)}, ${lon.toFixed(5)}` }));
-//       } catch {
-//         setLocationNames(prev => ({ ...prev, [key]: `${lat.toFixed(5)}, ${lon.toFixed(5)}` }));
-//       }
-//     });
-//   }, [events]);
+    const pending = events.filter(e => {
+      if (!e.location) return false;
+      const key = `${e.location.lat},${e.location.lon}`;
+      return !(key in locationNames);
+    });
+    if (pending.length === 0) return;
+
+    // Mark all pending as loading
+    const loading = {};
+    pending.forEach(e => { loading[`${e.location.lat},${e.location.lon}`] = null; });
+    setLocationNames(prev => ({ ...prev, ...loading }));
+
+    const uniqueKeys = [...new Set(pending.map(e => `${e.location.lat},${e.location.lon}`))];
+
+    // Process sequentially to avoid overwhelming native Geocoder
+    const fetchSequential = async () => {
+      for (const key of uniqueKeys) {
+        if (cancelled) break;
+        const [lat, lon] = key.split(',').map(Number);
+        try {
+          const result = await searchRef.current.reverseGeocode(lon, lat);
+          const name = result?.placeName || (result?.address?.length > 0 ? result.address[0] : null);
+          if (!cancelled) {
+            setLocationNames(prev => ({ ...prev, [key]: name || `${lat.toFixed(5)}, ${lon.toFixed(5)}` }));
+          }
+        } catch {
+          if (!cancelled) {
+            setLocationNames(prev => ({ ...prev, [key]: `${lat.toFixed(5)}, ${lon.toFixed(5)}` }));
+          }
+        }
+        // Small delay between requests to avoid Geocoder overload
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+    };
+
+    fetchSequential();
+
+    return () => { cancelled = true; };
+  }, [events]);
 
   return (
     <View style={styles.container}>
