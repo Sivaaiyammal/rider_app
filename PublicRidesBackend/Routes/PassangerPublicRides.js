@@ -70,6 +70,8 @@ Router.post('/editPassangerVehicle', CheckPassangerAuthenticated, withTiming(pas
 Router.post('/deletePassangerVehicle', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.deletePassangerVehicle))
 Router.get('/getOnboardingConfig', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.getOnboardingConfig))
 Router.post('/approveBill', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.approveBill))
+Router.post('/markBillAsPaid', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.markBillAsPaid))
+Router.post('/uploadPaymentReceipt', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.uploadPaymentReceipt))
 Router.post('/updateNotificationPreferences', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.updateNotificationPreferences))
 
 module.exports = Router

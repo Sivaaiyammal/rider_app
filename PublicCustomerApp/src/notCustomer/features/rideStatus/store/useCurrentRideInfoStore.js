@@ -38,6 +38,7 @@ const useCurrentRideInfoStore = create((set) => ({
   onGoingTripCancelled:null,
   bills: null,
   isActingDriverTrip: null,
+  harshDriving: null,
   passengerNotificationPreferences: null,
 
   setTripId: (tripId) => set({ tripId }),
@@ -127,6 +128,7 @@ const useCurrentRideInfoStore = create((set) => ({
     maxDistanceLimit: info.maxDistanceLimit || null,
     bills: info.bills || null,
     isActingDriverTrip: info.isActingDriverTrip || null,
+    harshDriving: info.harshDriving || null,
     passengerNotificationPreferences: info.passengerNotificationPreferences || null,
   }),
 

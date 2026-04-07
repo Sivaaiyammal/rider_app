@@ -139,7 +139,7 @@ const TripDetailsModal = ({
         </View>
 
         {/* Notification Preferences */}
-        {Array.isArray(localPrefs) && localPrefs.length > 0 && (
+        {/* {Array.isArray(localPrefs) && localPrefs.length > 0 && (
           <View style={styles.notifSection}>
             <TouchableOpacity
               style={styles.notifHeader}
@@ -156,7 +156,6 @@ const TripDetailsModal = ({
                 color={colors.grey_xxdark}
               />
             </TouchableOpacity>
-            {showNotifSettings && (
               <View style={styles.notifList}>
                 {localPrefs.map((pref, idx) => (
                   <View
@@ -176,9 +175,8 @@ const TripDetailsModal = ({
                   </View>
                 ))}
               </View>
-            )}
           </View>
-        )}
+        )} */}
       </ScrollView>
       <View style={styles.cancelBtnContainer}>  
           <TouchableOpacity style={styles.cancelBtn} onPress={()=>{

@@ -22,7 +22,9 @@ const path = require('path');
 const { getUserSocketIds } = require("../../Services/WebsocketUtilities");
 const PushNotifiationService = require("../../Services/PushNotification/PushNotifiationService");
 const NOTPushNotifiationService = require("../../Services/PushNotification/NOTPushNotifiationService");
-const { sendBillRejectedDriverMessage } = require('../../Services/PushNotification/Messages');
+const { sendBillRejectedDriverMessage, sendBillPaidDriverMessage } = require('../../Services/PushNotification/Messages');
+const multer = require('multer');
+const { e2eS3File } = require('../../Models/e2eS3File');
 const AppConfig = require("../../Models/AppConfig");
 const EmergencyContacts = require("../../Models/EmergencyContacts");
 const { passangerEmergencyContactSchema } = require("../../Schemas/PassangerSchema");
@@ -1823,6 +1825,109 @@ module.exports = function (CLASS) {
         } catch (err) {
             return this.handleError(err, res);
         }
+    }
+
+    CLASS.prototype.markBillAsPaid = async function (req, res) {
+        try {
+            const { tripId, billIndex } = req.body;
+            const passangerId = req.passanger.id;
+
+            if (!tripId || billIndex === undefined || billIndex === null) {
+                return res.status(400).json({ success: false, message: 'tripId and billIndex are required' });
+            }
+
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
+            if (trip.passangerId?.toString() !== passangerId.toString()) {
+                return res.status(403).json({ success: false, message: 'Not authorised to update bills for this trip' });
+            }
+
+            const bills = trip.bills?.bills || [];
+            const idx = parseInt(billIndex, 10);
+            if (isNaN(idx) || idx < 0 || idx >= bills.length) {
+                return res.status(400).json({ success: false, message: 'Invalid billIndex' });
+            }
+
+            await Trip.updateBillByIndex(tripId, idx, { approval: 'approved', paidAt: new Date().getTime() });
+
+            if (trip.driverId) {
+                getUserSocketIds(String(trip.driverId)).then(driverSocketIds => {
+                    if (driverSocketIds && driverSocketIds.length > 0) {
+                        req.socketService.publicRideDriverHandler.emitBillApprovalStatus(driverSocketIds, {
+                            _id: tripId,
+                            billIndex: idx,
+                            bill: bills[idx],
+                            approval: 'approved',
+                        });
+                    }
+                }).catch(err => console.error('Error emitting billApprovalStatus to driver:', err));
+
+                Driver.getDriverWithId(trip.driverId).then(driver => {
+                    if (!driver?.fcmToken?.token) return;
+                    const bill = bills[idx];
+                    const msg = sendBillPaidDriverMessage(bill?.description, parseFloat(bill?.amount || 0).toFixed(2));
+                    const service = req.useNotPushNotification ? NOTPushNotifiationService : PushNotifiationService;
+                    service.sendPushNotification(driver.fcmToken.token, msg, null, 'high', { tripId: String(tripId) });
+                }).catch(err => console.error('Error sending bill paid push to driver:', err));
+            }
+
+            return res.json({ success: true, message: 'Bill marked as paid' });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
+
+    CLASS.prototype.uploadPaymentReceipt = async function (req, res) {
+        const storage = multer.memoryStorage();
+        const fileFilter = (_, file, cb) => {
+            if (/^image\/(jpeg|jpg|png|webp|heic)$/i.test(file.mimetype)) {
+                cb(null, true);
+            } else {
+                cb(new Error('Only image files (JPEG, PNG, WEBP, HEIC) are allowed'));
+            }
+        };
+        const upload = multer({ storage, fileFilter }).single('paymentReceipt');
+
+        upload(req, res, async (err) => {
+            if (err) {
+                return res.status(400).json({ success: false, message: 'File parse error', error: err.message });
+            }
+            try {
+                const { tripId, billIndex } = req.body || {};
+                const passangerId = req.passanger.id;
+
+                if (!tripId || billIndex === undefined || billIndex === null) {
+                    return res.status(400).json({ success: false, message: 'tripId and billIndex are required' });
+                }
+                if (!req.file) {
+                    return res.status(400).json({ success: false, message: 'paymentReceipt file is required' });
+                }
+
+                const trip = await Trip.getTripById(tripId);
+                if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
+                if (trip.passangerId?.toString() !== passangerId.toString()) {
+                    return res.status(403).json({ success: false, message: 'Not authorised to update bills for this trip' });
+                }
+
+                const bills = (trip.bills?.bills || []).filter(Boolean);
+                const idx = parseInt(billIndex, 10);
+                if (isNaN(idx) || idx < 0 || idx >= bills.length) {
+                    return res.status(400).json({ success: false, message: 'Invalid billIndex' });
+                }
+
+                const s3Key = `${tripId}_payment_receipt_${idx}_${Date.now()}`;
+                const result = await e2eS3File('upload', req.file, s3Key, `trips/${tripId}/paymentReceipts/`);
+                if (!result?.completed) {
+                    return res.status(500).json({ success: false, message: 'File upload failed' });
+                }
+
+                await Trip.updateBillByIndex(tripId, idx, { paymentReceiptPhoto: result.url });
+
+                return res.json({ success: true, message: 'Payment receipt uploaded', url: result.url });
+            } catch (err) {
+                return this.handleError(err, res);
+            }
+        });
     }
 
     CLASS.prototype.updateNotificationPreferences = async function (req, res) {

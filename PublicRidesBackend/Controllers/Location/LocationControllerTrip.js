@@ -75,7 +75,21 @@ module.exports = function (CLASS) {
 
             const speedinKm = driverLastCoordinate.speed * 1.852
             const isOverSpeeding = trip?.isScheduledTrip && trip?.maxSpeed != null && speedinKm > trip.maxSpeed
+            const overspeedingEntry = isOverSpeeding ? [{
+                details: `Overspeeding at ${Math.round(speedinKm)} km/h (limit: ${trip.maxSpeed} km/h)`,
+                location: {
+                    lat: Array.isArray(driverLastCoordinate.location) ? driverLastCoordinate.location[1] : driverLastCoordinate.location?.lat,
+                    lon: Array.isArray(driverLastCoordinate.location) ? driverLastCoordinate.location[0] : driverLastCoordinate.location?.lon,
+                },
+                time: new Date(driverLastCoordinate.time).toISOString(),
+            }] : null;
             // console.log("Speed Check:", { speedinKm, maxSpeed: trip?.maxSpeed, isOverSpeeding })
+            driverLastLocationDetail.liveStats.harshDrivingStats = {
+                harshBreaking: (trip.harshDriving?.harshBreaking?.length || 0) + (payload.harsh_braking ? 1 : 0),
+                harshAcceleration: (trip.harshDriving?.harshAcceleration?.length || 0) + (payload.hard_acceleration ? 1 : 0),
+                harshCornering: (trip.harshDriving?.harshCornering?.length || 0) + (payload.hard_cornering ? 1 : 0),
+                overspeeding: (trip.harshDriving?.overspeeding?.length || 0) + (isOverSpeeding ? 1 : 0),
+            };
             this.getValidSocketIdsForTrip(req.socketService, tripId, lastCoordinateDetails, driverLastLocationDetail)
                 .then(async (data) => {
                     if (!isOverSpeeding || !data?.validFcmTokens?.length) {
@@ -111,8 +125,8 @@ module.exports = function (CLASS) {
             if (existingSession) {
                 await LiveLocation.addLocations(payload.locations, payload.sessionId, payload.id);
                 await Driver.updateLiveStatsAndLocation(driverId, driverLastLocationDetail.location, driverLastLocationDetail.liveStats);
-                if (payload.harsh_braking || payload.hard_acceleration || payload.hard_cornering) {
-                await Trip.updateHarshDrivingStats(tripId, driverLastLocationDetail.liveStats.harshBreaking, driverLastLocationDetail.liveStats.harshAcceleration, driverLastLocationDetail.liveStats.harshCornering);
+                if (payload.harsh_braking || payload.hard_acceleration || payload.hard_cornering || isOverSpeeding) {
+                await Trip.updateHarshDrivingStats(tripId, driverLastLocationDetail.liveStats.harshBreaking, driverLastLocationDetail.liveStats.harshAcceleration, driverLastLocationDetail.liveStats.harshCornering, overspeedingEntry);
                 }
                 if (payload.completed) {
                     sessionData.endTime = new Date(payload.locations[payload.locations.length - 1].time);
@@ -128,8 +142,8 @@ module.exports = function (CLASS) {
             await Session.createSession(sessionData)
             await LiveLocation.addLocations(payload.locations, payload.sessionId, payload.id);
             await Driver.updateLiveStatsAndLocation(driverId, driverLastLocationDetail.location, driverLastLocationDetail.liveStats);
-            if (payload.harsh_braking || payload.hard_acceleration || payload.hard_cornering) {
-                await Trip.updateHarshDrivingStats(tripId, driverLastLocationDetail.liveStats.harshBreaking, driverLastLocationDetail.liveStats.harshAcceleration, driverLastLocationDetail.liveStats.harshCornering);
+            if (payload.harsh_braking || payload.hard_acceleration || payload.hard_cornering || isOverSpeeding) {
+                await Trip.updateHarshDrivingStats(tripId, driverLastLocationDetail.liveStats.harshBreaking, driverLastLocationDetail.liveStats.harshAcceleration, driverLastLocationDetail.liveStats.harshCornering, overspeedingEntry);
             }
             return res.status(200).json({ success: true, message: 'Locations added', details: [] });
 

@@ -23,6 +23,7 @@ import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { getTotalDistanceAndTime } from '../services/getTotalDistanceandTime';
 import { firebaselog_onRide } from '../../../../common/utils/FirebaseAnalytics';
 import { getPresignedImageUrl } from '../../../../common/utils/getPresignedImageUrl';
+import locationTask from '../../../controllers/GetCurrentLocation';
 
 const shallowEqual = (a, b) => {
   if (Object.is(a, b)) {
@@ -86,6 +87,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
     paymentMethod,
     isActingDriverTrip,
     passengerNotificationPreferences,
+    tripId,
   } = useCurrentRideInfoStore(
     state => ({
       stops: state.stops,
@@ -97,6 +99,7 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
       paymentMethod: state.paymentMethod,
       isActingDriverTrip : state.isActingDriverTrip,
       passengerNotificationPreferences: state.passengerNotificationPreferences,
+      tripId: state.tripId,
     }),
     shallowEqual,
   );
@@ -142,8 +145,12 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
   }, []);
 
   const handleMapIconPress = useCallback(() => {
-    boundingBoxRef.current?.();
-  }, []);
+    if (isActingDriverTrip) {
+      locationTask.getCurrentLocation();
+    } else {
+      boundingBoxRef.current?.();
+    }
+  }, [isActingDriverTrip]);
 
   useEffect(() => {
     let isActive = true;
@@ -189,21 +196,22 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
   }, [driverPhoto, userToken]);
 
   useEffect(() => {
-    if (!stops || stops.length === 0) {
+    if (isActingDriverTrip || !stops || stops.length === 0) {
       return undefined;
     }
     const timeout = setTimeout(() => {
       boundingBoxRef.current?.();
     }, 1000);
     return () => clearTimeout(timeout);
-  }, [stops]);
+  }, [stops, isActingDriverTrip]);
 
   useEffect(() => {
+    if (isActingDriverTrip) return undefined;
     const interval = setInterval(() => {
       boundingBoxRef.current?.();
     }, 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isActingDriverTrip]);
 
   const handlePickLocation = useCallback(
     async item => {
@@ -326,6 +334,8 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
      
 
       <View style={[styles.root, { backgroundColor: 'white' }]}>
+        {isActingDriverTrip ? <>
+        </> : 
         <View style={styles.vehicleCard}>
           {getVehicleImage(vehicleType, styles.vehicleImg)}
           <View style={styles.vehicleInfo}>
@@ -351,6 +361,8 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
             </View>
           </View>
         </View>
+        }
+       
 
         <View style={styles.driverRow}>
           <View style={styles.driverProfile}>
@@ -431,6 +443,15 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
             </View>
           </View>
         </TripDetailsModal>
+
+        {/* Bills & Photos row */}
+        {/* <TouchableOpacity
+          style={styles.tripDetailsRow}
+          onPress={() => setStackScreen('BillsAndPhotosScreen', { tripId })}
+          activeOpacity={0.7}>
+          <AdaptiveText style={styles.tripDetailsLabel}>Bills & Photos</AdaptiveText>
+          <Icon name="keyboard-arrow-right" size={25} color="#000" />
+        </TouchableOpacity> */}
 
         <View style={styles.actionRow}>
           <TouchableOpacity
@@ -695,12 +716,7 @@ const styles = StyleSheet.create({
   
     position: 'absolute',
     bottom: -5,
-    elevation: 5,
-   
-  
-
- 
-    
+    elevation: 5, 
   },
   star: {
     color: '#FFD700',

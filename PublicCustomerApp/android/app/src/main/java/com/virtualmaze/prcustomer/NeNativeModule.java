@@ -744,7 +744,11 @@ public class NeNativeModule extends ViewGroupManager<MapView> implements Lifecyc
             case "drop_point": return R.drawable.drop_point;
             case "pickup_point": return R.drawable.pickup_point;
             case "bearing": return R.drawable.bearing;
-         
+            case "over_speed": return R.drawable.over_speed;
+            case "hard_acceleration": return R.drawable.hard_acceleration;
+            case "hard_braking": return R.drawable.hard_brake;
+            case "hard_corner": return R.drawable.hard_corner;
+
             default: return null;
         }
     }

@@ -942,7 +942,7 @@ class Trip {
         }
     }   
 
-    static updateHarshDrivingStats = async (tripId, harshBreaking, harshAcceleration, harshCornering) => {
+    static updateHarshDrivingStats = async (tripId, harshBreaking, harshAcceleration, harshCornering, overspeeding) => {
         const pushFields = {};
         if (harshBreaking && harshBreaking.length > 0) {
             pushFields["harshDriving.harshBreaking"] = { $each: harshBreaking };
@@ -952,6 +952,9 @@ class Trip {
         }
         if (harshCornering && harshCornering.length > 0) {
             pushFields["harshDriving.harshCornering"] = { $each: harshCornering };
+        }
+        if (overspeeding && overspeeding.length > 0) {
+            pushFields["harshDriving.overspeeding"] = { $each: overspeeding };
         }
         if (Object.keys(pushFields).length === 0) return { acknowledged: true, matchedCount: 0, modifiedCount: 0 };
         const result = await Mongo.updateOneRaw(

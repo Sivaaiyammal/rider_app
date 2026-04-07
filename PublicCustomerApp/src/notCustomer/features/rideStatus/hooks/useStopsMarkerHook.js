@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Marker from "../../../controllers/NEMap/Marker";
 import useMapStore from "../../map/store/useMapStore";
 
-const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,markerType="default",driverAngle=0, isActingDriverTrip ) => {
+const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,markerType="default",driverAngle=0, isActingDriverTrip, extraMarkers ) => {
     const { setMapMarkers } = useMapStore();    
     const [markersList, setMarkersList] = useState([]);
     const markerId = ``;
@@ -75,13 +75,13 @@ const useStopsMarkerHook = (stops,driverLatitude,driverLongitude,vehicleType,mar
 
     // Sync markersList to map store
     useEffect(() => {
-       
-        setMapMarkers([...markersList]);
+        const all = extraMarkers?.length ? [...markersList, ...extraMarkers] : [...markersList];
+        setMapMarkers(all);
 
         return () => {
             setMapMarkers([]);
         }
-    }, [markersList, setMapMarkers]);
+    }, [markersList, extraMarkers, setMapMarkers]);
 
     return { markersList };
 };

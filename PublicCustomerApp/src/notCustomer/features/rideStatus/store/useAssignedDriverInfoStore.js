@@ -14,6 +14,7 @@ const useAssignedDriverInfoStore = create((set) => ({
   driverAngle: null,
   driverMaxSpeed: null,
   driverUPIId: null,
+  harshDrivingStats: null,
 
   setDriverInfo: (info) =>
     set((state) => ({
@@ -52,6 +53,16 @@ const useAssignedDriverInfoStore = create((set) => ({
         driverAngle: angle,
       }),
 
+    setHarshDrivingStats: (stats) =>
+      set({
+        harshDrivingStats: stats,
+      }),
+
+    setDriverMaxSpeed: (speed) =>
+      set({
+        driverMaxSpeed: speed ?? null,
+      }),
+
   clearDriverInfo: () =>
     set({
       driverName: '',
@@ -66,6 +77,7 @@ const useAssignedDriverInfoStore = create((set) => ({
       driverLongitude: null,
       driverAngle: null,
       driverMaxSpeed: null,
+      harshDrivingStats: null,
       }),
 }));
 

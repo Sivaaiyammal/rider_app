@@ -1,4 +1,4 @@
-import React, { act, use, useCallback, useEffect, useRef, useState, useContext } from 'react';
+import React, { useCallback, useEffect, useRef, useState, useContext } from 'react';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import Homescreen from '../features/home/screens/HomeScreen.jsx'
 import MapContainer from '../features/map/components/MapContainer.js';
@@ -72,6 +72,8 @@ import DriverAccessScreen from '../../common/screens/Driver/DriverAccessScreen.j
 import ActingDriverVehicleSelectScreen from '../features/home/screens/ActingDriverVehicleSelectScreen.jsx';
 import MyVehiclesScreen from '../features/myVehicles/screens/MyVehiclesScreen.jsx';
 import BillsAndPhotosScreen from '../features/rideStatus/screens/BillsAndPhotosScreen';
+import TripSettingsScreen from '../features/rideStatus/screens/TripSettingsScreen';
+import TripTimelineScreen from '../features/rideStatus/screens/TripTimelineScreen';
 import NotificationSettingsScreen from '../features/notifications/screens/NotificationSettingsScreen';
 import useRideMatchStore from '../features/rideStatus/store/useRideMatchStore.js';
 import usePaymentStore from '../features/payment/store/usePaymentStore.js';
@@ -378,6 +380,7 @@ const Home = () => {
   } 
 
   const checkTrip = async (response,currentTripId=null) => {
+    // console.log("checkTrip response",response, currentTripId)
     if(response?.trip?.status == "CANCELLED" && !response?.trip?.fareDetails && currentTripId ){
       showModal('ride_cancelled_by_driver', null, {type: 'warning', imageName: 'cancelled_auto'});
     }
@@ -428,7 +431,7 @@ const Home = () => {
           }
           return;
         }
-       
+        // console.log("Setting current ride info with trip data", response.trip);
         setCurrentRideInfo(response?.trip);
 
         if(response?.assignDriver){
@@ -938,6 +941,10 @@ const Home = () => {
         return <MyVehiclesScreen {...params} />;
       case 'BillsAndPhotosScreen':
         return <BillsAndPhotosScreen {...params} />;
+      case 'TripSettingsScreen':
+        return <TripSettingsScreen {...params} />;
+      case 'TripTimelineScreen':
+        return <TripTimelineScreen {...params} />;
       case 'NotificationSettingsScreen':
         return <NotificationSettingsScreen {...params} />;
       default:

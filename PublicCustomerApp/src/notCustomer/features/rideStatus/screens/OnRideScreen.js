@@ -27,19 +27,84 @@ import TripPersonVehicle from '../../rideHistory/components/TripPersonVehicle';
 import useUserInfoStore from '../../../../common/store/useUserInfoStore';
 import { getPresignedImageUrl } from '../../../../common/utils/getPresignedImageUrl';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
+import HarshDrivingCard from '../component/HarshDrivingCard';
+import useMapStore from '../../map/store/useMapStore';
+import Marker from '../../../controllers/NEMap/Marker';
 
 const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
-  const {driverName,vehicleNumber,model,brand,color,driverPhoto,driverLatitude,driverLongitude,driverAngle} = useAssignedDriverInfoStore();
-  const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare,tripId,passengerNotificationPreferences} = useCurrentRideInfoStore();
+  const {driverName,vehicleNumber,model,brand,color,driverPhoto,driverLatitude,driverLongitude,driverAngle,harshDrivingStats,driverMaxSpeed} = useAssignedDriverInfoStore();
+  const {stops,duration,totalDistance,vehicleType,paymentMethod,estimatedFare,tripId,passengerNotificationPreferences, isActingDriverTrip, harshDriving} = useCurrentRideInfoStore();
   const {waitingForDriverApproval} = useWayPointReorderStore();
+
+  const effectiveHarshDrivingStats = harshDrivingStats ?? (harshDriving ? {
+    harshBreaking: harshDriving.harshBreaking?.length ?? 0,
+    harshAcceleration: harshDriving.harshAcceleration?.length ?? 0,
+    harshCornering: harshDriving.harshCornering?.length ?? 0,
+    overspeeding: harshDriving.overspeeding?.length ?? 0,
+  } : null);
   const { setStackScreen } = useStackScreenStore();
+  const { setMapBounds } = useMapStore();
+  const [harshEventMarkers, setHarshEventMarkers] = useState([]);
+
+  const buildHarshMarkers = (types) => {
+    if (!harshDriving) return { markers: [], coords: [] };
+    const EVENT_KEYS = [
+      { key: 'harshBreaking',     label: 'Hard Brake',   markerType: 'hard_braking' },
+      { key: 'harshAcceleration', label: 'Hard Accel',   markerType: 'hard_acceleration' },
+      { key: 'harshCornering',    label: 'Hard Corner',  markerType: 'hard_corner' },
+      { key: 'overspeeding',      label: 'Overspeeding', markerType: 'over_speed' },
+    ];
+    const markers = [];
+    const coords = [];
+    EVENT_KEYS.filter(e => types.includes(e.key)).forEach(({ key, label, markerType }) => {
+      const events = harshDriving[key];
+      if (!Array.isArray(events)) return;
+      events.forEach((event, index) => {
+        if (!event.location?.lat || !event.location?.lon) return;
+        const m = new Marker(
+          `harsh-${key}-${index}`,
+          label,
+          event.location.lon,
+          event.location.lat,
+          markerType,
+          36,
+          false,
+          0,
+        );
+        markers.push(m);
+        coords.push([event.location.lon, event.location.lat]);
+      });
+    });
+    return { markers, coords };
+  };
+
+  const handleViewOnMap = () => {
+    if (harshEventMarkers.length > 0) {
+      setHarshEventMarkers([]);
+      return;
+    }
+    const { markers, coords } = buildHarshMarkers(['harshBreaking', 'harshAcceleration', 'harshCornering', 'overspeeding']);
+    if (markers.length === 0) return;
+    setHarshEventMarkers(markers);
+    const bounds = utils.getBoundingBox(coords);
+    if (bounds) setMapBounds([bounds, [50, 100, 50, 500]]);
+  };
+
+  const handleFilterChange = (types) => {
+    const { markers, coords } = buildHarshMarkers(types);
+    setHarshEventMarkers(markers);
+    if (coords.length > 0) {
+      const bounds = utils.getBoundingBox(coords);
+      if (bounds) setMapBounds([bounds, [50, 100, 50, 500]]);
+    }
+  };
   const currentStop = useMemo(() => stops?.find(item => item.isReached === false) || null, [stops]);
   const {t} = useTranslation();
   const { userdetails } = useUserInfoStore();
   const userToken = userdetails?.token || null;
   
   const {stopspolyline} = useDrawStopsPolyline();
-  useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"drop",driverAngle);
+  useStopsMarkerHook(stops,driverLatitude,driverLongitude,vehicleType,"drop",driverAngle, undefined, harshEventMarkers);
   const {estimatedDuration,SetViewBoundingBox} = useRouteDraw({destinationlat:currentStop?.location[1],destinationlon:currentStop?.location[0],driverLat:driverLatitude,driverLon:driverLongitude,remainingStops: stopspolyline})  
   const animation = useRef(new Animated.Value(0)).current;
   
@@ -163,6 +228,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
         <AdaptiveText style={styles.topBarText}>{t(!iswaypoint ? 'reach_your_destination_in' : 'reach_your_waypoints_in',{stop:currentStop?.name})}</AdaptiveText>
         <View style={styles.timeBox}>
           <AdaptiveText style={styles.timeText}>{estimatedDuration} {estimatedDuration == 1 ? 'Min' : 'Mins'}</AdaptiveText>
+          { <AdaptiveText style={styles.speedText}>{Math.round(driverMaxSpeed)} km/h</AdaptiveText>}
             </View>
         
     </View>
@@ -171,7 +237,7 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
       <View style={[styles.root,{backgroundColor:'white'}]}>
 
       {/* Card */}
-     
+        {isActingDriverTrip ? <></> : 
         <View style={styles.vehicleDetailsContainer}>
           <TripPersonVehicle
             driverName={driverName}
@@ -187,13 +253,14 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
             descriptonSize={14}
           />
         </View>
+        }
+        
         {/* Estimated amount */}
         <View style={styles.amountBox}>
           <FontAwesome name="receipt" size={20} color="#00770d" />
           <AdaptiveText style={styles.amountLabel}>{t('estimated_amount_to_be_paid')}</AdaptiveText>
           <AdaptiveText style={styles.amountValue}>₹{estimatedFare || "--"}</AdaptiveText>
         </View>
-
         <>
              
               <View style={styles.rideInfoRow}>
@@ -214,36 +281,49 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
               </View>
             </>
 
+        <HarshDrivingCard
+          stats={effectiveHarshDrivingStats}
+          onViewOnMap={handleViewOnMap}
+          showingOnMap={harshEventMarkers.length > 0}
+          onFilterChange={handleFilterChange}
+        />
+
         
 
        
 
-               {/* Trip Details row with chevron */}
-        <TouchableOpacity style={styles.tripDetailsRow} onPress={toggleExpand} activeOpacity={0.7}>
-          <AdaptiveText style={styles.tripDetailsLabel}>{t('trip_details')}</AdaptiveText>
-          <View style={{flexDirection:"row",alignItems:"center",gap:10}}>
-          {
-            waitingForDriverApproval === "PENDING" &&
-            <View style={styles.driverWaitingApprovalContainer}>
-                <View style={styles.updateIconContainer}>
-                  </View>
-                  <Icon name="update" size={25} color={colors.grey_xxdark} />
-              </View>
-            }
-          <Animated.View style={{ transform: [{ rotate: chevronRotation }] }}>
-            <Icon name="keyboard-arrow-right" size={25} color="#000" />
-          </Animated.View>
-          </View>
-        </TouchableOpacity>
+        {/* Action cards row */}
+        <View style={styles.actionCardsRow}>
+          <TouchableOpacity style={[styles.actionCard, styles.actionCardTrip]} onPress={toggleExpand} activeOpacity={0.8}>
+            <View style={[styles.actionCardIconCircle, { backgroundColor: '#DBEAFE' }]}>
+              <Icon name="route" size={20} color="#1D4ED8" />
+              {waitingForDriverApproval === "PENDING" && (
+                <View style={styles.actionCardBadge} />
+              )}
+            </View>
+            <AdaptiveText style={styles.actionCardLabel}>{t('trip_details')}</AdaptiveText>
+          </TouchableOpacity>
 
-        {/* Bills & Photos row */}
-        <TouchableOpacity
-          style={styles.tripDetailsRow}
-          onPress={() => setStackScreen('BillsAndPhotosScreen', { tripId })}
-          activeOpacity={0.7}>
-          <AdaptiveText style={styles.tripDetailsLabel}>Bills & Photos</AdaptiveText>
-          <Icon name="keyboard-arrow-right" size={25} color="#000" />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionCard, styles.actionCardBills]}
+            onPress={() => setStackScreen('BillsAndPhotosScreen', { tripId })}
+            activeOpacity={0.8}>
+            <View style={[styles.actionCardIconCircle, { backgroundColor: '#DCFCE7' }]}>
+              <Icon name="receipt-long" size={20} color="#15803D" />
+            </View>
+            <AdaptiveText style={styles.actionCardLabel}>Bills & Photos</AdaptiveText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionCard, styles.actionCardSettings]}
+            onPress={() => setStackScreen('TripSettingsScreen')}
+            activeOpacity={0.8}>
+            <View style={[styles.actionCardIconCircle, { backgroundColor: '#F3E8FF' }]}>
+              <Icon name="settings" size={20} color="#7C3AED" />
+            </View>
+            <AdaptiveText style={styles.actionCardLabel}>Settings</AdaptiveText>
+          </TouchableOpacity>
+        </View>
 
        
 
@@ -344,6 +424,13 @@ const styles = StyleSheet.create({
     fontFamily:Fonts.regular,
     fontSize: 15,
   },
+  speedText: {
+    color: '#fff',
+    fontFamily: Fonts.regular,
+    fontSize: 13,
+    opacity: 0.8,
+    marginLeft: 6,
+  },
   divider:{
     width:2,
     backgroundColor:"#eee",
@@ -441,14 +528,74 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     backgroundColor:colors.grey,
     borderRadius:10,
-   
-    margin: 10,
-    marginBottom:20,
+    marginBottom:5,
   },
   tripDetailsLabel: {
     color: colors.black,
     fontSize: 16,
     fontFamily: Fonts.regular,
+  },
+  actionCardsRow: {
+    flexDirection: 'row',
+    width: '90%',
+    gap: 8,
+    marginBottom: 5,
+  },
+  actionCard: {
+    flex: 1,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    gap: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  actionCardTrip: {
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  actionCardBills: {
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+  },
+  actionCardSettings: {
+    backgroundColor: '#FAF5FF',
+    borderWidth: 1,
+    borderColor: '#E9D5FF',
+  },
+  actionCardIconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  actionCardIconWrap: {
+    position: 'relative',
+  },
+  actionCardBadge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: '#EF4444',
+    borderWidth: 1.5,
+    borderColor: '#fff',
+  },
+  actionCardLabel: {
+    color: '#374151',
+    fontSize: 11,
+    fontFamily: Fonts.medium,
+    textAlign: 'center',
   },
   stopsBox: {
     backgroundColor: '#F7F7F7',
@@ -544,6 +691,7 @@ driverWaitingApprovalText:{
     fontFamily:Fonts.medium,
     color:colors.grey_xxdark
 },
+
 dotsContainer: {
   flexDirection: 'row',
   justifyContent: 'center',
