@@ -4,7 +4,8 @@ const { getVmtrackersApp } = require('./firebaseApps');
 
 class PushNotifiationService {
     constructor() {
-        this.messaging = getVmtrackersApp().messaging();
+        const app = getVmtrackersApp();
+        this.messaging = app ? app.messaging() : null;
 
         this.queueOptions = {
             limiter: {
@@ -72,6 +73,7 @@ class PushNotifiationService {
                 }
             }
 
+            if (!this.messaging) return false;
             await this.messaging.send(payload)
             // console.log('Push notification sent successfully!');
             return true;

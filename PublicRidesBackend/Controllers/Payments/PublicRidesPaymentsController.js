@@ -12,10 +12,11 @@ const { getUserSocketIds } = require("../../Services/WebsocketUtilities");
 
 
 
-const razorpay = new Razorpay({
+// TODO: Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to .env
+const razorpay = process.env.RAZORPAY_KEY_ID ? new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+}) : null;
 
 
 async function sendDriverSocketEvents(driverId, socketService, tripId, data) {

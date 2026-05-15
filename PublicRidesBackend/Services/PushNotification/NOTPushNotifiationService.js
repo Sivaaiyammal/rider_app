@@ -4,7 +4,8 @@ const { getVmtaxicustomerApp } = require('./firebaseApps');
 
 class NOTPushNotifiationService {
     constructor() {
-        this.messaging = getVmtaxicustomerApp().messaging();
+        const app = getVmtaxicustomerApp();
+        this.messaging = app ? app.messaging() : null;
 
         this.queueOptions = {
             limiter: {
@@ -72,6 +73,7 @@ class NOTPushNotifiationService {
                 }
             }
 
+            if (!this.messaging) return false;
             await this.messaging.send(payload)
             // console.log('Push notification sent successfully!');
             return true;

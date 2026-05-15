@@ -13,11 +13,17 @@ class SendSMS {
     }
 
     async sendOTP( number, to, event) {
-        
+        const DEV_OTP = 123456;
+        if (process.env.RAZORPAY_DISABLE_STRICT === 'true') {
+            console.log(`[DEV] OTP for ${number}: ${DEV_OTP}`);
+            const expiry = Date.now() + 2 * 60 * 1000;
+            return {otp: DEV_OTP, expiry: expiry, status: 200};
+        }
+
         const templateid = ping4smsJson?.[to]?.[event]['ID']
         const {otp, expiry} = this.generateOTP();
         const message = `Your one-time verification code is ${otp}. Please use it to verify your identity for Namma Ooru Taxi.- VirtualMaze Softsys Pvt Ltd`;
-        
+
         const phoneNumber = Number(number);
         try {
             const response = await fetch(`http://site.ping4sms.com/api/smsapi?key=7860ccc5920d609839f3ec5d63b1ff89&route=2&sender=VMSFLT&number=${phoneNumber}&sms=${message}&templateid=${templateid}`);
@@ -28,7 +34,6 @@ class SendSMS {
             console.error('Error verifying subscription:', error);
             throw error;
         }
-        // return {otp: otp, expiry: expiry, status: 200};
     }
 
     async sendMessage(number, passangerName, platform, link) {

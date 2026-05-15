@@ -1,4 +1,10 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.project.sourcePaths": [],
+    "java.import.exclusions": [
+        "**/node_modules/**",
+        "**/build/**",
+        "**/.gradle/**"
+    ]
 }

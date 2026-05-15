@@ -9,14 +9,20 @@ const initApp = (appName, serviceAccountPath) => {
     try {
         return admin.app(appName);
     } catch (error) {
-        const serviceAccount = require(serviceAccountPath);
-        return admin.initializeApp(
-            {
-                credential: admin.credential.cert(serviceAccount),
-                projectId: serviceAccount.project_id,
-            },
-            appName
-        );
+        try {
+            const serviceAccount = require(serviceAccountPath);
+            if (!serviceAccount.private_key) return null;
+            return admin.initializeApp(
+                {
+                    credential: admin.credential.cert(serviceAccount),
+                    projectId: serviceAccount.project_id,
+                },
+                appName
+            );
+        } catch (e) {
+            console.warn(`[Firebase] Skipping ${appName} — credentials not configured.`);
+            return null;
+        }
     }
 };
 
