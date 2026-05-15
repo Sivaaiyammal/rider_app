@@ -1631,13 +1631,8 @@ module.exports = function (CLASS) {
                     // if (!verifyRes?.valid) {
                     //     return res.status(400).json({ success: true, isParivahanFailed: false, message: "parivahan_verification_failed" });
                     // }
-                    if (verifyRes?.status === 'error') {
-                        lastVerifyRes = verifyRes;
-                        isParivahanFailed = true;
-                    } else {
-                        lastVerifyRes = verifyRes;
-                        isParivahanFailed = false;
-                    }
+                    lastVerifyRes = verifyRes;
+                    isParivahanFailed = !verifyRes?.valid;
                 } catch (e) {
                     isParivahanFailed = true;
                     // return res.status(200).json({ success: true, isParivahanFailed: false, message: 'parivahan_verification_failed', error: e.message });

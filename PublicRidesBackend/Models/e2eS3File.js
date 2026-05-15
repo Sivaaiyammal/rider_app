@@ -2,8 +2,17 @@ const Minio = require('minio');
 const fs = require('fs');
 const path = require('path');
 
+const e2eBase = process.env.E2E_BASE;
+const isLocalE2E = ['localhost', '127.0.0.1'].includes(String(e2eBase || '').toLowerCase());
+const e2ePort = Number(process.env.E2E_PORT || (isLocalE2E ? 9000 : 443));
+const useSSLE2E = process.env.E2E_USE_SSL
+    ? String(process.env.E2E_USE_SSL).toLowerCase() === 'true'
+    : !isLocalE2E;
+
 const s3 = new Minio.Client({
-    endPoint: process.env.E2E_BASE,
+    endPoint: e2eBase,
+    port: e2ePort,
+    useSSL: useSSLE2E,
     accessKey: process.env.E2E_ACCESS_KEY,
     secretKey: process.env.E2E_SECRET_KEY
 });
@@ -11,7 +20,10 @@ const s3 = new Minio.Client({
 const bucket = process.env.E2E_BUCKET_NAME;
 
 const e2eS3File = async (method = 'upload', file, fileName, filePath, oldFilePath = '', preferExt) => {
-    const e2eUrlTemplate = `https://${bucket}.objectstore.e2enetworks.net`;
+    const protocol = useSSLE2E ? 'https' : 'http';
+    const e2eUrlTemplate = isLocalE2E
+        ? `${protocol}://${e2eBase}:${e2ePort}/${bucket}`
+        : `https://${bucket}.objectstore.e2enetworks.net`;
     const mimeToExt = {
         'image/jpeg': '.jpg',
         'image/jpg': '.jpg',
