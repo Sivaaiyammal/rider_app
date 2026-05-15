@@ -14,20 +14,19 @@ buildscript {
 
         // Kotlin / AGP
         kotlinVersion                = "2.2.0"
-        androidGradlePluginVersion   = "8.8.0"
+        androidGradlePluginVersion   = "8.5.2"
     }
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle")
+        classpath("com.android.tools.build:gradle:${androidGradlePluginVersion}")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("de.undercouch:gradle-download-task:4.1.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
-        classpath 'com.google.gms:google-services:4.4.2'
-        // keep a single kotlin-gradle-plugin declaration, pinned to kotlinVersion above
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.0'
+        classpath("com.google.gms:google-services:4.4.2")
+        classpath("com.google.firebase:firebase-crashlytics-gradle:3.0.0")
     }
 }
 

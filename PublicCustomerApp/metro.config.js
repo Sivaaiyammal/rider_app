@@ -18,7 +18,13 @@ const config = {
   resolver: {
     assetExts: assetExts.filter((ext) => ext !== "svg"),
     sourceExts: [...sourceExts, "svg"],
+    blockList: [
+      // Exclude android build intermediates from being watched
+      /node_modules\/.*\/android\/build\/.*/,
+      /android\/build\/.*/,
+    ],
   },
+  watchFolders: [],
 };
 
 module.exports = mergeConfig(defaultConfig, config);

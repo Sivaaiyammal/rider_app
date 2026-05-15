@@ -153,7 +153,7 @@ dependencies {
     implementation name: "ne_location_management", ext: 'aar'
     implementation name: "bundle_downloader", ext: 'aar'
     implementation name: "services_core", ext: 'aar'
-    implementation name: "geoJson", ext: 'aar'
+    implementation name: "geojson", ext: 'aar'
     implementation name: "navigation", ext: 'aar'
     implementation name: "navigation_ui", ext: 'aar'
     implementation name: "speech", ext: 'aar'
