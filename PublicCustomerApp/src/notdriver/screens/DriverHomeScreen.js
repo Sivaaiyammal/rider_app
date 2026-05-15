@@ -1,6 +1,7 @@
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import React, {useEffect, useState, useCallback, useMemo, useContext } from 'react';
 import {useQuery} from 'react-query';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import HomeTab from '../../notdriver/assets/icons/homeTab.svg';
 import HomeHl from '../../notdriver/assets/icons/homeHl.svg';
@@ -42,6 +43,7 @@ import DriverLocationHandler from '../components/DriverLocationHandler';
 import PaymentCompletionScreen from './PaymentCompletionScreen';
 import AppUpdateChecker from '../../common/components/AppUpdateChecker';
 import DriverEarnings from './DriverEarnings/DriverEarnings';
+import DriverCalendarScreen from './DriverCalendar/DriverCalendarScreen';
 import DriverRouteDetailsScreen from './DriverRouteDetailsScreen';
 import DriverPermissionScreen from './DriverPermissionScreen';
 import DriverVehiclesDetails from './DriverVehicleDetails/DriverVehiclesDetails';
@@ -657,6 +659,7 @@ const PublicRidesDriverHomeScreen = () => {
               { id: 1, name: 'Map', icon: <HomeTab />, iconHighlight: <HomeHl />, title: 'home', component: 
               <DriverMapScreen isLoading={isLoading} isPublicRidesDriver={true} approved={approved} blocked={blocked} isBankVerified={isBankVerified} refreshStatus={refreshStatus} modes={driverModes} role={role}/> },
               { id: 9, name: 'Trips', icon: <TripNotSelected/>, iconHighlight: <TripSelected />, title: 'trips', component: <TripHistory />},
+              { id: 3, name: 'Calendar', icon: <MaterialIcons name="event-note" size={24} color="#757575" />, iconHighlight: <MaterialIcons name="event-note" size={24} color={Colors.periwinkle} />, title: 'Calendar', component: <DriverCalendarScreen /> },
               { id: 2, name: 'Earnings', icon: <Tracking />, iconHighlight: <TrackingHl />, title: 'earnings', component: <DriverEarnings />},
               { id: 5, name: 'Settings', icon: <SettingsTab />, iconHighlight: <SettingTabHi />, title: 'settings', component: <DriverSettingsScreen /> }
             ].filter(item => role === 'salaried' ? item.id !== 2 : true)}

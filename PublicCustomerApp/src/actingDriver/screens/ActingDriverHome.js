@@ -3,6 +3,8 @@ import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import React, {useEffect, useState, useCallback, useMemo, useContext } from 'react';
 import {useQuery} from 'react-query';
 
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+
 import HomeTab from '../../notdriver/assets/icons/homeTab.svg';
 import HomeHl from '../../notdriver/assets/icons/homeHl.svg';
 import SettingsTab from '../../notdriver/assets/icons/settingsTab.svg';
@@ -32,6 +34,7 @@ import { Colors, colors, Fonts } from '../../common/constants/constants';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
 import PaymentCompletionScreen from '../../notdriver/screens/PaymentCompletionScreen';
 import AppUpdateChecker from '../../common/components/AppUpdateChecker';
+import DriverCalendarScreen from '../../notdriver/screens/DriverCalendar/DriverCalendarScreen';
 import DriverLocationHandler from '../../notdriver/components/DriverLocationHandler';
 import ActingDriverTabBar from '../../notdriver/bottomNavigation/DriverTabBar';
 import { getMessaging } from '@react-native-firebase/messaging';
@@ -47,6 +50,7 @@ import UPIVerification from '../../notdriver/screens/DriverDocumentCenter/UPIVer
 import DriverProofDoc from '../../notdriver/screens/DriverDocumentCenter/DriverProofDoc';
 import ActingDriverSettingsScreen from './ActingDriverSettingsScreen';
 import TripHistory from '../../notdriver/screens/TripHistory/TripHistory';
+import TripDetailScreen from '../../notdriver/screens/TripHistory/TripDetailScreen';
 import TicketSupportScreen from '../../common/screens/RiseSupportTicket/TicketSupportScreen';
 import TicketDetailScreen from '../../common/screens/RiseSupportTicket/TicketDetailScreen';
 import DriverBasicDetails from '../../notdriver/screens/DriverDetails/DriverBasicDetails';
@@ -606,6 +610,7 @@ const ActingDriverHomeScreen = () => {
               { id: 1, name: 'Map', icon: <HomeTab />, iconHighlight: <HomeHl />, title: 'home', component: 
               <ActingDriverMapScreen isLoading={isLoading} isPublicRidesDriver={true} approved={approved} blocked={blocked} isBankVerified={isBankVerified} refreshStatus={refreshStatus} /> },
               { id: 9, name: 'Trips', icon: <TripNotSelected/>, iconHighlight: <TripSelected />, title: 'trips', component: <TripHistory />},
+              { id: 3, name: 'Calendar', icon: <MaterialIcons name="event-note" size={24} color="#757575" />, iconHighlight: <MaterialIcons name="event-note" size={24} color={Colors.periwinkle} />, title: 'calendar', component: <DriverCalendarScreen /> },
             //   { id: 2, name: 'Earnings', icon: <Tracking />, iconHighlight: <TrackingHl />, title: 'earnings', component: <DriverEarnings />},
               { id: 5, name: 'Settings', icon: <SettingsTab />, iconHighlight: <SettingTabHi />, title: 'settings', component: <ActingDriverSettingsScreen /> },
             ]}
@@ -637,6 +642,8 @@ const ActingDriverHomeScreen = () => {
         return <TicketSupportScreen />;
       case 'TicketDetailScreen':
         return <TicketDetailScreen />;
+      case 'TripDetailScreen':
+        return <TripDetailScreen />;
       case 'DriverHelpSupport':
         return <DriverHelpSupport />;
       case 'DriverApprovalScreen':
