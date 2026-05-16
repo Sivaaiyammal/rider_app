@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: 16,
     padding: 20,
     width: '100%',
     shadowColor: '#000',
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 10,
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1.5,
     borderColor: '#E0E0E0',
     backgroundColor: '#FAFAFA',
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 30,
+    borderRadius: 10,
     borderWidth: 1.5,
     borderColor: '#E0E0E0',
     alignItems: 'center',
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   continueBtn: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 30,
+    borderRadius: 10,
     backgroundColor: Colors.periwinkle || '#5C6BC0',
     alignItems: 'center',
   },

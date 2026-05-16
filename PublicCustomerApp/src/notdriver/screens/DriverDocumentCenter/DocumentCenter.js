@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
   iconWrapper: {
     width: 48,
     height: 48,
-    borderRadius: 12,
+    borderRadius: 16,
     backgroundColor: Colors.periwinkle,
     alignItems: 'center',
     justifyContent: 'center',
@@ -548,7 +548,7 @@ const styles = StyleSheet.create({
   modeTab: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
   },
   doneButton: {
     backgroundColor: Colors.periwinkle,
-    borderRadius: 12,
+    borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
   },
@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 10,
     backgroundColor: Colors.periwinkle,
     alignItems: 'center',
   },

@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     width: '80%',
     backgroundColor: 'white',
     padding: 20,
-    borderRadius: 10,
+    borderRadius: 16,
     elevation: 5,
     alignItems: 'center',
     gap: 20,
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: Colors.green_online,
-    borderRadius: 8,
+    borderRadius: 16,
   },
   offlineCloseBtnText: {
     fontFamily: Fonts.regular,
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: Colors.danger_red,
-    borderRadius: 8,
+    borderRadius: 16,
   },
   offlineActionBtnText: {
     fontFamily: Fonts.regular,
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     width: '50%',
     paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 16,
   },
   onlineActionText: {
     fontFamily: Fonts.regular,

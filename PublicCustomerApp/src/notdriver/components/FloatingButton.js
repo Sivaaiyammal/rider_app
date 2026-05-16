@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     paddingVertical: 5,
     paddingHorizontal: 30,
-    borderRadius: 8,
+    borderRadius: 16,
     fontFamily: Fonts.regular,
     fontSize: 16,
     color: Colors.green_online,
@@ -467,11 +467,11 @@ const styles = StyleSheet.create({
   },
   breakBtn:{
     paddingVertical:5,
-    flexDirection:'row',
-    gap:4,
-    paddingHorizontal:4,
-    borderRadius:8,
-    borderWidth:1,
+    flexDirection: 'row',
+    gap: 4,
+    paddingHorizontal: 4,
+    borderRadius: 16,
+    borderWidth: 1,
     alignItems:'center'
   },
   timer:{
