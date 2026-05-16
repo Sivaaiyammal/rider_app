@@ -6,6 +6,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Switch,
 } from 'react-native';
 import PropTypes from 'prop-types';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -60,10 +61,33 @@ const DriverModeModal = ({visible, onClose}) => {
     driverInfo: s.driverInfo,
   }));
 
-  const [selected, setSelected] = useState(driverMode || 'driver');
+  const [selectedSingleMode, setSelectedSingleMode] = useState(driverMode === 'both' ? 'driver' : (driverMode || 'driver'));
+  const [bothMode, setBothMode] = useState(driverMode === 'both');
   const [loading, setLoading] = useState(false);
 
+  const selected = bothMode ? 'both' : selectedSingleMode;
+
+  const handleModeChange = (key) => {
+    if (!bothMode) {
+      setSelectedSingleMode(key);
+    }
+  };
+
+  const toggleBothMode = (value) => {
+    setBothMode(value);
+  };
+
   const getMissingItems = (mode) => {
+    if (mode === 'both') {
+      // Combine requirements for both modes
+      const combined = [...DRIVER_REQUIRED];
+      ACTING_REQUIRED.forEach(req => {
+        if (!combined.find(r => r.key === req.key)) {
+          combined.push(req);
+        }
+      });
+      return combined.filter(f => !f.check(storeStatus)).map(f => f.label);
+    }
     const fields = mode === 'driver' ? DRIVER_REQUIRED : ACTING_REQUIRED;
     return fields.filter(f => !f.check(storeStatus)).map(f => f.label);
   };
@@ -123,17 +147,23 @@ const DriverModeModal = ({visible, onClose}) => {
           {/* Mode buttons */}
           <View style={styles.modeRow}>
             {MODES.map(mode => {
-              const active = selected === mode.key;
+              const active = selectedSingleMode === mode.key && !bothMode;
+              const disabled = bothMode;
               return (
                 <TouchableOpacity
                   key={mode.key}
-                  style={[styles.modeCard, active && styles.modeCardActive]}
-                  onPress={() => setSelected(mode.key)}
-                  activeOpacity={0.8}>
+                  style={[
+                    styles.modeCard, 
+                    active && styles.modeCardActive,
+                    disabled && styles.modeCardDisabled
+                  ]}
+                  onPress={() => handleModeChange(mode.key)}
+                  activeOpacity={0.8}
+                  disabled={disabled}>
                   <MaterialIcons
                     name={mode.icon}
                     size={28}
-                    color={active ? Colors.periwinkle || '#5C6BC0' : '#9e9e9e'}
+                    color={active ? Colors.blue_xxdark : '#9e9e9e'}
                   />
                   <Text style={[styles.modeLabel, active && styles.modeLabelActive]}>
                     {mode.label}
@@ -141,12 +171,26 @@ const DriverModeModal = ({visible, onClose}) => {
                   <Text style={styles.modeSubtitle}>{mode.subtitle}</Text>
                   {active && (
                     <View style={styles.checkBadge}>
-                      <MaterialIcons name="check" size={14} color="#fff" />
+                      <MaterialIcons name="check" size={12} color="#fff" />
                     </View>
                   )}
                 </TouchableOpacity>
               );
             })}
+          </View>
+
+          {/* Both Mode Switch */}
+          <View style={styles.switchRow}>
+            <Text style={styles.switchLabel}>Both Mode</Text>
+            <View style={styles.switchWrapper}>
+              <Switch
+                trackColor={{ false: '#D1D1D1', true: Colors.blue_xxdark + '80' }}
+                thumbColor={bothMode ? Colors.blue_xxdark : '#f4f3f4'}
+                onValueChange={toggleBothMode}
+                value={bothMode}
+              />
+              <Text style={styles.switchStatus}>{bothMode ? 'On' : 'Off'}</Text>
+            </View>
           </View>
 
           {/* Missing fields warning */}
@@ -157,7 +201,7 @@ const DriverModeModal = ({visible, onClose}) => {
                 <Text style={styles.warningText}>
                   Complete the following before switching to{' '}
                   <Text style={{fontFamily: Fonts.semi_bold}}>
-                    {selected === 'driver' ? 'Driver' : 'Acting Driver'}
+                    {selected === 'driver' ? 'Driver' : selected === 'acting_driver' ? 'Acting Driver' : 'Both'}
                   </Text>{' '}mode:
                 </Text>
                 {missingItems.map((item, i) => (
@@ -253,8 +297,49 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   modeCardActive: {
-    borderColor: Colors.periwinkle || '#5C6BC0',
+    borderColor: Colors.blue_xxdark,
     backgroundColor: '#EEF0FB',
+  },
+  modeCardDisabled: {
+    opacity: 0.5,
+    backgroundColor: '#f5f5f5',
+  },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF5F5',
+    padding: 12,
+    borderRadius: 12,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  switchLabel: {
+    fontSize: 16,
+    fontFamily: Fonts.semi_bold,
+    color: '#FF0000', // Red color as requested/image
+  },
+  switchWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  switchStatus: {
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: Colors.black,
+    minWidth: 25,
+  },
+  checkBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: Colors.blue_xxdark,
+    borderRadius: 20,
+    width: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   modeLabel: {
     fontSize: 13,
@@ -263,7 +348,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   modeLabelActive: {
-    color: Colors.periwinkle || '#5C6BC0',
+    color: Colors.periwinkle || '#0F223C',
   },
   modeSubtitle: {
     fontSize: 10,
@@ -275,7 +360,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: Colors.periwinkle || '#5C6BC0',
+    backgroundColor: Colors.periwinkle || '#0F223C',
     borderRadius: 20,
     width: 18,
     height: 18,
@@ -325,7 +410,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     borderRadius: 10,
-    backgroundColor: Colors.periwinkle || '#5C6BC0',
+    backgroundColor: Colors.periwinkle || '#0F223C',
     alignItems: 'center',
   },
   continueBtnText: {

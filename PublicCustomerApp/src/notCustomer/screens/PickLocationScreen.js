@@ -410,7 +410,7 @@ const PickLocationScreen = ({onPickLocationResultCallback,locationType=null,defa
       defaultLocation.location[0],
       limitRadius * 1000, // radius in meters
       "#1A7d5fff",
-      "#7d5fff", 
+      "#0F223C", 
       "medium",
       );
       console.log('circle',circle);

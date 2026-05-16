@@ -24,10 +24,10 @@ const CustomeCalender = ({startDate, endDate, onDateChange, isSelectMultipleDate
 
   const markedDates = {
     ...(extraMarkedDates || {}),
-    [startDate]: {startingDay: true, selected: true, color: Colors.periwinkle, selectedColor: Colors.periwinkle},
-    [endDate]: {endingDay: true,selected: true, color: Colors.periwinkle},
+    [startDate]: {startingDay: true, selected: true, color: Colors.blue_xxdark, selectedColor: Colors.blue_xxdark},
+    [endDate]: {endingDay: true,selected: true, color: Colors.blue_xxdark},
     ...getDatesBetween(startDate, endDate).reduce((acc, date) => {
-      acc[date] = {color: Colors.periwinkle, selected: true,};
+      acc[date] = {color: Colors.blue_xxdark, selected: true,};
       return acc;
     }, {}),
   };
@@ -38,9 +38,9 @@ const CustomeCalender = ({startDate, endDate, onDateChange, isSelectMultipleDate
       onDayPress={handleDayPress}
       markedDates={markedDates}
       theme={{
-        todayTextColor: '#7d5fff',
+        todayTextColor: Colors.blue_xxdark,
         dayTextColor: '#2d4150',
-        arrowColor: 'black',
+        arrowColor: Colors.blue_xxdark,
         textDayFontFamily: Fonts.regular,
         textMonthFontFamily: Fonts.regular,
         textDayHeaderFontFamily: Fonts.light,

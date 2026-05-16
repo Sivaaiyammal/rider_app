@@ -656,12 +656,12 @@ const PublicRidesDriverHomeScreen = () => {
         return (
           <DriverTabBar
             menus={[
-              { id: 1, name: 'Map', icon: <HomeTab />, iconHighlight: <HomeHl />, title: 'home', component: 
+              { id: 1, name: 'Map', icon: <HomeTab />, iconHighlight: <HomeHl fill={Colors.blue_xxdark} />, title: 'home', component: 
               <DriverMapScreen isLoading={isLoading} isPublicRidesDriver={true} approved={approved} blocked={blocked} isBankVerified={isBankVerified} refreshStatus={refreshStatus} modes={driverModes} role={role}/> },
-              { id: 9, name: 'Trips', icon: <TripNotSelected/>, iconHighlight: <TripSelected />, title: 'trips', component: <TripHistory />},
-              { id: 3, name: 'Calendar', icon: <MaterialIcons name="event-note" size={24} color="#757575" />, iconHighlight: <MaterialIcons name="event-note" size={24} color={Colors.periwinkle} />, title: 'Calendar', component: <DriverCalendarScreen /> },
-              { id: 2, name: 'Earnings', icon: <Tracking />, iconHighlight: <TrackingHl />, title: 'earnings', component: <DriverEarnings />},
-              { id: 5, name: 'Settings', icon: <SettingsTab />, iconHighlight: <SettingTabHi />, title: 'settings', component: <DriverSettingsScreen /> }
+              { id: 9, name: 'Trips', icon: <TripNotSelected/>, iconHighlight: <TripSelected fill={Colors.blue_xxdark} />, title: 'trips', component: <TripHistory />},
+              { id: 3, name: 'Calendar', icon: <MaterialIcons name="event-note" size={24} color="#757575" />, iconHighlight: <MaterialIcons name="event-note" size={24} color={Colors.blue_xxdark} />, title: 'Calendar', component: <DriverCalendarScreen /> },
+              { id: 2, name: 'Earnings', icon: <Tracking />, iconHighlight: <TrackingHl fill={Colors.blue_xxdark} />, title: 'earnings', component: <DriverEarnings />},
+              { id: 5, name: 'Settings', icon: <SettingsTab />, iconHighlight: <SettingTabHi fill={Colors.blue_xxdark} />, title: 'settings', component: <DriverSettingsScreen /> }
             ].filter(item => role === 'salaried' ? item.id !== 2 : true)}
           />
         );

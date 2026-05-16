@@ -278,17 +278,18 @@ const TrackingMapIcons = props => {
             onPress={toggleDriverMode}
             activeOpacity={0.8}>
             <MaterialIcons
-              name={driverMode === 'acting_driver' ? 'swap-horiz' : 'drive-eta'}
+              name={driverMode === 'acting_driver' ? 'swap-horiz' : driverMode === 'both' ? 'all-inclusive' : 'drive-eta'}
               size={22}
-              color={driverMode === 'acting_driver' ? '#7b1fa2' : Colors.black}
+              color={driverMode === 'acting_driver' ? '#7b1fa2' : driverMode === 'both' ? Colors.blue_xxdark : Colors.black}
             />
             <Text
               style={[
                 styles.modeLabel,
                 driverMode === 'acting_driver' && styles.modeLabelActing,
+                driverMode === 'both' && { color: Colors.blue_xxdark }
               ]}
               numberOfLines={1}>
-              {driverMode === 'acting_driver' ? 'Acting' : 'Driver'}
+              {driverMode === 'acting_driver' ? 'Acting' : driverMode === 'both' ? 'Both' : 'Driver'}
             </Text>
           </TouchableOpacity>
           <DriverModeModal

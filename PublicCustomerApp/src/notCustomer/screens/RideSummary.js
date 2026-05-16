@@ -249,7 +249,7 @@ const RideSummary = () => {
                   ) : (
                     <View style={billStyles.actions}>
                       {isLoading ? (
-                        <ActivityIndicator size="small" color={colors.primary || '#5C6BC0'} />
+                        <ActivityIndicator size="small" color={colors.primary || '#0F223C'} />
                       ) : (
                         <>
                           <TouchableOpacity
@@ -279,7 +279,7 @@ const RideSummary = () => {
       
       {isCompleted ? (
         <TouchableOpacity
-          style={[rideSummary.payBtn, {backgroundColor: colors.black}]}
+          style={[rideSummary.payBtn, {backgroundColor: colors.blue_xxdark}]}
           onPress={handleGoToHome}>
           <Text style={rideSummary.payBtnTxt}>HOME</Text>
         </TouchableOpacity>

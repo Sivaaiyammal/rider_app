@@ -110,7 +110,7 @@ export default function DriverTabBar({ menus }) {
                       styles.menuName,
                       {
                         color:
-                          currentScreen === menu.name ?Colors.periwinkle : '#757575',
+                          currentScreen === menu.name ? Colors.blue_xxdark : '#757575',
                           fontFamily:currentScreen === menu.name ?  Fonts.medium:  Fonts.light,
                         fontSize: selectedLanguage === "en" ? 12 : 10,
                         textAlign:"center",

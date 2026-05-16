@@ -8,6 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Switch,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {useTranslation} from 'react-i18next';
@@ -54,15 +55,22 @@ const DocumentCenter = ({ isEditMode = false }) => {
 
   // const defaultMode = driverRole === 'acting_driver' ? 'acting_driver' : 'driver';
   const {driverMode, setDriverMode, pendingDriverMode, setPendingDriverMode} = useUserStore();
-  const [modeLoading, setModeLoading] = useState(false);
-  const [initialMode] = useState(driverMode);
-  const [selectedMode, setSelectedMode] = useState(pendingDriverMode ?? driverMode);
-  const isActingDriverMode = selectedMode === 'acting_driver';
+  const [selectedSingleMode, setSelectedSingleMode] = useState(pendingDriverMode === 'both' || (pendingDriverMode === null && driverMode === 'both') ? 'driver' : (pendingDriverMode ?? driverMode ?? 'driver'));
+  const [bothMode, setBothMode] = useState(pendingDriverMode === 'both' || (pendingDriverMode === null && driverMode === 'both'));
+  const selectedMode = bothMode ? 'both' : selectedSingleMode;
+  const isActingDriverMode = selectedMode === 'acting_driver' || selectedMode === 'both';
+  const isBothMode = selectedMode === 'both';
 
-  const handleModeChange = (mode) => {
-    if (mode === selectedMode) return;
-    setSelectedMode(mode);
-    setPendingDriverMode(mode);
+  const handleModeChange = (key) => {
+    if (!bothMode) {
+      setSelectedSingleMode(key);
+      setPendingDriverMode(key);
+    }
+  };
+
+  const toggleBothMode = (value) => {
+    setBothMode(value);
+    setPendingDriverMode(value ? 'both' : selectedSingleMode);
   };
 
   const drivingExperienceComplete = Boolean(driverInfo?.drivingExperience?.totalExperience);
@@ -154,9 +162,22 @@ const DocumentCenter = ({ isEditMode = false }) => {
     },
   ];
 
-  const sections = isActingDriverMode ? actingDriverSections : driverSections;
+  const combinedSections = [
+    ...driverSections,
+    ...actingDriverSections.filter(s => !driverSections.find(ds => ds.id === s.id))
+  ];
 
-  const docCompleted = isActingDriverMode
+  const sections = isBothMode ? combinedSections : isActingDriverMode ? actingDriverSections : driverSections;
+
+  const docCompleted = isBothMode
+    ? locationCompleteStatus &&
+      driverDetailsCompleteStatus &&
+      vehicleDetailsCompleteStatus &&
+      bankDetailsCompleteStatus &&
+      documentsCompleteStatus &&
+      drivingExperienceComplete &&
+      vehicleHandlingComplete
+    : isActingDriverMode
     ? locationCompleteStatus &&
       driverDetailsCompleteStatus &&
       bankDetailsCompleteStatus &&
@@ -292,25 +313,43 @@ const DocumentCenter = ({ isEditMode = false }) => {
         </Text>
 
         <View style={styles.modeSelector}>
-          {MODES.map(mode => (
-            <TouchableOpacity
-              key={mode.key}
-              style={[
-                styles.modeTab,
-                selectedMode === mode.key && styles.modeTabActive,
-              ]}
-              activeOpacity={0.8}
-              disabled={modeLoading}
-              onPress={() => handleModeChange(mode.key)}>
-              <Text
+          {MODES.map(mode => {
+            const active = selectedSingleMode === mode.key && !bothMode;
+            const disabled = bothMode;
+            return (
+              <TouchableOpacity
+                key={mode.key}
+                style={[
+                  styles.modeTab,
+                  active && styles.modeTabActive,
+                  disabled && { opacity: 0.5 }
+                ]}
+                activeOpacity={0.8}
+                disabled={disabled}
+                onPress={() => handleModeChange(mode.key)}>
+                <Text
                   style={[
                     styles.modeTabText,
-                    selectedMode === mode.key && styles.modeTabTextActive,
+                    active && styles.modeTabTextActive,
                   ]}>
                   {mode.label}
                 </Text>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        <View style={styles.bothModeContainer}>
+          <Text style={styles.bothModeLabel}>Both Mode</Text>
+          <View style={styles.switchContainer}>
+            <Switch
+              trackColor={{ false: '#D1D1D1', true: Colors.blue_xxdark + '80' }}
+              thumbColor={bothMode ? Colors.blue_xxdark : '#f4f3f4'}
+              onValueChange={toggleBothMode}
+              value={bothMode}
+            />
+            <Text style={styles.switchText}>{bothMode ? 'On' : 'Off'}</Text>
+          </View>
         </View>
 
         <View style={styles.sectionsContainer}>
@@ -568,6 +607,31 @@ const styles = StyleSheet.create({
   modeTabTextActive: {
     color: Colors.white,
     fontFamily: Fonts.semi_bold,
+  },
+  bothModeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF5F5',
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  bothModeLabel: {
+    fontSize: 16,
+    fontFamily: Fonts.semi_bold,
+    color: '#FF0000',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  switchText: {
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: Colors.black,
+    minWidth: 25,
   },
   title:{
     fontFamily: Fonts.semi_bold,

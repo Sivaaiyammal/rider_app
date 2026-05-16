@@ -46,9 +46,9 @@ export const Colors = {
   battleship_grey: '#6c757d',
   light_grey: '#D6D6D6',
   silver: '#dee2e6',
-  bright_orange: '#0F223C',
+  bright_orange: '#0F223C', // Rebranded to Deep Blue
   yellow_orange: '#ffaa2a',
-  periwinkle: '#0F223C',
+  periwinkle: '#0F223C', // Rebranded to Deep Blue
   periwinkle_light: '#E8F4FF',
   home_bg: '#353348',
   dusk: '#5f5a7a',
@@ -67,14 +67,14 @@ export const Colors = {
   yellow_xxlight:'#FFF7E5',
   orange_xxlight: '#FFF0E8',
   red_xxxlight:'#FFF8F8',
-  violet:'#4322cf',
-  violet_disabled:'#e4dff9',
+  violet:'#0F223C', // Rebranded to Deep Blue
+  violet_disabled:'#D1D8E0',
   dark: '#0A0A0A',
-  yellow: '#FFD100',
+  yellow: '#FFD100', // Brand Yellow
   grey: '#EEEEEE',
   grey_dark: '#9E9E9E',
   grey_xxdark: '#757575',
-  blue_xxdark: '#0F223C',
+  blue_xxdark: '#0F223C', // Brand Deep Blue
   danger_red: '#D83838',
   grey_xdark: '#D6D6D6',
   white_dirt: '#F5F5F5',

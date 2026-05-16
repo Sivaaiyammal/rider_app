@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     color: Colors.danger_red,
   },
   onlineActionBtn: {
-    backgroundColor: Colors.black,
+    backgroundColor: Colors.blue_xxdark,
     width: '50%',
     paddingVertical: 10,
     alignItems: 'center',

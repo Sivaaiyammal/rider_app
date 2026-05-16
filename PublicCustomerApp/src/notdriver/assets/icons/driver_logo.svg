@@ -26,7 +26,7 @@
       }
     </style>
     <linearGradient id="linear-gradient" y1="0.5" x2="1" y2="0.5" gradientUnits="objectBoundingBox">
-      <stop offset="0" stop-color="#7d5fff"/>
+      <stop offset="0" stop-color="#0F223C"/>
       <stop offset="1" stop-color="#292289"/>
     </linearGradient>
     <linearGradient id="linear-gradient-4" x1="0" y1="0.5" x2="1" y2="0.5" xlink:href="#linear-gradient"/>
