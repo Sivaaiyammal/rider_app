@@ -1012,7 +1012,7 @@ module.exports = function (CLASS) {
                 }
             }
 
-            if (tripStatus) {
+            if (tripStatus && tripStatus !== 'ALL') {
                 filter.status = tripStatus;
             }
 

@@ -147,24 +147,24 @@ const DriverCalendarScreen = () => {
   const fetchMonthTrips = async (date) => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      // const api = new APIRequest();
-      // const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-      // const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-      // const response = await api.request(
-      //   `/publicrides/driver/v2/getTrips?page=1&limit=100&tripStatus=ALL&startTime=${firstDay.getTime()}&endTime=${lastDay.getTime()}`,
-      //   'POST',
-      //   {},
-      //   userInfo?.token
-      // );
+      const api = new APIRequest();
+      const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+      const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+      const response = await api.request(
+        `/publicrides/driver/v2/getTrips?page=1&limit=100&tripStatus=ALL&startTime=${firstDay.getTime()}&endTime=${lastDay.getTime()}`,
+        'POST',
+        {},
+        userInfo?.token
+      );
 
-      // Use dummy data for now
-      const dummyTrips = getDummyTrips();
-      setTrips(dummyTrips);
+      if (response && response.success) {
+        setTrips(response.trips || []);
+      } else {
+        setTrips([]);
+      }
     } catch (error) {
       console.error('Error fetching trips:', error);
-      // Fallback to dummy data on error
-      setTrips(getDummyTrips());
+      setTrips([]);
     } finally {
       setLoading(false);
     }
