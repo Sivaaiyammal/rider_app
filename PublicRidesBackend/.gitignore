@@ -8,3 +8,7 @@ Cargo.lock
 creds/
 
 logs/
+
+
+assignDummyTrip.js
+checkPassengers.js

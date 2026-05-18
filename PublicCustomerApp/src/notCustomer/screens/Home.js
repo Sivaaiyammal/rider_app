@@ -596,8 +596,8 @@ const Home = () => {
         }
 
         if (!(Response?.userStats)) {
-          logout();
-          return;
+          // logout();
+          // return;
         }
 
         if (Response?.userStats?.name == "") {

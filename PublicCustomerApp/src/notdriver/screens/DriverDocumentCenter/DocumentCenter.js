@@ -339,18 +339,7 @@ const DocumentCenter = ({ isEditMode = false }) => {
           })}
         </View>
 
-        <View style={styles.bothModeContainer}>
-          <Text style={styles.bothModeLabel}>Both Mode</Text>
-          <View style={styles.switchContainer}>
-            <Switch
-              trackColor={{ false: '#D1D1D1', true: Colors.blue_xxdark + '80' }}
-              thumbColor={bothMode ? Colors.blue_xxdark : '#f4f3f4'}
-              onValueChange={toggleBothMode}
-              value={bothMode}
-            />
-            <Text style={styles.switchText}>{bothMode ? 'On' : 'Off'}</Text>
-          </View>
-        </View>
+
 
         <View style={styles.sectionsContainer}>
           {sections.map(section => (

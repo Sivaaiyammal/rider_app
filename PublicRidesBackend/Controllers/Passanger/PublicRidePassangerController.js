@@ -799,14 +799,30 @@ module.exports = function (CLASS) {
 
        
 
-        const result = await fareService.getFareRange({
-            distance,
-            duration,
-            zone,
-            vehicleType,
-            regionCode: RegionCode,
-        });
-     
+        // const result = await fareService.getFareRange({
+        //     distance,
+        //     duration,
+        //     zone,
+        //     vehicleType,
+        //     regionCode: RegionCode,
+        // });
+        
+        // DEV BYPASS: Mock the fareEngine result
+        const result = {
+            success: true,
+            data: {
+                distance: distance,
+                duration: duration,
+                fareRanges: {
+                    "CAR": { minFare: 100, maxFare: 150, currency: "INR", estimatedDuration: duration, maxDistanceLimit: 1000 },
+                    "AUTO": { minFare: 50, maxFare: 80, currency: "INR", estimatedDuration: duration, maxDistanceLimit: 1000 },
+                    "BIKE": { minFare: 30, maxFare: 50, currency: "INR", estimatedDuration: duration, maxDistanceLimit: 1000 },
+                    "ELECTRIC_AUTO": { minFare: 40, maxFare: 70, currency: "INR", estimatedDuration: duration, maxDistanceLimit: 1000 },
+                    "SUV": { minFare: 150, maxFare: 200, currency: "INR", estimatedDuration: duration, maxDistanceLimit: 1000 },
+                    "MINI": { minFare: 80, maxFare: 120, currency: "INR", estimatedDuration: duration, maxDistanceLimit: 1000 }
+                }
+            }
+        };
 
         return res.json({ result, regionCode: RegionCode, regionOfficeId: RegionOfficeId });
     }

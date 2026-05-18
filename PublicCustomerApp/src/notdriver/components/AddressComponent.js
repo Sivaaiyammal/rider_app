@@ -92,7 +92,7 @@ const AddressComponent = props => {
               {t(displayName) || displayName}{' '}
               <Text style={styles.yourStopTxt}>{t(isMyStop(item.name))}</Text>
             </Text>
-            <Text style={styles.addTxt}>{item.address.length > 30 ? item.address.substring(0, 30) + '...' : item.address}</Text>
+            <Text style={styles.addTxt}>{item?.address?.length > 30 ? item.address.substring(0, 30) + '...' : (item?.address || '')}</Text>
             {item?.waitingTime > 0 && (
               <View style={styles.waitingTimeContainer}>
                 <Entypo name="clock" size={14} color={Colors.periwinkle} />
@@ -153,7 +153,7 @@ const AddressComponent = props => {
                         : t(displayName) || displayName}{' '}
                       <Text style={styles.yourStopTxt}>{t(isMyStop(item.name))}</Text>
                     </Text>
-                    <Text style={styles.addTxt}>{item.address}</Text>
+                    <Text style={styles.addTxt}>{item?.address || ''}</Text>
                     {item?.waitingTime > 0 && (
                       <View style={styles.waitingTimeContainer}>
                         <Entypo name="clock" size={14} color={Colors.periwinkle} />
