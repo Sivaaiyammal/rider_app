@@ -32,7 +32,7 @@ const MyAccountProfileImage = (props) => {
                 {/* <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#6c63ff' }}>{id}</Text> */}
                 
                 {/* Rating Display */}
-                {ratingData?.currentrating && (
+                {ratingData?.currentrating != null && (
                     <View style={styles.ratingContainer}>
                         <View style={styles.starContainer}>
                             {[1, 2, 3, 4, 5].map((star) => {

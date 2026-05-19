@@ -57,6 +57,7 @@ import TextTicker from 'react-native-text-ticker'
       } catch (e) { /* no-op */ }
      
     }
+
     // Calculate responsive maxWidth (70% of screen width)
     const responsiveMaxWidth = width * 0.7;
   
@@ -177,6 +178,5 @@ import TextTicker from 'react-native-text-ticker'
       justifyContent: 'center',
       borderRadius: 30,
       elevation: 10,
-     
     },
   });

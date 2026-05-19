@@ -292,7 +292,7 @@ const UpComingTripsView = () => {
               <Feather
                 name="calendar"
                 size={18}
-                color={Colors.periwinkle}
+                color={Colors.yellow || '#FFD100'}
                 style={styles.scheduleIcon}
               />
               <View>
@@ -310,9 +310,9 @@ const UpComingTripsView = () => {
           isPublicRides={true}
         />
         <View style={styles.cardsContainer}>
-          <View style={[styles.infoCard, styles.distanceCard]}>
-            <View style={styles.cardIconContainer}>
-              <Feather name="map-pin" size={16} color="#FFFFFF" />
+          <View style={styles.infoCard}>
+            <View style={[styles.cardIconContainer, styles.distanceIconContainer]}>
+              <Feather name="map-pin" size={15} color="#3B82F6" />
             </View>
             <Text style={styles.cardValue}>
               {upComingTripDetails?.estimatedDistance
@@ -322,9 +322,9 @@ const UpComingTripsView = () => {
             <Text style={styles.cardLabel}>{t.distance || 'Distance'}</Text>
           </View>
 
-          <View style={[styles.infoCard, styles.durationCard]}>
-            <View style={styles.cardIconContainer}>
-              <Feather name="clock" size={16} color="#FFFFFF" />
+          <View style={styles.infoCard}>
+            <View style={[styles.cardIconContainer, styles.durationIconContainer]}>
+              <Feather name="clock" size={15} color="#10B981" />
             </View>
             <Text style={styles.cardValue}>
               {upComingTripDetails?.estimatedDuration
@@ -334,9 +334,9 @@ const UpComingTripsView = () => {
             <Text style={styles.cardLabel}>{t.duration || 'Duration'}</Text>
           </View>
 
-          <View style={[styles.infoCard, styles.fareCard]}>
-            <View style={styles.cardIconContainer}>
-              <FontAwesome name="rupee" size={16} color="#FFFFFF" />
+          <View style={styles.infoCard}>
+            <View style={[styles.cardIconContainer, styles.fareIconContainer]}>
+              <FontAwesome name="rupee" size={15} color="#F59E0B" />
             </View>
             <Text style={styles.cardValue}>
               ₹
@@ -351,7 +351,7 @@ const UpComingTripsView = () => {
           style={[styles.actionButton, styles.primaryButton]}
           activeOpacity={0.85}
           onPress={() => onAcceptRide()}>
-          <Text style={styles.actionButtonText}>Start Ride</Text>
+          <Text style={[styles.actionButtonText, {color: '#FFFFFF'}]}>Start Ride</Text>
           <FontAwesome
             name="road"
             size={18}
@@ -360,16 +360,16 @@ const UpComingTripsView = () => {
           />
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.actionButton, {backgroundColor: Colors.red}]}
+          style={styles.cancelButton}
           activeOpacity={0.85}
           onPress={() => setCancelRideModalVisible(true)}>
-          <Text style={styles.actionButtonText}>Cancel Ride</Text>
-          {/* <FontAwesome
-          name="road"
-          size={18}
-          color="#FFFFFF"
-          style={styles.actionButtonIcon}
-        /> */}
+          <Text style={styles.cancelButtonText}>Cancel Ride</Text>
+          <Feather
+            name="x-circle"
+            size={18}
+            color="#EF4444"
+            style={styles.actionButtonIcon}
+          />
         </TouchableOpacity>
       </CustomeBottomSheet>
       {cancelRideModalVisible && (
@@ -389,17 +389,19 @@ export default UpComingTripsView;
 
 const styles = StyleSheet.create({
   sectionCard: {
-    width: '92%',
+    width: '94%',
     alignSelf: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: '#0F223C', // Premium deep navy backdrop
+    borderRadius: 24,
     padding: 20,
     marginBottom: 16,
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
     shadowOffset: {width: 0, height: 6},
-    elevation: 4,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: '#1E3A8A', // Sleek neon blue border highlight
   },
   sectionHeaderRow: {
     flexDirection: 'row',
@@ -408,14 +410,15 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionHeading: {
-    fontFamily: Fonts.semi_bold,
-    fontSize: 16,
-    color: Colors.black,
-    letterSpacing: 0.4,
+    fontFamily: Fonts.bold,
+    fontSize: 12,
+    color: '#FFD100', // Premium warm gold title
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
   },
   passengerRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
   },
   passengerInfo: {
@@ -423,51 +426,53 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   passengerName: {
-    fontFamily: Fonts.semi_bold,
-    fontSize: 18,
-    color: Colors.black,
-    marginBottom: 4,
+    fontFamily: Fonts.bold,
+    fontSize: 20,
+    color: '#FFFFFF', // High contrast white name
+    marginBottom: 6,
   },
   passengerMeta: {
     fontFamily: Fonts.medium,
     fontSize: 13,
-    color: Colors.warm_grey_two,
-    marginBottom: 2,
+    color: '#E2E8F0', // Soft readable grey metadata
+    marginBottom: 3,
   },
   contactButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.periwinkle,
+    backgroundColor: '#10B981', // Glowing Emerald Green call container
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    borderRadius: 20, // Clean pill shape
+    shadowColor: '#10B981',
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
     shadowOffset: {width: 0, height: 3},
-    elevation: 3,
+    elevation: 4,
   },
   contactButtonDisabled: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#334155',
     shadowOpacity: 0,
     elevation: 0,
   },
   contactButtonText: {
-    fontFamily: Fonts.semi_bold,
-    fontSize: 14,
+    fontFamily: Fonts.bold,
+    fontSize: 12,
     color: '#FFFFFF',
-    marginLeft: 8,
+    marginLeft: 6,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   contactButtonTextDisabled: {
-    color: '#9CA3AF',
+    color: '#64748B',
   },
   scheduleSection: {
     marginTop: 20,
     borderRadius: 16,
-    backgroundColor: 'rgba(125, 95, 255, 0.08)',
-    padding: 16,
+    backgroundColor: 'rgba(255, 209, 0, 0.08)', // Beautiful gold transparency
+    padding: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 209, 0, 0.15)',
   },
   scheduleRow: {
     flexDirection: 'row',
@@ -478,15 +483,15 @@ const styles = StyleSheet.create({
   },
   scheduleLabel: {
     fontFamily: Fonts.medium,
-    fontSize: 12,
-    color: Colors.warm_grey_two,
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.6)',
     textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    letterSpacing: 0.8,
   },
   scheduleValue: {
-    fontFamily: Fonts.semi_bold,
+    fontFamily: Fonts.bold,
     fontSize: 16,
-    color: Colors.black,
+    color: '#FFFFFF', // White text schedule
     marginTop: 2,
   },
   badge: {
@@ -497,7 +502,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   badgeNeutral: {
-    backgroundColor: 'rgba(125, 95, 255, 0.15)',
+    backgroundColor: 'rgba(255, 209, 0, 0.15)',
   },
   badgeWarning: {
     backgroundColor: '#FEF3C7',
@@ -514,7 +519,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   badgeTextNeutral: {
-    color: Colors.periwinkle,
+    color: '#FFD100',
   },
   badgeTextWarning: {
     color: '#B45309',
@@ -526,27 +531,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    shadowOffset: {width: 0, height: 2},
-    elevation: 3,
-    backgroundColor: Colors.periwinkle,
-    width: '90%',
+    paddingVertical: 14,
+    borderRadius: 28, // Beautiful modern pill shape
+    width: '92%',
     alignSelf: 'center',
-    marginVertical: 10,
+    marginVertical: 8,
   },
+
   primaryButton: {
-    backgroundColor: Colors.bright_orange,
+    backgroundColor: '#0F223C', // Solid deep navy backdrop
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: {width: 0, height: 3},
+    elevation: 4,
   },
   actionButtonText: {
-    fontFamily: Fonts.semi_bold,
+    fontFamily: Fonts.bold,
     fontSize: 14,
     letterSpacing: 1,
     textTransform: 'uppercase',
-    color: '#FFFFFF',
+  },
+  cancelButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 28,
+    borderWidth: 1.5,
+    borderColor: '#EF4444', // Red outline cancellation button
+    backgroundColor: 'transparent',
+    width: '92%',
+    alignSelf: 'center',
+    marginVertical: 8,
+  },
+  cancelButtonText: {
+    fontFamily: Fonts.bold,
+    fontSize: 14,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: '#EF4444',
   },
 
   actionButtonIcon: {
@@ -556,59 +580,57 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginVertical: 20,
-    width: '90%',
+    width: '92%',
     alignSelf: 'center',
+    gap: 8,
   },
   infoCard: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#F8FAFC', // Elegant off-white background
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    minHeight: 90,
+    borderWidth: 1,
+    borderColor: '#E2E8F0', // Beautiful thin outline
+    minHeight: 88,
     justifyContent: 'center',
-    marginHorizontal: 4,
+    marginHorizontal: 0,
   },
-  distanceCard: {
-    backgroundColor: '#4A90E2', // Blue
-  },
-  durationCard: {
-    backgroundColor: '#50C878', // Green
-  },
-  fareCard: {
-    backgroundColor: '#FF6B6B', // Red/Coral
-  },
+  distanceCard: {},
+  durationCard: {},
+  fareCard: {},
   cardIconContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
+  },
+  distanceIconContainer: {
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+  },
+  durationIconContainer: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  fareIconContainer: {
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
   },
   cardValue: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: Fonts.bold,
-    color: '#FFFFFF',
-    // marginBottom: 4,
+    color: '#0F223C', // Deep navy brand color
     textAlign: 'center',
   },
   cardLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: Fonts.medium,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#64748B', // Slate gray label
     textAlign: 'center',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    marginTop: 2,
   },
 });
 

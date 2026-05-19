@@ -15,11 +15,13 @@ import APIRequest from '../../../common/APIRequest';
 import useUserStore from '../../../common/store/useUserStore';
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
 import { useSelectedRouteStore } from '../../store/useTripsStore';
+import useTripsStore from '../../store/useTripsStore';
 import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter';
 import { useTranslation } from 'react-i18next';
 import { useMapMarkerStore } from '../../../common/store/useMapMarkerStore';
 import useCurrentScreenStore from '../../../common/store/useCurrentScreenStore';
 import Marker from '../../../common/map/Marker';
+import { useTripAcceptStore } from '../../store/useTripAcceptStore';
 
 const DriverCalendarScreen = () => {
   const { t } = useTranslation();
@@ -218,10 +220,35 @@ const DriverCalendarScreen = () => {
     setStackScreen('TripDetailScreen');
   };
 
-  const handleStartTrip = (trip) => {
-    // Logic to start the trip
-    setSelectedTrip(trip);
-    setStackScreen('ActingDriverPreTripScreen');
+  const handleStartTrip = async (trip) => {
+    try {
+      const api = new APIRequest();
+      const response = await api.request(`/publicrides/driver/v2/getTrip?tripId=${trip._id}`, 'GET', null, userInfo?.token);
+      if (response?.success && response?.trip && response?.trip?.length > 0) {
+        const freshTrip = response.trip[0];
+        // Ensure status is at least ACCEPTED so DriverOnRide loads
+        if (freshTrip.status === 'PENDING') {
+          freshTrip.status = 'ACCEPTED';
+        }
+        useTripsStore.setState({ activeTripData: [freshTrip] });
+        setStackScreen('PublicDriverTrackingScreen');
+      } else {
+        const tripData = { ...trip };
+        if (tripData.status === 'PENDING') {
+          tripData.status = 'ACCEPTED';
+        }
+        useTripsStore.setState({ activeTripData: [tripData] });
+        setStackScreen('PublicDriverTrackingScreen');
+      }
+    } catch (err) {
+      console.log("Error starting trip:", err);
+      const tripData = { ...trip };
+      if (tripData.status === 'PENDING') {
+        tripData.status = 'ACCEPTED';
+      }
+      useTripsStore.setState({ activeTripData: [tripData] });
+      setStackScreen('PublicDriverTrackingScreen');
+    }
   };
 
   const handleViewLocation = (location) => {

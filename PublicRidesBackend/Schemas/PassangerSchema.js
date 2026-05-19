@@ -192,6 +192,9 @@ const actingDriverTripSchemaPublicrides = Joi.object({
     passangerCount: Joi.number().required(),
     estimatedDistance: Joi.number().required(),
     estimatedDuration: Joi.number().required(),
+    minFare: Joi.number().optional(),
+    maxFare: Joi.number().optional(),
+    estimatedFare: Joi.number().optional(),
     // Acting driver specifics
     isActingDriverTrip: Joi.boolean().valid(true).required(),
     actingDriverHours: Joi.number().allow(null).optional(),

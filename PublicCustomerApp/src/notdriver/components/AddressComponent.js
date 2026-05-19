@@ -128,7 +128,7 @@ const AddressComponent = props => {
                 <Ionicons name="close" size={22} color={Colors.black} />
               </TouchableOpacity>
             </View>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20, paddingLeft: 16, paddingRight: 16 }}>
               {transformedData?.map((item, index) => {
                 let displayName;
                 let displayIcon;

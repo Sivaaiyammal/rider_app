@@ -163,6 +163,11 @@ const UpComingTripsList = () => {
         <ScrollView
           contentContainerStyle={{paddingVertical: 20, paddingBottom: 40}}
           showsVerticalScrollIndicator={false}>
+          <View style={styles.listHeader}>
+            <Text style={styles.headerSubtitle}>DRIVER SCHEDULE</Text>
+            <Text style={styles.headerTitle}>Your Upcoming Trips</Text>
+            <View style={styles.headerIndicator} />
+          </View>
           {trips
             ?.sort(
               (a, b) =>
@@ -220,11 +225,11 @@ const UpComingTripsList = () => {
                     </View>
                   </View>
 
-                  <View style={styles.scheduleCard}>
+                   <View style={styles.scheduleCard}>
                     <Feather
                       name="calendar"
                       size={18}
-                      color={Colors.periwinkle}
+                      color={Colors.yellow || '#FFD100'}
                       style={styles.scheduleIcon}
                     />
                     <View>
@@ -236,9 +241,9 @@ const UpComingTripsList = () => {
                   <View style={styles.separator} />
 
                   <View style={styles.cardsContainer}>
-                    <View style={[styles.infoCard, styles.distanceCard]}>
-                      <View style={styles.cardIconContainer}>
-                        <Feather name="map-pin" size={16} color="#FFFFFF" />
+                    <View style={styles.infoCard}>
+                      <View style={[styles.cardIconContainer, styles.distanceIconContainer]}>
+                        <Feather name="map-pin" size={15} color="#3B82F6" />
                       </View>
                       <Text style={styles.cardValue}>
                         {trip?.estimatedDistance
@@ -250,9 +255,9 @@ const UpComingTripsList = () => {
                       </Text>
                     </View>
 
-                    <View style={[styles.infoCard, styles.durationCard]}>
-                      <View style={styles.cardIconContainer}>
-                        <Feather name="clock" size={16} color="#FFFFFF" />
+                    <View style={styles.infoCard}>
+                      <View style={[styles.cardIconContainer, styles.durationIconContainer]}>
+                        <Feather name="clock" size={15} color="#10B981" />
                       </View>
                       <Text style={styles.cardValue}>
                         {trip?.estimatedDuration
@@ -264,9 +269,9 @@ const UpComingTripsList = () => {
                       </Text>
                     </View>
 
-                    <View style={[styles.infoCard, styles.fareCard]}>
-                      <View style={styles.cardIconContainer}>
-                        <FontAwesome name="rupee" size={16} color="#FFFFFF" />
+                    <View style={styles.infoCard}>
+                      <View style={[styles.cardIconContainer, styles.fareIconContainer]}>
+                        <FontAwesome name="rupee" size={15} color="#F59E0B" />
                       </View>
                       <Text style={styles.cardValue}>
                         ₹
@@ -274,7 +279,7 @@ const UpComingTripsList = () => {
                           ? parseFloat(trip.minFare).toFixed(2)
                           : '0.00'}
                       </Text>
-                            <Text style={styles.cardLabel}>{t('fare') || 'Fare'}</Text>
+                      <Text style={styles.cardLabel}>{t('fare') || 'Fare'}</Text>
                     </View>
                   </View>
 
@@ -306,7 +311,7 @@ const UpComingTripsList = () => {
                       <Feather
                         name="arrow-right"
                         size={18}
-                        color={Colors.periwinkle}
+                        color="#0F223C"
                         style={styles.actionButtonIcon}
                       />
                     </TouchableOpacity>
@@ -337,20 +342,44 @@ export default UpComingTripsList;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: '#F8FAFC', // Ultra-clean, premium light-grey page background
+  },
+  listHeader: {
+    paddingHorizontal: 20,
+    marginTop: 5,
+    marginBottom: 20,
+  },
+  headerSubtitle: {
+    fontSize: 10,
+    fontFamily: Fonts.bold,
+    color: '#64748B', // Slate gray
+    letterSpacing: 1.5,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontFamily: Fonts.bold,
+    color: '#0F223C', // Deep navy
+    marginTop: 4,
+  },
+  headerIndicator: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#FFD100', // Gold colored indicator line
+    marginTop: 8,
   },
   tripCard: {
     width: '92%',
     alignSelf: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    borderRadius: 24, // Bolder premium rounded corners
     padding: 20,
     marginBottom: 20,
-    shadowColor: '#0F172A',
-    shadowOpacity: 0.08,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
     shadowRadius: 16,
     shadowOffset: {width: 0, height: 6},
-    elevation: 4,
+    elevation: 6,
   },
   headerRow: {
     flexDirection: 'row',
@@ -368,7 +397,7 @@ const styles = StyleSheet.create({
   rideIdValue: {
     fontFamily: Fonts.semi_bold,
     fontSize: 20,
-    color: Colors.black,
+    color: '#0F223C', // Premium navy title color
     marginTop: 2,
   },
   badge: {
@@ -379,7 +408,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   badgeNeutral: {
-    backgroundColor: 'rgba(125, 95, 255, 0.15)',
+    backgroundColor: 'rgba(255, 209, 0, 0.15)', // Premium gold countdown badge
   },
   badgeWarning: {
     backgroundColor: '#FEF3C7',
@@ -396,7 +425,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   badgeTextNeutral: {
-    color: Colors.periwinkle,
+    color: '#FFD100', // Gold colored text
   },
   badgeTextWarning: {
     color: '#B45309',
@@ -407,7 +436,7 @@ const styles = StyleSheet.create({
   scheduleCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(125, 95, 255, 0.08)',
+    backgroundColor: 'rgba(15, 34, 60, 0.04)', // Elegant transparent brand blue tint
     borderRadius: 16,
     padding: 14,
   },
@@ -436,57 +465,55 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 18,
+    gap: 8,
   },
   infoCard: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#F8FAFC', // Sleek off-white background
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    minHeight: 90,
+    borderWidth: 1,
+    borderColor: '#E2E8F0', // Beautiful modern thin border
+    minHeight: 88,
     justifyContent: 'center',
-    marginHorizontal: 4,
+    marginHorizontal: 0,
   },
-  distanceCard: {
-    backgroundColor: '#4A90E2', // Blue
-  },
-  durationCard: {
-    backgroundColor: '#50C878', // Green
-  },
-  fareCard: {
-    backgroundColor: '#FF6B6B', // Red/Coral
-  },
+  distanceCard: {},
+  durationCard: {},
+  fareCard: {},
   cardIconContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
+  },
+  distanceIconContainer: {
+    backgroundColor: 'rgba(59, 130, 246, 0.1)', // Subtle blue glow
+  },
+  durationIconContainer: {
+    backgroundColor: 'rgba(16, 185, 129, 0.1)', // Subtle green glow
+  },
+  fareIconContainer: {
+    backgroundColor: 'rgba(245, 158, 11, 0.1)', // Subtle amber/rupee glow
   },
   cardValue: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: Fonts.bold,
-    color: '#FFFFFF',
-    // marginBottom: 4,
+    color: '#0F223C', // Deep navy text matching brand
     textAlign: 'center',
   },
   cardLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: Fonts.medium,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#64748B', // Slate gray label
     textAlign: 'center',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    marginTop: 2,
   },
   textStyle: {
     color: 'white',
@@ -496,7 +523,9 @@ const styles = StyleSheet.create({
   routeContainer: {
     borderRadius: 16,
     padding: 14,
-    backgroundColor: '#F5F3FF',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     marginBottom: 18,
   },
   sectionTitle: {
@@ -510,41 +539,41 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
   actionButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 14,
+    borderRadius: 28, // Beautiful modern pill shape
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 4,
     shadowOffset: {width: 0, height: 2},
     elevation: 3,
-    backgroundColor: Colors.periwinkle,
   },
   primaryButton: {
-    backgroundColor: Colors.bright_orange,
+    backgroundColor: '#0F223C', // Deep navy primary button
   },
   secondaryButton: {
     backgroundColor: 'white',
-    borderWidth: 1.2,
-    borderColor: Colors.periwinkle,
+    borderWidth: 1.5,
+    borderColor: '#0F223C', // Deep navy outline border
   },
   buttonSpacing: {
-    marginRight: 12,
+    marginRight: 0, // Handled by gap property
   },
   actionButtonText: {
-    fontFamily: Fonts.semi_bold,
+    fontFamily: Fonts.bold,
     fontSize: 14,
     letterSpacing: 1,
     textTransform: 'uppercase',
     color: '#FFFFFF',
   },
   secondaryButtonText: {
-    color: Colors.periwinkle,
+    color: '#0F223C', // Deep navy text color
   },
   actionButtonIcon: {
     marginLeft: 8,

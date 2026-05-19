@@ -496,6 +496,30 @@ module.exports = function (CLASS) {
                 payload.passengerNotificationPreferences = passanger.notificationPreferences;
             }
 
+            // Calculate and set minFare, maxFare, estimatedFare, and maxDistanceLimit if not present
+            const dist = Number(payload.estimatedDistance) || 0;
+            const dur = Number(payload.estimatedDuration) || 0;
+            const vType = payload.vehicleType || 'AUTO';
+
+            const baseRates = {
+                "CAR": { basePerKm: 15, basePerMin: 1.2 },
+                "AUTO": { basePerKm: 12, basePerMin: 1.0 },
+                "BIKE": { basePerKm: 6, basePerMin: 0.5 },
+                "ELECTRIC_AUTO": { basePerKm: 10, basePerMin: 1.0 },
+                "SUV": { basePerKm: 22, basePerMin: 1.5 },
+                "MINI": { basePerKm: 13, basePerMin: 1.0 }
+            };
+
+            const rate = baseRates[vType.toUpperCase()] || baseRates["AUTO"];
+            const baseFare = (dist * rate.basePerKm) + (dur * rate.basePerMin);
+            
+            if (!payload.minFare) payload.minFare = Math.max(15, Math.round(baseFare * 0.9));
+            if (!payload.maxFare) payload.maxFare = Math.max(20, Math.round(baseFare * 1.1));
+            if (!payload.estimatedFare) payload.estimatedFare = Math.round(baseFare);
+
+            const maxDistLimit = await FareConfigs.getMaxDistanceLimit(payload.regionCode || 'default', vType);
+            payload.maxDistanceLimit = maxDistLimit || 1000;
+
             const otp = OTP.generateOTP(4);
             payload.otp = otp;
 
@@ -807,19 +831,35 @@ module.exports = function (CLASS) {
         //     regionCode: RegionCode,
         // });
         
-        // DEV BYPASS: Mock the fareEngine result
+        // Dynamic fare calculation matching normal ride booking rates
+        const dist = Number(distance) || 0;
+        const dur = Number(duration) || 0;
+
+        const calculateRange = (basePerKm, basePerMin, minMultiplier = 0.9, maxMultiplier = 1.1) => {
+            const baseFare = (dist * basePerKm) + (dur * basePerMin);
+            const minFare = Math.max(15, Math.round(baseFare * minMultiplier));
+            const maxFare = Math.max(20, Math.round(baseFare * maxMultiplier));
+            return {
+                minFare,
+                maxFare,
+                currency: "INR",
+                estimatedDuration: dur,
+                maxDistanceLimit: 1000
+            };
+        };
+
         const result = {
             success: true,
             data: {
-                distance: distance,
-                duration: duration,
+                distance: dist,
+                duration: dur,
                 fareRanges: {
-                    "CAR": { minFare: 100, maxFare: 150, currency: "INR", estimatedDuration: duration, maxDistanceLimit: 1000 },
-                    "AUTO": { minFare: 50, maxFare: 80, currency: "INR", estimatedDuration: duration, maxDistanceLimit: 1000 },
-                    "BIKE": { minFare: 30, maxFare: 50, currency: "INR", estimatedDuration: duration, maxDistanceLimit: 1000 },
-                    "ELECTRIC_AUTO": { minFare: 40, maxFare: 70, currency: "INR", estimatedDuration: duration, maxDistanceLimit: 1000 },
-                    "SUV": { minFare: 150, maxFare: 200, currency: "INR", estimatedDuration: duration, maxDistanceLimit: 1000 },
-                    "MINI": { minFare: 80, maxFare: 120, currency: "INR", estimatedDuration: duration, maxDistanceLimit: 1000 }
+                    "CAR": calculateRange(15, 1.2),
+                    "AUTO": calculateRange(12, 1.0),
+                    "BIKE": calculateRange(6, 0.5),
+                    "ELECTRIC_AUTO": calculateRange(10, 1.0),
+                    "SUV": calculateRange(22, 1.5),
+                    "MINI": calculateRange(13, 1.0)
                 }
             }
         };

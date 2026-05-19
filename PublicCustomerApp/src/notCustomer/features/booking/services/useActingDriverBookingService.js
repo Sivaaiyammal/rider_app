@@ -97,9 +97,33 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
       vehicleType: actingDriverVehicle.type || 'AUTO',
       passangerCount: 1,
 
-      // Distance / fare
+       // Distance / fare
       estimatedDistance: rideDistance,
       estimatedDuration: estimatedDuration,
+      minFare: (() => {
+        const dist = Number(rideDistance) || 0;
+        const dur = Number(estimatedDuration) || 0;
+        const type = actingDriverVehicle?.type || 'AUTO';
+        const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
+        const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
+        return Math.max(15, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 0.9));
+      })(),
+      maxFare: (() => {
+        const dist = Number(rideDistance) || 0;
+        const dur = Number(estimatedDuration) || 0;
+        const type = actingDriverVehicle?.type || 'AUTO';
+        const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
+        const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
+        return Math.max(20, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 1.1));
+      })(),
+      estimatedFare: (() => {
+        const dist = Number(rideDistance) || 0;
+        const dur = Number(estimatedDuration) || 0;
+        const type = actingDriverVehicle?.type || 'AUTO';
+        const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
+        const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
+        return Math.round((dist * basePerKm) + (dur * basePerMin));
+      })(),
 
       // Booking details
       bookingFor: rideBookMode,
