@@ -15,13 +15,12 @@ import APIRequest from '../../../common/APIRequest';
 import useUserStore from '../../../common/store/useUserStore';
 import { useStackScreenStore } from '../../../common/store/useStackScreenStore';
 import { useSelectedRouteStore } from '../../store/useTripsStore';
-import useTripsStore from '../../store/useTripsStore';
+import { useTripAcceptStore } from '../../store/useTripAcceptStore';
 import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter';
 import { useTranslation } from 'react-i18next';
 import { useMapMarkerStore } from '../../../common/store/useMapMarkerStore';
 import useCurrentScreenStore from '../../../common/store/useCurrentScreenStore';
 import Marker from '../../../common/map/Marker';
-import { useTripAcceptStore } from '../../store/useTripAcceptStore';
 
 const DriverCalendarScreen = () => {
   const { t } = useTranslation();
@@ -30,12 +29,12 @@ const DriverCalendarScreen = () => {
   const { setSelectedTrip } = useSelectedRouteStore();
   const { setMapLocation, setMapMarkers } = useMapMarkerStore();
   const { setCurrentScreen } = useCurrentScreenStore();
+  const { setUpComingTripDetails } = useTripAcceptStore();
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTrips, setSelectedTrips] = useState([]);
 
   // Get days in month
   const getDaysInMonth = (date) => {
@@ -47,105 +46,7 @@ const DriverCalendarScreen = () => {
     return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
   };
 
-  // Dummy data - Replace with API call later
-  const getDummyTrips = () => {
-    const today = new Date();
-    const thisMonth = today.getMonth();
-    const thisYear = today.getFullYear();
-
-    return [
-      // COMPLETED Acting driver trips
-      {
-        _id: 'trip_001',
-        bookingTime: new Date(thisYear, thisMonth, 2, 10, 30).getTime(),
-        status: 'COMPLETED',
-        finalDistance: 12.5,
-        finalDuration: 25,
-        isActingDriverTrip: true,
-        paymentDetails: { fareDetails: { fare: 350 } },
-        customerInfo: {
-          name: 'John Doe',
-          phone: '+91 98765 43210',
-          image: 'https://randomuser.me/api/portraits/men/1.jpg'
-        },
-        pickupLocation: {
-          address: '123, Main Street, Chennai',
-          lat: 13.0827,
-          lng: 80.2707
-        }
-      },
-      {
-        _id: 'trip_002',
-        bookingTime: new Date(thisYear, thisMonth, 5, 14, 15).getTime(),
-        status: 'COMPLETED',
-        finalDistance: 8.3,
-        finalDuration: 18,
-        isActingDriverTrip: true,
-        paymentDetails: { fareDetails: { fare: 245 } },
-        customerInfo: {
-          name: 'Jane Smith',
-          phone: '+91 98765 43211',
-          image: null
-        },
-        pickupLocation: {
-          address: '45, Park Avenue, Chennai',
-          lat: 13.0405,
-          lng: 80.2337
-        }
-      },
-      // UPCOMING Acting driver trips
-      {
-        _id: 'trip_011',
-        bookingTime: new Date(thisYear, thisMonth, 20, 14, 30).getTime(),
-        status: 'ACCEPTED',
-        finalDistance: 0,
-        finalDuration: 0,
-        isActingDriverTrip: true,
-        paymentDetails: { fareDetails: { fare: 0 } },
-        customerInfo: {
-          name: 'Robert Wilson',
-          phone: '+91 98765 43220',
-          image: 'https://randomuser.me/api/portraits/men/3.jpg'
-        },
-        pickupLocation: {
-          address: 'Central Station, Chennai',
-          lat: 13.0817,
-          lng: 80.2730
-        }
-      },
-      {
-        _id: 'trip_012',
-        bookingTime: new Date(thisYear, thisMonth, 23, 9, 15).getTime(),
-        status: 'PENDING',
-        finalDistance: 0,
-        finalDuration: 0,
-        isActingDriverTrip: true,
-        paymentDetails: { fareDetails: { fare: 0 } },
-        customerInfo: {
-          name: 'Mary Johnson',
-          phone: '+91 98765 43221',
-          image: null
-        },
-        pickupLocation: {
-          address: 'Anna Nagar, Chennai',
-          lat: 13.0850,
-          lng: 80.2101
-        }
-      },
-      // ... (other regular trips can remain as they are or be simplified)
-      {
-        _id: 'trip_004',
-        bookingTime: new Date(thisYear, thisMonth, 3, 11, 20).getTime(),
-        status: 'COMPLETED',
-        finalDistance: 10.2,
-        finalDuration: 22,
-        isActingDriverTrip: false,
-        paymentDetails: { fareDetails: { fare: 300 } }
-      }
-    ];
-  };
-
-  // Fetch trips for the entire month (using dummy data for now)
+  // Fetch trips for the entire month from API
   const fetchMonthTrips = async (date) => {
     try {
       setLoading(true);
@@ -193,6 +94,9 @@ const DriverCalendarScreen = () => {
     });
   };
 
+  // Derived state: trips for the selected date
+  const selectedTrips = getTripsForDate(selectedDate);
+
   // Check if a date has acting driver trips
   const hasActingTrips = (date) => {
     return getTripsForDate(date).some(trip => trip.isActingDriverTrip);
@@ -202,7 +106,6 @@ const DriverCalendarScreen = () => {
   const handleDateSelect = (day) => {
     const selected = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     setSelectedDate(selected);
-    setSelectedTrips(getTripsForDate(selected));
   };
 
   // Handle month navigation
@@ -220,35 +123,9 @@ const DriverCalendarScreen = () => {
     setStackScreen('TripDetailScreen');
   };
 
-  const handleStartTrip = async (trip) => {
-    try {
-      const api = new APIRequest();
-      const response = await api.request(`/publicrides/driver/v2/getTrip?tripId=${trip._id}`, 'GET', null, userInfo?.token);
-      if (response?.success && response?.trip && response?.trip?.length > 0) {
-        const freshTrip = response.trip[0];
-        // Ensure status is at least ACCEPTED so DriverOnRide loads
-        if (freshTrip.status === 'PENDING') {
-          freshTrip.status = 'ACCEPTED';
-        }
-        useTripsStore.setState({ activeTripData: [freshTrip] });
-        setStackScreen('PublicDriverTrackingScreen');
-      } else {
-        const tripData = { ...trip };
-        if (tripData.status === 'PENDING') {
-          tripData.status = 'ACCEPTED';
-        }
-        useTripsStore.setState({ activeTripData: [tripData] });
-        setStackScreen('PublicDriverTrackingScreen');
-      }
-    } catch (err) {
-      console.log("Error starting trip:", err);
-      const tripData = { ...trip };
-      if (tripData.status === 'PENDING') {
-        tripData.status = 'ACCEPTED';
-      }
-      useTripsStore.setState({ activeTripData: [tripData] });
-      setStackScreen('PublicDriverTrackingScreen');
-    }
+  const handleStartTrip = trip => {
+    setUpComingTripDetails(trip);
+    setStackScreen('UpComingTripsView');
   };
 
   const handleViewLocation = (location) => {
@@ -276,12 +153,6 @@ const DriverCalendarScreen = () => {
   useEffect(() => {
     fetchMonthTrips(currentDate);
   }, [currentDate]);
-
-  // Set selected trips when component mounts
-  useEffect(() => {
-    setSelectedDate(new Date());
-    setSelectedTrips(getTripsForDate(new Date()));
-  }, []);
 
   // Render calendar days
   const renderCalendarDays = () => {
@@ -714,6 +585,29 @@ const styles = StyleSheet.create({
   tripStatus: {
     fontSize: 12,
     fontFamily: Fonts.medium,
+  },
+  tripMeta: {
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#E5E7EB',
+    marginVertical: 10,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  metaLabel: {
+    fontSize: 12,
+    color: Colors.warm_grey,
+    fontFamily: Fonts.medium,
+  },
+  metaValue: {
+    fontSize: 12,
+    color: Colors.black,
+    fontFamily: Fonts.semi_bold,
   },
   tripDetails: {
     gap: 6,
