@@ -644,14 +644,14 @@ module.exports = function (CLASS) {
      */
 
     CLASS.prototype.publicridesGetTrips = async function (req, res) {
-        let { startTime, endTime, status, page, limit } = req.query;
+        let { startTime, endTime, status, page, limit, rideCategory } = req.query;
         const passangerId = req.passanger.id;
 
         // Fix: Convert pagination parameters to integers with defaults
         page = parseInt(page, 10) || 1;
         limit = parseInt(limit, 10) || 10;
 
-        console.log(startTime, endTime, status, page, limit, "startTime, endTime, status, page, limit")
+        console.log(startTime, endTime, status, page, limit, rideCategory, "startTime, endTime, status, page, limit, rideCategory")
 
         try {
 
@@ -665,6 +665,12 @@ module.exports = function (CLASS) {
 
             // Fix: Convert passangerId to ObjectId
             const filter = { passangerId: new ObjectId(passangerId) };
+
+            if (rideCategory === 'acting_driver') {
+                filter.isActingDriverTrip = true;
+            } else if (rideCategory === 'normal') {
+                filter.isActingDriverTrip = { $ne: true };
+            }
 
             // Only add bookingTime filter if startTime or endTime is provided
             if (startTime || endTime) {

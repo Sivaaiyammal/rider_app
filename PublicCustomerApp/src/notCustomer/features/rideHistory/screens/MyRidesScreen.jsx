@@ -75,6 +75,7 @@ const YourRidesScreen = () => {
     const [customStartDate, setCustomStartDate] = useState(new Date());
     const [customEndDate, setCustomEndDate] = useState(new Date());
     const [activeTab, setActiveTab] = useState('today');
+    const [rideCategory, setRideCategory] = useState('normal');
 
     // Function to get today's date range
     const getTodayDateRange = () => {
@@ -96,7 +97,8 @@ const YourRidesScreen = () => {
         try {
             let payload = {
                 page: page,
-                limit: FilterLimit
+                limit: FilterLimit,
+                rideCategory: rideCategory
             }
             
             // Only add date filters if provided (today/week/custom). Skip for "all".
@@ -369,7 +371,7 @@ const YourRidesScreen = () => {
             setHasMoreData(true);
             LoadRides(1, false);
         }
-    }, [durationFilterSet, FilterStart, FilterEnd, selectedStatus])
+    }, [durationFilterSet, FilterStart, FilterEnd, selectedStatus, rideCategory])
 
   
 
@@ -479,7 +481,37 @@ const YourRidesScreen = () => {
                 options={Header_Options}
                 callback={ToggleHeaderCallback}
             /> */}
-            <View style={{ flexDirection: 'row', paddingHorizontal: 16,  gap: 12 }}>
+            <View style={{ flexDirection: 'row', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, gap: 12 }}>
+                {[
+                    { id: 'normal', label: 'Normal Rides' },
+                    { id: 'acting_driver', label: 'Acting Drivers' }
+                ].map((cat) => (
+                    <TouchableOpacity
+                        key={cat.id}
+                        onPress={() => {
+                            if (rideCategory !== cat.id) {
+                                setRideCategory(cat.id);
+                                setCurrentPage(1);
+                                setHasMoreData(true);
+                            }
+                        }}
+                        style={{
+                            flex: 1,
+                            borderWidth: 1,
+                            borderColor: colors.grey_light,
+                            borderRadius: 16,
+                            paddingVertical: 8,
+                            backgroundColor: rideCategory === cat.id ? colors.black : colors.white,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <AdaptiveText style={{ fontSize:14 ,fontFamily:Fonts.medium}} color={rideCategory === cat.id ? colors.white : colors.black}>{cat.label}</AdaptiveText>
+                    </TouchableOpacity>
+                ))}
+            </View>
+
+            <View style={{ flexDirection: 'row', paddingHorizontal: 16, paddingBottom: 10, gap: 12 }}>
                 {[
                     { id: 'today', label: t('today'), getRange: DateTimeFormatter.getTodaysStartEndTime },
                     { id: 'week', label: t('week'), getRange: DateTimeFormatter.getThisWeekStartEndTime },
