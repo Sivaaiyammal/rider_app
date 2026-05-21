@@ -165,7 +165,7 @@ module.exports = function (CLASS) {
             const driverCheck = await Driver.checkDriverExistWithPhoneOrEmail(payload);
             const otp = await Redis.getData(payload.phone);
             if (!otp) return res.status(400).json({ success: false, message: 'OTP expired' });
-            if (Number(otp) !== payload.otp) return res.status(400).json({ success: false, message: 'Invalid OTP' });
+            if (String(otp) !== String(payload.otp)) return res.status(400).json({ success: false, message: 'Invalid OTP' });
             await Redis.removeKey(payload.phone);
             if (driverCheck) {
                 const driverDetails = await Driver.getDriverWithId(driverCheck._id);
@@ -728,7 +728,11 @@ module.exports = function (CLASS) {
             if (trip.status === RideStatus.CANCELLED ) return res.status(400).json({ success: true, message: 'Trip is already cancelled', isCancelled: true });
             const passangerId = trip.passangerId;
             if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
-            if (trip.otp !== otp) return res.status(400).json({ success: false, message: 'Invalid OTP' });
+            console.log(`[DEBUG verifyTripOtp] tripId: ${tripId}`);
+            console.log(`[DEBUG verifyTripOtp] trip.otp (type ${typeof trip.otp}): '${trip.otp}'`);
+            console.log(`[DEBUG verifyTripOtp] req otp (type ${typeof otp}): '${otp}'`);
+            
+            if (String(trip.otp).trim() !== String(otp).trim()) return res.status(400).json({ success: false, message: 'Invalid OTP' });
             const timeline = {
                 state: 'PICKEDUP',
                 timestamp: new Date().getTime(),

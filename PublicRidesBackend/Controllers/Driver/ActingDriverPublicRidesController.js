@@ -16,7 +16,7 @@ module.exports = function (CLASS) {
             const driverCheck = await Driver.checkDriverExistWithPhoneOrEmail(payload);
             const otp = await Redis.getData(payload.phone);
             if (!otp) return res.status(400).json({ success: false, message: 'OTP expired' });
-            if (Number(otp) !== payload.otp) return res.status(400).json({ success: false, message: 'Invalid OTP' });
+            if (String(otp) !== String(payload.otp)) return res.status(400).json({ success: false, message: 'Invalid OTP' });
             await Redis.removeKey(payload.phone);
             console.log('OTP verified successfully for phone:', driverCheck);
             if (driverCheck) {

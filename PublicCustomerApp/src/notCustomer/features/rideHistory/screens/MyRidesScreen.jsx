@@ -276,17 +276,33 @@ const YourRidesScreen = () => {
                 <View
                     style={yourRidesStyles.ridesContainerItemRight}
                 >
-                    <TripPersonVehicle 
-                        usedScreen={'MyRides'}
-                        driverName={ride?.driverInfo?.driverName} 
-                        driverPhoto={driverPhoto || undefined} 
-                        driverPhotoLoading={driverPhotoLoading}
-                        showDriverPhotoPlaceholder={showDriverPhotoPlaceholder}
-                        vehicleType={ride?.vehicleType} 
-                        vehicleBrand={ride?.driverInfo?.vehicleBrand} 
-                        vehicleModel={ride?.driverInfo?.vehicleModel} 
-                        vehicleNumber={ride?.driverInfo?.vehicleNumber} 
-                    />
+                    {ride?.isActingDriverTrip ? (
+                        <View style={{ alignItems: 'center' }}>
+                            <TripPersonVehicle 
+                                usedScreen={'MyRides'}
+                                driverName={ride?.driverInfo?.driverName} 
+                                driverPhoto={driverPhoto || undefined} 
+                                driverPhotoLoading={driverPhotoLoading}
+                                showDriverPhotoPlaceholder={showDriverPhotoPlaceholder}
+                                vehicleType={ride?.vehicleType} 
+                            />
+                            <Text style={{ fontFamily: Fonts.medium, fontSize: 11, color: '#6B7280', marginTop: 2, textAlign: 'center' }}>
+                                Acting Driver
+                            </Text>
+                        </View>
+                    ) : (
+                        <TripPersonVehicle 
+                            usedScreen={'MyRides'}
+                            driverName={ride?.driverInfo?.driverName} 
+                            driverPhoto={driverPhoto || undefined} 
+                            driverPhotoLoading={driverPhotoLoading}
+                            showDriverPhotoPlaceholder={showDriverPhotoPlaceholder}
+                            vehicleType={ride?.vehicleType} 
+                            vehicleBrand={ride?.driverInfo?.vehicleBrand} 
+                            vehicleModel={ride?.driverInfo?.vehicleModel} 
+                            vehicleNumber={ride?.driverInfo?.vehicleNumber} 
+                        />
+                    )}
                 </View>
               
                 <Icon name="chevron-right" size={20} color={colors.dark} />

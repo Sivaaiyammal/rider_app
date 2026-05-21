@@ -265,7 +265,7 @@ module.exports = function (CLASS) {
             const passanger = await Passanger.checkPassangerExistWithPhone(payload.phone);
             const otp = await Redis.getData(payload.phone);
             if (!otp) return res.status(400).json({ success: false, message: 'OTP expired' });
-            if (Number(otp) !== payload.otp) return res.status(400).json({ success: false, message: 'Invalid OTP' });
+            if (String(otp) !== String(payload.otp)) return res.status(400).json({ success: false, message: 'Invalid OTP' });
             await Redis.removeKey(payload.phone);
             // if exisiting user
             
@@ -1331,7 +1331,7 @@ module.exports = function (CLASS) {
         const redisData = await Redis.getData(phoneNumber);
         if (!redisData) return res.json({ success: false, message: "OTP expired" });
         const redisDataObj = JSON.parse(redisData);
-        if (redisDataObj.otp !== otp) return res.json({ success: false, message: "Invalid OTP" });
+        if (String(redisDataObj.otp) !== String(otp)) return res.json({ success: false, message: "Invalid OTP" });
 
         const passengerAccountDeletion = await Passanger.updatePassangerAccountDeletion(passenger._id, redisDataObj.deletionReason);
         if (!passengerAccountDeletion) return res.json({ success: false, message: "Failed to update passenger account deletion" });

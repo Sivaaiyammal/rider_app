@@ -235,16 +235,31 @@ const RideDetailScreen = ({ TripData }) => {
         ) : null}
         
         
-        <TripPersonVehicle 
-          driverName={rideData.driverInfo?.driverName} 
-          driverPhoto={driverPhotoUri || undefined} 
-          driverPhotoLoading={isDriverPhotoLoading}
-          showDriverPhotoPlaceholder
-          vehicleType={rideData?.vehicleType} 
-          vehicleBrand={rideData.driverInfo?.vehicleBrand} 
-          vehicleModel={rideData.driverInfo?.vehicleModel} 
-          vehicleNumber={rideData.driverInfo?.vehicleNumber} 
-        />
+        {rideData?.isActingDriverTrip ? (
+          <View style={{ alignItems: 'center', marginVertical: 10 }}>
+            <TripPersonVehicle 
+              driverName={rideData.driverInfo?.driverName} 
+              driverPhoto={driverPhotoUri || undefined} 
+              driverPhotoLoading={isDriverPhotoLoading}
+              showDriverPhotoPlaceholder
+              vehicleType={rideData?.vehicleType} 
+            />
+            <Text style={{ fontFamily: Fonts.medium, fontSize: 13, color: '#6B7280', marginTop: 6, textAlign: 'center' }}>
+              Acting Driver • {rideData?.vehicleType ? rideData.vehicleType.replace('_', ' ') : 'Manual'}
+            </Text>
+          </View>
+        ) : (
+          <TripPersonVehicle 
+            driverName={rideData.driverInfo?.driverName} 
+            driverPhoto={driverPhotoUri || undefined} 
+            driverPhotoLoading={isDriverPhotoLoading}
+            showDriverPhotoPlaceholder
+            vehicleType={rideData?.vehicleType} 
+            vehicleBrand={rideData.driverInfo?.vehicleBrand} 
+            vehicleModel={rideData.driverInfo?.vehicleModel} 
+            vehicleNumber={rideData.driverInfo?.vehicleNumber} 
+          />
+        )}
 
         <View style={{marginVertical:20}}>
         

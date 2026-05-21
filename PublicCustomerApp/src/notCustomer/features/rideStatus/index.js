@@ -369,7 +369,7 @@ const RideStatus = () => {
       zIndex={0}
   >
     </Overlay>}
-        <NavBar title={t(getTitle())} feedbackIcon={true} onrightIconPress={onFeedbackPress} />
+        <NavBar title={t(getTitle())} feedbackIcon={true} onrightIconPress={onFeedbackPress} onBackPress={goBack} />
         <TouchableOpacity
           style={styles.refreshButton}
           onPress={() => {
