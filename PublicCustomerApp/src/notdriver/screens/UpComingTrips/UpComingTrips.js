@@ -26,7 +26,7 @@ const UpComingTrips = (props) => {
       <TouchableOpacity style={styles.upComingTrips} onPress={()=>setStackScreen('UpComingTripsList')}>
         <View style={styles.leftSection}>
           <View style={styles.iconContainer}>
-            <MaterialIcons name="date-range" color={Colors.yellow} size={24} />
+            <MaterialIcons name="date-range" color={Colors.blue_xxdark || '#0F223C'} size={20} />
           </View>
           <View style={styles.textContainer}>
             <Text style={styles.subtitleTxt}>SCHEDULED BOOKINGS</Text>
@@ -37,7 +37,7 @@ const UpComingTrips = (props) => {
           <View style={styles.badgeContainer}>
             <Text style={styles.upComingTripsLength}>{upComingTrips?.length}</Text>
           </View>
-          <Feather name="arrow-right" color={Colors.yellow} size={20} />
+          <Feather name="arrow-right" color={Colors.blue_xxdark || '#0F223C'} size={20} />
         </View>
       </TouchableOpacity>
     </View>
@@ -49,20 +49,19 @@ export default UpComingTrips
 const styles = StyleSheet.create({
     container: {
         position: 'absolute',
-        bottom: height * 0.09,
-        backgroundColor: Colors.blue_xxdark || '#0F223C',
-        width: '90%',
+        bottom: height * 0.11,
+        backgroundColor: Colors.white || '#FFFFFF',
+        width: '94%',
         alignSelf: 'center',
-        borderRadius: 26, // Perfect modern pill shape
-        paddingVertical: 10, // Highly compact padding
+        borderRadius: 24,
+        paddingVertical: 14,
         paddingHorizontal: 16,
-        borderWidth: 1.2,
-        borderColor: '#1E3A8A', // Deep blue neon accent border
-        elevation: 8,
+        borderWidth: 0,
+        elevation: 6,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.25,
-        shadowRadius: 6,
+        shadowOpacity: 0.12,
+        shadowRadius: 8,
     },
     upComingTrips: {
         flexDirection: 'row',
@@ -72,13 +71,15 @@ const styles = StyleSheet.create({
     leftSection: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10,
+        gap: 12,
     },
     iconContainer: {
-        width: 32,
-        height: 32,
-        borderRadius: 16, // Matching circular design
-        backgroundColor: 'rgba(255, 209, 0, 0.15)', // Premium gold glow
+        width: 34,
+        height: 34,
+        borderRadius: 17,
+        backgroundColor: Colors.yellow_xlight || '#FFF7E5',
+        borderWidth: 1,
+        borderColor: Colors.grey_light || '#F5F5F5',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -86,33 +87,33 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     subtitleTxt: {
-        fontSize: 8,
+        fontSize: 9,
         fontFamily: Fonts.bold,
-        color: Colors.yellow || '#FFD100',
+        color: Colors.grey_dark || '#9E9E9E',
         letterSpacing: 1.0,
-        marginBottom: 0,
+        marginBottom: 2,
     },
     upComingTripsTxt: {
-        fontSize: 14, // Compact and highly readable
+        fontSize: 16,
         fontFamily: Fonts.semi_bold,
-        color: Colors.white,
+        color: Colors.dark || '#0A0A0A',
     },
     rightSection: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
+        gap: 10,
     },
     badgeContainer: {
-        height: 22,
-        minWidth: 22,
-        borderRadius: 11,
+        height: 24,
+        minWidth: 24,
+        borderRadius: 12,
         backgroundColor: Colors.yellow || '#FFD100',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingHorizontal: 4,
+        paddingHorizontal: 6,
     },
     upComingTripsLength: {
-        fontSize: 11,
+        fontSize: 12,
         fontFamily: Fonts.bold,
         color: Colors.blue_xxdark || '#0F223C',
         textAlign: 'center',
