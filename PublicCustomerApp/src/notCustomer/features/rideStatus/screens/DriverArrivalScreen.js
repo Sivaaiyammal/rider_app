@@ -456,13 +456,13 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
         </TripDetailsModal>
 
         {/* Bills & Photos row */}
-        {/* <TouchableOpacity
+        <TouchableOpacity
           style={styles.tripDetailsRow}
           onPress={() => setStackScreen('BillsAndPhotosScreen', { tripId })}
           activeOpacity={0.7}>
-          <AdaptiveText style={styles.tripDetailsLabel}>Bills & Photos</AdaptiveText>
+          <Text style={styles.tripDetailsLabel}>Bills & Photos</Text>
           <Icon name="keyboard-arrow-right" size={25} color="#000" />
-        </TouchableOpacity> */}
+        </TouchableOpacity>
 
         <View style={styles.actionRow}>
           <TouchableOpacity

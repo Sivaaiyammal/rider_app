@@ -60,24 +60,21 @@ async function assignDummyActingDriverTrip() {
         const pickupCoords = [77.3361, 11.1207]; // Approx SAP Theatre, Tiruppur
         const dropCoords = [77.3402, 11.1256];   // Approx New Bus Stand, Tiruppur
 
-        // 4. Construct Acting Driver Trip Payload for TOMORROW at 10:00 AM
+        // 4. Construct Acting Driver Trip Payload for NOW
         const regionalCode = "NOT";
         const now = new Date();
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(10, 0, 0, 0); // Scheduled for 10:00 AM tomorrow
-        const tomorrowTimestamp = tomorrow.getTime();
+        const nowTimestamp = now.getTime();
 
-        const day = String(tomorrow.getDate()).padStart(2, '0');
-        const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
-        const year = String(tomorrow.getFullYear()).slice(-2);
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = String(now.getFullYear()).slice(-2);
         const currentDateStr = `${day}${month}${year}`;
         const random5digits = Math.floor(10000 + Math.random() * 90000);
         const rideId = `AD${regionalCode}${currentDateStr}${random5digits}`;
 
         const tripPayload = {
             rideId: rideId,
-            bookingTime: tomorrowTimestamp,
+            bookingTime: nowTimestamp,
             status: "ACCEPTED",
             publicRidesTrip: true,
             isActingDriverTrip: true,
@@ -136,24 +133,23 @@ async function assignDummyActingDriverTrip() {
         // 5. Insert Trip
         const result = await db.collection('trips').insertOne(tripPayload);
         const tripId = result.insertedId;
-        console.log(`✅ Dummy Acting Driver ACCEPTED trip created successfully for TOMORROW!`);
-        console.log(`Trip ID: ${tripId} | Ride ID: ${rideId} | Scheduled for: ${tomorrow.toLocaleString()}`);
+        console.log(`✅ Dummy Acting Driver ACCEPTED trip created successfully for NOW!`);
+        console.log(`Trip ID: ${tripId} | Ride ID: ${rideId} | OTP: 1234`);
 
-        // 6. Update Driver: set tripStatus to "NOTRIP" (since it's a future trip) and push to upComingTrips
+        // 6. Update Driver: set tripStatus to "ACCEPTED" and currentTripId to tripId
         await db.collection('drivers').updateOne(
             { _id: driver._id },
             { 
                 $set: { 
-                    currentTripId: null,
-                    tripStatus: "NOTRIP",
+                    currentTripId: tripId,
+                    tripStatus: "ACCEPTED",
                     location: { type: "Point", coordinates: pickupCoords },
                     homeLocation: { type: "Point", coordinates: pickupCoords },
-                    isAvailable: true
-                },
-                $addToSet: { upComingTrips: tripId }
+                    isAvailable: false
+                }
             }
         );
-        console.log(`✅ Driver ${driver.name} set to "NOTRIP" with future trip added to upComingTrips.`);
+        console.log(`✅ Driver ${driver.name} set to "ACCEPTED" with current active trip.`);
 
         // 7. Update Passenger: link to latestTripId
         await db.collection('passangers').updateOne(
@@ -165,7 +161,9 @@ async function assignDummyActingDriverTrip() {
             }
         );
         console.log(`✅ Passenger ${passenger.name} updated with latestTripId linked to trip.`);
-        console.log("\n🚀 Setup Complete! Open Calendar View on the Driver app to see the upcoming tomorrow trip and tap 'Start Trip'.");
+        console.log("\n🚀 Setup Complete! You can now test the flow: ");
+        console.log("   Driver App -> Appears immediately as active trip. Driver can arrive, upload pre-trip photos, enter OTP '1234' to start, end trip, etc.");
+        console.log("   Passenger App -> User can see 'Bills & Photos' button and view uploaded photos!");
 
     } catch (e) {
         console.error("❌ Error setting up dummy acting driver trip:", e);

@@ -68,8 +68,32 @@ const BillsAndPhotosScreen = ({ tripId }) => {
   const resolveUrl = useCallback(
     async (rawUrl) => {
       const key = normalizeKey(rawUrl);
-      if (!key || !token) return null;
-      return getPresignedImageUrl(key, token);
+      console.log('[resolveUrl] Input:', rawUrl, '-> Key:', key, 'HasToken:', !!token);
+      
+      if (!key || !token) {
+        // If it's a direct HTTP URL, return as-is
+        if (rawUrl?.startsWith('http')) {
+          console.log('[resolveUrl] Using direct HTTP URL');
+          return rawUrl;
+        }
+        console.warn('[resolveUrl] No key or token available');
+        return null;
+      }
+      
+      const presigned = await getPresignedImageUrl(key, token);
+      if (presigned) {
+        console.log('[resolveUrl] Got presigned URL');
+        return presigned;
+      }
+      
+      // Fallback: If presigned fails but it's a direct link, use it
+      if (rawUrl && rawUrl.startsWith('http')) {
+        console.log('[resolveUrl] Presigned failed, using fallback HTTP URL');
+        return rawUrl;
+      }
+      
+      console.warn('[resolveUrl] Failed to resolve URL');
+      return null;
     },
     [token],
   );
@@ -133,18 +157,24 @@ const BillsAndPhotosScreen = ({ tripId }) => {
 
         // Resolve pre-trip vehicle photo URLs
         const resolvedPre = {};
+        console.log("[BillsAndPhotosScreen] preRaw keys:", Object.keys(preRaw));
         for (const key of Object.keys(PHOTO_LABELS)) {
           if (preRaw[key]) {
+            console.log(`[BillsAndPhotosScreen] Resolving pre-trip ${key}:`, preRaw[key]);
             resolvedPre[key] = await resolveUrl(preRaw[key]);
+            console.log(`[BillsAndPhotosScreen] Resolved pre-trip ${key}:`, !!resolvedPre[key]);
           }
         }
         if (!active) return;
 
         // Resolve post-trip vehicle photo URLs
         const resolvedPost = {};
+        console.log("[BillsAndPhotosScreen] postRaw keys:", Object.keys(postRaw));
         for (const key of Object.keys(PHOTO_LABELS)) {
           if (postRaw[key]) {
+            console.log(`[BillsAndPhotosScreen] Resolving post-trip ${key}:`, postRaw[key]);
             resolvedPost[key] = await resolveUrl(postRaw[key]);
+            console.log(`[BillsAndPhotosScreen] Resolved post-trip ${key}:`, !!resolvedPost[key]);
           }
         }
         if (!active) return;

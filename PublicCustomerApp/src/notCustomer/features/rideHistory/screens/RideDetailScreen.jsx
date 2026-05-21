@@ -24,7 +24,7 @@ import { getPresignedImageUrl } from '../../../../common/utils/getPresignedImage
 const RideDetailScreen = ({ TripData }) => {
   console.log("TripData",TripData)
   const { t } = useTranslation();
-  const { goBack } = useStackScreenStore();
+  const { goBack, setStackScreen } = useStackScreenStore();
   const { userdetails } = useUserInfoStore();
   const userToken = userdetails?.token || null;
   const [showReceipt, setShowReceipt] = useState(false);
@@ -311,22 +311,31 @@ const RideDetailScreen = ({ TripData }) => {
         
         {/* <SupportSection onPress={handleSupportPress} /> */}
         
-        {/* Receipt Button */}
-       {(rideData?.status == "COMPLETED" || rideData?.status == "DIVERGED" )&& <View style={styles.actionButtonsContainer}>
-        <TouchableOpacity style={styles.receiptButton} onPress={handleReceiptPress}>
-          <MaterialIcons name="receipt" size={20} color={colors.black} />
-          <Text style={styles.receiptButtonText}> {t('view_receipt')}</Text>
-        </TouchableOpacity>
-        
-        {/* Invoice Button */}
-        <TouchableOpacity style={styles.invoiceButton} onPress={handleInvoicePress}>
-          <FontAwesome5 name="file-invoice" size={20} color={colors.white} />
-          <Text style={styles.invoiceButtonText}>{t('show_invoice')}</Text>
-        </TouchableOpacity>
-        {/* Feedback Button */}
-        
+        {/* Receipt and Invoice Buttons */}
+       {(rideData?.status == "COMPLETED" || rideData?.status == "DIVERGED" )&& (
+        <View style={styles.actionButtonsContainer}>
+          <TouchableOpacity style={styles.receiptButton} onPress={handleReceiptPress}>
+            <MaterialIcons name="receipt" size={20} color={colors.black} />
+            <Text style={styles.receiptButtonText}> {t('view_receipt')}</Text>
+          </TouchableOpacity>
+          
+          {/* Invoice Button */}
+          <TouchableOpacity style={styles.invoiceButton} onPress={handleInvoicePress}>
+            <FontAwesome5 name="file-invoice" size={20} color={colors.white} />
+            <Text style={styles.invoiceButtonText}>{t('show_invoice')}</Text>
+          </TouchableOpacity>
         </View>
-        }
+       )}
+
+        {/* Bills & Photos Button for Acting Driver (Visible for all statuses) */}
+        {rideData?.isActingDriverTrip && (
+          <View style={styles.actionButtonsContainer}>
+            <TouchableOpacity style={[styles.receiptButton, { backgroundColor: '#DCFCE7', borderColor: '#15803D', borderWidth: 1 }]} onPress={() => setStackScreen('BillsAndPhotosScreen', { tripId: rideData._id || rideData.id })}>
+              <MaterialIcons name="photo-library" size={20} color="#15803D" />
+              <Text style={[styles.receiptButtonText, { color: '#15803D' }]}> Bills & Photos</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
 
       </ScrollView>
