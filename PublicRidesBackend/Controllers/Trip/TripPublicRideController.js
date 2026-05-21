@@ -1050,8 +1050,8 @@ module.exports = function (CLASS) {
 
                 if (!tripId) return res.status(400).json({ success: false, message: 'tripId is required' });
                 if (!/^[a-f\d]{24}$/i.test(tripId)) return res.status(400).json({ success: false, message: 'tripId is not a valid ObjectId' });
-                if (!phase || !['pre', 'post', 'bills'].includes(phase)) {
-                    return res.status(400).json({ success: false, message: "phase must be 'pre', 'post', or 'bills'" });
+                if (!phase || !['pre', 'post', 'bills', 'dent', 'odometer'].includes(phase)) {
+                    return res.status(400).json({ success: false, message: "phase must be 'pre', 'post', 'bills', 'dent', or 'odometer'" });
                 }
 
                 const trip = await Trip.getTripById(tripId);
@@ -1141,7 +1141,38 @@ module.exports = function (CLASS) {
                     await Trip.updateTripMediaData(tripId, setPayload);
                 }
 
+
+                // ── dent photos phase ─────────────────────────────────────
+                if (phase === 'dent') {
+                    const dentUrls = [];
+                    let idx = 0;
+                    while (fileMap[`dentPhoto_${idx}`]) {
+                        const url = await uploadFile(`dentPhoto_${idx}`, `${tripId}_dentPhoto_${idx}_${Date.now()}`);
+                        if (url) dentUrls.push(url);
+                        idx++;
+                    }
+                    if (dentUrls.length === 0) {
+                        return res.status(400).json({ success: false, message: 'No dent photos provided' });
+                    }
+                    const existing = existingBills.dentPhotos || [];
+                    setPayload['bills.dentPhotos'] = [...existing, ...dentUrls];
+                    await Trip.updateTripMediaData(tripId, setPayload);
+                    // res.json handled at the end
+                }
+
+                // ── odometer photo phase ──────────────────────────────────
+                if (phase === 'odometer') {
+                    const url = await uploadFile('odometerPhoto', `${tripId}_odometerPhoto_${Date.now()}`);
+                    if (!url) {
+                        return res.status(400).json({ success: false, message: 'No odometer photo provided' });
+                    }
+                    setPayload['bills.odometerPhoto'] = url;
+                    await Trip.updateTripMediaData(tripId, setPayload);
+                    // res.json handled at the end
+                }
+
                 // ── bills-only phase ──────────────────────────────────
+
                 if (phase === 'bills') {
                     if (!billsJson) {
                         return res.status(400).json({ success: false, message: 'bills JSON is required for bills phase' });
@@ -1210,7 +1241,23 @@ module.exports = function (CLASS) {
                     return res.json({ success: true, message: 'Bills uploaded successfully', bills: returnedBills });
                 }
 
-                // Notify passenger when driver uploads bills (post phase only)
+                // Emit socket event for all phases so passenger can see the uploaded media
+                if (['pre', 'post', 'dent', 'odometer'].includes(phase)) {
+                    const passangerId = trip.passangerId?.toString();
+                    if (passangerId) {
+                        const updatedTrip = await Trip.getTripById(tripId);
+                        sendPassangerSocketEvents(
+                            'newBillRequest',
+                            passangerId,
+                            req.socketService,
+                            null,
+                            updatedTrip,
+                            null
+                        ).catch(err => console.error('Error sending newBillRequest socket:', err));
+                    }
+                }
+
+                // Send push notification when driver uploads actual bills (post phase only)
                 if (phase === 'post' && setPayload['bills.bills']?.length > 0) {
                     const uploadedBills = setPayload['bills.bills'];
                     const billCount = uploadedBills.length;
@@ -1220,18 +1267,6 @@ module.exports = function (CLASS) {
 
                     const passangerId = trip.passangerId?.toString();
                     const passanger = await Passanger.getPassangerWithId(passangerId);
-
-                    // Attach bills to trip object for socket payload
-                    trip.bills = { ...existingBills, bills: uploadedBills };
-
-                    sendPassangerSocketEvents(
-                        'newBillRequest',
-                        passangerId,
-                        req.socketService,
-                        null,
-                        trip,
-                        null
-                    ).catch(err => console.error('Error sending newBillRequest socket:', err));
 
                     if (passanger?.fcmToken?.token) {
                         const msg = sendNewBillRequestMessage(billCount, billTotal);
@@ -1255,7 +1290,7 @@ module.exports = function (CLASS) {
                     }
                 }
 
-                return res.json({ success: true, message: `Trip ${phase}-trip media uploaded successfully` });
+                return res.json({ success: true, message: `Trip ${phase} media uploaded successfully` });
 
             } catch (err) {
                 return this.handleError(err, res);

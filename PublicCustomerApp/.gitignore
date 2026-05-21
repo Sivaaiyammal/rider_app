@@ -83,3 +83,5 @@ package-lock.json
 Todo.md
 [core]
   ignorecase = false
+
+set-dev-ip.sh

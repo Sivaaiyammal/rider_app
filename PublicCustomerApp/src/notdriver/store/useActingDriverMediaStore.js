@@ -9,6 +9,18 @@ const useActingDriverMediaStore = create(set => ({
   pendingNavOpen: false,
   setPendingNavOpen: v => set({ pendingNavOpen: v }),
 
+  // dent photos (dynamic array — driver can add multiple)
+  dentPhotos: [],
+  setDentPhotos: photos => set({ dentPhotos: photos }),
+  dentPhotosDone: false,
+  setDentPhotosDone: done => set({ dentPhotosDone: done }),
+
+  // odometer (single photo)
+  odometerPhoto: null,
+  setOdometerPhoto: photo => set({ odometerPhoto: photo }),
+  odometerPhotoDone: false,
+  setOdometerPhotoDone: done => set({ odometerPhotoDone: done }),
+
   // post-trip
   postTripPhotos: { front: null, rear: null, leftSide: null, rightSide: null },
   setPostTripPhotos: photos => set({ postTripPhotos: photos }),
@@ -22,6 +34,10 @@ const useActingDriverMediaStore = create(set => ({
     preTripPhotos: { front: null, rear: null, leftSide: null, rightSide: null },
     preTripDone: false,
     pendingNavOpen: false,
+    dentPhotos: [],
+    dentPhotosDone: false,
+    odometerPhoto: null,
+    odometerPhotoDone: false,
     postTripPhotos: { front: null, rear: null, leftSide: null, rightSide: null },
     bills: [],
     postTripDone: false,
@@ -29,3 +45,4 @@ const useActingDriverMediaStore = create(set => ({
 }));
 
 export default useActingDriverMediaStore;
+

@@ -134,6 +134,8 @@ const DriverVehiclePhotosScreen = () => {
   const {
     preTripPhotos, setPreTripPhotos, setPreTripDone,
     postTripPhotos, setPostTripPhotos, setPostTripDone,
+    dentPhotos, setDentPhotos, setDentPhotosDone, dentPhotosDone,
+    odometerPhoto, setOdometerPhoto, setOdometerPhotoDone, odometerPhotoDone,
   } = useActingDriverMediaStore();
   const { userInfo } = useUserStore();
   const { activeTripData } = useTripsStore();
@@ -141,8 +143,13 @@ const DriverVehiclePhotosScreen = () => {
   const [loadingFromServer, setLoadingFromServer] = useState(false);
   const [uploadingPre, setUploadingPre] = useState(false);
   const [uploadingPost, setUploadingPost] = useState(false);
+  const [uploadingDent, setUploadingDent] = useState(false);
+  const [uploadingOdometer, setUploadingOdometer] = useState(false);
+
   const [preUploaded, setPreUploaded] = useState(false);
   const [postUploaded, setPostUploaded] = useState(false);
+  const [dentUploaded, setDentUploaded] = useState(false);
+  const [odometerUploaded, setOdometerUploaded] = useState(false);
 
   const { t } = useTranslation();
 
@@ -179,6 +186,24 @@ const DriverVehiclePhotosScreen = () => {
           if (Object.values(seeded).some(Boolean)) { setPreTripPhotos(seeded); setPreUploaded(true); }
         }
 
+        // Seed Dent Photos
+        if (serverBills.dentPhotos && serverBills.dentPhotos.length > 0 && dentPhotos.length === 0) {
+          const seededDents = await Promise.all(serverBills.dentPhotos.map(async (url, idx) => {
+            return await resolveSlot(url, `dent_${idx}.jpg`);
+          }));
+          setDentPhotos(seededDents.filter(Boolean));
+          setDentUploaded(true);
+        }
+
+        // Seed Odometer Photo
+        if (serverBills.odometerPhoto && !odometerPhoto) {
+          const seededOdometer = await resolveSlot(serverBills.odometerPhoto, 'odometer.jpg');
+          if (seededOdometer) {
+            setOdometerPhoto(seededOdometer);
+            setOdometerUploaded(true);
+          }
+        }
+
         const post = serverBills.postTripVehiclePhotos;
         if (post?.front && !Object.values(postTripPhotos).some(Boolean)) {
           const [front, rear, leftSide, rightSide] = await Promise.all([
@@ -204,10 +229,28 @@ const DriverVehiclePhotosScreen = () => {
   const isAccepted = tripStatus === 'ACCEPTED';
 
   const [preExpanded, setPreExpanded] = useState(true);
+  const [dentExpanded, setDentExpanded] = useState(true);
+  const [odometerExpanded, setOdometerExpanded] = useState(true);
   const [postExpanded, setPostExpanded] = useState(true);
 
   const onPickPre = (key, img) => { setPreTripPhotos({ ...preTripPhotos, [key]: img }); setPreUploaded(false); };
   const onPickPost = (key, img) => { setPostTripPhotos({ ...postTripPhotos, [key]: img }); setPostUploaded(false); };
+
+  const onPickDent = async (source) => {
+    await pickImage(source, (img) => {
+      setDentPhotos([...dentPhotos, img]);
+      setDentUploaded(false);
+    });
+  };
+
+  const removeDent = (index) => {
+    const newPhotos = [...dentPhotos];
+    newPhotos.splice(index, 1);
+    setDentPhotos(newPhotos);
+    setDentUploaded(false);
+  };
+
+  const onPickOdometer = (key, img) => { setOdometerPhoto(img); setOdometerUploaded(false); };
 
   const uploadPre = async () => {
     if (!preAllDone) { Alert.alert(t('photos_required'), t('please_capture_all_4_pre_trip_photos')); return; }
@@ -245,6 +288,40 @@ const DriverVehiclePhotosScreen = () => {
       else Alert.alert('Upload Failed', res?.message || 'Could not upload post-trip photos.');
     } catch { Alert.alert('Error', 'Something went wrong.'); }
     finally { setUploadingPost(false); }
+  };
+
+  const uploadDent = async () => {
+    if (dentPhotos.length === 0) return;
+    try {
+      setUploadingDent(true);
+      const formData = new FormData();
+      formData.append('tripId', activeTripData[0]._id);
+      formData.append('phase', 'dent');
+      dentPhotos.forEach((photo, idx) => {
+        formData.append(`dentPhoto_${idx}`, { uri: photo.uri, type: photo.type, name: photo.name || `dent_${idx}.jpg` });
+      });
+      const api = new APIRequest();
+      const res = await api.request('/publicrides/driver/v2/uploadTripMedia', 'POST', formData, userInfo?.token);
+      if (res.success) { setDentUploaded(true); setDentPhotosDone(true); }
+      else Alert.alert('Upload Failed', res?.message || 'Could not upload dent photos.');
+    } catch { Alert.alert('Error', 'Something went wrong.'); }
+    finally { setUploadingDent(false); }
+  };
+
+  const uploadOdometer = async () => {
+    if (!odometerPhoto) return;
+    try {
+      setUploadingOdometer(true);
+      const formData = new FormData();
+      formData.append('tripId', activeTripData[0]._id);
+      formData.append('phase', 'odometer');
+      formData.append('odometerPhoto', { uri: odometerPhoto.uri, type: odometerPhoto.type, name: odometerPhoto.name || 'odometer.jpg' });
+      const api = new APIRequest();
+      const res = await api.request('/publicrides/driver/v2/uploadTripMedia', 'POST', formData, userInfo?.token);
+      if (res.success) { setOdometerUploaded(true); setOdometerPhotoDone(true); }
+      else Alert.alert('Upload Failed', res?.message || 'Could not upload odometer photo.');
+    } catch { Alert.alert('Error', 'Something went wrong.'); }
+    finally { setUploadingOdometer(false); }
   };
 
   return (
@@ -295,6 +372,113 @@ const DriverVehiclePhotosScreen = () => {
                   ? <ActivityIndicator size="small" color={Colors.white} />
                   : <MaterialCommunityIcons name="cloud-upload-outline" size={16} color={Colors.white} />}
                 <Text style={styles.uploadBtnTxt}>{uploadingPre ? t('uploading') : preUploaded ? t('reupload_pre_trip') : t('upload_pre_trip_photos')}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+
+        {/* Dent Photos Section */}
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.sectionHeaderRow} onPress={() => setDentExpanded(v => !v)} activeOpacity={0.8}>
+            <MaterialCommunityIcons name="car-door" size={18} color={Colors.periwinkle} />
+            <Text style={styles.sectionTitle}>{t('dent_photos', 'Dent Photos')}</Text>
+            <Text style={styles.progressTxt}>{dentPhotos.length} {t('photos', 'photos')}</Text>
+            {dentUploaded && (
+              <View style={styles.uploadedBadge}>
+                <MaterialCommunityIcons name="check-circle" size={13} color="#43A047" />
+                <Text style={styles.uploadedTxt}>{t('uploaded')}</Text>
+              </View>
+            )}
+            <MaterialCommunityIcons
+              name={dentExpanded ? 'chevron-up' : 'chevron-down'}
+              size={20} color={Colors.grey_dark} style={{ marginLeft: 4 }}
+            />
+          </TouchableOpacity>
+          {dentExpanded && (
+            <>
+              <View style={styles.grid}>
+                {dentPhotos.map((photo, index) => (
+                  <View key={index} style={ps.slot}>
+                    <View style={{ width: '100%', height: 100, borderRadius: 8, overflow: 'hidden' }}>
+                      <Image source={{ uri: photo.uri }} style={ps.thumb} />
+                      <TouchableOpacity
+                        style={{ position: 'absolute', top: 4, right: 4, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 12, padding: 2 }}
+                        onPress={() => removeDent(index)}
+                      >
+                        <MaterialCommunityIcons name="close" size={16} color="white" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
+                
+                {/* Add New Dent Button */}
+                <View style={ps.slot}>
+                  <View style={ps.emptyThumb}>
+                    <MaterialCommunityIcons name="image-plus" size={30} color="#C0C0C0" />
+                  </View>
+                  <View style={ps.pickRow}>
+                    <TouchableOpacity style={ps.pickBtn} onPress={() => onPickDent('camera')} activeOpacity={0.8}>
+                      <MaterialCommunityIcons name="camera-outline" size={14} color={Colors.periwinkle} />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={ps.pickBtn} onPress={() => onPickDent('gallery')} activeOpacity={0.8}>
+                      <MaterialCommunityIcons name="image-outline" size={14} color={Colors.periwinkle} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={[styles.uploadBtn, (dentPhotos.length === 0 || uploadingDent) && styles.uploadBtnDisabled]}
+                onPress={uploadDent}
+                disabled={dentPhotos.length === 0 || uploadingDent}
+                activeOpacity={0.8}>
+                {uploadingDent
+                  ? <ActivityIndicator size="small" color={Colors.white} />
+                  : <MaterialCommunityIcons name="cloud-upload-outline" size={16} color={Colors.white} />}
+                <Text style={styles.uploadBtnTxt}>{uploadingDent ? t('uploading') : dentUploaded ? t('reupload', 'Re-upload') : t('upload', 'Upload')}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+
+        {/* Odometer Photo Section */}
+        <View style={styles.section}>
+          <TouchableOpacity style={styles.sectionHeaderRow} onPress={() => setOdometerExpanded(v => !v)} activeOpacity={0.8}>
+            <MaterialCommunityIcons name="speedometer" size={18} color={Colors.periwinkle} />
+            <Text style={styles.sectionTitle}>{t('odometer_photo', 'Odometer Photo')}</Text>
+            <Text style={styles.progressTxt}>{odometerPhoto ? 1 : 0}/1</Text>
+            {odometerUploaded && (
+              <View style={styles.uploadedBadge}>
+                <MaterialCommunityIcons name="check-circle" size={13} color="#43A047" />
+                <Text style={styles.uploadedTxt}>{t('uploaded')}</Text>
+              </View>
+            )}
+            <MaterialCommunityIcons
+              name={odometerExpanded ? 'chevron-up' : 'chevron-down'}
+              size={20} color={Colors.grey_dark} style={{ marginLeft: 4 }}
+            />
+          </TouchableOpacity>
+          {odometerExpanded && (
+            <>
+              <View style={styles.grid}>
+                <PhotoSlot
+                  slotKey="odometer"
+                  label="odometer"
+                  icon="speedometer"
+                  t={t}
+                  image={odometerPhoto}
+                  onPick={onPickOdometer}
+                  loading={loadingFromServer}
+                />
+              </View>
+              <TouchableOpacity
+                style={[styles.uploadBtn, (!odometerPhoto || uploadingOdometer) && styles.uploadBtnDisabled]}
+                onPress={uploadOdometer}
+                disabled={!odometerPhoto || uploadingOdometer}
+                activeOpacity={0.8}>
+                {uploadingOdometer
+                  ? <ActivityIndicator size="small" color={Colors.white} />
+                  : <MaterialCommunityIcons name="cloud-upload-outline" size={16} color={Colors.white} />}
+                <Text style={styles.uploadBtnTxt}>{uploadingOdometer ? t('uploading') : odometerUploaded ? t('reupload', 'Re-upload') : t('upload', 'Upload')}</Text>
               </TouchableOpacity>
             </>
           )}

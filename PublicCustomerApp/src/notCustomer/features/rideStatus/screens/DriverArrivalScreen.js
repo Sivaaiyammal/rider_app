@@ -334,34 +334,45 @@ const DriverArrivalScreen = ({ onCancel, handleOverlay }) => {
      
 
       <View style={[styles.root, { backgroundColor: 'white' }]}>
-        {isActingDriverTrip ? <>
-        </> : 
-        <View style={styles.vehicleCard}>
-          {getVehicleImage(vehicleType, styles.vehicleImg)}
-          <View style={styles.vehicleInfo}>
-            <Text style={styles.vehicleNum}>{vehicleNumber}</Text>
-            <View style={styles.vehicleDescRow}>
-              {brand ? (
-                <Text style={styles.vehicleDesc} numberOfLines={1} ellipsizeMode="tail">
-                  {brand}
+        {isActingDriverTrip ? (
+          <View style={styles.vehicleCard}>
+            {getVehicleImage(vehicleType, styles.vehicleImg)}
+            <View style={styles.vehicleInfo}>
+              <Text style={styles.vehicleNum}>Acting Driver</Text>
+              <View style={styles.vehicleDescRow}>
+                <Text style={styles.vehicleDesc}>
+                  {vehicleType ? vehicleType.replace('_', ' ') : 'Manual'}
                 </Text>
-              ) : null}
-              {brand && model ? <Text style={styles.vehicleDescSeparator}>.</Text> : null}
-              {model ? (
-                <Text style={styles.vehicleDesc} numberOfLines={1} ellipsizeMode="tail">
-                  {model}
-                </Text>
-              ) : null}
-              {(model || brand) && color ? <Text style={styles.vehicleDescSeparator}>.</Text> : null}
-              {color ? (
-                <Text  numberOfLines={1} ellipsizeMode="tail" style={[styles.vehicleDesc, { textTransform: 'capitalize' }]}>
-                {limitText(color, 10)}
-                </Text>
-              ) : null}
+              </View>
             </View>
           </View>
-        </View>
-        }
+        ) : (
+          <View style={styles.vehicleCard}>
+            {getVehicleImage(vehicleType, styles.vehicleImg)}
+            <View style={styles.vehicleInfo}>
+              <Text style={styles.vehicleNum}>{vehicleNumber}</Text>
+              <View style={styles.vehicleDescRow}>
+                {brand ? (
+                  <Text style={styles.vehicleDesc} numberOfLines={1} ellipsizeMode="tail">
+                    {brand}
+                  </Text>
+                ) : null}
+                {brand && model ? <Text style={styles.vehicleDescSeparator}>.</Text> : null}
+                {model ? (
+                  <Text style={styles.vehicleDesc} numberOfLines={1} ellipsizeMode="tail">
+                    {model}
+                  </Text>
+                ) : null}
+                {(model || brand) && color ? <Text style={styles.vehicleDescSeparator}>.</Text> : null}
+                {color ? (
+                  <Text  numberOfLines={1} ellipsizeMode="tail" style={[styles.vehicleDesc, { textTransform: 'capitalize' }]}>
+                  {limitText(color, 10)}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+          </View>
+        )}
        
 
         <View style={styles.driverRow}>

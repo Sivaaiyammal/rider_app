@@ -237,23 +237,37 @@ const OnRideScreen = ({onPaymentMethodChange,onCancel,handleOverlay}) => {
       <View style={[styles.root,{backgroundColor:'white'}]}>
 
       {/* Card */}
-        {isActingDriverTrip ? <></> : 
-        <View style={styles.vehicleDetailsContainer}>
-          <TripPersonVehicle
-            driverName={driverName}
-            driverPhoto={driverPhotoUri || undefined}
-            driverPhotoLoading={isDriverPhotoLoading}
-            showDriverPhotoPlaceholder
-            vehicleType={vehicleType}
-            vehicleBrand={brand}
-            vehicleModel={model}
-            vehicleNumber={vehicleNumber}
-            vehicleColor={color}
-            isElectricVehicle={isElectricVehicle}
-            descriptonSize={14}
-          />
-        </View>
-        }
+        {isActingDriverTrip ? (
+          <View style={styles.vehicleDetailsContainer}>
+            <TripPersonVehicle
+              driverName={driverName}
+              driverPhoto={driverPhotoUri || undefined}
+              driverPhotoLoading={isDriverPhotoLoading}
+              showDriverPhotoPlaceholder
+              vehicleType={vehicleType} // Will fetch the default acting driver icon
+              descriptonSize={14}
+            />
+            <Text style={{ fontFamily: Fonts.medium, fontSize: 13, color: '#6B7280', marginTop: 4 }}>
+              Acting Driver • {vehicleType ? vehicleType.replace('_', ' ') : 'Manual'}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.vehicleDetailsContainer}>
+            <TripPersonVehicle
+              driverName={driverName}
+              driverPhoto={driverPhotoUri || undefined}
+              driverPhotoLoading={isDriverPhotoLoading}
+              showDriverPhotoPlaceholder
+              vehicleType={vehicleType}
+              vehicleBrand={brand}
+              vehicleModel={model}
+              vehicleNumber={vehicleNumber}
+              vehicleColor={color}
+              isElectricVehicle={isElectricVehicle}
+              descriptonSize={14}
+            />
+          </View>
+        )}
         
         {/* Estimated amount */}
         <View style={styles.amountBox}>

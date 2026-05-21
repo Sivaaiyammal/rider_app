@@ -51,6 +51,8 @@ const BillsAndPhotosScreen = ({ tripId }) => {
   const [driverInfo, setDriverInfo] = useState({});
   const [preTripPhotos, setPreTripPhotos] = useState({});
   const [postTripPhotos, setPostTripPhotos] = useState({});
+  const [dentPhotos, setDentPhotos] = useState([]);
+  const [odometerPhoto, setOdometerPhoto] = useState(null);
   const [previewUri, setPreviewUri] = useState(null);
   // tracks per-bill action: 'payNow' | 'payLater' | 'rejected' | 'paid'
   const [billActions, setBillActions] = useState({});
@@ -115,6 +117,8 @@ const BillsAndPhotosScreen = ({ tripId }) => {
         const tripBills = data?.trip?.bills?.bills || [];
         const preRaw = data?.trip?.bills?.preTripVehiclePhotos || {};
         const postRaw = data?.trip?.bills?.postTripVehiclePhotos || {};
+        const dentRaw = data?.trip?.bills?.dentPhotos || [];
+        const odometerRaw = data?.trip?.bills?.odometerPhoto || null;
 
         // Resolve receipt photos for bills
         const billsWithUrls = await Promise.all(
@@ -145,9 +149,26 @@ const BillsAndPhotosScreen = ({ tripId }) => {
         }
         if (!active) return;
 
+        const resolvedDent = [];
+        for (const url of dentRaw) {
+          if (url) {
+            const resolved = await resolveUrl(url);
+            if (resolved) resolvedDent.push(resolved);
+          }
+        }
+        if (!active) return;
+
+        let resolvedOdometer = null;
+        if (odometerRaw) {
+          resolvedOdometer = await resolveUrl(odometerRaw);
+        }
+        if (!active) return;
+
         setBills(billsWithUrls);
         setPreTripPhotos(resolvedPre);
         setPostTripPhotos(resolvedPost);
+        setDentPhotos(resolvedDent);
+        setOdometerPhoto(resolvedOdometer);
         setDriverInfo(data?.trip?.driverInfo || {});
 
         // Seed billActions from existing approval values
@@ -184,39 +205,71 @@ const BillsAndPhotosScreen = ({ tripId }) => {
     socketBillsRef.current = socketBills;
     // Don't update while the initial API fetch is still running (it will set bills itself)
     if (loading) return;
-    if (!socketBills?.bills) return;
+    if (!socketBills) return;
 
     let active = true;
     (async () => {
       try {
-        const tripBills = socketBills.bills;
-        const billsWithUrls = await Promise.all(
-          tripBills.map(async (bill) => {
-            // Reuse an already-resolved URL for the same receipt photo key
-            const existing = billsRef.current.find(b => b.receiptPhoto && b.receiptPhoto === bill.receiptPhoto);
-            return {
-              ...bill,
-              receiptPhotoUri:
-                existing?.receiptPhotoUri ||
-                (bill.receiptPhoto ? await resolveUrl(bill.receiptPhoto) : null),
-            };
-          }),
-        );
-        if (!active) return;
-        setBills(billsWithUrls);
-        // Re-seed bill action states from approval values
-        const newActions = {};
-        billsWithUrls.forEach((bill, idx) => {
-          if (bill.approval === 'approved') newActions[idx] = 'payNow';
-          if (bill.approval === 'rejected') newActions[idx] = 'rejected';
-          if (bill.paidAt) newActions[idx] = 'paid';
-          if (bill.paymentReceiptPhoto) {
-            resolveUrl(bill.paymentReceiptPhoto).then(url => {
-              if (url) setPaymentReceiptUris(prev => ({ ...prev, [idx]: url }));
-            });
+        if (socketBills.bills) {
+          const tripBills = socketBills.bills;
+          const billsWithUrls = await Promise.all(
+            tripBills.map(async (bill) => {
+              const existing = billsRef.current.find(b => b.receiptPhoto && b.receiptPhoto === bill.receiptPhoto);
+              return {
+                ...bill,
+                receiptPhotoUri: existing?.receiptPhotoUri || (bill.receiptPhoto ? await resolveUrl(bill.receiptPhoto) : null),
+              };
+            }),
+          );
+          if (!active) return;
+          setBills(billsWithUrls);
+          const newActions = {};
+          billsWithUrls.forEach((bill, idx) => {
+            if (bill.approval === 'approved') newActions[idx] = 'payNow';
+            if (bill.approval === 'rejected') newActions[idx] = 'rejected';
+            if (bill.paidAt) newActions[idx] = 'paid';
+            if (bill.paymentReceiptPhoto) {
+              resolveUrl(bill.paymentReceiptPhoto).then(url => {
+                if (url) setPaymentReceiptUris(prev => ({ ...prev, [idx]: url }));
+              });
+            }
+          });
+          setBillActions(newActions);
+        }
+
+        if (socketBills.preTripVehiclePhotos) {
+          const preRaw = socketBills.preTripVehiclePhotos;
+          const resolvedPre = {};
+          for (const key of Object.keys(PHOTO_LABELS)) {
+            if (preRaw[key]) resolvedPre[key] = await resolveUrl(preRaw[key]);
           }
-        });
-        setBillActions(newActions);
+          if (active) setPreTripPhotos(resolvedPre);
+        }
+
+        if (socketBills.postTripVehiclePhotos) {
+          const postRaw = socketBills.postTripVehiclePhotos;
+          const resolvedPost = {};
+          for (const key of Object.keys(PHOTO_LABELS)) {
+            if (postRaw[key]) resolvedPost[key] = await resolveUrl(postRaw[key]);
+          }
+          if (active) setPostTripPhotos(resolvedPost);
+        }
+
+        if (socketBills.dentPhotos) {
+          const resolvedDent = [];
+          for (const url of socketBills.dentPhotos) {
+            if (url) {
+              const resolved = await resolveUrl(url);
+              if (resolved) resolvedDent.push(resolved);
+            }
+          }
+          if (active) setDentPhotos(resolvedDent);
+        }
+
+        if (socketBills.odometerPhoto) {
+          const resolvedOdometer = await resolveUrl(socketBills.odometerPhoto);
+          if (active) setOdometerPhoto(resolvedOdometer);
+        }
       } catch {
         // silently handle
       }
@@ -229,7 +282,9 @@ const BillsAndPhotosScreen = ({ tripId }) => {
 
   const hasPrePhotos = Object.values(preTripPhotos).some(Boolean);
   const hasPostPhotos = Object.values(postTripPhotos).some(Boolean);
-  const isEmpty = !loading && bills.length === 0 && !hasPrePhotos && !hasPostPhotos;
+  const hasDentPhotos = dentPhotos.length > 0;
+  const hasOdometerPhoto = !!odometerPhoto;
+  const isEmpty = !loading && bills.length === 0 && !hasPrePhotos && !hasPostPhotos && !hasDentPhotos && !hasOdometerPhoto;
 
   const handleBillAction = async (idx, action) => {
     if (action === 'payNow') {
@@ -495,6 +550,55 @@ const BillsAndPhotosScreen = ({ tripId }) => {
               photos={preTripPhotos}
               onPress={setPreviewUri}
             />
+          )}
+
+          {/* Dent Photos */}
+          {hasDentPhotos && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionIconWrap}>
+                  <Ionicons name="car-sport-outline" size={16} color="#2563EB" />
+                </View>
+                <Text style={styles.sectionTitle}>Dent Photos</Text>
+              </View>
+              <View style={styles.photoGrid}>
+                {dentPhotos.map((uri, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    style={styles.photoItem}
+                    onPress={() => setPreviewUri(uri)}
+                    activeOpacity={0.85}>
+                    <Image source={{ uri }} style={styles.photoThumb} resizeMode="cover" />
+                    <View style={styles.photoLabelOverlay}>
+                      <Text style={styles.photoLabel}>{`Dent ${idx + 1}`}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Odometer Photo */}
+          {hasOdometerPhoto && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionIconWrap}>
+                  <Ionicons name="speedometer-outline" size={16} color="#2563EB" />
+                </View>
+                <Text style={styles.sectionTitle}>Odometer Photo</Text>
+              </View>
+              <View style={styles.photoGrid}>
+                <TouchableOpacity
+                  style={styles.photoItem}
+                  onPress={() => setPreviewUri(odometerPhoto)}
+                  activeOpacity={0.85}>
+                  <Image source={{ uri: odometerPhoto }} style={styles.photoThumb} resizeMode="cover" />
+                  <View style={styles.photoLabelOverlay}>
+                    <Text style={styles.photoLabel}>Odometer</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
           )}
 
           {/* Post-trip Vehicle Photos */}
