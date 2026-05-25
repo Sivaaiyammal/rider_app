@@ -366,13 +366,20 @@ const YourRidesScreen = () => {
         return null;
     }, [isLoadMore]);
 
-    // Set default date filters to today when component mounts
+    // Set default date filters: today for normal rides, no filter (all) for acting driver
     useEffect(() => {
-        const todayRange = getTodayDateRange();
-        setFilterStart(todayRange.start);
-        setFilterEnd(todayRange.end);
+        if (rideCategory === 'acting_driver') {
+            setFilterStart(null);
+            setFilterEnd(null);
+            setActiveTab('all');
+        } else {
+            const todayRange = getTodayDateRange();
+            setFilterStart(todayRange.start);
+            setFilterEnd(todayRange.end);
+            setActiveTab('today');
+        }
         setDurationFilterSet(true);
-    }, []);
+    }, [rideCategory]);
 
     // Update filter active state based on current filters
     useEffect(() => {
@@ -453,18 +460,24 @@ const YourRidesScreen = () => {
 
     const handleClearFilters = () => {
         setShowCustomDatePicker(false);
-        const todayRange = getTodayDateRange();
-        setFilterStart(todayRange.start);
-        setFilterEnd(todayRange.end);
         setSelectedStatus('');
         setTempSelectedStatus('');
         setIsCustomDateRangeSelected(false);
         setTempIsDateRangeEnabled(false);
         setCurrentPage(1);
         setHasMoreData(true);
-        setDurationFilterSet(true);
         setIsFilterActive(false);
-        setActiveTab('today'); // Reset to today tab
+        if (rideCategory === 'acting_driver') {
+            setFilterStart(null);
+            setFilterEnd(null);
+            setActiveTab('all');
+        } else {
+            const todayRange = getTodayDateRange();
+            setFilterStart(todayRange.start);
+            setFilterEnd(todayRange.end);
+            setActiveTab('today');
+        }
+        setDurationFilterSet(true);
     };
 
     const handleClearDateRange = () => {
@@ -528,12 +541,15 @@ const YourRidesScreen = () => {
             </View>
 
             <View style={{ flexDirection: 'row', paddingHorizontal: 16, paddingBottom: 10, gap: 12 }}>
-                {[
-                    { id: 'today', label: t('today'), getRange: DateTimeFormatter.getTodaysStartEndTime },
-                    { id: 'week', label: t('week'), getRange: DateTimeFormatter.getThisWeekStartEndTime },
-                    // { id: 'last_week', label: 'Last Week', getRange: DateTimeFormatter.getLastWeekStartEndTime },
-                    { id: 'all', label: t('all'), getRange: null },
-                ].map((tab) => (
+                {(
+                    rideCategory === 'acting_driver'
+                        ? [{ id: 'all', label: t('all'), getRange: null }]
+                        : [
+                            { id: 'today', label: t('today'), getRange: DateTimeFormatter.getTodaysStartEndTime },
+                            { id: 'week', label: t('week'), getRange: DateTimeFormatter.getThisWeekStartEndTime },
+                            { id: 'all', label: t('all'), getRange: null },
+                        ]
+                ).map((tab) => (
                     <TouchableOpacity
                         key={tab.id}
                         onPress={() => {
@@ -567,10 +583,9 @@ const YourRidesScreen = () => {
                         }}
                     >
                         <AdaptiveText numberOfLines={1} style={{ fontSize:14 ,fontFamily:Fonts.regular}} color={activeTab === tab.id ? colors.white : colors.black}>{tab.label}</AdaptiveText>
-                        {/* <AdaptiveText style={{ fontFamily: Fonts.medium, color: activeTab === tab.id ? colors.white : colors.black }}>{tab.label}</AdaptiveText> */}
                     </TouchableOpacity>
                 ))}
-                {/* Calendar icon for custom date range */}
+                {/* Filter icon for custom date range / status filter */}
                 <TouchableOpacity
                     onPress={handleOpenFilterSheet}
                     style={{

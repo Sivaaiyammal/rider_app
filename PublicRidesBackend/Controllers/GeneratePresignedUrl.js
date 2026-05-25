@@ -56,7 +56,6 @@ const parseS3Endpoint = (rawEndpoint) => {
         rawEndpoint: rawEndpoint
     };
 
-    console.log('[S3 Init] Parsed endpoint config:', config);
     return config;
 };
 
@@ -66,13 +65,6 @@ const initializeS3Client = () => {
     const accessKey = process.env.E2E_ACCESS_KEY;
     const secretKey = process.env.E2E_SECRET_KEY;
     const bucket = process.env.E2E_BUCKET_NAME;
-
-    console.log('[S3 Init] Environment variables check:', {
-        E2E_BASE: rawEndpoint ? `***${rawEndpoint.slice(-10)}` : 'MISSING',
-        E2E_ACCESS_KEY: accessKey ? '***' : 'MISSING',
-        E2E_SECRET_KEY: secretKey ? '***' : 'MISSING',
-        E2E_BUCKET_NAME: bucket || 'MISSING',
-    });
 
     if (!accessKey || !secretKey) {
         console.error('[S3 Init] Missing S3 credentials - requests will fail');
@@ -95,12 +87,6 @@ const initializeS3Client = () => {
         accessKey: accessKey || '',
         secretKey: secretKey || '',
     };
-
-    console.log('[S3 Init] Creating Minio client with:', {
-        endPoint: clientConfig.endPoint,
-        port: clientConfig.port,
-        useSSL: clientConfig.useSSL,
-    });
 
     return new Minio.Client(clientConfig);
 };

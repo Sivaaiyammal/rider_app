@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler, Modal} from 'react-native';
+import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler, Modal, TextInput} from 'react-native';
 import React, {useCallback, useState,useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar } from 'react-native-calendars';
@@ -89,7 +89,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
 
-  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,setFemaleDriverOnly,setSafeNightRides,actingDriverVehicle,setActingDriverVehicle,setActingDriverHours} = useRideBookingInfo()
+  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,setFemaleDriverOnly,setSafeNightRides,actingDriverVehicle,setActingDriverVehicle,setActingDriverHours, actingDriverMaxSpeed, setActingDriverMaxSpeed, actingDriverNotifyEvents, setActingDriverNotifyEvents} = useRideBookingInfo()
 
   const [showTripFor, setShowTripFor] = useState(false);
   const [showScheduleContainer, setShowScheduleContainer] = useState(false);
@@ -498,6 +498,38 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                 </View>
               ) : null}
             </View>
+
+            {/* Driver Configurations */}
+            <View style={styles.configSection}>
+              <Text style={styles.durationLabel}>{t('driver_preferences', 'Driver Preferences')}</Text>
+              
+              <View style={styles.configItemRow}>
+                <Text style={styles.configLabel}>{t('max_speed', 'Max Speed Limit (km/h)')}</Text>
+                <TextInput
+                  style={styles.speedInput}
+                  value={actingDriverMaxSpeed}
+                  onChangeText={setActingDriverMaxSpeed}
+                  placeholder="e.g. 80"
+                  keyboardType="numeric"
+                  placeholderTextColor={colors.grey_dark}
+                />
+              </View>
+
+              <TouchableOpacity 
+                style={styles.checkboxRow}
+                onPress={() => setActingDriverNotifyEvents(!actingDriverNotifyEvents)}
+                activeOpacity={0.8}
+              >
+                <Ionicons 
+                  name={actingDriverNotifyEvents ? "checkbox" : "square-outline"} 
+                  size={22} 
+                  color={actingDriverNotifyEvents ? colors.black : colors.grey_dark} 
+                />
+                <Text style={styles.checkboxLabel}>
+                  {t('notify_events_desc', 'Notify me if driver takes a break or vehicle is in traffic > 5 mins')}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
         <HistoryContainer selectCallback={handleHistoryLocationClick} bottomborder = {false} fromSearchScreen={true}/>
@@ -668,6 +700,22 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     color: colors.black,
   },
+  pickDatesButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: colors.black,
+    backgroundColor: '#F5F5F5',
+  },
+  pickDatesText: {
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: colors.black,
+  },
   durationUnitRow: {
     flexDirection: 'row',
     gap: 8,
@@ -736,6 +784,50 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: Fonts.semibold || Fonts.medium,
     color: colors.black,
+  },
+  configSection: {
+    gap: 12,
+    marginTop: 6,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+  },
+  configItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  configLabel: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: colors.grey_xxdark,
+    flex: 1,
+  },
+  speedInput: {
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    width: 80,
+    textAlign: 'center',
+    fontFamily: Fonts.medium,
+    fontSize: 13,
+    color: colors.black,
+    backgroundColor: '#F5F5F5',
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginTop: 4,
+  },
+  checkboxLabel: {
+    fontFamily: Fonts.regular,
+    fontSize: 12,
+    color: colors.grey_xxdark,
+    marginLeft: 8,
+    flex: 1,
+    lineHeight: 18,
   },
   calendarModalOverlay: {
     flex: 1,

@@ -43,6 +43,12 @@ const useRideBookingInfo = create(set => ({
   actingDriverHours: null,
   setActingDriverHours: (actingDriverHours) => set({ actingDriverHours }),
 
+  actingDriverMaxSpeed: null,
+  setActingDriverMaxSpeed: (actingDriverMaxSpeed) => set({ actingDriverMaxSpeed }),
+
+  actingDriverNotifyEvents: false,
+  setActingDriverNotifyEvents: (actingDriverNotifyEvents) => set({ actingDriverNotifyEvents }),
+
 
   couponCode: null,
   setCouponCode: (couponCode) => set({ couponCode }),

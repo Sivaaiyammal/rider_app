@@ -316,6 +316,21 @@ const BillsAndPhotosScreen = ({ tripId }) => {
   const hasOdometerPhoto = !!odometerPhoto;
   const isEmpty = !loading && bills.length === 0 && !hasPrePhotos && !hasPostPhotos && !hasDentPhotos && !hasOdometerPhoto;
 
+  // Summary values for "Pay All" and quick glance
+  const totalAmount = bills.reduce((s, b) => s + (parseFloat(b.amount || 0) || 0), 0);
+  const unpaidCount = bills.filter((_, i) => !(billActions[i] === 'paid' || billActions[i] === 'paid' )).length;
+
+  const handlePayAll = async () => {
+    if (!driverInfo?.upiid) {
+      Alert.alert('UPI not available', 'Driver UPI ID is not provided.');
+      return;
+    }
+    const opened = await payViaUpi({ amount: totalAmount, upiId: driverInfo.upiid, name: driverInfo.driverName || 'Driver' });
+    if (!opened) {
+      // user already alerted inside payViaUpi; keep silent here
+    }
+  };
+
   const handleBillAction = async (idx, action) => {
     if (action === 'payNow') {
       const bill = bills[idx];
@@ -455,6 +470,23 @@ const BillsAndPhotosScreen = ({ tripId }) => {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Summary-first block */}
+          {bills.length > 0 && (
+            <View style={styles.summary}>
+              <View>
+                <Text style={styles.summaryTitle}>Bills Summary</Text>
+                <Text style={styles.summarySub}>{bills.length} item(s) • {unpaidCount} unpaid</Text>
+              </View>
+              <View style={styles.summaryRight}>
+                <Text style={styles.summaryAmount}>₹{totalAmount.toFixed(2)}</Text>
+                {unpaidCount > 0 && (
+                  <TouchableOpacity style={styles.payAllBtn} onPress={handlePayAll} activeOpacity={0.85}>
+                    <Text style={styles.payAllTxt}>Pay All</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
           {/* Driver Bills */}
           {bills.length > 0 && (
             <View style={styles.section}>
@@ -992,7 +1024,7 @@ const styles = StyleSheet.create({
   },
   receiptThumb: {
     width: '100%',
-    height: 160,
+    height: 220,
     borderRadius: 10,
     backgroundColor: '#EEF2FF',
   },
@@ -1243,6 +1275,22 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     color: '#64748B',
   },
+  summary: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    elevation: 2,
+  },
+  summaryTitle: { fontSize: 15, fontFamily: Fonts.medium, color: '#1E3A8A' },
+  summarySub: { fontSize: 13, fontFamily: Fonts.regular, color: '#6B7280', marginTop: 4 },
+  summaryRight: { alignItems: 'flex-end' },
+  summaryAmount: { fontSize: 16, fontFamily: Fonts.semi_bold || Fonts.medium, color: '#1D4ED8' },
+  payAllBtn: { marginTop: 8, backgroundColor: '#1D4ED8', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
+  payAllTxt: { fontSize: 13, fontFamily: Fonts.medium, color: '#fff' },
 });
 
 
