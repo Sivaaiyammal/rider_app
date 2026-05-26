@@ -217,7 +217,7 @@ const RideDetailScreen = ({ TripData }) => {
      
         <AddressContainer directions={transformStops(rideData.stops)} />
 
-         {rideData?.otp ? (
+         {rideData?.otp && (!rideData?.isActingDriverTrip || rideData?.status !== 'PENDING') ? (
           <View style={styles.inlinePanel}>
             <View style={styles.inlineHeader}>
               <Text style={styles.inlineTitle}>{t('O T P')}</Text>
@@ -236,18 +236,27 @@ const RideDetailScreen = ({ TripData }) => {
         
         
         {rideData?.isActingDriverTrip ? (
-          <View style={{ alignItems: 'center', marginVertical: 10 }}>
-            <TripPersonVehicle 
-              driverName={rideData.driverInfo?.driverName} 
-              driverPhoto={driverPhotoUri || undefined} 
-              driverPhotoLoading={isDriverPhotoLoading}
-              showDriverPhotoPlaceholder
-              vehicleType={rideData?.vehicleType} 
-            />
-            <Text style={{ fontFamily: Fonts.medium, fontSize: 13, color: '#6B7280', marginTop: 6, textAlign: 'center' }}>
-              Acting Driver • {rideData?.vehicleType ? rideData.vehicleType.replace('_', ' ') : 'Manual'}
-            </Text>
-          </View>
+          rideData?.status !== 'PENDING' ? (
+            <View style={{ alignItems: 'center', marginVertical: 10 }}>
+              <TripPersonVehicle 
+                driverName={rideData.driverInfo?.driverName} 
+                driverPhoto={driverPhotoUri || undefined} 
+                driverPhotoLoading={isDriverPhotoLoading}
+                showDriverPhotoPlaceholder
+                vehicleType={rideData?.vehicleType} 
+              />
+              <Text style={{ fontFamily: Fonts.medium, fontSize: 13, color: '#6B7280', marginTop: 6, textAlign: 'center' }}>
+                Acting Driver • {rideData?.vehicleType ? rideData.vehicleType.replace('_', ' ') : 'Manual'}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.pendingStatusContainer}>
+              <MaterialIcons name="hourglass-empty" size={24} color="#EA580C" />
+              <Text style={styles.pendingStatusText}>
+                {t('waiting_for_driver_approval', 'Waiting for driver approval')}
+              </Text>
+            </View>
+          )
         ) : (
           <TripPersonVehicle 
             driverName={rideData.driverInfo?.driverName} 
@@ -535,6 +544,23 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.semi_bold,
     fontSize: 16,
     color: colors.grey_xxdark,
+  },
+  pendingStatusContainer: {
+    backgroundColor: '#FFF7ED',
+    borderWidth: 1,
+    borderColor: '#FED7AA',
+    borderRadius: 12,
+    padding: 16,
+    marginVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  pendingStatusText: {
+    fontFamily: Fonts.medium,
+    fontSize: 15,
+    color: '#EA580C',
   },
   overlayContainer:{
     position:'absolute',

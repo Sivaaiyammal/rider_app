@@ -41,31 +41,9 @@ const useActingDriverBookTrip = () => {
           try {
             await DataStore.storeData(PREF.CURRENT_TRIP, result.trip?._id);
             setCurrentRideInfo(result.trip);
-            setRideMatchStatus({
-              status: 'searching',
-              message: t('searching_for_drivers', 'Searching for drivers...'),
-              driver: null,
-            });
-            setStackScreen('RideStatus', {});
-
-            let connected = rideMatchingSocketService.isConnected();
-            if (!connected) {
-              connected = await initializeSocket(userId);
-            }
-            if (!connected) {
-              setRideMatchStatus({
-                status: 'failed',
-                message: t('network_error'),
-                driver: null,
-              });
-              showNotification(t('network_error'), t('please_try_again'), 'danger');
-              return result;
-            }
-
-            startMatching(result.tripId, userId, result?.trip?.vehicleType);
             return result;
           } catch (err) {
-            console.error('Error handling acting driver trip navigation:', err);
+            console.error('Error handling acting driver trip database storage:', err);
             throw err;
           }
         }

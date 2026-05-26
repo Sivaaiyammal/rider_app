@@ -89,7 +89,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   const {goBack,setStackScreen} = useStackScreenStore();
   const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
 
-  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,setFemaleDriverOnly,setSafeNightRides,actingDriverVehicle,setActingDriverVehicle,setActingDriverHours, actingDriverMaxSpeed, setActingDriverMaxSpeed, actingDriverNotifyEvents, setActingDriverNotifyEvents} = useRideBookingInfo()
+  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,setFemaleDriverOnly,setSafeNightRides,actingDriverVehicle,setActingDriverVehicle,setActingDriverHours, actingDriverMaxSpeed, setActingDriverMaxSpeed, actingDriverNotifyEvents, setActingDriverNotifyEvents, actingDriverAccommodation, setActingDriverAccommodation, actingDriverFood, setActingDriverFood} = useRideBookingInfo()
 
   const [showTripFor, setShowTripFor] = useState(false);
   const [showScheduleContainer, setShowScheduleContainer] = useState(false);
@@ -448,11 +448,13 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
           <View style={styles.actingDriverPanel}>
             {/* Vehicle row */}
             <View style={styles.actingVehicleRow}>
-              <Ionicons
-                name={VEHICLE_TYPE_ICON[actingDriverVehicle.type] || 'car-outline'}
-                size={22}
-                color={colors.black}
-              />
+              <View style={styles.actingVehicleIconContainer}>
+                <Ionicons
+                  name={VEHICLE_TYPE_ICON[actingDriverVehicle.type] || 'car-outline'}
+                  size={24}
+                  color={colors.black}
+                />
+              </View>
               <View style={styles.actingVehicleInfo}>
                 <Text style={styles.actingVehicleReg}>{actingDriverVehicle.regNo}</Text>
                 <Text style={styles.actingVehicleMeta}>
@@ -513,6 +515,75 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                   keyboardType="numeric"
                   placeholderTextColor={colors.grey_dark}
                 />
+              </View>
+
+              {/* Accommodation & Food Options */}
+              <View style={styles.provisionsRow}>
+                <TouchableOpacity 
+                  style={[
+                    styles.provisionCard,
+                    actingDriverAccommodation && styles.provisionCardSelected
+                  ]}
+                  onPress={() => setActingDriverAccommodation(!actingDriverAccommodation)}
+                  activeOpacity={0.85}
+                >
+                  <View style={styles.provisionHeader}>
+                    <View style={[styles.provisionIconContainer, actingDriverAccommodation && styles.provisionIconContainerSelected]}>
+                      <Ionicons 
+                        name="bed" 
+                        size={18} 
+                        color={actingDriverAccommodation ? colors.black : colors.grey_dark} 
+                      />
+                    </View>
+                    <Ionicons 
+                      name={actingDriverAccommodation ? "checkmark-circle" : "ellipse-outline"} 
+                      size={20} 
+                      color={actingDriverAccommodation ? (colors.green || '#4CAF50') : colors.grey_light} 
+                    />
+                  </View>
+                  <Text style={[
+                    styles.provisionLabel,
+                    actingDriverAccommodation && styles.provisionLabelSelected
+                  ]}>
+                    {t('accommodation', 'Accommodation')}
+                  </Text>
+                  <Text style={styles.provisionSubLabel}>
+                    {t('accommodation_desc', 'For overnight stay')}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[
+                    styles.provisionCard,
+                    actingDriverFood && styles.provisionCardSelected
+                  ]}
+                  onPress={() => setActingDriverFood(!actingDriverFood)}
+                  activeOpacity={0.85}
+                >
+                  <View style={styles.provisionHeader}>
+                    <View style={[styles.provisionIconContainer, actingDriverFood && styles.provisionIconContainerSelected]}>
+                      <Ionicons 
+                        name="fast-food" 
+                        size={18} 
+                        color={actingDriverFood ? colors.black : colors.grey_dark} 
+                      />
+                    </View>
+                    <Ionicons 
+                      name={actingDriverFood ? "checkmark-circle" : "ellipse-outline"} 
+                      size={20} 
+                      color={actingDriverFood ? (colors.green || '#4CAF50') : colors.grey_light} 
+                    />
+                  </View>
+                  <Text style={[
+                    styles.provisionLabel,
+                    actingDriverFood && styles.provisionLabelSelected
+                  ]}>
+                    {t('food', 'Food')}
+                  </Text>
+                  <Text style={styles.provisionSubLabel}>
+                    {t('food_desc', 'Meals/Allowance')}
+                  </Text>
+                </TouchableOpacity>
               </View>
 
               <TouchableOpacity 
@@ -636,26 +707,38 @@ PlanRideScreen.propTypes = {
 const styles = StyleSheet.create({
   PlanRideScreen: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: '#F8FAFC',
     paddingHorizontal: 10,
-   
   },
   actingDriverPanel: {
-    marginHorizontal: 4,
-    marginTop: 10,
-    marginBottom: 2,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#E0E0E0',
-    backgroundColor: '#FAFAFA',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 10,
+    marginHorizontal: 10,
+    marginTop: 14,
+    marginBottom: 10,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    gap: 16,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 3,
   },
   actingVehicleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    padding: 12,
+    gap: 12,
+  },
+  actingVehicleIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actingVehicleInfo: {
     flex: 1,
@@ -672,19 +755,19 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   changeVehicleContainer: {
-    alignItems: 'center',
-    gap: 3,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    gap: 4,
   },
   changeVehicleBtn: {
     paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: colors.black,
+    paddingVertical: 6,
+    borderRadius: 20,
+    backgroundColor: '#E2E8F0',
   },
   changeVehicleText: {
     fontSize: 12,
-    fontFamily: Fonts.medium,
+    fontFamily: Fonts.semibold || Fonts.medium,
     color: colors.black,
   },
   durationRequiredText: {
@@ -697,19 +780,20 @@ const styles = StyleSheet.create({
   },
   durationLabel: {
     fontSize: 13,
-    fontFamily: Fonts.medium,
+    fontFamily: Fonts.semibold || Fonts.medium,
     color: colors.black,
+    marginBottom: 2,
   },
   pickDatesButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1.5,
-    borderColor: colors.black,
-    backgroundColor: '#F5F5F5',
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
   },
   pickDatesText: {
     fontSize: 14,
@@ -770,64 +854,122 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    borderRadius: 10,
-    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    marginTop: 8,
   },
   durationOutputLabel: {
     fontSize: 12,
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.medium,
     color: colors.grey_xxdark,
   },
   durationOutputText: {
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: Fonts.semibold || Fonts.medium,
     color: colors.black,
   },
   configSection: {
     gap: 12,
-    marginTop: 6,
-    paddingTop: 12,
+    marginTop: 8,
+    paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: '#F1F5F9',
   },
   configItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   configLabel: {
     fontSize: 13,
-    fontFamily: Fonts.regular,
-    color: colors.grey_xxdark,
+    fontFamily: Fonts.medium,
+    color: colors.black,
     flex: 1,
   },
   speedInput: {
-    borderWidth: 1.5,
-    borderColor: '#E0E0E0',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    width: 80,
-    textAlign: 'center',
-    fontFamily: Fonts.medium,
-    fontSize: 13,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    width: 70,
+    textAlign: 'right',
+    fontFamily: Fonts.semibold || Fonts.medium,
+    fontSize: 14,
     color: colors.black,
-    backgroundColor: '#F5F5F5',
   },
   checkboxRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     marginTop: 4,
   },
-  checkboxLabel: {
-    fontFamily: Fonts.regular,
-    fontSize: 12,
-    color: colors.grey_xxdark,
-    marginLeft: 8,
+  provisionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginTop: 6,
+  },
+  provisionCard: {
     flex: 1,
-    lineHeight: 18,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    padding: 12,
+  },
+  provisionCardSelected: {
+    borderColor: colors.black || '#000000',
+    backgroundColor: '#F5F5F5',
+  },
+  provisionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  provisionIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F5F5F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  provisionIconContainerSelected: {
+    backgroundColor: '#E0E0E0',
+  },
+  provisionLabel: {
+    fontFamily: Fonts.medium,
+    fontSize: 13,
+    color: colors.grey_xxdark,
+  },
+  provisionLabelSelected: {
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.black,
+  },
+  provisionSubLabel: {
+    fontFamily: Fonts.regular,
+    fontSize: 10,
+    color: colors.grey_dark,
+    marginTop: 2,
+  },
+  checkboxLabel: {
+    fontFamily: Fonts.medium,
+    fontSize: 12,
+    color: colors.black,
+    marginLeft: 10,
+    flex: 1,
+    lineHeight: 16,
   },
   calendarModalOverlay: {
     flex: 1,

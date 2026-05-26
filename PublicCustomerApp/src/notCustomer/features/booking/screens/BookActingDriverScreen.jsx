@@ -5,6 +5,7 @@ import {
     StyleSheet,
     TouchableOpacity,
     ActivityIndicator,
+    Modal,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -215,6 +216,26 @@ const BookActingDriverScreen = () => {
     const { t } = useTranslation();
     const { goBack } = useStackScreenStore();
 
+    // States for simulated payment
+    const [isSimulatedPaymentOpen, setIsSimulatedPaymentOpen] = useState(false);
+    const [isPaying, setIsPaying] = useState(false);
+    const [paymentSuccess, setPaymentSuccess] = useState(false);
+    const [selectedMethod, setSelectedMethod] = useState('UPI');
+    const [bookingSuccess, setBookingSuccess] = useState(false);
+
+    const currentScreen = useStackScreenStore(state => state.stackScreen[state.stackScreen.length - 1]);
+    const params = currentScreen?.params;
+
+    useEffect(() => {
+        if (params?.RideMatchDriverNotFound) {
+            showNotification(
+                t('driver_not_found', 'Driver Not Found'),
+                t('no_available_drivers_acting', 'No available drivers found at the moment. Your booking has been closed.'),
+                'danger'
+            );
+        }
+    }, [params]);
+
     const {
         paymentType,
         setPaymentType,
@@ -407,11 +428,31 @@ const BookActingDriverScreen = () => {
             console.log('Acting driver booking validation errors:', errors);
             return;
         }
+        setIsSimulatedPaymentOpen(true);
+    };
+
+    const proceedWithBooking = async () => {
         try {
-            await bookTrip();
+            const res = await bookTrip();
+            if (res?.success) {
+                setBookingSuccess(true);
+            }
         } catch (error) {
             console.error('Acting driver booking failed:', error);
         }
+    };
+
+    const handleSimulatedPay = () => {
+        setIsPaying(true);
+        setTimeout(() => {
+            setIsPaying(false);
+            setPaymentSuccess(true);
+            setTimeout(() => {
+                setIsSimulatedPaymentOpen(false);
+                setPaymentSuccess(false);
+                proceedWithBooking();
+            }, 1800);
+        }, 1500);
     };
 
     const onRetryFetchRoute = () => loadRoute();
@@ -425,7 +466,7 @@ const BookActingDriverScreen = () => {
             </View>
 
             <BottomSheetWrapper
-                snapPoints={[380]}
+                snapPoints={[480]}
                 index={0}
                 enablePanDownToClose={false}
                 enableOverDrag={true}
@@ -448,6 +489,60 @@ const BookActingDriverScreen = () => {
                         <AdaptiveText style={styles.noVehicleText}>
                             {t('no_vehicle_selected', 'No vehicle selected')}
                         </AdaptiveText>
+                    )}
+
+                    {/* Fare breakdown details */}
+                    {actingDriverVehicle && (
+                        <View style={styles.paymentBreakdownCard}>
+                            <AdaptiveText style={styles.breakdownTitle}>
+                                {t('payment_breakdown', 'Payment Breakdown')}
+                            </AdaptiveText>
+                            <View style={styles.breakdownRow}>
+                                <AdaptiveText style={styles.breakdownLabel}>
+                                    {t('total_estimated_fare', 'Total Estimated Fare')}
+                                </AdaptiveText>
+                                <AdaptiveText style={styles.breakdownValue}>
+                                    {fareDisplay || `₹${(() => {
+                                        const dist = Number(rideDistance) || 0;
+                                        const dur = Number(estimatedDuration) || 0;
+                                        const type = actingDriverVehicle?.type || 'CAR';
+                                        const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
+                                        const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
+                                        const minFare = Math.max(15, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 0.9));
+                                        const maxFare = Math.max(20, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 1.1));
+                                        return `${minFare} - ₹${maxFare}`;
+                                    })()}`}
+                                </AdaptiveText>
+                            </View>
+                            <View style={styles.breakdownRow}>
+                                <AdaptiveText style={styles.breakdownLabel}>
+                                    {t('advance_to_pay_now', 'Advance to Pay Now')}
+                                </AdaptiveText>
+                                <AdaptiveText style={[styles.breakdownValue, { color: colors.orange, fontFamily: Fonts.semi_bold }]}>
+                                    ₹500
+                                </AdaptiveText>
+                            </View>
+                            <View style={styles.breakdownRow}>
+                                <AdaptiveText style={styles.breakdownLabel}>
+                                    {t('balance_after_trip', 'Balance (Pay after Trip)')}
+                                </AdaptiveText>
+                                <AdaptiveText style={styles.breakdownValue}>
+                                    {(() => {
+                                        const dist = Number(rideDistance) || 0;
+                                        const dur = Number(estimatedDuration) || 0;
+                                        const type = actingDriverVehicle?.type || 'CAR';
+                                        const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
+                                        const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
+                                        const minFare = Math.max(15, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 0.9));
+                                        const maxFare = Math.max(20, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 1.1));
+                                        return `₹${Math.max(0, minFare - 500)} - ₹${Math.max(0, maxFare - 500)}`;
+                                    })()}
+                                </AdaptiveText>
+                            </View>
+                            <AdaptiveText style={styles.breakdownNote}>
+                                {t('advance_note', 'Please pay the advance of ₹500 first. The remaining balance will be paid to the driver on trip completion.')}
+                            </AdaptiveText>
+                        </View>
                     )}
                 </View>
 
@@ -502,7 +597,7 @@ const BookActingDriverScreen = () => {
                             <AdaptiveText style={styles.confirmButtonText}>
                                 {isBookingLoading
                                     ? t('booking')
-                                    : t('confirm_booking', 'Confirm Booking')}
+                                    : t('pay_advance_and_book', 'Pay Advance (₹500) & Book')}
                             </AdaptiveText>
                         </TouchableOpacity>
                     </View>
@@ -537,6 +632,149 @@ const BookActingDriverScreen = () => {
                     <CouponContainer />
                 </AnimatedBottomSheetWrapper>
             )}
+
+            {/* Simulated Payment Modal */}
+            <Modal
+                visible={isSimulatedPaymentOpen}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => {
+                    if (!isPaying) setIsSimulatedPaymentOpen(false);
+                }}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        {!paymentSuccess ? (
+                            <>
+                                <View style={styles.modalHeader}>
+                                    <AdaptiveText style={styles.modalTitle}>
+                                        {t('pay_advance', 'Pay Advance Amount')}
+                                    </AdaptiveText>
+                                    <TouchableOpacity 
+                                        style={styles.closeButton} 
+                                        onPress={() => setIsSimulatedPaymentOpen(false)}
+                                        disabled={isPaying}
+                                    >
+                                        <Icon name="close" size={24} color={colors.black} />
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={styles.paymentSummaryCard}>
+                                    <AdaptiveText style={styles.summaryLabel}>
+                                        {t('ride_booking_advance', 'Ride Booking Advance')}
+                                    </AdaptiveText>
+                                    <AdaptiveText style={styles.summaryAmount}>
+                                        ₹500.00
+                                    </AdaptiveText>
+                                </View>
+
+                                <AdaptiveText style={styles.methodSectionTitle}>
+                                    {t('select_payment_method', 'Select Payment Method')}
+                                </AdaptiveText>
+
+                                <View style={styles.methodList}>
+                                    {/* UPI Option */}
+                                    <TouchableOpacity 
+                                        style={[
+                                            styles.methodRow,
+                                            selectedMethod === 'UPI' && styles.methodRowSelected
+                                        ]}
+                                        onPress={() => setSelectedMethod('UPI')}
+                                        disabled={isPaying}
+                                    >
+                                        <View style={styles.methodInfo}>
+                                            <FontAwesome6 name="u" size={16} color={selectedMethod === 'UPI' ? colors.black : '#64748B'} />
+                                            <AdaptiveText style={styles.methodText}>UPI (GPay / PhonePe / Paytm)</AdaptiveText>
+                                        </View>
+                                        <View style={[styles.radioCircle, selectedMethod === 'UPI' && styles.radioCircleSelected]}>
+                                            {selectedMethod === 'UPI' && <View style={styles.radioDot} />}
+                                        </View>
+                                    </TouchableOpacity>
+
+                                    {/* Card Option */}
+                                    <TouchableOpacity 
+                                        style={[
+                                            styles.methodRow,
+                                            selectedMethod === 'CARD' && styles.methodRowSelected
+                                        ]}
+                                        onPress={() => setSelectedMethod('CARD')}
+                                        disabled={isPaying}
+                                    >
+                                        <View style={styles.methodInfo}>
+                                            <Icon name="credit-card" size={20} color={selectedMethod === 'CARD' ? colors.black : '#64748B'} />
+                                            <AdaptiveText style={styles.methodText}>Credit / Debit Card</AdaptiveText>
+                                        </View>
+                                        <View style={[styles.radioCircle, selectedMethod === 'CARD' && styles.radioCircleSelected]}>
+                                            {selectedMethod === 'CARD' && <View style={styles.radioDot} />}
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
+
+                                <TouchableOpacity
+                                    style={[styles.payNowButton, isPaying && { backgroundColor: colors.grey_light }]}
+                                    onPress={handleSimulatedPay}
+                                    disabled={isPaying}
+                                >
+                                    {isPaying ? (
+                                        <ActivityIndicator size="small" color={colors.black} />
+                                    ) : (
+                                        <AdaptiveText style={styles.payNowText}>
+                                            {t('pay_now', 'Pay ₹500.00 Now')}
+                                        </AdaptiveText>
+                                    )}
+                                </TouchableOpacity>
+                            </>
+                        ) : (
+                            <View style={styles.successContainer}>
+                                <View style={styles.successCircle}>
+                                    <Icon name="check" size={48} color="#059669" />
+                                </View>
+                                <AdaptiveText style={styles.successTitle}>
+                                    {t('payment_successful', 'Payment Successful')}
+                                </AdaptiveText>
+                                <AdaptiveText style={styles.successSubtitle}>
+                                    {t('payment_success_msg', 'Your advance payment of ₹500 was completed. Finding driver details...')}
+                                </AdaptiveText>
+                            </View>
+                        )}
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Booking Success Modal */}
+            <Modal
+                visible={bookingSuccess}
+                animationType="fade"
+                transparent={true}
+            >
+                <View style={styles.successModalOverlay}>
+                    <View style={styles.successModalContent}>
+                        <View style={styles.successIconCircle}>
+                            <Icon name="check-circle" size={80} color={colors.green} />
+                        </View>
+                        
+                        <AdaptiveText style={styles.successModalTitle}>
+                            {t('acting_driver_booked', 'Acting Driver Booked!')}
+                        </AdaptiveText>
+                        
+                        <AdaptiveText style={styles.successModalSubtitle}>
+                            {t('booking_success_info', 'Acting driver booked. We will let you know once driver approved.')}
+                        </AdaptiveText>
+
+                        <TouchableOpacity
+                            style={styles.doneButton}
+                            onPress={() => {
+                                setBookingSuccess(false);
+                                useStackScreenStore.getState().reset();
+                            }}
+                        >
+                            <AdaptiveText style={styles.doneButtonText}>
+                                {t('done', 'Done')}
+                            </AdaptiveText>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </>
     );
 };
@@ -730,5 +968,242 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: Fonts.medium,
         textAlign: 'center',
+    },
+    paymentBreakdownCard: {
+        marginTop: 16,
+        backgroundColor: '#F8FAFC',
+        borderRadius: 16,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+    },
+    breakdownTitle: {
+        fontSize: 14,
+        fontFamily: Fonts.semi_bold,
+        color: colors.black,
+        marginBottom: 12,
+    },
+    breakdownRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 8,
+        borderBottomWidth: 0.5,
+        borderBottomColor: '#E2E8F0',
+    },
+    breakdownLabel: {
+        fontSize: 13,
+        fontFamily: Fonts.regular,
+        color: colors.grey_dark,
+    },
+    breakdownValue: {
+        fontSize: 13,
+        fontFamily: Fonts.medium,
+        color: colors.black,
+    },
+    breakdownNote: {
+        fontSize: 11,
+        fontFamily: Fonts.regular,
+        color: colors.grey_dark,
+        marginTop: 12,
+        lineHeight: 16,
+        fontStyle: 'italic',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(15, 23, 42, 0.65)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: 24,
+        minHeight: 450,
+        shadowColor: '#0F172A',
+        shadowOffset: { width: 0, height: -10 },
+        shadowOpacity: 0.15,
+        shadowRadius: 20,
+        elevation: 10,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontFamily: Fonts.semi_bold,
+        color: colors.black,
+    },
+    closeButton: {
+        padding: 4,
+    },
+    paymentSummaryCard: {
+        backgroundColor: '#F1F5F9',
+        borderRadius: 16,
+        padding: 16,
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    summaryLabel: {
+        fontSize: 13,
+        fontFamily: Fonts.medium,
+        color: '#64748B',
+        marginBottom: 4,
+    },
+    summaryAmount: {
+        fontSize: 32,
+        fontFamily: Fonts.bold,
+        color: colors.black,
+    },
+    methodSectionTitle: {
+        fontSize: 14,
+        fontFamily: Fonts.semi_bold,
+        color: colors.black,
+        marginBottom: 12,
+    },
+    methodList: {
+        gap: 12,
+        marginBottom: 24,
+    },
+    methodRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 14,
+        borderRadius: 12,
+        borderWidth: 1.5,
+        borderColor: '#E2E8F0',
+        backgroundColor: '#FFFFFF',
+    },
+    methodRowSelected: {
+        borderColor: colors.black,
+        backgroundColor: '#F8FAFC',
+    },
+    methodInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    methodText: {
+        fontSize: 14,
+        fontFamily: Fonts.medium,
+        color: colors.black,
+    },
+    radioCircle: {
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+        borderWidth: 2,
+        borderColor: '#94A3B8',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    radioCircleSelected: {
+        borderColor: colors.black,
+    },
+    radioDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: colors.black,
+    },
+    payNowButton: {
+        backgroundColor: colors.green,
+        borderRadius: 16,
+        paddingVertical: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: colors.green,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    payNowText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontFamily: Fonts.semi_bold,
+    },
+    successContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 40,
+    },
+    successCircle: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#DEF7EC',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+    },
+    successTitle: {
+        fontSize: 20,
+        fontFamily: Fonts.bold,
+        color: '#03543F',
+        marginBottom: 8,
+    },
+    successSubtitle: {
+        fontSize: 14,
+        fontFamily: Fonts.regular,
+        color: '#6B7280',
+        textAlign: 'center',
+        paddingHorizontal: 20,
+    },
+    successModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(15, 23, 42, 0.7)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+    },
+    successModalContent: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 24,
+        padding: 30,
+        width: '100%',
+        alignItems: 'center',
+        shadowColor: '#0F172A',
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.2,
+        shadowRadius: 20,
+        elevation: 10,
+    },
+    successIconCircle: {
+        marginBottom: 20,
+    },
+    successModalTitle: {
+        fontSize: 22,
+        fontFamily: Fonts.bold,
+        color: colors.black,
+        marginBottom: 12,
+        textAlign: 'center',
+    },
+    successModalSubtitle: {
+        fontSize: 15,
+        fontFamily: Fonts.regular,
+        color: colors.grey_dark,
+        textAlign: 'center',
+        lineHeight: 22,
+        marginBottom: 28,
+        paddingHorizontal: 10,
+    },
+    doneButton: {
+        backgroundColor: colors.black,
+        borderRadius: 16,
+        paddingVertical: 14,
+        paddingHorizontal: 32,
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    doneButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontFamily: Fonts.semi_bold,
     },
 });

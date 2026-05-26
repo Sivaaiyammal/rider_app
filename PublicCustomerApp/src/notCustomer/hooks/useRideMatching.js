@@ -9,6 +9,7 @@ import { firebase } from '@react-native-firebase/analytics';
 import { firebaselog_tripBooking } from '../../common/utils/FirebaseAnalytics';
 import useRideBookingLocationStore from '../features/booking/store/useRideBookingLocationStore';
 import useAssignedDriverInfoStore from '../features/rideStatus/store/useAssignedDriverInfoStore';
+import { cancelRide } from '../API/EndPoints/EndPoints';
 /**
  * Custom hook to manage ride matching status and socket integration
  * @returns {Object} Ride matching state and methods
@@ -42,7 +43,7 @@ const useRideMatching = () => {
   const matchedLoggedRef = useRef(false);
   const errorLoggedRef = useRef(false);
   const { goBack,goBackToScreen,setStackScreen } = useStackScreenStore();
-  const { setTripStatus,setOtp,setEstimatedFare } = useCurrentRideInfoStore();
+  const { setTripStatus,setOtp,setEstimatedFare, isActingDriverTrip, tripId } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo } = useAssignedDriverInfoStore();
   
   /**
@@ -118,9 +119,22 @@ const useRideMatching = () => {
               firebaselog_tripBooking('TB_Ride_Match(TB_RM)','TB_RM:no_available_drivers');
               errorLoggedRef.current = true;
             }
+            if (isActingDriverTrip && tripId) {
+              cancelRide({
+                tripId: tripId,
+                reason: "No driver available",
+                isNotyetPickedUp: true
+              }).catch(err => {
+                console.error("Failed to cancel trip on matching error:", err);
+              });
+            }
             resetSocket();
             setTripStatus(null);
-            goBackToScreen('BookRideScreen',{RideMatchDriverNotFound:true});
+            if (isActingDriverTrip) {
+              goBackToScreen('BookActingDriverScreen', { RideMatchDriverNotFound: true });
+            } else {
+              goBackToScreen('BookRideScreen',{RideMatchDriverNotFound:true});
+            }
           }
         });
         rideMatchingSocketService.onCancelRideMatch((matchingData) => {
