@@ -86,7 +86,7 @@ const getDateRangeMarkedDates = (startDateString, endDateString) => {
 const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mode,vehicle}) => {
   const { t } = useTranslation();
   const {userdetails,userFavPlaces} = useUserInfoStore();
-  const {goBack,setStackScreen} = useStackScreenStore();
+  const {goBack,setStackScreen,goBackToScreen} = useStackScreenStore();
   const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
 
   const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,setFemaleDriverOnly,setSafeNightRides,actingDriverVehicle,setActingDriverVehicle,setActingDriverHours, actingDriverMaxSpeed, setActingDriverMaxSpeed, actingDriverNotifyEvents, setActingDriverNotifyEvents, actingDriverAccommodation, setActingDriverAccommodation, actingDriverFood, setActingDriverFood} = useRideBookingInfo()
@@ -202,9 +202,12 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
  
 
   useEffect(() => {
-    if(mode == 'ACTING_DRIVER' && vehicle){
+    if (mode === 'ACTING_DRIVER' && vehicle) {
       setActingDriverVehicle(vehicle);
     }
+  }, [mode, vehicle]);
+
+  useEffect(() => {
     if(mode == 'SCHEDULE_TRIP'){
       console.log("Schedule ride mode detected");
       setShowScheduleContainer(true)
@@ -469,7 +472,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
               <View style={styles.changeVehicleContainer}>
                 <TouchableOpacity
                   style={styles.changeVehicleBtn}
-                  onPress={() => { setActingDriverVehicle(null); setActingDriverHours(null); setDurationRangeStart(null); setDurationRangeEnd(null); goBack(); }}
+                  onPress={() => { goBackToScreen('ActingDriverVehicleSelectScreen', {}); }}
                   activeOpacity={0.7}
                 >
                   <Text style={styles.changeVehicleText}>{t('change', 'Change')}</Text>

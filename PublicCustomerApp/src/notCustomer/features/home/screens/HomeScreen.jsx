@@ -5,7 +5,8 @@ import {
   TouchableOpacity, 
   StatusBar, 
   View,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import React, {useEffect, useRef, useState, useCallback,useContext} from 'react';
 import { useTranslation } from 'react-i18next';
@@ -23,8 +24,10 @@ import MapIcon from '../../../components/Map/MapIcon';
 import FavLabelItems from '../components/FavLabelItems';
 import useLocationStore from '../../../store/useLocationStore';
 import  LocationTypes  from '../../booking/types/LocationTypes.json';  
-import useRideBookingLocationStore from '../../booking/store/useRideBookingLocationStore'
+import useRideBookingLocationStore from '../../booking/store/useRideBookingLocationStore';
 import useRideVehicleStore from '../../booking/store/useRideVehicleStore';
+import useRideBookingInfo from '../../booking/store/useRideBookingInfo';
+import { getPassangerVehicles } from '../../../API/EndPoints/EndPoints';
 import { VEHICLE_LABELS } from '../../../constants/VehicleLabels';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { height, utils, width } from '../../../utils/Utils';
@@ -80,10 +83,12 @@ const MapScreen = () => {
    const { showModal } = useContext(GlobalContext);
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const {setStackScreen , setShowSocialMediaModal , showSocialMediaModal} = useStackScreenStore();
   const {location,currentLocationName} = useLocationStore();
   const {setRideStartLocation,setRideEndLocation,resetRideBookingLocation } = useRideBookingLocationStore()
   const { setSelectedVehicle } = useRideVehicleStore();
+  const { setActingDriverVehicle } = useRideBookingInfo();
   const { fetchLatestDrivers, driversAll } = useNearbyDrivers();
  
   const {setMapMarkers,setMapBounds,setVehicleMarkers, setDirectionPoints , mapReady} = useMapStore();
@@ -466,7 +471,7 @@ const MapScreen = () => {
     setStackScreen("PlanRideScreen", screenParams)
   }, [location, currentLocationName, setRideStartLocation, setStackScreen])
 
-    const handleServiceVehicleSelect = useCallback((item) => {
+    const handleServiceVehicleSelect = useCallback(async (item) => {
    
       if(!item || !item.key){
         return;
@@ -513,9 +518,29 @@ const MapScreen = () => {
       }
 
       if(item.key == "acting_driver"){
-        setCurrentLoactionPickupLocation();
-        setStackScreen('ActingDriverVehicleSelectScreen', {});
-        // setStackScreen('MyVehiclesScreen', {});
+        try {
+          setLoading(true);
+          const response = await getPassangerVehicles();
+          if (response?.success && response?.vehicles?.length > 0) {
+            const firstVehicle = response.vehicles[0];
+            setActingDriverVehicle(firstVehicle);
+            setCurrentLoactionPickupLocation();
+            makeRidePlan({
+              mode: 'ACTING_DRIVER',
+              preselectedVehicleType: firstVehicle.type,
+              vehicle: firstVehicle,
+            });
+          } else {
+            setCurrentLoactionPickupLocation();
+            setStackScreen('ActingDriverVehicleSelectScreen', {});
+          }
+        } catch (e) {
+          console.error('Error fetching passenger vehicles for acting driver:', e);
+          setCurrentLoactionPickupLocation();
+          setStackScreen('ActingDriverVehicleSelectScreen', {});
+        } finally {
+          setLoading(false);
+        }
         return;
       }
 
@@ -536,7 +561,7 @@ const MapScreen = () => {
 
       makeRidePlan({ preselectedVehicleType: item.key });
       
-    }, [setSelectedVehicle, makeRidePlan, setCurrentLoactionPickupLocation, setStackScreen])
+    }, [setSelectedVehicle, makeRidePlan, setCurrentLoactionPickupLocation, setStackScreen, setActingDriverVehicle])
 
     const renderBottomSheetHandle = useCallback((handleProps) => (
       <BottomSheetHeader {...handleProps} makeRidePlan={makeRidePlan} />
@@ -585,6 +610,12 @@ const MapScreen = () => {
       {showMenu && <SideDrawer handleMenu={handleMenu} />}
       {showSocialMediaModal && <SocialMediaModal onClose={() => setShowSocialMediaModal(false)} visible={showSocialMediaModal} />}
       <ErrorMessage />
+      {loading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={colors.white} />
+          <AdaptiveText style={styles.loadingText}>{t('loading', 'Loading...')}</AdaptiveText>
+        </View>
+      )}
     </>
   );
 };

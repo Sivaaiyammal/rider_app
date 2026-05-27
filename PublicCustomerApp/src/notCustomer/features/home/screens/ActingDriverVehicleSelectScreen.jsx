@@ -13,6 +13,7 @@ import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import NavBar from '../../../components/NavBar';
 import { colors, Fonts } from '../../../constants/constants';
 import { getPassangerVehicles } from '../../../API/EndPoints/EndPoints';
+import useRideBookingInfo from '../../booking/store/useRideBookingInfo';
 import {
   VEHICLE_TYPE_OPTIONS,
   VEHICLE_TYPE_ICON,
@@ -62,10 +63,11 @@ const VehicleItem = ({ vehicle, selected, onPress }) => {
 
 const ActingDriverVehicleSelectScreen = () => {
   const { t } = useTranslation();
-  const { goBack, setStackScreen } = useStackScreenStore();
+  const { goBack, setStackScreen, goBackToScreen } = useStackScreenStore();
+  const { actingDriverVehicle } = useRideBookingInfo();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedId, setSelectedId] = useState(null);
+  const [selectedId, setSelectedId] = useState(actingDriverVehicle?._id?.toString() || null);
 
   useEffect(() => {
     (async () => {
@@ -86,7 +88,7 @@ const ActingDriverVehicleSelectScreen = () => {
 
   const handleContinue = () => {
     if (!selectedVehicle) return;
-    setStackScreen('PlanRideScreen', {
+    goBackToScreen('PlanRideScreen', {
       mode: 'ACTING_DRIVER',
       preselectedVehicleType: selectedVehicle.type,
       vehicle: selectedVehicle,
