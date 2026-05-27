@@ -34,6 +34,7 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
     scheduleDateTime,
     actingDriverKidsOnBoard,
     actingDriverElderlyOnBoard,
+    actingDriverItinerary,
   } = useRideBookingInfo();
 
   const { resetRideMatchStatus } = useRideMatchStore();
@@ -46,8 +47,8 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
   const [data, setData] = useState(null);
 
   const prepareBookingPayload = () => {
-    if (!rideStartLocation || !rideEndLocation) {
-      throw new Error(t('start_end_locations_required'));
+    if (!rideStartLocation) {
+      throw new Error(t('start_location_required', 'Start location is required'));
     }
     if (!actingDriverVehicle) {
       throw new Error(t('vehicle_selection_required'));
@@ -75,25 +76,28 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
       });
     }
 
-    stops.push({
-      name: 'Drop Point',
-      location: [rideEndLocation.longitude, rideEndLocation.latitude],
-      address: utils.formatAddressName(rideEndLocation),
-      waitingTime: 0,
-      isReached: false,
-    });
+    if (rideEndLocation) {
+      stops.push({
+        name: 'Drop Point',
+        location: [rideEndLocation.longitude, rideEndLocation.latitude],
+        address: utils.formatAddressName(rideEndLocation),
+        waitingTime: 0,
+        isReached: false,
+      });
+    }
 
     const estimatedWaitTime = stops.reduce((sum, s) => sum + (s.waitingTime || 0), 0);
 
     const payload = {
       // Locations
       startLocation: [rideStartLocation.longitude, rideStartLocation.latitude],
-      endLocation: [rideEndLocation.longitude, rideEndLocation.latitude],
+      endLocation: rideEndLocation ? [rideEndLocation.longitude, rideEndLocation.latitude] : null,
       stops,
 
       // Acting driver specific
       isActingDriverTrip: true,
       actingDriverHours: actingDriverHours ?? null,
+      actingDriverItinerary: actingDriverItinerary || null,
       passangerVehicleId: actingDriverVehicle._id,
       passangerVehicleType: actingDriverVehicle.type,
 

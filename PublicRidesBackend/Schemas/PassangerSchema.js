@@ -177,14 +177,14 @@ const rideEstimationSchemaPublicrides = Joi.object({
 
 const actingDriverTripSchemaPublicrides = Joi.object({
     startLocation: Joi.array().items(Joi.number().min(-180).max(180), Joi.number().min(-90).max(90)).length(2).required(),
-    endLocation: Joi.array().items(Joi.number().min(-180).max(180), Joi.number().min(-90).max(90)).length(2).required(),
+    endLocation: Joi.array().items(Joi.number().min(-180).max(180), Joi.number().min(-90).max(90)).length(2).optional().allow(null),
     stops: Joi.array().items(Joi.object({
         name: Joi.string().required(),
         address: Joi.string().required(),
         location: Joi.array().items(Joi.number().min(-180).max(180), Joi.number().min(-90).max(90)).length(2).required(),
         waitingTime: Joi.number().required(),
         isReached: Joi.boolean().required()
-    })).min(2).required(),
+    })).min(1).required(),
     vehicleType: Joi
         .string()
         .optional(),
@@ -214,6 +214,7 @@ const actingDriverTripSchemaPublicrides = Joi.object({
     regionalOffice: Joi.string().allow(null).optional(),
     isScheduledTrip: Joi.boolean().optional(),
     scheduleDateTime: Joi.number().optional(),
+    actingDriverItinerary: Joi.object().optional().allow(null),
     appVersion: Joi.string().optional(),
     buildNumber: Joi.string().optional(),
     estimatedWaitTime: Joi.number().optional(),

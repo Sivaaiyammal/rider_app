@@ -30,6 +30,7 @@ import useRideBookingInfo from '../store/useRideBookingInfo';
 import { Fonts } from '../../../constants/constants';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { openFeedback } from '../../../utils/feedback';
+import { getCustomerTrips } from '../../../API/EndPoints/EndPoints';
 
 const formatCalendarDate = (date) => {
   const year = date.getFullYear();
@@ -90,7 +91,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   const {goBack,setStackScreen,goBackToScreen} = useStackScreenStore();
   const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
 
-  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,setFemaleDriverOnly,setSafeNightRides,actingDriverVehicle,setActingDriverVehicle,setActingDriverHours, actingDriverHours, actingDriverMaxSpeed, setActingDriverMaxSpeed, actingDriverNotifyEvents, setActingDriverNotifyEvents, actingDriverAccommodation, setActingDriverAccommodation, actingDriverFood, setActingDriverFood, actingDriverKidsOnBoard, setActingDriverKidsOnBoard, actingDriverElderlyOnBoard, setActingDriverElderlyOnBoard} = useRideBookingInfo()
+  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,setFemaleDriverOnly,setSafeNightRides,actingDriverVehicle,setActingDriverVehicle,setActingDriverHours, actingDriverHours, actingDriverMaxSpeed, setActingDriverMaxSpeed, actingDriverNotifyEvents, setActingDriverNotifyEvents, actingDriverAccommodation, setActingDriverAccommodation, actingDriverFood, setActingDriverFood, actingDriverKidsOnBoard, setActingDriverKidsOnBoard, actingDriverElderlyOnBoard, setActingDriverElderlyOnBoard, actingDriverItinerary, setActingDriverItinerary} = useRideBookingInfo()
 
   const [showTripFor, setShowTripFor] = useState(false);
   const [showScheduleContainer, setShowScheduleContainer] = useState(false);
@@ -136,8 +137,73 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   });
   const [showCustomTimePicker, setShowCustomTimePicker] = useState(false);
 
+  const getDatesInRange = (startDateStr, endDateStr) => {
+    if (!startDateStr) return [];
+    const dates = [];
+    let curr = new Date(startDateStr);
+    const end = new Date(endDateStr || startDateStr);
+    while (curr <= end) {
+      const yyyy = curr.getFullYear();
+      const mm = String(curr.getMonth() + 1).padStart(2, '0');
+      const dd = String(curr.getDate()).padStart(2, '0');
+      dates.push(`${yyyy}-${mm}-${dd}`);
+      curr.setDate(curr.getDate() + 1);
+    }
+    return dates;
+  };
+
+  const [lastRidePrefs, setLastRidePrefs] = useState(null);
+  const [showApplyPrefsModal, setShowApplyPrefsModal] = useState(false);
+
+  const applyLastRidePreferences = () => {
+    if (!lastRidePrefs) return;
+    if (lastRidePrefs.maxSpeed) setActingDriverMaxSpeed(String(lastRidePrefs.maxSpeed));
+    setActingDriverKidsOnBoard(!!lastRidePrefs.kidsOnBoard);
+    setActingDriverElderlyOnBoard(!!lastRidePrefs.elderlyOnBoard);
+    setActingDriverNotifyEvents(!!lastRidePrefs.notifyEvents);
+    setActingDriverAccommodation(!!lastRidePrefs.accommodation);
+    setActingDriverFood(!!lastRidePrefs.food);
+    setShowApplyPrefsModal(false);
+  };
+
+  useEffect(() => {
+    if (!isActingDriverMode) return;
+
+    const fetchLastRidePreferences = async () => {
+      try {
+        const response = await getCustomerTrips({
+          page: 1,
+          limit: 10,
+        });
+
+        if (response.success && response.trips?.length > 0) {
+          const lastActingDriverTrip = response.trips.find(t => 
+            t.isActingDriverTrip && 
+            (t.kidsOnBoard || t.elderlyOnBoard || t.maxSpeed || t.accommodation || t.food || t.notifyEvents)
+          );
+
+          if (lastActingDriverTrip) {
+            setLastRidePrefs({
+              maxSpeed: lastActingDriverTrip.maxSpeed,
+              kidsOnBoard: lastActingDriverTrip.kidsOnBoard,
+              elderlyOnBoard: lastActingDriverTrip.elderlyOnBoard,
+              notifyEvents: lastActingDriverTrip.notifyEvents,
+              accommodation: lastActingDriverTrip.accommodation,
+              food: lastActingDriverTrip.food,
+            });
+            setShowApplyPrefsModal(true);
+          }
+        }
+      } catch (err) {
+        console.log('Failed to fetch last ride preferences', err);
+      }
+    };
+
+    fetchLastRidePreferences();
+  }, [isActingDriverMode]);
+
   const isTripDurationSelected = !isActingDriverMode || (bookingTab === 'CUSTOM' ? !!durationRangeStart : true);
-  const hasRequiredLocations = rideStartLocation && rideEndLocation;
+  const hasRequiredLocations = isActingDriverMode ? !!rideStartLocation : (!!rideStartLocation && !!rideEndLocation);
   const isContinueButtonVisible = hasRequiredLocations && isTripDurationSelected;
 
   useEffect(() => {
@@ -859,6 +925,41 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                           </Text>
                         </View>
                       )}
+
+                      {durationRangeStart && selectedDurationDays > 1 && (
+                        <View style={styles.itinerarySection}>
+                          <Text style={styles.itineraryHeading}>
+                            {t('plan_daily_itinerary', 'Plan Daily Itinerary (Optional)')}
+                          </Text>
+                          <Text style={styles.itinerarySub}>
+                            {t('plan_daily_itinerary_desc', 'Add places or travel plans for each day so your driver can prepare.')}
+                          </Text>
+                          {getDatesInRange(durationRangeStart, durationRangeEnd).map((dateStr, idx) => {
+                            const formattedDate = utils.formatDate(dateStr, 'DD MMM, ddd');
+                            return (
+                              <View key={dateStr} style={styles.itineraryItem}>
+                                <View style={styles.itineraryDayHeader}>
+                                  <View style={styles.itineraryDayBadge}>
+                                    <Text style={styles.itineraryDayBadgeText}>{t('day_n', `Day {{n}}`, { n: idx + 1 })}</Text>
+                                  </View>
+                                  <Text style={styles.itineraryDateText}>{formattedDate}</Text>
+                                </View>
+                                <TextInput
+                                  style={styles.itineraryInput}
+                                  placeholder={t('enter_places_for_day', 'e.g. Visit place A, drop at hotel, then local sightseeing')}
+                                  placeholderTextColor={colors.grey_light}
+                                  value={actingDriverItinerary?.[dateStr] || ''}
+                                  onChangeText={(text) => {
+                                    const newItinerary = { ...(actingDriverItinerary || {}), [dateStr]: text };
+                                    setActingDriverItinerary(newItinerary);
+                                  }}
+                                  multiline
+                                />
+                              </View>
+                            );
+                          })}
+                        </View>
+                      )}
                     </>
                   )}
                 </View>
@@ -1170,6 +1271,88 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             </View>
           </Modal>
         )}
+
+        {/* Apply Last Ride Preferences Modal */}
+        <Modal
+          visible={showApplyPrefsModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowApplyPrefsModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.premiumAlertBox}>
+              <View style={styles.alertHeader}>
+                <View style={styles.alertIconBg}>
+                  <Ionicons name="sparkles-outline" size={24} color={colors.black} />
+                </View>
+                <Text style={styles.alertTitle}>
+                  {t('apply_previous_prefs', 'Apply Last Ride Preferences?')}
+                </Text>
+              </View>
+              
+              <Text style={styles.alertDesc}>
+                {t('apply_previous_prefs_desc', 'We found preferences from your recent acting driver ride. Would you like to apply them to this booking?')}
+              </Text>
+
+              <View style={styles.prefsListContainer}>
+                {lastRidePrefs?.maxSpeed ? (
+                  <View style={styles.prefTag}>
+                    <Ionicons name="speedometer-outline" size={14} color={colors.black} />
+                    <Text style={styles.prefTagText}>{t('max_speed_limit_n', 'Max Speed: {{n}} km/h', { n: lastRidePrefs.maxSpeed })}</Text>
+                  </View>
+                ) : null}
+                {lastRidePrefs?.kidsOnBoard ? (
+                  <View style={styles.prefTag}>
+                    <Ionicons name="people-outline" size={14} color={colors.black} />
+                    <Text style={styles.prefTagText}>{t('kids_on_board', 'Children on Board')}</Text>
+                  </View>
+                ) : null}
+                {lastRidePrefs?.elderlyOnBoard ? (
+                  <View style={styles.prefTag}>
+                    <Ionicons name="heart-outline" size={14} color={colors.black} />
+                    <Text style={styles.prefTagText}>{t('elderly_passengers', 'Elderly Passengers')}</Text>
+                  </View>
+                ) : null}
+                {lastRidePrefs?.accommodation ? (
+                  <View style={styles.prefTag}>
+                    <Ionicons name="bed-outline" size={14} color={colors.black} />
+                    <Text style={styles.prefTagText}>{t('accommodation', 'Accommodation')}</Text>
+                  </View>
+                ) : null}
+                {lastRidePrefs?.food ? (
+                  <View style={styles.prefTag}>
+                    <Ionicons name="restaurant-outline" size={14} color={colors.black} />
+                    <Text style={styles.prefTagText}>{t('food', 'Food')}</Text>
+                  </View>
+                ) : null}
+                {lastRidePrefs?.notifyEvents ? (
+                  <View style={styles.prefTag}>
+                    <Ionicons name="notifications-outline" size={14} color={colors.black} />
+                    <Text style={styles.prefTagText}>{t('status_updates', 'Status Updates')}</Text>
+                  </View>
+                ) : null}
+              </View>
+
+              <View style={styles.alertActionsRow}>
+                <TouchableOpacity
+                  style={styles.alertCancelBtn}
+                  onPress={() => setShowApplyPrefsModal(false)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.alertCancelText}>{t('no_thanks', 'No, thanks')}</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.alertApplyBtn}
+                  onPress={applyLastRidePreferences}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.alertApplyText}>{t('apply', 'Apply')}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </View>
       
     </>
@@ -1814,6 +1997,163 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: colors.grey_dark,
     lineHeight: 15,
+  },
+  itinerarySection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    marginTop: 16,
+  },
+  itineraryHeading: {
+    fontSize: 14,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.black,
+    marginBottom: 4,
+  },
+  itinerarySub: {
+    fontSize: 12,
+    fontFamily: Fonts.regular,
+    color: colors.grey_dark,
+    marginBottom: 16,
+    lineHeight: 16,
+  },
+  itineraryItem: {
+    marginBottom: 16,
+    gap: 8,
+  },
+  itineraryDayHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  itineraryDayBadge: {
+    backgroundColor: colors.black,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  itineraryDayBadgeText: {
+    fontSize: 11,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.white,
+  },
+  itineraryDateText: {
+    fontSize: 13,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.black,
+  },
+  itineraryInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 13,
+    color: colors.black,
+    minHeight: 60,
+    textAlignVertical: 'top',
+    fontFamily: Fonts.regular,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  premiumAlertBox: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  alertHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  alertIconBg: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  alertTitle: {
+    fontSize: 16,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.black,
+    flex: 1,
+  },
+  alertDesc: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: colors.grey_dark,
+    lineHeight: 18,
+    marginBottom: 16,
+  },
+  prefsListContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 20,
+  },
+  prefTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    gap: 6,
+  },
+  prefTagText: {
+    fontSize: 11,
+    fontFamily: Fonts.medium,
+    color: colors.black,
+  },
+  alertActionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  alertCancelBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  alertCancelText: {
+    fontSize: 13,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.grey_dark,
+  },
+  alertApplyBtn: {
+    flex: 1,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: colors.black,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  alertApplyText: {
+    fontSize: 13,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.white,
   },
 });
 
