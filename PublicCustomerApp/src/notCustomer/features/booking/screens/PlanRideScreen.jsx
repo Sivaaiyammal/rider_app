@@ -8,6 +8,7 @@ import {addLocation} from '../../../styles/AddLocationStyles';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
 import { VEHICLE_TYPE_OPTIONS, VEHICLE_TYPE_ICON } from '../../myVehicles/constants/vehicleData';
+import DatePicker from 'react-native-date-picker';
 
 
 import DashedLine from '../../../components/Common/DashedLine';
@@ -89,7 +90,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   const {goBack,setStackScreen,goBackToScreen} = useStackScreenStore();
   const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
 
-  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,setFemaleDriverOnly,setSafeNightRides,actingDriverVehicle,setActingDriverVehicle,setActingDriverHours, actingDriverMaxSpeed, setActingDriverMaxSpeed, actingDriverNotifyEvents, setActingDriverNotifyEvents, actingDriverAccommodation, setActingDriverAccommodation, actingDriverFood, setActingDriverFood} = useRideBookingInfo()
+  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,setFemaleDriverOnly,setSafeNightRides,actingDriverVehicle,setActingDriverVehicle,setActingDriverHours, actingDriverHours, actingDriverMaxSpeed, setActingDriverMaxSpeed, actingDriverNotifyEvents, setActingDriverNotifyEvents, actingDriverAccommodation, setActingDriverAccommodation, actingDriverFood, setActingDriverFood, actingDriverKidsOnBoard, setActingDriverKidsOnBoard, actingDriverElderlyOnBoard, setActingDriverElderlyOnBoard} = useRideBookingInfo()
 
   const [showTripFor, setShowTripFor] = useState(false);
   const [showScheduleContainer, setShowScheduleContainer] = useState(false);
@@ -108,9 +109,126 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     ? `${utils.formatDate(durationRangeStart, 'DD MMM')} - ${utils.formatDate(durationRangeEnd || durationRangeStart, 'DD MMM')}`
     : '';
   const isActingDriverMode = mode === 'ACTING_DRIVER';
-  const isTripDurationSelected = !isActingDriverMode || selectedDurationDays > 0;
+
+  // Acting Driver Booking Option States
+  const [bookingTab, setBookingTab] = useState('TODAY'); // 'TODAY', 'TOMORROW', 'CUSTOM'
+  const [isFlexibleDuration, setIsFlexibleDuration] = useState(false);
+  
+  // Today option: '1_HOUR', '3_DAYS', 'CUSTOM_HOURS', 'FLEXIBLE'
+  const [todayDurationOption, setTodayDurationOption] = useState('1_HOUR');
+  const [todayCustomHours, setTodayCustomHours] = useState(4);
+
+  // Tomorrow option: 'HOURLY', '1_DAY', '2_DAYS', '3_DAYS', 'FLEXIBLE'
+  const [tomorrowDurationOption, setTomorrowDurationOption] = useState('HOURLY');
+  const [tomorrowCustomHours, setTomorrowCustomHours] = useState(4);
+  const [tomorrowStartTime, setTomorrowStartTime] = useState(() => {
+    const time = new Date();
+    time.setHours(9, 0, 0, 0); // Default to 9:00 AM
+    return time;
+  });
+  const [showTomorrowTimePicker, setShowTomorrowTimePicker] = useState(false);
+
+  // Custom option
+  const [customStartTime, setCustomStartTime] = useState(() => {
+    const time = new Date();
+    time.setHours(9, 0, 0, 0);
+    return time;
+  });
+  const [showCustomTimePicker, setShowCustomTimePicker] = useState(false);
+
+  const isTripDurationSelected = !isActingDriverMode || (bookingTab === 'CUSTOM' ? !!durationRangeStart : true);
   const hasRequiredLocations = rideStartLocation && rideEndLocation;
   const isContinueButtonVisible = hasRequiredLocations && isTripDurationSelected;
+
+  useEffect(() => {
+    if (mode !== 'ACTING_DRIVER') return;
+
+    if (bookingTab === 'TODAY') {
+      setIsScheduledTrip(false);
+      setScheduleDateTime(null);
+      
+      if (todayDurationOption === 'FLEXIBLE') {
+        setIsFlexibleDuration(true);
+        setActingDriverHours(null);
+      } else {
+        setIsFlexibleDuration(false);
+        if (todayDurationOption === '1_HOUR') {
+          setActingDriverHours(1);
+        } else if (todayDurationOption === '3_DAYS') {
+          setActingDriverHours(72);
+        } else {
+          setActingDriverHours(todayCustomHours);
+        }
+      }
+    } 
+    else if (bookingTab === 'TOMORROW') {
+      setIsScheduledTrip(true);
+      
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      setScheduleDateTime({
+        date: tomorrow.toISOString(),
+        time: tomorrowStartTime
+      });
+
+      if (tomorrowDurationOption === 'FLEXIBLE') {
+        setIsFlexibleDuration(true);
+        setActingDriverHours(null);
+      } else {
+        setIsFlexibleDuration(false);
+        if (tomorrowDurationOption === '1_DAY') {
+          setActingDriverHours(24);
+        } else if (tomorrowDurationOption === '2_DAYS') {
+          setActingDriverHours(48);
+        } else if (tomorrowDurationOption === '3_DAYS') {
+          setActingDriverHours(72);
+        } else {
+          setActingDriverHours(tomorrowCustomHours);
+        }
+      }
+    } 
+    else if (bookingTab === 'CUSTOM') {
+      if (durationRangeStart) {
+        const startDate = new Date(durationRangeStart);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        startDate.setHours(0, 0, 0, 0);
+        
+        if (startDate > today) {
+          setIsScheduledTrip(true);
+          setScheduleDateTime({
+            date: startDate.toISOString(),
+            time: customStartTime
+          });
+        } else {
+          setIsScheduledTrip(false);
+          setScheduleDateTime(null);
+        }
+        
+        if (isFlexibleDuration) {
+          setActingDriverHours(null);
+        } else {
+          const days = getInclusiveDateRangeDays(durationRangeStart, durationRangeEnd);
+          setActingDriverHours(days * 24);
+        }
+      } else {
+        setActingDriverHours(null);
+      }
+    }
+  }, [
+    mode,
+    bookingTab,
+    todayDurationOption,
+    todayCustomHours,
+    tomorrowDurationOption,
+    tomorrowCustomHours,
+    tomorrowStartTime,
+    customStartTime,
+    durationRangeStart,
+    durationRangeEnd,
+    isFlexibleDuration
+  ]);
 
   const onPickDatesPress = () => {
     setPendingRangeStart(durationRangeStart);
@@ -412,40 +530,40 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
           onrightIconPress={onFeedbackPress}
         />
 
-        <View style={addLocation.rideSelectionContainer}>
-          <TouchableOpacity style={[addLocation.rideSelection]} onPress={() => onTripForPress()}>
-            <Ionicons name="person" size={18} color={colors.white} />
-           { <Text style={[addLocation.rideSelectionTxt, {width:'60%',justifyContent:'center',textAlign:'center'}]} numberOfLines={1} ellipsizeMode="tail">{rideBookMode === 'MYSELF' ? t('myself') : passangerDetails?.name || t('others')}</Text>}
-            <Ionicons name="chevron-down" size={18} color={colors.white} />
-          </TouchableOpacity>
-        </View>
-        <RideLocationSetBox 
-      
-        onAddWaypoint={onAddWaypoint}
-        onLocationClick={handleLocationClick}
-        hideDestination={false}
-        
-        />
-
-      
-
         <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.favPlacesContainer}
-          style={styles.favPlacesScrollView}
-        >  
-          {userFavPlaces?.map((item,index)=>(
-            <FavPlacesItem key={index} data={item} onPress={() => {
-              handleFavouriteLocationPress(item)
-            }}  selected={selectedFavPlace?.label === item.label} />
-          ))}
-          <FavPlacesItem data={{label:t('add_favorite_places')}} onPress={() => {
-            setStackScreen("SavedPlacesScreen",{})
-          }} type="add" />
-        </ScrollView>
-        <DashedLine style={styles.dottedLine} />
-        <ScrollView style={{ flex: 1}} contentContainerStyle={{paddingBottom: height*0.2}}>
+          style={{ flex: 1}} 
+          contentContainerStyle={{paddingBottom: height*0.2}}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={addLocation.rideSelectionContainer}>
+            <TouchableOpacity style={[addLocation.rideSelection]} onPress={() => onTripForPress()}>
+              <Ionicons name="person" size={18} color={colors.white} />
+             { <Text style={[addLocation.rideSelectionTxt, {width:'60%',justifyContent:'center',textAlign:'center'}]} numberOfLines={1} ellipsizeMode="tail">{rideBookMode === 'MYSELF' ? t('myself') : passangerDetails?.name || t('others')}</Text>}
+              <Ionicons name="chevron-down" size={18} color={colors.white} />
+            </TouchableOpacity>
+          </View>
+          <RideLocationSetBox 
+            onAddWaypoint={onAddWaypoint}
+            onLocationClick={handleLocationClick}
+            hideDestination={false}
+          />
+
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.favPlacesContainer}
+            style={styles.favPlacesScrollView}
+          >  
+            {userFavPlaces?.map((item,index)=>(
+              <FavPlacesItem key={index} data={item} onPress={() => {
+                handleFavouriteLocationPress(item)
+              }}  selected={selectedFavPlace?.label === item.label} />
+            ))}
+            <FavPlacesItem data={{label:t('add_favorite_places')}} onPress={() => {
+              setStackScreen("SavedPlacesScreen",{})
+            }} type="add" />
+          </ScrollView>
+          <DashedLine style={styles.dottedLine} />
             {/* Acting Driver: selected vehicle + duration */}
         {mode === 'ACTING_DRIVER' && actingDriverVehicle && (
           <View style={styles.actingDriverPanel}>
@@ -477,7 +595,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                 >
                   <Text style={styles.changeVehicleText}>{t('change', 'Change')}</Text>
                 </TouchableOpacity>
-                {!selectedDurationDays && (
+                {!isTripDurationSelected && (
                   <Text style={styles.durationRequiredText}>{t('required', 'Required')}</Text>
                 )}
               </View>
@@ -485,28 +603,271 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
 
             {/* Duration selector */}
             <View style={styles.durationSection}>
-              <Text style={styles.durationLabel}>{t('pick_dates', 'Pick Dates')}</Text>
-              <TouchableOpacity
-                style={styles.pickDatesButton}
-                onPress={onPickDatesPress}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.pickDatesText}>
-                  {durationRangeLabel || t('select_date_range', 'Select Date Range')}
-                </Text>
-                <Ionicons name="calendar-outline" size={18} color={colors.black} />
-              </TouchableOpacity>
-              {selectedDurationDays ? (
-                <View style={styles.durationOutputContainer}>
-                  <Text style={styles.durationOutputLabel}>{t('duration', 'Duration')}</Text>
-                  <Text style={styles.durationOutputText}>{selectedDurationDays}</Text>
+              <Text style={styles.durationLabel}>{t('booking_options', 'Booking Options')}</Text>
+              
+              <View style={styles.optionTabsRow}>
+                <TouchableOpacity
+                  style={[styles.optionTab, bookingTab === 'TODAY' && styles.optionTabSelected]}
+                  onPress={() => setBookingTab('TODAY')}
+                >
+                  <Text style={[styles.optionTabText, bookingTab === 'TODAY' && styles.optionTabTextSelected]}>
+                    {t('today', 'Today')}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.optionTab, bookingTab === 'TOMORROW' && styles.optionTabSelected]}
+                  onPress={() => setBookingTab('TOMORROW')}
+                >
+                  <Text style={[styles.optionTabText, bookingTab === 'TOMORROW' && styles.optionTabTextSelected]}>
+                    {t('tomorrow', 'Tomorrow')}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.optionTab, bookingTab === 'CUSTOM' && styles.optionTabSelected]}
+                  onPress={() => setBookingTab('CUSTOM')}
+                >
+                  <Text style={[styles.optionTabText, bookingTab === 'CUSTOM' && styles.optionTabTextSelected]}>
+                    {t('custom_dates', 'Custom Dates')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {bookingTab === 'TODAY' && (
+                <View style={styles.tabContentContainer}>
+                  <Text style={styles.subLabel}>{t('select_duration', 'Select Duration')}</Text>
+                  <View style={styles.chipsRow}>
+                    <TouchableOpacity
+                      style={[styles.chipButton, todayDurationOption === '1_HOUR' && styles.chipButtonSelected]}
+                      onPress={() => setTodayDurationOption('1_HOUR')}
+                    >
+                      <Text style={[styles.chipText, todayDurationOption === '1_HOUR' && styles.chipTextSelected]}>
+                        {t('1_hour_only', '1 Hour only')}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.chipButton, todayDurationOption === '3_DAYS' && styles.chipButtonSelected]}
+                      onPress={() => setTodayDurationOption('3_DAYS')}
+                    >
+                      <Text style={[styles.chipText, todayDurationOption === '3_DAYS' && styles.chipTextSelected]}>
+                        {t('now_to_3_days', 'Now to 3 Days')}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.chipButton, todayDurationOption === 'CUSTOM_HOURS' && styles.chipButtonSelected]}
+                      onPress={() => setTodayDurationOption('CUSTOM_HOURS')}
+                    >
+                      <Text style={[styles.chipText, todayDurationOption === 'CUSTOM_HOURS' && styles.chipTextSelected]}>
+                        {t('custom_hours', 'Custom Hours')}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.chipButton, todayDurationOption === 'FLEXIBLE' && styles.chipButtonSelected]}
+                      onPress={() => setTodayDurationOption('FLEXIBLE')}
+                    >
+                      <Text style={[styles.chipText, todayDurationOption === 'FLEXIBLE' && styles.chipTextSelected]}>
+                        {t('flexible_duration', 'Flexible (Decide Later)')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {todayDurationOption === 'CUSTOM_HOURS' && (
+                    <View style={styles.stepperContainer}>
+                      <Text style={styles.stepperLabel}>{t('booking_duration_hours', 'Duration (Hours)')}</Text>
+                      <View style={styles.stepperRow}>
+                        <TouchableOpacity
+                          style={styles.stepperBtn}
+                          onPress={() => setTodayCustomHours(prev => Math.max(1, prev - 1))}
+                        >
+                          <Ionicons name="remove-circle-outline" size={24} color={colors.black} />
+                        </TouchableOpacity>
+                        <Text style={styles.stepperValue}>{todayCustomHours} {todayCustomHours === 1 ? t('hour', 'Hour') : t('hours', 'Hours')}</Text>
+                        <TouchableOpacity
+                          style={styles.stepperBtn}
+                          onPress={() => setTodayCustomHours(prev => Math.min(24, prev + 1))}
+                        >
+                          <Ionicons name="add-circle-outline" size={24} color={colors.black} />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
+
+                  {todayDurationOption === 'FLEXIBLE' && (
+                    <View style={styles.flexibleInfoCard}>
+                      <Ionicons name="information-circle-outline" size={16} color="#0288D1" />
+                      <Text style={styles.flexibleInfoText}>
+                        {t('flexible_info_desc', 'Pay per hour after trip completion. Total fare will be computed on actual driving hours.')}
+                      </Text>
+                    </View>
+                  )}
                 </View>
-              ) : null}
+              )}
+
+              {bookingTab === 'TOMORROW' && (
+                <View style={styles.tabContentContainer}>
+                  <View style={styles.timePickerRow}>
+                    <Text style={styles.subLabel}>{t('select_start_time', 'Select Start Time')}</Text>
+                    <TouchableOpacity
+                      style={styles.timeSelectBtn}
+                      onPress={() => setShowTomorrowTimePicker(true)}
+                    >
+                      <Text style={styles.timeSelectText}>
+                        {utils.timestampTo12HourFormat(tomorrowStartTime)}
+                      </Text>
+                      <Ionicons name="time-outline" size={16} color={colors.black} />
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={styles.subLabel}>{t('select_duration', 'Select Duration')}</Text>
+                  <View style={styles.chipsRow}>
+                    <TouchableOpacity
+                      style={[styles.chipButton, tomorrowDurationOption === 'HOURLY' && styles.chipButtonSelected]}
+                      onPress={() => setTomorrowDurationOption('HOURLY')}
+                    >
+                      <Text style={[styles.chipText, tomorrowDurationOption === 'HOURLY' && styles.chipTextSelected]}>
+                        {t('hourly_booking', 'Hourly')}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.chipButton, tomorrowDurationOption === '1_DAY' && styles.chipButtonSelected]}
+                      onPress={() => setTomorrowDurationOption('1_DAY')}
+                    >
+                      <Text style={[styles.chipText, tomorrowDurationOption === '1_DAY' && styles.chipTextSelected]}>
+                        {t('1_day', '1 Day')}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.chipButton, tomorrowDurationOption === '2_DAYS' && styles.chipButtonSelected]}
+                      onPress={() => setTomorrowDurationOption('2_DAYS')}
+                    >
+                      <Text style={[styles.chipText, tomorrowDurationOption === '2_DAYS' && styles.chipTextSelected]}>
+                        {t('2_days', '2 Days')}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.chipButton, tomorrowDurationOption === '3_DAYS' && styles.chipButtonSelected]}
+                      onPress={() => setTomorrowDurationOption('3_DAYS')}
+                    >
+                      <Text style={[styles.chipText, tomorrowDurationOption === '3_DAYS' && styles.chipTextSelected]}>
+                        {t('3_days', '3 Days')}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.chipButton, tomorrowDurationOption === 'FLEXIBLE' && styles.chipButtonSelected]}
+                      onPress={() => setTomorrowDurationOption('FLEXIBLE')}
+                    >
+                      <Text style={[styles.chipText, tomorrowDurationOption === 'FLEXIBLE' && styles.chipTextSelected]}>
+                        {t('flexible_duration', 'Flexible (Decide Later)')}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {tomorrowDurationOption === 'HOURLY' && (
+                    <View style={styles.stepperContainer}>
+                      <Text style={styles.stepperLabel}>{t('booking_duration_hours', 'Duration (Hours)')}</Text>
+                      <View style={styles.stepperRow}>
+                        <TouchableOpacity
+                          style={styles.stepperBtn}
+                          onPress={() => setTomorrowCustomHours(prev => Math.max(1, prev - 1))}
+                        >
+                          <Ionicons name="remove-circle-outline" size={24} color={colors.black} />
+                        </TouchableOpacity>
+                        <Text style={styles.stepperValue}>{tomorrowCustomHours} {tomorrowCustomHours === 1 ? t('hour', 'Hour') : t('hours', 'Hours')}</Text>
+                        <TouchableOpacity
+                          style={styles.stepperBtn}
+                          onPress={() => setTomorrowCustomHours(prev => Math.min(24, prev + 1))}
+                        >
+                          <Ionicons name="add-circle-outline" size={24} color={colors.black} />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
+
+                  {tomorrowDurationOption === 'FLEXIBLE' && (
+                    <View style={styles.flexibleInfoCard}>
+                      <Ionicons name="information-circle-outline" size={16} color="#0288D1" />
+                      <Text style={styles.flexibleInfoText}>
+                        {t('flexible_info_desc', 'Pay per hour after trip completion. Total fare will be computed on actual driving hours.')}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {bookingTab === 'CUSTOM' && (
+                <View style={styles.tabContentContainer}>
+                  <Text style={styles.subLabel}>{t('pick_date_range', 'Pick Date Range')}</Text>
+                  <TouchableOpacity
+                    style={styles.pickDatesButton}
+                    onPress={onPickDatesPress}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.pickDatesText}>
+                      {durationRangeLabel || t('select_date_range', 'Select Date Range')}
+                    </Text>
+                    <Ionicons name="calendar-outline" size={18} color={colors.black} />
+                  </TouchableOpacity>
+
+                  {durationRangeStart && (
+                    <>
+                      <View style={styles.timePickerRow}>
+                        <Text style={styles.subLabel}>{t('select_start_time', 'Select Start Time')}</Text>
+                        <TouchableOpacity
+                          style={styles.timeSelectBtn}
+                          onPress={() => setShowCustomTimePicker(true)}
+                        >
+                          <Text style={styles.timeSelectText}>
+                            {utils.timestampTo12HourFormat(customStartTime)}
+                          </Text>
+                          <Ionicons name="time-outline" size={16} color={colors.black} />
+                        </TouchableOpacity>
+                      </View>
+
+                      <Text style={styles.subLabel}>{t('booking_type', 'Booking Type')}</Text>
+                      <View style={styles.chipsRow}>
+                        <TouchableOpacity
+                          style={[styles.chipButton, !isFlexibleDuration && styles.chipButtonSelected]}
+                          onPress={() => setIsFlexibleDuration(false)}
+                        >
+                          <Text style={[styles.chipText, !isFlexibleDuration && styles.chipTextSelected]}>
+                            {t('fixed_days', 'Fixed Days')}
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[styles.chipButton, isFlexibleDuration && styles.chipButtonSelected]}
+                          onPress={() => setIsFlexibleDuration(true)}
+                        >
+                          <Text style={[styles.chipText, isFlexibleDuration && styles.chipTextSelected]}>
+                            {t('flexible_duration', 'Flexible (Decide Later)')}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+
+                      {!isFlexibleDuration ? (
+                        selectedDurationDays ? (
+                          <View style={styles.durationOutputContainer}>
+                            <Text style={styles.durationOutputLabel}>{t('duration', 'Duration')}</Text>
+                            <Text style={styles.durationOutputText}>
+                              {selectedDurationDays} {selectedDurationDays === 1 ? t('day', 'Day') : t('days', 'Days')} ({actingDriverHours} {t('hours', 'Hours')})
+                            </Text>
+                          </View>
+                        ) : null
+                      ) : (
+                        <View style={styles.flexibleInfoCard}>
+                          <Ionicons name="information-circle-outline" size={16} color="#0288D1" />
+                          <Text style={styles.flexibleInfoText}>
+                            {t('flexible_info_desc', 'Pay per hour after trip completion. Total fare will be computed on actual driving hours.')}
+                          </Text>
+                        </View>
+                      )}
+                    </>
+                  )}
+                </View>
+              )}
             </View>
 
             {/* Driver Configurations */}
             <View style={styles.configSection}>
-              <Text style={styles.durationLabel}>{t('driver_preferences', 'Driver Preferences')}</Text>
+              <Text style={styles.durationLabel}>{t('driver_preferences', 'Ride Preferences')}</Text>
               
               <View style={styles.configItemRow}>
                 <Text style={styles.configLabel}>{t('max_speed', 'Max Speed Limit (km/h)')}</Text>
@@ -590,18 +951,72 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
               </View>
 
               <TouchableOpacity 
-                style={styles.checkboxRow}
+                style={[styles.prefCardRow, actingDriverNotifyEvents && styles.prefCardRowActive]}
                 onPress={() => setActingDriverNotifyEvents(!actingDriverNotifyEvents)}
                 activeOpacity={0.8}
               >
+                <View style={[styles.prefIconBox, actingDriverNotifyEvents && styles.prefIconBoxActive]}>
+                  <Ionicons 
+                    name="notifications-outline" 
+                    size={20} 
+                    color={actingDriverNotifyEvents ? colors.black : colors.grey_dark} 
+                  />
+                </View>
+                <View style={styles.prefTextContainer}>
+                  <Text style={styles.prefTitle}>{t('notify_events_title', 'Status Updates')}</Text>
+                  <Text style={styles.prefSub}>{t('notify_events_desc', 'Get alerts if driver takes a break or gets stuck in traffic > 5 mins')}</Text>
+                </View>
                 <Ionicons 
-                  name={actingDriverNotifyEvents ? "checkbox" : "square-outline"} 
+                  name={actingDriverNotifyEvents ? "checkmark-circle" : "ellipse-outline"} 
                   size={22} 
-                  color={actingDriverNotifyEvents ? colors.black : colors.grey_dark} 
+                  color={actingDriverNotifyEvents ? (colors.green || '#4CAF50') : colors.grey_light} 
                 />
-                <Text style={styles.checkboxLabel}>
-                  {t('notify_events_desc', 'Notify me if driver takes a break or vehicle is in traffic > 5 mins')}
-                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.prefCardRow, actingDriverKidsOnBoard && styles.prefCardRowActive]}
+                onPress={() => setActingDriverKidsOnBoard(!actingDriverKidsOnBoard)}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.prefIconBox, actingDriverKidsOnBoard && styles.prefIconBoxActive]}>
+                  <Ionicons 
+                    name="people-outline" 
+                    size={20} 
+                    color={actingDriverKidsOnBoard ? colors.black : colors.grey_dark} 
+                  />
+                </View>
+                <View style={styles.prefTextContainer}>
+                  <Text style={styles.prefTitle}>{t('kids_on_board_title', 'Children on Board')}</Text>
+                  <Text style={styles.prefSub}>{t('kids_on_board_desc', 'Driver will maintain safer speeds and be extra attentive')}</Text>
+                </View>
+                <Ionicons 
+                  name={actingDriverKidsOnBoard ? "checkmark-circle" : "ellipse-outline"} 
+                  size={22} 
+                  color={actingDriverKidsOnBoard ? (colors.green || '#4CAF50') : colors.grey_light} 
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.prefCardRow, actingDriverElderlyOnBoard && styles.prefCardRowActive]}
+                onPress={() => setActingDriverElderlyOnBoard(!actingDriverElderlyOnBoard)}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.prefIconBox, actingDriverElderlyOnBoard && styles.prefIconBoxActive]}>
+                  <Ionicons 
+                    name="heart-outline" 
+                    size={20} 
+                    color={actingDriverElderlyOnBoard ? colors.black : colors.grey_dark} 
+                  />
+                </View>
+                <View style={styles.prefTextContainer}>
+                  <Text style={styles.prefTitle}>{t('elderly_on_board_title', 'Elderly Passengers')}</Text>
+                  <Text style={styles.prefSub}>{t('elderly_on_board_desc', 'Driver will avoid sudden braking and help getting in/out')}</Text>
+                </View>
+                <Ionicons 
+                  name={actingDriverElderlyOnBoard ? "checkmark-circle" : "ellipse-outline"} 
+                  size={22} 
+                  color={actingDriverElderlyOnBoard ? (colors.green || '#4CAF50') : colors.grey_light} 
+                />
               </TouchableOpacity>
             </View>
           </View>
@@ -693,6 +1108,68 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             </View>
           </View>
         </Modal>
+
+        {/* Tomorrow Time Picker Modal */}
+        {showTomorrowTimePicker && (
+          <Modal
+            visible={showTomorrowTimePicker}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setShowTomorrowTimePicker(false)}
+          >
+            <View style={styles.timePickerModalOverlay}>
+              <View style={styles.timePickerModalCard}>
+                <Text style={styles.timePickerModalTitle}>{t('select_start_time', 'Select Start Time')}</Text>
+                <DatePicker
+                  mode="time"
+                  theme="light"
+                  date={tomorrowStartTime}
+                  is24hourSource="locale"
+                  onDateChange={setTomorrowStartTime}
+                />
+                <View style={styles.timePickerModalActions}>
+                  <TouchableOpacity
+                    style={styles.timePickerOkButton}
+                    onPress={() => setShowTomorrowTimePicker(false)}
+                  >
+                    <Text style={styles.timePickerOkText}>{t('done', 'Done')}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        )}
+
+        {/* Custom Start Time Picker Modal */}
+        {showCustomTimePicker && (
+          <Modal
+            visible={showCustomTimePicker}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setShowCustomTimePicker(false)}
+          >
+            <View style={styles.timePickerModalOverlay}>
+              <View style={styles.timePickerModalCard}>
+                <Text style={styles.timePickerModalTitle}>{t('select_start_time', 'Select Start Time')}</Text>
+                <DatePicker
+                  mode="time"
+                  theme="light"
+                  date={customStartTime}
+                  is24hourSource="locale"
+                  onDateChange={setCustomStartTime}
+                />
+                <View style={styles.timePickerModalActions}>
+                  <TouchableOpacity
+                    style={styles.timePickerOkButton}
+                    onPress={() => setShowCustomTimePicker(false)}
+                  >
+                    <Text style={styles.timePickerOkText}>{t('done', 'Done')}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        )}
       </View>
       
     </>
@@ -1113,6 +1590,230 @@ const styles = StyleSheet.create({
   },
   continueButtonTextDisabled:{
     color:'#BDBDBD',
+  },
+  optionTabsRow: {
+    flexDirection: 'row',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    padding: 4,
+    gap: 4,
+    marginBottom: 10,
+  },
+  optionTab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  optionTabSelected: {
+    backgroundColor: colors.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  optionTabText: {
+    fontSize: 13,
+    fontFamily: Fonts.medium,
+    color: colors.grey_dark,
+  },
+  optionTabTextSelected: {
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.black,
+  },
+  tabContentContainer: {
+    padding: 12,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    gap: 12,
+  },
+  subLabel: {
+    fontSize: 12,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.grey_xxdark,
+    marginBottom: 4,
+  },
+  chipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  chipButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    backgroundColor: colors.white,
+  },
+  chipButtonSelected: {
+    borderColor: colors.black,
+    backgroundColor: colors.black,
+  },
+  chipText: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: colors.black,
+  },
+  chipTextSelected: {
+    color: colors.white,
+  },
+  stepperContainer: {
+    backgroundColor: colors.white,
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    gap: 6,
+  },
+  stepperLabel: {
+    fontSize: 11,
+    fontFamily: Fonts.medium,
+    color: colors.grey_dark,
+  },
+  stepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  stepperBtn: {
+    padding: 4,
+  },
+  stepperValue: {
+    fontSize: 15,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.black,
+    minWidth: 80,
+    textAlign: 'center',
+  },
+  timePickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.white,
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  timeSelectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+  },
+  timeSelectText: {
+    fontSize: 13,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.black,
+  },
+  timePickerModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  timePickerModalCard: {
+    width: '100%',
+    maxWidth: 320,
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  timePickerModalTitle: {
+    fontSize: 16,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.black,
+    marginBottom: 16,
+  },
+  timePickerModalActions: {
+    marginTop: 16,
+    width: '100%',
+  },
+  timePickerOkButton: {
+    backgroundColor: colors.black,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timePickerOkText: {
+    color: colors.white,
+    fontSize: 14,
+    fontFamily: Fonts.semibold || Fonts.medium,
+  },
+  flexibleInfoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#E1F5FE',
+    borderWidth: 1,
+    borderColor: '#B3E5FC',
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 4,
+  },
+  flexibleInfoText: {
+    flex: 1,
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: '#0277BD',
+    lineHeight: 16,
+  },
+  prefCardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    marginTop: 10,
+    gap: 12,
+  },
+  prefCardRowActive: {
+    borderColor: colors.black || '#000000',
+    backgroundColor: '#FFFFFF',
+  },
+  prefIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  prefIconBoxActive: {
+    backgroundColor: '#E2E8F0',
+  },
+  prefTextContainer: {
+    flex: 1,
+    gap: 2,
+  },
+  prefTitle: {
+    fontSize: 13,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: colors.black,
+  },
+  prefSub: {
+    fontSize: 11,
+    fontFamily: Fonts.regular,
+    color: colors.grey_dark,
+    lineHeight: 15,
   },
 });
 

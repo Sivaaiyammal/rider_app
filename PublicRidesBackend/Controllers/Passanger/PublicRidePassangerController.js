@@ -479,6 +479,9 @@ module.exports = function (CLASS) {
             const OfferCoupon = payload?.offerCoupon || null;
             payload.bookingTime = new Date().getTime();
             payload.status = RideStatus.PENDING;
+            if (payload.isScheduledTrip) {
+                payload.status = RideStatus.SCHEDULED;
+            }
             payload.publicRidesTrip = true;
             payload.passangerId = new ObjectId(passangerId);
             payload.createdBy = passangerId;

@@ -55,6 +55,11 @@ const useRideBookingInfo = create(set => ({
   actingDriverFood: false,
   setActingDriverFood: (actingDriverFood) => set({ actingDriverFood }),
 
+  actingDriverKidsOnBoard: false,
+  setActingDriverKidsOnBoard: (actingDriverKidsOnBoard) => set({ actingDriverKidsOnBoard }),
+
+  actingDriverElderlyOnBoard: false,
+  setActingDriverElderlyOnBoard: (actingDriverElderlyOnBoard) => set({ actingDriverElderlyOnBoard }),
 
   couponCode: null,
   setCouponCode: (couponCode) => set({ couponCode }),
@@ -74,6 +79,8 @@ const useRideBookingInfo = create(set => ({
     couponCode: null,
     actingDriverVehicle: null,
     actingDriverHours: null,
+    actingDriverKidsOnBoard: false,
+    actingDriverElderlyOnBoard: false,
   }),
 
   

@@ -30,6 +30,10 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
     regionOfficeCode,
     actingDriverHours,
     actingDriverVehicle,
+    isScheduledTrip,
+    scheduleDateTime,
+    actingDriverKidsOnBoard,
+    actingDriverElderlyOnBoard,
   } = useRideBookingInfo();
 
   const { resetRideMatchStatus } = useRideMatchStore();
@@ -134,6 +138,8 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
       paymentMethod: paymentType || 'CASH',
       nightRide: safeNightRides,
       femaleOnly: femaleDriverOnly,
+      kidsOnBoard: actingDriverKidsOnBoard,
+      elderlyOnBoard: actingDriverElderlyOnBoard,
 
       // Region
       regionalOffice: regionOfficeId || null,
@@ -145,6 +151,19 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
       estimatedWaitTime: estimatedWaitTime || 0,
       rideMatchVersion: '2.0',
     };
+
+    if (isScheduledTrip) {
+      payload.isScheduledTrip = true;
+      if (scheduleDateTime?.date && scheduleDateTime?.time) {
+        const dateObj = new Date(scheduleDateTime.date);
+        const timeObj = new Date(scheduleDateTime.time);
+        dateObj.setHours(timeObj.getHours());
+        dateObj.setMinutes(timeObj.getMinutes());
+        dateObj.setSeconds(timeObj.getSeconds());
+        dateObj.setMilliseconds(timeObj.getMilliseconds());
+        payload.scheduleDateTime = dateObj.getTime();
+      }
+    }
 
     if (couponCode) {
       payload.offerCoupon = couponCode;

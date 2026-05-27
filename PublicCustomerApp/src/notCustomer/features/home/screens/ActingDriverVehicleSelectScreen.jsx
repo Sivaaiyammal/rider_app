@@ -32,13 +32,13 @@ const VehicleItem = ({ vehicle, selected, onPress }) => {
   return (
     <TouchableOpacity
       style={[styles.card, selected && styles.cardSelected]}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       onPress={onPress}
     >
       <View style={[styles.cardIcon, selected && styles.cardIconSelected]}>
         <Ionicons
           name={iconName}
-          size={28}
+          size={24}
           color={selected ? colors.black : colors.grey_xxdark}
         />
       </View>
@@ -49,13 +49,15 @@ const VehicleItem = ({ vehicle, selected, onPress }) => {
         {!!meta && <Text style={styles.cardMeta}>{meta}</Text>}
         {vehicle.verified && (
           <View style={styles.verifiedRow}>
-            <Ionicons name="checkmark-circle" size={12} color={colors.green} />
+            <Ionicons name="checkmark-circle" size={12} color={colors.green || '#4CAF50'} />
             <Text style={styles.verifiedText}>Verified</Text>
           </View>
         )}
       </View>
-      <View style={styles.radioOuter}>
-        {selected && <View style={styles.radioInner} />}
+      <View style={[styles.selectorCheck, selected && styles.selectorCheckActive]}>
+        {selected && (
+          <Ionicons name="checkmark" size={12} color={colors.white} />
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -213,6 +215,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.grey_xxdark,
     marginBottom: 20,
+    lineHeight: 20,
   },
   centered: {
     flex: 1,
@@ -255,28 +258,38 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.grey_xxlight,
-    borderRadius: 12,
-    padding: 14,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 16,
     marginBottom: 12,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   cardSelected: {
     borderColor: colors.black,
-    backgroundColor: '#F0EFFF',
+    backgroundColor: '#FFFFFF',
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
   },
   cardIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: colors.white,
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    marginRight: 14,
   },
   cardIconSelected: {
-    backgroundColor: '#E8E7FF',
+    backgroundColor: '#E2E8F0',
   },
   cardInfo: {
     flex: 1,
@@ -293,41 +306,45 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     fontSize: 13,
     color: colors.grey_xxdark,
-    marginTop: 2,
+    marginTop: 4,
   },
   verifiedRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginTop: 4,
+    marginTop: 6,
   },
   verifiedText: {
     fontFamily: Fonts.regular,
     fontSize: 11,
     color: colors.green,
   },
-  radioOuter: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+  selectorCheck: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
-    borderColor: colors.black,
+    borderColor: '#CBD5E1',
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,
   },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  selectorCheckActive: {
+    borderColor: colors.black,
     backgroundColor: colors.black,
   },
   addMoreBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 4,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: '#CBD5E1',
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 8,
   },
   addMoreBtnText: {
     fontFamily: Fonts.medium,
