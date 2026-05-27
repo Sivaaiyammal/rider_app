@@ -97,7 +97,25 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
       // Acting driver specific
       isActingDriverTrip: true,
       actingDriverHours: actingDriverHours ?? null,
-      actingDriverItinerary: actingDriverItinerary || null,
+      actingDriverItinerary: (() => {
+        if (!actingDriverItinerary) return null;
+        const cleanedItinerary = {};
+        Object.keys(actingDriverItinerary).forEach((dateStr) => {
+          const loc = actingDriverItinerary[dateStr];
+          if (loc) {
+            if (typeof loc === 'object') {
+              cleanedItinerary[dateStr] = {
+                name: loc.placeName || loc.name || 'Destination',
+                address: utils.formatAddressName(loc),
+                location: [loc.longitude, loc.latitude],
+              };
+            } else {
+              cleanedItinerary[dateStr] = loc;
+            }
+          }
+        });
+        return Object.keys(cleanedItinerary).length > 0 ? cleanedItinerary : null;
+      })(),
       passangerVehicleId: actingDriverVehicle._id,
       passangerVehicleType: actingDriverVehicle.type,
 

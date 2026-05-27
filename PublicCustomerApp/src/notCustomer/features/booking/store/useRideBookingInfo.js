@@ -67,12 +67,49 @@ const useRideBookingInfo = create(set => ({
   couponCode: null,
   setCouponCode: (couponCode) => set({ couponCode }),
 
-
   regionOfficeId: null,
   setRegionOfficeId: (regionOfficeId) => set({ regionOfficeId }),
 
   regionOfficeCode: null,
   setRegionOfficeCode: (regionOfficeCode) => set({ regionOfficeCode }),
+
+  bookingTab: 'TODAY',
+  setBookingTab: (bookingTab) => set({ bookingTab }),
+
+  durationRangeStart: null,
+  setDurationRangeStart: (durationRangeStart) => set({ durationRangeStart }),
+
+  durationRangeEnd: null,
+  setDurationRangeEnd: (durationRangeEnd) => set({ durationRangeEnd }),
+
+  isFlexibleDuration: false,
+  setIsFlexibleDuration: (isFlexibleDuration) => set({ isFlexibleDuration }),
+
+  todayDurationOption: '1_HOUR',
+  setTodayDurationOption: (todayDurationOption) => set({ todayDurationOption }),
+
+  todayCustomHours: 4,
+  setTodayCustomHours: (todayCustomHours) => set({ todayCustomHours }),
+
+  tomorrowDurationOption: 'HOURLY',
+  setTomorrowDurationOption: (tomorrowDurationOption) => set({ tomorrowDurationOption }),
+
+  tomorrowCustomHours: 4,
+  setTomorrowCustomHours: (tomorrowCustomHours) => set({ tomorrowCustomHours }),
+
+  tomorrowStartTime: (() => {
+    const time = new Date();
+    time.setHours(9, 0, 0, 0);
+    return time;
+  })(),
+  setTomorrowStartTime: (tomorrowStartTime) => set({ tomorrowStartTime }),
+
+  customStartTime: (() => {
+    const time = new Date();
+    time.setHours(9, 0, 0, 0);
+    return time;
+  })(),
+  setCustomStartTime: (customStartTime) => set({ customStartTime }),
 
   // Reset all booking info
   resetBookingInfo: () => set({
@@ -85,6 +122,24 @@ const useRideBookingInfo = create(set => ({
     actingDriverKidsOnBoard: false,
     actingDriverElderlyOnBoard: false,
     actingDriverItinerary: null,
+    bookingTab: 'TODAY',
+    durationRangeStart: null,
+    durationRangeEnd: null,
+    isFlexibleDuration: false,
+    todayDurationOption: '1_HOUR',
+    todayCustomHours: 4,
+    tomorrowDurationOption: 'HOURLY',
+    tomorrowCustomHours: 4,
+    tomorrowStartTime: (() => {
+      const time = new Date();
+      time.setHours(9, 0, 0, 0);
+      return time;
+    })(),
+    customStartTime: (() => {
+      const time = new Date();
+      time.setHours(9, 0, 0, 0);
+      return time;
+    })(),
   }),
 
   

@@ -21,6 +21,7 @@ import { colors } from '../../../constants/constants';
 import Contactsheet from '../components/planride/Contactsheet';
 import useUserInfoStore from '../../../../common/store/useUserInfoStore';
 import RideLocationSetBox from '../components/planride/RideLocationSetBox';
+import RideLocationPlanSetBox from '../components/planride/RideLocationPlanSetBox';
 import FavPlacesItem from '../components/planride/FavPlacesItem';
 import HistoryContainer from '../../shared/component/HistoryCard';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
@@ -91,14 +92,61 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   const {goBack,setStackScreen,goBackToScreen} = useStackScreenStore();
   const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
 
-  const {setPassangerDetails,setRideBookMode,rideBookMode,passangerDetails,setIsScheduledTrip,scheduleDateTime, setScheduleDateTime,setFemaleDriverOnly,setSafeNightRides,actingDriverVehicle,setActingDriverVehicle,setActingDriverHours, actingDriverHours, actingDriverMaxSpeed, setActingDriverMaxSpeed, actingDriverNotifyEvents, setActingDriverNotifyEvents, actingDriverAccommodation, setActingDriverAccommodation, actingDriverFood, setActingDriverFood, actingDriverKidsOnBoard, setActingDriverKidsOnBoard, actingDriverElderlyOnBoard, setActingDriverElderlyOnBoard, actingDriverItinerary, setActingDriverItinerary} = useRideBookingInfo()
+  const {
+    setPassangerDetails,
+    setRideBookMode,
+    rideBookMode,
+    passangerDetails,
+    setIsScheduledTrip,
+    scheduleDateTime,
+    setScheduleDateTime,
+    setFemaleDriverOnly,
+    setSafeNightRides,
+    actingDriverVehicle,
+    setActingDriverVehicle,
+    setActingDriverHours,
+    actingDriverHours,
+    actingDriverMaxSpeed,
+    setActingDriverMaxSpeed,
+    actingDriverNotifyEvents,
+    setActingDriverNotifyEvents,
+    actingDriverAccommodation,
+    setActingDriverAccommodation,
+    actingDriverFood,
+    setActingDriverFood,
+    actingDriverKidsOnBoard,
+    setActingDriverKidsOnBoard,
+    actingDriverElderlyOnBoard,
+    setActingDriverElderlyOnBoard,
+    actingDriverItinerary,
+    setActingDriverItinerary,
+    bookingTab,
+    setBookingTab,
+    durationRangeStart,
+    setDurationRangeStart,
+    durationRangeEnd,
+    setDurationRangeEnd,
+    isFlexibleDuration,
+    setIsFlexibleDuration,
+    todayDurationOption,
+    setTodayDurationOption,
+    todayCustomHours,
+    setTodayCustomHours,
+    tomorrowDurationOption,
+    setTomorrowDurationOption,
+    tomorrowCustomHours,
+    setTomorrowCustomHours,
+    tomorrowStartTime,
+    setTomorrowStartTime,
+    customStartTime,
+    setCustomStartTime,
+  } = useRideBookingInfo();
 
   const [showTripFor, setShowTripFor] = useState(false);
   const [showScheduleContainer, setShowScheduleContainer] = useState(false);
   const [selectedFavPlace, setSelectedFavPlace] = useState(null);
   const [isContinuing, setIsContinuing] = useState(false);
-  const [durationRangeStart, setDurationRangeStart] = useState(null);
-  const [durationRangeEnd, setDurationRangeEnd] = useState(null);
+  const [isItineraryExpanded, setIsItineraryExpanded] = useState(false);
   const [pendingRangeStart, setPendingRangeStart] = useState(null);
   const [pendingRangeEnd, setPendingRangeEnd] = useState(null);
   const [showCustomCalendarModal, setShowCustomCalendarModal] = useState(false);
@@ -111,30 +159,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     : '';
   const isActingDriverMode = mode === 'ACTING_DRIVER';
 
-  // Acting Driver Booking Option States
-  const [bookingTab, setBookingTab] = useState('TODAY'); // 'TODAY', 'TOMORROW', 'CUSTOM'
-  const [isFlexibleDuration, setIsFlexibleDuration] = useState(false);
-  
-  // Today option: '1_HOUR', '3_DAYS', 'CUSTOM_HOURS', 'FLEXIBLE'
-  const [todayDurationOption, setTodayDurationOption] = useState('1_HOUR');
-  const [todayCustomHours, setTodayCustomHours] = useState(4);
-
-  // Tomorrow option: 'HOURLY', '1_DAY', '2_DAYS', '3_DAYS', 'FLEXIBLE'
-  const [tomorrowDurationOption, setTomorrowDurationOption] = useState('HOURLY');
-  const [tomorrowCustomHours, setTomorrowCustomHours] = useState(4);
-  const [tomorrowStartTime, setTomorrowStartTime] = useState(() => {
-    const time = new Date();
-    time.setHours(9, 0, 0, 0); // Default to 9:00 AM
-    return time;
-  });
   const [showTomorrowTimePicker, setShowTomorrowTimePicker] = useState(false);
-
-  // Custom option
-  const [customStartTime, setCustomStartTime] = useState(() => {
-    const time = new Date();
-    time.setHours(9, 0, 0, 0);
-    return time;
-  });
   const [showCustomTimePicker, setShowCustomTimePicker] = useState(false);
 
   const getDatesInRange = (startDateStr, endDateStr) => {
@@ -152,6 +177,47 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     return dates;
   };
 
+  const addDays = (date, days) => {
+    const res = new Date(date);
+    res.setDate(res.getDate() + days);
+    return res;
+  };
+
+  const getItineraryDates = () => {
+    const today = new Date();
+    if (bookingTab === 'TODAY') {
+      if (todayDurationOption === '3_DAYS') {
+        return [
+          formatCalendarDate(today),
+          formatCalendarDate(addDays(today, 1)),
+          formatCalendarDate(addDays(today, 2)),
+        ];
+      }
+    } else if (bookingTab === 'TOMORROW') {
+      const tomorrow = addDays(today, 1);
+      if (tomorrowDurationOption === '2_DAYS') {
+        return [
+          formatCalendarDate(tomorrow),
+          formatCalendarDate(addDays(tomorrow, 1)),
+        ];
+      } else if (tomorrowDurationOption === '3_DAYS') {
+        return [
+          formatCalendarDate(tomorrow),
+          formatCalendarDate(addDays(tomorrow, 1)),
+          formatCalendarDate(addDays(tomorrow, 2)),
+        ];
+      }
+    } else if (bookingTab === 'CUSTOM') {
+      if (durationRangeStart && selectedDurationDays > 1) {
+        return getDatesInRange(durationRangeStart, durationRangeEnd);
+      }
+    }
+    return [];
+  };
+
+  const itineraryDates = getItineraryDates();
+  const shouldShowItinerary = itineraryDates.length > 0;
+
   const [lastRidePrefs, setLastRidePrefs] = useState(null);
   const [showApplyPrefsModal, setShowApplyPrefsModal] = useState(false);
 
@@ -164,6 +230,25 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     setActingDriverAccommodation(!!lastRidePrefs.accommodation);
     setActingDriverFood(!!lastRidePrefs.food);
     setShowApplyPrefsModal(false);
+  };
+
+  const handleItineraryLocationClick = (dateStr) => {
+    const props = {
+      onPickLocationResultCallback: (pickedLocation) => {
+        if (pickedLocation) {
+          const newItinerary = { ...(actingDriverItinerary || {}), [dateStr]: pickedLocation };
+          setActingDriverItinerary(newItinerary);
+        }
+        goBack();
+      },
+      locationType: LocationTypes.WAYPOINT_LOCATION,
+      isFromRidePointsSelection: false,
+      searchBar: true,
+      focusSearchOnMount: true,
+      label: t('select_location', 'Select Location'),
+      buttonLabel: t('select_location', 'Select Location'),
+    };
+    setStackScreen('PickLocationScreen', props);
   };
 
   useEffect(() => {
@@ -612,6 +697,10 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             onAddWaypoint={onAddWaypoint}
             onLocationClick={handleLocationClick}
             hideDestination={false}
+            dayHeader={shouldShowItinerary ? {
+              label: t('day_1', 'Day 1'),
+              date: utils.formatDate(itineraryDates[0], 'DD MMM, ddd'),
+            } : null}
           />
 
           <ScrollView 
@@ -926,45 +1015,71 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                         </View>
                       )}
 
-                      {durationRangeStart && selectedDurationDays > 1 && (
-                        <View style={styles.itinerarySection}>
-                          <Text style={styles.itineraryHeading}>
-                            {t('plan_daily_itinerary', 'Plan Daily Itinerary (Optional)')}
-                          </Text>
-                          <Text style={styles.itinerarySub}>
-                            {t('plan_daily_itinerary_desc', 'Add places or travel plans for each day so your driver can prepare.')}
-                          </Text>
-                          {getDatesInRange(durationRangeStart, durationRangeEnd).map((dateStr, idx) => {
-                            const formattedDate = utils.formatDate(dateStr, 'DD MMM, ddd');
-                            return (
-                              <View key={dateStr} style={styles.itineraryItem}>
-                                <View style={styles.itineraryDayHeader}>
-                                  <View style={styles.itineraryDayBadge}>
-                                    <Text style={styles.itineraryDayBadgeText}>{t('day_n', `Day {{n}}`, { n: idx + 1 })}</Text>
-                                  </View>
-                                  <Text style={styles.itineraryDateText}>{formattedDate}</Text>
-                                </View>
-                                <TextInput
-                                  style={styles.itineraryInput}
-                                  placeholder={t('enter_places_for_day', 'e.g. Visit place A, drop at hotel, then local sightseeing')}
-                                  placeholderTextColor={colors.grey_light}
-                                  value={actingDriverItinerary?.[dateStr] || ''}
-                                  onChangeText={(text) => {
-                                    const newItinerary = { ...(actingDriverItinerary || {}), [dateStr]: text };
-                                    setActingDriverItinerary(newItinerary);
-                                  }}
-                                  multiline
-                                />
-                              </View>
-                            );
-                          })}
-                        </View>
-                      )}
                     </>
                   )}
                 </View>
               )}
             </View>
+
+            {/* Plan Daily Itinerary Section */}
+            {shouldShowItinerary && (
+              <View style={styles.itinerarySection}>
+                <TouchableOpacity
+                  style={styles.itineraryCollapsibleHeader}
+                  onPress={() => setIsItineraryExpanded(!isItineraryExpanded)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.itineraryHeaderLeft}>
+                    <Text style={[styles.itineraryHeading, { marginBottom: 0 }]}>
+                      {t('plan_daily_itinerary', 'Plan Daily Itinerary (Optional)')}
+                    </Text>
+                  </View>
+                  <Ionicons
+                    name={isItineraryExpanded ? 'chevron-up' : 'chevron-down'}
+                    size={20}
+                    color="#666"
+                  />
+                </TouchableOpacity>
+
+                {isItineraryExpanded && (
+                  <View style={{ marginTop: 12 }}>
+                    <Text style={styles.itinerarySub}>
+                      {t('plan_daily_itinerary_desc', 'Add places or travel plans for each day so your driver can prepare.')}
+                    </Text>
+
+                    {rideStartLocation && (
+                      <View style={styles.rideStartInfoCard}>
+                        <View style={styles.rideStartDot} />
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.rideStartLabel}>{t('ride_starts_from', 'Ride starts from')}</Text>
+                          <Text style={styles.rideStartAddress} numberOfLines={2}>
+                            {utils.formatAddressName(rideStartLocation)}
+                          </Text>
+                        </View>
+                      </View>
+                    )}
+                    {itineraryDates.map((dateStr, idx) => {
+                      const formattedDate = utils.formatDate(dateStr, 'DD MMM, ddd');
+                      return (
+                        <View key={dateStr} style={styles.itineraryItem}>
+                          <View style={styles.itineraryDayHeader}>
+                            <View style={styles.itineraryDayBadge}>
+                              <Text style={styles.itineraryDayBadgeText}>{t('day_n', `Day ${idx + 1}`)}</Text>
+                            </View>
+                            <Text style={styles.itineraryDateText}>{formattedDate}</Text>
+                          </View>
+                          
+                          <RideLocationPlanSetBox
+                            location={actingDriverItinerary?.[dateStr]}
+                            onLocationClick={() => handleItineraryLocationClick(dateStr)}
+                          />
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </View>
+            )}
 
             {/* Driver Configurations */}
             <View style={styles.configSection}>
@@ -2006,6 +2121,15 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     marginTop: 16,
   },
+  itineraryCollapsibleHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  itineraryHeaderLeft: {
+    flex: 1,
+  },
   itineraryHeading: {
     fontSize: 14,
     fontFamily: Fonts.semibold || Fonts.medium,
@@ -2018,6 +2142,36 @@ const styles = StyleSheet.create({
     color: colors.grey_dark,
     marginBottom: 16,
     lineHeight: 16,
+  },
+  rideStartInfoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#F0FDF4',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 16,
+  },
+  rideStartDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#16A34A',
+    flexShrink: 0,
+  },
+  rideStartLabel: {
+    fontSize: 11,
+    fontFamily: Fonts.regular,
+    color: '#16A34A',
+    marginBottom: 2,
+  },
+  rideStartAddress: {
+    fontSize: 13,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: '#15803D',
   },
   itineraryItem: {
     marginBottom: 16,
