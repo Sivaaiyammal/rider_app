@@ -46,6 +46,7 @@ import useConfigStore from '../../../store/useConfigStore';
 import { firebaselog_ridePlanning } from '../../../../common/utils/FirebaseAnalytics';
 import SocialMediaModal from '../../../components/SocialMediaModal';
 import { GlobalContext } from '../../../../context/GlobalContext';
+import ActingDriverModal from '../components/ActingDriverModal';
 
 
 const BottomSheetHeader = ({ makeRidePlan, style }) => {
@@ -84,11 +85,21 @@ const MapScreen = () => {
   const [showMenu, setShowMenu] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showActingDriverModal, setShowActingDriverModal] = useState(false);
+  const [actingDriverLoading, setActingDriverLoading] = useState(false);
   const {setStackScreen , setShowSocialMediaModal , showSocialMediaModal} = useStackScreenStore();
   const {location,currentLocationName} = useLocationStore();
   const {setRideStartLocation,setRideEndLocation,resetRideBookingLocation } = useRideBookingLocationStore()
   const { setSelectedVehicle } = useRideVehicleStore();
-  const { setActingDriverVehicle } = useRideBookingInfo();
+  const {
+    setActingDriverVehicle,
+    setBookingTab,
+    setDurationRangeStart,
+    setDurationRangeEnd,
+    setActingDriverHours,
+    setTodayDurationOption,
+    setTodayCustomHours,
+  } = useRideBookingInfo();
   const { fetchLatestDrivers, driversAll } = useNearbyDrivers();
  
   const {setMapMarkers,setMapBounds,setVehicleMarkers, setDirectionPoints , mapReady} = useMapStore();
@@ -518,29 +529,7 @@ const MapScreen = () => {
       }
 
       if(item.key == "acting_driver"){
-        try {
-          setLoading(true);
-          const response = await getPassangerVehicles();
-          if (response?.success && response?.vehicles?.length > 0) {
-            const firstVehicle = response.vehicles[0];
-            setActingDriverVehicle(firstVehicle);
-            setCurrentLoactionPickupLocation();
-            makeRidePlan({
-              mode: 'ACTING_DRIVER',
-              preselectedVehicleType: firstVehicle.type,
-              vehicle: firstVehicle,
-            });
-          } else {
-            setCurrentLoactionPickupLocation();
-            setStackScreen('ActingDriverVehicleSelectScreen', {});
-          }
-        } catch (e) {
-          console.error('Error fetching passenger vehicles for acting driver:', e);
-          setCurrentLoactionPickupLocation();
-          setStackScreen('ActingDriverVehicleSelectScreen', {});
-        } finally {
-          setLoading(false);
-        }
+        setShowActingDriverModal(true);
         return;
       }
 
@@ -562,6 +551,63 @@ const MapScreen = () => {
       makeRidePlan({ preselectedVehicleType: item.key });
       
     }, [setSelectedVehicle, makeRidePlan, setCurrentLoactionPickupLocation, setStackScreen, setActingDriverVehicle])
+
+  const handleActingDriverTripType = React.useCallback(async (tripType, selectedDate, selectedPackage, endLocation) => {
+    try {
+      setActingDriverLoading(true);
+      const response = await getPassangerVehicles();
+      setShowActingDriverModal(false);
+      if (response?.success && response?.vehicles?.length > 0) {
+        const firstVehicle = response.vehicles[0];
+        setActingDriverVehicle(firstVehicle);
+        setCurrentLoactionPickupLocation();
+
+        if (endLocation) {
+          setRideEndLocation(endLocation);
+        }
+
+        if (tripType === 'OUTSTATION' && selectedDate) {
+          const year = selectedDate.getFullYear();
+          const month = `${selectedDate.getMonth() + 1}`.padStart(2, '0');
+          const day = `${selectedDate.getDate()}`.padStart(2, '0');
+          const formattedDate = `${year}-${month}-${day}`;
+          setBookingTab('CUSTOM');
+          setDurationRangeStart(formattedDate);
+          setDurationRangeEnd(formattedDate);
+          setActingDriverHours(24);
+        } else if (tripType === 'RENTAL' && selectedPackage) {
+          const hours = selectedPackage.hours;
+          setBookingTab('TODAY');
+          setTodayDurationOption(hours === 1 ? '1_HOUR' : 'CUSTOM');
+          if (hours !== 1) {
+            setTodayCustomHours(hours);
+          }
+          setActingDriverHours(hours);
+        } else {
+          setBookingTab('TODAY');
+          setTodayDurationOption('1_HOUR');
+          setActingDriverHours(1);
+        }
+
+        makeRidePlan({
+          mode: 'ACTING_DRIVER',
+          actingDriverTripType: tripType,
+          preselectedVehicleType: firstVehicle.type,
+          vehicle: firstVehicle,
+        });
+      } else {
+        setCurrentLoactionPickupLocation();
+        setStackScreen('ActingDriverVehicleSelectScreen', {});
+      }
+    } catch (e) {
+      console.error('ActingDriver trip type error:', e);
+      setShowActingDriverModal(false);
+      setCurrentLoactionPickupLocation();
+      setStackScreen('ActingDriverVehicleSelectScreen', {});
+    } finally {
+      setActingDriverLoading(false);
+    }
+  }, [makeRidePlan, setCurrentLoactionPickupLocation, setStackScreen, setActingDriverVehicle, setRideEndLocation, setBookingTab, setDurationRangeStart, setDurationRangeEnd, setActingDriverHours, setTodayDurationOption, setTodayCustomHours]);
 
     const renderBottomSheetHandle = useCallback((handleProps) => (
       <BottomSheetHeader {...handleProps} makeRidePlan={makeRidePlan} />
@@ -609,6 +655,12 @@ const MapScreen = () => {
 
       {showMenu && <SideDrawer handleMenu={handleMenu} />}
       {showSocialMediaModal && <SocialMediaModal onClose={() => setShowSocialMediaModal(false)} visible={showSocialMediaModal} />}
+      <ActingDriverModal
+        visible={showActingDriverModal}
+        onClose={() => setShowActingDriverModal(false)}
+        onTripTypeSelect={handleActingDriverTripType}
+        loading={actingDriverLoading}
+      />
       <ErrorMessage />
       {loading && (
         <View style={styles.loadingOverlay}>

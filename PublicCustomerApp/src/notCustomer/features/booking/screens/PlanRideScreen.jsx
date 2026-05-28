@@ -23,6 +23,7 @@ import useUserInfoStore from '../../../../common/store/useUserInfoStore';
 import RideLocationSetBox from '../components/planride/RideLocationSetBox';
 import RideLocationPlanSetBox from '../components/planride/RideLocationPlanSetBox';
 import FavPlacesItem from '../components/planride/FavPlacesItem';
+import ItineraryPlanModal from '../components/planride/ItineraryPlanModal';
 import HistoryContainer from '../../shared/component/HistoryCard';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import LocationTypes from '../types/LocationTypes.json';
@@ -147,6 +148,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   const [selectedFavPlace, setSelectedFavPlace] = useState(null);
   const [isContinuing, setIsContinuing] = useState(false);
   const [isItineraryExpanded, setIsItineraryExpanded] = useState(false);
+  const [showItineraryModal, setShowItineraryModal] = useState(false);
+  const [activeItineraryDay, setActiveItineraryDay] = useState(0);
   const [pendingRangeStart, setPendingRangeStart] = useState(null);
   const [pendingRangeEnd, setPendingRangeEnd] = useState(null);
   const [showCustomCalendarModal, setShowCustomCalendarModal] = useState(false);
@@ -1021,64 +1024,35 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
               )}
             </View>
 
-            {/* Plan Daily Itinerary Section */}
+            {/* Plan Daily Itinerary Button */}
             {shouldShowItinerary && (
-              <View style={styles.itinerarySection}>
-                <TouchableOpacity
-                  style={styles.itineraryCollapsibleHeader}
-                  onPress={() => setIsItineraryExpanded(!isItineraryExpanded)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.itineraryHeaderLeft}>
-                    <Text style={[styles.itineraryHeading, { marginBottom: 0 }]}>
-                      {t('plan_daily_itinerary', 'Plan Daily Itinerary (Optional)')}
+              <TouchableOpacity
+                style={styles.itineraryButton}
+                onPress={() => { setActiveItineraryDay(0); setShowItineraryModal(true); }}
+                activeOpacity={0.85}
+              >
+                <View style={styles.itineraryButtonLeft}>
+                  <View style={styles.itineraryButtonIconWrap}>
+                    <Ionicons name="map-outline" size={18} color="#7C3AED" />
+                  </View>
+                  <View>
+                    <Text style={styles.itineraryButtonTitle}>{t('plan_daily_itinerary', 'Plan Daily Itinerary')}</Text>
+                    <Text style={styles.itineraryButtonSub}>
+                      {Object.keys(actingDriverItinerary || {}).length > 0
+                        ? t('itinerary_configured', `${Object.keys(actingDriverItinerary).length} day(s) configured`)
+                        : t('itinerary_optional', 'Optional · Tap to plan each day')}
                     </Text>
                   </View>
-                  <Ionicons
-                    name={isItineraryExpanded ? 'chevron-up' : 'chevron-down'}
-                    size={20}
-                    color="#666"
-                  />
-                </TouchableOpacity>
-
-                {isItineraryExpanded && (
-                  <View style={{ marginTop: 12 }}>
-                    <Text style={styles.itinerarySub}>
-                      {t('plan_daily_itinerary_desc', 'Add places or travel plans for each day so your driver can prepare.')}
-                    </Text>
-
-                    {rideStartLocation && (
-                      <View style={styles.rideStartInfoCard}>
-                        <View style={styles.rideStartDot} />
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.rideStartLabel}>{t('ride_starts_from', 'Ride starts from')}</Text>
-                          <Text style={styles.rideStartAddress} numberOfLines={2}>
-                            {utils.formatAddressName(rideStartLocation)}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
-                    {itineraryDates.map((dateStr, idx) => {
-                      const formattedDate = utils.formatDate(dateStr, 'DD MMM, ddd');
-                      return (
-                        <View key={dateStr} style={styles.itineraryItem}>
-                          <View style={styles.itineraryDayHeader}>
-                            <View style={styles.itineraryDayBadge}>
-                              <Text style={styles.itineraryDayBadgeText}>{t('day_n', `Day ${idx + 1}`)}</Text>
-                            </View>
-                            <Text style={styles.itineraryDateText}>{formattedDate}</Text>
-                          </View>
-                          
-                          <RideLocationPlanSetBox
-                            location={actingDriverItinerary?.[dateStr]}
-                            onLocationClick={() => handleItineraryLocationClick(dateStr)}
-                          />
-                        </View>
-                      );
-                    })}
-                  </View>
-                )}
-              </View>
+                </View>
+                <View style={styles.itineraryButtonRight}>
+                  {Object.keys(actingDriverItinerary || {}).length > 0 && (
+                    <View style={styles.itineraryBadge}>
+                      <Text style={styles.itineraryBadgeText}>{Object.keys(actingDriverItinerary).length}</Text>
+                    </View>
+                  )}
+                  <Ionicons name="chevron-forward" size={18} color="#7C3AED" />
+                </View>
+              </TouchableOpacity>
             )}
 
             {/* Driver Configurations */}
@@ -1468,6 +1442,17 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             </View>
           </View>
         </Modal>
+
+        {/* Plan Daily Itinerary Modal */}
+        <ItineraryPlanModal
+          visible={showItineraryModal}
+          onClose={() => setShowItineraryModal(false)}
+          itineraryDates={itineraryDates}
+          actingDriverItinerary={actingDriverItinerary}
+          setActingDriverItinerary={setActingDriverItinerary}
+          onAddWaypoint={onAddWaypoint}
+          onLocationClick={handleLocationClick}
+        />
       </View>
       
     </>
@@ -2309,6 +2294,60 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.semibold || Fonts.medium,
     color: colors.white,
   },
+  /* ── Itinerary Button ── */
+  itineraryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F5F3FF',
+    borderWidth: 1.5,
+    borderColor: '#DDD6FE',
+    borderRadius: 14,
+    padding: 14,
+    marginTop: 16,
+  },
+  itineraryButtonLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  itineraryButtonIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#EDE9FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  itineraryButtonTitle: {
+    fontSize: 14,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: '#4C1D95',
+  },
+  itineraryButtonSub: {
+    fontSize: 11,
+    fontFamily: Fonts.regular,
+    color: '#7C3AED',
+    marginTop: 2,
+  },
+  itineraryButtonRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  itineraryBadge: {
+    backgroundColor: '#7C3AED',
+    borderRadius: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  itineraryBadgeText: {
+    fontSize: 11,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: '#FFFFFF',
+  },
+  /* itin* styles moved to ItineraryPlanModal.jsx */
 });
 
 export default PlanRideScreen;
