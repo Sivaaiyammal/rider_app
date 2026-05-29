@@ -42,22 +42,28 @@ const ItineraryPlanModal = ({
         />
 
         {/* Day Phase Tabs */}
-        <View style={styles.dayTabsRow}>
-          {itineraryDates.map((dateStr, idx) => (
-            <TouchableOpacity
-              key={dateStr}
-              style={[styles.dayTab, activeDay === idx && styles.dayTabActive]}
-              onPress={() => setActiveDay(idx)}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.dayTabPhase, activeDay === idx && styles.dayTabPhaseActive]}>
-                PHASE
-              </Text>
-              <Text style={[styles.dayTabLabel, activeDay === idx && styles.dayTabLabelActive]}>
-                Day {idx + 1}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.dayTabsWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.dayTabsContent}
+          >
+            {itineraryDates.map((dateStr, idx) => (
+              <TouchableOpacity
+                key={dateStr}
+                style={[styles.dayTab, activeDay === idx && styles.dayTabActive]}
+                onPress={() => setActiveDay(idx)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.dayTabLabel, activeDay === idx && styles.dayTabLabelActive]}>
+                  Day {idx + 1}
+                </Text>
+                <Text style={[styles.dayTabDate, activeDay === idx && styles.dayTabDateActive]}>
+                  {utils.formatDate(dateStr, 'DD MMM')}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         {/* Scrollable Content */}
@@ -67,15 +73,29 @@ const ItineraryPlanModal = ({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          {/* Active Day Header Banner */}
+          {itineraryDates[activeDay] && (
+            <View style={styles.activeDayBanner}>
+              <View style={styles.activeDayIconWrap}>
+                <Ionicons name="time-outline" size={20} color={actingDriverColors.secondary} />
+              </View>
+              <View style={styles.activeDayTextWrap}>
+                <Text style={styles.activeDayTitle}>
+                  Day {activeDay + 1} Route
+                </Text>
+                <Text style={styles.activeDaySubtitle}>
+                  {utils.formatDate(itineraryDates[activeDay], 'dddd, DD MMMM YYYY')}
+                </Text>
+              </View>
+            </View>
+          )}
+
           {/* Location Set Box — updates label/date per active day */}
           <RideLocationSetBox
             onAddWaypoint={onAddWaypoint}
             onLocationClick={onLocationClick}
             hideDestination={false}
-            dayHeader={itineraryDates[activeDay] ? {
-              label: `Day ${activeDay + 1}`,
-              date: utils.formatDate(itineraryDates[activeDay], 'DD MMM, ddd'),
-            } : null}
+            dayHeader={null} // We show the customized activeDayBanner instead!
           />
 
           {/* Summary Cards */}
@@ -84,21 +104,36 @@ const ItineraryPlanModal = ({
 
             <View style={styles.summaryGrid}>
               <View style={styles.summaryCard}>
-                <Text style={styles.summaryLabel}>Total Duration</Text>
+                <View style={styles.summaryCardHeader}>
+                  <Ionicons name="calendar-outline" size={20} color={actingDriverColors.secondary} />
+                  <Text style={styles.summaryLabel}>Duration</Text>
+                </View>
                 <Text style={styles.summaryValue}>
                   {itineraryDates.length} {itineraryDates.length === 1 ? 'Day' : 'Days'}
                 </Text>
               </View>
+
               <View style={styles.summaryCard}>
-                <Text style={styles.summaryLabel}>Est. Distance</Text>
+                <View style={styles.summaryCardHeader}>
+                  <Ionicons name="navigate-outline" size={20} color={actingDriverColors.secondary} />
+                  <Text style={styles.summaryLabel}>Distance</Text>
+                </View>
                 <Text style={styles.summaryValue}>— km</Text>
               </View>
+
               <View style={styles.summaryCard}>
-                <Text style={styles.summaryLabel}>Fuel Saver</Text>
+                <View style={styles.summaryCardHeader}>
+                  <Ionicons name="leaf-outline" size={20} color={actingDriverColors.success} />
+                  <Text style={styles.summaryLabel}>Fuel Saver</Text>
+                </View>
                 <Text style={[styles.summaryValue, { color: actingDriverColors.success }]}>Optimized</Text>
               </View>
+
               <View style={styles.summaryCard}>
-                <Text style={styles.summaryLabel}>Booking Status</Text>
+                <View style={styles.summaryCardHeader}>
+                  <Ionicons name="shield-checkmark-outline" size={20} color={actingDriverColors.secondary} />
+                  <Text style={styles.summaryLabel}>Status</Text>
+                </View>
                 <Text style={styles.summaryValue}>Draft</Text>
               </View>
             </View>
@@ -139,98 +174,154 @@ const styles = StyleSheet.create({
   },
 
   /* ── Day Tabs ── */
-  dayTabsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    gap: 8,
+  dayTabsWrapper: {
     backgroundColor: actingDriverColors.background,
     borderBottomWidth: 1,
     borderBottomColor: actingDriverColors.border,
+    elevation: 2,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+  },
+  dayTabsContent: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 10,
   },
   dayTab: {
-    flex: 1,
-    backgroundColor: colors.grey,
-    borderRadius: 10,
+    width: 85,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
     paddingVertical: 10,
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: actingDriverColors.border,
   },
   dayTabActive: {
     backgroundColor: actingDriverColors.primary,
     borderColor: actingDriverColors.primary,
-  },
-  dayTabPhase: {
-    fontSize: 9,
-    fontFamily: Fonts.medium,
-    color: colors.grey_xxdark,
-    letterSpacing: 1,
-  },
-  dayTabPhaseActive: {
-    color: actingDriverColors.secondary,
+    elevation: 3,
+    shadowColor: actingDriverColors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   dayTabLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: Fonts.semi_bold || Fonts.medium,
     color: colors.grey_xxdark,
-    marginTop: 2,
   },
   dayTabLabelActive: {
     color: actingDriverColors.secondary,
+    fontFamily: Fonts.bold || Fonts.semi_bold,
+  },
+  dayTabDate: {
+    fontSize: 10,
+    fontFamily: Fonts.regular,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  dayTabDateActive: {
+    color: actingDriverColors.secondary,
+    fontFamily: Fonts.medium,
+  },
+
+  /* ── Active Day Banner ── */
+  activeDayBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    padding: 14,
+    backgroundColor: '#FFFBEB',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#FEF3C7',
+  },
+  activeDayIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FEF3C7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  activeDayTextWrap: {
+    flex: 1,
+  },
+  activeDayTitle: {
+    fontSize: 14,
+    fontFamily: Fonts.bold || Fonts.semi_bold,
+    color: actingDriverColors.secondary,
+  },
+  activeDaySubtitle: {
+    fontSize: 11,
+    fontFamily: Fonts.regular,
+    color: '#6B7280',
+    marginTop: 2,
   },
 
   /* ── Scroll ── */
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 120,
     paddingTop: 4,
   },
 
   /* ── Summary Section ── */
   sectionCard: {
-    marginHorizontal: 12,
-    marginTop: 12,
+    marginHorizontal: 16,
+    marginTop: 16,
     backgroundColor: actingDriverColors.background,
-    borderRadius: 14,
-    padding: 16,
+    borderRadius: 16,
+    padding: 18,
     borderWidth: 1,
     borderColor: actingDriverColors.border,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
   sectionTitle: {
-    fontSize: 13,
-    fontFamily: Fonts.semi_bold || Fonts.medium,
-    color: actingDriverColors.secondary,
-    marginBottom: 12,
+    fontSize: 12,
+    fontFamily: Fonts.bold || Fonts.semi_bold,
+    color: '#64748B',
+    marginBottom: 14,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
   },
   summaryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 12,
   },
   summaryCard: {
     flex: 1,
-    minWidth: '44%',
-    backgroundColor: colors.white_dirt,
-    borderRadius: 10,
-    padding: 12,
+    minWidth: '46%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 14,
     borderWidth: 1,
-    borderColor: actingDriverColors.border,
+    borderColor: '#F1F5F9',
+  },
+  summaryCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 6,
   },
   summaryLabel: {
     fontSize: 11,
-    fontFamily: Fonts.regular,
-    color: colors.grey_xxdark,
-    marginBottom: 6,
+    fontFamily: Fonts.medium,
+    color: '#64748B',
   },
   summaryValue: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: Fonts.bold || Fonts.semi_bold,
     color: actingDriverColors.secondary,
   },
@@ -242,22 +333,27 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: actingDriverColors.background,
-    paddingHorizontal: 12,
-    paddingBottom: 28,
-    paddingTop: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 32,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: actingDriverColors.border,
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
   },
   doneButton: {
     backgroundColor: actingDriverColors.secondary,
-    borderRadius: 10,
-    paddingVertical: 15,
+    borderRadius: 12,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   doneButtonText: {
     fontSize: 16,
-    fontFamily: Fonts.semi_bold || Fonts.medium,
+    fontFamily: Fonts.bold || Fonts.semi_bold,
     color: colors.white,
   },
 });

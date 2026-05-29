@@ -6,7 +6,6 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     Modal,
-    ScrollView,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -32,6 +31,7 @@ import RideInfo from '../components/bookRide/RideInfo';
 import useRideBookingInfo from '../store/useRideBookingInfo';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import useDirectionLoad from '../hooks/useDirectionLoad';
+import LocationTypes from '../types/LocationTypes.json';
 import useMapStore from '../../map/store/useMapStore';
 import useActingDriverBookTrip from '../hooks/useActingDriverBookTrip';
 import { getFareEngineRange, getRideEstimation } from '../../../API/EndPoints/EndPoints';
@@ -268,8 +268,44 @@ const BookActingDriverScreen = () => {
         setStackScreen('WaypointScreen', { fromPlanScreen: true });
     };
 
+    const {
+        rideStartLocation,
+        rideEndLocation,
+        rideWayPoints,
+        setRideStartLocation,
+        setRideEndLocation,
+        addRideWayPoint,
+    } = useRideBookingLocationStore();
+
     const handleLocationClick = (type) => {
-        setStackScreen('SearchScreen', { locationType: type });
+        const onPickLocationResultCallback = (item, locType) => {
+            if (locType === LocationTypes.START_LOCATION) {
+                setRideStartLocation(item);
+            } else if (locType === LocationTypes.DESTINATION_LOCATION) {
+                setRideEndLocation(item);
+            } else if (locType === LocationTypes.WAYPOINT_LOCATION) {
+                addRideWayPoint(item);
+            }
+        };
+
+        const props = {
+            onPickLocationResultCallback: onPickLocationResultCallback,
+            locationType: type || LocationTypes.DESTINATION_LOCATION,
+            label: type === LocationTypes.DESTINATION_LOCATION ? t('locate_drop_location') : type === LocationTypes.WAYPOINT_LOCATION ? t('locate_stop') : t('locate_pickup_location'),
+            buttonLabel: type === LocationTypes.DESTINATION_LOCATION ? t('button_locate_drop_location') : type === LocationTypes.WAYPOINT_LOCATION ? t('button_locate_stop') : t('button_locate_pickup_location'),
+            isFromRidePointsSelection: true,
+            searchBar: true,
+            focusSearchOnMount: true,
+        };
+
+        if (type === LocationTypes.START_LOCATION && rideStartLocation) {
+            props.defaultLocation = rideStartLocation;
+        }
+        if (type === LocationTypes.DESTINATION_LOCATION && rideEndLocation) {
+            props.defaultLocation = rideEndLocation;
+        }
+
+        setStackScreen('PickLocationScreen', props);
     };
 
     const currentScreen = useStackScreenStore(state => state.stackScreen[state.stackScreen.length - 1]);
@@ -299,8 +335,6 @@ const BookActingDriverScreen = () => {
         actingDriverItinerary,
         setActingDriverItinerary,
     } = useRideBookingInfo();
-
-    const { rideStartLocation, rideEndLocation, rideWayPoints } = useRideBookingLocationStore();
 
     const {
         transformRideLocationsToDirectionPoints,

@@ -312,7 +312,9 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const onLocationNamePress = useCallback((item) => {
     item["locationFrom"] = "SEARCH";
     storeRecentSearch(item);
-    onSearchClick(item, searchType, index);
+    if (onSearchClick) {
+      onSearchClick(item, searchType, index);
+    }
   }, [onSearchClick, searchType, index]);
 
   const fullSearch = () => {
@@ -340,7 +342,9 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   };
 
   const handleLocateOnMapCallback = (item) => {
-    onSearchClick(item, searchType, index);
+    if (onSearchClick) {
+      onSearchClick(item, searchType, index);
+    }
   }
 
   const handleLocateOnMap = () => {
@@ -399,7 +403,9 @@ const SearchScreen = ({onSearchClick=null,searchType,fromaddWayPoint=false,getwa
   const handleFavouriteLocationPress = (locationType,labelLocation) => {
     labelLocation["locationFrom"] = "FAVOURITE";
     labelLocation["labelName"] = locationType;
-    onSearchClick(labelLocation, searchType, index);
+    if (onSearchClick) {
+      onSearchClick(labelLocation, searchType, index);
+    }
   }
 
   return (

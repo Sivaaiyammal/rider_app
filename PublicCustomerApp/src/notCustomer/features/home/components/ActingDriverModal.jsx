@@ -57,6 +57,8 @@ const RENTAL_PACKAGES = [
   { hours: 4, kms: 40, label: '4 hrs', sub: '40 Kms' },
   { hours: 6, kms: 60, label: '6 hrs', sub: '60 Kms' },
   { hours: 8, kms: 80, label: '8 hrs', sub: '80 Kms' },
+  { hours: 10, kms: 100, label: '10 hrs', sub: '100 Kms' },
+  { hours: 12, kms: 120, label: '12 hrs', sub: '120 Kms' }
 ];
 
 const ActingDriverModal = ({ visible, onClose, onTripTypeSelect, loading }) => {

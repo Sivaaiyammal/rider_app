@@ -49,6 +49,31 @@ import { GlobalContext } from '../../../../context/GlobalContext';
 import ActingDriverModal from '../components/ActingDriverModal';
 
 
+const isOutsideTirupur = (item) => {
+  if (!item) return false;
+  const nameText = (item.name || '').toLowerCase();
+  const addressText = (typeof item.address === 'string' ? item.address : (item.address && typeof item.address === 'object' ? JSON.stringify(item.address) : '') || '').toLowerCase();
+  const placeNameText = (item.placeName || '').toLowerCase();
+  
+  const textToSearch = `${nameText} ${addressText} ${placeNameText}`;
+
+  // Direct cities list to verify
+  const outsideCities = ['pollachi', 'erode', 'palladam', 'coimbatore', 'dharapuram', 'udumalpet', 'kangeyam', 'karur', 'salem', 'madurai', 'chennai', 'bengaluru', 'bangalore', 'kovai', 'tiruchirappalli', 'trichy'];
+  for (const city of outsideCities) {
+    if (textToSearch.includes(city)) {
+      return true;
+    }
+  }
+
+  // Also, if it doesn't mention Tirupur or Tiruppur at all (and has something specified), it is outside Tirupur
+  const hasContent = nameText || addressText || placeNameText;
+  if (hasContent && !textToSearch.includes('tirupur') && !textToSearch.includes('tiruppur')) {
+    return true;
+  }
+
+  return false;
+};
+
 const BottomSheetHeader = ({ makeRidePlan, style }) => {
   const { t } = useTranslation();
   const handlePress = useCallback(() => {
@@ -557,6 +582,18 @@ const MapScreen = () => {
       setActingDriverLoading(true);
       const response = await getPassangerVehicles();
       setShowActingDriverModal(false);
+
+      let resolvedTripType = tripType;
+      if (endLocation && isOutsideTirupur(endLocation)) {
+        if (tripType !== 'OUTSTATION') {
+          resolvedTripType = 'OUTSTATION';
+          Alert.alert(
+            'Outstation Ride',
+            'Destination is outside Tirupur, so the booking type has been updated to Outstation.'
+          );
+        }
+      }
+
       if (response?.success && response?.vehicles?.length > 0) {
         const firstVehicle = response.vehicles[0];
         setActingDriverVehicle(firstVehicle);
@@ -566,16 +603,16 @@ const MapScreen = () => {
           setRideEndLocation(endLocation);
         }
 
-        if (tripType === 'OUTSTATION' && selectedDate) {
-          const year = selectedDate.getFullYear();
-          const month = `${selectedDate.getMonth() + 1}`.padStart(2, '0');
-          const day = `${selectedDate.getDate()}`.padStart(2, '0');
+        if (resolvedTripType === 'OUTSTATION') {
+          const year = (selectedDate || new Date()).getFullYear();
+          const month = `${(selectedDate || new Date()).getMonth() + 1}`.padStart(2, '0');
+          const day = `${(selectedDate || new Date()).getDate()}`.padStart(2, '0');
           const formattedDate = `${year}-${month}-${day}`;
           setBookingTab('CUSTOM');
           setDurationRangeStart(formattedDate);
           setDurationRangeEnd(formattedDate);
           setActingDriverHours(24);
-        } else if (tripType === 'RENTAL' && selectedPackage) {
+        } else if (resolvedTripType === 'RENTAL' && selectedPackage) {
           const hours = selectedPackage.hours;
           setBookingTab('TODAY');
           setTodayDurationOption(hours === 1 ? '1_HOUR' : 'CUSTOM');
@@ -591,7 +628,7 @@ const MapScreen = () => {
 
         makeRidePlan({
           mode: 'ACTING_DRIVER',
-          actingDriverTripType: tripType,
+          actingDriverTripType: resolvedTripType,
           preselectedVehicleType: firstVehicle.type,
           vehicle: firstVehicle,
         });

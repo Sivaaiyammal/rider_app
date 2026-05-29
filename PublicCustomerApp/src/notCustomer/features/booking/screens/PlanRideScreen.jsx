@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler, Modal, TextInput} from 'react-native';
+import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler, Modal, TextInput, Alert} from 'react-native';
 import React, {useCallback, useState,useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar } from 'react-native-calendars';
@@ -85,6 +85,31 @@ const getDateRangeMarkedDates = (startDateString, endDateString) => {
   }
 
   return markedDates;
+};
+
+const isOutsideTirupur = (item) => {
+  if (!item) return false;
+  const nameText = (item.name || '').toLowerCase();
+  const addressText = (typeof item.address === 'string' ? item.address : (item.address && typeof item.address === 'object' ? JSON.stringify(item.address) : '') || '').toLowerCase();
+  const placeNameText = (item.placeName || '').toLowerCase();
+  
+  const textToSearch = `${nameText} ${addressText} ${placeNameText}`;
+
+  // Direct cities list to verify
+  const outsideCities = ['pollachi', 'erode', 'palladam', 'coimbatore', 'dharapuram', 'udumalpet', 'kangeyam', 'karur', 'salem', 'madurai', 'chennai', 'bengaluru', 'bangalore', 'kovai', 'tiruchirappalli', 'trichy'];
+  for (const city of outsideCities) {
+    if (textToSearch.includes(city)) {
+      return true;
+    }
+  }
+
+  // Also, if it doesn't mention Tirupur or Tiruppur at all (and has something specified), it is outside Tirupur
+  const hasContent = nameText || addressText || placeNameText;
+  if (hasContent && !textToSearch.includes('tirupur') && !textToSearch.includes('tiruppur')) {
+    return true;
+  }
+
+  return false;
 };
 
 const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mode,vehicle}) => {
@@ -211,7 +236,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
         ];
       }
     } else if (bookingTab === 'CUSTOM') {
-      if (durationRangeStart && selectedDurationDays > 1) {
+      if (durationRangeStart) {
         return getDatesInRange(durationRangeStart, durationRangeEnd);
       }
     }
@@ -289,6 +314,25 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
 
     fetchLastRidePreferences();
   }, [isActingDriverMode]);
+
+  useEffect(() => {
+    if (isActingDriverMode && rideEndLocation) {
+      if (isOutsideTirupur(rideEndLocation)) {
+        if (bookingTab !== 'CUSTOM') {
+          setBookingTab('CUSTOM');
+          const todayStr = formatCalendarDate(new Date());
+          setDurationRangeStart(todayStr);
+          setDurationRangeEnd(todayStr);
+          setActingDriverHours(24);
+          
+          Alert.alert(
+            'Outstation Ride',
+            'Destination is outside Tirupur, so the booking type has been updated to Outstation.'
+          );
+        }
+      }
+    }
+  }, [isActingDriverMode, rideEndLocation, bookingTab]);
 
   const isTripDurationSelected = !isActingDriverMode || (bookingTab === 'CUSTOM' ? !!durationRangeStart : true);
   const hasRequiredLocations = isActingDriverMode ? !!rideStartLocation : (!!rideStartLocation && !!rideEndLocation);
