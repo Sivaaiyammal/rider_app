@@ -760,7 +760,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             </View>
 
             {/* Duration selector */}
-            <View style={styles.durationSection}>
+            {/* <View style={styles.durationSection}>
               <Text style={styles.durationLabel}>{t('booking_options', 'Booking Options')}</Text>
               
               <View style={styles.optionTabsRow}>
@@ -1022,7 +1022,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                   )}
                 </View>
               )}
-            </View>
+            </View> */}
 
             {/* Plan Daily Itinerary Button */}
             {shouldShowItinerary && (
