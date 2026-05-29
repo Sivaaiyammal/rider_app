@@ -51,5 +51,13 @@ export const colors = {
 
 export const Colors = colors;
 
+export const actingDriverColors = {
+  primary: '#F4B400',     // Honey Yellow
+  secondary: '#1A1A1A',   // Black
+  background: '#FFFFFF',  // White
+  success: '#22C55E',     // Success Green
+  border: '#E5E5E5',       // Border Grey
+};
+
 export const webPortalURL = 'https://tracker.vmmaps.com';
 export const mapcopyrightURL = 'https://www.openstreetmap.org/copyright';

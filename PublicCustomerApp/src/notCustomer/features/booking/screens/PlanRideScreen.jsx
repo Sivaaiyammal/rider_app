@@ -17,7 +17,7 @@ import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomShe
 
 import ScheduleContainer from '../../../screens/SearchLocation/ScheduleContainer';
 import { height, utils } from '../../../utils/Utils';
-import { colors } from '../../../constants/constants';
+import { colors, actingDriverColors } from '../../../constants/constants';
 import Contactsheet from '../components/planride/Contactsheet';
 import useUserInfoStore from '../../../../common/store/useUserInfoStore';
 import RideLocationSetBox from '../components/planride/RideLocationSetBox';
@@ -731,7 +731,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                 <Ionicons
                   name={VEHICLE_TYPE_ICON[actingDriverVehicle.type] || 'car-outline'}
                   size={24}
-                  color={colors.black}
+                  color={actingDriverColors.secondary}
                 />
               </View>
               <View style={styles.actingVehicleInfo}>
@@ -1033,7 +1033,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
               >
                 <View style={styles.itineraryButtonLeft}>
                   <View style={styles.itineraryButtonIconWrap}>
-                    <Ionicons name="map-outline" size={18} color="#7C3AED" />
+                    <Ionicons name="map-outline" size={18} color={actingDriverColors.primary} />
                   </View>
                   <View>
                     <Text style={styles.itineraryButtonTitle}>{t('plan_daily_itinerary', 'Plan Daily Itinerary')}</Text>
@@ -1050,7 +1050,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                       <Text style={styles.itineraryBadgeText}>{Object.keys(actingDriverItinerary).length}</Text>
                     </View>
                   )}
-                  <Ionicons name="chevron-forward" size={18} color="#7C3AED" />
+                  <Ionicons name="chevron-forward" size={18} color={actingDriverColors.secondary} />
                 </View>
               </TouchableOpacity>
             )}
@@ -1086,13 +1086,13 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                       <Ionicons 
                         name="bed" 
                         size={18} 
-                        color={actingDriverAccommodation ? colors.black : colors.grey_dark} 
+                        color={actingDriverAccommodation ? actingDriverColors.secondary : colors.grey_dark} 
                       />
                     </View>
                     <Ionicons 
                       name={actingDriverAccommodation ? "checkmark-circle" : "ellipse-outline"} 
                       size={20} 
-                      color={actingDriverAccommodation ? (colors.green || '#4CAF50') : colors.grey_light} 
+                      color={actingDriverAccommodation ? actingDriverColors.success : colors.grey_light} 
                     />
                   </View>
                   <Text style={[
@@ -1119,13 +1119,13 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                       <Ionicons 
                         name="fast-food" 
                         size={18} 
-                        color={actingDriverFood ? colors.black : colors.grey_dark} 
+                        color={actingDriverFood ? actingDriverColors.secondary : colors.grey_dark} 
                       />
                     </View>
                     <Ionicons 
                       name={actingDriverFood ? "checkmark-circle" : "ellipse-outline"} 
                       size={20} 
-                      color={actingDriverFood ? (colors.green || '#4CAF50') : colors.grey_light} 
+                      color={actingDriverFood ? actingDriverColors.success : colors.grey_light} 
                     />
                   </View>
                   <Text style={[
@@ -1149,17 +1149,16 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                   <Ionicons 
                     name="notifications-outline" 
                     size={20} 
-                    color={actingDriverNotifyEvents ? colors.black : colors.grey_dark} 
+                    color={actingDriverNotifyEvents ? actingDriverColors.secondary : colors.grey_dark} 
                   />
                 </View>
                 <View style={styles.prefTextContainer}>
                   <Text style={styles.prefTitle}>{t('notify_events_title', 'Status Updates')}</Text>
-                  <Text style={styles.prefSub}>{t('notify_events_desc', 'Get alerts if driver takes a break or gets stuck in traffic > 5 mins')}</Text>
                 </View>
                 <Ionicons 
                   name={actingDriverNotifyEvents ? "checkmark-circle" : "ellipse-outline"} 
                   size={22} 
-                  color={actingDriverNotifyEvents ? (colors.green || '#4CAF50') : colors.grey_light} 
+                  color={actingDriverNotifyEvents ? actingDriverColors.success : colors.grey_light} 
                 />
               </TouchableOpacity>
 
@@ -1172,7 +1171,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                   <Ionicons 
                     name="people-outline" 
                     size={20} 
-                    color={actingDriverKidsOnBoard ? colors.black : colors.grey_dark} 
+                    color={actingDriverKidsOnBoard ? actingDriverColors.secondary : colors.grey_dark} 
                   />
                 </View>
                 <View style={styles.prefTextContainer}>
@@ -1182,7 +1181,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                 <Ionicons 
                   name={actingDriverKidsOnBoard ? "checkmark-circle" : "ellipse-outline"} 
                   size={22} 
-                  color={actingDriverKidsOnBoard ? (colors.green || '#4CAF50') : colors.grey_light} 
+                  color={actingDriverKidsOnBoard ? actingDriverColors.success : colors.grey_light} 
                 />
               </TouchableOpacity>
 
@@ -1195,7 +1194,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                   <Ionicons 
                     name="heart-outline" 
                     size={20} 
-                    color={actingDriverElderlyOnBoard ? colors.black : colors.grey_dark} 
+                    color={actingDriverElderlyOnBoard ? actingDriverColors.secondary : colors.grey_dark} 
                   />
                 </View>
                 <View style={styles.prefTextContainer}>
@@ -1205,7 +1204,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                 <Ionicons 
                   name={actingDriverElderlyOnBoard ? "checkmark-circle" : "ellipse-outline"} 
                   size={22} 
-                  color={actingDriverElderlyOnBoard ? (colors.green || '#4CAF50') : colors.grey_light} 
+                  color={actingDriverElderlyOnBoard ? actingDriverColors.success : colors.grey_light} 
                 />
               </TouchableOpacity>
             </View>
@@ -1509,7 +1508,7 @@ const styles = StyleSheet.create({
   actingVehicleReg: {
     fontSize: 14,
     fontFamily: Fonts.semibold || Fonts.medium,
-    color: colors.black,
+    color: actingDriverColors.secondary,
   },
   actingVehicleMeta: {
     fontSize: 12,
@@ -1531,7 +1530,7 @@ const styles = StyleSheet.create({
   changeVehicleText: {
     fontSize: 12,
     fontFamily: Fonts.semibold || Fonts.medium,
-    color: colors.black,
+    color: actingDriverColors.secondary,
   },
   durationRequiredText: {
     fontSize: 10,
@@ -1544,7 +1543,7 @@ const styles = StyleSheet.create({
   durationLabel: {
     fontSize: 13,
     fontFamily: Fonts.semibold || Fonts.medium,
-    color: colors.black,
+    color: actingDriverColors.secondary,
     marginBottom: 2,
   },
   pickDatesButton: {
@@ -1691,8 +1690,8 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   provisionCardSelected: {
-    borderColor: colors.black || '#000000',
-    backgroundColor: '#F5F5F5',
+    borderColor: actingDriverColors.primary,
+    backgroundColor: '#F8FAFC',
   },
   provisionHeader: {
     flexDirection: 'row',
@@ -1718,7 +1717,7 @@ const styles = StyleSheet.create({
   },
   provisionLabelSelected: {
     fontFamily: Fonts.semibold || Fonts.medium,
-    color: colors.black,
+    color: actingDriverColors.secondary,
   },
   provisionSubLabel: {
     fontFamily: Fonts.regular,
@@ -2069,7 +2068,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   prefCardRowActive: {
-    borderColor: colors.black || '#000000',
+    borderColor: actingDriverColors.primary,
     backgroundColor: '#FFFFFF',
   },
   prefIconBox: {
@@ -2299,9 +2298,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F5F3FF',
+    backgroundColor: '#FFFBEB',
     borderWidth: 1.5,
-    borderColor: '#DDD6FE',
+    borderColor: actingDriverColors.primary,
     borderRadius: 14,
     padding: 14,
     marginTop: 16,
@@ -2316,19 +2315,19 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#EDE9FE',
+    backgroundColor: '#FEF3C7',
     alignItems: 'center',
     justifyContent: 'center',
   },
   itineraryButtonTitle: {
     fontSize: 14,
     fontFamily: Fonts.semibold || Fonts.medium,
-    color: '#4C1D95',
+    color: actingDriverColors.secondary,
   },
   itineraryButtonSub: {
     fontSize: 11,
     fontFamily: Fonts.regular,
-    color: '#7C3AED',
+    color: '#4B5563',
     marginTop: 2,
   },
   itineraryButtonRight: {
@@ -2337,7 +2336,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   itineraryBadge: {
-    backgroundColor: '#7C3AED',
+    backgroundColor: actingDriverColors.primary,
     borderRadius: 10,
     paddingHorizontal: 7,
     paddingVertical: 2,
@@ -2345,7 +2344,7 @@ const styles = StyleSheet.create({
   itineraryBadgeText: {
     fontSize: 11,
     fontFamily: Fonts.semibold || Fonts.medium,
-    color: '#FFFFFF',
+    color: actingDriverColors.secondary,
   },
   /* itin* styles moved to ItineraryPlanModal.jsx */
 });

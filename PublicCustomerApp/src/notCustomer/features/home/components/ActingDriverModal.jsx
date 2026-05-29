@@ -13,7 +13,7 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DatePicker from 'react-native-date-picker';
 import PropTypes from 'prop-types';
-import { colors, Fonts } from '../../../constants/constants';
+import { colors, Fonts, actingDriverColors } from '../../../constants/constants';
 import { DataStore } from '../../../controllers/DataStore';
 import { utils } from '../../../utils/Utils';
 
@@ -96,7 +96,7 @@ const ActingDriverModal = ({ visible, onClose, onTripTypeSelect, loading }) => {
       activeOpacity={0.7}
     >
       <View style={styles.recentIconWrap}>
-        <Ionicons name="location" size={20} color={colors.black} />
+        <Ionicons name="location" size={20} color={actingDriverColors.secondary} />
       </View>
       <View style={styles.recentTextWrap}>
         <Text style={styles.recentName} numberOfLines={1}>
@@ -156,7 +156,7 @@ const ActingDriverModal = ({ visible, onClose, onTripTypeSelect, loading }) => {
             <Text style={styles.subtitle}>Book professional drivers for your vehicle</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
-            <Ionicons name="close" size={24} color={colors.black} />
+            <Ionicons name="close" size={24} color={actingDriverColors.secondary} />
           </TouchableOpacity>
         </View>
 
@@ -236,7 +236,7 @@ const ActingDriverModal = ({ visible, onClose, onTripTypeSelect, loading }) => {
               onPress={() => setOpenDatePicker(true)}
               activeOpacity={0.8}
             >
-              <Ionicons name="calendar-outline" size={20} color={colors.orange} />
+              <Ionicons name="calendar-outline" size={20} color={actingDriverColors.primary} />
               <Text style={styles.dateText}>
                 {utils.formatDate(selectedDate, 'DD MMM YYYY, ddd')}
               </Text>
@@ -283,7 +283,7 @@ const ActingDriverModal = ({ visible, onClose, onTripTypeSelect, loading }) => {
 
         {loading && (
           <View style={styles.loadingRow}>
-            <ActivityIndicator size="small" color={colors.orange} />
+            <ActivityIndicator size="small" color={actingDriverColors.primary} />
             <Text style={styles.loadingText}>Initializing acting driver info...</Text>
           </View>
         )}
@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   panel: {
-    backgroundColor: colors.white,
+    backgroundColor: actingDriverColors.background,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     paddingHorizontal: 16,
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: colors.grey_xdark,
+    backgroundColor: actingDriverColors.border,
     marginBottom: 16,
   },
 
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontFamily: Fonts.bold || Fonts.semi_bold,
-    color: colors.black,
+    color: actingDriverColors.secondary,
     marginBottom: 2,
   },
   subtitle: {
@@ -354,13 +354,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 20,
+    gap: 24,
     paddingVertical: 10,
     marginBottom: 16,
   },
   tabItem: {
     alignItems: 'center',
-    width: 80,
+    minWidth: 90,
     paddingVertical: 6,
   },
   tabItemActive: {
@@ -381,7 +381,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -2,
     right: -2,
-    backgroundColor: '#212121',
+    backgroundColor: actingDriverColors.secondary,
     width: 18,
     height: 18,
     borderRadius: 9,
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
     color: colors.grey_xxdark,
   },
   selectedPill: {
-    backgroundColor: colors.orange,
+    backgroundColor: actingDriverColors.primary,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 8,
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
   selectedPillText: {
     fontSize: 13,
     fontFamily: Fonts.semi_bold,
-    color: colors.white,
+    color: actingDriverColors.secondary,
   },
 
   /* Search Box */
@@ -415,7 +415,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white_dirt,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: colors.grey_xdark,
+    borderColor: actingDriverColors.border,
     paddingHorizontal: 14,
     paddingVertical: 14,
     marginBottom: 16,
@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 13,
     fontFamily: Fonts.medium,
-    color: colors.black,
+    color: actingDriverColors.secondary,
     marginBottom: 8,
   },
   dateSelector: {
@@ -444,14 +444,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white_dirt,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: colors.grey_xdark,
+    borderColor: actingDriverColors.border,
     paddingHorizontal: 14,
     paddingVertical: 14,
   },
   dateText: {
     fontSize: 15,
     fontFamily: Fonts.medium,
-    color: colors.black,
+    color: actingDriverColors.secondary,
     flex: 1,
   },
 
@@ -469,22 +469,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: colors.grey_xdark,
+    borderColor: actingDriverColors.border,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 2,
   },
   packageCardActive: {
-    borderColor: colors.orange,
+    borderColor: actingDriverColors.primary,
     borderWidth: 2,
   },
   packageHrs: {
     fontSize: 15,
     fontFamily: Fonts.bold,
-    color: colors.black,
+    color: actingDriverColors.secondary,
   },
   packageHrsActive: {
-    color: colors.orange,
+    color: actingDriverColors.secondary,
   },
   packageKms: {
     fontSize: 11,
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: colors.black,
+    backgroundColor: actingDriverColors.secondary,
     borderRadius: 14,
     paddingVertical: 16,
     marginBottom: 16,
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
   recentName: {
     fontSize: 15,
     fontFamily: Fonts.medium,
-    color: colors.black,
+    color: actingDriverColors.secondary,
     marginBottom: 2,
   },
   recentAddress: {
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 0.5,
-    backgroundColor: colors.grey_light,
+    backgroundColor: actingDriverColors.border,
   },
 
   /* Loading State */

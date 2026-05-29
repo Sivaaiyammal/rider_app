@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
-import { colors, Fonts } from '../../../../constants/constants';
+import { colors, Fonts, actingDriverColors } from '../../../../constants/constants';
 import { utils } from '../../../../utils/Utils';
 import NavBar from '../../../../components/NavBar';
 import RideLocationSetBox from './RideLocationSetBox';
@@ -95,7 +95,7 @@ const ItineraryPlanModal = ({
               </View>
               <View style={styles.summaryCard}>
                 <Text style={styles.summaryLabel}>Fuel Saver</Text>
-                <Text style={[styles.summaryValue, { color: colors.green }]}>Optimized</Text>
+                <Text style={[styles.summaryValue, { color: actingDriverColors.success }]}>Optimized</Text>
               </View>
               <View style={styles.summaryCard}>
                 <Text style={styles.summaryLabel}>Booking Status</Text>
@@ -144,9 +144,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
     gap: 8,
-    backgroundColor: colors.white,
+    backgroundColor: actingDriverColors.background,
     borderBottomWidth: 1,
-    borderBottomColor: colors.grey_xdark,
+    borderBottomColor: actingDriverColors.border,
   },
   dayTab: {
     flex: 1,
@@ -155,11 +155,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.grey_xdark,
+    borderColor: actingDriverColors.border,
   },
   dayTabActive: {
-    backgroundColor: colors.black,
-    borderColor: colors.black,
+    backgroundColor: actingDriverColors.primary,
+    borderColor: actingDriverColors.primary,
   },
   dayTabPhase: {
     fontSize: 9,
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   dayTabPhaseActive: {
-    color: colors.grey_xdark,
+    color: actingDriverColors.secondary,
   },
   dayTabLabel: {
     fontSize: 14,
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   dayTabLabelActive: {
-    color: colors.white,
+    color: actingDriverColors.secondary,
   },
 
   /* ── Scroll ── */
@@ -190,12 +190,12 @@ const styles = StyleSheet.create({
   sectionCard: {
     marginHorizontal: 12,
     marginTop: 12,
-    backgroundColor: colors.white,
+    backgroundColor: actingDriverColors.background,
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: colors.grey_xdark,
-    shadowColor: colors.black,
+    borderColor: actingDriverColors.border,
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
     shadowRadius: 4,
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 13,
     fontFamily: Fonts.semi_bold || Fonts.medium,
-    color: colors.black,
+    color: actingDriverColors.secondary,
     marginBottom: 12,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     borderWidth: 1,
-    borderColor: colors.grey_xdark,
+    borderColor: actingDriverColors.border,
   },
   summaryLabel: {
     fontSize: 11,
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: 16,
     fontFamily: Fonts.bold || Fonts.semi_bold,
-    color: colors.black,
+    color: actingDriverColors.secondary,
   },
 
   /* ── Footer ── */
@@ -241,15 +241,15 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.white,
+    backgroundColor: actingDriverColors.background,
     paddingHorizontal: 12,
     paddingBottom: 28,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: colors.grey_xdark,
+    borderTopColor: actingDriverColors.border,
   },
   doneButton: {
-    backgroundColor: colors.black,
+    backgroundColor: actingDriverColors.secondary,
     borderRadius: 10,
     paddingVertical: 15,
     alignItems: 'center',

@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import NavBar from '../../../components/NavBar';
-import { colors, Fonts } from '../../../constants/constants';
+import { colors, Fonts, actingDriverColors } from '../../../constants/constants';
 import { getPassangerVehicles } from '../../../API/EndPoints/EndPoints';
 import useRideBookingInfo from '../../booking/store/useRideBookingInfo';
 import {
@@ -39,7 +39,7 @@ const VehicleItem = ({ vehicle, selected, onPress }) => {
         <Ionicons
           name={iconName}
           size={24}
-          color={selected ? colors.black : colors.grey_xxdark}
+          color={selected ? actingDriverColors.secondary : colors.grey_xxdark}
         />
       </View>
       <View style={styles.cardInfo}>
@@ -49,7 +49,7 @@ const VehicleItem = ({ vehicle, selected, onPress }) => {
         {!!meta && <Text style={styles.cardMeta}>{meta}</Text>}
         {vehicle.verified && (
           <View style={styles.verifiedRow}>
-            <Ionicons name="checkmark-circle" size={12} color={colors.green || '#4CAF50'} />
+            <Ionicons name="checkmark-circle" size={12} color={actingDriverColors.success} />
             <Text style={styles.verifiedText}>Verified</Text>
           </View>
         )}
@@ -119,7 +119,7 @@ const ActingDriverVehicleSelectScreen = () => {
 
         {loading ? (
           <View style={styles.centered}>
-            <ActivityIndicator size="large" color={colors.black} />
+            <ActivityIndicator size="large" color={actingDriverColors.primary} />
           </View>
         ) : vehicles.length === 0 ? (
           <View style={styles.centered}>
@@ -168,7 +168,7 @@ const ActingDriverVehicleSelectScreen = () => {
                 <Ionicons
                   name="add-circle-outline"
                   size={20}
-                  color={colors.black}
+                  color={actingDriverColors.secondary}
                 />
                 <Text style={styles.addMoreBtnText}>
                   {t('add_another_vehicle', 'Add Another Vehicle')}
@@ -203,7 +203,7 @@ export default ActingDriverVehicleSelectScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: actingDriverColors.background,
   },
   content: {
     flex: 1,
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontFamily: Fonts.semi_bold,
     fontSize: 18,
-    color: colors.black,
+    color: actingDriverColors.secondary,
     marginTop: 16,
   },
   emptySubtitle: {
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: colors.black,
+    backgroundColor: actingDriverColors.secondary,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 28,
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: actingDriverColors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -271,9 +271,9 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   cardSelected: {
-    borderColor: colors.black,
+    borderColor: actingDriverColors.primary,
     backgroundColor: '#FFFFFF',
-    shadowColor: colors.black,
+    shadowColor: actingDriverColors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
     shadowRadius: 6,
@@ -297,10 +297,10 @@ const styles = StyleSheet.create({
   cardRegNo: {
     fontFamily: Fonts.semi_bold,
     fontSize: 15,
-    color: colors.black,
+    color: actingDriverColors.secondary,
   },
   cardRegNoSelected: {
-    color: colors.black,
+    color: actingDriverColors.secondary,
   },
   cardMeta: {
     fontFamily: Fonts.regular,
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   verifiedText: {
     fontFamily: Fonts.regular,
     fontSize: 11,
-    color: colors.green,
+    color: actingDriverColors.success,
   },
   selectorCheck: {
     width: 22,
@@ -330,8 +330,8 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   selectorCheckActive: {
-    borderColor: colors.black,
-    backgroundColor: colors.black,
+    borderColor: actingDriverColors.primary,
+    backgroundColor: actingDriverColors.primary,
   },
   addMoreBtn: {
     flexDirection: 'row',
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderStyle: 'dashed',
-    borderColor: '#CBD5E1',
+    borderColor: actingDriverColors.border,
     borderRadius: 12,
     padding: 14,
     marginTop: 8,
@@ -349,10 +349,10 @@ const styles = StyleSheet.create({
   addMoreBtnText: {
     fontFamily: Fonts.medium,
     fontSize: 14,
-    color: colors.black,
+    color: actingDriverColors.secondary,
   },
   continueButton: {
-    backgroundColor: colors.black,
+    backgroundColor: actingDriverColors.secondary,
     marginHorizontal: 16,
     marginBottom: 24,
     paddingVertical: 16,
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   continueButtonDisabled: {
-    backgroundColor: colors.grey_light,
+    backgroundColor: actingDriverColors.border,
   },
   continueButtonText: {
     fontFamily: Fonts.semi_bold,

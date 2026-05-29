@@ -24,7 +24,7 @@ import CurrentLocationIcon from '../../../assets/icons/CurrentLocationIcon.svg';
 import AddStopIcon from '../../../assets/icons/AddStopIcon.svg';
 import { height, width } from '../../../utils/Utils';
 import { utils } from '../../../utils/Utils';
-import { colors, Fonts } from '../../../constants/constants';
+import { colors, Fonts, actingDriverColors } from '../../../constants/constants';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import RouteStatusOverlay from '../../../components/Loaders/RouteStatusOverlay';
 import RideInfo from '../components/bookRide/RideInfo';
@@ -176,21 +176,21 @@ const SelectedVehicleCard = ({ vehicle, fare, isLoading }) => {
     return (
         <View style={styles.vehicleCard}>
             <View style={styles.vehicleIconBox}>
-                <Ionicons name={iconName} size={30} color={colors.black} />
+                <Ionicons name={iconName} size={30} color={actingDriverColors.secondary} />
             </View>
             <View style={styles.vehicleInfo}>
                 <AdaptiveText style={styles.vehicleRegNo}>{vehicle?.regNo}</AdaptiveText>
                 {!!meta && <AdaptiveText style={styles.vehicleMeta}>{meta}</AdaptiveText>}
                 {vehicle?.verified && (
                     <View style={styles.verifiedRow}>
-                        <Ionicons name="checkmark-circle" size={12} color={colors.green} />
+                        <Ionicons name="checkmark-circle" size={12} color={actingDriverColors.success} />
                         <AdaptiveText style={styles.verifiedText}>{t('verified', 'Verified')}</AdaptiveText>
                     </View>
                 )}
             </View>
             <View style={styles.fareBox}>
                 {isLoading ? (
-                    <ActivityIndicator size="small" color={colors.black} />
+                    <ActivityIndicator size="small" color={actingDriverColors.secondary} />
                 ) : fare ? (
                     <>
                         <AdaptiveText style={styles.fareLabel}>{t('est_fare', 'Est. Fare')}</AdaptiveText>
@@ -539,7 +539,7 @@ const BookActingDriverScreen = () => {
                                 <Icon
                                     name="call-made"
                                     size={18}
-                                    color={tripType === 'ONE_WAY' ? colors.orange : '#757575'}
+                                    color={tripType === 'ONE_WAY' ? actingDriverColors.primary : '#757575'}
                                     style={styles.tabIcon}
                                 />
                                 <AdaptiveText style={[styles.tripTabText, tripType === 'ONE_WAY' && styles.tripTabTextActive]}>
@@ -558,7 +558,7 @@ const BookActingDriverScreen = () => {
                                 <Ionicons
                                     name="sync"
                                     size={16}
-                                    color={tripType === 'ROUND_TRIP' ? colors.orange : '#757575'}
+                                    color={tripType === 'ROUND_TRIP' ? actingDriverColors.primary : '#757575'}
                                     style={styles.tabIcon}
                                 />
                                 <AdaptiveText style={[styles.tripTabText, tripType === 'ROUND_TRIP' && styles.tripTabTextActive]}>
@@ -602,7 +602,7 @@ const BookActingDriverScreen = () => {
                         >
                             <View style={styles.itineraryButtonLeft}>
                                 <View style={styles.itineraryButtonIconWrap}>
-                                    <Ionicons name="map-outline" size={18} color={colors.orange} />
+                                    <Ionicons name="map-outline" size={18} color={actingDriverColors.primary} />
                                 </View>
                                 <View>
                                     <AdaptiveText style={styles.itineraryButtonTitle}>{t('plan_daily_itinerary', 'Plan Daily Itinerary')}</AdaptiveText>
@@ -668,7 +668,7 @@ const BookActingDriverScreen = () => {
                                     <AdaptiveText style={styles.breakdownLabel}>
                                         {t('advance_to_pay_now', 'Advance to Pay Now')}
                                     </AdaptiveText>
-                                    <AdaptiveText style={[styles.breakdownValue, { color: colors.orange, fontFamily: Fonts.semi_bold }]}>
+                                    <AdaptiveText style={[styles.breakdownValue, { color: actingDriverColors.primary, fontFamily: Fonts.semi_bold }]}>
                                         ₹500
                                     </AdaptiveText>
                                 </View>
@@ -739,7 +739,7 @@ const BookActingDriverScreen = () => {
                                 styles.confirmButton,
                                 (!actingDriverVehicle || isBookingLoading || routeLoading?.loading) &&
                                     styles.confirmButtonDisabled,
-                                isBookingLoading && { backgroundColor: colors.orange },
+                                isBookingLoading && { backgroundColor: actingDriverColors.primary },
                             ]}
                             onPress={handleConfirm}
                             disabled={!actingDriverVehicle || isBookingLoading || !!routeLoading?.loading}
@@ -993,7 +993,7 @@ const BookActingDriverScreen = () => {
                 <View style={styles.successModalOverlay}>
                     <View style={styles.successModalContent}>
                         <View style={styles.successIconCircle}>
-                            <Icon name="check-circle" size={80} color={colors.green} />
+                            <Icon name="check-circle" size={80} color={actingDriverColors.success} />
                         </View>
                         
                         <AdaptiveText style={styles.successModalTitle}>
@@ -1197,7 +1197,7 @@ const styles = StyleSheet.create({
     confirmButton: {
         width: '100%',
         padding: 15,
-        backgroundColor: colors.green,
+        backgroundColor: actingDriverColors.success,
         borderRadius: 20,
         borderWidth: 1,
         borderColor: 'white',
@@ -1313,13 +1313,13 @@ const styles = StyleSheet.create({
     scheduleLabel: {
         fontSize: 13,
         fontFamily: Fonts.medium,
-        color: colors.orange,
+        color: actingDriverColors.secondary,
         marginBottom: 2,
     },
     scheduleDateText: {
         fontSize: 14,
         fontFamily: Fonts.bold,
-        color: '#212121',
+        color: actingDriverColors.secondary,
     },
     scheduleChevronWrap: {
         width: 24,
@@ -1356,7 +1356,7 @@ const styles = StyleSheet.create({
     scheduleTitle: {
         fontSize: 18,
         fontFamily: Fonts.bold,
-        color: colors.black,
+        color: actingDriverColors.secondary,
         marginBottom: 4,
     },
     scheduleSubtitle: {
@@ -1384,7 +1384,7 @@ const styles = StyleSheet.create({
         color: '#757575',
     },
     scheduleTabLabelActive: {
-        color: colors.orange,
+        color: actingDriverColors.secondary,
         fontFamily: Fonts.bold,
     },
     scheduleActiveBar: {
@@ -1393,7 +1393,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: 3,
-        backgroundColor: colors.orange,
+        backgroundColor: actingDriverColors.primary,
     },
     datePickerContainer: {
         alignItems: 'center',
@@ -1439,7 +1439,7 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 18,
         fontFamily: Fonts.semi_bold,
-        color: colors.black,
+        color: actingDriverColors.secondary,
     },
     closeButton: {
         padding: 4,
@@ -1460,12 +1460,12 @@ const styles = StyleSheet.create({
     summaryAmount: {
         fontSize: 32,
         fontFamily: Fonts.bold,
-        color: colors.black,
+        color: actingDriverColors.secondary,
     },
     methodSectionTitle: {
         fontSize: 14,
         fontFamily: Fonts.semi_bold,
-        color: colors.black,
+        color: actingDriverColors.secondary,
         marginBottom: 12,
     },
     methodList: {
@@ -1483,8 +1483,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
     },
     methodRowSelected: {
-        borderColor: colors.black,
-        backgroundColor: '#F8FAFC',
+        borderColor: actingDriverColors.primary,
+        backgroundColor: '#FFFBEB',
     },
     methodInfo: {
         flexDirection: 'row',
@@ -1494,7 +1494,7 @@ const styles = StyleSheet.create({
     methodText: {
         fontSize: 14,
         fontFamily: Fonts.medium,
-        color: colors.black,
+        color: actingDriverColors.secondary,
     },
     radioCircle: {
         width: 18,
@@ -1506,21 +1506,21 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     radioCircleSelected: {
-        borderColor: colors.black,
+        borderColor: actingDriverColors.primary,
     },
     radioDot: {
         width: 10,
         height: 10,
         borderRadius: 5,
-        backgroundColor: colors.black,
+        backgroundColor: actingDriverColors.primary,
     },
     payNowButton: {
-        backgroundColor: colors.green,
+        backgroundColor: actingDriverColors.success,
         borderRadius: 16,
         paddingVertical: 16,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: colors.green,
+        shadowColor: actingDriverColors.success,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.2,
         shadowRadius: 8,
@@ -1548,7 +1548,7 @@ const styles = StyleSheet.create({
     successTitle: {
         fontSize: 20,
         fontFamily: Fonts.bold,
-        color: '#03543F',
+        color: actingDriverColors.success,
         marginBottom: 8,
     },
     successSubtitle: {
@@ -1583,7 +1583,7 @@ const styles = StyleSheet.create({
     successModalTitle: {
         fontSize: 22,
         fontFamily: Fonts.bold,
-        color: colors.black,
+        color: actingDriverColors.secondary,
         marginBottom: 12,
         textAlign: 'center',
     },
@@ -1597,7 +1597,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
     },
     doneButton: {
-        backgroundColor: colors.black,
+        backgroundColor: actingDriverColors.secondary,
         borderRadius: 16,
         paddingVertical: 14,
         paddingHorizontal: 32,
@@ -1615,9 +1615,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#FFF7ED',
+        backgroundColor: '#FFFBEB',
         borderWidth: 1.5,
-        borderColor: '#FFEDD5',
+        borderColor: actingDriverColors.primary,
         borderRadius: 14,
         padding: 14,
         marginTop: 16,
@@ -1632,19 +1632,19 @@ const styles = StyleSheet.create({
         width: 38,
         height: 38,
         borderRadius: 19,
-        backgroundColor: '#FFEDD5',
+        backgroundColor: '#FEF3C7',
         alignItems: 'center',
         justifyContent: 'center',
     },
     itineraryButtonTitle: {
         fontSize: 14,
         fontFamily: Fonts.semi_bold || Fonts.medium,
-        color: colors.orange,
+        color: actingDriverColors.secondary,
     },
     itineraryButtonSub: {
         fontSize: 11,
         fontFamily: Fonts.regular,
-        color: colors.orange,
+        color: '#4B5563',
         marginTop: 2,
     },
     itineraryButtonRight: {
@@ -1653,7 +1653,7 @@ const styles = StyleSheet.create({
         gap: 6,
     },
     itineraryBadge: {
-        backgroundColor: colors.orange,
+        backgroundColor: actingDriverColors.primary,
         borderRadius: 10,
         paddingHorizontal: 7,
         paddingVertical: 2,
@@ -1661,6 +1661,6 @@ const styles = StyleSheet.create({
     itineraryBadgeText: {
         fontSize: 11,
         fontFamily: Fonts.semi_bold || Fonts.medium,
-        color: '#FFFFFF',
+        color: actingDriverColors.secondary,
     },
 });
