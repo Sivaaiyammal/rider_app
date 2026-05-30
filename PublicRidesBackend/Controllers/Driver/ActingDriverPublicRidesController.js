@@ -158,28 +158,28 @@ module.exports = function (CLASS) {
         try {
             const driverId = req.driver.id;
             const { mode } = req.body;
-            if (!mode || !['driver', 'acting_driver'].includes(mode)) {
-                return res.status(400).json({ success: false, message: 'Invalid mode. Must be either "driver" or "acting_driver".' });
+            if (!mode || !['driver', 'acting_driver', 'both'].includes(mode)) {
+                return res.status(400).json({ success: false, message: 'Invalid mode. Must be "driver", "acting_driver", or "both".' });
             }
             const driver = await Driver.getDriverWithId(driverId);
             if (!driver) return res.status(400).json({ success: false, message: 'Driver not found' });
 
-            // 'driver' maps to ['dco'], 'acting_driver' maps to ['dco', 'acting_driver']
-            const targetModes = mode === 'acting_driver' ? ['dco', 'acting_driver'] : ['dco'];
-            const primaryMode = mode === 'acting_driver' ? 'acting_driver' : 'dco';
-
-            const currentModes = Array.isArray(driver.mode) ? driver.mode : [];
             let updatedModes;
-            if (currentModes.includes(primaryMode)) {
-                // Toggle off: remove all target modes
-                updatedModes = currentModes.filter(m => !targetModes.includes(m));
+            let updatedRole;
+            
+            if (mode === 'both') {
+                updatedModes = ['dco', 'acting_driver'];
+                updatedRole = (driver.vendorId || driver.role === 'salaried') ? 'salaried' : 'dco';
+            } else if (mode === 'acting_driver') {
+                updatedModes = ['acting_driver'];
+                updatedRole = 'acting_driver';
             } else {
-                // Toggle on: add target modes (deduplicated)
-                updatedModes = [...new Set([...currentModes, ...targetModes])];
+                updatedModes = ['dco'];
+                updatedRole = (driver.vendorId || driver.role === 'salaried') ? 'salaried' : 'dco';
             }
 
-            await Driver.updateDriver(driverId, { mode: updatedModes });
-            return res.json({ success: true, message: `Driver modes updated successfully`, modes: updatedModes });
+            await Driver.updateDriver(driverId, { mode: updatedModes, role: updatedRole });
+            return res.json({ success: true, message: `Driver modes updated successfully`, modes: updatedModes, role: updatedRole });
         } catch (err) {
             return this.handleError(err, res);
         }

@@ -58,6 +58,7 @@ const DocumentCenter = ({ isEditMode = false }) => {
   const [selectedSingleMode, setSelectedSingleMode] = useState(pendingDriverMode === 'both' || (pendingDriverMode === null && driverMode === 'both') ? 'driver' : (pendingDriverMode ?? driverMode ?? 'driver'));
   const [bothMode, setBothMode] = useState(pendingDriverMode === 'both' || (pendingDriverMode === null && driverMode === 'both'));
   const selectedMode = bothMode ? 'both' : selectedSingleMode;
+  const [initialMode] = useState(driverMode);
   const isActingDriverMode = selectedMode === 'acting_driver' || selectedMode === 'both';
   const isBothMode = selectedMode === 'both';
 

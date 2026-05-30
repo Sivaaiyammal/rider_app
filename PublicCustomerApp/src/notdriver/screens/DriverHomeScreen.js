@@ -154,7 +154,7 @@ const PublicRidesDriverHomeScreen = () => {
   const {setTimeoutSeconds, setLoading: setTripAcceptLoading} = useTripAcceptStore();
   const {setDriverStatus, setUpComingTrips} = useDriverStatusStore();
   const {setCurrentScreen, currentScreen} = useCurrentScreenStore()
-  const {userInfo, setIsDev } = useUserStore();
+  const {userInfo, setIsDev, setDriverMode } = useUserStore();
   const {
     hasNotificationPermission,
     setHasNotificationPermission,
@@ -408,8 +408,16 @@ const PublicRidesDriverHomeScreen = () => {
         const vehicleBlocked = response?.driver?.ownVehicleInfo?.isBlocked
         const vehicleDeleted = response?.driver?.ownVehicleInfo?.isDeleted
 
-        const modes = response?.driver?.mode || []
-        setDriverModes(modes)
+        const rawMode = response?.driver?.mode;
+        const modes = Array.isArray(rawMode) ? rawMode : (typeof rawMode === 'string' ? [rawMode] : []);
+        setDriverModes(modes);
+        if (modes.includes('dco') && modes.includes('acting_driver')) {
+          setDriverMode('both');
+        } else if (modes.includes('acting_driver')) {
+          setDriverMode('acting_driver');
+        } else {
+          setDriverMode('driver');
+        }
 
         setTimeoutSeconds(timeoutSeconds)
         setApproved(isApproved)
@@ -458,7 +466,7 @@ const PublicRidesDriverHomeScreen = () => {
           setIsBankVerified(true)
         }
         
-        if (response?.driver?.mode.includes('dco')) {
+        if (response?.driver?.mode?.includes('dco')) {
           if(response?.driver?.role === 'dco' && (!vehicleApproved || vehicleBlocked || vehicleDeleted)){
           setStackScreen('DriverVehicleApprovalScreen');
           BGLocationTask.stopDriverBgTask();
