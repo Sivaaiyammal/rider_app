@@ -45,11 +45,36 @@ public class TripNotificationReceiver extends BroadcastReceiver {
 
         JSONObject payload = bundleToJson(extras);
         String title = payload.optString("title", "");
-        if ("new trip request".equalsIgnoreCase(title)) {
+        String normalizedTitle = title.toLowerCase().replaceAll("[^a-z0-9 ]", "").trim();
+        if ("new trip request".equals(normalizedTitle)) {
             Log.i(TAG, "Broadcast trip payload for tripId=" + tripId + " -> " + payload);
             TripNotificationDispatcher.dispatch(context, tripId, payload);
+        } else if ("driver assigned".equals(normalizedTitle)) {
+            Log.i(TAG, "Driver assigned notification received in TripNotificationReceiver.");
+
+            // Dispatch to acting dispatcher if this is an acting driver trip
+            String isActingFlag = payload.optString("isActingDriverTrip", "");
+            if ("true".equalsIgnoreCase(isActingFlag) && !tripId.trim().isEmpty()) {
+                Log.i(TAG, "Acting driver assigned; dispatching TripNotificationDispatcherActing for tripId=" + tripId);
+                TripNotificationDispatcherActing.dispatch(context, tripId, payload);
+            }
+
+            // Always play sound + vibrate
+            try {
+                com.virtualmaze.prcustomer.tripAlert.PlayTripSound.getInstance(context).playSound("driver_allocated", false);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to play driver_allocated sound", e);
+            }
+            try {
+                android.os.Vibrator vibrator = (android.os.Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+                if (vibrator != null) {
+                    vibrator.vibrate(1000);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to vibrate", e);
+            }
         } else {
-            Log.i(TAG, "TripNotificationReceiver ignored broadcast: title is not 'new trip request' (title=" + title + ")");
+            Log.i(TAG, "TripNotificationReceiver ignored broadcast: title is not matched (title=" + title + ")");
         }
     }
 

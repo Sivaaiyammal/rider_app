@@ -178,13 +178,13 @@ module.exports = function (CLASS) {
 
             
             if (passanger?.fcmToken) {
+                const notifParams = { tripId: String(trip._id), "trip_status": 'ACCEPTED' };
+                if (trip.isActingDriverTrip) notifParams.isActingDriverTrip = 'true';
                 if(req.useNotPushNotification){
-                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessageWithOTP(driver.name, otp), null, "high", { tripId: String(trip._id), "trip_status": 'ACCEPTED' });
+                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessageWithOTP(driver.name, otp), null, "high", notifParams);
                 }else{
-                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessageWithOTP(driver.name, otp), null, "high", { tripId: String(trip._id), "trip_status": 'ACCEPTED' });
-
+                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessageWithOTP(driver.name, otp), null, "high", notifParams);
                 }
-               
             }
 
             const currentTrip = await Trip.getTripById(tripId);
@@ -880,11 +880,12 @@ module.exports = function (CLASS) {
 
             
             if (passanger?.fcmToken) {
+                const notifParamsUp = { tripId: String(trip._id) };
+                if (trip.isActingDriverTrip) notifParamsUp.isActingDriverTrip = 'true';
                 if(req.useNotPushNotification){
-                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", { tripId: String(trip._id) });
-
+                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", notifParamsUp);
                 }else{  
-                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", { tripId: String(trip._id) });
+                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", notifParamsUp);
                 }
             }
 
@@ -956,11 +957,12 @@ module.exports = function (CLASS) {
 
             
             if (passanger?.fcmToken) {
+                const notifParamsSup = { tripId: String(trip._id) };
+                if (trip.isActingDriverTrip) notifParamsSup.isActingDriverTrip = 'true';
                 if(req.useNotPushNotification){
-                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", { tripId: String(trip._id) });
-
+                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", notifParamsSup);
                 }else{
-                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", { tripId: String(trip._id) });
+                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", notifParamsSup);
                 }
             }
 

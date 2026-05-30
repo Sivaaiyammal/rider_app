@@ -62,6 +62,10 @@ public final class PlayTripSound {
         playSoundInternal(soundName, loop, 0, promise);
     }
 
+    public void playSound(@Nullable String soundName, boolean loop) {
+        playSoundInternal(soundName, loop, 0, null);
+    }
+
     public void stopAlertSound() {
         stopAlertSoundInternal();
     }

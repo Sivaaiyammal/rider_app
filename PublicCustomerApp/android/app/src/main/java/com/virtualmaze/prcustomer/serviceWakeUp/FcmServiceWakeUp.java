@@ -36,19 +36,59 @@ public class FcmServiceWakeUp extends FirebaseMessagingService {
               + " body=" + msg.getNotification().getBody());
     }
     String title = data != null ? data.get("title") : null;
+    if (title == null && msg.getNotification() != null) {
+        title = msg.getNotification().getTitle();
+    }
+    String normalizedTitle = title != null ? title.toLowerCase().replaceAll("[^a-z0-9 ]", "").trim() : "";
 
-    if (TITLE_WAKEUP.equals(title)) {
+    if ("wakeupbgservice".equals(normalizedTitle)) {
       handleWakeupMessage();
       return;
     }
 
-    if (TITLE_TRIP_NOTIFICATION.equals(title)) {
-      String tripId = data.get("tripId");
+    if ("new trip request".equals(normalizedTitle)) {
+      String tripId = data != null ? data.get("tripId") : null;
       if (tripId != null && !tripId.trim().isEmpty()) {
         Log.d(TAG, "Dispatching trip notification for tripId=" + tripId);
         handleTripNotification(tripId, data);
         return;
       }
+    }
+
+    if ("driver assigned".equals(normalizedTitle)) {
+      Log.d(TAG, "Driver assigned notification received in FcmServiceWakeUp.");
+
+      // Check if this is an acting driver trip
+      String isActingDriverTrip = data != null ? data.get("isActingDriverTrip") : null;
+      String tripId = data != null ? data.get("tripId") : null;
+      boolean isActing = "true".equalsIgnoreCase(isActingDriverTrip);
+
+      if (isActing && tripId != null && !tripId.trim().isEmpty()) {
+        Log.i(TAG, "Acting driver assigned, dispatching TripNotificationDispatcherActing for tripId=" + tripId);
+        JSONObject payload = new JSONObject();
+        if (data != null) {
+          for (Map.Entry<String, String> entry : data.entrySet()) {
+            try { payload.put(entry.getKey(), entry.getValue()); } catch (JSONException ignored) {}
+          }
+        }
+        TripNotificationDispatcherActing.dispatch(getApplicationContext(), tripId, payload);
+      }
+
+      // Always play sound + vibrate for driver assigned
+      try {
+        com.virtualmaze.prcustomer.tripAlert.PlayTripSound.getInstance(getApplicationContext()).playSound("driver_allocated", false);
+      } catch (Exception e) {
+        Log.e(TAG, "Failed to play driver_allocated sound", e);
+      }
+      try {
+        android.os.Vibrator vibrator = (android.os.Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator != null) {
+          vibrator.vibrate(1000);
+        }
+      } catch (Exception e) {
+        Log.e(TAG, "Failed to vibrate", e);
+      }
+      return;
     }
     Log.d(TAG, "FCM message did not match known handlers");
   }

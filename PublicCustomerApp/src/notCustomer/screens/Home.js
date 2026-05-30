@@ -6,7 +6,7 @@ import { RequestAllPermissions } from '../controllers/PermissionHandler';
 import locationTask from '../controllers/GetCurrentLocation';
 import SearchScreen from '../features/search/screens/SearchScreen';
 import WaypointScreen from '../features/booking/screens/WaypointScreen';
-import { StatusBar, View, StyleSheet, AppState, Platform, Alert } from 'react-native';
+import { StatusBar, View, StyleSheet, AppState, Platform, Alert, DeviceEventEmitter } from 'react-native';
 import LottieView from 'lottie-react-native';
 import messaging from '@react-native-firebase/messaging';
 import useUserInfoStore from '../../common/store/useUserInfoStore.js';
@@ -695,6 +695,15 @@ const Home = () => {
         global.checkOnGoingRideAndLog = undefined;
       }
     };
+  }, [checkOnGoingRideAndLog]);
+
+  // When the customer taps an acting-driver-assigned push notification, Android emits
+  // this event. We poll the API and navigate to RideStatus (same path as socket events).
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener('onActingDriverTripAssigned', () => {
+      checkOnGoingRideAndLog(true);
+    });
+    return () => sub.remove();
   }, [checkOnGoingRideAndLog]);
 
 
