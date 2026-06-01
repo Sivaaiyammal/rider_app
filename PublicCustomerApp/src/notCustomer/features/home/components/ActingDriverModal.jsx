@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,114 +7,145 @@ import {
   Modal,
   ActivityIndicator,
   ScrollView,
-  Image,
-  FlatList,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DatePicker from 'react-native-date-picker';
+import { Calendar } from 'react-native-calendars';
 import PropTypes from 'prop-types';
 import { colors, Fonts, actingDriverColors } from '../../../constants/constants';
-import { DataStore } from '../../../controllers/DataStore';
 import { utils } from '../../../utils/Utils';
 
-const TRIP_TABS = [
-  {
-    key: 'LOCAL',
-    label: 'Local',
-    image: require('../../../assets/markers/hatchback.png'),
-    badgeIcon: 'location',
-  },
-  {
-    key: 'RENTAL',
-    label: 'Rental',
-    image: require('../../../assets/markers/sedan.png'),
-    badgeIcon: 'time',
-  },
-  {
-    key: 'OUTSTATION',
-    label: 'Outstation',
-    image: require('../../../assets/markers/suv.png'),
-    badgeIcon: 'compass',
-  },
-  // {
-  //   key: 'BIKE',
-  //   label: 'Bike',
-  //   image: require('../../../assets/markers/bike.png'),
-  //   badgeIcon: null,
-  // },
-  // {
-  //   key: 'AUTO',
-  //   label: 'Auto',
-  //   image: require('../../../assets/image/vehicle/auto.png'),
-  //   badgeIcon: null,
-  // },
+const DATE_TABS = [
+  { key: 'TODAY', label: 'Today', icon: 'calendar-clear-outline' },
+  { key: 'TOMORROW', label: 'Tomorrow', icon: 'calendar-outline' },
+  { key: 'SCHEDULE', label: 'Schedule', icon: 'time-outline' },
+  { key: 'CUSTOM', label: 'Custom Dates', icon: 'calendar-number-outline' },
 ];
 
-const RENTAL_PACKAGES = [
-  { hours: 1, kms: 10, label: '1 hr', sub: '10 Kms' },
-  { hours: 2, kms: 20, label: '2 hrs', sub: '20 Kms' },
-  { hours: 3, kms: 30, label: '3 hrs', sub: '30 Kms' },
-  { hours: 4, kms: 40, label: '4 hrs', sub: '40 Kms' },
-  { hours: 6, kms: 60, label: '6 hrs', sub: '60 Kms' },
-  { hours: 8, kms: 80, label: '8 hrs', sub: '80 Kms' },
-  { hours: 10, kms: 100, label: '10 hrs', sub: '100 Kms' },
-  { hours: 12, kms: 120, label: '12 hrs', sub: '120 Kms' }
-];
+const formatCalendarDate = (date) => {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const ActingDriverModal = ({ visible, onClose, onTripTypeSelect, loading }) => {
-  const [activeTab, setActiveTab] = useState('LOCAL');
-  const [selectedPackage, setSelectedPackage] = useState(RENTAL_PACKAGES[0]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [openDatePicker, setOpenDatePicker] = useState(false);
-  const [recentSearches, setRecentSearches] = useState([]);
+  const [activeTab, setActiveTab] = useState('TODAY');
+  
+  // Duration state
+  const [durationOption, setDurationOption] = useState('HOURLY'); // 'HOURLY', 'FULL_DAY', 'CUSTOM_HOURS'
+  const [customHours, setCustomHours] = useState(4);
+  
+  // Date/Time state
+  const [scheduleDateTime, setScheduleDateTime] = useState(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  
+  // Custom Date Range state
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
-  // Fetch recent searches
-  useEffect(() => {
-    if (visible) {
-      const fetchRecent = async () => {
-        try {
-          const data = await DataStore.loadData('recentSearches');
-          setRecentSearches(data?.data?.slice(0, 5) || []);
-        } catch (e) {
-          console.log('Error loading searches in acting driver modal:', e);
-        }
-      };
-      fetchRecent();
-    }
-  }, [visible]);
-
-  const handleSearchPress = () => {
-    onTripTypeSelect(activeTab, selectedDate, selectedPackage, null);
+  const handleProceed = () => {
+    onTripTypeSelect({
+      bookingTab: activeTab,
+      durationOption,
+      customHours,
+      scheduleDateTime,
+      startDate,
+      endDate
+    });
   };
 
-  const handleRecentPress = (item) => {
-    onTripTypeSelect(activeTab, selectedDate, selectedPackage, item);
-  };
-
-  const renderRecentItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.recentItem}
-      onPress={() => handleRecentPress(item)}
-      activeOpacity={0.7}
-    >
-      <View style={styles.recentIconWrap}>
-        <Ionicons name="location" size={20} color={actingDriverColors.secondary} />
-      </View>
-      <View style={styles.recentTextWrap}>
-        <Text style={styles.recentName} numberOfLines={1}>
-          {item.name ? item.name.charAt(0).toUpperCase() + item.name.slice(1) : ''}
-        </Text>
-        {item.address && (
-          <Text style={styles.recentAddress} numberOfLines={1}>
-            {utils.formatArrayAddress(item.address)}
+  const renderDurationSelector = () => (
+    <View style={styles.sectionContainer}>
+      <Text style={styles.sectionLabel}>Select Duration</Text>
+      <View style={styles.chipsRow}>
+        <TouchableOpacity
+          style={[styles.chipButton, durationOption === 'HOURLY' && styles.chipButtonSelected]}
+          onPress={() => setDurationOption('HOURLY')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.chipText, durationOption === 'HOURLY' && styles.chipTextSelected]}>
+            Hourly
           </Text>
-        )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.chipButton, durationOption === 'FULL_DAY' && styles.chipButtonSelected]}
+          onPress={() => setDurationOption('FULL_DAY')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.chipText, durationOption === 'FULL_DAY' && styles.chipTextSelected]}>
+            Full Day (12 hrs)
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.chipButton, durationOption === 'CUSTOM_HOURS' && styles.chipButtonSelected]}
+          onPress={() => setDurationOption('CUSTOM_HOURS')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.chipText, durationOption === 'CUSTOM_HOURS' && styles.chipTextSelected]}>
+            Custom Hours
+          </Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.heartBtn} activeOpacity={0.6}>
-        <Ionicons name="heart-outline" size={20} color={colors.grey_dark} />
-      </TouchableOpacity>
-    </TouchableOpacity>
+
+      {durationOption === 'CUSTOM_HOURS' && (
+        <View style={styles.stepperContainer}>
+          <Text style={styles.stepperLabel}>Duration (Hours)</Text>
+          <View style={styles.stepperRow}>
+            <TouchableOpacity
+              style={styles.stepperBtn}
+              onPress={() => setCustomHours(prev => Math.max(1, prev - 1))}
+            >
+              <Ionicons name="remove-circle-outline" size={24} color={actingDriverColors.secondary} />
+            </TouchableOpacity>
+            <Text style={styles.stepperValue}>{customHours} {customHours === 1 ? 'Hour' : 'Hours'}</Text>
+            <TouchableOpacity
+              style={styles.stepperBtn}
+              onPress={() => setCustomHours(prev => Math.min(24, prev + 1))}
+            >
+              <Ionicons name="add-circle-outline" size={24} color={actingDriverColors.secondary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+    </View>
   );
+
+  const getMarkedDates = () => {
+    if (!startDate) return {};
+    const marked = {};
+    const start = new Date(startDate);
+    const end = endDate ? new Date(endDate) : new Date(startDate);
+    
+    let current = new Date(start);
+    while (current <= end) {
+      const dateString = formatCalendarDate(current);
+      marked[dateString] = {
+        color: actingDriverColors.primary,
+        textColor: actingDriverColors.secondary,
+        startingDay: dateString === startDate,
+        endingDay: dateString === (endDate || startDate),
+      };
+      current.setDate(current.getDate() + 1);
+    }
+    return marked;
+  };
+
+  const handleDayPress = (day) => {
+    const selectedDate = day.dateString;
+    if (!startDate || (startDate && endDate)) {
+      setStartDate(selectedDate);
+      setEndDate(null);
+    } else if (selectedDate < startDate) {
+      setStartDate(selectedDate);
+      setEndDate(null);
+    } else {
+      setEndDate(selectedDate);
+    }
+  };
+
+  const isProceedDisabled = activeTab === 'CUSTOM' && (!startDate);
 
   return (
     <Modal
@@ -123,48 +154,23 @@ const ActingDriverModal = ({ visible, onClose, onTripTypeSelect, loading }) => {
       transparent
       onRequestClose={onClose}
     >
-      <DatePicker
-        modal
-        open={openDatePicker}
-        date={selectedDate}
-        mode="date"
-        minimumDate={new Date()}
-        theme="light"
-        onConfirm={(date) => {
-          setOpenDatePicker(false);
-          setSelectedDate(date);
-        }}
-        onCancel={() => {
-          setOpenDatePicker(false);
-        }}
-      />
-
-      {/* Overlay */}
-      <TouchableOpacity
-        style={styles.overlay}
-        activeOpacity={1}
-        onPress={onClose}
-      />
-
-      {/* Bottom sheet panel */}
+      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose} />
+      
       <View style={styles.panel}>
-        {/* Drag Handle */}
         <View style={styles.handle} />
-
-        {/* Top Header */}
+        
         <View style={styles.header}>
           <View>
             <Text style={styles.title}>Acting Driver</Text>
-            <Text style={styles.subtitle}>Book professional drivers for your vehicle</Text>
+            <Text style={styles.subtitle}>Plan your trip timeline</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
             <Ionicons name="close" size={24} color={actingDriverColors.secondary} />
           </TouchableOpacity>
         </View>
 
-        {/* Category Tabs (Local, Rental, Outstation) */}
         <View style={styles.tabsContainer}>
-          {TRIP_TABS.map((tab) => {
+          {DATE_TABS.map((tab) => {
             const isSelected = activeTab === tab.key;
             return (
               <TouchableOpacity
@@ -173,115 +179,91 @@ const ActingDriverModal = ({ visible, onClose, onTripTypeSelect, loading }) => {
                 onPress={() => setActiveTab(tab.key)}
                 activeOpacity={0.8}
               >
-                <View style={styles.tabImageWrapper}>
-                  <Image source={tab.image} style={styles.tabImage} resizeMode="contain" />
-                  {tab.badgeIcon && (
-                    <View style={styles.badgeOverlay}>
-                      <Ionicons name={tab.badgeIcon} size={10} color={colors.white} />
-                    </View>
-                  )}
-                </View>
-                {isSelected ? (
-                  <View style={styles.selectedPill}>
-                    <Text style={styles.selectedPillText}>{tab.label}</Text>
-                  </View>
-                ) : (
-                  <Text style={styles.tabLabel}>{tab.label}</Text>
-                )}
+                <Ionicons 
+                  name={tab.icon} 
+                  size={24} 
+                  color={isSelected ? actingDriverColors.secondary : colors.grey_dark} 
+                  style={styles.tabIcon}
+                />
+                <Text style={[styles.tabLabel, isSelected && styles.tabLabelSelected]}>
+                  {tab.label}
+                </Text>
+                {isSelected && <View style={styles.activeIndicator} />}
               </TouchableOpacity>
             );
           })}
         </View>
 
-        {/* Content based on Active Tab */}
-        {activeTab === 'RENTAL' && (
-          <View style={styles.rentalSection}>
-            <Text style={styles.sectionLabel}>Choose Package</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.packagesScroll}
-            >
-              {RENTAL_PACKAGES.map((pkg) => {
-                const isPkgSelected = selectedPackage.hours === pkg.hours;
-                return (
-                  <TouchableOpacity
-                    key={pkg.hours}
-                    style={[
-                      styles.packageCard,
-                      isPkgSelected && styles.packageCardActive,
-                    ]}
-                    onPress={() => setSelectedPackage(pkg)}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={[styles.packageHrs, isPkgSelected && styles.packageHrsActive]}>
-                      {pkg.label}
-                    </Text>
-                    {/* <Text style={styles.packageKms}>{pkg.sub}</Text> */}
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-            <View style={styles.rentalBanner}>
-              <Text style={styles.rentalBannerText}>
-                Hourly Rentals, Budget-Friendly Prices, Trusted Journeys - Unlock a better ride with Red Taxi Rental.
-              </Text>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {activeTab === 'TOMORROW' && (
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionLabel}>Select Start Time</Text>
+              <TouchableOpacity
+                style={styles.selectorBox}
+                onPress={() => setShowTimePicker(true)}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="time-outline" size={20} color={actingDriverColors.secondary} />
+                <Text style={styles.selectorText}>
+                  {utils.timestampTo12HourFormat(scheduleDateTime)}
+                </Text>
+                <Ionicons name="chevron-forward" size={18} color={colors.grey_dark} />
+              </TouchableOpacity>
             </View>
-          </View>
-        )}
+          )}
 
-        {activeTab === 'OUTSTATION' && (
-          <View style={styles.outstationSection}>
-            <Text style={styles.sectionLabel}>Select Departure Date</Text>
-            <TouchableOpacity
-              style={styles.dateSelector}
-              onPress={() => setOpenDatePicker(true)}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="calendar-outline" size={20} color={actingDriverColors.primary} />
-              <Text style={styles.dateText}>
-                {utils.formatDate(selectedDate, 'DD MMM YYYY, ddd')}
-              </Text>
-              <Ionicons name="chevron-forward-outline" size={18} color={colors.grey_dark} />
-            </TouchableOpacity>
-          </View>
-        )}
+          {activeTab === 'SCHEDULE' && (
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionLabel}>Select Date & Time</Text>
+              <TouchableOpacity
+                style={styles.selectorBox}
+                onPress={() => setShowDatePicker(true)}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="calendar-outline" size={20} color={actingDriverColors.secondary} />
+                <Text style={styles.selectorText}>
+                  {utils.formatDate(scheduleDateTime, 'DD MMM YYYY, hh:mm A')}
+                </Text>
+                <Ionicons name="chevron-forward" size={18} color={colors.grey_dark} />
+              </TouchableOpacity>
+            </View>
+          )}
 
-        {/* Search Input Box */}
-        {activeTab !== 'RENTAL' && (
-          <TouchableOpacity
-            style={styles.searchBox}
-            activeOpacity={0.8}
-            onPress={handleSearchPress}
-          >
-            <Ionicons name="search-outline" size={20} color={colors.grey_xxdark} />
-            <Text style={styles.searchPlaceholder}>Where do you want to go?</Text>
-          </TouchableOpacity>
-        )}
+          {activeTab !== 'CUSTOM' && renderDurationSelector()}
 
-        {activeTab === 'RENTAL' && (
-          <TouchableOpacity
-            style={styles.proceedButton}
-            activeOpacity={0.8}
-            onPress={handleSearchPress}
-          >
-            <Text style={styles.proceedButtonText}>Proceed to Location Selection</Text>
-            <Ionicons name="arrow-forward-outline" size={18} color={colors.white} />
-          </TouchableOpacity>
-        )}
+          {activeTab === 'CUSTOM' && (
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionLabel}>Select Date Range</Text>
+              <Calendar
+                minDate={formatCalendarDate(new Date())}
+                onDayPress={handleDayPress}
+                markingType="period"
+                markedDates={getMarkedDates()}
+                theme={{
+                  calendarBackground: colors.white_dirt,
+                  textSectionTitleColor: colors.grey_xxdark,
+                  todayTextColor: actingDriverColors.secondary,
+                  dayTextColor: colors.black,
+                  textDayFontFamily: Fonts.regular,
+                  textMonthFontFamily: Fonts.medium,
+                  textDayHeaderFontFamily: Fonts.medium,
+                  arrowColor: actingDriverColors.secondary,
+                }}
+                style={styles.calendar}
+              />
+            </View>
+          )}
+        </ScrollView>
 
-        {/* Recent Places List */}
-        {activeTab !== 'RENTAL' && recentSearches.length > 0 && (
-          <View style={styles.recentSection}>
-            <FlatList
-              data={recentSearches}
-              renderItem={renderRecentItem}
-              keyExtractor={(item, index) => index.toString()}
-              scrollEnabled={false}
-              ItemSeparatorComponent={() => <View style={styles.divider} />}
-            />
-          </View>
-        )}
+        <TouchableOpacity
+          style={[styles.proceedButton, isProceedDisabled && styles.proceedButtonDisabled]}
+          activeOpacity={0.8}
+          onPress={handleProceed}
+          disabled={isProceedDisabled}
+        >
+          <Text style={styles.proceedButtonText}>Proceed to Plan Trip</Text>
+          <Ionicons name="arrow-forward-outline" size={18} color={colors.white} />
+        </TouchableOpacity>
 
         {loading && (
           <View style={styles.loadingRow}>
@@ -290,6 +272,33 @@ const ActingDriverModal = ({ visible, onClose, onTripTypeSelect, loading }) => {
           </View>
         )}
       </View>
+
+      <DatePicker
+        modal
+        open={showTimePicker}
+        date={scheduleDateTime}
+        mode="time"
+        theme="light"
+        onConfirm={(date) => {
+          setShowTimePicker(false);
+          setScheduleDateTime(date);
+        }}
+        onCancel={() => setShowTimePicker(false)}
+      />
+
+      <DatePicker
+        modal
+        open={showDatePicker}
+        date={scheduleDateTime}
+        mode="datetime"
+        minimumDate={new Date()}
+        theme="light"
+        onConfirm={(date) => {
+          setShowDatePicker(false);
+          setScheduleDateTime(date);
+        }}
+        onCancel={() => setShowDatePicker(false)}
+      />
     </Modal>
   );
 };
@@ -308,7 +317,7 @@ ActingDriverModal.defaultProps = {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   panel: {
     backgroundColor: actingDriverColors.background,
@@ -327,8 +336,6 @@ const styles = StyleSheet.create({
     backgroundColor: actingDriverColors.border,
     marginBottom: 16,
   },
-
-  /* Header */
   header: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -350,163 +357,123 @@ const styles = StyleSheet.create({
     padding: 4,
     marginTop: 2,
   },
-
-  /* Category Tabs */
   tabsContainer: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 24,
-    paddingVertical: 10,
-    marginBottom: 16,
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    backgroundColor: colors.white_dirt,
+    borderRadius: 12,
+    padding: 4,
   },
   tabItem: {
+    flex: 1,
     alignItems: 'center',
-    minWidth: 90,
-    paddingVertical: 6,
+    paddingVertical: 10,
+    position: 'relative',
   },
-  tabItemActive: {
-    // any active tab item outer container styles if needed
-  },
-  tabImageWrapper: {
-    width: 60,
-    height: 45,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  tabImage: {
-    width: '100%',
-    height: '100%',
-  },
-  badgeOverlay: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    backgroundColor: actingDriverColors.secondary,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: colors.white,
+  tabIcon: {
+    marginBottom: 4,
   },
   tabLabel: {
-    fontSize: 14,
-    fontFamily: Fonts.regular,
-    color: colors.grey_xxdark,
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: colors.grey_dark,
   },
-  selectedPill: {
-    backgroundColor: actingDriverColors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  selectedPillText: {
-    fontSize: 13,
-    fontFamily: Fonts.semi_bold,
+  tabLabelSelected: {
     color: actingDriverColors.secondary,
+    fontFamily: Fonts.bold || Fonts.semi_bold,
   },
-
-  /* Search Box */
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: colors.white_dirt,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: actingDriverColors.border,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    marginBottom: 16,
+  activeIndicator: {
+    position: 'absolute',
+    bottom: -4,
+    width: '40%',
+    height: 3,
+    backgroundColor: actingDriverColors.secondary,
+    borderRadius: 3,
   },
-  searchPlaceholder: {
-    fontSize: 15,
-    fontFamily: Fonts.regular,
-    color: colors.grey_xxdark,
-    flex: 1,
-  },
-
-  /* Outstation section */
-  outstationSection: {
-    marginBottom: 16,
+  sectionContainer: {
+    marginBottom: 20,
   },
   sectionLabel: {
-    fontSize: 13,
-    fontFamily: Fonts.medium,
+    fontSize: 14,
+    fontFamily: Fonts.semi_bold || Fonts.medium,
     color: actingDriverColors.secondary,
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  dateSelector: {
+  chipsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
     gap: 10,
-    backgroundColor: colors.white_dirt,
-    borderRadius: 14,
+  },
+  chipButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: actingDriverColors.border,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
   },
-  dateText: {
-    fontSize: 15,
+  chipButtonSelected: {
+    backgroundColor: actingDriverColors.primary,
+    borderColor: actingDriverColors.primary,
+  },
+  chipText: {
+    fontSize: 14,
     fontFamily: Fonts.medium,
+    color: colors.grey_xxdark,
+  },
+  chipTextSelected: {
     color: actingDriverColors.secondary,
-    flex: 1,
+    fontFamily: Fonts.semi_bold,
   },
-
-  /* Rental Section */
-  rentalSection: {
-    marginBottom: 16,
-  },
-  packagesScroll: {
-    gap: 10,
-    paddingBottom: 10,
-  },
-  packageCard: {
-    width: 80,
-    height: 70,
+  stepperContainer: {
+    marginTop: 16,
     backgroundColor: colors.white,
     borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
     borderColor: actingDriverColors.border,
+  },
+  stepperLabel: {
+    fontSize: 13,
+    fontFamily: Fonts.medium,
+    color: colors.grey_dark,
+    marginBottom: 12,
+  },
+  stepperRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 2,
+    justifyContent: 'space-between',
   },
-  packageCardActive: {
-    borderColor: actingDriverColors.primary,
-    borderWidth: 2,
+  stepperBtn: {
+    padding: 8,
   },
-  packageHrs: {
-    fontSize: 15,
+  stepperValue: {
+    fontSize: 16,
     fontFamily: Fonts.bold,
     color: actingDriverColors.secondary,
   },
-  packageHrsActive: {
-    color: actingDriverColors.secondary,
-  },
-  packageKms: {
-    fontSize: 11,
-    fontFamily: Fonts.regular,
-    color: colors.grey_xxdark,
-  },
-  rentalBanner: {
-    backgroundColor: colors.white_dirt,
+  selectorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: actingDriverColors.border,
     borderRadius: 12,
     padding: 14,
-    marginTop: 10,
+    gap: 12,
   },
-  rentalBannerText: {
-    fontSize: 12,
-    fontFamily: Fonts.regular,
-    color: colors.grey_xxdark,
-    lineHeight: 18,
+  selectorText: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: Fonts.medium,
+    color: actingDriverColors.secondary,
   },
-
-  /* Proceed Button */
+  calendar: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: actingDriverColors.border,
+  },
   proceedButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -515,61 +482,22 @@ const styles = StyleSheet.create({
     backgroundColor: actingDriverColors.secondary,
     borderRadius: 14,
     paddingVertical: 16,
-    marginBottom: 16,
+    marginTop: 8,
+  },
+  proceedButtonDisabled: {
+    opacity: 0.5,
   },
   proceedButtonText: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: Fonts.semi_bold,
     color: colors.white,
   },
-
-  /* Recent Searches */
-  recentSection: {
-    marginTop: 8,
-  },
-  recentItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  recentIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.white_dirt,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  recentTextWrap: {
-    flex: 1,
-  },
-  recentName: {
-    fontSize: 15,
-    fontFamily: Fonts.medium,
-    color: actingDriverColors.secondary,
-    marginBottom: 2,
-  },
-  recentAddress: {
-    fontSize: 12,
-    fontFamily: Fonts.regular,
-    color: colors.grey_xxdark,
-  },
-  heartBtn: {
-    padding: 6,
-  },
-  divider: {
-    height: 0.5,
-    backgroundColor: actingDriverColors.border,
-  },
-
-  /* Loading State */
   loadingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginTop: 10,
+    marginTop: 12,
   },
   loadingText: {
     fontSize: 13,

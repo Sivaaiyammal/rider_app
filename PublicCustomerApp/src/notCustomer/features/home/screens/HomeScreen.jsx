@@ -124,6 +124,10 @@ const MapScreen = () => {
     setActingDriverHours,
     setTodayDurationOption,
     setTodayCustomHours,
+    setTomorrowDurationOption,
+    setTomorrowCustomHours,
+    setTomorrowStartTime,
+    setCustomStartTime,
   } = useRideBookingInfo();
   const { fetchLatestDrivers, driversAll } = useNearbyDrivers();
  
@@ -577,58 +581,76 @@ const MapScreen = () => {
       
     }, [setSelectedVehicle, makeRidePlan, setCurrentLoactionPickupLocation, setStackScreen, setActingDriverVehicle])
 
-  const handleActingDriverTripType = React.useCallback(async (tripType, selectedDate, selectedPackage, endLocation) => {
+  const handleActingDriverTripType = React.useCallback(async (bookingData) => {
     try {
       setActingDriverLoading(true);
       const response = await getPassangerVehicles();
       setShowActingDriverModal(false);
-
-      let resolvedTripType = tripType;
-      if (endLocation && isOutsideTirupur(endLocation)) {
-        if (tripType !== 'OUTSTATION') {
-          resolvedTripType = 'OUTSTATION';
-          Alert.alert(
-            'Outstation Ride',
-            'Destination is outside Tirupur, so the booking type has been updated to Outstation.'
-          );
-        }
-      }
 
       if (response?.success && response?.vehicles?.length > 0) {
         const firstVehicle = response.vehicles[0];
         setActingDriverVehicle(firstVehicle);
         setCurrentLoactionPickupLocation();
 
-        if (endLocation) {
-          setRideEndLocation(endLocation);
-        }
+        const { bookingTab, durationOption, customHours, scheduleDateTime, startDate, endDate } = bookingData;
+        setBookingTab(bookingTab);
 
-        if (resolvedTripType === 'OUTSTATION') {
-          const year = (selectedDate || new Date()).getFullYear();
-          const month = `${(selectedDate || new Date()).getMonth() + 1}`.padStart(2, '0');
-          const day = `${(selectedDate || new Date()).getDate()}`.padStart(2, '0');
+        if (bookingTab === 'TODAY') {
+          if (durationOption === 'HOURLY') {
+             setTodayDurationOption('1_HOUR');
+             setActingDriverHours(1);
+          } else if (durationOption === 'FULL_DAY') {
+             setTodayDurationOption('CUSTOM_HOURS');
+             setTodayCustomHours(12);
+             setActingDriverHours(12);
+          } else if (durationOption === 'CUSTOM_HOURS') {
+             setTodayDurationOption('CUSTOM_HOURS');
+             setTodayCustomHours(customHours);
+             setActingDriverHours(customHours);
+          }
+        } else if (bookingTab === 'TOMORROW') {
+          if (durationOption === 'HOURLY') {
+             setTomorrowDurationOption('HOURLY');
+             setTomorrowCustomHours(1);
+             setActingDriverHours(1);
+          } else if (durationOption === 'FULL_DAY') {
+             setTomorrowDurationOption('HOURLY');
+             setTomorrowCustomHours(12);
+             setActingDriverHours(12);
+          } else if (durationOption === 'CUSTOM_HOURS') {
+             setTomorrowDurationOption('HOURLY');
+             setTomorrowCustomHours(customHours);
+             setActingDriverHours(customHours);
+          }
+          if (scheduleDateTime) {
+             setTomorrowStartTime(scheduleDateTime);
+          }
+        } else if (bookingTab === 'SCHEDULE') {
+          setBookingTab('SCHEDULE');
+          const year = scheduleDateTime.getFullYear();
+          const month = `${scheduleDateTime.getMonth() + 1}`.padStart(2, '0');
+          const day = `${scheduleDateTime.getDate()}`.padStart(2, '0');
           const formattedDate = `${year}-${month}-${day}`;
-          setBookingTab('CUSTOM');
+          
           setDurationRangeStart(formattedDate);
           setDurationRangeEnd(formattedDate);
-          setActingDriverHours(24);
-        } else if (resolvedTripType === 'RENTAL' && selectedPackage) {
-          const hours = selectedPackage.hours;
-          setBookingTab('TODAY');
-          setTodayDurationOption(hours === 1 ? '1_HOUR' : 'CUSTOM');
-          if (hours !== 1) {
-            setTodayCustomHours(hours);
+          setCustomStartTime(scheduleDateTime);
+          
+          if (durationOption === 'HOURLY') {
+             setActingDriverHours(1);
+          } else if (durationOption === 'FULL_DAY') {
+             setActingDriverHours(12);
+          } else if (durationOption === 'CUSTOM_HOURS') {
+             setActingDriverHours(customHours);
           }
-          setActingDriverHours(hours);
-        } else {
-          setBookingTab('TODAY');
-          setTodayDurationOption('1_HOUR');
-          setActingDriverHours(1);
+        } else if (bookingTab === 'CUSTOM') {
+          setDurationRangeStart(startDate);
+          setDurationRangeEnd(endDate || startDate);
+          // PlanRideScreen calculates actingDriverHours based on date range
         }
 
         makeRidePlan({
           mode: 'ACTING_DRIVER',
-          actingDriverTripType: resolvedTripType,
           preselectedVehicleType: firstVehicle.type,
           vehicle: firstVehicle,
         });
@@ -644,7 +666,7 @@ const MapScreen = () => {
     } finally {
       setActingDriverLoading(false);
     }
-  }, [makeRidePlan, setCurrentLoactionPickupLocation, setStackScreen, setActingDriverVehicle, setRideEndLocation, setBookingTab, setDurationRangeStart, setDurationRangeEnd, setActingDriverHours, setTodayDurationOption, setTodayCustomHours]);
+  }, [makeRidePlan, setCurrentLoactionPickupLocation, setStackScreen, setActingDriverVehicle, setRideEndLocation, setBookingTab, setDurationRangeStart, setDurationRangeEnd, setActingDriverHours, setTodayDurationOption, setTodayCustomHours, setTomorrowDurationOption, setTomorrowCustomHours, setTomorrowStartTime, setCustomStartTime]);
 
     const renderBottomSheetHandle = useCallback((handleProps) => (
       <BottomSheetHeader {...handleProps} makeRidePlan={makeRidePlan} />

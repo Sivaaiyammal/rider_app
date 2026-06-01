@@ -14,7 +14,7 @@ buildscript {
 
         // Kotlin / AGP
         kotlinVersion                = "2.2.0"
-        androidGradlePluginVersion   = "8.5.2"
+        androidGradlePluginVersion   = '8.13.2'
     }
     repositories {
         google()

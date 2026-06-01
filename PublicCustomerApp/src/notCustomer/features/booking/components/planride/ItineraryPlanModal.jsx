@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -12,18 +12,29 @@ import PropTypes from 'prop-types';
 import { colors, Fonts, actingDriverColors } from '../../../../constants/constants';
 import { utils } from '../../../../utils/Utils';
 import NavBar from '../../../../components/NavBar';
+import useRideBookingLocationStore from '../../store/useRideBookingLocationStore';
+import { useTranslation } from 'react-i18next';
+import useRideBookingInfo from '../../store/useRideBookingInfo';
 import RideLocationSetBox from './RideLocationSetBox';
+import { addLocation } from '../../../../styles/AddLocationStyles';
 
 const ItineraryPlanModal = ({
   visible,
   onClose,
   itineraryDates,
-  actingDriverItinerary,
-  setActingDriverItinerary,
-  onAddWaypoint,
   onLocationClick,
+  onTripForPress,
+  onAddWaypoint,
 }) => {
-  const [activeDay, setActiveDay] = useState(0);
+  const { t } = useTranslation();
+  const { rideBookMode, passangerDetails } = useRideBookingInfo();
+  const { rideStartLocation, rideEndLocation } = useRideBookingLocationStore();
+
+  const destination = rideEndLocation ? utils.formatAddressName(rideEndLocation) : 'Select Destination';
+  const pickup = rideStartLocation ? utils.formatAddressName(rideStartLocation) : 'Select Pickup Location';
+
+  // Fallback to at least 1 day if empty
+  const datesToRender = itineraryDates?.length > 0 ? itineraryDates : [new Date().toISOString()];
 
   return (
     <Modal
@@ -33,114 +44,76 @@ const ItineraryPlanModal = ({
       onRequestClose={onClose}
     >
       <View style={styles.container}>
-
-        {/* NavBar — same as every other screen */}
         <NavBar
           withBg
           onBackPress={onClose}
           title="Plan Your Itinerary"
         />
 
-        {/* Day Phase Tabs */}
-        <View style={styles.dayTabsWrapper}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.dayTabsContent}
-          >
-            {itineraryDates.map((dateStr, idx) => (
-              <TouchableOpacity
-                key={dateStr}
-                style={[styles.dayTab, activeDay === idx && styles.dayTabActive]}
-                onPress={() => setActiveDay(idx)}
-                activeOpacity={0.8}
-              >
-                <Text style={[styles.dayTabLabel, activeDay === idx && styles.dayTabLabelActive]}>
-                  Day {idx + 1}
-                </Text>
-                <Text style={[styles.dayTabDate, activeDay === idx && styles.dayTabDateActive]}>
-                  {utils.formatDate(dateStr, 'DD MMM')}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {/* Scrollable Content */}
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
         >
-          {/* Active Day Header Banner */}
-          {itineraryDates[activeDay] && (
-            <View style={styles.activeDayBanner}>
-              <View style={styles.activeDayIconWrap}>
-                <Ionicons name="time-outline" size={20} color={actingDriverColors.secondary} />
-              </View>
-              <View style={styles.activeDayTextWrap}>
-                <Text style={styles.activeDayTitle}>
-                  Day {activeDay + 1} Route
-                </Text>
-                <Text style={styles.activeDaySubtitle}>
-                  {utils.formatDate(itineraryDates[activeDay], 'dddd, DD MMMM YYYY')}
-                </Text>
-              </View>
-            </View>
-          )}
+          {/* Header Row */}
+          <View style={styles.headerRow}>
+            <Text style={styles.headerTitle}>Daily Schedule</Text>
+            <Text style={styles.headerSubtitle}>{datesToRender.length} Stops Planned</Text>
+          </View>
 
-          {/* Location Set Box — updates label/date per active day */}
-          <RideLocationSetBox
-            onAddWaypoint={onAddWaypoint}
-            onLocationClick={onLocationClick}
-            hideDestination={false}
-            dayHeader={null} // We show the customized activeDayBanner instead!
-          />
+          {/* Timeline Cards */}
+          <View style={styles.timelineContainer}>
+            {datesToRender.map((dateStr, index) => {
+              // Placeholder titles like the reference image
+              const titles = ["Arrival & Transit", "Corporate Site Visit", "Return Flight"];
+              const dayTitle = titles[index % titles.length];
 
-          {/* Summary Cards */}
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>Trip Summary</Text>
+              // Generic times for UI aesthetics
+              const times = ["08:30 AM", "09:15 AM", "02:00 PM"];
+              const dayTime = times[index % times.length];
 
-            <View style={styles.summaryGrid}>
-              <View style={styles.summaryCard}>
-                <View style={styles.summaryCardHeader}>
-                  <Ionicons name="calendar-outline" size={20} color={actingDriverColors.secondary} />
-                  <Text style={styles.summaryLabel}>Duration</Text>
+              // Generic pill values
+              const durations = ["1h 20m", "55m", "1h 45m"];
+              const distances = ["24.5 mi", "42.1 mi", "31.2 mi"];
+              const duration = durations[index % durations.length];
+              const distance = distances[index % distances.length];
+
+              return (
+                <View key={index} style={styles.cardContainer}>
+                  {/* Top Row: Circle + Title + Time */}
+                  <View style={styles.cardHeaderRow}>
+                    <View style={styles.dayCircle}>
+                      <Text style={styles.dayCircleText}>{index + 1}</Text>
+                    </View>
+                    <Text style={styles.dayTitle}>Day {index + 1}: {dayTitle}</Text>
+                    <Text style={styles.dayTime}>{dayTime}</Text>
+                  </View>
+
+                  {/* Body Row: Dashed Line + Content */}
+                  <View style={styles.cardBodyRow}>
+                    <View style={styles.dashedLineContainer}>
+                      <View style={styles.verticalDashedLine} />
+                    </View>
+
+                    <View style={styles.cardContent}>
+                      {/* Interactive Location Set Box */}
+                      <RideLocationSetBox 
+                        onAddWaypoint={onAddWaypoint}
+                        onLocationClick={onLocationClick}
+                        hideDestination={false}
+                        dayHeader={null}
+                      />
+                    </View>
+                  </View>
                 </View>
-                <Text style={styles.summaryValue}>
-                  {itineraryDates.length} {itineraryDates.length === 1 ? 'Day' : 'Days'}
-                </Text>
-              </View>
-
-              <View style={styles.summaryCard}>
-                <View style={styles.summaryCardHeader}>
-                  <Ionicons name="navigate-outline" size={20} color={actingDriverColors.secondary} />
-                  <Text style={styles.summaryLabel}>Distance</Text>
-                </View>
-                <Text style={styles.summaryValue}>— km</Text>
-              </View>
-
-              <View style={styles.summaryCard}>
-                <View style={styles.summaryCardHeader}>
-                  <Ionicons name="leaf-outline" size={20} color={actingDriverColors.success} />
-                  <Text style={styles.summaryLabel}>Fuel Saver</Text>
-                </View>
-                <Text style={[styles.summaryValue, { color: actingDriverColors.success }]}>Optimized</Text>
-              </View>
-
-              <View style={styles.summaryCard}>
-                <View style={styles.summaryCardHeader}>
-                  <Ionicons name="shield-checkmark-outline" size={20} color={actingDriverColors.secondary} />
-                  <Text style={styles.summaryLabel}>Status</Text>
-                </View>
-                <Text style={styles.summaryValue}>Draft</Text>
-              </View>
-            </View>
+              );
+            })}
           </View>
         </ScrollView>
 
-        {/* Footer — same as continueButton on PlanRideScreen */}
+        {/* Footer */}
         <View style={styles.footer}>
           <TouchableOpacity style={styles.doneButton} onPress={onClose} activeOpacity={0.85}>
             <Text style={styles.doneButtonText}>Done</Text>
@@ -155,178 +128,177 @@ ItineraryPlanModal.propTypes = {
   visible: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   itineraryDates: PropTypes.arrayOf(PropTypes.string).isRequired,
-  actingDriverItinerary: PropTypes.object,
-  setActingDriverItinerary: PropTypes.func.isRequired,
-  onAddWaypoint: PropTypes.func,
   onLocationClick: PropTypes.func,
+  onTripForPress: PropTypes.func,
+  onAddWaypoint: PropTypes.func,
 };
 
 ItineraryPlanModal.defaultProps = {
-  actingDriverItinerary: {},
-  onAddWaypoint: () => {},
   onLocationClick: () => {},
+  onTripForPress: () => {},
+  onAddWaypoint: () => {},
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    height: '100%',
+    backgroundColor: '#F8FAFC', // light gray/blue background
+  },
+  scrollContent: {
+    paddingBottom: 120,
+    paddingTop: 10,
+  },
+  
+  /* Header */
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontFamily: Fonts.bold || Fonts.semi_bold,
+    color: '#003366',
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: '#64748B',
   },
 
-  /* ── Day Tabs ── */
-  dayTabsWrapper: {
-    backgroundColor: actingDriverColors.background,
-    borderBottomWidth: 1,
-    borderBottomColor: actingDriverColors.border,
-    elevation: 2,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
+  /* Timeline */
+  timelineContainer: {
+    paddingHorizontal: 16,
+  },
+  cardContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
-  },
-  dayTabsContent: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 10,
-  },
-  dayTab: {
-    width: 85,
-    backgroundColor: '#F1F5F9',
-    borderRadius: 12,
-    paddingVertical: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: actingDriverColors.border,
-  },
-  dayTabActive: {
-    backgroundColor: actingDriverColors.primary,
-    borderColor: actingDriverColors.primary,
-    elevation: 3,
-    shadowColor: actingDriverColors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  dayTabLabel: {
-    fontSize: 13,
-    fontFamily: Fonts.semi_bold || Fonts.medium,
-    color: colors.grey_xxdark,
-  },
-  dayTabLabelActive: {
-    color: actingDriverColors.secondary,
-    fontFamily: Fonts.bold || Fonts.semi_bold,
-  },
-  dayTabDate: {
-    fontSize: 10,
-    fontFamily: Fonts.regular,
-    color: '#64748B',
-    marginTop: 2,
-  },
-  dayTabDateActive: {
-    color: actingDriverColors.secondary,
-    fontFamily: Fonts.medium,
+    elevation: 2,
   },
 
-  /* ── Active Day Banner ── */
-  activeDayBanner: {
+  /* Card Header */
+  cardHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 8,
-    padding: 14,
-    backgroundColor: '#FFFBEB',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#FEF3C7',
   },
-  activeDayIconWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#FEF3C7',
+  dayCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#0F4A75', // Dark blue as in the image
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
-  activeDayTextWrap: {
-    flex: 1,
-  },
-  activeDayTitle: {
+  dayCircleText: {
+    color: '#FFFFFF',
     fontSize: 14,
-    fontFamily: Fonts.bold || Fonts.semi_bold,
-    color: actingDriverColors.secondary,
+    fontFamily: Fonts.bold,
   },
-  activeDaySubtitle: {
-    fontSize: 11,
-    fontFamily: Fonts.regular,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-
-  /* ── Scroll ── */
-  scrollContent: {
-    paddingBottom: 120,
-    paddingTop: 4,
-  },
-
-  /* ── Summary Section ── */
-  sectionCard: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    backgroundColor: actingDriverColors.background,
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: actingDriverColors.border,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontFamily: Fonts.bold || Fonts.semi_bold,
-    color: '#64748B',
-    marginBottom: 14,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-  },
-  summaryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  summaryCard: {
+  dayTitle: {
     flex: 1,
-    minWidth: '46%',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    fontSize: 15,
+    fontFamily: Fonts.medium,
+    color: '#0F4A75',
   },
-  summaryCardHeader: {
+  dayTime: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: '#475569',
+  },
+
+  /* Card Body */
+  cardBodyRow: {
+    flexDirection: 'row',
+    marginTop: 8,
+  },
+  dashedLineContainer: {
+    width: 32,
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  verticalDashedLine: {
+    width: 1,
+    flex: 1,
+    borderStyle: 'dashed',
+    borderLeftWidth: 1.5,
+    borderColor: '#CBD5E1',
+    marginBottom: 10,
+  },
+  cardContent: {
+    flex: 1,
+    paddingTop: 8,
+  },
+
+  /* Locations */
+  locationItem: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  locIconWrap: {
+    width: 20,
+    alignItems: 'center',
+    marginTop: 2,
+    marginRight: 10,
+  },
+  greenRing: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: '#10B981',
+    backgroundColor: '#FFFFFF',
+  },
+  locTextWrap: {
+    flex: 1,
+  },
+  locLabel: {
+    fontSize: 10,
+    fontFamily: Fonts.bold,
+    color: '#64748B',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  locValue: {
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: '#0F4A75',
+    lineHeight: 20,
+  },
+
+  /* Pills */
+  pillsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
+  pillBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-    gap: 6,
+    backgroundColor: '#E0E7FF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 4,
   },
-  summaryLabel: {
+  pillText: {
     fontSize: 11,
-    fontFamily: Fonts.medium,
-    color: '#64748B',
-  },
-  summaryValue: {
-    fontSize: 15,
-    fontFamily: Fonts.bold || Fonts.semi_bold,
-    color: actingDriverColors.secondary,
+    fontFamily: Fonts.semi_bold || Fonts.medium,
+    color: '#3730A3',
   },
 
-  /* ── Footer ── */
+  /* Footer */
   footer: {
     position: 'absolute',
     bottom: 0,
@@ -359,3 +331,4 @@ const styles = StyleSheet.create({
 });
 
 export default ItineraryPlanModal;
+

@@ -386,6 +386,29 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
         }
       }
     } 
+    else if (bookingTab === 'SCHEDULE') {
+      if (durationRangeStart) {
+        const startDate = new Date(durationRangeStart);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        startDate.setHours(0, 0, 0, 0);
+        
+        if (startDate > today) {
+          setIsScheduledTrip(true);
+          setScheduleDateTime({
+            date: startDate.toISOString(),
+            time: customStartTime
+          });
+        } else {
+          setIsScheduledTrip(false);
+          setScheduleDateTime(null);
+        }
+        setIsFlexibleDuration(false);
+        // actingDriverHours are already set by HomeScreen, do not overwrite them here.
+      } else {
+        setActingDriverHours(null);
+      }
+    }
     else if (bookingTab === 'CUSTOM') {
       if (durationRangeStart) {
         const startDate = new Date(durationRangeStart);
@@ -1495,6 +1518,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
           setActingDriverItinerary={setActingDriverItinerary}
           onAddWaypoint={onAddWaypoint}
           onLocationClick={handleLocationClick}
+          onTripForPress={onTripForPress}
         />
       </View>
       
