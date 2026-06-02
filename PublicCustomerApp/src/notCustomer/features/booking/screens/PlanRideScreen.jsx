@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler, Modal, TextInput, Alert} from 'react-native';
+import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler, Modal, TextInput, Alert, FlatList} from 'react-native';
 import React, {useCallback, useState,useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar } from 'react-native-calendars';
@@ -32,7 +32,7 @@ import useRideBookingInfo from '../store/useRideBookingInfo';
 import { Fonts } from '../../../constants/constants';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { openFeedback } from '../../../utils/feedback';
-import { getCustomerTrips } from '../../../API/EndPoints/EndPoints';
+import { getCustomerTrips, getPassangerVehicles } from '../../../API/EndPoints/EndPoints';
 import ActingDriverPreferences from '../components/bookRide/ActingDriverPreferences';
 
 const formatCalendarDate = (date) => {
@@ -180,6 +180,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   const [pendingRangeStart, setPendingRangeStart] = useState(null);
   const [pendingRangeEnd, setPendingRangeEnd] = useState(null);
   const [showCustomCalendarModal, setShowCustomCalendarModal] = useState(false);
+  const [vehiclesList, setVehiclesList] = useState([]);
+  const [loadingVehicles, setLoadingVehicles] = useState(false);
   const todayDate = formatCalendarDate(new Date());
   const maxCustomDate = formatCalendarDate(addMonths(new Date(), 2));
   const selectedDurationDays = getInclusiveDateRangeDays(durationRangeStart, durationRangeEnd);
@@ -332,6 +334,33 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     };
 
     fetchLastRidePreferences();
+  }, [isActingDriverMode]);
+
+  useEffect(() => {
+    if (!isActingDriverMode) return;
+    
+    const fetchUserVehicles = async () => {
+      setLoadingVehicles(true);
+      try {
+        const response = await getPassangerVehicles();
+        if (response.success) {
+          const list = response.vehicles || [];
+          setVehiclesList(list);
+          if (list.length > 0 && !actingDriverVehicle) {
+            setActingDriverVehicle(list[0]);
+            if (list[0].maxSpeed) {
+              setActingDriverMaxSpeed(String(list[0].maxSpeed));
+            }
+          }
+        }
+      } catch (err) {
+        console.log('Failed to fetch user vehicles', err);
+      } finally {
+        setLoadingVehicles(false);
+      }
+    };
+
+    fetchUserVehicles();
   }, [isActingDriverMode]);
 
   useEffect(() => {
@@ -835,41 +864,78 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
           </ScrollView>
           <DashedLine style={styles.dottedLine} />
             {/* Acting Driver: selected vehicle + duration */}
-        {mode === 'ACTING_DRIVER' && actingDriverVehicle && (
+        {mode === 'ACTING_DRIVER' && (
           <View style={styles.actingDriverPanel}>
             {/* Vehicle row */}
-            <View style={styles.actingVehicleRow}>
-              <View style={styles.actingVehicleIconContainer}>
-                <Ionicons
-                  name={VEHICLE_TYPE_ICON[actingDriverVehicle.type] || 'car-outline'}
-                  size={24}
-                  color={actingDriverColors.secondary}
-                />
-              </View>
-              <View style={styles.actingVehicleInfo}>
-                <Text style={styles.actingVehicleReg}>{actingDriverVehicle.regNo}</Text>
-                <Text style={styles.actingVehicleMeta}>
-                  {[
-                    VEHICLE_TYPE_OPTIONS.find(o => o.value === actingDriverVehicle.type)?.label,
-                    actingDriverVehicle.make,
-                    actingDriverVehicle.model,
-                    actingDriverVehicle.year,
-                  ].filter(Boolean).join(' · ')}
-                </Text>
-              </View>
-              <View style={styles.changeVehicleContainer}>
-                <TouchableOpacity
-                  style={styles.changeVehicleBtn}
-                  onPress={() => { goBackToScreen('ActingDriverVehicleSelectScreen', {}); }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.changeVehicleText}>{t('change', 'Change')}</Text>
-                </TouchableOpacity>
-                {!isTripDurationSelected && (
-                  <Text style={styles.durationRequiredText}>{t('required', 'Required')}</Text>
-                )}
-              </View>
+            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8}}>
+              <Text style={[styles.subLabel, {marginLeft: 2}]}>{t('select_vehicle', 'Select Vehicle')}</Text>
+              {(vehiclesList?.length > 1) && (
+                <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+                  <Text style={{fontSize: 12, fontFamily: Fonts.medium, color: '#94A3B8'}}>{t('swipe', 'Swipe')}</Text>
+                  <Ionicons name="ellipsis-horizontal" size={16} color="#94A3B8" />
+                </View>
+              )}
             </View>
+            {loadingVehicles ? (
+              <View style={{padding: 20, alignItems: 'center'}}>
+                <ActivityIndicator size="small" color={colors.black} />
+              </View>
+            ) : (
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 16 }}
+                data={[...(vehiclesList || []), { isAddBtn: true }]}
+                keyExtractor={(item, idx) => item.isAddBtn ? 'add-btn' : (item._id?.toString() || String(idx))}
+                renderItem={({ item }) => {
+                  if (item.isAddBtn) {
+                    return (
+                      <TouchableOpacity
+                        style={[styles.vehicleScrollCard, styles.addVehicleScrollCard]}
+                        onPress={() => { goBackToScreen('MyVehiclesScreen', { returnTo: 'PlanRideScreen' }); }}
+                        activeOpacity={0.8}
+                      >
+                        <Ionicons name="add-circle-outline" size={24} color={colors.black} />
+                        <Text style={[styles.addVehicleScrollText, { marginTop: 0 }]}>{t('add_vehicle', 'Add Vehicle')}</Text>
+                      </TouchableOpacity>
+                    );
+                  }
+
+                  const isSelected = actingDriverVehicle?._id === item._id;
+                  
+                  return (
+                    <TouchableOpacity
+                      style={[styles.vehicleScrollCard, isSelected && styles.vehicleScrollCardSelected]}
+                      onPress={() => {
+                        setActingDriverVehicle(item);
+                        if (item.maxSpeed) {
+                          setActingDriverMaxSpeed(String(item.maxSpeed));
+                        }
+                      }}
+                      activeOpacity={0.8}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={[styles.vehicleScrollIconBg, isSelected && styles.vehicleScrollIconBgSelected]}>
+                          <Ionicons
+                            name={VEHICLE_TYPE_ICON[item.type] || 'car-outline'}
+                            size={22}
+                            color={isSelected ? colors.white : '#64748B'}
+                          />
+                        </View>
+                        <View style={{ marginLeft: 12, flex: 1 }}>
+                          <Text style={[styles.vehicleScrollReg, isSelected && styles.vehicleScrollRegSelected]} numberOfLines={1}>
+                            {item.regNo}
+                          </Text>
+                          <Text style={[styles.vehicleScrollMeta, isSelected && styles.vehicleScrollMetaSelected]} numberOfLines={1}>
+                            {item.make} {item.model}
+                          </Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            )}
 
             {/* Duration selector */}
             {/* <View style={styles.durationSection}>
@@ -1485,15 +1551,33 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 3,
   },
-  actingVehicleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F1F5F9',
+  vehicleScrollCard: {
+    width: 240,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     borderRadius: 12,
     padding: 12,
-    gap: 12,
+    marginRight: 12,
   },
-  actingVehicleIconContainer: {
+  vehicleScrollCardSelected: {
+    backgroundColor: '#F1F5F9',
+    borderColor: '#94A3B8',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  addVehicleScrollCard: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderStyle: 'dashed',
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  vehicleScrollIconBg: {
     width: 40,
     height: 40,
     borderRadius: 20,
@@ -1501,40 +1585,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actingVehicleInfo: {
-    flex: 1,
+  vehicleScrollIconBgSelected: {
+    backgroundColor: '#475569',
   },
-  actingVehicleReg: {
+  vehicleScrollReg: {
     fontSize: 14,
-    fontFamily: Fonts.semibold || Fonts.medium,
-    color: actingDriverColors.secondary,
+    fontFamily: Fonts.bold,
+    color: '#1E293B',
   },
-  actingVehicleMeta: {
+  vehicleScrollRegSelected: {
+    color: '#1E293B',
+  },
+  vehicleScrollMeta: {
     fontSize: 12,
-    fontFamily: Fonts.regular,
-    color: colors.grey_xxdark,
+    fontFamily: Fonts.medium,
+    color: '#64748B',
     marginTop: 2,
   },
-  changeVehicleContainer: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    gap: 4,
+  vehicleScrollMetaSelected: {
+    color: '#64748B',
   },
-  changeVehicleBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: '#E2E8F0',
-  },
-  changeVehicleText: {
-    fontSize: 12,
-    fontFamily: Fonts.semibold || Fonts.medium,
-    color: actingDriverColors.secondary,
-  },
-  durationRequiredText: {
-    fontSize: 10,
+  addVehicleScrollText: {
+    fontSize: 13,
     fontFamily: Fonts.medium,
-    color: '#E53935',
+    color: '#1E293B',
+    marginTop: 8,
   },
   durationSection: {
     gap: 8,

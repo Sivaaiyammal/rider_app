@@ -35,6 +35,7 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
     actingDriverKidsOnBoard,
     actingDriverElderlyOnBoard,
     actingDriverItinerary,
+    tripType,
   } = useRideBookingInfo();
 
   const { resetRideMatchStatus } = useRideMatchStore();
@@ -78,9 +79,19 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
 
     if (rideEndLocation) {
       stops.push({
-        name: 'Drop Point',
+        name: tripType === 'ROUND_TRIP' ? 'Turnaround Point' : 'Drop Point',
         location: [rideEndLocation.longitude, rideEndLocation.latitude],
         address: utils.formatAddressName(rideEndLocation),
+        waitingTime: 0,
+        isReached: false,
+      });
+    }
+
+    if (tripType === 'ROUND_TRIP') {
+      stops.push({
+        name: 'Drop Point',
+        location: [rideStartLocation.longitude, rideStartLocation.latitude],
+        address: utils.formatAddressName(rideStartLocation),
         waitingTime: 0,
         isReached: false,
       });
@@ -91,7 +102,7 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
     const payload = {
       // Locations
       startLocation: [rideStartLocation.longitude, rideStartLocation.latitude],
-      endLocation: rideEndLocation ? [rideEndLocation.longitude, rideEndLocation.latitude] : null,
+      endLocation: tripType === 'ROUND_TRIP' ? [rideStartLocation.longitude, rideStartLocation.latitude] : (rideEndLocation ? [rideEndLocation.longitude, rideEndLocation.latitude] : null),
       stops,
 
       // Acting driver specific
@@ -127,28 +138,22 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
       estimatedDistance: rideDistance,
       estimatedDuration: estimatedDuration,
       minFare: (() => {
-        const dist = Number(rideDistance) || 0;
-        const dur = Number(estimatedDuration) || 0;
         const type = actingDriverVehicle?.type || 'AUTO';
         const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
         const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
-        return Math.max(15, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 0.9));
+        return Math.max(15, Math.round(((Number(rideDistance) * basePerKm) + (Number(estimatedDuration) * basePerMin)) * 0.9));
       })(),
       maxFare: (() => {
-        const dist = Number(rideDistance) || 0;
-        const dur = Number(estimatedDuration) || 0;
         const type = actingDriverVehicle?.type || 'AUTO';
         const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
         const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
-        return Math.max(20, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 1.1));
+        return Math.max(20, Math.round(((Number(rideDistance) * basePerKm) + (Number(estimatedDuration) * basePerMin)) * 1.1));
       })(),
       estimatedFare: (() => {
-        const dist = Number(rideDistance) || 0;
-        const dur = Number(estimatedDuration) || 0;
         const type = actingDriverVehicle?.type || 'AUTO';
         const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
         const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
-        return Math.round((dist * basePerKm) + (dur * basePerMin));
+        return Math.round((Number(rideDistance) * basePerKm) + (Number(estimatedDuration) * basePerMin));
       })(),
 
       // Booking details

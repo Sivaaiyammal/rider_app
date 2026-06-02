@@ -6,17 +6,18 @@ import {
     TouchableOpacity,
     ActivityIndicator,
     Modal,
+    FlatList,
+    Text,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-import DatePicker from 'react-native-date-picker';
 
 import NavBar from '../../../components/NavBar';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
-import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import { BottomSheetScrollView, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import ItineraryPlanModal from '../components/planride/ItineraryPlanModal';
 import MapIcon from '../../../components/Map/MapIcon';
 import CurrentLocationIcon from '../../../assets/icons/CurrentLocationIcon.svg';
@@ -34,7 +35,7 @@ import useDirectionLoad from '../hooks/useDirectionLoad';
 import LocationTypes from '../types/LocationTypes.json';
 import useMapStore from '../../map/store/useMapStore';
 import useActingDriverBookTrip from '../hooks/useActingDriverBookTrip';
-import { getFareEngineRange, getRideEstimation } from '../../../API/EndPoints/EndPoints';
+import { getFareEngineRange, getRideEstimation, getPassangerVehicles } from '../../../API/EndPoints/EndPoints';
 import { useDebouncedAPICall } from '../../../hooks/useDebounce';
 import { showNotification } from '../../../components/NotificationManger';
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
@@ -161,59 +162,7 @@ const BottomSheetHeader = (rideDistance, estimatedDuration, setShowPreference) =
     );
 };
 
-// ─── Selected vehicle card ────────────────────────────────────────────────────
-const SelectedVehicleCard = ({ vehicle, fare, isLoading }) => {
-    const { t } = useTranslation();
-    const iconName = VEHICLE_TYPE_ICON[vehicle?.type] || 'car-outline';
-    const typeLabel =
-        VEHICLE_TYPE_OPTIONS.find((o) => o.value === vehicle?.type)?.label ||
-        vehicle?.type ||
-        '';
-    const meta = [typeLabel, vehicle?.make, vehicle?.model, vehicle?.year]
-        .filter(Boolean)
-        .join(' · ');
 
-    return (
-        <View style={styles.vehicleCard}>
-            <View style={styles.vehicleIconBox}>
-                <Ionicons name={iconName} size={30} color={actingDriverColors.secondary} />
-            </View>
-            <View style={styles.vehicleInfo}>
-                <AdaptiveText style={styles.vehicleRegNo}>{vehicle?.regNo}</AdaptiveText>
-                {!!meta && <AdaptiveText style={styles.vehicleMeta}>{meta}</AdaptiveText>}
-                {vehicle?.verified && (
-                    <View style={styles.verifiedRow}>
-                        <Ionicons name="checkmark-circle" size={12} color={actingDriverColors.success} />
-                        <AdaptiveText style={styles.verifiedText}>{t('verified', 'Verified')}</AdaptiveText>
-                    </View>
-                )}
-            </View>
-            <View style={styles.fareBox}>
-                {isLoading ? (
-                    <ActivityIndicator size="small" color={actingDriverColors.secondary} />
-                ) : fare ? (
-                    <>
-                        <AdaptiveText style={styles.fareLabel}>{t('est_fare', 'Est. Fare')}</AdaptiveText>
-                        <AdaptiveText style={styles.fareValue}>{fare}</AdaptiveText>
-                    </>
-                ) : null}
-            </View>
-        </View>
-    );
-};
-
-SelectedVehicleCard.propTypes = {
-    vehicle: PropTypes.shape({
-        type: PropTypes.string,
-        make: PropTypes.string,
-        model: PropTypes.string,
-        year: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-        regNo: PropTypes.string,
-        verified: PropTypes.bool,
-    }),
-    fare: PropTypes.string,
-    isLoading: PropTypes.bool,
-};
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 const BookActingDriverScreen = () => {
@@ -227,42 +176,37 @@ const BookActingDriverScreen = () => {
     const [selectedMethod, setSelectedMethod] = useState('UPI');
     const [bookingSuccess, setBookingSuccess] = useState(false);
 
-    // Booking mode states (One Way vs Round Trip)
-    const [tripType, setTripType] = useState('ONE_WAY'); // 'ONE_WAY' or 'ROUND_TRIP'
 
-    // Date scheduling states
-    const [pickupDate, setPickupDate] = useState(new Date());
-    const [returnDate, setReturnDate] = useState(new Date(Date.now() + 24 * 60 * 60 * 1000));
-    const [activeScheduleTab, setActiveScheduleTab] = useState('LEAVE_ON'); // 'LEAVE_ON' or 'RETURN_BY'
-    const [showScheduleModal, setShowScheduleModal] = useState(false);
 
-    // Format Date for banner
-    const formatBannerDate = (d) => {
-        return utils.formatDate(d, 'DD MMM YYYY, hh:mm A');
-    };
+    const [vehiclesList, setVehiclesList] = useState([]);
+    const [loadingVehicles, setLoadingVehicles] = useState(false);
+
+    useEffect(() => {
+        const fetchUserVehicles = async () => {
+            setLoadingVehicles(true);
+            try {
+                const response = await getPassangerVehicles();
+                if (response.success) {
+                    const list = response.vehicles || [];
+                    setVehiclesList(list);
+                    if (list.length > 0 && !actingDriverVehicle) {
+                        setActingDriverVehicle(list[0]);
+                        if (list[0].maxSpeed) {
+                            setActingDriverMaxSpeed(String(list[0].maxSpeed));
+                        }
+                    }
+                }
+            } catch (err) {
+                console.log('Failed to fetch user vehicles', err);
+            } finally {
+                setLoadingVehicles(false);
+            }
+        };
+
+        fetchUserVehicles();
+    }, []);
 
     const [showItineraryModal, setShowItineraryModal] = useState(false);
-
-    const getItineraryDates = () => {
-        if (!pickupDate || !returnDate || tripType === 'ONE_WAY') return [];
-        
-        const dates = [];
-        let current = new Date(pickupDate);
-        const end = new Date(returnDate);
-        
-        // Clear hours to compare calendar days
-        current.setHours(0,0,0,0);
-        end.setHours(0,0,0,0);
-        
-        while (current <= end) {
-            dates.push(current.toISOString().split('T')[0]);
-            current.setDate(current.getDate() + 1);
-        }
-        return dates;
-    };
-
-    const itineraryDates = getItineraryDates();
-    const shouldShowItinerary = itineraryDates.length > 1;
 
     const onAddWaypoint = () => {
         setStackScreen('WaypointScreen', { fromPlanScreen: true });
@@ -328,13 +272,44 @@ const BookActingDriverScreen = () => {
         estimatedDuration,
         updateBookingInfo,
         actingDriverVehicle,
+        setActingDriverVehicle,
         setRegionOfficeId,
         setRegionOfficeCode,
         regionOfficeCode,
         couponCode,
         actingDriverItinerary,
         setActingDriverItinerary,
+        setActingDriverMaxSpeed,
+        bookingTab,
+        durationRangeStart,
+        durationRangeEnd,
+        actingDriverHours,
+        customStartTime,
+        tomorrowStartTime,
+        tripType,
+        setTripType,
     } = useRideBookingInfo();
+
+    const itineraryDates = (() => {
+        if (bookingTab !== 'CUSTOM' || !durationRangeStart || !durationRangeEnd) {
+            return [];
+        }
+        
+        const dates = [];
+        let current = new Date(durationRangeStart);
+        const end = new Date(durationRangeEnd);
+        
+        current.setHours(0,0,0,0);
+        end.setHours(0,0,0,0);
+        
+        while (current <= end) {
+            dates.push(current.toISOString().split('T')[0]);
+            current.setDate(current.getDate() + 1);
+        }
+        return dates;
+    })();
+
+    const shouldShowItinerary = itineraryDates.length > 1;
 
     const {
         transformRideLocationsToDirectionPoints,
@@ -370,6 +345,7 @@ const BookActingDriverScreen = () => {
             clearMarkers: true,
             vehicleType: 'car',
             padding: [50, 50, 50, height * 0.5],
+            tripType,
         });
         if (result.success) {
             const distanceKm = Number(result.distance);
@@ -387,7 +363,7 @@ const BookActingDriverScreen = () => {
             setDirectionPoints(null);
             updateBookingInfo({ rideDistance: null, estimatedDuration: null });
         };
-    }, []);
+    }, [tripType]);
 
     // ── Fare estimation ────────────────────────────────────────────────────────
     const onEstimationSuccess = useCallback(
@@ -478,6 +454,7 @@ const BookActingDriverScreen = () => {
             start: rideStartLocation,
             end: rideEndLocation,
             waypoints: rideWayPoints,
+            tripType,
         });
         pruneEstimationCache();
         const cached = getEstimationFromCache(cacheKey);
@@ -493,13 +470,13 @@ const BookActingDriverScreen = () => {
             coordinates: [rideStartLocation?.longitude, rideStartLocation?.latitude],
         };
         debouncedGetRideEstimation(payload, cacheKey);
-    }, [rideDistance, estimatedDuration, regionOfficeCode, rideStartLocation, rideEndLocation, rideWayPoints]);
+    }, [rideDistance, estimatedDuration, regionOfficeCode, rideStartLocation, rideEndLocation, rideWayPoints, tripType]);
 
     useEffect(() => {
         if (rideDistance && estimatedDuration) {
             getEstimatedFare();
         }
-    }, [rideDistance, estimatedDuration]);
+    }, [rideDistance, estimatedDuration, tripType, getEstimatedFare]);
 
     // ── Actions ────────────────────────────────────────────────────────────────
     const handleBackPress = () => {
@@ -513,7 +490,7 @@ const BookActingDriverScreen = () => {
             console.log('Acting driver booking validation errors:', errors);
             return;
         }
-        setIsSimulatedPaymentOpen(true);
+        proceedWithBooking();
     };
 
     const proceedWithBooking = async () => {
@@ -525,19 +502,6 @@ const BookActingDriverScreen = () => {
         } catch (error) {
             console.error('Acting driver booking failed:', error);
         }
-    };
-
-    const handleSimulatedPay = () => {
-        setIsPaying(true);
-        setTimeout(() => {
-            setIsPaying(false);
-            setPaymentSuccess(true);
-            setTimeout(() => {
-                setIsSimulatedPaymentOpen(false);
-                setPaymentSuccess(false);
-                proceedWithBooking();
-            }, 1800);
-        }, 1500);
     };
 
     const onRetryFetchRoute = () => loadRoute();
@@ -561,71 +525,71 @@ const BookActingDriverScreen = () => {
                 handleIndicatorStyle={{ backgroundColor: '#DEDEDE', width: 50, height: 4 }}
 
             >
-
                 {/* One Way / Round Trip Tabs */}
-                    <View style={styles.tripTabsRow}>
-                        <TouchableOpacity
-                            style={[styles.tripTab, tripType === 'ONE_WAY' && styles.tripTabActive]}
-                            onPress={() => setTripType('ONE_WAY')}
-                            activeOpacity={0.8}
-                        >
-                            <View style={styles.tabLabelContainer}>
-                                <Icon
-                                    name="call-made"
-                                    size={18}
-                                    color={tripType === 'ONE_WAY' ? actingDriverColors.primary : '#757575'}
-                                    style={styles.tabIcon}
-                                />
-                                <AdaptiveText style={[styles.tripTabText, tripType === 'ONE_WAY' && styles.tripTabTextActive]}>
-                                    {t('one_way', 'One Way')}
-                                </AdaptiveText>
-                            </View>
-                            {tripType === 'ONE_WAY' && <View style={styles.activeTabUnderline} />}
-                        </TouchableOpacity>
+                <View style={styles.tripTabsRow}>
+                    <TouchableOpacity
+                        style={[styles.tripTab, tripType === 'ONE_WAY' && styles.tripTabActive]}
+                        onPress={() => setTripType('ONE_WAY')}
+                        activeOpacity={0.8}
+                    >
+                        <View style={styles.tabLabelContainer}>
+                            <Icon
+                                name="call-made"
+                                size={18}
+                                color={tripType === 'ONE_WAY' ? actingDriverColors.primary : '#757575'}
+                                style={styles.tabIcon}
+                            />
+                            <AdaptiveText style={[styles.tripTabText, tripType === 'ONE_WAY' && styles.tripTabTextActive]}>
+                                {t('one_way', 'One Way')}
+                            </AdaptiveText>
+                        </View>
+                        {tripType === 'ONE_WAY' && <View style={styles.activeTabUnderline} />}
+                    </TouchableOpacity>
 
-                        <TouchableOpacity
-                            style={[styles.tripTab, tripType === 'ROUND_TRIP' && styles.tripTabActive]}
-                            onPress={() => setTripType('ROUND_TRIP')}
-                            activeOpacity={0.8}
-                        >
-                            <View style={styles.tabLabelContainer}>
-                                <Ionicons
-                                    name="sync"
-                                    size={16}
-                                    color={tripType === 'ROUND_TRIP' ? actingDriverColors.primary : '#757575'}
-                                    style={styles.tabIcon}
-                                />
-                                <AdaptiveText style={[styles.tripTabText, tripType === 'ROUND_TRIP' && styles.tripTabTextActive]}>
-                                    {t('round_trip', 'Round Trip')}
-                                </AdaptiveText>
-                            </View>
-                            {tripType === 'ROUND_TRIP' && <View style={styles.activeTabUnderline} />}
-                        </TouchableOpacity>
-                    </View>
-                
+                    <TouchableOpacity
+                        style={[styles.tripTab, tripType === 'ROUND_TRIP' && styles.tripTabActive]}
+                        onPress={() => setTripType('ROUND_TRIP')}
+                        activeOpacity={0.8}
+                    >
+                        <View style={styles.tabLabelContainer}>
+                            <Ionicons
+                                name="sync"
+                                size={16}
+                                color={tripType === 'ROUND_TRIP' ? actingDriverColors.primary : '#757575'}
+                                style={styles.tabIcon}
+                            />
+                            <AdaptiveText style={[styles.tripTabText, tripType === 'ROUND_TRIP' && styles.tripTabTextActive]}>
+                                {t('round_trip', 'Round Trip')}
+                            </AdaptiveText>
+                        </View>
+                        {tripType === 'ROUND_TRIP' && <View style={styles.activeTabUnderline} />}
+                    </TouchableOpacity>
+                </View>
+
                 <BottomSheetScrollView style={styles.sheetContent} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
                     
-
                     {/* Schedule Date Banner */}
-                    <TouchableOpacity
-                        style={styles.scheduleBanner}
-                        onPress={() => setShowScheduleModal(true)}
-                        activeOpacity={0.85}
-                    >
+                    <View style={styles.scheduleBanner}>
                         <View style={styles.scheduleInfo}>
                             <AdaptiveText style={styles.scheduleLabel}>
-                                {tripType === 'ONE_WAY' ? 'Booking one-way ride for' : 'Booking Round trip for'}
+                                {tripType === 'ONE_WAY' ? t('booking_one_way_for', 'Booking one-way for') : t('booking_round_trip_for', 'Booking round trip for')}
                             </AdaptiveText>
                             <AdaptiveText style={styles.scheduleDateText}>
-                                {tripType === 'ONE_WAY'
-                                    ? formatBannerDate(pickupDate)
-                                    : `${formatBannerDate(pickupDate)} - ${formatBannerDate(returnDate)}`}
+                                {(() => {
+                                    if (bookingTab === 'TODAY') {
+                                        return `${t('today', 'Today')} · ${actingDriverHours} ${t('hour_s', 'Hour(s)')}`;
+                                    } else if (bookingTab === 'TOMORROW') {
+                                        return `${t('tomorrow', 'Tomorrow')} · ${actingDriverHours} ${t('hour_s', 'Hour(s)')} (Start: ${utils.timestampTo12HourFormat(tomorrowStartTime || new Date())})`;
+                                    } else if (bookingTab === 'SCHEDULE') {
+                                        return `${utils.formatDate(customStartTime || new Date(), 'DD MMM YYYY, hh:mm A')} · ${actingDriverHours} ${t('hour_s', 'Hour(s)')}`;
+                                    } else if (bookingTab === 'CUSTOM') {
+                                        return `${utils.formatDate(durationRangeStart, 'DD MMM YYYY')} - ${utils.formatDate(durationRangeEnd, 'DD MMM YYYY')} (Start: ${utils.timestampTo12HourFormat(customStartTime || new Date())})`;
+                                    }
+                                    return t('schedule_not_set', 'Schedule not set');
+                                })()}
                             </AdaptiveText>
                         </View>
-                        <View style={styles.scheduleChevronWrap}>
-                            <Ionicons name="chevron-forward" size={16} color="#212121" />
-                        </View>
-                    </TouchableOpacity>
+                    </View>
 
                     {/* Plan Daily Itinerary Button */}
                     {shouldShowItinerary && (
@@ -660,72 +624,107 @@ const BookActingDriverScreen = () => {
 
                     {/* Selected vehicle */}
                     <View style={styles.sectionContainer}>
-                        <AdaptiveText style={styles.sectionTitle}>
-                            {t('your_vehicle', 'Your Vehicle')}
-                        </AdaptiveText>
-                        {actingDriverVehicle ? (
-                            <SelectedVehicleCard
-                                vehicle={actingDriverVehicle}
-                                fare={fareDisplay}
-                                isLoading={isEstimationLoading}
-                            />
-                        ) : (
-                            <AdaptiveText style={styles.noVehicleText}>
-                                {t('no_vehicle_selected', 'No vehicle selected')}
+                        <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12}}>
+                            <AdaptiveText style={styles.sectionTitle}>
+                                {t('your_vehicle', 'Your Vehicle')}
                             </AdaptiveText>
+                            {(vehiclesList?.length > 1) && (
+                                <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
+                                    <Text style={{fontSize: 12, fontFamily: Fonts.medium, color: '#94A3B8'}}>{t('swipe', 'Swipe')}</Text>
+                                    <Ionicons name="ellipsis-horizontal" size={16} color="#94A3B8" />
+                                </View>
+                            )}
+                        </View>
+                        {loadingVehicles ? (
+                            <View style={{padding: 20, alignItems: 'center'}}>
+                                <ActivityIndicator size="small" color={colors.black} />
+                            </View>
+                        ) : (
+                            <BottomSheetFlatList
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                                contentContainerStyle={{ paddingBottom: 8 }}
+                                data={[...(vehiclesList || []), { isAddBtn: true }]}
+                                keyExtractor={(item, idx) => item.isAddBtn ? 'add-btn' : (item._id?.toString() || String(idx))}
+                                renderItem={({ item }) => {
+                                    if (item.isAddBtn) {
+                                        return (
+                                            <TouchableOpacity
+                                                style={[styles.vehicleScrollCard, styles.addVehicleScrollCard]}
+                                                onPress={() => { setStackScreen('MyVehiclesScreen', { returnTo: 'BookActingDriverScreen' }); }}
+                                                activeOpacity={0.8}
+                                            >
+                                                <Ionicons name="add-circle-outline" size={24} color={colors.black} />
+                                                <Text style={[styles.addVehicleScrollText, { marginTop: 0 }]}>{t('add_vehicle', 'Add Vehicle')}</Text>
+                                            </TouchableOpacity>
+                                        );
+                                    }
+
+                                    const isSelected = actingDriverVehicle?._id === item._id;
+                                    
+                                    return (
+                                        <TouchableOpacity
+                                            style={[styles.vehicleScrollCard, isSelected && styles.vehicleScrollCardSelected]}
+                                            onPress={() => {
+                                                setActingDriverVehicle(item);
+                                                if (item.maxSpeed) {
+                                                    setActingDriverMaxSpeed(String(item.maxSpeed));
+                                                }
+                                            }}
+                                            activeOpacity={0.8}
+                                        >
+                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                <View style={[styles.vehicleScrollIconBg, isSelected && styles.vehicleScrollIconBgSelected]}>
+                                                    <Ionicons
+                                                        name={VEHICLE_TYPE_ICON[item.type] || 'car-outline'}
+                                                        size={22}
+                                                        color={isSelected ? colors.white : '#64748B'}
+                                                    />
+                                                </View>
+                                                <View style={{ marginLeft: 12, flex: 1 }}>
+                                                    <Text style={[styles.vehicleScrollReg, isSelected && styles.vehicleScrollRegSelected]} numberOfLines={1}>
+                                                        {item.regNo}
+                                                    </Text>
+                                                    <Text style={[styles.vehicleScrollMeta, isSelected && styles.vehicleScrollMetaSelected]} numberOfLines={1}>
+                                                        {item.make} {item.model}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        </TouchableOpacity>
+                                    );
+                                }}
+                            />
                         )}
 
                         {/* Fare breakdown details */}
                         {actingDriverVehicle && (
                             <View style={styles.paymentBreakdownCard}>
                                 <AdaptiveText style={styles.breakdownTitle}>
-                                    {t('payment_breakdown', 'Payment Breakdown')}
+                                    {t('fare_details', 'Fare Details')}
                                 </AdaptiveText>
-                                <View style={styles.breakdownRow}>
+                                <View style={[styles.breakdownRow, { borderBottomWidth: 0, paddingBottom: 0, marginBottom: 0 }]}>
                                     <AdaptiveText style={styles.breakdownLabel}>
                                         {t('total_estimated_fare', 'Total Estimated Fare')}
                                     </AdaptiveText>
-                                    <AdaptiveText style={styles.breakdownValue}>
-                                        {fareDisplay || `₹${(() => {
-                                            const dist = Number(rideDistance) || 0;
-                                            const dur = Number(estimatedDuration) || 0;
-                                            const type = actingDriverVehicle?.type || 'CAR';
-                                            const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
-                                            const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
-                                            const minFare = Math.max(15, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 0.9));
-                                            const maxFare = Math.max(20, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 1.1));
-                                            return `${minFare} - ₹${maxFare}`;
-                                        })()}`}
-                                    </AdaptiveText>
+                                    <View style={{alignItems: 'flex-end'}}>
+                                        {isEstimationLoading ? (
+                                            <ActivityIndicator size="small" color={actingDriverColors.secondary} />
+                                        ) : (
+                                            <AdaptiveText style={[styles.breakdownValue, { fontSize: 16, fontFamily: Fonts.bold, color: actingDriverColors.primary }]}>
+                                                {fareDisplay || `₹${(() => {
+                                                    const dist = Number(rideDistance) || 0;
+                                                    const dur = Number(estimatedDuration) || 0;
+                                                    const type = actingDriverVehicle?.type || 'CAR';
+                                                    const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
+                                                    const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
+                                                    const minFare = Math.max(15, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 0.9));
+                                                    const maxFare = Math.max(20, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 1.1));
+                                                    return `${minFare} - ₹${maxFare}`;
+                                                })()}`}
+                                            </AdaptiveText>
+                                        )}
+                                    </View>
                                 </View>
-                                <View style={styles.breakdownRow}>
-                                    <AdaptiveText style={styles.breakdownLabel}>
-                                        {t('advance_to_pay_now', 'Advance to Pay Now')}
-                                    </AdaptiveText>
-                                    <AdaptiveText style={[styles.breakdownValue, { color: actingDriverColors.primary, fontFamily: Fonts.semi_bold }]}>
-                                        ₹500
-                                    </AdaptiveText>
-                                </View>
-                                <View style={styles.breakdownRow}>
-                                    <AdaptiveText style={styles.breakdownLabel}>
-                                        {t('balance_after_trip', 'Balance (Pay after Trip)')}
-                                    </AdaptiveText>
-                                    <AdaptiveText style={styles.breakdownValue}>
-                                        {(() => {
-                                            const dist = Number(rideDistance) || 0;
-                                            const dur = Number(estimatedDuration) || 0;
-                                            const type = actingDriverVehicle?.type || 'CAR';
-                                            const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
-                                            const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
-                                            const minFare = Math.max(15, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 0.9));
-                                            const maxFare = Math.max(20, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 1.1));
-                                            return `₹${Math.max(0, minFare - 500)} - ₹${Math.max(0, maxFare - 500)}`;
-                                        })()}
-                                    </AdaptiveText>
-                                </View>
-                                <AdaptiveText style={styles.breakdownNote}>
-                                    {t('advance_note', 'Please pay the advance of ₹500 first. The remaining balance will be paid to the driver on trip completion.')}
-                                </AdaptiveText>
                             </View>
                         )}
                     </View>
@@ -782,7 +781,7 @@ const BookActingDriverScreen = () => {
                             <AdaptiveText style={styles.confirmButtonText}>
                                 {isBookingLoading
                                     ? t('booking')
-                                    : t('pay_advance_and_book', 'Pay Advance (₹500) & Book')}
+                                    : t('confirm_and_book', 'Confirm & Book')}
                             </AdaptiveText>
                         </TouchableOpacity>
                     </View>
@@ -818,88 +817,6 @@ const BookActingDriverScreen = () => {
                 </AnimatedBottomSheetWrapper>
             )}
 
-            {/* Custom Schedule DateTime Picker Modal */}
-            <Modal
-                visible={showScheduleModal}
-                animationType="slide"
-                transparent={true}
-                onRequestClose={() => setShowScheduleModal(false)}
-            >
-                <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPress={() => setShowScheduleModal(false)}
-                />
-                <View style={styles.schedulePanel}>
-                    <View style={styles.scheduleHeader}>
-                        <View>
-                            <AdaptiveText style={styles.scheduleTitle}>
-                                {tripType === 'ONE_WAY' ? 'Schedule one-way ride' : 'Schedule round trip'}
-                            </AdaptiveText>
-                            <AdaptiveText style={styles.scheduleSubtitle}>
-                                {tripType === 'ONE_WAY' ? 'Ride can be scheduled up to 15 Days in Advance' : 'Ride can be scheduled up to 10 Days in Advance'}
-                            </AdaptiveText>
-                        </View>
-                        <TouchableOpacity onPress={() => setShowScheduleModal(false)} style={styles.closeBtn}>
-                            <Ionicons name="close" size={24} color={colors.black} />
-                        </TouchableOpacity>
-                    </View>
-
-                    {tripType === 'ROUND_TRIP' && (
-                        <View style={styles.scheduleTabRow}>
-                            <TouchableOpacity
-                                style={[styles.scheduleTabItem, activeScheduleTab === 'LEAVE_ON' && styles.scheduleTabItemActive]}
-                                onPress={() => setActiveScheduleTab('LEAVE_ON')}
-                            >
-                                <AdaptiveText style={[styles.scheduleTabLabel, activeScheduleTab === 'LEAVE_ON' && styles.scheduleTabLabelActive]}>
-                                    Leave on
-                                </AdaptiveText>
-                                {activeScheduleTab === 'LEAVE_ON' && <View style={styles.scheduleActiveBar} />}
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.scheduleTabItem, activeScheduleTab === 'RETURN_BY' && styles.scheduleTabItemActive]}
-                                onPress={() => setActiveScheduleTab('RETURN_BY')}
-                            >
-                                <AdaptiveText style={[styles.scheduleTabLabel, activeScheduleTab === 'RETURN_BY' && styles.scheduleTabLabelActive]}>
-                                    Return by
-                                </AdaptiveText>
-                                {activeScheduleTab === 'RETURN_BY' && <View style={styles.scheduleActiveBar} />}
-                            </TouchableOpacity>
-                        </View>
-                    )}
-
-                    <View style={styles.datePickerContainer}>
-                        <DatePicker
-                            date={tripType === 'ROUND_TRIP' && activeScheduleTab === 'RETURN_BY' ? returnDate : pickupDate}
-                            onDateChange={(date) => {
-                                if (tripType === 'ROUND_TRIP' && activeScheduleTab === 'RETURN_BY') {
-                                    setReturnDate(date);
-                                } else {
-                                    setPickupDate(date);
-                                    if (returnDate <= date) {
-                                        setReturnDate(new Date(date.getTime() + 24 * 60 * 60 * 1000));
-                                    }
-                                }
-                            }}
-                            mode="datetime"
-                            minimumDate={new Date()}
-                            theme="light"
-                            androidVariant="iosClone"
-                            locale="en"
-                            style={{ width: width - 48, height: 180 }}
-                        />
-                    </View>
-
-                    <TouchableOpacity
-                        style={styles.scheduleConfirmButton}
-                        onPress={() => setShowScheduleModal(false)}
-                        activeOpacity={0.85}
-                    >
-                        <AdaptiveText style={styles.scheduleConfirmText}>Confirm</AdaptiveText>
-                    </TouchableOpacity>
-                </View>
-            </Modal>
-
             <ItineraryPlanModal
                 visible={showItineraryModal}
                 onClose={() => setShowItineraryModal(false)}
@@ -910,113 +827,7 @@ const BookActingDriverScreen = () => {
                 onLocationClick={handleLocationClick}
             />
 
-            {/* Simulated Payment Modal */}
-            <Modal
-                visible={isSimulatedPaymentOpen}
-                animationType="slide"
-                transparent={true}
-                onRequestClose={() => {
-                    if (!isPaying) setIsSimulatedPaymentOpen(false);
-                }}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        {!paymentSuccess ? (
-                            <>
-                                <View style={styles.modalHeader}>
-                                    <AdaptiveText style={styles.modalTitle}>
-                                        {t('pay_advance', 'Pay Advance Amount')}
-                                    </AdaptiveText>
-                                    <TouchableOpacity 
-                                        style={styles.closeButton} 
-                                        onPress={() => setIsSimulatedPaymentOpen(false)}
-                                        disabled={isPaying}
-                                    >
-                                        <Icon name="close" size={24} color={colors.black} />
-                                    </TouchableOpacity>
-                                </View>
 
-                                <View style={styles.paymentSummaryCard}>
-                                    <AdaptiveText style={styles.summaryLabel}>
-                                        {t('ride_booking_advance', 'Ride Booking Advance')}
-                                    </AdaptiveText>
-                                    <AdaptiveText style={styles.summaryAmount}>
-                                        ₹500.00
-                                    </AdaptiveText>
-                                </View>
-
-                                <AdaptiveText style={styles.methodSectionTitle}>
-                                    {t('select_payment_method', 'Select Payment Method')}
-                                </AdaptiveText>
-
-                                <View style={styles.methodList}>
-                                    {/* UPI Option */}
-                                    <TouchableOpacity 
-                                        style={[
-                                            styles.methodRow,
-                                            selectedMethod === 'UPI' && styles.methodRowSelected
-                                        ]}
-                                        onPress={() => setSelectedMethod('UPI')}
-                                        disabled={isPaying}
-                                    >
-                                        <View style={styles.methodInfo}>
-                                            <FontAwesome6 name="u" size={16} color={selectedMethod === 'UPI' ? colors.black : '#64748B'} />
-                                            <AdaptiveText style={styles.methodText}>UPI (GPay / PhonePe / Paytm)</AdaptiveText>
-                                        </View>
-                                        <View style={[styles.radioCircle, selectedMethod === 'UPI' && styles.radioCircleSelected]}>
-                                            {selectedMethod === 'UPI' && <View style={styles.radioDot} />}
-                                        </View>
-                                    </TouchableOpacity>
-
-                                    {/* Card Option */}
-                                    <TouchableOpacity 
-                                        style={[
-                                            styles.methodRow,
-                                            selectedMethod === 'CARD' && styles.methodRowSelected
-                                        ]}
-                                        onPress={() => setSelectedMethod('CARD')}
-                                        disabled={isPaying}
-                                    >
-                                        <View style={styles.methodInfo}>
-                                            <Icon name="credit-card" size={20} color={selectedMethod === 'CARD' ? colors.black : '#64748B'} />
-                                            <AdaptiveText style={styles.methodText}>Credit / Debit Card</AdaptiveText>
-                                        </View>
-                                        <View style={[styles.radioCircle, selectedMethod === 'CARD' && styles.radioCircleSelected]}>
-                                            {selectedMethod === 'CARD' && <View style={styles.radioDot} />}
-                                        </View>
-                                    </TouchableOpacity>
-                                </View>
-
-                                <TouchableOpacity
-                                    style={[styles.payNowButton, isPaying && { backgroundColor: colors.grey_light }]}
-                                    onPress={handleSimulatedPay}
-                                    disabled={isPaying}
-                                >
-                                    {isPaying ? (
-                                        <ActivityIndicator size="small" color={colors.black} />
-                                    ) : (
-                                        <AdaptiveText style={styles.payNowText}>
-                                            {t('pay_now', 'Pay ₹500.00 Now')}
-                                        </AdaptiveText>
-                                    )}
-                                </TouchableOpacity>
-                            </>
-                        ) : (
-                            <View style={styles.successContainer}>
-                                <View style={styles.successCircle}>
-                                    <Icon name="check" size={48} color="#059669" />
-                                </View>
-                                <AdaptiveText style={styles.successTitle}>
-                                    {t('payment_successful', 'Payment Successful')}
-                                </AdaptiveText>
-                                <AdaptiveText style={styles.successSubtitle}>
-                                    {t('payment_success_msg', 'Your advance payment of ₹500 was completed. Finding driver details...')}
-                                </AdaptiveText>
-                            </View>
-                        )}
-                    </View>
-                </View>
-            </Modal>
 
             {/* Booking Success Modal */}
             <Modal
@@ -1696,5 +1507,65 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontFamily: Fonts.semi_bold || Fonts.medium,
         color: actingDriverColors.secondary,
+    },
+    vehicleScrollCard: {
+        width: 240,
+        backgroundColor: '#F8FAFC',
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        borderRadius: 12,
+        padding: 12,
+        marginRight: 12,
+    },
+    vehicleScrollCardSelected: {
+        backgroundColor: '#F1F5F9',
+        borderColor: '#94A3B8',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+        elevation: 2,
+    },
+    addVehicleScrollCard: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderStyle: 'dashed',
+        backgroundColor: '#FFFFFF',
+        flexDirection: 'row',
+        gap: 8,
+    },
+    vehicleScrollIconBg: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#E2E8F0',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    vehicleScrollIconBgSelected: {
+        backgroundColor: '#475569',
+    },
+    vehicleScrollReg: {
+        fontSize: 14,
+        fontFamily: Fonts.bold,
+        color: '#1E293B',
+    },
+    vehicleScrollRegSelected: {
+        color: '#1E293B',
+    },
+    vehicleScrollMeta: {
+        fontSize: 12,
+        fontFamily: Fonts.medium,
+        color: '#64748B',
+        marginTop: 2,
+    },
+    vehicleScrollMetaSelected: {
+        color: '#64748B',
+    },
+    addVehicleScrollText: {
+        fontSize: 13,
+        fontFamily: Fonts.medium,
+        color: '#1E293B',
+        marginTop: 8,
     },
 });

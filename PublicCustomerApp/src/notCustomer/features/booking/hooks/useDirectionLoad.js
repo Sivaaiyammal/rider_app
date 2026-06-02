@@ -32,7 +32,7 @@ const useDirectionLoad = () => {
     try{
 
       setRouteLoading({loading:true})
-    const { clearMarkers = true, vehicleType = 'car', padding } = options;
+    const { clearMarkers = true, vehicleType = 'car', padding, tripType } = options;
 
     
     
@@ -72,6 +72,16 @@ const useDirectionLoad = () => {
         lat: rideEndLocation.latitude,
         lon: rideEndLocation.longitude,
         locationName: rideEndLocation?.name || rideEndLocation?.address,
+        type: tripType === 'ROUND_TRIP' ? 'waypoint' : 'end'
+      });
+    }
+
+    // Add return to start if Round Trip
+    if (tripType === 'ROUND_TRIP' && rideStartLocation && rideStartLocation.latitude && rideStartLocation.longitude) {
+      allLocations.push({
+        lat: rideStartLocation.latitude,
+        lon: rideStartLocation.longitude,
+        locationName: rideStartLocation.name || rideStartLocation.address,
         type: 'end'
       });
     }

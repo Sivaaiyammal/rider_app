@@ -13,6 +13,9 @@ const useRideBookingInfo = create(set => ({
   paymentType: "CASH",
   setPaymentType: (paymentType) => set({ paymentType }),
 
+  tripType: 'ONE_WAY',
+  setTripType: (tripType) => set({ tripType }),
+
 
   rideBookMode: null,
   setRideBookMode: (rideBookMode) => set({ rideBookMode }),
@@ -122,6 +125,7 @@ const useRideBookingInfo = create(set => ({
     actingDriverKidsOnBoard: false,
     actingDriverElderlyOnBoard: false,
     actingDriverItinerary: null,
+    tripType: 'ONE_WAY',
     bookingTab: 'TODAY',
     durationRangeStart: null,
     durationRangeEnd: null,

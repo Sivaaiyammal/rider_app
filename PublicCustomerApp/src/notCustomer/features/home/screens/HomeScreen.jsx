@@ -646,6 +646,7 @@ const MapScreen = () => {
         } else if (bookingTab === 'CUSTOM') {
           setDurationRangeStart(startDate);
           setDurationRangeEnd(endDate || startDate);
+          setCustomStartTime(scheduleDateTime);
           // PlanRideScreen calculates actingDriverHours based on date range
         }
 

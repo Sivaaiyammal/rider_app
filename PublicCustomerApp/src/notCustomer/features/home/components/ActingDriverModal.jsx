@@ -232,6 +232,21 @@ const ActingDriverModal = ({ visible, onClose, onTripTypeSelect, loading }) => {
           {activeTab !== 'CUSTOM' && renderDurationSelector()}
 
           {activeTab === 'CUSTOM' && (
+            <>
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionLabel}>Select Start Time</Text>
+              <TouchableOpacity
+                style={styles.selectorBox}
+                onPress={() => setShowTimePicker(true)}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="time-outline" size={20} color={actingDriverColors.secondary} />
+                <Text style={styles.selectorText}>
+                  {utils.timestampTo12HourFormat(scheduleDateTime)}
+                </Text>
+                <Ionicons name="chevron-forward" size={18} color={colors.grey_dark} />
+              </TouchableOpacity>
+            </View>
             <View style={styles.sectionContainer}>
               <Text style={styles.sectionLabel}>Select Date Range</Text>
               <Calendar
@@ -252,6 +267,7 @@ const ActingDriverModal = ({ visible, onClose, onTripTypeSelect, loading }) => {
                 style={styles.calendar}
               />
             </View>
+            </>
           )}
         </ScrollView>
 
