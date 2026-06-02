@@ -1757,6 +1757,9 @@ module.exports = function (CLASS) {
                 if (vehicleInfo.maxSpeed !== undefined && vehicleInfo.maxSpeed !== null) {
                     vehicleDoc.maxSpeed = Number(vehicleInfo.maxSpeed);
                 }
+                if (vehicleInfo.photo !== undefined) {
+                    vehicleDoc.photo = vehicleInfo.photo;
+                }
                 vehicleDoc.verified = false;
             }
 
@@ -1809,7 +1812,7 @@ module.exports = function (CLASS) {
             const owned = vehicles.some(v => v._id.toString() === vehicleId);
             if (!owned) return res.status(403).json({ success: false, message: 'Vehicle not found for this passenger' });
 
-            const allowedFields = ['type', 'make', 'model', 'year', 'fuelType', 'transmission', 'features', 'additionalInfo', 'maxSpeed'];
+            const allowedFields = ['type', 'make', 'model', 'year', 'fuelType', 'transmission', 'features', 'additionalInfo', 'maxSpeed', 'photo'];
             const updateDoc = {};
             for (const key of allowedFields) {
                 if (vehicleInfo[key] !== undefined) updateDoc[key] = vehicleInfo[key];
@@ -2002,6 +2005,41 @@ module.exports = function (CLASS) {
                 }
 
                 return res.json({ success: true, message: 'Payment receipt uploaded', url: result.url });
+            } catch (err) {
+                return this.handleError(err, res);
+            }
+        });
+    }
+
+    CLASS.prototype.uploadPassangerVehiclePhoto = async function (req, res) {
+        const storage = multer.memoryStorage();
+        const fileFilter = (_, file, cb) => {
+            if (/^image\/(jpeg|jpg|png|webp|heic)$/i.test(file.mimetype)) {
+                cb(null, true);
+            } else {
+                cb(new Error('Only image files (JPEG, PNG, WEBP, HEIC) are allowed'));
+            }
+        };
+        const upload = multer({ storage, fileFilter }).single('photo');
+
+        upload(req, res, async (err) => {
+            if (err) {
+                return res.status(400).json({ success: false, message: 'File parse error', error: err.message });
+            }
+            try {
+                const passangerId = req.passanger.id;
+
+                if (!req.file) {
+                    return res.status(400).json({ success: false, message: 'photo file is required' });
+                }
+
+                const s3Key = `${passangerId}_vehicle_photo_${Date.now()}`;
+                const result = await e2eS3File('upload', req.file, s3Key, `passengers/${passangerId}/vehicles/`);
+                if (!result?.completed) {
+                    return res.status(500).json({ success: false, message: 'File upload failed' });
+                }
+
+                return res.json({ success: true, message: 'Vehicle photo uploaded', url: result.url });
             } catch (err) {
                 return this.handleError(err, res);
             }

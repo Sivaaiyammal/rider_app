@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler, Modal, TextInput, Alert, FlatList, StatusBar} from 'react-native';
+import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler, Modal, TextInput, Alert, FlatList, StatusBar, Image} from 'react-native';
 import React, {useCallback, useState,useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar } from 'react-native-calendars';
@@ -7,7 +7,7 @@ import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import {addLocation} from '../../../styles/AddLocationStyles';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
-import { VEHICLE_TYPE_OPTIONS, VEHICLE_TYPE_ICON } from '../../myVehicles/constants/vehicleData';
+import { VEHICLE_TYPE_OPTIONS, VEHICLE_TYPE_ICON, getStockImage } from '../../myVehicles/constants/vehicleData';
 import DatePicker from 'react-native-date-picker';
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -128,7 +128,7 @@ const ACTING_DRIVER_THEMES = {
 const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mode,vehicle}) => {
   const { t } = useTranslation();
   const {userdetails,userFavPlaces} = useUserInfoStore();
-  const {goBack,setStackScreen,goBackToScreen} = useStackScreenStore();
+  const {goBack,setStackScreen,goBackToScreen,getCurrentScreen} = useStackScreenStore();
   const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
 
   const {
@@ -351,6 +351,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
 
   useEffect(() => {
     if (!isActingDriverMode) return;
+    const currentScreen = getCurrentScreen();
+    if (currentScreen?.name !== 'PlanRideScreen') return;
     
     const fetchUserVehicles = async () => {
       setLoadingVehicles(true);
@@ -358,13 +360,23 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
         const response = await getPassangerVehicles();
         if (response.success) {
           const list = response.vehicles || [];
-          setVehiclesList(list);
-          if (list.length > 0 && !actingDriverVehicle) {
+          // Compare and select newly added vehicle if list size grew
+          if (list.length > vehiclesList.length) {
+            const existingRegs = vehiclesList.map(v => v.regNo);
+            const newVehicle = list.find(v => !existingRegs.includes(v.regNo));
+            if (newVehicle) {
+              setActingDriverVehicle(newVehicle);
+              if (newVehicle.maxSpeed) {
+                setActingDriverMaxSpeed(String(newVehicle.maxSpeed));
+              }
+            }
+          } else if (list.length > 0 && !actingDriverVehicle) {
             setActingDriverVehicle(list[0]);
             if (list[0].maxSpeed) {
               setActingDriverMaxSpeed(String(list[0].maxSpeed));
             }
           }
+          setVehiclesList(list);
         }
       } catch (err) {
         console.log('Failed to fetch user vehicles', err);
@@ -374,7 +386,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     };
 
     fetchUserVehicles();
-  }, [isActingDriverMode]);
+  }, [isActingDriverMode, getCurrentScreen()]);
 
   useEffect(() => {
     if (isActingDriverMode && rideEndLocation) {
@@ -857,9 +869,9 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             {actingDriverVehicle && (
               <View style={{ 
                 marginHorizontal: 16, 
-                backgroundColor: 'rgba(0,0,0,0.2)', 
+                backgroundColor: currentTheme.primary, 
                 borderRadius: 20, 
-                padding: 16, 
+                overflow: 'hidden',
                 flexDirection: 'row', 
                 alignItems: 'center', 
                 justifyContent: 'space-between',
@@ -867,7 +879,45 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                 borderWidth: 1,
                 borderColor: 'rgba(255,255,255,0.1)'
               }}>
-                <View style={{ flex: 1 }}>
+                {/* Decorative Background Effects (Bubbles & Sparkles) */}
+                <View style={{
+                  position: 'absolute',
+                  width: 180,
+                  height: 180,
+                  borderRadius: 90,
+                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                  top: -80,
+                  left: -40,
+                }} />
+                <View style={{
+                  position: 'absolute',
+                  width: 120,
+                  height: 120,
+                  borderRadius: 60,
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  bottom: -40,
+                  right: '30%',
+                }} />
+                <Ionicons 
+                  name="sparkles" 
+                  size={18} 
+                  color="#FFF" 
+                  style={{ position: 'absolute', top: 16, right: '55%', opacity: 0.2 }} 
+                />
+                <Ionicons 
+                  name="star" 
+                  size={12} 
+                  color="#FFF" 
+                  style={{ position: 'absolute', bottom: 20, left: '45%', opacity: 0.15 }} 
+                />
+                <Ionicons 
+                  name="sparkles" 
+                  size={14} 
+                  color="#FFF" 
+                  style={{ position: 'absolute', top: 50, left: '35%', opacity: 0.15 }} 
+                />
+
+                <View style={{ flex: 1, padding: 16, zIndex: 1 }}>
                   <Text style={{ fontFamily: Fonts.bold, fontSize: 20, color: '#FFF' }}>{actingDriverVehicle.regNo}</Text>
                   <Text style={{ fontFamily: Fonts.medium, fontSize: 14, color: '#FFF', opacity: 0.9, marginTop: 2 }}>{actingDriverVehicle.make} {actingDriverVehicle.model}</Text>
                   
@@ -882,8 +932,22 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                   </View>
                 </View>
                 
-                <View style={{ width: 120, height: 80, alignItems: 'center', justifyContent: 'center' }}>
-                  <Ionicons name={VEHICLE_TYPE_ICON[actingDriverVehicle.type.toLowerCase()] || 'car-sport'} size={80} color="#FFF" style={{ opacity: 0.9 }} />
+                <View style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '50%', alignItems: 'center', justifyContent: 'center' }}>
+                  {actingDriverVehicle.photo ? (
+                    <>
+                      <Image source={{ uri: actingDriverVehicle.photo }} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
+                      <LinearGradient
+                        colors={[currentTheme.primary, 'transparent']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 0.3, y: 0 }}
+                        style={{ position: 'absolute', top: 0, left: -2, right: 0, bottom: 0 }}
+                      />
+                    </>
+                  ) : getStockImage(actingDriverVehicle.type) ? (
+                    <Image source={getStockImage(actingDriverVehicle.type)} style={{ width: '90%', height: '90%', resizeMode: 'contain' }} />
+                  ) : (
+                    <Ionicons name={VEHICLE_TYPE_ICON[actingDriverVehicle.type.toLowerCase()] || 'car-sport'} size={120} color="#FFF" style={{ opacity: 0.2, right: -20, position: 'absolute' }} />
+                  )}
                 </View>
               </View>
             )}
@@ -1280,6 +1344,10 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             setShowVehicleModal(false);
           }}
           themeMap={ACTING_DRIVER_THEMES}
+          onAddVehicle={() => {
+            setShowVehicleModal(false);
+            setStackScreen('MyVehiclesScreen', { returnTo: 'PlanRideScreen', action: 'add' });
+          }}
         />
       </View>
       

@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors } from '../../../constants/constants';
-import { VEHICLE_TYPE_OPTIONS, VEHICLE_TYPE_ICON } from '../constants/vehicleData';
+import { VEHICLE_TYPE_OPTIONS, VEHICLE_TYPE_ICON, getStockImage } from '../constants/vehicleData';
 import styles from '../styles/vehicleStyles';
 
 const VehicleCard = ({ vehicle, onEdit, onDelete }) => {
@@ -13,8 +12,15 @@ const VehicleCard = ({ vehicle, onEdit, onDelete }) => {
 
   return (
     <View style={styles.card}>
-      <View style={styles.cardIconContainer}>
-        <Ionicons name={iconName} size={28} color={colors.black} />
+      <View style={[styles.cardIconContainer, { overflow: 'hidden' }]}>
+        {vehicle.photo || getStockImage(vehicle.type) ? (
+          <Image
+            source={vehicle.photo ? { uri: vehicle.photo } : getStockImage(vehicle.type)}
+            style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
+          />
+        ) : (
+          <Ionicons name={iconName} size={28} color={colors.black} />
+        )}
       </View>
       <View style={styles.cardInfo}>
         <Text style={styles.cardRegNo}>{vehicle.regNo}</Text>

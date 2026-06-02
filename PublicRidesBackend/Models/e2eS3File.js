@@ -2,8 +2,9 @@ const Minio = require('minio');
 const fs = require('fs');
 const path = require('path');
 
-const e2eBase = process.env.E2E_BASE;
-const isLocalE2E = ['localhost', '127.0.0.1'].includes(String(e2eBase || '').toLowerCase());
+const rawE2eBase = process.env.E2E_BASE || '';
+const e2eBase = String(rawE2eBase).replace(/['"]/g, '').trim();
+const isLocalE2E = ['localhost', '127.0.0.1'].includes(e2eBase.toLowerCase()) || e2eBase.includes('192.168.') || e2eBase.includes('10.');
 const e2ePort = Number(process.env.E2E_PORT || (isLocalE2E ? 9000 : 443));
 const useSSLE2E = process.env.E2E_USE_SSL
     ? String(process.env.E2E_USE_SSL).toLowerCase() === 'true'

@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, FlatList, Image } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Fonts } from '../../../../constants/constants';
-import { VEHICLE_TYPE_ICON } from '../../../myVehicles/constants/vehicleData';
+import { VEHICLE_TYPE_ICON, getStockImage } from '../../../myVehicles/constants/vehicleData';
+
 const VehicleSelectionModal = ({
   visible,
   onClose,
@@ -10,6 +11,7 @@ const VehicleSelectionModal = ({
   selectedVehicle,
   onSelect,
   themeMap,
+  onAddVehicle,
 }) => {
 
   const renderVehicleItem = ({ item }) => {
@@ -23,7 +25,11 @@ const VehicleSelectionModal = ({
         activeOpacity={0.7}
       >
         <View style={styles.imageContainer}>
-          <Ionicons name={VEHICLE_TYPE_ICON[item.type?.toLowerCase()] || 'car-sport'} size={50} color={theme.primary} />
+          {item.photo || getStockImage(item.type) ? (
+            <Image source={item.photo ? { uri: item.photo } : getStockImage(item.type)} style={{ width: '100%', height: '100%', resizeMode: 'cover', borderRadius: 8 }} />
+          ) : (
+            <Ionicons name={VEHICLE_TYPE_ICON[item.type?.toLowerCase()] || 'car-sport'} size={50} color={theme.primary} />
+          )}
         </View>
 
         <View style={styles.detailsContainer}>
@@ -79,6 +85,16 @@ const VehicleSelectionModal = ({
                <Text style={styles.emptyText}>No vehicles found</Text>
             </View>
           )}
+
+          {/* Add Vehicle Button */}
+          <TouchableOpacity 
+            style={styles.addBtn}
+            onPress={onAddVehicle}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="add" size={20} color="#FFF" />
+            <Text style={styles.addBtnText}>Add Vehicle</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Modal>
@@ -181,7 +197,23 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#94A3B8',
     marginTop: 12,
-  }
+  },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0F172A',
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginHorizontal: 20,
+    marginBottom: 24,
+    gap: 6,
+  },
+  addBtnText: {
+    fontFamily: Fonts.bold,
+    fontSize: 15,
+    color: '#FFF',
+  },
 });
 
 export default VehicleSelectionModal;

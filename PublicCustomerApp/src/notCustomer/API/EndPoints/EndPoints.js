@@ -242,6 +242,23 @@ export const deleteAccount = async (payload) => {
     return data
   }
 
+  export const uploadPassangerVehiclePhoto = async (photoAsset) => {
+    const formData = new FormData();
+    formData.append('photo', {
+      uri: photoAsset.uri,
+      type: photoAsset.type || 'image/jpeg',
+      name: photoAsset.name || photoAsset.fileName || 'vehicle_photo.jpg',
+    });
+    
+    // apiClient in React Native can handle FormData when configured properly
+    const { data } = await apiClient.post('/publicrides/customer/v2/uploadPassangerVehiclePhoto', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  }
+
 export const approveBill = async (tripId, billIndex, approval) => {
   const { data } = await apiClient.post('/publicrides/customer/v2/approveBill', { tripId, billIndex, approval });
   return data;

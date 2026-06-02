@@ -221,3 +221,17 @@ export const ADVANCED_FEATURES = [
   {label: 'Blind Spot Monitor', value: 'blind_spot_monitor'},
   {label: 'Drive Modes (Eco/Sport)', value: 'drive_modes'},
 ];
+
+export const STOCK_IMAGES = {
+  hatchback: require('../../../assets/image/garage/hatback.png'),
+  sedan: require('../../../assets/image/garage/sedan.png'),
+  suv: require('../../../assets/image/garage/suv.png'),
+  muv: require('../../../assets/image/garage/muv.png'),
+  exsedan: require('../../../assets/image/garage/exec_sedan.png'),
+  luxury: require('../../../assets/image/garage/luxury.png'),
+};
+
+export const getStockImage = (type) => {
+  if (!type) return null;
+  return STOCK_IMAGES[type.toLowerCase()] || null;
+};

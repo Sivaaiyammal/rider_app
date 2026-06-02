@@ -6,6 +6,7 @@ import {
   StyleSheet,
   FlatList,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -17,6 +18,7 @@ import useRideBookingInfo from '../../booking/store/useRideBookingInfo';
 import {
   VEHICLE_TYPE_OPTIONS,
   VEHICLE_TYPE_ICON,
+  getStockImage,
 } from '../../myVehicles/constants/vehicleData';
 
 const VehicleItem = ({ vehicle, selected, onPress }) => {
@@ -35,12 +37,19 @@ const VehicleItem = ({ vehicle, selected, onPress }) => {
       activeOpacity={0.85}
       onPress={onPress}
     >
-      <View style={[styles.cardIcon, selected && styles.cardIconSelected]}>
-        <Ionicons
-          name={iconName}
-          size={24}
-          color={selected ? actingDriverColors.secondary : colors.grey_xxdark}
-        />
+      <View style={[styles.cardIcon, selected && styles.cardIconSelected, { overflow: 'hidden' }]}>
+        {vehicle.photo || getStockImage(vehicle.type) ? (
+          <Image
+            source={vehicle.photo ? { uri: vehicle.photo } : getStockImage(vehicle.type)}
+            style={{ width: '100%', height: '100%', resizeMode: 'cover' }}
+          />
+        ) : (
+          <Ionicons
+            name={iconName}
+            size={24}
+            color={selected ? actingDriverColors.secondary : colors.grey_xxdark}
+          />
+        )}
       </View>
       <View style={styles.cardInfo}>
         <Text style={[styles.cardRegNo, selected && styles.cardRegNoSelected]}>

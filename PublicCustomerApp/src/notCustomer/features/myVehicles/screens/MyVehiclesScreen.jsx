@@ -17,6 +17,7 @@ import {
   editPassangerVehicle,
   getPassangerVehicles,
   updatePassangerVehicle,
+  uploadPassangerVehiclePhoto,
 } from '../../../API/EndPoints/EndPoints';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import NavBar from '../../../components/NavBar';
@@ -38,6 +39,7 @@ const EMPTY_FIELDS = {
   features: [],
   additionalInfo: '',
   maxSpeed: '',
+  photo: '',
 };
 
 const fieldsFromVehicle = v => ({
@@ -54,6 +56,7 @@ const fieldsFromVehicle = v => ({
   features: Array.isArray(v.features) ? v.features : [],
   additionalInfo: v.additionalInfo || '',
   maxSpeed: v.maxSpeed ? String(v.maxSpeed) : '',
+  photo: v.photo || '',
 });
 
 const hasValidTransmission = transmission =>
@@ -316,6 +319,19 @@ const ManualForm = ({regNo, onAdd, onCancel}) => {
     }
     setLoading(true);
     try {
+      let photoUrl = fields.photo || undefined;
+      // If photo is an object with uri (not yet uploaded to S3)
+      if (fields.photo && typeof fields.photo === 'object' && fields.photo.uri && !fields.photo.uri.startsWith('http')) {
+        const uploadResponse = await uploadPassangerVehiclePhoto(fields.photo);
+        if (uploadResponse.success && uploadResponse.url) {
+          photoUrl = uploadResponse.url;
+        } else {
+          Alert.alert(t('error'), uploadResponse.message || t('photo_upload_failed', 'Failed to upload photo'));
+          setLoading(false);
+          return;
+        }
+      }
+
       const response = await updatePassangerVehicle({
         regNo,
         type: fields.vehicleType,
@@ -327,9 +343,10 @@ const ManualForm = ({regNo, onAdd, onCancel}) => {
         features: fields.features,
         additionalInfo: fields.additionalInfo.trim(),
         maxSpeed: fields.maxSpeed ? Number(fields.maxSpeed) : undefined,
+        photo: photoUrl,
       });
       if (response.success) {
-        onAdd(response.vehicle || {regNo, ...fields, type: fields.vehicleType});
+        onAdd(response.vehicle || {regNo, ...fields, type: fields.vehicleType, photo: photoUrl});
       } else {
         Alert.alert(
           t('error'),
@@ -457,19 +474,34 @@ const EditForm = ({vehicle, onSave, onCancel}) => {
       );
       return;
     }
-    const updated = {
-      type: fields.vehicleType,
-      make: fields.make.trim(),
-      model: fields.model.trim(),
-      year: fields.year,
-      fuelType: fields.fuelType,
-      transmission: fields.transmission,
-      features: fields.features,
-      additionalInfo: fields.additionalInfo.trim(),
-      maxSpeed: fields.maxSpeed ? Number(fields.maxSpeed) : undefined,
-    };
     setLoading(true);
     try {
+      let photoUrl = fields.photo || undefined;
+      // If photo is an object with uri (not yet uploaded to S3)
+      if (fields.photo && typeof fields.photo === 'object' && fields.photo.uri && !fields.photo.uri.startsWith('http')) {
+        const uploadResponse = await uploadPassangerVehiclePhoto(fields.photo);
+        if (uploadResponse.success && uploadResponse.url) {
+          photoUrl = uploadResponse.url;
+        } else {
+          Alert.alert(t('error'), uploadResponse.message || t('photo_upload_failed', 'Failed to upload photo'));
+          setLoading(false);
+          return;
+        }
+      }
+
+      const updated = {
+        type: fields.vehicleType,
+        make: fields.make.trim(),
+        model: fields.model.trim(),
+        year: fields.year,
+        fuelType: fields.fuelType,
+        transmission: fields.transmission,
+        features: fields.features,
+        additionalInfo: fields.additionalInfo.trim(),
+        maxSpeed: fields.maxSpeed ? Number(fields.maxSpeed) : undefined,
+        photo: photoUrl,
+      };
+
       const response = await editPassangerVehicle(vehicle._id, updated);
       if (response.success) {
         onSave({...vehicle, ...updated});
@@ -532,9 +564,11 @@ const EditForm = ({vehicle, onSave, onCancel}) => {
 const MyVehiclesScreen = () => {
   const {t} = useTranslation();
   const {goBack} = useStackScreenStore();
+  const currentScreen = useStackScreenStore(state => state.getCurrentScreen());
+  const params = currentScreen?.params;
 
   // 'list' | 'regNo' | 'manual' | 'verified' | 'edit'
-  const [view, setView] = useState('list');
+  const [view, setView] = useState(params?.action === 'add' ? 'regNo' : 'list');
   const [pendingRegNo, setPendingRegNo] = useState('');
   const [pendingVehicleId, setPendingVehicleId] = useState(null);
   const [pendingVerifiedData, setPendingVerifiedData] = useState(null);
@@ -590,8 +624,11 @@ const MyVehiclesScreen = () => {
       setPendingRegNo('');
       setView('list');
       await fetchVehicles();
+      if (params?.action === 'add' && params?.returnTo) {
+        goBack();
+      }
     },
-    [fetchVehicles],
+    [fetchVehicles, params, goBack],
   );
 
   const handleCancel = useCallback(() => {
@@ -599,8 +636,12 @@ const MyVehiclesScreen = () => {
     setPendingVehicleId(null);
     setPendingVerifiedData(null);
     setEditingVehicle(null);
-    setView('list');
-  }, []);
+    if (params?.action === 'add' && params?.returnTo) {
+      goBack();
+    } else {
+      setView('list');
+    }
+  }, [params, goBack]);
 
   const handleVerifiedFormSave = useCallback(
     async vehicle => {
@@ -608,8 +649,11 @@ const MyVehiclesScreen = () => {
       setPendingVerifiedData(null);
       setView('list');
       await fetchVehicles();
+      if (params?.action === 'add' && params?.returnTo) {
+        goBack();
+      }
     },
-    [fetchVehicles],
+    [fetchVehicles, params, goBack],
   );
 
   const handleEdit = useCallback(vehicle => {

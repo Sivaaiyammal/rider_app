@@ -19,8 +19,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { launchImageLibrary } from 'react-native-image-picker';
 import useOnboardingConfigStore from '../../../../common/store/useOnboardingConfigStore';
 import useUserStore from '../../../../common/store/useUserStore';
 import {colors} from '../../../constants/constants';
@@ -143,7 +145,29 @@ const VehicleFormFields = ({values, onChange}) => {
     features,
     additionalInfo,
     maxSpeed,
+    photo,
   } = values;
+
+  const handleImagePick = async () => {
+    const options = {
+      mediaType: 'photo',
+      quality: 0.5,
+      maxWidth: 800,
+      maxHeight: 800,
+    };
+    
+    launchImageLibrary(options, (response) => {
+      if (response.didCancel) return;
+      if (response.errorCode) {
+        Alert.alert('Error', response.errorMessage || 'Failed to pick image');
+        return;
+      }
+      if (response.assets && response.assets.length > 0) {
+        const asset = response.assets[0];
+        onChange('photo', asset);
+      }
+    });
+  };
 
   const [tempTransmission, setTempTransmission] = useState([]);
   const [tempFeatures, setTempFeatures] = useState([]);
@@ -188,6 +212,39 @@ const VehicleFormFields = ({values, onChange}) => {
 
   return (
     <>
+      <Text style={styles.inputLabel}>
+        {t('vehicle_photo', 'Vehicle Photo')}
+      </Text>
+      <TouchableOpacity 
+        style={{
+          height: 140,
+          backgroundColor: '#F8FAFC',
+          borderRadius: 16,
+          borderWidth: 1.5,
+          borderStyle: 'dashed',
+          borderColor: '#CBD5E1',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 16,
+          overflow: 'hidden'
+        }}
+        onPress={handleImagePick}
+        activeOpacity={0.7}
+      >
+        {photo ? (
+          <>
+            <Image source={{ uri: typeof photo === 'string' ? photo : photo?.uri }} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
+            <View style={{ position: 'absolute', bottom: 8, right: 8, backgroundColor: 'rgba(0,0,0,0.6)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 }}>
+              <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '600' }}>Change Photo</Text>
+            </View>
+          </>
+        ) : (
+          <>
+            <Ionicons name="camera-outline" size={32} color={colors.grey_dark} />
+            <Text style={{ marginTop: 8, color: colors.grey_dark, fontSize: 13 }}>Tap to upload vehicle photo</Text>
+          </>
+        )}
+      </TouchableOpacity>
       <Text style={styles.inputLabel}>
         {t('vehicle_type', 'Vehicle Type')} *
       </Text>
