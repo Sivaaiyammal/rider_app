@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,16 +6,20 @@ import {
   ScrollView,
   StyleSheet,
   Modal,
+  SafeAreaView,
 } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
 import { colors, Fonts, actingDriverColors } from '../../../../constants/constants';
 import { utils } from '../../../../utils/Utils';
 import NavBar from '../../../../components/NavBar';
+import DatePicker from 'react-native-date-picker';
 import useRideBookingLocationStore from '../../store/useRideBookingLocationStore';
 import { useTranslation } from 'react-i18next';
 import useRideBookingInfo from '../../store/useRideBookingInfo';
 import RideLocationSetBox from './RideLocationSetBox';
+import RidePlanSetBox from './RidePlanSetBox';
 import { addLocation } from '../../../../styles/AddLocationStyles';
 
 const ItineraryPlanModal = ({
@@ -25,13 +29,53 @@ const ItineraryPlanModal = ({
   onLocationClick,
   onTripForPress,
   onAddWaypoint,
+  onAddDay,
 }) => {
   const { t } = useTranslation();
-  const { rideBookMode, passangerDetails } = useRideBookingInfo();
+  const { rideBookMode, passangerDetails, actingDriverItinerary, updateBookingInfo } = useRideBookingInfo();
   const { rideStartLocation, rideEndLocation } = useRideBookingLocationStore();
 
   const destination = rideEndLocation ? utils.formatAddressName(rideEndLocation) : 'Select Destination';
   const pickup = rideStartLocation ? utils.formatAddressName(rideStartLocation) : 'Select Pickup Location';
+
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [activeTimeDateStr, setActiveTimeDateStr] = useState(null);
+  const [tempTime, setTempTime] = useState(new Date());
+
+  const handleTimeConfirm = (date) => {
+    if (activeTimeDateStr) {
+      const currentDayItin = actingDriverItinerary?.[activeTimeDateStr] || {};
+      updateBookingInfo({
+        actingDriverItinerary: {
+          ...actingDriverItinerary,
+          [activeTimeDateStr]: {
+            ...currentDayItin,
+            time: date.toISOString(),
+          }
+        }
+      });
+    }
+    setShowTimePicker(false);
+    setActiveTimeDateStr(null);
+  };
+
+  const formatTime = (dateString) => {
+    if (!dateString) return '09:00 AM';
+    const d = new Date(dateString);
+    let hours = d.getHours();
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; 
+    return `${hours.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+  };
+
+  const formatDateDisplay = (dateString) => {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${d.getDate()} ${months[d.getMonth()]}`;
+  };
 
   // Fallback to at least 1 day if empty
   const datesToRender = itineraryDates?.length > 0 ? itineraryDates : [new Date().toISOString()];
@@ -43,36 +87,38 @@ const ItineraryPlanModal = ({
       transparent={false}
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
-        <NavBar
-          withBg
-          onBackPress={onClose}
-          title="Plan Your Itinerary"
-        />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaView style={styles.container}>
+          <NavBar
+            withBg
+            onBackPress={onClose}
+            title="Plan Your Itinerary"
+          />
 
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          nestedScrollEnabled={true}
-        >
-          {/* Header Row */}
+          <View style={{ flex: 1 }}>
+            <ScrollView
+              style={{ flex: 1 }}
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              nestedScrollEnabled={true}
+            >
+            {/* Premium Header Row */}
           <View style={styles.headerRow}>
-            <Text style={styles.headerTitle}>Daily Schedule</Text>
-            <Text style={styles.headerSubtitle}>{datesToRender.length} Stops Planned</Text>
+            <View>
+              <Text style={styles.headerTitle}>Trip Itinerary</Text>
+              <Text style={styles.headerDate}>{formatDateDisplay(datesToRender[0])} - {formatDateDisplay(datesToRender[datesToRender.length-1])}</Text>
+            </View>
+            <View style={styles.badgeContainer}>
+              <Text style={styles.badgeText}>{datesToRender.length} Days</Text>
+            </View>
           </View>
 
           {/* Timeline Cards */}
           <View style={styles.timelineContainer}>
+            <View style={styles.timelineAxis} />
             {datesToRender.map((dateStr, index) => {
-              // Placeholder titles like the reference image
-              const titles = ["Arrival & Transit", "Corporate Site Visit", "Return Flight"];
-              const dayTitle = titles[index % titles.length];
-
-              // Generic times for UI aesthetics
-              const times = ["08:30 AM", "09:15 AM", "02:00 PM"];
-              const dayTime = times[index % times.length];
+              // Removed generic times
 
               // Generic pill values
               const durations = ["1h 20m", "55m", "1h 45m"];
@@ -80,46 +126,100 @@ const ItineraryPlanModal = ({
               const duration = durations[index % durations.length];
               const distance = distances[index % distances.length];
 
+              const dayItinerary = actingDriverItinerary?.[dateStr] || {};
+              const startLocation = dayItinerary.startLocation || null;
+              const endLocation = dayItinerary.endLocation || null;
+              const wayPoints = dayItinerary.wayPoints || [];
+              const dayTime = dayItinerary.time ? formatTime(dayItinerary.time) : formatTime(null);
+              const dayDateFormatted = formatDateDisplay(dateStr);
+
               return (
-                <View key={index} style={styles.cardContainer}>
-                  {/* Top Row: Circle + Title + Time */}
-                  <View style={styles.cardHeaderRow}>
-                    <View style={styles.dayCircle}>
-                      <Text style={styles.dayCircleText}>{index + 1}</Text>
-                    </View>
-                    <Text style={styles.dayTitle}>Day {index + 1}: {dayTitle}</Text>
-                    <Text style={styles.dayTime}>{dayTime}</Text>
+                <View key={index} style={styles.dayWrapper}>
+                  {/* Timeline Node */}
+                  <View style={styles.dayCircle}>
+                    <Text style={styles.dayCircleText}>{index + 1}</Text>
                   </View>
 
-                  {/* Body Row: Dashed Line + Content */}
-                  <View style={styles.cardBodyRow}>
-                    <View style={styles.dashedLineContainer}>
-                      <View style={styles.verticalDashedLine} />
+                  <View style={styles.cardContainer}>
+                    {/* Top Row: Title + Time */}
+                    <View style={styles.cardHeaderRow}>
+                      <Text style={styles.dayTitle}>
+                        Day {index + 1} <Text style={styles.dayTitleDate}>({dayDateFormatted})</Text>
+                      </Text>
+                      <TouchableOpacity 
+                        style={styles.timeButton}
+                        activeOpacity={0.7}
+                        onPress={() => {
+                          setActiveTimeDateStr(dateStr);
+                          setTempTime(dayItinerary.time ? new Date(dayItinerary.time) : new Date());
+                          setShowTimePicker(true);
+                        }}
+                      >
+                        <Text style={styles.dayTime}>{dayTime}</Text>
+                        <Ionicons name="time" size={14} color="#0F4A75" style={{marginLeft: 4}} />
+                      </TouchableOpacity>
                     </View>
+
+                    {/* Body Row: Content */}
+                    <View style={styles.cardBodyRow}>
 
                     <View style={styles.cardContent}>
                       {/* Interactive Location Set Box */}
-                      <RideLocationSetBox 
-                        onAddWaypoint={onAddWaypoint}
-                        onLocationClick={onLocationClick}
+                      <RidePlanSetBox 
+                        startLocation={startLocation}
+                        endLocation={endLocation}
+                        wayPoints={wayPoints}
+                        onAddWaypoint={(type) => onAddWaypoint(type, dateStr)}
+                        onLocationClick={(type) => onLocationClick(type, dateStr)}
                         hideDestination={false}
                         dayHeader={null}
                       />
+                    </View>
                     </View>
                   </View>
                 </View>
               );
             })}
+            
+            {/* Add Another Day Button */}
+            {onAddDay && (
+              <TouchableOpacity 
+                style={styles.addDayButton} 
+                onPress={onAddDay}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="add-circle" size={20} color="#0F4A75" />
+                <Text style={styles.addDayText}>Add Another Day</Text>
+              </TouchableOpacity>
+            )}
           </View>
-        </ScrollView>
+          </ScrollView>
+        </View>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.doneButton} onPress={onClose} activeOpacity={0.85}>
-            <Text style={styles.doneButtonText}>Done</Text>
+        {/* Floating Action Button (FAB) Footer */}
+        <View style={styles.fabContainer}>
+          <TouchableOpacity style={styles.fabButton} onPress={onClose} activeOpacity={0.85}>
+            <Text style={styles.fabButtonText}>Done Planning</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
+      </GestureHandlerRootView>
+
+      <DatePicker
+        modal
+        open={showTimePicker}
+        date={tempTime}
+        mode="datetime"
+        theme="light"
+        onConfirm={(date) => {
+          setTempTime(date);
+          handleTimeConfirm(date);
+        }}
+        onCancel={() => {
+          setShowTimePicker(false);
+          setActiveTimeDateStr(null);
+        }}
+      />
     </Modal>
   );
 };
@@ -131,202 +231,235 @@ ItineraryPlanModal.propTypes = {
   onLocationClick: PropTypes.func,
   onTripForPress: PropTypes.func,
   onAddWaypoint: PropTypes.func,
+  onAddDay: PropTypes.func,
 };
 
 ItineraryPlanModal.defaultProps = {
   onLocationClick: () => {},
   onTripForPress: () => {},
   onAddWaypoint: () => {},
+  onAddDay: null,
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     height: '100%',
-    backgroundColor: '#F8FAFC', // light gray/blue background
+    backgroundColor: '#F4F7FA', // Modern soft background
   },
   scrollContent: {
-    paddingBottom: 120,
+    flexGrow: 1,
+    paddingBottom: 120, // space for FAB
     paddingTop: 10,
   },
   
-  /* Header */
+  /* Premium Header */
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 8,
   },
   headerTitle: {
-    fontSize: 16,
-    fontFamily: Fonts.bold || Fonts.semi_bold,
-    color: '#003366',
+    fontSize: 22,
+    fontFamily: Fonts.bold,
+    color: '#0F223C',
+    marginBottom: 4,
   },
-  headerSubtitle: {
-    fontSize: 12,
+  headerDate: {
+    fontSize: 13,
     fontFamily: Fonts.medium,
     color: '#64748B',
+  },
+  badgeContainer: {
+    backgroundColor: '#E0F2FE',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontFamily: Fonts.semi_bold || Fonts.bold,
+    color: '#0369A1',
   },
 
   /* Timeline */
   timelineContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
+    position: 'relative',
   },
-  cardContainer: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginBottom: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+  timelineAxis: {
+    position: 'absolute',
+    left: 35, // 20 padding + 15 half-circle
+    top: 16,
+    bottom: 24,
+    width: 2,
+    backgroundColor: '#CBD5E1',
+    borderRadius: 1,
   },
-
-  /* Card Header */
-  cardHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  dayWrapper: {
+    position: 'relative',
+    marginBottom: 20,
   },
   dayCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#0F4A75', // Dark blue as in the image
+    position: 'absolute',
+    left: 0,
+    top: 14, 
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#0F4A75', 
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    zIndex: 2,
+    elevation: 3,
+    shadowColor: '#0F4A75',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   dayCircleText: {
     color: '#FFFFFF',
     fontSize: 14,
     fontFamily: Fonts.bold,
   },
+
+  /* Cards */
+  cardContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    marginLeft: 46, // Space for circle + margin
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 4,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    paddingBottom: 12,
+  },
   dayTitle: {
-    flex: 1,
-    fontSize: 15,
-    fontFamily: Fonts.medium,
+    fontSize: 16,
+    fontFamily: Fonts.bold,
     color: '#0F4A75',
+  },
+  dayTitleDate: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: '#94A3B8',
+  },
+  timeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#F0F7FF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E0F2FE',
   },
   dayTime: {
     fontSize: 12,
-    fontFamily: Fonts.medium,
-    color: '#475569',
+    fontFamily: Fonts.bold,
+    color: '#0F4A75',
   },
-
-  /* Card Body */
   cardBodyRow: {
-    flexDirection: 'row',
-    marginTop: 8,
-  },
-  dashedLineContainer: {
-    width: 32,
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  verticalDashedLine: {
-    width: 1,
-    flex: 1,
-    borderStyle: 'dashed',
-    borderLeftWidth: 1.5,
-    borderColor: '#CBD5E1',
-    marginBottom: 10,
+    marginTop: 0,
   },
   cardContent: {
     flex: 1,
-    paddingTop: 8,
   },
 
-  /* Locations */
-  locationItem: {
+  /* Add Day Button */
+  addDayButton: {
     flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 46, // Align with cards
+    backgroundColor: '#F0F7FF',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E0F2FE',
+    alignSelf: 'flex-start',
+    marginTop: 8,
     marginBottom: 16,
   },
-  locIconWrap: {
-    width: 20,
-    alignItems: 'center',
-    marginTop: 2,
-    marginRight: 10,
-  },
-  greenRing: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 2,
-    borderColor: '#10B981',
-    backgroundColor: '#FFFFFF',
-  },
-  locTextWrap: {
-    flex: 1,
-  },
-  locLabel: {
-    fontSize: 10,
+  addDayText: {
     fontFamily: Fonts.bold,
-    color: '#64748B',
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  locValue: {
     fontSize: 14,
-    fontFamily: Fonts.medium,
     color: '#0F4A75',
-    lineHeight: 20,
+    marginLeft: 8,
   },
 
-  /* Pills */
-  pillsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 4,
-  },
-  pillBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E0E7FF',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    gap: 4,
-  },
-  pillText: {
-    fontSize: 11,
-    fontFamily: Fonts.semi_bold || Fonts.medium,
-    color: '#3730A3',
-  },
-
-  /* Footer */
-  footer: {
+  /* FAB Footer */
+  fabContainer: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: actingDriverColors.background,
-    paddingHorizontal: 16,
-    paddingBottom: 32,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: actingDriverColors.border,
-    elevation: 8,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
+    bottom: 24,
+    left: 20,
+    right: 20,
   },
-  doneButton: {
-    backgroundColor: actingDriverColors.secondary,
-    borderRadius: 12,
-    paddingVertical: 16,
+  fabButton: {
+    backgroundColor: '#000000',
+    borderRadius: 16,
+    paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
   },
-  doneButtonText: {
+  fabButtonText: {
+    fontSize: 18,
+    fontFamily: Fonts.bold,
+    color: '#FFFFFF',
+  },
+
+  /* Modal Overlays */
+  timePickerModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  timePickerModalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 24,
+    width: '80%',
+    alignItems: 'center',
+  },
+  timePickerModalTitle: {
+    fontSize: 18,
+    fontFamily: Fonts.bold,
+    color: '#0F4A75',
+    marginBottom: 16,
+  },
+  timePickerModalActions: {
+    marginTop: 24,
+    width: '100%',
+  },
+  timePickerOkButton: {
+    backgroundColor: actingDriverColors.primary,
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  timePickerOkButtonText: {
+    color: '#FFFFFF',
+    fontFamily: Fonts.bold,
     fontSize: 16,
-    fontFamily: Fonts.bold || Fonts.semi_bold,
-    color: colors.white,
   },
 });
 

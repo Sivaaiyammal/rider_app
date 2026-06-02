@@ -166,6 +166,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     setTomorrowStartTime,
     customStartTime,
     setCustomStartTime,
+    showItineraryModal,
+    setShowItineraryModal,
   } = useRideBookingInfo();
 
   const [showTripFor, setShowTripFor] = useState(false);
@@ -173,7 +175,6 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   const [selectedFavPlace, setSelectedFavPlace] = useState(null);
   const [isContinuing, setIsContinuing] = useState(false);
   const [isItineraryExpanded, setIsItineraryExpanded] = useState(false);
-  const [showItineraryModal, setShowItineraryModal] = useState(false);
   const [activeItineraryDay, setActiveItineraryDay] = useState(0);
   const [pendingRangeStart, setPendingRangeStart] = useState(null);
   const [pendingRangeEnd, setPendingRangeEnd] = useState(null);
@@ -241,6 +242,23 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
       }
     }
     return [];
+  };
+
+  const handleAddDay = () => {
+    const dates = getItineraryDates();
+    if (dates.length === 0) return;
+    
+    const lastDateStr = dates[dates.length - 1];
+    const newEnd = formatCalendarDate(addDays(lastDateStr, 1));
+
+    if (bookingTab === 'CUSTOM') {
+      setDurationRangeEnd(newEnd);
+    } else {
+      // Switch to CUSTOM to allow arbitrary length
+      setBookingTab('CUSTOM');
+      setDurationRangeStart(dates[0]);
+      setDurationRangeEnd(newEnd);
+    }
   };
 
   const itineraryDates = getItineraryDates();
@@ -595,8 +613,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     setShowTripFor(true)
   }
 
-  const onAddWaypoint = () => {
-    setStackScreen('WaypointScreen',{fromPlanScreen:true});
+  const onAddWaypoint = (type, dateStr) => {
+    setStackScreen('WaypointScreen',{fromPlanScreen:true, dateStr});
   }
 
   const HandsetRideLocation = (item,type)=>{
@@ -609,15 +627,34 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     }
   }
 
-  const handleLocationClick=(type)=>{
-    console.log("handleLocationClick",type)
+  const handleLocationClick=(type, dateStr)=>{
+    console.log("handleLocationClick",type, dateStr)
     
-    handlePickLocation(type)
+    handlePickLocation(type, dateStr)
     // onSearchClick(type)
   }
 
-  // Debounced pick location callback
-  const debouncedPickLocationCallback = (item, type) => {
+  const debouncedPickLocationCallback = (item, type, dateStr) => {
+    if (dateStr) {
+      const currentDayItin = actingDriverItinerary?.[dateStr] || {};
+      let updatedDayItin = { ...currentDayItin };
+      
+      if (type === LocationTypes.START_LOCATION) {
+        updatedDayItin.startLocation = item;
+      } else if (type === LocationTypes.DESTINATION_LOCATION) {
+        updatedDayItin.endLocation = item;
+      } else if (type === LocationTypes.WAYPOINT_LOCATION) {
+        updatedDayItin.wayPoints = [...(updatedDayItin.wayPoints || []), item];
+      }
+      
+      setActingDriverItinerary({
+        ...actingDriverItinerary,
+        [dateStr]: updatedDayItin
+      });
+      goBack();
+      return;
+    }
+
     // First update the store with the selected location
     HandsetRideLocation(item, type);
 
@@ -637,8 +674,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     goBack();
   };
 
-  const onPickLocationResultCallback = (item,type) =>{
-    debouncedPickLocationCallback(item,type)
+  const onPickLocationResultCallback = (item,type, dateStr) =>{
+    debouncedPickLocationCallback(item,type, dateStr)
     
   }
    const confirmPickUpCurrentLocation = () => {
@@ -656,10 +693,10 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     setStackScreen('PickLocationScreen', props);
   }
 
-  const handlePickLocation = (type=null) =>{
+  const handlePickLocation = (type=null, dateStr=null) =>{
 
     const props ={
-      onPickLocationResultCallback:onPickLocationResultCallback,
+      onPickLocationResultCallback: (item, locType) => onPickLocationResultCallback(item, locType, dateStr),
       locationType:type?type:LocationTypes.DESTINATION_LOCATION,
       label: type === LocationTypes.DESTINATION_LOCATION ? t('locate_drop_location') : type === LocationTypes.WAYPOINT_LOCATION ? t('locate_stop') : t('locate_pickup_location'),
       buttonLabel: type === LocationTypes.DESTINATION_LOCATION ? t('button_locate_drop_location') : type === LocationTypes.WAYPOINT_LOCATION ? t('button_locate_stop') : t('button_locate_pickup_location'),
@@ -1519,6 +1556,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
           onAddWaypoint={onAddWaypoint}
           onLocationClick={handleLocationClick}
           onTripForPress={onTripForPress}
+          onAddDay={handleAddDay}
         />
       </View>
       

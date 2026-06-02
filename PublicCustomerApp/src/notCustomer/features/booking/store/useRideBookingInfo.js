@@ -140,7 +140,11 @@ const useRideBookingInfo = create(set => ({
       time.setHours(9, 0, 0, 0);
       return time;
     })(),
+    showItineraryModal: false,
   }),
+
+  showItineraryModal: false,
+  setShowItineraryModal: (showItineraryModal) => set({ showItineraryModal }),
 
   
 
