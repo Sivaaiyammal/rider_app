@@ -1,4 +1,4 @@
-import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler, Modal, TextInput, Alert, FlatList} from 'react-native';
+import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler, Modal, TextInput, Alert, FlatList, StatusBar} from 'react-native';
 import React, {useCallback, useState,useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar } from 'react-native-calendars';
@@ -9,7 +9,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
 import { VEHICLE_TYPE_OPTIONS, VEHICLE_TYPE_ICON } from '../../myVehicles/constants/vehicleData';
 import DatePicker from 'react-native-date-picker';
-import ActingDriverPreferences from '../components/bookRide/ActingDriverPreferences';
+import LinearGradient from 'react-native-linear-gradient';
 
 
 
@@ -26,6 +26,8 @@ import RideLocationSetBox from '../components/planride/RideLocationSetBox';
 import RideLocationPlanSetBox from '../components/planride/RideLocationPlanSetBox';
 import FavPlacesItem from '../components/planride/FavPlacesItem';
 import ItineraryPlanModal from '../components/planride/ItineraryPlanModal';
+import ActingDriverPlanCard from '../components/planride/ActingDriverPlanCard';
+import VehicleSelectionModal from '../components/planride/VehicleSelectionModal';
 import HistoryContainer from '../../shared/component/HistoryCard';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import LocationTypes from '../types/LocationTypes.json';
@@ -114,6 +116,15 @@ const isOutsideTirupur = (item) => {
   return false;
 };
 
+const ACTING_DRIVER_THEMES = {
+  hatchback: { primary: '#FF2B2B', secondary: '#D60000', accent: '#FF6B6B' },
+  sedan: { primary: '#4A3AFF', secondary: '#2B1CCF', accent: '#8A7DFF' },
+  suv: { primary: '#0E9F3E', secondary: '#067A2C', accent: '#56D87D' },
+  muv: { primary: '#0F8DA5', secondary: '#006E82', accent: '#59D6ED' },
+  exsedan: { primary: '#8A00C4', secondary: '#640093', accent: '#C46FFF' },
+  luxury: { primary: '#D97706', secondary: '#B45309', accent: '#FBBF24' },
+};
+
 const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mode,vehicle}) => {
   const { t } = useTranslation();
   const {userdetails,userFavPlaces} = useUserInfoStore();
@@ -183,6 +194,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   const [showCustomCalendarModal, setShowCustomCalendarModal] = useState(false);
   const [vehiclesList, setVehiclesList] = useState([]);
   const [loadingVehicles, setLoadingVehicles] = useState(false);
+  const [showVehicleModal, setShowVehicleModal] = useState(false);
   const todayDate = formatCalendarDate(new Date());
   const maxCustomDate = formatCalendarDate(addMonths(new Date(), 2));
   const selectedDurationDays = getInclusiveDateRangeDays(durationRangeStart, durationRangeEnd);
@@ -806,27 +818,102 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     //  Vibration.vibrate(100);
   }
 
-
+  const currentTheme = mode === 'ACTING_DRIVER' && actingDriverVehicle 
+    ? ACTING_DRIVER_THEMES[actingDriverVehicle.type.toLowerCase()] || ACTING_DRIVER_THEMES['hatchback']
+    : ACTING_DRIVER_THEMES['hatchback'];
 
   return (
     <>
-      
+      <View style={[styles.PlanRideScreen, mode === 'ACTING_DRIVER' && { backgroundColor: '#F8FAFC' }]}>
+        {mode === 'ACTING_DRIVER' && (
+          <StatusBar backgroundColor={currentTheme.primary} barStyle="light-content" />
+        )}
+        {mode === 'ACTING_DRIVER' && (
+          <LinearGradient 
+            colors={[currentTheme.primary, currentTheme.secondary]} 
+            start={{x: 0, y: 0}} 
+            end={{x: 0, y: 1}} 
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 280, zIndex: 0 }}
+          />
+        )}
+        
+        {mode === 'ACTING_DRIVER' ? (
+          <View style={{ paddingBottom: 40, zIndex: 1 }}>
+            {/* Custom NavBar matching the theme */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 16 }}>
+              <TouchableOpacity onPress={onBackPress} hitSlop={{top:10,bottom:10,left:10,right:10}}>
+                 <Ionicons name="chevron-back" size={24} color="#FFF" />
+              </TouchableOpacity>
+              <View style={{ alignItems: 'center' }}>
+                 <Text style={{ fontFamily: Fonts.bold, fontSize: 16, color: '#FFF' }}>Acting Driver Booking</Text>
+                 <Text style={{ fontFamily: Fonts.regular, fontSize: 12, color: '#FFF', opacity: 0.9 }}>Choose your vehicle, add pickup location.</Text>
+              </View>
+              <TouchableOpacity onPress={onFeedbackPress} hitSlop={{top:10,bottom:10,left:10,right:10}}>
+                 <Ionicons name="chatbubble-ellipses-outline" size={22} color="#FFF" />
+              </TouchableOpacity>
+            </View>
+            
+            {/* Themed Vehicle Card */}
+            {actingDriverVehicle && (
+              <View style={{ 
+                marginHorizontal: 16, 
+                backgroundColor: 'rgba(0,0,0,0.2)', 
+                borderRadius: 20, 
+                padding: 16, 
+                flexDirection: 'row', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                height: 140,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.1)'
+              }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: Fonts.bold, fontSize: 20, color: '#FFF' }}>{actingDriverVehicle.regNo}</Text>
+                  <Text style={{ fontFamily: Fonts.medium, fontSize: 14, color: '#FFF', opacity: 0.9, marginTop: 2 }}>{actingDriverVehicle.make} {actingDriverVehicle.model}</Text>
+                  
+                  <View style={{ marginTop: 12, alignSelf: 'flex-start' }}>
+                    <View style={{ backgroundColor: currentTheme.accent, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, marginBottom: 8 }}>
+                       <Text style={{ fontFamily: Fonts.bold, fontSize: 11, color: '#FFF', textTransform: 'capitalize' }}>{actingDriverVehicle.type}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => setShowVehicleModal(true)} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                       <Text style={{ fontFamily: Fonts.bold, fontSize: 13, color: '#FFF' }}>Change Vehicle</Text>
+                       <Ionicons name="chevron-down" size={16} color="#FFF" style={{ marginLeft: 2 }} />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                
+                <View style={{ width: 120, height: 80, alignItems: 'center', justifyContent: 'center' }}>
+                  <Ionicons name={VEHICLE_TYPE_ICON[actingDriverVehicle.type.toLowerCase()] || 'car-sport'} size={80} color="#FFF" style={{ opacity: 0.9 }} />
+                </View>
+              </View>
+            )}
+          </View>
+        ) : (
+          <NavBar
+            withBg
+            onBackPress={onBackPress}
+            title={t('plan_your_trip')}
+            feedbackIcon={true}
+            onrightIconPress={onFeedbackPress}
+          />
+        )}
 
-
-      <View style={styles.PlanRideScreen}>
-        <NavBar
-          withBg
-          onBackPress={onBackPress}
-          title={t('plan_your_trip')}
-          feedbackIcon={true}
-          onrightIconPress={onFeedbackPress}
-        />
-
-        <ScrollView 
-          style={{ flex: 1}} 
-          contentContainerStyle={{paddingBottom: height*0.2}}
-          keyboardShouldPersistTaps="handled"
-        >
+        <View style={[{ flex: 1, zIndex: 10, elevation: 10}, mode === 'ACTING_DRIVER' && { marginTop: -30, backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, overflow: 'hidden' }]}>
+          <ScrollView 
+            style={{ flex: 1 }} 
+            contentContainerStyle={{paddingBottom: height*0.2}}
+            keyboardShouldPersistTaps="handled"
+          >
+          {mode === 'ACTING_DRIVER' ? (
+            <View style={{ zIndex: 10, elevation: 10 }}>
+               <ActingDriverPlanCard 
+                 onLocationClick={(type) => handleLocationClick(type)}
+                 onTripDetailsClick={() => setShowItineraryModal(true)}
+                 themeColor={currentTheme}
+               />
+            </View>
+          ) : (
+            <>
           <View style={styles.tripForContainer}>
             <TouchableOpacity style={styles.tripForPill} onPress={() => onTripForPress()} activeOpacity={0.8}>
               <View style={styles.tripForIconWrapper}>
@@ -864,384 +951,12 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             }} type="add" />
           </ScrollView>
           <DashedLine style={styles.dottedLine} />
-            {/* Acting Driver: selected vehicle + duration */}
-        {mode === 'ACTING_DRIVER' && (
-          <View style={styles.actingDriverPanel}>
-            {/* Vehicle row */}
-            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8}}>
-              <Text style={[styles.subLabel, {marginLeft: 2}]}>{t('select_vehicle', 'Select Vehicle')}</Text>
-              {(vehiclesList?.length > 1) && (
-                <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
-                  <Text style={{fontSize: 12, fontFamily: Fonts.medium, color: '#94A3B8'}}>{t('swipe', 'Swipe')}</Text>
-                  <Ionicons name="ellipsis-horizontal" size={16} color="#94A3B8" />
-                </View>
-              )}
-            </View>
-            {loadingVehicles ? (
-              <View style={{padding: 20, alignItems: 'center'}}>
-                <ActivityIndicator size="small" color={colors.black} />
-              </View>
-            ) : (
-              <FlatList
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 16 }}
-                data={[...(vehiclesList || []), { isAddBtn: true }]}
-                keyExtractor={(item, idx) => item.isAddBtn ? 'add-btn' : (item._id?.toString() || String(idx))}
-                renderItem={({ item }) => {
-                  if (item.isAddBtn) {
-                    return (
-                      <TouchableOpacity
-                        style={[styles.vehicleScrollCard, styles.addVehicleScrollCard]}
-                        onPress={() => { goBackToScreen('MyVehiclesScreen', { returnTo: 'PlanRideScreen' }); }}
-                        activeOpacity={0.8}
-                      >
-                        <Ionicons name="add-circle-outline" size={24} color={colors.black} />
-                        <Text style={[styles.addVehicleScrollText, { marginTop: 0 }]}>{t('add_vehicle', 'Add Vehicle')}</Text>
-                      </TouchableOpacity>
-                    );
-                  }
+            </>
+          )}
 
-                  const isSelected = actingDriverVehicle?._id === item._id;
-                  
-                  return (
-                    <TouchableOpacity
-                      style={[styles.vehicleScrollCard, isSelected && styles.vehicleScrollCardSelected]}
-                      onPress={() => {
-                        setActingDriverVehicle(item);
-                        if (item.maxSpeed) {
-                          setActingDriverMaxSpeed(String(item.maxSpeed));
-                        }
-                      }}
-                      activeOpacity={0.8}
-                    >
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <View style={[styles.vehicleScrollIconBg, isSelected && styles.vehicleScrollIconBgSelected]}>
-                          <Ionicons
-                            name={VEHICLE_TYPE_ICON[item.type] || 'car-outline'}
-                            size={22}
-                            color={isSelected ? colors.white : '#64748B'}
-                          />
-                        </View>
-                        <View style={{ marginLeft: 12, flex: 1 }}>
-                          <Text style={[styles.vehicleScrollReg, isSelected && styles.vehicleScrollRegSelected]} numberOfLines={1}>
-                            {item.regNo}
-                          </Text>
-                          <Text style={[styles.vehicleScrollMeta, isSelected && styles.vehicleScrollMetaSelected]} numberOfLines={1}>
-                            {item.make} {item.model}
-                          </Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                }}
-              />
-            )}
-
-            {/* Duration selector */}
-            {/* <View style={styles.durationSection}>
-              <Text style={styles.durationLabel}>{t('booking_options', 'Booking Options')}</Text>
-              
-              <View style={styles.optionTabsRow}>
-                <TouchableOpacity
-                  style={[styles.optionTab, bookingTab === 'TODAY' && styles.optionTabSelected]}
-                  onPress={() => setBookingTab('TODAY')}
-                >
-                  <Text style={[styles.optionTabText, bookingTab === 'TODAY' && styles.optionTabTextSelected]}>
-                    {t('today', 'Today')}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.optionTab, bookingTab === 'TOMORROW' && styles.optionTabSelected]}
-                  onPress={() => setBookingTab('TOMORROW')}
-                >
-                  <Text style={[styles.optionTabText, bookingTab === 'TOMORROW' && styles.optionTabTextSelected]}>
-                    {t('tomorrow', 'Tomorrow')}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.optionTab, bookingTab === 'CUSTOM' && styles.optionTabSelected]}
-                  onPress={() => setBookingTab('CUSTOM')}
-                >
-                  <Text style={[styles.optionTabText, bookingTab === 'CUSTOM' && styles.optionTabTextSelected]}>
-                    {t('custom_dates', 'Custom Dates')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {bookingTab === 'TODAY' && (
-                <View style={styles.tabContentContainer}>
-                  <Text style={styles.subLabel}>{t('select_duration', 'Select Duration')}</Text>
-                  <View style={styles.chipsRow}>
-                    <TouchableOpacity
-                      style={[styles.chipButton, todayDurationOption === '1_HOUR' && styles.chipButtonSelected]}
-                      onPress={() => setTodayDurationOption('1_HOUR')}
-                    >
-                      <Text style={[styles.chipText, todayDurationOption === '1_HOUR' && styles.chipTextSelected]}>
-                        {t('1_hour_only', '1 Hour only')}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.chipButton, todayDurationOption === '3_DAYS' && styles.chipButtonSelected]}
-                      onPress={() => setTodayDurationOption('3_DAYS')}
-                    >
-                      <Text style={[styles.chipText, todayDurationOption === '3_DAYS' && styles.chipTextSelected]}>
-                        {t('now_to_3_days', 'Now to 3 Days')}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.chipButton, todayDurationOption === 'CUSTOM_HOURS' && styles.chipButtonSelected]}
-                      onPress={() => setTodayDurationOption('CUSTOM_HOURS')}
-                    >
-                      <Text style={[styles.chipText, todayDurationOption === 'CUSTOM_HOURS' && styles.chipTextSelected]}>
-                        {t('custom_hours', 'Custom Hours')}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.chipButton, todayDurationOption === 'FLEXIBLE' && styles.chipButtonSelected]}
-                      onPress={() => setTodayDurationOption('FLEXIBLE')}
-                    >
-                      <Text style={[styles.chipText, todayDurationOption === 'FLEXIBLE' && styles.chipTextSelected]}>
-                        {t('flexible_duration', 'Flexible (Decide Later)')}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  {todayDurationOption === 'CUSTOM_HOURS' && (
-                    <View style={styles.stepperContainer}>
-                      <Text style={styles.stepperLabel}>{t('booking_duration_hours', 'Duration (Hours)')}</Text>
-                      <View style={styles.stepperRow}>
-                        <TouchableOpacity
-                          style={styles.stepperBtn}
-                          onPress={() => setTodayCustomHours(prev => Math.max(1, prev - 1))}
-                        >
-                          <Ionicons name="remove-circle-outline" size={24} color={colors.black} />
-                        </TouchableOpacity>
-                        <Text style={styles.stepperValue}>{todayCustomHours} {todayCustomHours === 1 ? t('hour', 'Hour') : t('hours', 'Hours')}</Text>
-                        <TouchableOpacity
-                          style={styles.stepperBtn}
-                          onPress={() => setTodayCustomHours(prev => Math.min(24, prev + 1))}
-                        >
-                          <Ionicons name="add-circle-outline" size={24} color={colors.black} />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
-
-                  {todayDurationOption === 'FLEXIBLE' && (
-                    <View style={styles.flexibleInfoCard}>
-                      <Ionicons name="information-circle-outline" size={16} color="#0288D1" />
-                      <Text style={styles.flexibleInfoText}>
-                        {t('flexible_info_desc', 'Pay per hour after trip completion. Total fare will be computed on actual driving hours.')}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              )}
-
-              {bookingTab === 'TOMORROW' && (
-                <View style={styles.tabContentContainer}>
-                  <View style={styles.timePickerRow}>
-                    <Text style={styles.subLabel}>{t('select_start_time', 'Select Start Time')}</Text>
-                    <TouchableOpacity
-                      style={styles.timeSelectBtn}
-                      onPress={() => setShowTomorrowTimePicker(true)}
-                    >
-                      <Text style={styles.timeSelectText}>
-                        {utils.timestampTo12HourFormat(tomorrowStartTime)}
-                      </Text>
-                      <Ionicons name="time-outline" size={16} color={colors.black} />
-                    </TouchableOpacity>
-                  </View>
-
-                  <Text style={styles.subLabel}>{t('select_duration', 'Select Duration')}</Text>
-                  <View style={styles.chipsRow}>
-                    <TouchableOpacity
-                      style={[styles.chipButton, tomorrowDurationOption === 'HOURLY' && styles.chipButtonSelected]}
-                      onPress={() => setTomorrowDurationOption('HOURLY')}
-                    >
-                      <Text style={[styles.chipText, tomorrowDurationOption === 'HOURLY' && styles.chipTextSelected]}>
-                        {t('hourly_booking', 'Hourly')}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.chipButton, tomorrowDurationOption === '1_DAY' && styles.chipButtonSelected]}
-                      onPress={() => setTomorrowDurationOption('1_DAY')}
-                    >
-                      <Text style={[styles.chipText, tomorrowDurationOption === '1_DAY' && styles.chipTextSelected]}>
-                        {t('1_day', '1 Day')}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.chipButton, tomorrowDurationOption === '2_DAYS' && styles.chipButtonSelected]}
-                      onPress={() => setTomorrowDurationOption('2_DAYS')}
-                    >
-                      <Text style={[styles.chipText, tomorrowDurationOption === '2_DAYS' && styles.chipTextSelected]}>
-                        {t('2_days', '2 Days')}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.chipButton, tomorrowDurationOption === '3_DAYS' && styles.chipButtonSelected]}
-                      onPress={() => setTomorrowDurationOption('3_DAYS')}
-                    >
-                      <Text style={[styles.chipText, tomorrowDurationOption === '3_DAYS' && styles.chipTextSelected]}>
-                        {t('3_days', '3 Days')}
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.chipButton, tomorrowDurationOption === 'FLEXIBLE' && styles.chipButtonSelected]}
-                      onPress={() => setTomorrowDurationOption('FLEXIBLE')}
-                    >
-                      <Text style={[styles.chipText, tomorrowDurationOption === 'FLEXIBLE' && styles.chipTextSelected]}>
-                        {t('flexible_duration', 'Flexible (Decide Later)')}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  {tomorrowDurationOption === 'HOURLY' && (
-                    <View style={styles.stepperContainer}>
-                      <Text style={styles.stepperLabel}>{t('booking_duration_hours', 'Duration (Hours)')}</Text>
-                      <View style={styles.stepperRow}>
-                        <TouchableOpacity
-                          style={styles.stepperBtn}
-                          onPress={() => setTomorrowCustomHours(prev => Math.max(1, prev - 1))}
-                        >
-                          <Ionicons name="remove-circle-outline" size={24} color={colors.black} />
-                        </TouchableOpacity>
-                        <Text style={styles.stepperValue}>{tomorrowCustomHours} {tomorrowCustomHours === 1 ? t('hour', 'Hour') : t('hours', 'Hours')}</Text>
-                        <TouchableOpacity
-                          style={styles.stepperBtn}
-                          onPress={() => setTomorrowCustomHours(prev => Math.min(24, prev + 1))}
-                        >
-                          <Ionicons name="add-circle-outline" size={24} color={colors.black} />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
-
-                  {tomorrowDurationOption === 'FLEXIBLE' && (
-                    <View style={styles.flexibleInfoCard}>
-                      <Ionicons name="information-circle-outline" size={16} color="#0288D1" />
-                      <Text style={styles.flexibleInfoText}>
-                        {t('flexible_info_desc', 'Pay per hour after trip completion. Total fare will be computed on actual driving hours.')}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              )}
-
-              {bookingTab === 'CUSTOM' && (
-                <View style={styles.tabContentContainer}>
-                  <Text style={styles.subLabel}>{t('pick_date_range', 'Pick Date Range')}</Text>
-                  <TouchableOpacity
-                    style={styles.pickDatesButton}
-                    onPress={onPickDatesPress}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.pickDatesText}>
-                      {durationRangeLabel || t('select_date_range', 'Select Date Range')}
-                    </Text>
-                    <Ionicons name="calendar-outline" size={18} color={colors.black} />
-                  </TouchableOpacity>
-
-                  {durationRangeStart && (
-                    <>
-                      <View style={styles.timePickerRow}>
-                        <Text style={styles.subLabel}>{t('select_start_time', 'Select Start Time')}</Text>
-                        <TouchableOpacity
-                          style={styles.timeSelectBtn}
-                          onPress={() => setShowCustomTimePicker(true)}
-                        >
-                          <Text style={styles.timeSelectText}>
-                            {utils.timestampTo12HourFormat(customStartTime)}
-                          </Text>
-                          <Ionicons name="time-outline" size={16} color={colors.black} />
-                        </TouchableOpacity>
-                      </View>
-
-                      <Text style={styles.subLabel}>{t('booking_type', 'Booking Type')}</Text>
-                      <View style={styles.chipsRow}>
-                        <TouchableOpacity
-                          style={[styles.chipButton, !isFlexibleDuration && styles.chipButtonSelected]}
-                          onPress={() => setIsFlexibleDuration(false)}
-                        >
-                          <Text style={[styles.chipText, !isFlexibleDuration && styles.chipTextSelected]}>
-                            {t('fixed_days', 'Fixed Days')}
-                          </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={[styles.chipButton, isFlexibleDuration && styles.chipButtonSelected]}
-                          onPress={() => setIsFlexibleDuration(true)}
-                        >
-                          <Text style={[styles.chipText, isFlexibleDuration && styles.chipTextSelected]}>
-                            {t('flexible_duration', 'Flexible (Decide Later)')}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-
-                      {!isFlexibleDuration ? (
-                        selectedDurationDays ? (
-                          <View style={styles.durationOutputContainer}>
-                            <Text style={styles.durationOutputLabel}>{t('duration', 'Duration')}</Text>
-                            <Text style={styles.durationOutputText}>
-                              {selectedDurationDays} {selectedDurationDays === 1 ? t('day', 'Day') : t('days', 'Days')} ({actingDriverHours} {t('hours', 'Hours')})
-                            </Text>
-                          </View>
-                        ) : null
-                      ) : (
-                        <View style={styles.flexibleInfoCard}>
-                          <Ionicons name="information-circle-outline" size={16} color="#0288D1" />
-                          <Text style={styles.flexibleInfoText}>
-                            {t('flexible_info_desc', 'Pay per hour after trip completion. Total fare will be computed on actual driving hours.')}
-                          </Text>
-                        </View>
-                      )}
-
-                    </>
-                  )}
-                </View>
-              )}
-            </View> */}
-
-            {/* Plan Daily Itinerary Button */}
-            {shouldShowItinerary && (
-              <TouchableOpacity
-                style={styles.itineraryButton}
-                onPress={() => { setActiveItineraryDay(0); setShowItineraryModal(true); }}
-                activeOpacity={0.85}
-              >
-                <View style={styles.itineraryButtonLeft}>
-                  <View style={styles.itineraryButtonIconWrap}>
-                    <Ionicons name="map-outline" size={18} color={actingDriverColors.primary} />
-                  </View>
-                  <View>
-                    <Text style={styles.itineraryButtonTitle}>{t('plan_daily_itinerary', 'Plan Daily Itinerary')}</Text>
-                    <Text style={styles.itineraryButtonSub}>
-                      {Object.keys(actingDriverItinerary || {}).length > 0
-                        ? t('itinerary_configured', `${Object.keys(actingDriverItinerary).length} day(s) configured`)
-                        : t('itinerary_optional', 'Optional · Tap to plan each day')}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.itineraryButtonRight}>
-                  {Object.keys(actingDriverItinerary || {}).length > 0 && (
-                    <View style={styles.itineraryBadge}>
-                      <Text style={styles.itineraryBadgeText}>{Object.keys(actingDriverItinerary).length}</Text>
-                    </View>
-                  )}
-                  <Ionicons name="chevron-forward" size={18} color={actingDriverColors.secondary} />
-                </View>
-              </TouchableOpacity>
-            )}
-
-            {/* Driver Configurations */}
-            {mode === 'ACTING_DRIVER' && (
-              <ActingDriverPreferences />
-            )}
-          </View>
-        )}
         <HistoryContainer selectCallback={handleHistoryLocationClick} bottomborder = {false} fromSearchScreen={true}/>
         </ScrollView>
+        </View>
 
         <View style={styles.pickLocationContainer}> 
           {/* <PickLocationButton
@@ -1250,13 +965,34 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
           /> */}
          {
           isContinueButtonVisible && (
-            <TouchableOpacity style={[styles.continueButton, isContinuing && styles.continueButtonDisabled]} onPress={()=>{  handleContinue()}} disabled={isContinuing}>
-              {isContinuing ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <AdaptiveText style={[styles.continueButtonText, isContinuing && styles.continueButtonTextDisabled]} color={colors.white}>{t('continue')}</AdaptiveText>
-              )}
-            </TouchableOpacity>
+            mode === 'ACTING_DRIVER' ? (
+              <TouchableOpacity 
+                style={[styles.continueButtonActing, isContinuing && styles.continueButtonDisabled]} 
+                onPress={()=>{  handleContinue()}} 
+                disabled={isContinuing}
+              >
+                <LinearGradient
+                  colors={[currentTheme.primary, currentTheme.secondary]}
+                  start={{x: 0, y: 0}}
+                  end={{x: 1, y: 0}}
+                  style={styles.actingGradientBtn}
+                >
+                  {isContinuing ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.actingContinueText}>{t('continue')}</Text>
+                  )}
+                </LinearGradient>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={[styles.continueButton, isContinuing && styles.continueButtonDisabled]} onPress={()=>{  handleContinue()}} disabled={isContinuing}>
+                {isContinuing ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <AdaptiveText style={[styles.continueButtonText, isContinuing && styles.continueButtonTextDisabled]} color={colors.white}>{t('continue')}</AdaptiveText>
+                )}
+              </TouchableOpacity>
+            )
           )
          }
         </View>
@@ -1531,6 +1267,20 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
               }
           }}
         />
+        <VehicleSelectionModal 
+          visible={showVehicleModal}
+          onClose={() => setShowVehicleModal(false)}
+          vehiclesList={vehiclesList}
+          selectedVehicle={actingDriverVehicle}
+          onSelect={(vehicle) => {
+            setActingDriverVehicle(vehicle);
+            if (vehicle.maxSpeed) {
+              setActingDriverMaxSpeed(String(vehicle.maxSpeed));
+            }
+            setShowVehicleModal(false);
+          }}
+          themeMap={ACTING_DRIVER_THEMES}
+        />
       </View>
       
     </>
@@ -1549,7 +1299,7 @@ const styles = StyleSheet.create({
   PlanRideScreen: {
     flex: 1,
     backgroundColor: '#FAFAFC', // Slightly softer background
-    paddingHorizontal: 12,
+    paddingHorizontal: 0,
   },
   tripForContainer: {
     alignItems: 'center',
@@ -1979,7 +1729,27 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.05,
     shadowRadius: 12,
-    elevation: 10,
+    elevation: 20,
+    zIndex: 20,
+  },
+  continueButtonActing: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  actingGradientBtn: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actingContinueText: {
+    fontFamily: Fonts.bold,
+    fontSize: 16,
+    color: '#FFF',
   },
   continueButton: {
     backgroundColor: '#000000',
@@ -2489,59 +2259,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: Fonts.semibold || Fonts.medium,
     color: colors.white,
-  },
-  /* ── Itinerary Button ── */
-  itineraryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFBEB',
-    borderWidth: 1.5,
-    borderColor: actingDriverColors.primary,
-    borderRadius: 14,
-    padding: 14,
-    marginTop: 16,
-  },
-  itineraryButtonLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  itineraryButtonIconWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#FEF3C7',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  itineraryButtonTitle: {
-    fontSize: 14,
-    fontFamily: Fonts.semibold || Fonts.medium,
-    color: actingDriverColors.secondary,
-  },
-  itineraryButtonSub: {
-    fontSize: 11,
-    fontFamily: Fonts.regular,
-    color: '#4B5563',
-    marginTop: 2,
-  },
-  itineraryButtonRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  itineraryBadge: {
-    backgroundColor: actingDriverColors.primary,
-    borderRadius: 10,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-  },
-  itineraryBadgeText: {
-    fontSize: 11,
-    fontFamily: Fonts.semibold || Fonts.medium,
-    color: actingDriverColors.secondary,
   },
   /* itin* styles moved to ItineraryPlanModal.jsx */
 });
