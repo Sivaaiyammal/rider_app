@@ -33,6 +33,7 @@ import { Fonts } from '../../../constants/constants';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { openFeedback } from '../../../utils/feedback';
 import { getCustomerTrips } from '../../../API/EndPoints/EndPoints';
+import ActingDriverPreferences from '../components/bookRide/ActingDriverPreferences';
 
 const formatCalendarDate = (date) => {
   const year = date.getFullYear();
@@ -561,6 +562,9 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   useEffect(() => {
     if (mode === 'ACTING_DRIVER' && vehicle) {
       setActingDriverVehicle(vehicle);
+      if (vehicle.maxSpeed) {
+        setActingDriverMaxSpeed(String(vehicle.maxSpeed));
+      }
     }
   }, [mode, vehicle]);
 
@@ -793,11 +797,15 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
           contentContainerStyle={{paddingBottom: height*0.2}}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={addLocation.rideSelectionContainer}>
-            <TouchableOpacity style={[addLocation.rideSelection]} onPress={() => onTripForPress()}>
-              <Ionicons name="person" size={18} color={colors.white} />
-             { <Text style={[addLocation.rideSelectionTxt, {width:'60%',justifyContent:'center',textAlign:'center'}]} numberOfLines={1} ellipsizeMode="tail">{rideBookMode === 'MYSELF' ? t('myself') : passangerDetails?.name || t('others')}</Text>}
-              <Ionicons name="chevron-down" size={18} color={colors.white} />
+          <View style={styles.tripForContainer}>
+            <TouchableOpacity style={styles.tripForPill} onPress={() => onTripForPress()} activeOpacity={0.8}>
+              <View style={styles.tripForIconWrapper}>
+                <Ionicons name="person" size={14} color={colors.white} />
+              </View>
+              <Text style={styles.tripForText} numberOfLines={1} ellipsizeMode="tail">
+                {rideBookMode === 'MYSELF' ? t('myself') : passangerDetails?.name || t('others')}
+              </Text>
+              <Ionicons name="chevron-down" size={16} color={colors.grey_dark} />
             </TouchableOpacity>
           </View>
           <RideLocationSetBox 
@@ -1160,158 +1168,9 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             )}
 
             {/* Driver Configurations */}
-            <View style={styles.configSection}>
-              <Text style={styles.durationLabel}>{t('driver_preferences', 'Ride Preferences')}</Text>
-              
-              <View style={styles.configItemRow}>
-                <Text style={styles.configLabel}>{t('max_speed', 'Max Speed Limit (km/h)')}</Text>
-                <TextInput
-                  style={styles.speedInput}
-                  value={actingDriverMaxSpeed}
-                  onChangeText={setActingDriverMaxSpeed}
-                  placeholder="e.g. 80"
-                  keyboardType="numeric"
-                  placeholderTextColor={colors.grey_dark}
-                />
-              </View>
-
-              {/* Accommodation & Food Options */}
-              <View style={styles.provisionsRow}>
-                <TouchableOpacity 
-                  style={[
-                    styles.provisionCard,
-                    actingDriverAccommodation && styles.provisionCardSelected
-                  ]}
-                  onPress={() => setActingDriverAccommodation(!actingDriverAccommodation)}
-                  activeOpacity={0.85}
-                >
-                  <View style={styles.provisionHeader}>
-                    <View style={[styles.provisionIconContainer, actingDriverAccommodation && styles.provisionIconContainerSelected]}>
-                      <Ionicons 
-                        name="bed" 
-                        size={18} 
-                        color={actingDriverAccommodation ? actingDriverColors.secondary : colors.grey_dark} 
-                      />
-                    </View>
-                    <Ionicons 
-                      name={actingDriverAccommodation ? "checkmark-circle" : "ellipse-outline"} 
-                      size={20} 
-                      color={actingDriverAccommodation ? actingDriverColors.success : colors.grey_light} 
-                    />
-                  </View>
-                  <Text style={[
-                    styles.provisionLabel,
-                    actingDriverAccommodation && styles.provisionLabelSelected
-                  ]}>
-                    {t('accommodation', 'Accommodation')}
-                  </Text>
-                  <Text style={styles.provisionSubLabel}>
-                    {t('accommodation_desc', 'For overnight stay')}
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={[
-                    styles.provisionCard,
-                    actingDriverFood && styles.provisionCardSelected
-                  ]}
-                  onPress={() => setActingDriverFood(!actingDriverFood)}
-                  activeOpacity={0.85}
-                >
-                  <View style={styles.provisionHeader}>
-                    <View style={[styles.provisionIconContainer, actingDriverFood && styles.provisionIconContainerSelected]}>
-                      <Ionicons 
-                        name="fast-food" 
-                        size={18} 
-                        color={actingDriverFood ? actingDriverColors.secondary : colors.grey_dark} 
-                      />
-                    </View>
-                    <Ionicons 
-                      name={actingDriverFood ? "checkmark-circle" : "ellipse-outline"} 
-                      size={20} 
-                      color={actingDriverFood ? actingDriverColors.success : colors.grey_light} 
-                    />
-                  </View>
-                  <Text style={[
-                    styles.provisionLabel,
-                    actingDriverFood && styles.provisionLabelSelected
-                  ]}>
-                    {t('food', 'Food')}
-                  </Text>
-                  <Text style={styles.provisionSubLabel}>
-                    {t('food_desc', 'Meals/Allowance')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity 
-                style={[styles.prefCardRow, actingDriverNotifyEvents && styles.prefCardRowActive]}
-                onPress={() => setActingDriverNotifyEvents(!actingDriverNotifyEvents)}
-                activeOpacity={0.8}
-              >
-                <View style={[styles.prefIconBox, actingDriverNotifyEvents && styles.prefIconBoxActive]}>
-                  <Ionicons 
-                    name="notifications-outline" 
-                    size={20} 
-                    color={actingDriverNotifyEvents ? actingDriverColors.secondary : colors.grey_dark} 
-                  />
-                </View>
-                <View style={styles.prefTextContainer}>
-                  <Text style={styles.prefTitle}>{t('notify_events_title', 'Status Updates')}</Text>
-                </View>
-                <Ionicons 
-                  name={actingDriverNotifyEvents ? "checkmark-circle" : "ellipse-outline"} 
-                  size={22} 
-                  color={actingDriverNotifyEvents ? actingDriverColors.success : colors.grey_light} 
-                />
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={[styles.prefCardRow, actingDriverKidsOnBoard && styles.prefCardRowActive]}
-                onPress={() => setActingDriverKidsOnBoard(!actingDriverKidsOnBoard)}
-                activeOpacity={0.8}
-              >
-                <View style={[styles.prefIconBox, actingDriverKidsOnBoard && styles.prefIconBoxActive]}>
-                  <Ionicons 
-                    name="people-outline" 
-                    size={20} 
-                    color={actingDriverKidsOnBoard ? actingDriverColors.secondary : colors.grey_dark} 
-                  />
-                </View>
-                <View style={styles.prefTextContainer}>
-                  <Text style={styles.prefTitle}>{t('kids_on_board_title', 'Children on Board')}</Text>
-                  <Text style={styles.prefSub}>{t('kids_on_board_desc', 'Driver will maintain safer speeds and be extra attentive')}</Text>
-                </View>
-                <Ionicons 
-                  name={actingDriverKidsOnBoard ? "checkmark-circle" : "ellipse-outline"} 
-                  size={22} 
-                  color={actingDriverKidsOnBoard ? actingDriverColors.success : colors.grey_light} 
-                />
-              </TouchableOpacity>
-
-              <TouchableOpacity 
-                style={[styles.prefCardRow, actingDriverElderlyOnBoard && styles.prefCardRowActive]}
-                onPress={() => setActingDriverElderlyOnBoard(!actingDriverElderlyOnBoard)}
-                activeOpacity={0.8}
-              >
-                <View style={[styles.prefIconBox, actingDriverElderlyOnBoard && styles.prefIconBoxActive]}>
-                  <Ionicons 
-                    name="heart-outline" 
-                    size={20} 
-                    color={actingDriverElderlyOnBoard ? actingDriverColors.secondary : colors.grey_dark} 
-                  />
-                </View>
-                <View style={styles.prefTextContainer}>
-                  <Text style={styles.prefTitle}>{t('elderly_on_board_title', 'Elderly Passengers')}</Text>
-                  <Text style={styles.prefSub}>{t('elderly_on_board_desc', 'Driver will avoid sudden braking and help getting in/out')}</Text>
-                </View>
-                <Ionicons 
-                  name={actingDriverElderlyOnBoard ? "checkmark-circle" : "ellipse-outline"} 
-                  size={22} 
-                  color={actingDriverElderlyOnBoard ? actingDriverColors.success : colors.grey_light} 
-                />
-              </TouchableOpacity>
-            </View>
+            {mode === 'ACTING_DRIVER' && (
+              <ActingDriverPreferences />
+            )}
           </View>
         )}
         <HistoryContainer selectCallback={handleHistoryLocationClick} bottomborder = {false} fromSearchScreen={true}/>
@@ -1575,8 +1434,42 @@ PlanRideScreen.propTypes = {
 const styles = StyleSheet.create({
   PlanRideScreen: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
-    paddingHorizontal: 10,
+    backgroundColor: '#FAFAFC', // Slightly softer background
+    paddingHorizontal: 12,
+  },
+  tripForContainer: {
+    alignItems: 'center',
+    marginVertical: 14,
+  },
+  tripForPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 24,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  tripForIconWrapper: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: actingDriverColors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tripForText: {
+    fontSize: 14,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: '#1E293B',
+    maxWidth: 160,
   },
   actingDriverPanel: {
     marginHorizontal: 10,
@@ -1950,65 +1843,79 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   pickLocationContainer: {
-    position:"absolute",
-    bottom:0,
-    width:"100%",
-    alignSelf:'center',
-    paddingHorizontal: 5,
-    backgroundColor:'white'
-   
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 10,
   },
-  continueButton:{
-    backgroundColor:"#000",
-    width:"100%",
-    padding:15,
-    borderRadius:10,
-    alignItems:'center',
-    justifyContent:'center',
-    marginVertical:10,
+  continueButton: {
+    backgroundColor: '#000000',
+    width: "100%",
+    padding: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  continueButtonText:{
-    color:"#fff",
-    fontSize:16,
-    fontFamily:Fonts.medium,
+  continueButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontFamily: Fonts.bold,
   },
-  continueButtonDisabled:{
-    backgroundColor:'#757575',
-    opacity:0.6,
+  continueButtonDisabled: {
+    backgroundColor: '#E2E8F0',
+    shadowOpacity: 0,
+    elevation: 0,
   },
-  continueButtonTextDisabled:{
-    color:'#BDBDBD',
+  continueButtonTextDisabled: {
+    color: '#94A3B8',
   },
   optionTabsRow: {
     flexDirection: 'row',
     backgroundColor: '#F1F5F9',
-    borderRadius: 12,
-    padding: 4,
+    borderRadius: 14,
+    padding: 6,
     gap: 4,
-    marginBottom: 10,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   optionTab: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: 'center',
     borderRadius: 10,
   },
   optionTabSelected: {
-    backgroundColor: colors.white,
+    backgroundColor: actingDriverColors.primary || '#1E293B',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   optionTabText: {
     fontSize: 13,
     fontFamily: Fonts.medium,
-    color: colors.grey_dark,
+    color: '#64748B',
   },
   optionTabTextSelected: {
-    fontFamily: Fonts.semibold || Fonts.medium,
-    color: colors.black,
+    fontFamily: Fonts.bold,
+    color: '#FFFFFF',
   },
   tabContentContainer: {
     padding: 12,
@@ -2205,11 +2112,72 @@ const styles = StyleSheet.create({
   },
   itinerarySection: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 16,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: '#E2E8F0',
     marginTop: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  itineraryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginTop: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  itineraryButtonLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  itineraryButtonIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  itineraryButtonTitle: {
+    fontSize: 15,
+    fontFamily: Fonts.semibold || Fonts.medium,
+    color: '#1E293B',
+  },
+  itineraryButtonSub: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  itineraryButtonRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  itineraryBadge: {
+    backgroundColor: actingDriverColors.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  itineraryBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontFamily: Fonts.bold,
   },
   itineraryCollapsibleHeader: {
     flexDirection: 'row',
