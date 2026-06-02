@@ -215,7 +215,7 @@ const actingDriverTripSchemaPublicrides = Joi.object({
     isScheduledTrip: Joi.boolean().optional(),
     scheduleDateTime: Joi.number().optional(),
     actingDriverItinerary: Joi.object().optional().allow(null),
-    tripType: Joi.string().valid('LOCAL', 'RENTAL', 'OUTSTATION').optional(),
+    tripType: Joi.string().valid('ONE_WAY', 'ROUND_TRIP').optional(),
     isRoundTrip: Joi.boolean().optional(),
     actingDriverMaxSpeed: Joi.number().optional(),
     actingDriverAccommodation: Joi.boolean().optional(),

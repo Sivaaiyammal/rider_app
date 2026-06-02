@@ -112,7 +112,7 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
 
       // Acting driver specific
       isActingDriverTrip: true,
-      tripType: tripType || 'LOCAL',
+      tripType: tripType || 'ONE_WAY',
       isRoundTrip: tripType === 'ROUND_TRIP',
       actingDriverMaxSpeed: actingDriverMaxSpeed || 80,
       actingDriverHours: actingDriverHours ?? null,

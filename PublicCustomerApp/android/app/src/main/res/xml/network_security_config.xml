@@ -15,8 +15,7 @@
         <domain includeSubdomains="true">192.168.29.1</domain>
         <domain includeSubdomains="true">192.168.1.13</domain>
         <domain includeSubdomains="true">10.181.150.69</domain>
-        <domain includeSubdomains="true">192.168.1.41</domain>
-        <domain includeSubdomains="true">192.168.0.32</domain>
+        <domain includeSubdomains="true">192.168.1.44</domain>
         <domain includeSubdomains="true">192.168.0.32</domain>
         <!-- 10.x.x.x subnet — covers corporate/hotspot networks -->
         <domain includeSubdomains="true">10.0.0.1</domain>
