@@ -28,7 +28,8 @@ const ItineraryPlanModal = ({
   itineraryDates,
   onLocationClick,
   onTripForPress,
-  onAddWaypoint,
+  onAddItineraryLocation,
+  onRemoveItineraryLocation,
   onAddDay,
 }) => {
   const { t } = useTranslation();
@@ -40,23 +41,34 @@ const ItineraryPlanModal = ({
 
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [activeTimeDateStr, setActiveTimeDateStr] = useState(null);
+  const [activeLocationIndex, setActiveLocationIndex] = useState(null);
   const [tempTime, setTempTime] = useState(new Date());
 
   const handleTimeConfirm = (date) => {
-    if (activeTimeDateStr) {
+    if (activeTimeDateStr && activeLocationIndex !== null) {
       const currentDayItin = actingDriverItinerary?.[activeTimeDateStr] || {};
-      updateBookingInfo({
-        actingDriverItinerary: {
-          ...actingDriverItinerary,
-          [activeTimeDateStr]: {
-            ...currentDayItin,
-            time: date.toISOString(),
+      const locations = [...(currentDayItin.locations || [])];
+      
+      if (locations[activeLocationIndex]) {
+        locations[activeLocationIndex] = {
+          ...locations[activeLocationIndex],
+          time: date.toISOString(),
+        };
+        
+        updateBookingInfo({
+          actingDriverItinerary: {
+            ...actingDriverItinerary,
+            [activeTimeDateStr]: {
+              ...currentDayItin,
+              locations: locations,
+            }
           }
-        }
-      });
+        });
+      }
     }
     setShowTimePicker(false);
     setActiveTimeDateStr(null);
+    setActiveLocationIndex(null);
   };
 
   const formatTime = (dateString) => {
@@ -141,39 +153,62 @@ const ItineraryPlanModal = ({
                   </View>
 
                   <View style={styles.cardContainer}>
-                    {/* Top Row: Title + Time */}
+                    {/* Top Row: Title */}
                     <View style={styles.cardHeaderRow}>
                       <Text style={styles.dayTitle}>
                         Day {index + 1} <Text style={styles.dayTitleDate}>({dayDateFormatted})</Text>
                       </Text>
-                      <TouchableOpacity 
-                        style={styles.timeButton}
-                        activeOpacity={0.7}
-                        onPress={() => {
-                          setActiveTimeDateStr(dateStr);
-                          setTempTime(dayItinerary.time ? new Date(dayItinerary.time) : new Date());
-                          setShowTimePicker(true);
-                        }}
-                      >
-                        <Text style={styles.dayTime}>{dayTime}</Text>
-                        <Ionicons name="time" size={14} color="#0F4A75" style={{marginLeft: 4}} />
-                      </TouchableOpacity>
                     </View>
 
                     {/* Body Row: Content */}
                     <View style={styles.cardBodyRow}>
 
                     <View style={styles.cardContent}>
-                      {/* Interactive Location Set Box */}
-                      <RidePlanSetBox 
-                        startLocation={startLocation}
-                        endLocation={endLocation}
-                        wayPoints={wayPoints}
-                        onAddWaypoint={(type) => onAddWaypoint(type, dateStr)}
-                        onLocationClick={(type) => onLocationClick(type, dateStr)}
-                        hideDestination={false}
-                        dayHeader={null}
-                      />
+                      <View style={{ gap: 8 }}>
+                        {(dayItinerary.locations || []).map((loc, locIndex) => (
+                          <View key={locIndex} style={styles.itineraryLocationRow}>
+                            <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
+                              <Ionicons name="location" size={16} color={actingDriverColors.secondary} />
+                              <Text style={styles.itineraryLocationText} numberOfLines={1}>
+                                {loc.name || loc.address}
+                              </Text>
+                            </View>
+                            
+                            <TouchableOpacity 
+                              style={styles.locTimeButton}
+                              onPress={() => {
+                                setActiveTimeDateStr(dateStr);
+                                setActiveLocationIndex(locIndex);
+                                setTempTime(loc.time ? new Date(loc.time) : new Date());
+                                setShowTimePicker(true);
+                              }}
+                              activeOpacity={0.7}
+                            >
+                              <Text style={styles.locTimeText}>{loc.time ? formatTime(loc.time) : "Any time"}</Text>
+                              <Ionicons name="time-outline" size={14} color="#0F4A75" style={{marginLeft: 2}} />
+                            </TouchableOpacity>
+
+                            {onRemoveItineraryLocation && (
+                              <TouchableOpacity 
+                                style={{marginLeft: 4, padding: 4}}
+                                onPress={() => onRemoveItineraryLocation(dateStr, locIndex)}
+                                activeOpacity={0.7}
+                              >
+                                <Ionicons name="close-circle" size={20} color="#999" />
+                              </TouchableOpacity>
+                            )}
+                          </View>
+                        ))}
+                        
+                        <TouchableOpacity 
+                          style={styles.addItineraryLocBtn}
+                          onPress={() => onAddItineraryLocation(dateStr)}
+                          activeOpacity={0.8}
+                        >
+                          <Ionicons name="add" size={18} color={actingDriverColors.secondary} />
+                          <Text style={styles.addItineraryLocText}>Add Location</Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
                     </View>
                   </View>
@@ -209,7 +244,7 @@ const ItineraryPlanModal = ({
         modal
         open={showTimePicker}
         date={tempTime}
-        mode="datetime"
+        mode="time"
         theme="light"
         onConfirm={(date) => {
           setTempTime(date);
@@ -218,6 +253,7 @@ const ItineraryPlanModal = ({
         onCancel={() => {
           setShowTimePicker(false);
           setActiveTimeDateStr(null);
+          setActiveLocationIndex(null);
         }}
       />
     </Modal>
@@ -228,16 +264,14 @@ ItineraryPlanModal.propTypes = {
   visible: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   itineraryDates: PropTypes.arrayOf(PropTypes.string).isRequired,
-  onLocationClick: PropTypes.func,
-  onTripForPress: PropTypes.func,
-  onAddWaypoint: PropTypes.func,
+  onAddItineraryLocation: PropTypes.func,
+  onRemoveItineraryLocation: PropTypes.func,
   onAddDay: PropTypes.func,
 };
 
 ItineraryPlanModal.defaultProps = {
-  onLocationClick: () => {},
-  onTripForPress: () => {},
-  onAddWaypoint: () => {},
+  onAddItineraryLocation: () => {},
+  onRemoveItineraryLocation: null,
   onAddDay: null,
 };
 
@@ -375,8 +409,49 @@ const styles = StyleSheet.create({
   cardBodyRow: {
     marginTop: 0,
   },
-  cardContent: {
+  itineraryLocationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white_dirt,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  itineraryLocationText: {
     flex: 1,
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: colors.black,
+    marginLeft: 8,
+  },
+  locTimeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: '#F0F7FF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E0F2FE',
+    marginLeft: 4,
+  },
+  locTimeText: {
+    fontSize: 10,
+    fontFamily: Fonts.bold,
+    color: '#0F4A75',
+  },
+  addItineraryLocBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    marginTop: 4,
+  },
+  addItineraryLocText: {
+    fontSize: 14,
+    fontFamily: Fonts.semi_bold,
+    color: actingDriverColors.secondary,
+    marginLeft: 4,
   },
 
   /* Add Day Button */

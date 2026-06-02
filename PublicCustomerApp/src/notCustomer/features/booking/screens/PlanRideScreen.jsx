@@ -9,6 +9,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
 import { VEHICLE_TYPE_OPTIONS, VEHICLE_TYPE_ICON } from '../../myVehicles/constants/vehicleData';
 import DatePicker from 'react-native-date-picker';
+import ActingDriverPreferences from '../components/bookRide/ActingDriverPreferences';
+
 
 
 import DashedLine from '../../../components/Common/DashedLine';
@@ -33,7 +35,6 @@ import { Fonts } from '../../../constants/constants';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { openFeedback } from '../../../utils/feedback';
 import { getCustomerTrips, getPassangerVehicles } from '../../../API/EndPoints/EndPoints';
-import ActingDriverPreferences from '../components/bookRide/ActingDriverPreferences';
 
 const formatCalendarDate = (date) => {
   const year = date.getFullYear();
@@ -1482,6 +1483,53 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
           onLocationClick={handleLocationClick}
           onTripForPress={onTripForPress}
           onAddDay={handleAddDay}
+          onAddItineraryLocation={(dateStr) => {
+            setStackScreen('PickLocationScreen', {
+                locationType: LocationTypes.WAYPOINT_LOCATION,
+                label: t('select_location', 'Select Location'),
+                buttonLabel: t('add_location', 'Add Location'),
+                isFromRidePointsSelection: true,
+                searchBar: true,
+                focusSearchOnMount: true,
+                onPickLocationResultCallback: (item) => {
+                    try {
+                        const state = useRideBookingInfo.getState();
+                        const currentItin = state.actingDriverItinerary || {};
+                        
+                        // Deep clone to prevent mutating frozen objects
+                        const newItin = JSON.parse(JSON.stringify(currentItin));
+                        const dayItin = newItin[dateStr] || { locations: [] };
+                        
+                        dayItin.locations = [...(dayItin.locations || []), item];
+                        newItin[dateStr] = dayItin;
+                        
+                        state.updateBookingInfo({
+                            actingDriverItinerary: newItin
+                        });
+                        
+                        setTimeout(() => {
+                            state.setShowItineraryModal(true);
+                        }, 100);
+                        
+                        useStackScreenStore.getState().goBack();
+                    } catch (e) {
+                        console.error("Error adding location to itinerary", e);
+                        useStackScreenStore.getState().goBack();
+                    }
+                }
+            });
+          }}
+          onRemoveItineraryLocation={(dateStr, index) => {
+              const state = useRideBookingInfo.getState();
+              const currentItin = state.actingDriverItinerary || {};
+              const newItin = JSON.parse(JSON.stringify(currentItin));
+              if (newItin[dateStr] && newItin[dateStr].locations) {
+                  newItin[dateStr].locations.splice(index, 1);
+                  state.updateBookingInfo({
+                      actingDriverItinerary: newItin
+                  });
+              }
+          }}
         />
       </View>
       

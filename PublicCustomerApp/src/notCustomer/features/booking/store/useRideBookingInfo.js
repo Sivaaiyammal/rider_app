@@ -49,6 +49,9 @@ const useRideBookingInfo = create(set => ({
   actingDriverMaxSpeed: null,
   setActingDriverMaxSpeed: (actingDriverMaxSpeed) => set({ actingDriverMaxSpeed }),
 
+  showItineraryModal: false,
+  setShowItineraryModal: (showItineraryModal) => set({ showItineraryModal }),
+
   actingDriverNotifyEvents: false,
   setActingDriverNotifyEvents: (actingDriverNotifyEvents) => set({ actingDriverNotifyEvents }),
 

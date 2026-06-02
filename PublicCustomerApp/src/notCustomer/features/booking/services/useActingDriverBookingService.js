@@ -35,6 +35,11 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
     actingDriverKidsOnBoard,
     actingDriverElderlyOnBoard,
     actingDriverItinerary,
+    actingDriverAccommodation,
+    actingDriverFood,
+    actingDriverNotifyEvents,
+    actingDriverOtherRequests,
+    actingDriverMaxSpeed,
     tripType,
   } = useRideBookingInfo();
 
@@ -107,22 +112,22 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
 
       // Acting driver specific
       isActingDriverTrip: true,
+      tripType: tripType || 'LOCAL',
+      isRoundTrip: tripType === 'ROUND_TRIP',
+      actingDriverMaxSpeed: actingDriverMaxSpeed || 80,
       actingDriverHours: actingDriverHours ?? null,
       actingDriverItinerary: (() => {
         if (!actingDriverItinerary) return null;
         const cleanedItinerary = {};
         Object.keys(actingDriverItinerary).forEach((dateStr) => {
-          const loc = actingDriverItinerary[dateStr];
-          if (loc) {
-            if (typeof loc === 'object') {
-              cleanedItinerary[dateStr] = {
-                name: loc.placeName || loc.name || 'Destination',
-                address: utils.formatAddressName(loc),
-                location: [loc.longitude, loc.latitude],
-              };
-            } else {
-              cleanedItinerary[dateStr] = loc;
-            }
+          const dayItin = actingDriverItinerary[dateStr];
+          if (dayItin && dayItin.locations && Array.isArray(dayItin.locations) && dayItin.locations.length > 0) {
+            cleanedItinerary[dateStr] = dayItin.locations.map(loc => ({
+              name: loc.placeName || loc.name || 'Location',
+              address: utils.formatAddressName(loc),
+              location: [loc.longitude, loc.latitude],
+              time: loc.time || null,
+            }));
           }
         });
         return Object.keys(cleanedItinerary).length > 0 ? cleanedItinerary : null;
@@ -135,25 +140,25 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
       passangerCount: 1,
 
        // Distance / fare
-      estimatedDistance: rideDistance,
-      estimatedDuration: estimatedDuration,
+      estimatedDistance: rideDistance || 0,
+      estimatedDuration: estimatedDuration || (actingDriverHours ? actingDriverHours * 60 : 0),
       minFare: (() => {
         const type = actingDriverVehicle?.type || 'AUTO';
         const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
         const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
-        return Math.max(15, Math.round(((Number(rideDistance) * basePerKm) + (Number(estimatedDuration) * basePerMin)) * 0.9));
+        return Math.max(15, Math.round(((Number(rideDistance || 0) * basePerKm) + (Number(estimatedDuration || (actingDriverHours ? actingDriverHours * 60 : 0)) * basePerMin)) * 0.9));
       })(),
       maxFare: (() => {
         const type = actingDriverVehicle?.type || 'AUTO';
         const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
         const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
-        return Math.max(20, Math.round(((Number(rideDistance) * basePerKm) + (Number(estimatedDuration) * basePerMin)) * 1.1));
+        return Math.max(20, Math.round(((Number(rideDistance || 0) * basePerKm) + (Number(estimatedDuration || (actingDriverHours ? actingDriverHours * 60 : 0)) * basePerMin)) * 1.1));
       })(),
       estimatedFare: (() => {
         const type = actingDriverVehicle?.type || 'AUTO';
         const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
         const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
-        return Math.round((Number(rideDistance) * basePerKm) + (Number(estimatedDuration) * basePerMin));
+        return Math.round((Number(rideDistance || 0) * basePerKm) + (Number(estimatedDuration || (actingDriverHours ? actingDriverHours * 60 : 0)) * basePerMin));
       })(),
 
       // Booking details
@@ -167,6 +172,10 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
       femaleOnly: femaleDriverOnly,
       kidsOnBoard: actingDriverKidsOnBoard,
       elderlyOnBoard: actingDriverElderlyOnBoard,
+      actingDriverAccommodation: actingDriverAccommodation || false,
+      actingDriverFood: actingDriverFood || false,
+      actingDriverNotifyEvents: actingDriverNotifyEvents || false,
+      actingDriverOtherRequests: actingDriverOtherRequests || '',
 
       // Region
       regionalOffice: regionOfficeId || null,
@@ -201,8 +210,8 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
 
   const bookTrip = async (customData = null) => {
     try {
-      if (!rideStartLocation || !rideEndLocation) {
-        throw new Error(t('please_select_start_end_locations'));
+      if (!rideStartLocation) {
+        throw new Error(t('please_select_start_location', 'Please select start location'));
       }
       if (!actingDriverVehicle) {
         throw new Error(t('vehicle_selection_required'));
@@ -250,12 +259,11 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
   };
 
   const isBookingReady = () =>
-    !!(rideStartLocation && rideEndLocation && actingDriverVehicle && paymentType);
+    !!(rideStartLocation && actingDriverVehicle && paymentType);
 
   const getBookingValidationErrors = () => {
     const errors = [];
     if (!rideStartLocation) errors.push(t('start_location_required'));
-    if (!rideEndLocation) errors.push(t('end_location_required'));
     if (!actingDriverVehicle) errors.push(t('vehicle_selection_required'));
     if (!paymentType) errors.push(t('payment_method_required'));
     return errors;
