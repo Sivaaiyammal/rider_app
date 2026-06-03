@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import {
     View,
@@ -9,13 +9,12 @@ import {
     FlatList,
     Text,
     Image,
-    ScrollView,
-    SafeAreaView,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
+import LinearGradient from 'react-native-linear-gradient';
 
 import NavBar from '../../../components/NavBar';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
@@ -129,7 +128,7 @@ const getFareDataForVehicle = (data, vehicleTypeKey, appVehicleType) => {
 };
 
 // ─── Bottom sheet header (map + current location button) ─────────────────────
-const BottomSheetHeader = (rideDistance, estimatedDuration, setShowPreference) => {
+const BottomSheetHeader = (rideDistance, estimatedDuration, setShowPreference, isFullScreenMap, toggleFullScreenMap) => {
     const { setStackScreen } = useStackScreenStore();
     const { rideBookMode, passangerDetails, actingDriverItinerary, updateBookingInfo, showItineraryModal, setShowItineraryModal } = useRideBookingInfo();
     const { rideStartLocation, rideEndLocation, rideWayPoints } = useRideBookingLocationStore();
@@ -152,9 +151,12 @@ const BottomSheetHeader = (rideDistance, estimatedDuration, setShowPreference) =
 
     return (
         <View style={styles.bottomSheetHeaderContainer}>
+             <MapIcon />
             <View style={styles.bottomSheetHeader}>
-                <MapIcon />
                 <View style={styles.mapActionContainer}>
+                    <TouchableOpacity style={styles.currentLocationIconContainer} onPress={toggleFullScreenMap}>
+                        <Ionicons name={isFullScreenMap ? "contract-outline" : "expand-outline"} size={22} color={colors.black} />
+                    </TouchableOpacity>
                     <TouchableOpacity style={styles.currentLocationIconContainer} onPress={handleCurrentLocation}>
                         <CurrentLocationIcon width={25} height={25} />
                     </TouchableOpacity>
@@ -181,6 +183,29 @@ const BookActingDriverScreen = () => {
     const [paymentSuccess, setPaymentSuccess] = useState(false);
     const [selectedMethod, setSelectedMethod] = useState('UPI');
     const [bookingSuccess, setBookingSuccess] = useState(false);
+
+    const bottomSheetRef = useRef(null);
+    const [isFullScreenMap, setIsFullScreenMap] = useState(false);
+
+    const toggleFullScreenMap = useCallback(() => {
+        if (isFullScreenMap) {
+            setIsFullScreenMap(false);
+            bottomSheetRef.current?.snapToIndex(0); // 75%
+        } else {
+            setIsFullScreenMap(true);
+            setTimeout(() => {
+                bottomSheetRef.current?.snapToIndex(0); // 14%
+            }, 100);
+        }
+    }, [isFullScreenMap]);
+
+    const snapPoints = useMemo(() => isFullScreenMap ? ['14%', '75%', '90%'] : ['75%', '90%'], [isFullScreenMap]);
+
+    const handleSheetChange = useCallback((index) => {
+        if (isFullScreenMap && index > 0) {
+            setIsFullScreenMap(false);
+        }
+    }, [isFullScreenMap]);
 
 
 
@@ -286,6 +311,10 @@ const BookActingDriverScreen = () => {
         actingDriverItinerary,
         setActingDriverItinerary,
         setActingDriverMaxSpeed,
+        actingDriverAccommodation,
+        actingDriverFood,
+        actingDriverKidsOnBoard,
+        actingDriverMaxSpeed,
         bookingTab,
         durationRangeStart,
         durationRangeEnd,
@@ -296,11 +325,6 @@ const BookActingDriverScreen = () => {
         setTripType,
         showItineraryModal,
         setShowItineraryModal,
-        actingDriverAccommodation,
-        actingDriverFood,
-        actingDriverKidsOnBoard,
-        actingDriverElderlyOnBoard,
-        actingDriverMaxSpeed,
     } = useRideBookingInfo();
 
     const itineraryDates = (() => {
@@ -525,36 +549,45 @@ const BookActingDriverScreen = () => {
     const themeColor = ACTING_DRIVER_THEMES[vehicleType] || actingDriverColors;
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: colors.white_dirt }}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={24} color={colors.black} />
-                </TouchableOpacity>
-                <View style={styles.headerTitleContainer}>
-                    <AdaptiveText style={styles.stepText}>{t('step_4_of_4', 'Step 4 of 4')}</AdaptiveText>
-                    <AdaptiveText style={styles.titleText}>{t('review_confirm', 'Review & Confirm')}</AdaptiveText>
-                </View>
+        <View style={{ flex: 1 }}>
+            <View>
+                <NavBar elevation onBackPress={handleBackPress} />
             </View>
+            
+            
 
-            <View style={styles.progressBar}>
-                <View style={[styles.progressDot, { backgroundColor: themeColor.primary }]} />
-                <View style={styles.progressLine}>
-                    <View style={{ width: '100%', height: '100%', backgroundColor: themeColor.primary }} />
-                </View>
-                <View style={[styles.progressDot, { backgroundColor: themeColor.primary }]} />
-                <View style={styles.progressLine}>
-                    <View style={{ width: '100%', height: '100%', backgroundColor: themeColor.primary }} />
-                </View>
-                <View style={[styles.progressDot, { backgroundColor: themeColor.primary }]} />
-                <View style={styles.progressLine}>
-                    <View style={{ width: '100%', height: '100%', backgroundColor: themeColor.primary }} />
-                </View>
-                <View style={[styles.progressDot, { backgroundColor: themeColor.primary }]} />
-            </View>
+            <BottomSheetWrapper
+                ref={bottomSheetRef}
+                snapPoints={snapPoints}
+                index={0}
+                enablePanDownToClose={false}
+                enableOverDrag={true}
+                enableScroll={true}
+                onChange={handleSheetChange}
+                handleComponent={() => BottomSheetHeader(rideDistance, estimatedDuration, setShowPreference, isFullScreenMap, toggleFullScreenMap)}
+                handleIndicatorStyle={{ backgroundColor: '#DEDEDE', width: 50, height: 4 }}
 
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+            >
                 
-                {/* Vehicle Card */}
+                    <View style={styles.sheetContent}>
+                    <View style={styles.headerTitleContainer}>
+                        <AdaptiveText style={styles.stepText}>{t('step_3_of_3', 'Step 3 of 3')}</AdaptiveText>
+                        <AdaptiveText style={styles.titleText}>{t('review_confirm', 'Review & Confirm')}</AdaptiveText>
+                    </View>
+
+                    <View style={styles.progressBar}>
+                        <View style={[styles.progressDot, { backgroundColor: themeColor.primary }]} />
+                        <View style={styles.progressLine}>
+                            <View style={{ width: '100%', height: '100%', backgroundColor: themeColor.primary }} />
+                        </View>
+                        <View style={[styles.progressDot, { backgroundColor: themeColor.primary }]} />
+                        <View style={styles.progressLine}>
+                            <View style={{ width: '100%', height: '100%', backgroundColor: themeColor.primary }} />
+                        </View>
+                        <View style={[styles.progressDot, { backgroundColor: themeColor.primary }]} />
+                    </View>
+
+                    {/* Vehicle Card */}
                 <View style={styles.reviewCard}>
                     <View style={styles.vehicleReviewHeader}>
                         {actingDriverVehicle?.photo || getStockImage(actingDriverVehicle?.type) ? (
@@ -574,6 +607,20 @@ const BookActingDriverScreen = () => {
                         <TouchableOpacity onPress={() => setStackScreen('ActingDriverVehicleSelectScreen', {})}>
                             <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
                         </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Fare Details */}
+                <View style={[styles.reviewCard, styles.fareReviewCard]}>
+                    <View style={styles.fareReviewRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="car-outline" size={18} color={themeColor.primary} />
+                            <AdaptiveText style={[styles.fareReviewLabel, {color: themeColor.primary}]}>{t('fare_details', 'Fare Details')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.fareReviewAmount}>{fareDisplay}</AdaptiveText>
+                        {/* <TouchableOpacity onPress={() => {}}>
+                            <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                        </TouchableOpacity> */}
                     </View>
                 </View>
 
@@ -695,92 +742,79 @@ const BookActingDriverScreen = () => {
                     </View>
                 </View>
 
-                {/* Fare Details */}
-                <View style={[styles.reviewCard, styles.fareReviewCard]}>
-                    <View style={styles.fareReviewRow}>
-                        <View style={styles.detailLeft}>
-                            <Ionicons name="car-outline" size={18} color={themeColor.primary} />
-                            <AdaptiveText style={[styles.fareReviewLabel, {color: themeColor.primary}]}>{t('fare_details', 'Fare Details')}</AdaptiveText>
+                
+
+                {/* End of Fare Details */}
+                <View style={{ height: 120 }} />
+                </View>
+            </BottomSheetWrapper>
+
+            {/* Coupon row */}
+            <TouchableOpacity style={[styles.couponContainer, { bottom: layoutHeight, borderColor: themeColor.primary, borderWidth: 1 }]} onPress={handleCouponPress}>
+                {!couponCode ? (
+                    <>
+                        <FontAwesome6 name="percent" size={20} color={themeColor.primary} />
+                        <AdaptiveText style={styles.couponText}>{t('offer_coupons', 'Offer & Coupons')}</AdaptiveText>
+                        <Icon name="chevron-right" size={20} color={colors.grey_dark} />
+                    </>
+                ) : (
+                    <>
+                        <FontAwesome6 name="percent" size={16} color={themeColor.primary} />
+                        <AdaptiveText>{t('coupon', 'Coupon')}</AdaptiveText>
+                        <AdaptiveText style={[styles.couponText, { fontFamily: Fonts.semi_bold, color: themeColor.primary }]}>{couponCode}</AdaptiveText>
+                        <AdaptiveText>{t('applied', 'Applied')}</AdaptiveText>
+                    </>
+                )}
+            </TouchableOpacity>
+
+            {/* Bottom action bar */}
+            <View onLayout={layOutChange} style={styles.bottomContainer}>
+                <View style={styles.bookingButtonContainer}>
+                    <TouchableOpacity
+                        style={styles.paymentContainer}
+                        onPress={() => setIsPaymentTypeOpen(true)}
+                        activeOpacity={0.8}
+                    >
+                        <AdaptiveText style={styles.payByLabel}>{t('pay_by')}</AdaptiveText>
+                        <View style={styles.paymentMode}>
+                            <AdaptiveText style={styles.paymentModeText}>{paymentType}</AdaptiveText>
+                            <Icon name="arrow-drop-down" color={colors.white} style={{ fontSize: 20 }} />
                         </View>
-                        <AdaptiveText style={styles.fareReviewAmount}>{fareDisplay}</AdaptiveText>
-                        <TouchableOpacity onPress={() => {}}>
-                            <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                    </TouchableOpacity>
+
+                    <View style={styles.confirmSection}>
+                        <TouchableOpacity
+                            style={[
+                                styles.confirmButton,
+                                { overflow: 'hidden' },
+                                (!actingDriverVehicle || isBookingLoading || routeLoading?.loading) &&
+                                    styles.confirmButtonDisabled,
+                            ]}
+                            onPress={handleConfirm}
+                            disabled={!actingDriverVehicle || isBookingLoading || !!routeLoading?.loading}
+                            activeOpacity={0.85}
+                        >
+                            <LinearGradient
+                                colors={[themeColor.primary, themeColor.secondary || '#FF9800']}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={StyleSheet.absoluteFill}
+                            />
+                            {isBookingLoading ? (
+                                <ActivityIndicator color={colors.white} />
+                            ) : (
+                                <>
+                                    <AdaptiveText style={styles.confirmButtonText}>
+                                        {t('confirm_and_book', 'Confirm & Book')}
+                                    </AdaptiveText>
+                                    <Ionicons name="arrow-forward" size={20} color={colors.white} />
+                                </>
+                            )}
                         </TouchableOpacity>
                     </View>
-                </View>
-
-                {/* Apply Coupon */}
-                <TouchableOpacity style={styles.reviewCard} onPress={handleCouponPress} activeOpacity={0.8}>
-                    <View style={styles.fareReviewRow}>
-                        <View style={styles.detailLeft}>
-                            <Ionicons name="pricetag-outline" size={18} color={themeColor.primary} />
-                            <AdaptiveText style={[styles.couponReviewLabel, {color: themeColor.primary}]}>{t('apply_coupon', 'Apply Coupon')}</AdaptiveText>
-                        </View>
-                        <AdaptiveText style={styles.viewOffersText}>{t('view_offers', 'View offers')} &gt;</AdaptiveText>
-                    </View>
-                </TouchableOpacity>
-
-                {/* Payment Method */}
-                <TouchableOpacity style={styles.reviewCard} onPress={() => {}} activeOpacity={0.8}>
-                    <View style={styles.fareReviewRow}>
-                        <View style={styles.detailLeft}>
-                            <Ionicons name="card-outline" size={18} color="#4B5563" />
-                            <AdaptiveText style={styles.detailLabel}>{t('payment_method', 'Payment Method')}</AdaptiveText>
-                        </View>
-                        <AdaptiveText style={styles.paymentMethodText}>UPI • Google Pay &gt;</AdaptiveText>
-                    </View>
-                </TouchableOpacity>
-
-            </ScrollView>
-
-            <View style={styles.stickyFooter}>
-                <TouchableOpacity
-                    style={[styles.confirmButton, {backgroundColor: themeColor.primary}, (isBookingLoading || !!routeLoading?.loading) && styles.confirmButtonDisabled]}
-                    onPress={proceedWithBooking}
-                    disabled={isBookingLoading || !!routeLoading?.loading}
-                    activeOpacity={0.85}
-                >
-                    {isBookingLoading ? (
-                        <ActivityIndicator color={colors.white} />
-                    ) : (
-                        <>
-                            <AdaptiveText style={styles.confirmButtonText}>{t('confirm_and_book', 'Confirm & Book')}</AdaptiveText>
-                            <Ionicons name="arrow-forward" size={20} color={colors.white} />
-                        </>
-                    )}
-                </TouchableOpacity>
-                <View style={styles.secureFooter}>
-                    <Ionicons name="lock-closed-outline" size={14} color="#6B7280" />
-                    <AdaptiveText style={styles.secureFooterText}>{t('secure_safe_booking', 'Secure & Safe Booking')}</AdaptiveText>
                 </View>
             </View>
 
-            {showCoupon && (
-                <AnimatedBottomSheetWrapper onClose={() => setShowCoupon(false)} zIndex={100000}>
-                    <CouponContainer />
-                </AnimatedBottomSheetWrapper>
-            )}
-
-            <Modal visible={bookingSuccess} animationType="fade" transparent={true}>
-                <View style={styles.successModalOverlay}>
-                    <View style={styles.successModalContent}>
-                        <View style={styles.successIconCircle}>
-                            <Icon name="check-circle" size={80} color={actingDriverColors.success} />
-                        </View>
-                        <AdaptiveText style={styles.successModalTitle}>{t('acting_driver_booked', 'Acting Driver Booked!')}</AdaptiveText>
-                        <AdaptiveText style={styles.successModalSubtitle}>{t('booking_success_info', 'Acting driver booked. We will let you know once driver approved.')}</AdaptiveText>
-                        <TouchableOpacity
-                            style={[styles.doneButton, {backgroundColor: themeColor.primary}]}
-                            onPress={() => {
-                                setBookingSuccess(false);
-                                useStackScreenStore.getState().reset();
-                            }}
-                        >
-                            <AdaptiveText style={styles.doneButtonText}>{t('done', 'Done')}</AdaptiveText>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
             <RouteStatusOverlay
                 loading={!!routeLoading?.loading}
                 error={routeLoading?.error}
@@ -788,33 +822,74 @@ const BookActingDriverScreen = () => {
                 onRetry={onRetryFetchRoute}
                 top={height * 0.25}
             />
-        </SafeAreaView>
-    );
 
+            {isPaymentTypeOpen && (
+                <AnimatedBottomSheetWrapper
+                    onClose={() => setIsPaymentTypeOpen(false)}
+                    zIndex={100000}
+                >
+                    <PaymentType
+                        onSelect={(pt) => {
+                            setPaymentType(pt);
+                            setIsPaymentTypeOpen(false);
+                        }}
+                        initialValue={paymentType}
+                    />
+                </AnimatedBottomSheetWrapper>
+            )}
+
+            {showCoupon && (
+                <AnimatedBottomSheetWrapper onClose={() => setShowCoupon(false)} zIndex={100000}>
+                    <CouponContainer />
+                </AnimatedBottomSheetWrapper>
+            )}
+
+
+
+
+
+            {/* Booking Success Modal */}
+            <Modal
+                visible={bookingSuccess}
+                animationType="fade"
+                transparent={true}
+            >
+                <View style={styles.successModalOverlay}>
+                    <View style={styles.successModalContent}>
+                        <View style={styles.successIconCircle}>
+                            <Icon name="check-circle" size={80} color={actingDriverColors.success} />
+                        </View>
+                        
+                        <AdaptiveText style={styles.successModalTitle}>
+                            {t('acting_driver_booked', 'Acting Driver Booked!')}
+                        </AdaptiveText>
+                        
+                        <AdaptiveText style={styles.successModalSubtitle}>
+                            {t('booking_success_info', 'Acting driver booked. We will let you know once driver approved.')}
+                        </AdaptiveText>
+
+                        <TouchableOpacity
+                            style={styles.doneButton}
+                            onPress={() => {
+                                setBookingSuccess(false);
+                                useStackScreenStore.getState().reset();
+                            }}
+                        >
+                            <AdaptiveText style={styles.doneButtonText}>
+                                {t('done', 'Done')}
+                            </AdaptiveText>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+        </View>
+    );
 };
 
 export default BookActingDriverScreen;
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.white_dirt,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 16,
-        paddingHorizontal: 20,
-        marginTop: 10,
-    },
-    backButton: {
-        position: 'absolute',
-        left: 20,
-        padding: 4,
-        zIndex: 1,
-    },
     headerTitleContainer: {
         alignItems: 'center',
     },
@@ -1040,5 +1115,632 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: Fonts.bold,
         color: colors.white,
+    },
+    // ── Bottom sheet header ──────────────────────────────────────────────────
+    bottomSheetHeaderContainer: {
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+    },
+    bottomSheetHeader: {
+        position: 'absolute',
+        width: width,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'flex-end',
+        top: -115,
+        paddingHorizontal: 10,
+    },
+    mapActionContainer: {
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        justifyContent: 'flex-end',
+        gap: 10,
+        paddingBottom: 10,
+    },
+    currentLocationIconContainer: {
+        padding: 10,
+        borderRadius: 30,
+        backgroundColor: 'white',
+        elevation: 5,
+    },
+    // ── Section ──────────────────────────────────────────────────────────────
+    sectionContainer: {
+        paddingHorizontal: 16,
+        paddingTop: 12,
+    },
+    sectionTitle: {
+        fontSize: 14,
+        fontFamily: Fonts.semi_bold,
+        color: colors.black,
+        marginBottom: 10,
+    },
+    noVehicleText: {
+        fontSize: 13,
+        color: colors.grey_dark,
+        fontFamily: Fonts.regular,
+    },
+    // ── Vehicle card ─────────────────────────────────────────────────────────
+    vehicleCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1.5,
+        borderColor: colors.black,
+        borderRadius: 12,
+        padding: 12,
+        backgroundColor: '#FAFAFA',
+        gap: 12,
+    },
+    vehicleIconBox: {
+        width: 50,
+        height: 50,
+        borderRadius: 10,
+        backgroundColor: '#F0EFFF',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    vehicleInfo: {
+        flex: 1,
+        gap: 3,
+    },
+    vehicleRegNo: {
+        fontSize: 15,
+        fontFamily: Fonts.semi_bold,
+        color: colors.black,
+    },
+    vehicleMeta: {
+        fontSize: 12,
+        fontFamily: Fonts.regular,
+        color: colors.grey_dark,
+    },
+    verifiedRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        marginTop: 2,
+    },
+    verifiedText: {
+        fontSize: 11,
+        fontFamily: Fonts.regular,
+        color: colors.green,
+    },
+    fareBox: {
+        alignItems: 'flex-end',
+        minWidth: 70,
+    },
+    fareLabel: {
+        fontSize: 11,
+        fontFamily: Fonts.regular,
+        color: colors.grey_dark,
+    },
+    fareValue: {
+        fontSize: 15,
+        fontFamily: Fonts.semi_bold,
+        color: colors.black,
+        marginTop: 2,
+    },
+    // ── Coupon row ───────────────────────────────────────────────────────────
+    couponContainer: {
+        position: 'absolute',
+        bottom: height * 0.15,
+        left: 0,
+        right: 0,
+        width: '100%',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        zIndex: 99999,
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        gap: 10,
+        backgroundColor: '#fffae2',
+    },
+    couponText: {
+        fontSize: 14,
+        fontFamily: Fonts.regular,
+        color: colors.black,
+    },
+    // ── Bottom bar ───────────────────────────────────────────────────────────
+    bottomContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 100000,
+        elevation: 10,
+        backgroundColor: 'white',
+        borderTopWidth: 1,
+        borderColor: '#e0e0e0',
+    },
+    bookingButtonContainer: {
+        backgroundColor: colors.black,
+        width: '100%',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        flexDirection: 'row',
+        padding: 10,
+        elevation: 5,
+    },
+    paymentContainer: {
+        width: '30%',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        paddingHorizontal: 15,
+    },
+    payByLabel: {
+        fontSize: 12,
+        color: colors.white,
+        fontFamily: Fonts.regular,
+    },
+    paymentMode: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+    },
+    paymentModeText: {
+        fontSize: 16,
+        fontFamily: Fonts.regular,
+        color: colors.white,
+    },
+    confirmSection: {
+        width: '70%',
+    },
+    paymentBreakdownCard: {
+        marginTop: 16,
+        backgroundColor: '#F8FAFC',
+        borderRadius: 16,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+    },
+    breakdownTitle: {
+        fontSize: 14,
+        fontFamily: Fonts.semi_bold,
+        color: colors.black,
+        marginBottom: 12,
+    },
+    breakdownRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 8,
+        borderBottomWidth: 0.5,
+        borderBottomColor: '#E2E8F0',
+    },
+    breakdownLabel: {
+        fontSize: 13,
+        fontFamily: Fonts.regular,
+        color: colors.grey_dark,
+    },
+    breakdownValue: {
+        fontSize: 13,
+        fontFamily: Fonts.medium,
+        color: colors.black,
+    },
+    breakdownNote: {
+        fontSize: 11,
+        fontFamily: Fonts.regular,
+        color: colors.grey_dark,
+        marginTop: 12,
+        lineHeight: 16,
+        fontStyle: 'italic',
+    },
+    sheetContent: {
+        paddingHorizontal: 16,
+        paddingTop: 10,
+        paddingBottom:80,
+    },
+    tripTabsRow: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+        marginBottom: 16,
+        paddingHorizontal: 16,
+    },
+    tripTab: {
+        flex: 1,
+        alignItems: 'center',
+        paddingVertical: 14,
+    },
+    tabLabelContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    tabIcon: {
+        marginRight: 6,
+    },
+    tripTabText: {
+        fontSize: 15,
+        fontFamily: Fonts.medium,
+        color: '#757575',
+    },
+    tripTabTextActive: {
+        color: colors.orange,
+        fontFamily: Fonts.bold,
+    },
+    activeTabUnderline: {
+        position: 'absolute',
+        bottom: -1,
+        left: 0,
+        right: 0,
+        height: 3,
+        backgroundColor: colors.orange,
+        borderTopLeftRadius: 2,
+        borderTopRightRadius: 2,
+    },
+    scheduleBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderRadius: 14,
+        borderWidth: 1.5,
+        borderColor: '#E2E8F0',
+        backgroundColor: '#FFFFFF',
+        marginBottom: 18,
+    },
+    scheduleInfo: {
+        flex: 1,
+    },
+    scheduleLabel: {
+        fontSize: 13,
+        fontFamily: Fonts.medium,
+        color: actingDriverColors.secondary,
+        marginBottom: 2,
+    },
+    scheduleDateText: {
+        fontSize: 14,
+        fontFamily: Fonts.bold,
+        color: actingDriverColors.secondary,
+    },
+    scheduleChevronWrap: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#F1F5F9',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    schedulePanel: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        paddingHorizontal: 24,
+        paddingBottom: 36,
+        paddingTop: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 20,
+    },
+    scheduleHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 16,
+        marginTop: 10,
+    },
+    scheduleTitle: {
+        fontSize: 18,
+        fontFamily: Fonts.bold,
+        color: actingDriverColors.secondary,
+        marginBottom: 4,
+    },
+    scheduleSubtitle: {
+        fontSize: 13,
+        fontFamily: Fonts.regular,
+        color: colors.grey_xxdark,
+    },
+    closeBtn: {
+        padding: 4,
+    },
+    scheduleTabRow: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+        marginBottom: 16,
+    },
+    scheduleTabItem: {
+        flex: 1,
+        alignItems: 'center',
+        paddingVertical: 12,
+    },
+    scheduleTabLabel: {
+        fontSize: 14,
+        fontFamily: Fonts.medium,
+        color: '#757575',
+    },
+    scheduleTabLabelActive: {
+        color: actingDriverColors.secondary,
+        fontFamily: Fonts.bold,
+    },
+    scheduleActiveBar: {
+        position: 'absolute',
+        bottom: -1,
+        left: 0,
+        right: 0,
+        height: 3,
+        backgroundColor: actingDriverColors.primary,
+    },
+    datePickerContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 10,
+    },
+    scheduleConfirmButton: {
+        backgroundColor: colors.blue_xxdark,
+        borderRadius: 14,
+        paddingVertical: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 16,
+    },
+    scheduleConfirmText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontFamily: Fonts.bold,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(15, 23, 42, 0.65)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: '#FFFFFF',
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        padding: 24,
+        minHeight: 450,
+        shadowColor: '#0F172A',
+        shadowOffset: { width: 0, height: -10 },
+        shadowOpacity: 0.15,
+        shadowRadius: 20,
+        elevation: 10,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontFamily: Fonts.semi_bold,
+        color: actingDriverColors.secondary,
+    },
+    closeButton: {
+        padding: 4,
+    },
+    paymentSummaryCard: {
+        backgroundColor: '#F1F5F9',
+        borderRadius: 16,
+        padding: 16,
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    summaryLabel: {
+        fontSize: 13,
+        fontFamily: Fonts.medium,
+        color: '#64748B',
+        marginBottom: 4,
+    },
+    summaryAmount: {
+        fontSize: 32,
+        fontFamily: Fonts.bold,
+        color: actingDriverColors.secondary,
+    },
+    methodSectionTitle: {
+        fontSize: 14,
+        fontFamily: Fonts.semi_bold,
+        color: actingDriverColors.secondary,
+        marginBottom: 12,
+    },
+    methodList: {
+        gap: 12,
+        marginBottom: 24,
+    },
+    methodRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 14,
+        borderRadius: 12,
+        borderWidth: 1.5,
+        borderColor: '#E2E8F0',
+        backgroundColor: '#FFFFFF',
+    },
+    methodRowSelected: {
+        borderColor: actingDriverColors.primary,
+        backgroundColor: '#FFFBEB',
+    },
+    methodInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    methodText: {
+        fontSize: 14,
+        fontFamily: Fonts.medium,
+        color: actingDriverColors.secondary,
+    },
+    radioCircle: {
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+        borderWidth: 2,
+        borderColor: '#94A3B8',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    radioCircleSelected: {
+        borderColor: actingDriverColors.primary,
+    },
+    radioDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: actingDriverColors.primary,
+    },
+    payNowButton: {
+        backgroundColor: actingDriverColors.success,
+        borderRadius: 16,
+        paddingVertical: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: actingDriverColors.success,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    payNowText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontFamily: Fonts.semi_bold,
+    },
+    successContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 40,
+    },
+    successCircle: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: '#DEF7EC',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+    },
+    successTitle: {
+        fontSize: 20,
+        fontFamily: Fonts.bold,
+        color: actingDriverColors.success,
+        marginBottom: 8,
+    },
+    successSubtitle: {
+        fontSize: 14,
+        fontFamily: Fonts.regular,
+        color: '#6B7280',
+        textAlign: 'center',
+        paddingHorizontal: 20,
+    },
+    /* ── Itinerary Button ── */
+    itineraryButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#FFFBEB',
+        borderWidth: 1.5,
+        borderColor: actingDriverColors.primary,
+        borderRadius: 14,
+        padding: 14,
+        marginTop: 16,
+    },
+    itineraryButtonLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        flex: 1,
+    },
+    itineraryButtonIconWrap: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        backgroundColor: '#FEF3C7',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    itineraryButtonTitle: {
+        fontSize: 14,
+        fontFamily: Fonts.semi_bold || Fonts.medium,
+        color: actingDriverColors.secondary,
+    },
+    itineraryButtonSub: {
+        fontSize: 11,
+        fontFamily: Fonts.regular,
+        color: '#4B5563',
+        marginTop: 2,
+    },
+    itineraryButtonRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    itineraryBadge: {
+        backgroundColor: actingDriverColors.primary,
+        borderRadius: 10,
+        paddingHorizontal: 7,
+        paddingVertical: 2,
+    },
+    itineraryBadgeText: {
+        fontSize: 11,
+        fontFamily: Fonts.semi_bold || Fonts.medium,
+        color: actingDriverColors.secondary,
+    },
+    vehicleScrollCard: {
+        width: 240,
+        backgroundColor: '#F8FAFC',
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        borderRadius: 12,
+        padding: 12,
+        marginRight: 12,
+    },
+    vehicleScrollCardSelected: {
+        backgroundColor: '#F1F5F9',
+        borderColor: '#94A3B8',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+        elevation: 2,
+    },
+    addVehicleScrollCard: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderStyle: 'dashed',
+        backgroundColor: '#FFFFFF',
+        flexDirection: 'row',
+        gap: 8,
+    },
+    vehicleScrollIconBg: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#E2E8F0',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    vehicleScrollIconBgSelected: {
+        backgroundColor: '#475569',
+    },
+    vehicleScrollReg: {
+        fontSize: 14,
+        fontFamily: Fonts.bold,
+        color: '#1E293B',
+    },
+    vehicleScrollRegSelected: {
+        color: '#1E293B',
+    },
+    vehicleScrollMeta: {
+        fontSize: 12,
+        fontFamily: Fonts.medium,
+        color: '#64748B',
+        marginTop: 2,
+    },
+    vehicleScrollMetaSelected: {
+        color: '#64748B',
+    },
+    addVehicleScrollText: {
+        fontSize: 13,
+        fontFamily: Fonts.medium,
+        color: '#1E293B',
+        marginTop: 8,
     },
 });

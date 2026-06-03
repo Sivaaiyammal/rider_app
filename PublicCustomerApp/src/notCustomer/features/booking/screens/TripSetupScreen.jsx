@@ -145,7 +145,7 @@ const TripSetupScreen = ({ isEditMode }) => {
               <Ionicons name="chevron-back" size={24} color={colors.black} />
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
-              <Text style={styles.stepText}>Step 1 of 4</Text>
+              <Text style={styles.stepText}>Step 1 of 3</Text>
               <Text style={styles.titleText}>Trip Setup</Text>
             </View>
           </View>
@@ -155,8 +155,6 @@ const TripSetupScreen = ({ isEditMode }) => {
             <View style={styles.progressLine}>
               <View style={{ width: '50%', height: '100%', backgroundColor: themeColor }} />
             </View>
-            <View style={styles.progressDot} />
-            <View style={styles.progressLine} />
             <View style={styles.progressDot} />
             <View style={styles.progressLine} />
             <View style={styles.progressDot} />
