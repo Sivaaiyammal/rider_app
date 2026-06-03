@@ -117,12 +117,12 @@ const isOutsideTirupur = (item) => {
 };
 
 const ACTING_DRIVER_THEMES = {
-  hatchback: { primary: '#FF2B2B', secondary: '#D60000', accent: '#FF6B6B' },
-  sedan: { primary: '#4A3AFF', secondary: '#2B1CCF', accent: '#8A7DFF' },
-  suv: { primary: '#0E9F3E', secondary: '#067A2C', accent: '#56D87D' },
-  muv: { primary: '#0F8DA5', secondary: '#006E82', accent: '#59D6ED' },
-  exsedan: { primary: '#8A00C4', secondary: '#640093', accent: '#C46FFF' },
-  luxury: { primary: '#D97706', secondary: '#B45309', accent: '#FBBF24' },
+  hatchback: { primary: '#E57373', secondary: '#C62828', accent: '#FFCDD2' },  // pastel rose-red
+  sedan:     { primary: '#7986CB', secondary: '#3949AB', accent: '#C5CAE9' },  // pastel indigo-blue
+  suv:       { primary: '#66BB6A', secondary: '#2E7D32', accent: '#C8E6C9' },  // pastel sage-green
+  muv:       { primary: '#4DD0E1', secondary: '#00838F', accent: '#B2EBF2' },  // pastel aqua-cyan
+  exsedan:   { primary: '#BA68C8', secondary: '#6A1B9A', accent: '#E1BEE7' },  // pastel lavender-purple
+  luxury:    { primary: '#FFB74D', secondary: '#E65100', accent: '#FFE0B2' },  // pastel warm amber
 };
 
 const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mode,vehicle}) => {
@@ -848,6 +848,49 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 280, zIndex: 0 }}
           />
         )}
+
+        {/* ── Abstract Scenery — sits on top of gradient, behind the card ── */}
+        {mode === 'ACTING_DRIVER' && (
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 280, zIndex: 0, overflow: 'hidden' }} pointerEvents="none">
+            {/* Sky large glow top-right */}
+            <View style={{ position: 'absolute', width: 220, height: 220, borderRadius: 110, backgroundColor: 'rgba(255,255,255,0.10)', top: -100, right: -40 }} />
+
+            {/* Sun outer disc */}
+            <View style={{ position: 'absolute', width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(255,255,255,0.18)', top: 18, right: 60 }} />
+            {/* Sun inner bright */}
+            <View style={{ position: 'absolute', width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.28)', top: 28, right: 70 }} />
+
+            {/* Cloud group 1 */}
+            <View style={{ position: 'absolute', width: 70, height: 26, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.14)', top: 36, left: '30%' }} />
+            <View style={{ position: 'absolute', width: 44, height: 22, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.11)', top: 40, left: '25%' }} />
+            <View style={{ position: 'absolute', width: 36, height: 18, borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.10)', top: 26, left: '33%' }} />
+
+            {/* Cloud group 2 (top-left small) */}
+            <View style={{ position: 'absolute', width: 48, height: 20, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.10)', top: 14, left: '10%' }} />
+            <View style={{ position: 'absolute', width: 30, height: 16, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.08)', top: 18, left: '7%' }} />
+
+            {/* Diagonal light rays */}
+            <View style={{ position: 'absolute', width: 5, height: 300, backgroundColor: 'rgba(255,255,255,0.06)', top: -40, left: '48%', transform: [{ rotate: '22deg' }] }} />
+            <View style={{ position: 'absolute', width: 3, height: 300, backgroundColor: 'rgba(255,255,255,0.04)', top: -40, left: '52%', transform: [{ rotate: '22deg' }] }} />
+            <View style={{ position: 'absolute', width: 2, height: 300, backgroundColor: 'rgba(255,255,255,0.03)', top: -40, left: '56%', transform: [{ rotate: '22deg' }] }} />
+
+            {/* Ground horizon band */}
+            <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 36, backgroundColor: 'rgba(0,0,0,0.14)' }} />
+
+            {/* Rolling hills — far (big, centered) */}
+            <View style={{ position: 'absolute', width: 260, height: 260, borderRadius: 130, backgroundColor: 'rgba(255,255,255,0.08)', bottom: -180, left: '15%' }} />
+            {/* Rolling hills — near left */}
+            <View style={{ position: 'absolute', width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.12)', bottom: -100, left: -30 }} />
+            {/* Rolling hills — near right */}
+            <View style={{ position: 'absolute', width: 130, height: 130, borderRadius: 65, backgroundColor: 'rgba(255,255,255,0.09)', bottom: -80, right: -20 }} />
+
+            {/* Road centre dashes */}
+            <View style={{ position: 'absolute', width: 22, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.22)', bottom: 18, left: '28%' }} />
+            <View style={{ position: 'absolute', width: 22, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.22)', bottom: 18, left: '36%' }} />
+            <View style={{ position: 'absolute', width: 22, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.22)', bottom: 18, left: '44%' }} />
+            <View style={{ position: 'absolute', width: 22, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.22)', bottom: 18, left: '52%' }} />
+          </View>
+        )}
         
         {mode === 'ACTING_DRIVER' ? (
           <View style={{ paddingBottom: 40, zIndex: 1 }}>
@@ -872,55 +915,107 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                 backgroundColor: currentTheme.primary, 
                 borderRadius: 20, 
                 overflow: 'hidden',
-                flexDirection: 'row', 
-                alignItems: 'center', 
-                justifyContent: 'space-between',
                 height: 140,
                 borderWidth: 1,
                 borderColor: 'rgba(255,255,255,0.1)'
               }}>
-                {/* Decorative Background Effects (Bubbles & Sparkles) */}
-                <View style={{
-                  position: 'absolute',
-                  width: 180,
-                  height: 180,
-                  borderRadius: 90,
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  top: -80,
-                  left: -40,
-                }} />
-                <View style={{
-                  position: 'absolute',
-                  width: 120,
-                  height: 120,
-                  borderRadius: 60,
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  bottom: -40,
-                  right: '30%',
-                }} />
-                <Ionicons 
-                  name="sparkles" 
-                  size={18} 
-                  color="#FFF" 
-                  style={{ position: 'absolute', top: 16, right: '55%', opacity: 0.2 }} 
-                />
-                <Ionicons 
-                  name="star" 
-                  size={12} 
-                  color="#FFF" 
-                  style={{ position: 'absolute', bottom: 20, left: '45%', opacity: 0.15 }} 
-                />
-                <Ionicons 
-                  name="sparkles" 
-                  size={14} 
-                  color="#FFF" 
-                  style={{ position: 'absolute', top: 50, left: '35%', opacity: 0.15 }} 
+
+                {/* ── LAYER 1: Full-card city skyline background ── */}
+                <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} pointerEvents="none">
+
+                  {/* Night-sky tint */}
+                  <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.10)' }} />
+
+                  {/* Moon — top right */}
+                  <View style={{ position: 'absolute', width: 26, height: 26, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.26)', top: 8, right: 18 }} />
+                  <View style={{ position: 'absolute', width: 17, height: 17, borderRadius: 8.5, backgroundColor: 'rgba(255,255,255,0.14)', top: 8, right: 14 }} />
+
+                  {/* Stars scattered across sky */}
+                  <View style={{ position: 'absolute', width: 3, height: 3, borderRadius: 1.5, backgroundColor: 'rgba(255,255,255,0.45)', top: 6, left: '18%' }} />
+                  <View style={{ position: 'absolute', width: 2, height: 2, borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.35)', top: 18, left: '32%' }} />
+                  <View style={{ position: 'absolute', width: 2, height: 2, borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.30)', top: 10, left: '48%' }} />
+                  <View style={{ position: 'absolute', width: 3, height: 3, borderRadius: 1.5, backgroundColor: 'rgba(255,255,255,0.28)', top: 22, left: '62%' }} />
+                  <View style={{ position: 'absolute', width: 2, height: 2, borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.22)', top: 8, left: '75%' }} />
+
+                  {/* Building A — tallest, left zone */}
+                  <View style={{ position: 'absolute', width: 18, height: 70, backgroundColor: 'rgba(255,255,255,0.15)', bottom: 20, left: '8%', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
+                    <View style={{ width: 6, height: 6, backgroundColor: 'rgba(255,255,255,0.55)', margin: 3, borderRadius: 1 }} />
+                    <View style={{ width: 6, height: 6, backgroundColor: 'rgba(255,255,255,0.22)', margin: 3, borderRadius: 1 }} />
+                    <View style={{ width: 6, height: 6, backgroundColor: 'rgba(255,255,255,0.55)', margin: 3, borderRadius: 1 }} />
+                    <View style={{ width: 6, height: 6, backgroundColor: 'rgba(255,255,255,0.30)', margin: 3, borderRadius: 1 }} />
+                  </View>
+                  {/* Antenna on A */}
+                  <View style={{ position: 'absolute', width: 2, height: 14, backgroundColor: 'rgba(255,255,255,0.25)', bottom: 90, left: '9.5%' }} />
+                  <View style={{ position: 'absolute', width: 5, height: 5, borderRadius: 2.5, backgroundColor: 'rgba(255,80,80,0.65)', bottom: 102, left: '8.8%' }} />
+
+                  {/* Building B — squat, far left */}
+                  <View style={{ position: 'absolute', width: 14, height: 40, backgroundColor: 'rgba(255,255,255,0.11)', bottom: 20, left: '1%', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
+                    <View style={{ width: 4, height: 4, backgroundColor: 'rgba(255,255,255,0.42)', margin: 2, borderRadius: 1 }} />
+                    <View style={{ width: 4, height: 4, backgroundColor: 'rgba(255,255,255,0.20)', margin: 2, borderRadius: 1 }} />
+                  </View>
+
+                  {/* Building C — medium, center-left */}
+                  <View style={{ position: 'absolute', width: 20, height: 52, backgroundColor: 'rgba(255,255,255,0.13)', bottom: 20, left: '28%', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
+                    <View style={{ width: 6, height: 6, backgroundColor: 'rgba(255,255,255,0.48)', margin: 3, borderRadius: 1 }} />
+                    <View style={{ width: 6, height: 6, backgroundColor: 'rgba(255,255,255,0.25)', margin: 3, borderRadius: 1 }} />
+                    <View style={{ width: 6, height: 6, backgroundColor: 'rgba(255,255,255,0.48)', margin: 3, borderRadius: 1 }} />
+                  </View>
+
+                  {/* Building D — wide, center */}
+                  <View style={{ position: 'absolute', width: 28, height: 42, backgroundColor: 'rgba(255,255,255,0.12)', bottom: 20, left: '42%', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
+                    <View style={{ flexDirection: 'row', margin: 3, gap: 3 }}>
+                      <View style={{ width: 5, height: 5, backgroundColor: 'rgba(255,255,255,0.50)', borderRadius: 1 }} />
+                      <View style={{ width: 5, height: 5, backgroundColor: 'rgba(255,255,255,0.25)', borderRadius: 1 }} />
+                      <View style={{ width: 5, height: 5, backgroundColor: 'rgba(255,255,255,0.50)', borderRadius: 1 }} />
+                    </View>
+                    <View style={{ flexDirection: 'row', margin: 3, gap: 3 }}>
+                      <View style={{ width: 5, height: 5, backgroundColor: 'rgba(255,255,255,0.28)', borderRadius: 1 }} />
+                      <View style={{ width: 5, height: 5, backgroundColor: 'rgba(255,255,255,0.50)', borderRadius: 1 }} />
+                      <View style={{ width: 5, height: 5, backgroundColor: 'rgba(255,255,255,0.28)', borderRadius: 1 }} />
+                    </View>
+                  </View>
+
+                  {/* Building E — slim tall, center-right */}
+                  <View style={{ position: 'absolute', width: 12, height: 58, backgroundColor: 'rgba(255,255,255,0.13)', bottom: 20, left: '62%', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
+                    <View style={{ width: 4, height: 4, backgroundColor: 'rgba(255,255,255,0.50)', margin: 2, borderRadius: 1 }} />
+                    <View style={{ width: 4, height: 4, backgroundColor: 'rgba(255,255,255,0.22)', margin: 2, borderRadius: 1 }} />
+                    <View style={{ width: 4, height: 4, backgroundColor: 'rgba(255,255,255,0.50)', margin: 2, borderRadius: 1 }} />
+                    <View style={{ width: 4, height: 4, backgroundColor: 'rgba(255,255,255,0.22)', margin: 2, borderRadius: 1 }} />
+                  </View>
+
+                  {/* Building F — short, far right */}
+                  <View style={{ position: 'absolute', width: 16, height: 30, backgroundColor: 'rgba(255,255,255,0.10)', bottom: 20, left: '76%', borderTopLeftRadius: 2, borderTopRightRadius: 2 }}>
+                    <View style={{ width: 4, height: 4, backgroundColor: 'rgba(255,255,255,0.38)', margin: 2, borderRadius: 1 }} />
+                  </View>
+
+                  {/* Building G — tiny, far-right edge */}
+                  <View style={{ position: 'absolute', width: 10, height: 22, backgroundColor: 'rgba(255,255,255,0.09)', bottom: 20, left: '88%', borderTopLeftRadius: 2, borderTopRightRadius: 2 }} />
+
+                  {/* Ground / road */}
+                  <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 20, backgroundColor: 'rgba(0,0,0,0.22)' }} />
+                  {/* Road dashes across full width */}
+                  <View style={{ position: 'absolute', width: 12, height: 2, borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.32)', bottom: 9, left: '5%' }} />
+                  <View style={{ position: 'absolute', width: 12, height: 2, borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.28)', bottom: 9, left: '18%' }} />
+                  <View style={{ position: 'absolute', width: 12, height: 2, borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.24)', bottom: 9, left: '31%' }} />
+                  <View style={{ position: 'absolute', width: 12, height: 2, borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.20)', bottom: 9, left: '44%' }} />
+                  <View style={{ position: 'absolute', width: 10, height: 2, borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.18)', bottom: 9, left: '57%' }} />
+                  <View style={{ position: 'absolute', width: 10, height: 2, borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.15)', bottom: 9, left: '70%' }} />
+                  <View style={{ position: 'absolute', width: 8,  height: 2, borderRadius: 1, backgroundColor: 'rgba(255,255,255,0.12)', bottom: 9, left: '82%' }} />
+                </View>
+
+                {/* ── LAYER 2: Left-side gradient so text stays readable ── */}
+                <LinearGradient
+                  colors={[currentTheme.primary, currentTheme.primary + 'CC', 'transparent']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '60%' }}
+                  pointerEvents="none"
                 />
 
-                <View style={{ flex: 1, padding: 16, zIndex: 1 }}>
+                {/* ── LAYER 3: Text info (left side) ── */}
+                <View style={{ flex: 1, padding: 16, zIndex: 2 }}>
                   <Text style={{ fontFamily: Fonts.bold, fontSize: 20, color: '#FFF' }}>{actingDriverVehicle.regNo}</Text>
                   <Text style={{ fontFamily: Fonts.medium, fontSize: 14, color: '#FFF', opacity: 0.9, marginTop: 2 }}>{actingDriverVehicle.make} {actingDriverVehicle.model}</Text>
-                  
                   <View style={{ marginTop: 12, alignSelf: 'flex-start' }}>
                     <View style={{ backgroundColor: currentTheme.accent, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, marginBottom: 8 }}>
                        <Text style={{ fontFamily: Fonts.bold, fontSize: 11, color: '#FFF', textTransform: 'capitalize' }}>{actingDriverVehicle.type}</Text>
@@ -931,24 +1026,18 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                     </TouchableOpacity>
                   </View>
                 </View>
-                
-                <View style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: '50%', alignItems: 'center', justifyContent: 'center' }}>
+
+                {/* ── LAYER 4: Vehicle image (right side, on top of scene) ── */}
+                <View style={{ position: 'absolute', right: 0, bottom: 0, top: 0, width: '55%', alignItems: 'center', justifyContent: 'flex-end' }} pointerEvents="none">
                   {actingDriverVehicle.photo ? (
-                    <>
-                      <Image source={{ uri: actingDriverVehicle.photo }} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
-                      <LinearGradient
-                        colors={[currentTheme.primary, 'transparent']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 0.3, y: 0 }}
-                        style={{ position: 'absolute', top: 0, left: -2, right: 0, bottom: 0 }}
-                      />
-                    </>
+                    <Image source={{ uri: actingDriverVehicle.photo }} style={{ width: '100%', height: '85%', resizeMode: 'cover' }} />
                   ) : getStockImage(actingDriverVehicle.type) ? (
-                    <Image source={getStockImage(actingDriverVehicle.type)} style={{ width: '90%', height: '90%', resizeMode: 'contain' }} />
+                    <Image source={getStockImage(actingDriverVehicle.type)} style={{ width: '140%', height: '90%', resizeMode: 'contain', marginBottom: 16 }} />
                   ) : (
-                    <Ionicons name={VEHICLE_TYPE_ICON[actingDriverVehicle.type.toLowerCase()] || 'car-sport'} size={120} color="#FFF" style={{ opacity: 0.2, right: -20, position: 'absolute' }} />
+                    <Ionicons name={VEHICLE_TYPE_ICON[actingDriverVehicle.type?.toLowerCase()] || 'car-sport'} size={110} color="#FFF" style={{ opacity: 0.28, marginBottom: 18 }} />
                   )}
                 </View>
+
               </View>
             )}
           </View>
