@@ -24,6 +24,7 @@ import useAssignedDriverInfoStore  from '../features/rideStatus/store/useAssigne
 import TripFeedbackScreen from '../features/rating/screens/TripFeedbackScreen';
 import { DataStore } from '../controllers/DataStore';
 import TripSetupScreen from '../features/booking/screens/TripSetupScreen';
+import ItineraryPlanScreen from '../features/booking/screens/ItineraryPlanScreen';
 import useMapStore from '../features/map/store/useMapStore';
 import { useNearbyPollingControl } from '../store/useNearByDriverPollingControl';
 
@@ -909,6 +910,8 @@ const Home = () => {
         return <PickLocationScreen {...params} />;
       case 'TripSetupScreen':
         return <TripSetupScreen {...params} />;
+      case 'ItineraryPlanScreen':
+        return <ItineraryPlanScreen {...params} />;
       case 'PaymentScreen':
         return <PaymentScreen {...params} />;
       case 'TripFeedbackScreen':

@@ -14,7 +14,7 @@ import DashedLine from '../../../../components/Common/DashedLine';
 
 const ActingDriverPlanCard = ({
   onLocationClick,
-  onTripDetailsClick,
+  onItineraryClick,
   themeColor = { primary: '#FF2B2B', secondary: '#D60000', accent: '#FF6B6B' },
 }) => {
   const { t } = useTranslation();
@@ -44,60 +44,61 @@ const ActingDriverPlanCard = ({
     <View style={styles.cardWrapper}>
       
       {/* 1. Location Cards Container */}
-      <View style={styles.locationsContainer}>
-        {/* Pickup Card */}
-        <TouchableOpacity style={styles.locationCard} onPress={() => onLocationClick(LocationTypes.START_LOCATION)}>
-          <View style={styles.iconContainer}>
-            <View style={[styles.iconItem, { backgroundColor: '#E8F5E9' }]}>
-              <Ionicons name="location-sharp" size={18} color="#2E7D32" />
+      <View style={styles.newLocationsContainer}>
+        
+        {/* Pickup Section */}
+        <TouchableOpacity style={styles.newPickupSection} onPress={() => onLocationClick(LocationTypes.START_LOCATION)}>
+          <View style={styles.newRowHeader}>
+            <Ionicons name="navigate" size={18} color="#16a34a" style={{marginRight: 6, transform: [{rotate: '45deg'}]}} />
+            <Text style={styles.newLabelBold}>{t('pickup_location_req', 'Pickup Location (Required)')}</Text>
+          </View>
+          {rideStartLocation ? (
+            <View style={styles.newAddressBox}>
+              <Text style={styles.newAddressText} numberOfLines={2}>{pickup}</Text>
             </View>
-          </View>
-          <View style={styles.locationTextContainer}>
-            <Text style={styles.label}>{t('pickup_location_req', 'Pickup Location (Required)')}</Text>
-            {rideStartLocation ? (
-              <Text style={styles.address} numberOfLines={1}>{pickup}</Text>
-            ) : (
-              <Text style={styles.placeHolder}>{pickup}</Text>
-            )}
-            {!rideStartLocation && <Text style={styles.subText}>{t('find_best_drivers', "We'll find the best drivers near you")}</Text>}
-          </View>
-          <View style={styles.actionBtnDark}>
-            <Icon name="add" size={18} color="white" />
-          </View>
+          ) : (
+            <View style={styles.newDashedBox}>
+              <View style={styles.newBigAddBtn}>
+                <Ionicons name="add" size={32} color="#FFF" />
+              </View>
+              <View style={styles.newShieldRow}>
+                <Ionicons name="shield-checkmark" size={14} color="#16a34a" />
+                <Text style={styles.newShieldText}>{t('find_best_drivers', "We'll find the best drivers near you")}</Text>
+              </View>
+            </View>
+          )}
         </TouchableOpacity>
 
-        {/* Drop Location Card */}
-        <TouchableOpacity style={styles.locationCard} onPress={() => onLocationClick(LocationTypes.DESTINATION_LOCATION)}>
-          <View style={styles.iconContainer}>
-            <View style={[styles.iconItem, { backgroundColor: '#FFEBEE' }]}>
-              <Ionicons name="location-sharp" size={18} color="#C62828" />
-            </View>
-          </View>
-          <View style={styles.locationTextContainer}>
-            <Text style={styles.label}>{t('drop_location_opt', 'Drop Location (Optional)')}</Text>
+        <View style={styles.newDivider} />
+
+        {/* Drop Location Row */}
+        <TouchableOpacity style={styles.newRowItem} onPress={() => onLocationClick(LocationTypes.DESTINATION_LOCATION)}>
+          <Ionicons name="location-outline" size={22} color="#1e293b" />
+          <View style={styles.newRowTextContainer}>
+            <Text style={styles.newLabelBold}>{t('drop_location_opt', 'Drop Location (Optional)')}</Text>
             {rideEndLocation ? (
-              <Text style={styles.address} numberOfLines={1}>{destination}</Text>
+               <Text style={styles.newAddressText} numberOfLines={1}>{destination}</Text>
             ) : (
-              <Text style={styles.placeHolder}>{destination}</Text>
+               <Text style={styles.newSubText}>Add now or decide later</Text>
             )}
           </View>
-          <View style={styles.actionBtnOutline}>
-            <Icon name="pencil" size={16} color="#64748B" />
-          </View>
+          <Ionicons name="add" size={24} color="#1e293b" />
         </TouchableOpacity>
 
-        {/* Trip Details Card */}
-        <TouchableOpacity style={styles.locationCard} onPress={onTripDetailsClick}>
-          <View style={styles.iconContainer}>
-            <View style={[styles.iconItem, { backgroundColor: `${themeColor.primary}15` }]}>
-               <Ionicons name="calendar" size={18} color={themeColor.primary} />
-            </View>
+        <View style={styles.newDivider} />
+
+        {/* Trip Itinerary Row */}
+        <TouchableOpacity style={styles.newRowItem} onPress={onItineraryClick}>
+          <MaterialCommunityIcons name="clipboard-text-outline" size={22} color="#1e293b" />
+          <View style={styles.newRowTextContainer}>
+            <Text style={styles.newLabelBold}>{t('trip_details_opt', 'Trip Itinerary (Optional)')}</Text>
+            {itineraryDates.length > 0 ? (
+               <Text style={styles.newAddressText} numberOfLines={1}>{tripDetailsText}</Text>
+            ) : (
+               <Text style={styles.newSubText}>Add places, dates & timings</Text>
+            )}
           </View>
-          <View style={styles.locationTextContainer}>
-            <Text style={styles.label}>{t('trip_details_opt', 'Trip Details (Optional)')}</Text>
-            <Text style={[styles.placeHolder, itineraryDates.length > 0 && { color: themeColor.primary, fontFamily: Fonts.semi_bold }]}>{tripDetailsText}</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
+          <Ionicons name="add" size={24} color="#1e293b" />
         </TouchableOpacity>
       </View>
 
@@ -242,7 +243,7 @@ const ActingDriverPlanCard = ({
 
 ActingDriverPlanCard.propTypes = {
   onLocationClick: PropTypes.func.isRequired,
-  onTripDetailsClick: PropTypes.func.isRequired,
+  onItineraryClick: PropTypes.func.isRequired,
   themeColor: PropTypes.object,
 };
 
@@ -252,76 +253,101 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     paddingTop: 24,
   },
-  locationsContainer: {
-    gap: 12,
-  },
-  locationCard: {
+  newLocationsContainer: {
     backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
+    paddingVertical: 8,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 3,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
-  iconContainer: {
-    width: 40,
-    marginRight: 12,
+  newPickupSection: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
+  newRowHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 10,
   },
-  iconItem: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  locationTextContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  label: {
+  newLabelBold: {
     fontFamily: Fonts.bold,
-    fontSize: 13,
-    color: '#1E293B',
-    marginBottom: 4,
-  },
-  address: {
     fontSize: 14,
-    color: '#334155',
-    fontFamily: Fonts.medium,
+    color: '#1e293b',
   },
-  placeHolder: {
-    fontSize: 14,
-    color: '#94A3B8',
-    fontFamily: Fonts.regular,
-  },
-  subText: {
-    fontSize: 12,
-    color: '#2E7D32',
-    fontFamily: Fonts.semi_bold,
-    marginTop: 4,
-  },
-  actionBtnDark: {
-    backgroundColor: '#1E293B',
-    borderRadius: 10,
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionBtnOutline: {
-    backgroundColor: 'transparent',
+  newDashedBox: {
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    borderRadius: 10,
-    width: 32,
-    height: 32,
+    borderStyle: 'dashed',
+    borderRadius: 12,
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#F8FAFC',
+    width: '100%',
+  },
+  newAddressBox: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 8,
+    width: '100%',
+  },
+  newBigAddBtn: {
+    backgroundColor: '#16a34a',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+    shadowColor: '#16a34a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  newShieldRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  newShieldText: {
+    fontFamily: Fonts.medium,
+    fontSize: 12,
+    color: '#1e293b',
+    marginLeft: 4,
+  },
+  newDivider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginHorizontal: 16,
+  },
+  newRowItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  newRowTextContainer: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  newAddressText: {
+    fontFamily: Fonts.medium,
+    fontSize: 13,
+    color: '#334155',
+  },
+  newSubText: {
+    fontFamily: Fonts.regular,
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 2,
   },
   sectionHeader: {
     marginTop: 24,

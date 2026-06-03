@@ -18,7 +18,7 @@ import NavBar from '../../../components/NavBar';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
 import { BottomSheetScrollView, BottomSheetFlatList } from '@gorhom/bottom-sheet';
-import ItineraryPlanModal from '../components/planride/ItineraryPlanModal';
+
 import MapIcon from '../../../components/Map/MapIcon';
 import CurrentLocationIcon from '../../../assets/icons/CurrentLocationIcon.svg';
 import AddStopIcon from '../../../assets/icons/AddStopIcon.svg';
@@ -599,7 +599,53 @@ const BookActingDriverScreen = () => {
                     {shouldShowItinerary && (
                         <TouchableOpacity
                             style={styles.itineraryButton}
-                            onPress={() => { setShowItineraryModal(true); }}
+                            onPress={() => {
+                                setStackScreen('ItineraryPlanScreen', {
+                                    itineraryDates: itineraryDates,
+                                    themeColor: actingDriverColors,
+                                    onAddItineraryLocation: (dateStr) => {
+                                        setStackScreen('PickLocationScreen', {
+                                            locationType: LocationTypes.WAYPOINT_LOCATION,
+                                            label: t('select_location', 'Select Location'),
+                                            buttonLabel: t('add_location', 'Add Location'),
+                                            isFromRidePointsSelection: true,
+                                            searchBar: true,
+                                            focusSearchOnMount: true,
+                                            onPickLocationResultCallback: (item) => {
+                                                try {
+                                                    const state = useRideBookingInfo.getState();
+                                                    const currentItin = state.actingDriverItinerary || {};
+                                                    const newItin = JSON.parse(JSON.stringify(currentItin));
+                                                    const dayItin = newItin[dateStr] || { locations: [] };
+                                                    
+                                                    dayItin.locations = [...(dayItin.locations || []), item];
+                                                    newItin[dateStr] = dayItin;
+                                                    
+                                                    state.updateBookingInfo({
+                                                        actingDriverItinerary: newItin
+                                                    });
+                                                    
+                                                    useStackScreenStore.getState().goBack();
+                                                } catch (e) {
+                                                    console.error("Error adding location to itinerary", e);
+                                                    useStackScreenStore.getState().goBack();
+                                                }
+                                            }
+                                        });
+                                    },
+                                    onRemoveItineraryLocation: (dateStr, index) => {
+                                        const state = useRideBookingInfo.getState();
+                                        const currentItin = state.actingDriverItinerary || {};
+                                        const newItin = JSON.parse(JSON.stringify(currentItin));
+                                        if (newItin[dateStr] && newItin[dateStr].locations) {
+                                            newItin[dateStr].locations.splice(index, 1);
+                                            state.updateBookingInfo({
+                                                actingDriverItinerary: newItin
+                                            });
+                                        }
+                                    }
+                                });
+                            }}
                             activeOpacity={0.85}
                         >
                             <View style={styles.itineraryButtonLeft}>
@@ -824,63 +870,7 @@ const BookActingDriverScreen = () => {
                 </AnimatedBottomSheetWrapper>
             )}
 
-            <ItineraryPlanModal
-                visible={showItineraryModal}
-                onClose={() => setShowItineraryModal(false)}
-                itineraryDates={itineraryDates}
-                actingDriverItinerary={actingDriverItinerary}
-                setActingDriverItinerary={setActingDriverItinerary}
-                onAddItineraryLocation={(dateStr) => {
-                    setShowItineraryModal(false);
-                    setTimeout(() => {
-                        setStackScreen('PickLocationScreen', {
-                            locationType: LocationTypes.WAYPOINT_LOCATION,
-                            label: t('select_location', 'Select Location'),
-                            buttonLabel: t('add_location', 'Add Location'),
-                            isFromRidePointsSelection: true,
-                            searchBar: true,
-                            focusSearchOnMount: true,
-                            onPickLocationResultCallback: (item) => {
-                                try {
-                                    const state = useRideBookingInfo.getState();
-                                    const currentItin = state.actingDriverItinerary || {};
-                                    
-                                    // Deep clone to prevent mutating frozen objects
-                                    const newItin = JSON.parse(JSON.stringify(currentItin));
-                                    const dayItin = newItin[dateStr] || { locations: [] };
-                                    
-                                    dayItin.locations = [...(dayItin.locations || []), item];
-                                    newItin[dateStr] = dayItin;
-                                    
-                                    state.updateBookingInfo({
-                                        actingDriverItinerary: newItin
-                                    });
-                                    
-                                    setTimeout(() => {
-                                        state.setShowItineraryModal(true);
-                                    }, 100);
-                                    
-                                    useStackScreenStore.getState().goBack();
-                                } catch (e) {
-                                    console.error("Error adding location to itinerary", e);
-                                    useStackScreenStore.getState().goBack();
-                                }
-                            }
-                        });
-                    }, 100);
-                }}
-                onRemoveItineraryLocation={(dateStr, index) => {
-                    const state = useRideBookingInfo.getState();
-                    const currentItin = state.actingDriverItinerary || {};
-                    const newItin = JSON.parse(JSON.stringify(currentItin));
-                    if (newItin[dateStr] && newItin[dateStr].locations) {
-                        newItin[dateStr].locations.splice(index, 1);
-                        state.updateBookingInfo({
-                            actingDriverItinerary: newItin
-                        });
-                    }
-                }}
-            />
+
 
 
 

@@ -5,34 +5,32 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Modal,
   SafeAreaView,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
-import { colors, Fonts, actingDriverColors } from '../../../../constants/constants';
-import { utils } from '../../../../utils/Utils';
-import NavBar from '../../../../components/NavBar';
+import LinearGradient from 'react-native-linear-gradient';
+import { colors, Fonts, actingDriverColors } from '../../../constants/constants';
+import { utils } from '../../../utils/Utils';
+import NavBar from '../../../components/NavBar';
 import DatePicker from 'react-native-date-picker';
-import useRideBookingLocationStore from '../../store/useRideBookingLocationStore';
+import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import { useTranslation } from 'react-i18next';
-import useRideBookingInfo from '../../store/useRideBookingInfo';
-import RideLocationSetBox from './RideLocationSetBox';
-import RidePlanSetBox from './RidePlanSetBox';
-import { addLocation } from '../../../../styles/AddLocationStyles';
+import useRideBookingInfo from '../store/useRideBookingInfo';
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
 
-const ItineraryPlanModal = ({
-  visible,
-  onClose,
+const ItineraryPlanScreen = ({
   itineraryDates,
   onLocationClick,
   onTripForPress,
   onAddItineraryLocation,
   onRemoveItineraryLocation,
   onAddDay,
+  themeColor = { primary: '#FF2B2B', secondary: '#D60000', accent: '#FF6B6B' },
 }) => {
   const { t } = useTranslation();
+  const { goBack } = useStackScreenStore();
   const { rideBookMode, passangerDetails, actingDriverItinerary, updateBookingInfo } = useRideBookingInfo();
   const { rideStartLocation, rideEndLocation } = useRideBookingLocationStore();
 
@@ -93,19 +91,26 @@ const ItineraryPlanModal = ({
   const datesToRender = itineraryDates?.length > 0 ? itineraryDates : [new Date().toISOString()];
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={false}
-      onRequestClose={onClose}
-    >
+    <View style={{ flex: 1, backgroundColor: '#F4F7FA' }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaView style={styles.container}>
-          <NavBar
-            withBg
-            onBackPress={onClose}
-            title="Plan Your Itinerary"
-          />
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => goBack()} style={styles.backButton}>
+              <Ionicons name="chevron-back" size={24} color={colors.black} />
+            </TouchableOpacity>
+            <View style={styles.headerTitleContainer}>
+              {/* <Text style={styles.stepText}>Step 3 of 4</Text> */}
+              <Text style={styles.titleText}>Itinerary Planner</Text>
+            </View>
+          </View>
+
+          <View style={styles.infoBanner}>
+            <Ionicons name="document-text-outline" size={32} color={themeColor.primary} style={styles.infoIcon} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.infoBannerTitle}>Plan your trip itinerary (Optional)</Text>
+              <Text style={styles.infoBannerSub}>You can add places, dates and timings for better driver planning.</Text>
+            </View>
+          </View>
 
           <View style={{ flex: 1 }}>
             <ScrollView
@@ -115,47 +120,26 @@ const ItineraryPlanModal = ({
               showsVerticalScrollIndicator={false}
               nestedScrollEnabled={true}
             >
-            {/* Premium Header Row */}
-          <View style={styles.headerRow}>
-            <View>
-              <Text style={styles.headerTitle}>Trip Itinerary</Text>
-              <Text style={styles.headerDate}>{formatDateDisplay(datesToRender[0])} - {formatDateDisplay(datesToRender[datesToRender.length-1])}</Text>
-            </View>
-            <View style={styles.badgeContainer}>
-              <Text style={styles.badgeText}>{datesToRender.length} Days</Text>
-            </View>
-          </View>
+
 
           {/* Timeline Cards */}
           <View style={styles.timelineContainer}>
             <View style={styles.timelineAxis} />
             {datesToRender.map((dateStr, index) => {
-              // Removed generic times
-
-              // Generic pill values
-              const durations = ["1h 20m", "55m", "1h 45m"];
-              const distances = ["24.5 mi", "42.1 mi", "31.2 mi"];
-              const duration = durations[index % durations.length];
-              const distance = distances[index % distances.length];
-
               const dayItinerary = actingDriverItinerary?.[dateStr] || {};
-              const startLocation = dayItinerary.startLocation || null;
-              const endLocation = dayItinerary.endLocation || null;
-              const wayPoints = dayItinerary.wayPoints || [];
-              const dayTime = dayItinerary.time ? formatTime(dayItinerary.time) : formatTime(null);
               const dayDateFormatted = formatDateDisplay(dateStr);
 
               return (
                 <View key={index} style={styles.dayWrapper}>
                   {/* Timeline Node */}
-                  <View style={styles.dayCircle}>
+                  <View style={[styles.dayCircle, { backgroundColor: themeColor.primary, shadowColor: themeColor.primary }]}>
                     <Text style={styles.dayCircleText}>{index + 1}</Text>
                   </View>
 
                   <View style={styles.cardContainer}>
                     {/* Top Row: Title */}
                     <View style={styles.cardHeaderRow}>
-                      <Text style={styles.dayTitle}>
+                      <Text style={[styles.dayTitle, { color: themeColor.primary }]}>
                         Day {index + 1} <Text style={styles.dayTitleDate}>({dayDateFormatted})</Text>
                       </Text>
                     </View>
@@ -168,7 +152,7 @@ const ItineraryPlanModal = ({
                         {(dayItinerary.locations || []).map((loc, locIndex) => (
                           <View key={locIndex} style={styles.itineraryLocationRow}>
                             <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
-                              <Ionicons name="location" size={16} color={actingDriverColors.secondary} />
+                              <Ionicons name="location" size={16} color={themeColor.secondary} />
                               <Text style={styles.itineraryLocationText} numberOfLines={1}>
                                 {loc.name || loc.address}
                               </Text>
@@ -184,8 +168,8 @@ const ItineraryPlanModal = ({
                               }}
                               activeOpacity={0.7}
                             >
-                              <Text style={styles.locTimeText}>{loc.time ? formatTime(loc.time) : "Any time"}</Text>
-                              <Ionicons name="time-outline" size={14} color="#0F4A75" style={{marginLeft: 2}} />
+                              <Text style={[styles.locTimeText, { color: themeColor.primary }]}>{loc.time ? formatTime(loc.time) : "Any time"}</Text>
+                              <Ionicons name="time-outline" size={14} color={themeColor.primary} style={{marginLeft: 2}} />
                             </TouchableOpacity>
 
                             {onRemoveItineraryLocation && (
@@ -205,8 +189,8 @@ const ItineraryPlanModal = ({
                           onPress={() => onAddItineraryLocation(dateStr)}
                           activeOpacity={0.8}
                         >
-                          <Ionicons name="add" size={18} color={actingDriverColors.secondary} />
-                          <Text style={styles.addItineraryLocText}>Add Location</Text>
+                          <Ionicons name="add" size={18} color={themeColor.secondary} />
+                          <Text style={[styles.addItineraryLocText, { color: themeColor.secondary }]}>Add Location</Text>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -223,8 +207,8 @@ const ItineraryPlanModal = ({
                 onPress={onAddDay}
                 activeOpacity={0.7}
               >
-                <Ionicons name="add-circle" size={20} color="#0F4A75" />
-                <Text style={styles.addDayText}>Add Another Day</Text>
+                <Ionicons name="add-circle" size={20} color={themeColor.primary} />
+                <Text style={[styles.addDayText, { color: themeColor.primary }]}>Add Another Day</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -233,8 +217,15 @@ const ItineraryPlanModal = ({
 
         {/* Floating Action Button (FAB) Footer */}
         <View style={styles.fabContainer}>
-          <TouchableOpacity style={styles.fabButton} onPress={onClose} activeOpacity={0.85}>
-            <Text style={styles.fabButtonText}>Done Planning</Text>
+          <TouchableOpacity onPress={() => goBack()} activeOpacity={0.85}>
+            <LinearGradient
+              colors={[themeColor.primary, themeColor.secondary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.fabButton, { shadowColor: themeColor.primary }]}
+            >
+              <Text style={styles.fabButtonText}>Done Planning</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -256,20 +247,19 @@ const ItineraryPlanModal = ({
           setActiveLocationIndex(null);
         }}
       />
-    </Modal>
+    </View>
   );
 };
 
-ItineraryPlanModal.propTypes = {
-  visible: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
+ItineraryPlanScreen.propTypes = {
   itineraryDates: PropTypes.arrayOf(PropTypes.string).isRequired,
   onAddItineraryLocation: PropTypes.func,
   onRemoveItineraryLocation: PropTypes.func,
   onAddDay: PropTypes.func,
+  themeColor: PropTypes.object,
 };
 
-ItineraryPlanModal.defaultProps = {
+ItineraryPlanScreen.defaultProps = {
   onAddItineraryLocation: () => {},
   onRemoveItineraryLocation: null,
   onAddDay: null,
@@ -287,36 +277,78 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   
-  /* Premium Header */
-  headerRow: {
+  /* Step Header */
+  header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
     paddingHorizontal: 20,
-    paddingBottom: 20,
-    paddingTop: 8,
+    marginTop: 10,
   },
-  headerTitle: {
-    fontSize: 22,
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    padding: 4,
+    zIndex: 1,
+  },
+  headerTitleContainer: {
+    alignItems: 'center',
+  },
+  stepText: {
+    fontFamily: Fonts.semi_bold,
+    fontSize: 14,
+    color: colors.black,
+  },
+  titleText: {
     fontFamily: Fonts.bold,
+    fontSize: 18,
+    color: colors.black,
+  },
+  progressBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  progressDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#D1D5DB', // default gray
+  },
+  progressLine: {
+    width: 40,
+    height: 2,
+    backgroundColor: '#D1D5DB',
+    marginHorizontal: 4,
+    borderRadius: 1,
+    overflow: 'hidden',
+  },
+
+  /* Info Banner */
+  infoBanner: {
+    backgroundColor: '#F0FDF4', // Light green
+    marginHorizontal: 20,
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  infoIcon: {
+    marginRight: 16,
+  },
+  infoBannerTitle: {
+    fontFamily: Fonts.bold,
+    fontSize: 14,
     color: '#0F223C',
     marginBottom: 4,
   },
-  headerDate: {
-    fontSize: 13,
+  infoBannerSub: {
     fontFamily: Fonts.medium,
-    color: '#64748B',
-  },
-  badgeContainer: {
-    backgroundColor: '#E0F2FE',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontFamily: Fonts.semi_bold || Fonts.bold,
-    color: '#0369A1',
+    fontSize: 13,
+    color: '#475569',
   },
 
   /* Timeline */
@@ -484,7 +516,6 @@ const styles = StyleSheet.create({
     right: 20,
   },
   fabButton: {
-    backgroundColor: '#000000',
     borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',
@@ -538,5 +569,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ItineraryPlanModal;
-
+export default ItineraryPlanScreen;

@@ -25,7 +25,7 @@ import useUserInfoStore from '../../../../common/store/useUserInfoStore';
 import RideLocationSetBox from '../components/planride/RideLocationSetBox';
 import RideLocationPlanSetBox from '../components/planride/RideLocationPlanSetBox';
 import FavPlacesItem from '../components/planride/FavPlacesItem';
-import ItineraryPlanModal from '../components/planride/ItineraryPlanModal';
+
 import ActingDriverPlanCard from '../components/planride/ActingDriverPlanCard';
 import VehicleSelectionModal from '../components/planride/VehicleSelectionModal';
 import HistoryContainer from '../../shared/component/HistoryCard';
@@ -171,8 +171,6 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     setTomorrowStartTime,
     customStartTime,
     setCustomStartTime,
-    showItineraryModal,
-    setShowItineraryModal,
   } = useRideBookingInfo();
 
   const [showTripFor, setShowTripFor] = useState(false);
@@ -572,8 +570,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     setIsScheduledTrip(false)
     setFemaleDriverOnly(false)
     setSafeNightRides(false)
-    setActingDriverVehicle(null)
-    setActingDriverHours(null)
+    // Do not clear actingDriverVehicle and actingDriverHours so that the user's progress is preserved when returning to TripSetupScreen
     goBack();
   };
 
@@ -1012,7 +1009,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                     <View style={{ backgroundColor: currentTheme.accent, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, marginBottom: 8 }}>
                        <Text style={{ fontFamily: Fonts.bold, fontSize: 11, color: '#FFF', textTransform: 'capitalize' }}>{actingDriverVehicle.type}</Text>
                     </View>
-                    <TouchableOpacity onPress={() => setShowVehicleModal(true)} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <TouchableOpacity onPress={() => setShowVehicleModal(true)} style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 5 }}>
                        <Text style={{ fontFamily: Fonts.bold, fontSize: 13, color: '#FFF' }}>Change Vehicle</Text>
                        <Ionicons name="chevron-down" size={16} color="#FFF" style={{ marginLeft: 2 }} />
                     </TouchableOpacity>
@@ -1053,7 +1050,14 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             <View style={{ zIndex: 10, elevation: 10 }}>
                <ActingDriverPlanCard 
                  onLocationClick={(type) => handleLocationClick(type)}
-                 onTripDetailsClick={() => setStackScreen('TripSetupScreen', { isEditMode: true })}
+                 onItineraryClick={() => {
+                   setStackScreen('ItineraryPlanScreen', {
+                     itineraryDates,
+                     themeColor: currentTheme,
+                     onAddItineraryLocation: handleItineraryLocationClick,
+                     onAddDay: handleAddDay,
+                   });
+                 }}
                  themeColor={currentTheme}
                />
             </View>
