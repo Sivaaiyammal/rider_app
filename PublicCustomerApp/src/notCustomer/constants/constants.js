@@ -59,5 +59,14 @@ export const actingDriverColors = {
   border: '#E5E5E5',       // Border Grey
 };
 
+export const ACTING_DRIVER_THEMES = {
+  hatchback: { primary: '#E57373', secondary: '#C62828', accent: '#FFCDD2' },  // pastel rose-red
+  sedan:     { primary: '#7986CB', secondary: '#3949AB', accent: '#C5CAE9' },  // pastel indigo-blue
+  suv:       { primary: '#66BB6A', secondary: '#2E7D32', accent: '#C8E6C9' },  // pastel sage-green
+  muv:       { primary: '#4DD0E1', secondary: '#00838F', accent: '#B2EBF2' },  // pastel aqua-cyan
+  exsedan:   { primary: '#BA68C8', secondary: '#6A1B9A', accent: '#E1BEE7' },  // pastel lavender-purple
+  luxury:    { primary: '#FFB74D', secondary: '#E65100', accent: '#FFE0B2' },  // pastel warm amber
+};
+
 export const webPortalURL = 'https://tracker.vmmaps.com';
 export const mapcopyrightURL = 'https://www.openstreetmap.org/copyright';

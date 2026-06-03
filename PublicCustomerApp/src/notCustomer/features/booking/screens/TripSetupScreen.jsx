@@ -4,54 +4,140 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
   Image,
   Platform,
+  ScrollView,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DatePicker from 'react-native-date-picker';
-import { colors, Fonts } from '../../../../constants/constants';
-import { getStockImage } from '../../../myVehicles/constants/vehicleData';
+import { colors, Fonts, ACTING_DRIVER_THEMES } from '../../../constants/constants';
+import { getStockImage } from '../../myVehicles/constants/vehicleData';
+import LinearGradient from 'react-native-linear-gradient';
 
-const TripSetupModal = ({
-  visible,
-  onClose,
-  vehicle,
-  currentTheme,
-  onContinue,
-  onChangeVehicle,
-}) => {
+import { useStackScreenStore } from '../../../store/useStackScreenStore';
+import useRideBookingInfo from '../store/useRideBookingInfo';
+import useLocationStore from '../../../store/useLocationStore';
+import LocationTypes from '../types/LocationTypes.json';
+import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
+
+const TripSetupScreen = () => {
+  const { goBack, setStackScreen } = useStackScreenStore();
+  const { location, currentLocationName } = useLocationStore();
+  const { setRideStartLocation } = useRideBookingLocationStore();
+  const { 
+    actingDriverVehicle, 
+    setCurrentLoactionPickupLocation,
+    setRideEndLocation,
+    setBookingTab,
+    setDurationRangeStart,
+    setDurationRangeEnd,
+    setActingDriverHours,
+    setTodayDurationOption,
+    setTodayCustomHours,
+    setTomorrowDurationOption,
+    setTomorrowCustomHours,
+    setTomorrowStartTime,
+    setCustomStartTime,
+  } = useRideBookingInfo();
+
+  const vehicle = actingDriverVehicle;
+  const currentTheme = vehicle?.type ? (ACTING_DRIVER_THEMES[vehicle.type.toLowerCase()] || ACTING_DRIVER_THEMES.hatchback) : ACTING_DRIVER_THEMES.hatchback;
   const [whenNeed, setWhenNeed] = useState('Today'); // Today, Tomorrow, Later
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [pickerMode, setPickerMode] = useState('date');
   const [tripType, setTripType] = useState('One Way'); // One Way, Round Trip
   const [duration, setDuration] = useState('Hourly'); // Hourly, Full Day, Multiple Days
   const [hours, setHours] = useState(4);
 
-  const themeColor = currentTheme?.primary || colors.primary;
+  const themeColor = currentTheme?.primary || ACTING_DRIVER_THEMES.hatchback.primary;
 
-  const handleContinue = () => {
-    // You can pass the selected options back to the parent component
-    onContinue({
-      whenNeed,
-      date,
-      tripType,
-      duration,
-      hours: duration === 'Hourly' ? hours : null,
-    });
+  const handleContinue = async () => {
+    try {
+      const setCurrentLoactionPickupLocation = () => {
+        if(!location || !currentLocationName || !location.length){
+          return;
+        }
+         const locationData ={
+          name:"Current Location",
+          latitude:location[1],
+          longitude:location[0],
+          address:currentLocationName.address,
+          placeName:currentLocationName.placeName,
+          type:LocationTypes.START_LOCATION,
+          locationFrom:"MAP",
+          currentLocation:true
+        }
+        setRideStartLocation(locationData)
+      };
+
+      if (actingDriverVehicle) {
+        setCurrentLoactionPickupLocation();
+
+        if (whenNeed === 'Today') {
+          setBookingTab('TODAY');
+          if (duration === 'Hourly') {
+             setTodayDurationOption('1_HOUR');
+             setActingDriverHours(hours || 1);
+          } else {
+             setTodayDurationOption('CUSTOM_HOURS');
+             setTodayCustomHours(12);
+             setActingDriverHours(12);
+          }
+        } else if (whenNeed === 'Tomorrow') {
+          setBookingTab('TOMORROW');
+          if (duration === 'Hourly') {
+             setTomorrowDurationOption('HOURLY');
+             setTomorrowCustomHours(hours || 1);
+             setActingDriverHours(hours || 1);
+          } else {
+             setTomorrowDurationOption('HOURLY');
+             setTomorrowCustomHours(12);
+             setActingDriverHours(12);
+          }
+        } else if (whenNeed === 'Later') {
+          setBookingTab('SCHEDULE');
+          const year = date.getFullYear();
+          const month = `${date.getMonth() + 1}`.padStart(2, '0');
+          const day = `${date.getDate()}`.padStart(2, '0');
+          const formattedDate = `${year}-${month}-${day}`;
+          
+          setDurationRangeStart(formattedDate);
+          setDurationRangeEnd(formattedDate);
+          setCustomStartTime(date);
+          
+          if (duration === 'Hourly') {
+             setActingDriverHours(hours || 1);
+          } else {
+             setActingDriverHours(12);
+          }
+        }
+
+        setStackScreen('PlanRideScreen', {
+          mode: 'ACTING_DRIVER',
+          preselectedVehicleType: actingDriverVehicle.type,
+          vehicle: actingDriverVehicle,
+        });
+      } else {
+        setCurrentLoactionPickupLocation();
+        setStackScreen('ActingDriverVehicleSelectScreen', {});
+      }
+    } catch (e) {
+      console.error('ActingDriver trip type error:', e);
+      setCurrentLoactionPickupLocation();
+      setStackScreen('ActingDriverVehicleSelectScreen', {});
+    }
+  };
+
+  const handleOnChangeVehicle = () => {
+    setStackScreen('ActingDriverVehicleSelectScreen', {});
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <View style={styles.header}>
-            <TouchableOpacity onPress={onClose} style={styles.backButton}>
+    <View style={styles.container}>
+      <View style={styles.modalContent}>
+        <View style={styles.header}>
+            <TouchableOpacity onPress={goBack} style={styles.backButton}>
               <Ionicons name="chevron-back" size={24} color={colors.black} />
             </TouchableOpacity>
             <View style={styles.headerTitleContainer}>
@@ -72,6 +158,11 @@ const TripSetupModal = ({
             <View style={styles.progressDot} />
           </View>
 
+          <ScrollView 
+            style={{ flex: 1 }} 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          >
           {vehicle ? (
             <View style={styles.vehicleCard}>
               <View style={styles.vehicleImageContainer}>
@@ -90,15 +181,14 @@ const TripSetupModal = ({
                   {vehicle.regNo} - {vehicle.model}
                 </Text>
               </View>
-              {onChangeVehicle && (
-                <TouchableOpacity style={styles.changeButton} onPress={onChangeVehicle}>
-                  <Text style={styles.changeButtonText}>Change</Text>
-                  <Ionicons name="chevron-forward" size={16} color={colors.black} />
-                </TouchableOpacity>
-              )}
+              {/* Remove onChangeVehicle check since we always have it in the screen */}
+              <TouchableOpacity style={styles.changeButton} onPress={handleOnChangeVehicle}>
+                <Text style={styles.changeButtonText}>Change</Text>
+                <Ionicons name="chevron-forward" size={16} color={colors.black} />
+              </TouchableOpacity>
             </View>
           ) : (
-            <TouchableOpacity style={styles.vehicleCard} onPress={onChangeVehicle}>
+            <TouchableOpacity style={styles.vehicleCard} onPress={handleOnChangeVehicle}>
               <View style={[styles.vehicleImageContainer, { backgroundColor: '#F3F4F6' }]}>
                 <Ionicons name="car-sport" size={24} color={colors.grey_dark} />
               </View>
@@ -120,7 +210,18 @@ const TripSetupModal = ({
                     styles.pill,
                     whenNeed === option && { borderColor: themeColor, backgroundColor: themeColor + '10' },
                   ]}
-                  onPress={() => setWhenNeed(option)}
+                  onPress={() => {
+                    setWhenNeed(option);
+                    if (option === 'Today') {
+                      setDate(new Date());
+                    } else if (option === 'Tomorrow') {
+                      const tmrw = new Date();
+                      tmrw.setDate(tmrw.getDate() + 1);
+                      setDate(tmrw);
+                    } else if (option === 'Later') {
+                      setShowDatePicker(true);
+                    }
+                  }}
                 >
                   <Ionicons
                     name={option === 'Later' ? 'time-outline' : 'calendar-outline'}
@@ -136,13 +237,15 @@ const TripSetupModal = ({
             </View>
           </View>
 
-          {whenNeed === 'Later' && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Date & Time</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Date & Time</Text>
               <View style={styles.dateTimeContainer}>
                 <TouchableOpacity
                   style={styles.datePickerButton}
-                  onPress={() => setShowDatePicker(true)}
+                  onPress={() => {
+                    setPickerMode('date');
+                    setShowDatePicker(true);
+                  }}
                 >
                   <Ionicons name="calendar-outline" size={20} color={colors.black} />
                   <Text style={styles.dateText}>
@@ -156,7 +259,10 @@ const TripSetupModal = ({
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.timePickerButton}
-                  onPress={() => setShowDatePicker(true)}
+                  onPress={() => {
+                    setPickerMode('time');
+                    setShowDatePicker(true);
+                  }}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <Ionicons name="time-outline" size={20} color={colors.black} />
@@ -174,18 +280,31 @@ const TripSetupModal = ({
                <DatePicker
                 modal
                 open={showDatePicker}
+                mode={pickerMode}
                 date={date}
                 minimumDate={new Date()}
-                onConfirm={(selectedDate) => {
+                 onConfirm={(selectedDate) => {
                   setShowDatePicker(false);
                   setDate(selectedDate);
+                  
+                  // Auto-update pill based on selected date
+                  const today = new Date();
+                  const tomorrow = new Date();
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  
+                  if (selectedDate.toDateString() === today.toDateString()) {
+                    setWhenNeed('Today');
+                  } else if (selectedDate.toDateString() === tomorrow.toDateString()) {
+                    setWhenNeed('Tomorrow');
+                  } else {
+                    setWhenNeed('Later');
+                  }
                 }}
                 onCancel={() => {
                   setShowDatePicker(false);
                 }}
               />
             </View>
-          )}
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>What type of trip?</Text>
@@ -267,22 +386,33 @@ const TripSetupModal = ({
             </View>
           )}
 
-          <TouchableOpacity
-            style={[styles.continueButton, { backgroundColor: themeColor }]}
-            onPress={handleContinue}
-          >
-            <View style={{ width: 24 }} />
-            <Text style={styles.continueButtonText}>Continue</Text>
-            <Ionicons name="arrow-forward" size={24} color={colors.white} />
-          </TouchableOpacity>
+          </ScrollView>
+
+          <View style={{ paddingTop: 10, paddingBottom: Platform.OS === 'ios' ? 20 : 0 }}>
+            <TouchableOpacity
+              style={styles.continueButtonWrapper}
+              onPress={handleContinue}
+            >
+              <LinearGradient
+                colors={[currentTheme.primary, currentTheme.secondary || currentTheme.primary]}
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 0}}
+                style={styles.continueButton}
+              >
+                <View style={{ width: 24 }} />
+                <Text style={styles.continueButtonText}>Continue</Text>
+                <Ionicons name="arrow-forward" size={24} color={colors.white} />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+
         </View>
-      </View>
-    </Modal>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  modalContainer: {
+  container: {
     flex: 1,
     backgroundColor: '#fff',
   },
@@ -505,14 +635,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.black,
   },
+  continueButtonWrapper: {
+    marginTop: 12,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
   continueButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 16,
     paddingHorizontal: 24,
-    borderRadius: 12,
-    marginTop: 12,
   },
   continueButtonText: {
     fontFamily: Fonts.bold,
@@ -521,4 +654,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default TripSetupModal;
+export default TripSetupScreen;

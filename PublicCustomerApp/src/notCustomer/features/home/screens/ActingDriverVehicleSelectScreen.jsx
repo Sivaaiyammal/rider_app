@@ -83,7 +83,7 @@ const VehicleItem = ({ vehicle, selected, onPress, isDefault }) => {
 const ActingDriverVehicleSelectScreen = () => {
   const { t } = useTranslation();
   const { goBack, setStackScreen, goBackToScreen } = useStackScreenStore();
-  const { actingDriverVehicle } = useRideBookingInfo();
+  const { actingDriverVehicle, setActingDriverVehicle } = useRideBookingInfo();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(actingDriverVehicle?._id?.toString() || null);
@@ -121,11 +121,8 @@ const ActingDriverVehicleSelectScreen = () => {
 
   const handleContinue = () => {
     if (!selectedVehicle) return;
-    goBackToScreen('PlanRideScreen', {
-      mode: 'ACTING_DRIVER',
-      preselectedVehicleType: selectedVehicle.type,
-      vehicle: selectedVehicle,
-    });
+    setActingDriverVehicle(selectedVehicle);
+    goBack();
   };
 
   const handleAddVehicle = () => {
