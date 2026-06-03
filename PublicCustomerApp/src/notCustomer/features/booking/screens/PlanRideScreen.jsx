@@ -26,6 +26,7 @@ import RideLocationSetBox from '../components/planride/RideLocationSetBox';
 import RideLocationPlanSetBox from '../components/planride/RideLocationPlanSetBox';
 import FavPlacesItem from '../components/planride/FavPlacesItem';
 import ItineraryPlanModal from '../components/planride/ItineraryPlanModal';
+import TripSetupModal from '../components/planride/TripSetupModal';
 import ActingDriverPlanCard from '../components/planride/ActingDriverPlanCard';
 import VehicleSelectionModal from '../components/planride/VehicleSelectionModal';
 import HistoryContainer from '../../shared/component/HistoryCard';
@@ -1362,62 +1363,15 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
         </Modal>
 
         {/* Plan Daily Itinerary Modal */}
-        <ItineraryPlanModal
+        <TripSetupModal
           visible={showItineraryModal}
           onClose={() => setShowItineraryModal(false)}
-          itineraryDates={itineraryDates}
-          actingDriverItinerary={actingDriverItinerary}
-          setActingDriverItinerary={setActingDriverItinerary}
-          onAddWaypoint={onAddWaypoint}
-          onLocationClick={handleLocationClick}
-          onTripForPress={onTripForPress}
-          onAddDay={handleAddDay}
-          onAddItineraryLocation={(dateStr) => {
-            setStackScreen('PickLocationScreen', {
-                locationType: LocationTypes.WAYPOINT_LOCATION,
-                label: t('select_location', 'Select Location'),
-                buttonLabel: t('add_location', 'Add Location'),
-                isFromRidePointsSelection: true,
-                searchBar: true,
-                focusSearchOnMount: true,
-                onPickLocationResultCallback: (item) => {
-                    try {
-                        const state = useRideBookingInfo.getState();
-                        const currentItin = state.actingDriverItinerary || {};
-                        
-                        // Deep clone to prevent mutating frozen objects
-                        const newItin = JSON.parse(JSON.stringify(currentItin));
-                        const dayItin = newItin[dateStr] || { locations: [] };
-                        
-                        dayItin.locations = [...(dayItin.locations || []), item];
-                        newItin[dateStr] = dayItin;
-                        
-                        state.updateBookingInfo({
-                            actingDriverItinerary: newItin
-                        });
-                        
-                        setTimeout(() => {
-                            state.setShowItineraryModal(true);
-                        }, 100);
-                        
-                        useStackScreenStore.getState().goBack();
-                    } catch (e) {
-                        console.error("Error adding location to itinerary", e);
-                        useStackScreenStore.getState().goBack();
-                    }
-                }
-            });
-          }}
-          onRemoveItineraryLocation={(dateStr, index) => {
-              const state = useRideBookingInfo.getState();
-              const currentItin = state.actingDriverItinerary || {};
-              const newItin = JSON.parse(JSON.stringify(currentItin));
-              if (newItin[dateStr] && newItin[dateStr].locations) {
-                  newItin[dateStr].locations.splice(index, 1);
-                  state.updateBookingInfo({
-                      actingDriverItinerary: newItin
-                  });
-              }
+          vehicle={actingDriverVehicle}
+          currentTheme={currentTheme}
+          onContinue={(tripDetails) => {
+             console.log("Trip Details:", tripDetails);
+             setShowItineraryModal(false);
+             // Store or navigate to next step
           }}
         />
         <VehicleSelectionModal 

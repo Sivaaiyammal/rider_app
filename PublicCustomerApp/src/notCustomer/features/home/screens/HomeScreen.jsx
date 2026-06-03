@@ -13,7 +13,9 @@ import { useTranslation } from 'react-i18next';
 
 
 import SideDrawer from '../../../components/Drawer/SideDrawer';
-import {colors, Fonts} from '../../../constants/constants';
+import {colors, Fonts, actingDriverColors} from '../../../constants/constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { PREF } from '../../../storage/PREF';
 
 import {useStackScreenStore} from '../../../store/useStackScreenStore';
 import LocationHeader from '../components/LocationHeader';
@@ -46,7 +48,7 @@ import useConfigStore from '../../../store/useConfigStore';
 import { firebaselog_ridePlanning } from '../../../../common/utils/FirebaseAnalytics';
 import SocialMediaModal from '../../../components/SocialMediaModal';
 import { GlobalContext } from '../../../../context/GlobalContext';
-import ActingDriverModal from '../components/ActingDriverModal';
+import TripSetupModal from '../../booking/components/planride/TripSetupModal';
 
 
 const isOutsideTirupur = (item) => {
@@ -117,6 +119,7 @@ const MapScreen = () => {
   const {setRideStartLocation,setRideEndLocation,resetRideBookingLocation } = useRideBookingLocationStore()
   const { setSelectedVehicle } = useRideVehicleStore();
   const {
+    actingDriverVehicle,
     setActingDriverVehicle,
     setBookingTab,
     setDurationRangeStart,
@@ -558,7 +561,19 @@ const MapScreen = () => {
       }
 
       if(item.key == "acting_driver"){
-        setShowActingDriverModal(true);
+        setActingDriverLoading(true);
+        try {
+          const response = await getPassangerVehicles({ _t: Date.now() });
+          if (response?.success && response?.vehicles?.length > 0) {
+            const defaultV = response.vehicles.find(v => v.isDefault) || response.vehicles[0];
+            setActingDriverVehicle(defaultV);
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setActingDriverLoading(false);
+          setShowActingDriverModal(true);
+        }
         return;
       }
 
@@ -583,77 +598,56 @@ const MapScreen = () => {
 
   const handleActingDriverTripType = React.useCallback(async (bookingData) => {
     try {
-      setActingDriverLoading(true);
-      const response = await getPassangerVehicles();
       setShowActingDriverModal(false);
 
-      if (response?.success && response?.vehicles?.length > 0) {
-        const firstVehicle = response.vehicles[0];
-        setActingDriverVehicle(firstVehicle);
+      if (actingDriverVehicle) {
         setCurrentLoactionPickupLocation();
 
-        const { bookingTab, durationOption, customHours, scheduleDateTime, startDate, endDate } = bookingData;
-        setBookingTab(bookingTab);
+        const { whenNeed, date, tripType, duration, hours } = bookingData;
 
-        if (bookingTab === 'TODAY') {
-          if (durationOption === 'HOURLY') {
+        if (whenNeed === 'Today') {
+          setBookingTab('TODAY');
+          if (duration === 'Hourly') {
              setTodayDurationOption('1_HOUR');
-             setActingDriverHours(1);
-          } else if (durationOption === 'FULL_DAY') {
+             setActingDriverHours(hours || 1);
+          } else {
              setTodayDurationOption('CUSTOM_HOURS');
              setTodayCustomHours(12);
              setActingDriverHours(12);
-          } else if (durationOption === 'CUSTOM_HOURS') {
-             setTodayDurationOption('CUSTOM_HOURS');
-             setTodayCustomHours(customHours);
-             setActingDriverHours(customHours);
           }
-        } else if (bookingTab === 'TOMORROW') {
-          if (durationOption === 'HOURLY') {
+        } else if (whenNeed === 'Tomorrow') {
+          setBookingTab('TOMORROW');
+          if (duration === 'Hourly') {
              setTomorrowDurationOption('HOURLY');
-             setTomorrowCustomHours(1);
-             setActingDriverHours(1);
-          } else if (durationOption === 'FULL_DAY') {
+             setTomorrowCustomHours(hours || 1);
+             setActingDriverHours(hours || 1);
+          } else {
              setTomorrowDurationOption('HOURLY');
              setTomorrowCustomHours(12);
              setActingDriverHours(12);
-          } else if (durationOption === 'CUSTOM_HOURS') {
-             setTomorrowDurationOption('HOURLY');
-             setTomorrowCustomHours(customHours);
-             setActingDriverHours(customHours);
           }
-          if (scheduleDateTime) {
-             setTomorrowStartTime(scheduleDateTime);
-          }
-        } else if (bookingTab === 'SCHEDULE') {
+        } else if (whenNeed === 'Later') {
           setBookingTab('SCHEDULE');
-          const year = scheduleDateTime.getFullYear();
-          const month = `${scheduleDateTime.getMonth() + 1}`.padStart(2, '0');
-          const day = `${scheduleDateTime.getDate()}`.padStart(2, '0');
+          const year = date.getFullYear();
+          const month = `${date.getMonth() + 1}`.padStart(2, '0');
+          const day = `${date.getDate()}`.padStart(2, '0');
           const formattedDate = `${year}-${month}-${day}`;
           
           setDurationRangeStart(formattedDate);
           setDurationRangeEnd(formattedDate);
-          setCustomStartTime(scheduleDateTime);
+          setCustomStartTime(date);
           
-          if (durationOption === 'HOURLY') {
-             setActingDriverHours(1);
-          } else if (durationOption === 'FULL_DAY') {
+          if (duration === 'Hourly') {
+             setActingDriverHours(hours || 1);
+          } else {
              setActingDriverHours(12);
-          } else if (durationOption === 'CUSTOM_HOURS') {
-             setActingDriverHours(customHours);
           }
-        } else if (bookingTab === 'CUSTOM') {
-          setDurationRangeStart(startDate);
-          setDurationRangeEnd(endDate || startDate);
-          setCustomStartTime(scheduleDateTime);
-          // PlanRideScreen calculates actingDriverHours based on date range
         }
 
         makeRidePlan({
           mode: 'ACTING_DRIVER',
-          preselectedVehicleType: firstVehicle.type,
-          vehicle: firstVehicle,
+          preselectedVehicleType: actingDriverVehicle.type,
+          vehicle: actingDriverVehicle,
         });
       } else {
         setCurrentLoactionPickupLocation();
@@ -664,10 +658,8 @@ const MapScreen = () => {
       setShowActingDriverModal(false);
       setCurrentLoactionPickupLocation();
       setStackScreen('ActingDriverVehicleSelectScreen', {});
-    } finally {
-      setActingDriverLoading(false);
     }
-  }, [makeRidePlan, setCurrentLoactionPickupLocation, setStackScreen, setActingDriverVehicle, setRideEndLocation, setBookingTab, setDurationRangeStart, setDurationRangeEnd, setActingDriverHours, setTodayDurationOption, setTodayCustomHours, setTomorrowDurationOption, setTomorrowCustomHours, setTomorrowStartTime, setCustomStartTime]);
+  }, [actingDriverVehicle, makeRidePlan, setCurrentLoactionPickupLocation, setStackScreen, setActingDriverVehicle, setRideEndLocation, setBookingTab, setDurationRangeStart, setDurationRangeEnd, setActingDriverHours, setTodayDurationOption, setTodayCustomHours, setTomorrowDurationOption, setTomorrowCustomHours, setTomorrowStartTime, setCustomStartTime]);
 
     const renderBottomSheetHandle = useCallback((handleProps) => (
       <BottomSheetHeader {...handleProps} makeRidePlan={makeRidePlan} />
@@ -715,11 +707,16 @@ const MapScreen = () => {
 
       {showMenu && <SideDrawer handleMenu={handleMenu} />}
       {showSocialMediaModal && <SocialMediaModal onClose={() => setShowSocialMediaModal(false)} visible={showSocialMediaModal} />}
-      <ActingDriverModal
+      <TripSetupModal
         visible={showActingDriverModal}
         onClose={() => setShowActingDriverModal(false)}
-        onTripTypeSelect={handleActingDriverTripType}
-        loading={actingDriverLoading}
+        vehicle={actingDriverVehicle}
+        currentTheme={actingDriverVehicle ? (actingDriverColors[actingDriverVehicle.type] || actingDriverColors.default) : actingDriverColors.default}
+        onContinue={handleActingDriverTripType}
+        onChangeVehicle={() => {
+            setShowActingDriverModal(false);
+            setStackScreen('ActingDriverVehicleSelectScreen', {});
+        }}
       />
       <ErrorMessage />
       {loading && (

@@ -100,6 +100,25 @@ class Vehicles {
         return Mongo.updateOneRaw(COLLECTION_NAME, { _id: new ObjectId(vehicleId) }, { $set: updateDoc });
     }
 
+    static setDefaultPassangerVehicle = async (passangerId, vehicleId) => {
+        const { ObjectId } = require('mongodb');
+        // Unset any existing default vehicles for this passenger
+        await Mongo.updateManyRaw(
+            COLLECTION_NAME, 
+            { passangerId: new ObjectId(passangerId) }, 
+            { $set: { isDefault: false } }
+        );
+        // Set the new default vehicle if one is specified
+        if (vehicleId) {
+            return Mongo.updateOneRaw(
+                COLLECTION_NAME, 
+                { _id: new ObjectId(vehicleId), passangerId: new ObjectId(passangerId) }, 
+                { $set: { isDefault: true } }
+            );
+        }
+        return { success: true };
+    }
+
     static deletePassangerVehicle = async (vehicleId) => {
         const { ObjectId } = require('mongodb');
         return Mongo.updateOneRaw(COLLECTION_NAME, { _id: new ObjectId(vehicleId) }, { $set: { isDeleted: true, deletedAt: new Date() } });

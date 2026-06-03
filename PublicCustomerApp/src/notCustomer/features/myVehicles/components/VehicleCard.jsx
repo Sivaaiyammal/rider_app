@@ -4,14 +4,14 @@ import { colors } from '../../../constants/constants';
 import { VEHICLE_TYPE_OPTIONS, VEHICLE_TYPE_ICON, getStockImage } from '../constants/vehicleData';
 import styles from '../styles/vehicleStyles';
 
-const VehicleCard = ({ vehicle, onEdit, onDelete }) => {
+const VehicleCard = ({ vehicle, onEdit, onDelete, isDefault = false, onSetDefault }) => {
   const iconName = VEHICLE_TYPE_ICON[vehicle.type] || 'car-outline';
   const typeLabel =
     VEHICLE_TYPE_OPTIONS.find((o) => o.value === vehicle.type)?.label || vehicle.type || '';
   const meta = [typeLabel, vehicle.make, vehicle.model, vehicle.year].filter(Boolean).join(' · ');
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, isDefault && { borderColor: '#F59E0B', borderWidth: 1.5 }]}>
       <View style={[styles.cardIconContainer, { overflow: 'hidden' }]}>
         {vehicle.photo || getStockImage(vehicle.type) ? (
           <Image
@@ -23,7 +23,14 @@ const VehicleCard = ({ vehicle, onEdit, onDelete }) => {
         )}
       </View>
       <View style={styles.cardInfo}>
-        <Text style={styles.cardRegNo}>{vehicle.regNo}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Text style={styles.cardRegNo}>{vehicle.regNo}</Text>
+          {isDefault && (
+            <View style={{ backgroundColor: '#FEF3C7', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+              <Text style={{ fontSize: 10, color: '#D97706', fontWeight: '700' }}>DEFAULT</Text>
+            </View>
+          )}
+        </View>
         {!!meta && <Text style={styles.cardMeta}>{meta}</Text>}
         {vehicle.verified && (
           <View style={styles.verifiedBadge}>
@@ -33,6 +40,19 @@ const VehicleCard = ({ vehicle, onEdit, onDelete }) => {
         )}
       </View>
       <View style={styles.cardActions}>
+        {onSetDefault && (
+          <TouchableOpacity
+            onPress={() => onSetDefault(vehicle)}
+            style={styles.cardActionBtn}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={isDefault ? 'star' : 'star-outline'}
+              size={20}
+              color={isDefault ? '#F59E0B' : colors.grey_dark}
+            />
+          </TouchableOpacity>
+        )}
         <TouchableOpacity onPress={() => onEdit(vehicle)} style={styles.cardActionBtn} activeOpacity={0.7}>
           <Ionicons name="create-outline" size={20} color={colors.black} />
         </TouchableOpacity>

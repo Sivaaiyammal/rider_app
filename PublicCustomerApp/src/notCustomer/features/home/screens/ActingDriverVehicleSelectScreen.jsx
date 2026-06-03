@@ -21,7 +21,7 @@ import {
   getStockImage,
 } from '../../myVehicles/constants/vehicleData';
 
-const VehicleItem = ({ vehicle, selected, onPress }) => {
+const VehicleItem = ({ vehicle, selected, onPress, isDefault }) => {
   const iconName = VEHICLE_TYPE_ICON[vehicle.type] || 'car-outline';
   const typeLabel =
     VEHICLE_TYPE_OPTIONS.find((o) => o.value === vehicle.type)?.label ||
@@ -52,9 +52,17 @@ const VehicleItem = ({ vehicle, selected, onPress }) => {
         )}
       </View>
       <View style={styles.cardInfo}>
-        <Text style={[styles.cardRegNo, selected && styles.cardRegNoSelected]}>
-          {vehicle.regNo}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Text style={[styles.cardRegNo, selected && styles.cardRegNoSelected]}>
+            {vehicle.regNo}
+          </Text>
+          {isDefault && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, backgroundColor: '#FEF3C7', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+              <Ionicons name="star" size={9} color="#D97706" />
+              <Text style={{ fontSize: 10, color: '#D97706', fontWeight: '700' }}>Default</Text>
+            </View>
+          )}
+        </View>
         {!!meta && <Text style={styles.cardMeta}>{meta}</Text>}
         {vehicle.verified && (
           <View style={styles.verifiedRow}>
@@ -79,12 +87,26 @@ const ActingDriverVehicleSelectScreen = () => {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(actingDriverVehicle?._id?.toString() || null);
+  const [defaultVehicleId, setDefaultVehicleId] = useState(null);
 
   useEffect(() => {
     (async () => {
       try {
-        const response = await getPassangerVehicles();
-        if (response.success) setVehicles(response.vehicles || []);
+        const response = await getPassangerVehicles({ _t: Date.now() });
+        if (response.success) {
+          const list = response.vehicles || [];
+          setVehicles(list);
+          
+          const defaultV = list.find(v => v.isDefault);
+          if (defaultV) {
+            setDefaultVehicleId(defaultV._id?.toString());
+          }
+
+          // Auto-select: prefer current actingDriverVehicle, else default, else nothing
+          if (!actingDriverVehicle?._id && defaultV) {
+            setSelectedId(defaultV._id?.toString());
+          }
+        }
       } catch (_) {
         // silently fail
       } finally {
@@ -163,6 +185,7 @@ const ActingDriverVehicleSelectScreen = () => {
               <VehicleItem
                 vehicle={item}
                 selected={selectedId === item._id?.toString()}
+                isDefault={defaultVehicleId === item._id?.toString()}
                 onPress={() => setSelectedId(item._id?.toString())}
               />
             )}

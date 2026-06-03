@@ -66,6 +66,7 @@ Router.post('/confirmTripStatus', CheckPassangerAuthenticated, withTiming(passan
 Router.get('/getPassengerTripStats', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.getPassengerTripStats))
 Router.post('/updatePassangerVehicle', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.updatePassangerVehicle))
 Router.get('/getPassangerVehicles', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.getPassangerVehicles))
+Router.post('/setDefaultPassangerVehicle', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.setDefaultPassangerVehicle))
 Router.post('/editPassangerVehicle', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.editPassangerVehicle))
 Router.post('/deletePassangerVehicle', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.deletePassangerVehicle))
 Router.get('/getOnboardingConfig', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.getOnboardingConfig))

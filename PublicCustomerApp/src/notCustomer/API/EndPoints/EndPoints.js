@@ -227,8 +227,13 @@ export const deleteAccount = async (payload) => {
     return data
   }
 
-  export const getPassangerVehicles = async () => {
-    const { data } = await apiClient.get('/publicrides/customer/v2/getPassangerVehicles')
+  export const getPassangerVehicles = async (params = {}) => {
+    const { data } = await apiClient.get('/publicrides/customer/v2/getPassangerVehicles', { params })
+    return data
+  }
+
+  export const setDefaultPassangerVehicle = async (vehicleId) => {
+    const { data } = await apiClient.post('/publicrides/customer/v2/setDefaultPassangerVehicle', { vehicleId })
     return data
   }
 

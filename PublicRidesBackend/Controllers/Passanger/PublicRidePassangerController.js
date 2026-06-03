@@ -1799,6 +1799,17 @@ module.exports = function (CLASS) {
         }
     }
 
+    CLASS.prototype.setDefaultPassangerVehicle = async function (req, res) {
+        try {
+            const { vehicleId } = req.body;
+            const passangerId = req.passanger.id;
+            await Vehicle.setDefaultPassangerVehicle(passangerId, vehicleId);
+            return res.json({ success: true, message: 'Default vehicle updated successfully' });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
+
     CLASS.prototype.editPassangerVehicle = async function (req, res) {
         try {
             const { vehicleId, vehicleInfo } = req.body;

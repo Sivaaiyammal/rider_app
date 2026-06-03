@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {
   deletePassangerVehicle,
@@ -18,6 +19,7 @@ import {
   getPassangerVehicles,
   updatePassangerVehicle,
   uploadPassangerVehiclePhoto,
+  setDefaultPassangerVehicle
 } from '../../../API/EndPoints/EndPoints';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import NavBar from '../../../components/NavBar';
@@ -27,6 +29,7 @@ import VehicleCard from '../components/VehicleCard';
 import VehicleFormFields from '../components/VehicleFormFields';
 import VerifiedForm from '../components/VerifiedForm';
 import styles from '../styles/vehicleStyles';
+import PREF from '../../../storage/PREF';
 
 // Initial form state
 const EMPTY_FIELDS = {
@@ -575,6 +578,39 @@ const MyVehiclesScreen = () => {
   const [editingVehicle, setEditingVehicle] = useState(null);
   const [vehicles, setVehicles] = useState([]);
   const [loadingVehicles, setLoadingVehicles] = useState(false);
+  const [defaultVehicleId, setDefaultVehicleId] = useState(null);
+
+  // Initialize defaultVehicleId whenever vehicles list updates
+  useEffect(() => {
+    const defaultV = vehicles.find(v => v.isDefault);
+    if (defaultV) {
+      setDefaultVehicleId(defaultV._id?.toString());
+    }
+  }, [vehicles]);
+
+  const handleSetDefault = useCallback(async (vehicle) => {
+    const id = vehicle._id?.toString();
+    const isAlreadyDefault = defaultVehicleId === id;
+    const newDefault = isAlreadyDefault ? null : id;
+    
+    // Optimistic UI update
+    setDefaultVehicleId(newDefault);
+    setVehicles(prev => prev.map(v => ({
+      ...v,
+      isDefault: v._id?.toString() === newDefault
+    })));
+
+    try {
+      await setDefaultPassangerVehicle(newDefault);
+    } catch (_) {
+      // Revert if failed
+      setDefaultVehicleId(defaultVehicleId);
+      setVehicles(prev => prev.map(v => ({
+        ...v,
+        isDefault: v._id?.toString() === defaultVehicleId
+      })));
+    }
+  }, [defaultVehicleId]);
 
   const fetchVehicles = useCallback(async () => {
     setLoadingVehicles(true);
@@ -692,6 +728,11 @@ const MyVehiclesScreen = () => {
                       v => v._id?.toString() !== vehicle._id?.toString(),
                     ),
                   );
+                  // clear default if deleted vehicle was the default
+                  if (defaultVehicleId === vehicle._id?.toString()) {
+                    setDefaultVehicleId(null);
+                    await setDefaultPassangerVehicle(null).catch(() => {});
+                  }
                 } else {
                   Alert.alert(
                     t('error'),
@@ -713,7 +754,7 @@ const MyVehiclesScreen = () => {
         ],
       );
     },
-    [t],
+    [t, defaultVehicleId],
   );
 
   if (view === 'edit') {
@@ -821,6 +862,8 @@ const MyVehiclesScreen = () => {
                 vehicle={item}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                isDefault={defaultVehicleId === item._id?.toString()}
+                onSetDefault={handleSetDefault}
               />
             )}
             contentContainerStyle={styles.listContent}
