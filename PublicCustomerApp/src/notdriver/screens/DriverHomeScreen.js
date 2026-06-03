@@ -809,6 +809,14 @@ const PublicRidesDriverHomeScreen = () => {
       {approved ? memoizedDriverLocationHandler : null}
       <PaymentCompletionScreen />
       <AppUpdateChecker />
+      {stackScreen[stackScreen.length - 1] === 'Home' && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => console.log('FAB pressed')}
+        >
+          <MaterialIcons name="add" size={24} color={Colors.white} />
+        </TouchableOpacity>
+      )}
     </View>
     </>
    
@@ -853,6 +861,23 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 16,
     fontFamily:Fonts.regular
+  },
+  fab: {
+    position: 'absolute',
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: 20,
+    bottom: 80, 
+    backgroundColor: Colors.blue_xxdark,
+    borderRadius: 28,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    zIndex: 9999,
   }
 });
 

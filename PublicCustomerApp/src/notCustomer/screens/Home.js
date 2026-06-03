@@ -87,6 +87,8 @@ import useRideBookingLocationStore from '../features/booking/store/useRideBookin
 import { setActive } from 'react-native-sound';
 import GlobalContext from '../../context/GlobalContext.js';
 import useUserStore from '../../common/store/useUserStore.js';
+import CustomerLiveTracking from './CustomerliveTracking';
+
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
     <View style={styles.overlay}>
@@ -973,6 +975,8 @@ const Home = () => {
         return <TripTimelineScreen {...params} />;
       case 'NotificationSettingsScreen':
         return <NotificationSettingsScreen {...params} />;
+      case 'CustomerliveTracking':
+        return <CustomerLiveTracking {...params} />;
       default:
         return null;
     }

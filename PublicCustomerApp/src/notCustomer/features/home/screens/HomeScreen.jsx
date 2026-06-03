@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import React, {useEffect, useRef, useState, useCallback,useContext} from 'react';
 import { useTranslation } from 'react-i18next';
-
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import SideDrawer from '../../../components/Drawer/SideDrawer';
 import {colors, Fonts, actingDriverColors, ACTING_DRIVER_THEMES} from '../../../constants/constants';
@@ -650,6 +650,12 @@ const MapScreen = () => {
           <AdaptiveText style={styles.loadingText}>{t('loading', 'Loading...')}</AdaptiveText>
         </View>
       )}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => setStackScreen('CustomerliveTracking', {})}
+      >
+        <Icon name="map-marker-path" size={24} color={colors.white} />
+      </TouchableOpacity>
     </>
   );
 };
@@ -792,7 +798,22 @@ const styles = StyleSheet.create({
   bottomSheetContent: {
     marginTop:height*0.06,
     flex:1,
-    
-  
   },
+  fab: {
+    position: 'absolute',
+    width: 56,
+    height: 56,
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: 20,
+    bottom: 40,
+    backgroundColor: '#4b48ab',
+    borderRadius: 28,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    zIndex: 9999,
+  }
 });
