@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import BannerAuto from '../../../assets/image/banners/bannerAuto.webp';
 import BannerFamily from '../../../assets/image/banners/bannerFamily.webp';
@@ -807,52 +808,58 @@ const DynamicSection = ({title = 'Dynamic Section', onSelect = () => {}}) => {
     local_events: renderBanner,
   };
 
+  const renderUpcomingActingDriverCard = () => {
+    return (
+      <View style={styles.upcomingDriverCard}>
+        {/* Header Row */}
+        <View style={styles.upcomingDriverHeader}>
+          <View style={styles.upcomingDriverTitleRow}>
+            <Icon name="calendar-month-outline" size={18} color="#5E35B1" />
+            <Text style={styles.upcomingDriverTitle}>Upcoming Acting Driver</Text>
+          </View>
+          <View style={styles.upcomingDriverDateBox}>
+            <Text style={styles.upcomingDriverDateText}>13 Jun 2025</Text>
+            <Text style={styles.upcomingDriverTimeText}>09:00 AM</Text>
+          </View>
+        </View>
+
+        {/* Content Row */}
+        <View style={styles.upcomingDriverContent}>
+          <Text style={styles.upcomingDriverVehicleText}>Audi Q2 • TN09CR3540</Text>
+          
+          <View style={styles.upcomingDriverFooter}>
+            <View style={styles.upcomingDriverBadge}>
+              <Text style={styles.upcomingDriverBadgeText}>Scheduled</Text>
+            </View>
+            <TouchableOpacity 
+              style={styles.upcomingDriverViewDetails}
+              activeOpacity={0.8}
+              onPress={() => onSelect({ key: 'my_acting_driver_bookings' })}
+            >
+              <Text style={styles.upcomingDriverViewDetailsText}>View Details</Text>
+              <Icon name="chevron-right" size={16} color="#5E35B1" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const renderActingDriverBanner = () =>
     appConfig.actingDriverEnabled ? (
-      /*
-            <TouchableOpacity
-                style={styles.actingDriverBanner}
-                activeOpacity={0.85}
-                onPress={() => onSelect({ key: "acting_driver" })}
-            >
-                <LinearGradient
-                    colors={["#9B2423", "#6B1A19"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.actingDriverGradient}
-                >
-                     <Image
-                        source={ActingDriverImage}
-                        style={styles.actingDriverImage}
-                        resizeMode="contain"
-                    />
-                    <View style={styles.actingDriverTextContainer}>
-                        <Text style={styles.actingDriverTitle}>
-                            {t("hire_acting_driver", "Hire an Acting Driver")}
-                        </Text>
-                        <Text style={styles.actingDriverSubtitle}>
-                            {t("hire_acting_driver_desc", "Need a driver? Book a verified driver for your vehicle")}
-                        </Text>
-                        <View style={styles.actingDriverCta}>
-                            <Text style={styles.actingDriverCtaText}>
-                                {t("book_now", "Book Now")}
-                            </Text>
-                        </View>
-                    </View>
-                   
-                </LinearGradient>
-            </TouchableOpacity>
-            */
-      <TouchableOpacity
-        style={styles.actingDriverBanner}
-        activeOpacity={0.85}
-        onPress={() => onSelect({key: 'acting_driver'})}>
-        <Image
-          source={ActingDriverPIC}
-          style={styles.actingDriverImage}
-          resizeMode="cover"
-        />
-      </TouchableOpacity>
+      <>
+        {renderUpcomingActingDriverCard()}
+        <TouchableOpacity
+          style={styles.actingDriverBanner}
+          activeOpacity={0.85}
+          onPress={() => onSelect({key: 'acting_driver'})}>
+          <Image
+            source={ActingDriverPIC}
+            style={styles.actingDriverImage}
+            resizeMode="cover"
+          />
+        </TouchableOpacity>
+      </>
     ) : null;
 
   return (
@@ -1075,11 +1082,80 @@ const styles = StyleSheet.create({
     height: 180,
     resizeMode: 'cover',
   },
-  //   actingDriverImage: {
-  //     width: 300,
-  //     height: 150,
-  //     marginRight: 10,
-  //   },
+  upcomingDriverCard: {
+    backgroundColor: '#F8F9FE',
+    borderWidth: 1,
+    borderColor: '#E8EAF6',
+    borderRadius: 16,
+    marginHorizontal: 12,
+    marginVertical: 10,
+    padding: 14,
+  },
+  upcomingDriverHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  upcomingDriverTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  upcomingDriverTitle: {
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
+    color: '#1F1F1F',
+  },
+  upcomingDriverDateBox: {
+    alignItems: 'flex-end',
+  },
+  upcomingDriverDateText: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: '#1F1F1F',
+  },
+  upcomingDriverTimeText: {
+    fontSize: 12,
+    fontFamily: Fonts.semiBold,
+    color: '#1F1F1F',
+  },
+  upcomingDriverContent: {
+    marginTop: 8,
+  },
+  upcomingDriverVehicleText: {
+    fontSize: 13,
+    fontFamily: Fonts.medium,
+    color: '#424242',
+    marginLeft: 24, // aligns with title text
+  },
+  upcomingDriverFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+    marginLeft: 24,
+  },
+  upcomingDriverBadge: {
+    backgroundColor: '#5E35B1',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  upcomingDriverBadgeText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontFamily: Fonts.medium,
+  },
+  upcomingDriverViewDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  upcomingDriverViewDetailsText: {
+    color: '#5E35B1',
+    fontSize: 13,
+    fontFamily: Fonts.medium,
+    marginRight: 2,
+  },
 });
 
 /* ------------------------------------------------------------------

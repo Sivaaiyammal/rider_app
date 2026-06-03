@@ -88,6 +88,7 @@ import { setActive } from 'react-native-sound';
 import GlobalContext from '../../context/GlobalContext.js';
 import useUserStore from '../../common/store/useUserStore.js';
 import CustomerLiveTracking from './CustomerliveTracking';
+import MyActingDriverBookings from './MyActingDriverBookings';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -977,6 +978,8 @@ const Home = () => {
         return <NotificationSettingsScreen {...params} />;
       case 'CustomerliveTracking':
         return <CustomerLiveTracking {...params} />;
+      case 'MyActingDriverBookings':
+        return <MyActingDriverBookings {...params} />;
       default:
         return null;
     }

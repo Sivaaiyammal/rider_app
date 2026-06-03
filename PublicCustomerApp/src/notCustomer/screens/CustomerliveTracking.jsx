@@ -114,33 +114,36 @@ const CustomerLiveTracking = () => {
       >
         <View style={styles.sheetContent}>
           
-          {/* Driver Profile */}
-          <View style={styles.driverProfileCard}>
-            <View style={styles.driverAvatar}>
-              <Text style={styles.driverInitials}>RK</Text>
-            </View>
-            <View style={styles.driverInfo}>
-              <View style={styles.driverNameRow}>
-                <Text style={styles.driverName}>Ramesh Kumar</Text>
-                
-                {/* <Text style={styles.driverRatingText}>4.8</Text> */}
+          {/* Combined Driver & Vehicle Info */}
+          <View style={styles.combinedInfoCard}>
+            {/* Driver Profile */}
+            <View style={styles.driverProfileSection}>
+              <View style={styles.driverAvatar}>
+                <Text style={styles.driverInitials}>RK</Text>
               </View>
-              <View style={{flexDirection:'row', alignItems:'center', gap:4}}>
-                <Icon name="star" size={12} color="#7E1CFC" />
-                <Text style={styles.driverRatingText}>4.8</Text>
+              <View style={styles.driverInfo}>
+                <View style={styles.driverNameRow}>
+                  <Text style={styles.driverName}>Ramesh Kumar</Text>
+                </View>
+                <View style={{flexDirection:'row', alignItems:'center', gap:4}}>
+                  <Icon name="star" size={12} color="#7E1CFC" />
+                  <Text style={styles.driverRatingText}>4.8</Text>
+                </View>
               </View>
             </View>
-          </View>
 
-          {/* Vehicle Info */}
-          <View style={styles.vehicleInfoCard}>
-            <Image 
-              source={{uri: 'https://pngimg.com/uploads/audi/audi_PNG1768.png'}} 
-              style={styles.vehicleImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.vehiclePlateText}>TN09CR3540</Text>
-            <Text style={styles.vehicleModelText}> • Audi Q2</Text>
+            <View style={styles.divider} />
+
+            {/* Vehicle Info */}
+            <View style={styles.vehicleInfoSection}>
+              <Image 
+                source={{uri: 'https://pngimg.com/uploads/audi/audi_PNG1768.png'}} 
+                style={styles.vehicleImage}
+                resizeMode="contain"
+              />
+              <Text style={styles.vehiclePlateText}>TN09CR3540</Text>
+              <Text style={styles.vehicleModelText}> • Audi Q2</Text>
+            </View>
           </View>
 
           {/* Trip Itinerary */}
@@ -644,25 +647,27 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#666',
   },
-  driverProfileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  combinedInfoCard: {
     backgroundColor: '#FFF',
-    padding: 12,
-    padding: 12,
     borderRadius: 24,
     marginBottom: 16,
+    overflow: 'hidden',
   },
-  vehicleInfoCard: {
+  driverProfileSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#EEEEEE',
+    padding: 16,
+  },
+  vehicleInfoSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    paddingTop: 12,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#F0F0F0',
+    marginHorizontal: 16,
   },
   vehicleImage: {
     width: 64,

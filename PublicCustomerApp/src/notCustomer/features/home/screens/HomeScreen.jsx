@@ -581,6 +581,11 @@ const MapScreen = () => {
         return;
       }
 
+      if(item.key == "my_acting_driver_bookings"){
+        setStackScreen('MyActingDriverBookings', {});
+        return;
+      }
+
       
       setSelectedVehicle({
         id: item.key,
