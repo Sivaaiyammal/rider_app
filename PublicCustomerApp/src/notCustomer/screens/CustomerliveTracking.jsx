@@ -4,6 +4,9 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import BottomSheetWrapper from '../components/BottomSheetWrapper';
 import { useStackScreenStore } from '../store/useStackScreenStore';
 import locationTask from '../controllers/GetCurrentLocation';
+import useMapStore from '../features/map/store/useMapStore';
+import useLocationStore from '../store/useLocationStore';
+import Marker from '../controllers/NEMap/Marker';
 
 const CustomerLiveTracking = () => {
   const { goBack } = useStackScreenStore();
@@ -55,7 +58,35 @@ const CustomerLiveTracking = () => {
       <View style={styles.mapRightControls} pointerEvents="box-none">
         <TouchableOpacity 
           style={styles.locationControl}
-          onPress={() => locationTask.getCurrentLocation()}
+          onPress={() => {
+            locationTask.getCurrentLocation();
+            const location = useLocationStore.getState().location;
+            if (location) {
+              // Extract lat/lng from location (assuming [lng, lat] format from useLocationStore)
+              const lng = Array.isArray(location) ? location[0] : location.longitude;
+              const lat = Array.isArray(location) ? location[1] : location.latitude;
+              useMapStore.getState().setMapLocation({ lat, lng, zoom: 16 });
+              
+              // Ensure the user location pointer is visible
+              const homeMarker = new Marker(
+                'home-marker',
+                'home-marker',
+                lng,
+                lat,
+                'pin_inactive',
+                36,
+                true,
+                0
+              );
+              homeMarker.setAnimate(true);
+              homeMarker.setFocus(false);
+              homeMarker.setDoRotation(false);
+              
+              const currentMarkers = useMapStore.getState().mapMarkers || [];
+              const filteredMarkers = currentMarkers.filter(m => m.id !== 'home-marker');
+              useMapStore.getState().setMapMarkers([...filteredMarkers, homeMarker]);
+            }
+          }}
         >
            <Icon name="crosshairs-gps" size={20} color="#333" />
         </TouchableOpacity>
@@ -91,17 +122,25 @@ const CustomerLiveTracking = () => {
             <View style={styles.driverInfo}>
               <View style={styles.driverNameRow}>
                 <Text style={styles.driverName}>Ramesh Kumar</Text>
+                
+                {/* <Text style={styles.driverRatingText}>4.8</Text> */}
+              </View>
+              <View style={{flexDirection:'row', alignItems:'center', gap:4}}>
                 <Icon name="star" size={12} color="#7E1CFC" />
                 <Text style={styles.driverRatingText}>4.8</Text>
               </View>
-              <Text style={styles.driverCarInfo}>TN09CR3540 • Audi Q2...</Text>
             </View>
-            <TouchableOpacity style={styles.viewDetailsBtn}>
-              <Text style={styles.viewDetailsText}>View Profile</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.callDriverBtn}>
-              <Icon name="phone" size={18} color="#FFF" />
-            </TouchableOpacity>
+          </View>
+
+          {/* Vehicle Info */}
+          <View style={styles.vehicleInfoCard}>
+            <Image 
+              source={{uri: 'https://pngimg.com/uploads/audi/audi_PNG1768.png'}} 
+              style={styles.vehicleImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.vehiclePlateText}>TN09CR3540</Text>
+            <Text style={styles.vehicleModelText}> • Audi Q2</Text>
           </View>
 
           {/* Trip Itinerary */}
@@ -436,28 +475,28 @@ const CustomerLiveTracking = () => {
              </TouchableOpacity>
           </View>
 
-          {/* Bottom Actions */}
-          <View style={styles.bottomActions}>
-             <TouchableOpacity style={[styles.actionBtn, {backgroundColor: '#F3E5F5'}]}>
-                <Icon name="phone" size={20} color="#5E35B1" />
-                <Text style={[styles.actionBtnText, {color: '#5E35B1'}]}>Call Driver</Text>
-             </TouchableOpacity>
-             <TouchableOpacity style={[styles.actionBtn, {backgroundColor: '#E8F5E9'}]}>
-                <Icon name="message-text" size={20} color="#00C853" />
-                <Text style={[styles.actionBtnText, {color: '#00C853'}]}>Chat</Text>
-             </TouchableOpacity>
-             <TouchableOpacity style={[styles.actionBtn, {backgroundColor: '#FFF3E0'}]}>
-                <Icon name="headset" size={20} color="#F57C00" />
-                <Text style={[styles.actionBtnText, {color: '#F57C00'}]}>Support</Text>
-             </TouchableOpacity>
-             <TouchableOpacity style={[styles.actionBtn, {backgroundColor: '#FFEBEE'}]}>
-                <Icon name="alert-octagon" size={20} color="#D32F2F" />
-                <Text style={[styles.actionBtnText, {color: '#D32F2F'}]}>SOS</Text>
-             </TouchableOpacity>
-          </View>
-
         </View>
       </BottomSheetWrapper>
+
+      {/* Floating Bottom Bar */}
+      <View style={styles.floatingBottomBar}>
+        <TouchableOpacity style={[styles.floatingActionBtn, {backgroundColor: '#F3E5F5', borderColor: '#E1BEE7'}]}>
+          <Icon name="phone-outline" size={20} color="#7E1CFC" />
+          <Text style={[styles.floatingActionBtnText, {color: '#7E1CFC'}]}>Call Driver</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.floatingActionBtn, {backgroundColor: '#E8F5E9', borderColor: '#C8E6C9'}]}>
+          <Icon name="message-outline" size={20} color="#00C853" />
+          <Text style={[styles.floatingActionBtnText, {color: '#00C853'}]}>Chat</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.floatingActionBtn, {backgroundColor: '#FFF3E0', borderColor: '#FFE0B2'}]}>
+          <Icon name="headset" size={20} color="#F57C00" />
+          <Text style={[styles.floatingActionBtnText, {color: '#F57C00'}]}>Support</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.floatingActionBtn, {backgroundColor: '#FFEBEE', borderColor: '#FFCDD2'}]}>
+          <Icon name="star-outline" size={20} color="#D32F2F" />
+          <Text style={[styles.floatingActionBtnText, {color: '#D32F2F'}]}>SOS</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -475,10 +514,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   backButton: {
     padding: 4,
@@ -550,12 +585,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.95)',
     paddingHorizontal: 16,
     paddingVertical: 10,
+    paddingVertical: 10,
     borderRadius: 24,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
   },
   compactOverlayTextGroup: {
     marginLeft: 8,
@@ -582,11 +613,8 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     alignItems: 'center',
+    alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   mapLeftControls: {
     position: 'absolute',
@@ -599,11 +627,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
+    paddingVertical: 8,
     borderRadius: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   speedValueMap: {
     fontSize: 14,
@@ -612,7 +637,7 @@ const styles = StyleSheet.create({
   },
   sheetContent: {
     padding: 16,
-    paddingBottom: 40,
+    paddingBottom: 100,
     backgroundColor: '#F8F9FE',
   },
   speedLabel: {
@@ -624,13 +649,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFF',
     padding: 12,
+    padding: 12,
     borderRadius: 24,
     marginBottom: 16,
-    shadowColor: '#7E1CFC',
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
+  },
+  vehicleInfoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#EEEEEE',
+  },
+  vehicleImage: {
+    width: 64,
+    height: 36,
+    marginRight: 12,
+  },
+  vehiclePlateText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1F1F1F',
+  },
+  vehicleModelText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#666',
   },
   driverAvatar: {
     width: 48,
@@ -694,13 +741,9 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFF',
     borderRadius: 24,
+    borderRadius: 24,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#7E1CFC',
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -1188,6 +1231,38 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     marginLeft: 4,
+  },
+  floatingBottomBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFF',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: '#EEEEEE',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: -4 },
+  },
+  floatingActionBtn: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    marginHorizontal: 4,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  floatingActionBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 4,
   },
 });
 
