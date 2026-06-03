@@ -353,7 +353,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
         if (response.success) {
           const list = response.vehicles || [];
           // Compare and select newly added vehicle if list size grew
-          if (list.length > vehiclesList.length) {
+          if (vehiclesList.length > 0 && list.length > vehiclesList.length) {
             const existingRegs = vehiclesList.map(v => v.regNo);
             const newVehicle = list.find(v => !existingRegs.includes(v.regNo));
             if (newVehicle) {
@@ -1053,7 +1053,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             <View style={{ zIndex: 10, elevation: 10 }}>
                <ActingDriverPlanCard 
                  onLocationClick={(type) => handleLocationClick(type)}
-                 onTripDetailsClick={() => setStackScreen('TripSetupScreen', {})}
+                 onTripDetailsClick={() => setStackScreen('TripSetupScreen', { isEditMode: true })}
                  themeColor={currentTheme}
                />
             </View>

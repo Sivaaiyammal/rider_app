@@ -20,7 +20,7 @@ import useLocationStore from '../../../store/useLocationStore';
 import LocationTypes from '../types/LocationTypes.json';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 
-const TripSetupScreen = () => {
+const TripSetupScreen = ({ isEditMode }) => {
   const { goBack, setStackScreen } = useStackScreenStore();
   const { location, currentLocationName } = useLocationStore();
   const { setRideStartLocation } = useRideBookingLocationStore();
@@ -113,11 +113,15 @@ const TripSetupScreen = () => {
           }
         }
 
-        setStackScreen('PlanRideScreen', {
-          mode: 'ACTING_DRIVER',
-          preselectedVehicleType: actingDriverVehicle.type,
-          vehicle: actingDriverVehicle,
-        });
+        if (isEditMode) {
+          goBack({ vehicle: actingDriverVehicle });
+        } else {
+          setStackScreen('PlanRideScreen', {
+            mode: 'ACTING_DRIVER',
+            preselectedVehicleType: actingDriverVehicle.type,
+            vehicle: actingDriverVehicle,
+          });
+        }
       } else {
         setCurrentLoactionPickupLocation();
         setStackScreen('ActingDriverVehicleSelectScreen', {});
