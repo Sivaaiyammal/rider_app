@@ -8,6 +8,9 @@ import {
     Modal,
     FlatList,
     Text,
+    Image,
+    ScrollView,
+    SafeAreaView,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -24,7 +27,7 @@ import CurrentLocationIcon from '../../../assets/icons/CurrentLocationIcon.svg';
 import AddStopIcon from '../../../assets/icons/AddStopIcon.svg';
 import { height, width } from '../../../utils/Utils';
 import { utils } from '../../../utils/Utils';
-import { colors, Fonts, actingDriverColors } from '../../../constants/constants';
+import { colors, Fonts, actingDriverColors, ACTING_DRIVER_THEMES } from '../../../constants/constants';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import RouteStatusOverlay from '../../../components/Loaders/RouteStatusOverlay';
 import RideInfo from '../components/bookRide/RideInfo';
@@ -46,6 +49,7 @@ import CouponContainer from '../components/bookRide/CouponConatiner';
 import {
     VEHICLE_TYPE_OPTIONS,
     VEHICLE_TYPE_ICON,
+    getStockImage,
 } from '../../myVehicles/constants/vehicleData';
 import {
     buildKey as buildEstimationCacheKey,
@@ -292,6 +296,11 @@ const BookActingDriverScreen = () => {
         setTripType,
         showItineraryModal,
         setShowItineraryModal,
+        actingDriverAccommodation,
+        actingDriverFood,
+        actingDriverKidsOnBoard,
+        actingDriverElderlyOnBoard,
+        actingDriverMaxSpeed,
     } = useRideBookingInfo();
 
     const itineraryDates = (() => {
@@ -512,357 +521,239 @@ const BookActingDriverScreen = () => {
 
     const handleCouponPress = () => setShowCoupon(true);
 
+    const vehicleType = actingDriverVehicle?.type?.toLowerCase() || 'sedan';
+    const themeColor = ACTING_DRIVER_THEMES[vehicleType] || actingDriverColors;
+
     return (
-        <>
-            <View>
-                <NavBar elevation onBackPress={handleBackPress} />
-            </View>
-            
-
-            <BottomSheetWrapper
-                snapPoints={['75%', '90%']}
-                index={0}
-                enablePanDownToClose={false}
-                enableOverDrag={true}
-                enableScroll={false}
-                handleComponent={() => BottomSheetHeader(rideDistance, estimatedDuration, setShowPreference)}
-                handleIndicatorStyle={{ backgroundColor: '#DEDEDE', width: 50, height: 4 }}
-
-            >
-                {/* One Way / Round Trip Tabs */}
-                <View style={styles.tripTabsRow}>
-                    <TouchableOpacity
-                        style={[styles.tripTab, tripType === 'ONE_WAY' && styles.tripTabActive]}
-                        onPress={() => setTripType('ONE_WAY')}
-                        activeOpacity={0.8}
-                    >
-                        <View style={styles.tabLabelContainer}>
-                            <Icon
-                                name="call-made"
-                                size={18}
-                                color={tripType === 'ONE_WAY' ? actingDriverColors.primary : '#757575'}
-                                style={styles.tabIcon}
-                            />
-                            <AdaptiveText style={[styles.tripTabText, tripType === 'ONE_WAY' && styles.tripTabTextActive]}>
-                                {t('one_way', 'One Way')}
-                            </AdaptiveText>
-                        </View>
-                        {tripType === 'ONE_WAY' && <View style={styles.activeTabUnderline} />}
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.tripTab, tripType === 'ROUND_TRIP' && styles.tripTabActive]}
-                        onPress={() => setTripType('ROUND_TRIP')}
-                        activeOpacity={0.8}
-                    >
-                        <View style={styles.tabLabelContainer}>
-                            <Ionicons
-                                name="sync"
-                                size={16}
-                                color={tripType === 'ROUND_TRIP' ? actingDriverColors.primary : '#757575'}
-                                style={styles.tabIcon}
-                            />
-                            <AdaptiveText style={[styles.tripTabText, tripType === 'ROUND_TRIP' && styles.tripTabTextActive]}>
-                                {t('round_trip', 'Round Trip')}
-                            </AdaptiveText>
-                        </View>
-                        {tripType === 'ROUND_TRIP' && <View style={styles.activeTabUnderline} />}
-                    </TouchableOpacity>
+        <SafeAreaView style={{ flex: 1, backgroundColor: colors.white_dirt }}>
+            <View style={styles.header}>
+                <TouchableOpacity onPress={handleBackPress} style={styles.backButton}>
+                    <Ionicons name="chevron-back" size={24} color={colors.black} />
+                </TouchableOpacity>
+                <View style={styles.headerTitleContainer}>
+                    <AdaptiveText style={styles.stepText}>{t('step_4_of_4', 'Step 4 of 4')}</AdaptiveText>
+                    <AdaptiveText style={styles.titleText}>{t('review_confirm', 'Review & Confirm')}</AdaptiveText>
                 </View>
+            </View>
 
-                <BottomSheetScrollView style={styles.sheetContent} contentContainerStyle={{ paddingBottom: 200 }} showsVerticalScrollIndicator={false}>
-                    
-                    {/* Schedule Date Banner */}
-                    <View style={styles.scheduleBanner}>
-                        <View style={styles.scheduleInfo}>
-                            <AdaptiveText style={styles.scheduleLabel}>
-                                {tripType === 'ONE_WAY' ? t('booking_one_way_for', 'Booking one-way for') : t('booking_round_trip_for', 'Booking round trip for')}
-                            </AdaptiveText>
-                            <AdaptiveText style={styles.scheduleDateText}>
-                                {(() => {
-                                    if (bookingTab === 'TODAY') {
-                                        return `${t('today', 'Today')} · ${actingDriverHours} ${t('hour_s', 'Hour(s)')}`;
-                                    } else if (bookingTab === 'TOMORROW') {
-                                        return `${t('tomorrow', 'Tomorrow')} · ${actingDriverHours} ${t('hour_s', 'Hour(s)')} (Start: ${utils.timestampTo12HourFormat(tomorrowStartTime || new Date())})`;
-                                    } else if (bookingTab === 'SCHEDULE') {
-                                        return `${utils.formatDate(customStartTime || new Date(), 'DD MMM YYYY, hh:mm A')} · ${actingDriverHours} ${t('hour_s', 'Hour(s)')}`;
-                                    } else if (bookingTab === 'CUSTOM') {
-                                        return `${utils.formatDate(durationRangeStart, 'DD MMM YYYY')} - ${utils.formatDate(durationRangeEnd, 'DD MMM YYYY')} (Start: ${utils.timestampTo12HourFormat(customStartTime || new Date())})`;
-                                    }
-                                    return t('schedule_not_set', 'Schedule not set');
-                                })()}
-                            </AdaptiveText>
-                        </View>
-                    </View>
+            <View style={styles.progressBar}>
+                <View style={[styles.progressDot, { backgroundColor: themeColor.primary }]} />
+                <View style={styles.progressLine}>
+                    <View style={{ width: '100%', height: '100%', backgroundColor: themeColor.primary }} />
+                </View>
+                <View style={[styles.progressDot, { backgroundColor: themeColor.primary }]} />
+                <View style={styles.progressLine}>
+                    <View style={{ width: '100%', height: '100%', backgroundColor: themeColor.primary }} />
+                </View>
+                <View style={[styles.progressDot, { backgroundColor: themeColor.primary }]} />
+                <View style={styles.progressLine}>
+                    <View style={{ width: '100%', height: '100%', backgroundColor: themeColor.primary }} />
+                </View>
+                <View style={[styles.progressDot, { backgroundColor: themeColor.primary }]} />
+            </View>
 
-                    {/* Plan Daily Itinerary Button */}
-                    {shouldShowItinerary && (
-                        <TouchableOpacity
-                            style={styles.itineraryButton}
-                            onPress={() => {
-                                setStackScreen('ItineraryPlanScreen', {
-                                    itineraryDates: itineraryDates,
-                                    themeColor: actingDriverColors,
-                                    onAddItineraryLocation: (dateStr) => {
-                                        setStackScreen('PickLocationScreen', {
-                                            locationType: LocationTypes.WAYPOINT_LOCATION,
-                                            label: t('select_location', 'Select Location'),
-                                            buttonLabel: t('add_location', 'Add Location'),
-                                            isFromRidePointsSelection: true,
-                                            searchBar: true,
-                                            focusSearchOnMount: true,
-                                            onPickLocationResultCallback: (item) => {
-                                                try {
-                                                    const state = useRideBookingInfo.getState();
-                                                    const currentItin = state.actingDriverItinerary || {};
-                                                    const newItin = JSON.parse(JSON.stringify(currentItin));
-                                                    const dayItin = newItin[dateStr] || { locations: [] };
-                                                    
-                                                    dayItin.locations = [...(dayItin.locations || []), item];
-                                                    newItin[dateStr] = dayItin;
-                                                    
-                                                    state.updateBookingInfo({
-                                                        actingDriverItinerary: newItin
-                                                    });
-                                                    
-                                                    useStackScreenStore.getState().goBack();
-                                                } catch (e) {
-                                                    console.error("Error adding location to itinerary", e);
-                                                    useStackScreenStore.getState().goBack();
-                                                }
-                                            }
-                                        });
-                                    },
-                                    onRemoveItineraryLocation: (dateStr, index) => {
-                                        const state = useRideBookingInfo.getState();
-                                        const currentItin = state.actingDriverItinerary || {};
-                                        const newItin = JSON.parse(JSON.stringify(currentItin));
-                                        if (newItin[dateStr] && newItin[dateStr].locations) {
-                                            newItin[dateStr].locations.splice(index, 1);
-                                            state.updateBookingInfo({
-                                                actingDriverItinerary: newItin
-                                            });
-                                        }
-                                    }
-                                });
-                            }}
-                            activeOpacity={0.85}
-                        >
-                            <View style={styles.itineraryButtonLeft}>
-                                <View style={styles.itineraryButtonIconWrap}>
-                                    <Ionicons name="map-outline" size={18} color={actingDriverColors.primary} />
-                                </View>
-                                <View>
-                                    <AdaptiveText style={styles.itineraryButtonTitle}>{t('plan_daily_itinerary', 'Plan Daily Itinerary')}</AdaptiveText>
-                                    <AdaptiveText style={styles.itineraryButtonSub}>
-                                        {Object.keys(actingDriverItinerary || {}).length > 0
-                                            ? t('itinerary_configured', `${Object.keys(actingDriverItinerary || {}).length} day(s) configured`)
-                                            : t('itinerary_optional', 'Optional · Tap to plan each day')}
-                                    </AdaptiveText>
-                                </View>
-                            </View>
-                            <View style={styles.itineraryButtonRight}>
-                                {Object.keys(actingDriverItinerary || {}).length > 0 && (
-                                    <View style={styles.itineraryBadge}>
-                                        <AdaptiveText style={styles.itineraryBadgeText}>{Object.keys(actingDriverItinerary || {}).length}</AdaptiveText>
-                                    </View>
-                                )}
-                                <Ionicons name="chevron-forward" size={16} color="#757575" />
-                            </View>
-                        </TouchableOpacity>
-                    )}
-
-                    {/* Selected vehicle */}
-                    <View style={styles.sectionContainer}>
-                        <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12}}>
-                            <AdaptiveText style={styles.sectionTitle}>
-                                {t('your_vehicle', 'Your Vehicle')}
-                            </AdaptiveText>
-                            {(vehiclesList?.length > 1) && (
-                                <View style={{flexDirection: 'row', alignItems: 'center', gap: 4}}>
-                                    <Text style={{fontSize: 12, fontFamily: Fonts.medium, color: '#94A3B8'}}>{t('swipe', 'Swipe')}</Text>
-                                    <Ionicons name="ellipsis-horizontal" size={16} color="#94A3B8" />
-                                </View>
-                            )}
-                        </View>
-                        {loadingVehicles ? (
-                            <View style={{padding: 20, alignItems: 'center'}}>
-                                <ActivityIndicator size="small" color={colors.black} />
-                            </View>
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                
+                {/* Vehicle Card */}
+                <View style={styles.reviewCard}>
+                    <View style={styles.vehicleReviewHeader}>
+                        {actingDriverVehicle?.photo || getStockImage(actingDriverVehicle?.type) ? (
+                            <Image
+                                source={actingDriverVehicle?.photo ? { uri: actingDriverVehicle.photo } : getStockImage(actingDriverVehicle?.type)}
+                                style={styles.vehicleReviewImage}
+                            />
                         ) : (
-                            <BottomSheetFlatList
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                contentContainerStyle={{ paddingBottom: 8 }}
-                                data={[...(vehiclesList || []), { isAddBtn: true }]}
-                                keyExtractor={(item, idx) => item.isAddBtn ? 'add-btn' : (item._id?.toString() || String(idx))}
-                                renderItem={({ item }) => {
-                                    if (item.isAddBtn) {
-                                        return (
-                                            <TouchableOpacity
-                                                style={[styles.vehicleScrollCard, styles.addVehicleScrollCard]}
-                                                onPress={() => { setStackScreen('MyVehiclesScreen', { returnTo: 'BookActingDriverScreen' }); }}
-                                                activeOpacity={0.8}
-                                            >
-                                                <Ionicons name="add-circle-outline" size={24} color={colors.black} />
-                                                <Text style={[styles.addVehicleScrollText, { marginTop: 0 }]}>{t('add_vehicle', 'Add Vehicle')}</Text>
-                                            </TouchableOpacity>
-                                        );
-                                    }
-
-                                    const isSelected = actingDriverVehicle?._id === item._id;
-                                    
-                                    return (
-                                        <TouchableOpacity
-                                            style={[styles.vehicleScrollCard, isSelected && styles.vehicleScrollCardSelected]}
-                                            onPress={() => {
-                                                setActingDriverVehicle(item);
-                                                if (item.maxSpeed) {
-                                                    setActingDriverMaxSpeed(String(item.maxSpeed));
-                                                }
-                                            }}
-                                            activeOpacity={0.8}
-                                        >
-                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                <View style={[styles.vehicleScrollIconBg, isSelected && styles.vehicleScrollIconBgSelected]}>
-                                                    <Ionicons
-                                                        name={VEHICLE_TYPE_ICON[item.type] || 'car-outline'}
-                                                        size={22}
-                                                        color={isSelected ? colors.white : '#64748B'}
-                                                    />
-                                                </View>
-                                                <View style={{ marginLeft: 12, flex: 1 }}>
-                                                    <Text style={[styles.vehicleScrollReg, isSelected && styles.vehicleScrollRegSelected]} numberOfLines={1}>
-                                                        {item.regNo}
-                                                    </Text>
-                                                    <Text style={[styles.vehicleScrollMeta, isSelected && styles.vehicleScrollMetaSelected]} numberOfLines={1}>
-                                                        {item.make} {item.model}
-                                                    </Text>
-                                                </View>
-                                            </View>
-                                        </TouchableOpacity>
-                                    );
-                                }}
-                            />
+                            <Ionicons name="car-sport" size={40} color={colors.black} />
                         )}
-
-                        {/* Fare breakdown details */}
-                        {actingDriverVehicle && (
-                            <View style={styles.paymentBreakdownCard}>
-                                <AdaptiveText style={styles.breakdownTitle}>
-                                    {t('fare_details', 'Fare Details')}
-                                </AdaptiveText>
-                                <View style={[styles.breakdownRow, { borderBottomWidth: 0, paddingBottom: 0, marginBottom: 0 }]}>
-                                    <AdaptiveText style={styles.breakdownLabel}>
-                                        {t('total_estimated_fare', 'Total Estimated Fare')}
-                                    </AdaptiveText>
-                                    <View style={{alignItems: 'flex-end'}}>
-                                        {isEstimationLoading ? (
-                                            <ActivityIndicator size="small" color={actingDriverColors.secondary} />
-                                        ) : (
-                                            <AdaptiveText style={[styles.breakdownValue, { fontSize: 16, fontFamily: Fonts.bold, color: actingDriverColors.primary }]}>
-                                                {fareDisplay || `₹${(() => {
-                                                    const dist = Number(rideDistance) || 0;
-                                                    const dur = Number(estimatedDuration) || 0;
-                                                    const type = actingDriverVehicle?.type || 'CAR';
-                                                    const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
-                                                    const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
-                                                    const minFare = Math.max(15, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 0.9));
-                                                    const maxFare = Math.max(20, Math.round(((dist * basePerKm) + (dur * basePerMin)) * 1.1));
-                                                    return `${minFare} - ₹${maxFare}`;
-                                                })()}`}
-                                            </AdaptiveText>
-                                        )}
-                                    </View>
-                                </View>
-                            </View>
-                        )}
-                        
-                        {/* Driver Arrangement & Special Requirements */}
-                        {/* <ActingDriverPreferences /> */}
-                    </View>
-
-                    <View style={{ height: 120 }} />
-                </BottomSheetScrollView>
-            </BottomSheetWrapper>
-
-            {/* Coupon row */}
-            <TouchableOpacity style={[styles.couponContainer, { bottom: layoutHeight }]} onPress={handleCouponPress}>
-                {!couponCode ? (
-                    <>
-                        <FontAwesome6 name="percent" size={20} color={colors.black} />
-                        <AdaptiveText style={styles.couponText}>{t('offer_coupons', 'Offer & Coupons')}</AdaptiveText>
-                        <Icon name="chevron-right" size={20} color="#888" />
-                    </>
-                ) : (
-                    <>
-                        <FontAwesome6 name="percent" size={16} color={colors.grey_dark} />
-                        <AdaptiveText>{t('coupon', 'Coupon')}</AdaptiveText>
-                        <AdaptiveText style={[styles.couponText, { fontFamily: Fonts.semi_bold }]}>{couponCode}</AdaptiveText>
-                        <AdaptiveText>{t('applied', 'Applied')}</AdaptiveText>
-                    </>
-                )}
-            </TouchableOpacity>
-
-            {/* Bottom action bar */}
-            <View onLayout={layOutChange} style={styles.bottomContainer}>
-                <View style={styles.bookingButtonContainer}>
-                    <TouchableOpacity
-                        style={styles.paymentContainer}
-                        onPress={() => setIsPaymentTypeOpen(true)}
-                        activeOpacity={0.8}
-                    >
-                        <AdaptiveText style={styles.payByLabel}>{t('pay_by')}</AdaptiveText>
-                        <View style={styles.paymentMode}>
-                            <AdaptiveText style={styles.paymentModeText}>{paymentType}</AdaptiveText>
-                            <Icon name="arrow-drop-down" color={colors.white} style={{ fontSize: 20 }} />
-                        </View>
-                    </TouchableOpacity>
-
-                    <View style={styles.confirmSection}>
-                        <TouchableOpacity
-                            style={[
-                                styles.confirmButton,
-                                (!actingDriverVehicle || isBookingLoading || routeLoading?.loading) &&
-                                    styles.confirmButtonDisabled,
-                                isBookingLoading && { backgroundColor: actingDriverColors.primary },
-                            ]}
-                            onPress={handleConfirm}
-                            disabled={!actingDriverVehicle || isBookingLoading || !!routeLoading?.loading}
-                            activeOpacity={0.85}
-                        >
-                            <AdaptiveText style={styles.confirmButtonText}>
-                                {isBookingLoading
-                                    ? t('booking')
-                                    : t('confirm_and_book', 'Confirm & Book')}
+                        <View style={styles.vehicleReviewInfo}>
+                            <AdaptiveText style={[styles.vehicleReviewLabel, {color: themeColor.primary}]}>{t('vehicle', 'Vehicle')}</AdaptiveText>
+                            <AdaptiveText style={styles.vehicleReviewName}>
+                                {actingDriverVehicle?.regNo || 'TN09CR3540'} • {actingDriverVehicle?.model || 'Audi Q2'}
                             </AdaptiveText>
+                        </View>
+                        <TouchableOpacity onPress={() => setStackScreen('ActingDriverVehicleSelectScreen', {})}>
+                            <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
                         </TouchableOpacity>
                     </View>
                 </View>
-            </View>
 
-            <RouteStatusOverlay
-                loading={!!routeLoading?.loading}
-                error={routeLoading?.error}
-                onBack={handleBackPress}
-                onRetry={onRetryFetchRoute}
-                top={height * 0.25}
-            />
+                {/* Main Details Card */}
+                <View style={styles.detailsContainer}>
+                    <View style={styles.detailRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="arrow-forward-outline" size={18} color="#4B5563" />
+                            <AdaptiveText style={styles.detailLabel}>{t('trip_type', 'Trip Type')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.detailValue}>
+                            {tripType === 'ONE_WAY' ? 'One Way (Drop Off)' : 'Round Trip'}
+                        </AdaptiveText>
+                        <TouchableOpacity onPress={() => useStackScreenStore.getState().goBack()}>
+                            <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.divider} />
 
-            {isPaymentTypeOpen && (
-                <AnimatedBottomSheetWrapper
-                    onClose={() => setIsPaymentTypeOpen(false)}
-                    zIndex={100000}
+                    <View style={styles.detailRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="calendar-outline" size={18} color="#4B5563" />
+                            <AdaptiveText style={styles.detailLabel}>{t('date_time', 'Date & Time')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.detailValue}>
+                            {utils.formatDate(bookingTab === 'TODAY' ? customStartTime : tomorrowStartTime, 'ddd, D MMM YYYY, hh:mm A')}
+                        </AdaptiveText>
+                        <TouchableOpacity onPress={() => useStackScreenStore.getState().goBack()}>
+                            <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.divider} />
+
+                    <View style={styles.detailRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="time-outline" size={18} color="#4B5563" />
+                            <AdaptiveText style={styles.detailLabel}>{t('duration', 'Duration')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.detailValue}>{actingDriverHours} Hours (Hourly)</AdaptiveText>
+                        <TouchableOpacity onPress={() => useStackScreenStore.getState().goBack()}>
+                            <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.divider} />
+
+                    <View style={styles.detailRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="location-outline" size={18} color="#4B5563" />
+                            <AdaptiveText style={styles.detailLabel}>{t('pickup_location', 'Pickup Location')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.detailValue} numberOfLines={1}>
+                            {rideStartLocation ? utils.formatAddressName(rideStartLocation) : ''}
+                        </AdaptiveText>
+                        <TouchableOpacity onPress={() => useStackScreenStore.getState().goBack()}>
+                            <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.divider} />
+
+                    <View style={styles.detailRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="location-outline" size={18} color="#4B5563" />
+                            <AdaptiveText style={styles.detailLabel}>{t('drop_location', 'Drop Location')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.detailValue} numberOfLines={1}>
+                            {rideEndLocation ? utils.formatAddressName(rideEndLocation) : ''}
+                        </AdaptiveText>
+                        <TouchableOpacity onPress={() => useStackScreenStore.getState().goBack()}>
+                            <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.divider} />
+
+                    <View style={styles.detailRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="reader-outline" size={18} color="#4B5563" />
+                            <AdaptiveText style={styles.detailLabel}>{t('itinerary', 'Itinerary')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.detailValue}>
+                            {actingDriverItinerary ? `${Object.keys(actingDriverItinerary).length} Days` : '0 Days'}
+                        </AdaptiveText>
+                        <TouchableOpacity onPress={() => {}}>
+                            <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.divider} />
+
+                    <View style={styles.detailRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="bed-outline" size={18} color="#4B5563" />
+                            <AdaptiveText style={styles.detailLabel}>{t('driver_arrangements', 'Driver Arrangements')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.detailValue}>
+                            {[actingDriverAccommodation ? 'Accommodation' : null, actingDriverFood ? 'Food Allowance' : null].filter(Boolean).join(' • ') || 'None'}
+                        </AdaptiveText>
+                    </View>
+                    <View style={styles.divider} />
+
+                    <View style={styles.detailRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="build-outline" size={18} color="#4B5563" />
+                            <AdaptiveText style={styles.detailLabel}>{t('special_requirements', 'Special Requirements')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.detailValue}>
+                            {[actingDriverKidsOnBoard ? 'Children On Board' : null, actingDriverMaxSpeed ? `Comfort ${actingDriverMaxSpeed} km/h` : null].filter(Boolean).join(' • ') || 'None'}
+                        </AdaptiveText>
+                        <TouchableOpacity onPress={() => {}}>
+                            <Ionicons name="chevron-forward" size={16} color="#4B5563" />
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.divider} />
+
+                    <View style={styles.detailRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="create-outline" size={18} color="#4B5563" />
+                            <AdaptiveText style={styles.detailLabel}>{t('custom_notes', 'Custom Notes')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.detailValue}>Driver familiar with hill roads</AdaptiveText>
+                    </View>
+                </View>
+
+                {/* Fare Details */}
+                <View style={[styles.reviewCard, styles.fareReviewCard]}>
+                    <View style={styles.fareReviewRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="car-outline" size={18} color={themeColor.primary} />
+                            <AdaptiveText style={[styles.fareReviewLabel, {color: themeColor.primary}]}>{t('fare_details', 'Fare Details')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.fareReviewAmount}>{fareDisplay}</AdaptiveText>
+                        <TouchableOpacity onPress={() => {}}>
+                            <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Apply Coupon */}
+                <TouchableOpacity style={styles.reviewCard} onPress={handleCouponPress} activeOpacity={0.8}>
+                    <View style={styles.fareReviewRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="pricetag-outline" size={18} color={themeColor.primary} />
+                            <AdaptiveText style={[styles.couponReviewLabel, {color: themeColor.primary}]}>{t('apply_coupon', 'Apply Coupon')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.viewOffersText}>{t('view_offers', 'View offers')} &gt;</AdaptiveText>
+                    </View>
+                </TouchableOpacity>
+
+                {/* Payment Method */}
+                <TouchableOpacity style={styles.reviewCard} onPress={() => {}} activeOpacity={0.8}>
+                    <View style={styles.fareReviewRow}>
+                        <View style={styles.detailLeft}>
+                            <Ionicons name="card-outline" size={18} color="#4B5563" />
+                            <AdaptiveText style={styles.detailLabel}>{t('payment_method', 'Payment Method')}</AdaptiveText>
+                        </View>
+                        <AdaptiveText style={styles.paymentMethodText}>UPI • Google Pay &gt;</AdaptiveText>
+                    </View>
+                </TouchableOpacity>
+
+            </ScrollView>
+
+            <View style={styles.stickyFooter}>
+                <TouchableOpacity
+                    style={[styles.confirmButton, {backgroundColor: themeColor.primary}, (isBookingLoading || !!routeLoading?.loading) && styles.confirmButtonDisabled]}
+                    onPress={proceedWithBooking}
+                    disabled={isBookingLoading || !!routeLoading?.loading}
+                    activeOpacity={0.85}
                 >
-                    <PaymentType
-                        onSelect={(pt) => {
-                            setPaymentType(pt);
-                            setIsPaymentTypeOpen(false);
-                        }}
-                        initialValue={paymentType}
-                    />
-                </AnimatedBottomSheetWrapper>
-            )}
+                    {isBookingLoading ? (
+                        <ActivityIndicator color={colors.white} />
+                    ) : (
+                        <>
+                            <AdaptiveText style={styles.confirmButtonText}>{t('confirm_and_book', 'Confirm & Book')}</AdaptiveText>
+                            <Ionicons name="arrow-forward" size={20} color={colors.white} />
+                        </>
+                    )}
+                </TouchableOpacity>
+                <View style={styles.secureFooter}>
+                    <Ionicons name="lock-closed-outline" size={14} color="#6B7280" />
+                    <AdaptiveText style={styles.secureFooterText}>{t('secure_safe_booking', 'Secure & Safe Booking')}</AdaptiveText>
+                </View>
+            </View>
 
             {showCoupon && (
                 <AnimatedBottomSheetWrapper onClose={() => setShowCoupon(false)} zIndex={100000}>
@@ -870,747 +761,284 @@ const BookActingDriverScreen = () => {
                 </AnimatedBottomSheetWrapper>
             )}
 
-
-
-
-
-            {/* Booking Success Modal */}
-            <Modal
-                visible={bookingSuccess}
-                animationType="fade"
-                transparent={true}
-            >
+            <Modal visible={bookingSuccess} animationType="fade" transparent={true}>
                 <View style={styles.successModalOverlay}>
                     <View style={styles.successModalContent}>
                         <View style={styles.successIconCircle}>
                             <Icon name="check-circle" size={80} color={actingDriverColors.success} />
                         </View>
-                        
-                        <AdaptiveText style={styles.successModalTitle}>
-                            {t('acting_driver_booked', 'Acting Driver Booked!')}
-                        </AdaptiveText>
-                        
-                        <AdaptiveText style={styles.successModalSubtitle}>
-                            {t('booking_success_info', 'Acting driver booked. We will let you know once driver approved.')}
-                        </AdaptiveText>
-
+                        <AdaptiveText style={styles.successModalTitle}>{t('acting_driver_booked', 'Acting Driver Booked!')}</AdaptiveText>
+                        <AdaptiveText style={styles.successModalSubtitle}>{t('booking_success_info', 'Acting driver booked. We will let you know once driver approved.')}</AdaptiveText>
                         <TouchableOpacity
-                            style={styles.doneButton}
+                            style={[styles.doneButton, {backgroundColor: themeColor.primary}]}
                             onPress={() => {
                                 setBookingSuccess(false);
                                 useStackScreenStore.getState().reset();
                             }}
                         >
-                            <AdaptiveText style={styles.doneButtonText}>
-                                {t('done', 'Done')}
-                            </AdaptiveText>
+                            <AdaptiveText style={styles.doneButtonText}>{t('done', 'Done')}</AdaptiveText>
                         </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
-        </>
+            <RouteStatusOverlay
+                loading={!!routeLoading?.loading}
+                error={routeLoading?.error}
+                onBack={handleBackPress}
+                onRetry={onRetryFetchRoute}
+                top={height * 0.25}
+            />
+        </SafeAreaView>
     );
+
 };
 
 export default BookActingDriverScreen;
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-    // ── Bottom sheet header ──────────────────────────────────────────────────
-    bottomSheetHeaderContainer: {
-        paddingHorizontal: 10,
-        paddingVertical: 10,
-    },
-    bottomSheetHeader: {
-        position: 'absolute',
-        width: width,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-end',
-        top: -115,
-        paddingHorizontal: 10,
-    },
-    mapActionContainer: {
-        flexDirection: 'column',
-        alignItems: 'flex-end',
-        justifyContent: 'flex-end',
-        gap: 10,
-        paddingBottom: 10,
-    },
-    currentLocationIconContainer: {
-        padding: 10,
-        borderRadius: 30,
-        backgroundColor: 'white',
-        elevation: 5,
-    },
-    // ── Section ──────────────────────────────────────────────────────────────
-    sectionContainer: {
-        paddingHorizontal: 16,
-        paddingTop: 12,
-    },
-    sectionTitle: {
-        fontSize: 14,
-        fontFamily: Fonts.semi_bold,
-        color: colors.black,
-        marginBottom: 10,
-    },
-    noVehicleText: {
-        fontSize: 13,
-        color: colors.grey_dark,
-        fontFamily: Fonts.regular,
-    },
-    // ── Vehicle card ─────────────────────────────────────────────────────────
-    vehicleCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderWidth: 1.5,
-        borderColor: colors.black,
-        borderRadius: 12,
-        padding: 12,
-        backgroundColor: '#FAFAFA',
-        gap: 12,
-    },
-    vehicleIconBox: {
-        width: 50,
-        height: 50,
-        borderRadius: 10,
-        backgroundColor: '#F0EFFF',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    vehicleInfo: {
+    container: {
         flex: 1,
-        gap: 3,
+        backgroundColor: colors.white_dirt,
     },
-    vehicleRegNo: {
-        fontSize: 15,
-        fontFamily: Fonts.semi_bold,
-        color: colors.black,
-    },
-    vehicleMeta: {
-        fontSize: 12,
-        fontFamily: Fonts.regular,
-        color: colors.grey_dark,
-    },
-    verifiedRow: {
+    header: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 4,
-        marginTop: 2,
-    },
-    verifiedText: {
-        fontSize: 11,
-        fontFamily: Fonts.regular,
-        color: colors.green,
-    },
-    fareBox: {
-        alignItems: 'flex-end',
-        minWidth: 70,
-    },
-    fareLabel: {
-        fontSize: 11,
-        fontFamily: Fonts.regular,
-        color: colors.grey_dark,
-    },
-    fareValue: {
-        fontSize: 15,
-        fontFamily: Fonts.semi_bold,
-        color: colors.black,
-        marginTop: 2,
-    },
-    // ── Coupon row ───────────────────────────────────────────────────────────
-    couponContainer: {
-        position: 'absolute',
-        bottom: height * 0.15,
-        left: 0,
-        right: 0,
-        width: '100%',
-        paddingHorizontal: 15,
-        paddingVertical: 10,
-        zIndex: 99999,
         justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'row',
-        gap: 10,
-        backgroundColor: '#fffae2',
-    },
-    couponText: {
-        fontSize: 14,
-        fontFamily: Fonts.regular,
-        color: colors.black,
-    },
-    // ── Bottom bar ───────────────────────────────────────────────────────────
-    bottomContainer: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100000,
-        elevation: 10,
-        backgroundColor: 'white',
-        borderTopWidth: 1,
-        borderColor: '#e0e0e0',
-    },
-    bookingButtonContainer: {
-        backgroundColor: colors.black,
-        width: '100%',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        flexDirection: 'row',
-        padding: 10,
-        elevation: 5,
-    },
-    paymentContainer: {
-        width: '30%',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        paddingHorizontal: 15,
-    },
-    payByLabel: {
-        fontSize: 12,
-        color: colors.white,
-        fontFamily: Fonts.regular,
-    },
-    paymentMode: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 5,
-    },
-    paymentModeText: {
-        fontSize: 16,
-        fontFamily: Fonts.regular,
-        color: colors.white,
-    },
-    confirmSection: {
-        width: '70%',
-    },
-    confirmButton: {
-        width: '100%',
-        padding: 15,
-        backgroundColor: actingDriverColors.success,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: 'white',
-    },
-    confirmButtonDisabled: {
-        backgroundColor: colors.grey_light,
-        opacity: 0.7,
-    },
-    confirmButtonText: {
-        color: colors.white,
-        fontSize: 14,
-        fontFamily: Fonts.medium,
-        textAlign: 'center',
-    },
-    paymentBreakdownCard: {
-        marginTop: 16,
-        backgroundColor: '#F8FAFC',
-        borderRadius: 16,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: '#E2E8F0',
-    },
-    breakdownTitle: {
-        fontSize: 14,
-        fontFamily: Fonts.semi_bold,
-        color: colors.black,
-        marginBottom: 12,
-    },
-    breakdownRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 8,
-        borderBottomWidth: 0.5,
-        borderBottomColor: '#E2E8F0',
-    },
-    breakdownLabel: {
-        fontSize: 13,
-        fontFamily: Fonts.regular,
-        color: colors.grey_dark,
-    },
-    breakdownValue: {
-        fontSize: 13,
-        fontFamily: Fonts.medium,
-        color: colors.black,
-    },
-    breakdownNote: {
-        fontSize: 11,
-        fontFamily: Fonts.regular,
-        color: colors.grey_dark,
-        marginTop: 12,
-        lineHeight: 16,
-        fontStyle: 'italic',
-    },
-    sheetContent: {
-        flex: 1,
-        paddingHorizontal: 16,
-        paddingTop: 10,
-    },
-    tripTabsRow: {
-        flexDirection: 'row',
-        borderBottomWidth: 1,
-        borderBottomColor: '#F1F5F9',
         marginBottom: 16,
-        paddingHorizontal: 16,
-    },
-    tripTab: {
-        flex: 1,
-        alignItems: 'center',
-        paddingVertical: 14,
-    },
-    tabLabelContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    tabIcon: {
-        marginRight: 6,
-    },
-    tripTabText: {
-        fontSize: 15,
-        fontFamily: Fonts.medium,
-        color: '#757575',
-    },
-    tripTabTextActive: {
-        color: colors.orange,
-        fontFamily: Fonts.bold,
-    },
-    activeTabUnderline: {
-        position: 'absolute',
-        bottom: -1,
-        left: 0,
-        right: 0,
-        height: 3,
-        backgroundColor: colors.orange,
-        borderTopLeftRadius: 2,
-        borderTopRightRadius: 2,
-    },
-    scheduleBanner: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        borderRadius: 14,
-        borderWidth: 1.5,
-        borderColor: '#E2E8F0',
-        backgroundColor: '#FFFFFF',
-        marginBottom: 18,
-    },
-    scheduleInfo: {
-        flex: 1,
-    },
-    scheduleLabel: {
-        fontSize: 13,
-        fontFamily: Fonts.medium,
-        color: actingDriverColors.secondary,
-        marginBottom: 2,
-    },
-    scheduleDateText: {
-        fontSize: 14,
-        fontFamily: Fonts.bold,
-        color: actingDriverColors.secondary,
-    },
-    scheduleChevronWrap: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: '#F1F5F9',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    schedulePanel: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        paddingHorizontal: 24,
-        paddingBottom: 36,
-        paddingTop: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -10 },
-        shadowOpacity: 0.1,
-        shadowRadius: 10,
-        elevation: 20,
-    },
-    scheduleHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 16,
+        paddingHorizontal: 20,
         marginTop: 10,
     },
-    scheduleTitle: {
-        fontSize: 18,
-        fontFamily: Fonts.bold,
-        color: actingDriverColors.secondary,
-        marginBottom: 4,
-    },
-    scheduleSubtitle: {
-        fontSize: 13,
-        fontFamily: Fonts.regular,
-        color: colors.grey_xxdark,
-    },
-    closeBtn: {
-        padding: 4,
-    },
-    scheduleTabRow: {
-        flexDirection: 'row',
-        borderBottomWidth: 1,
-        borderBottomColor: '#F1F5F9',
-        marginBottom: 16,
-    },
-    scheduleTabItem: {
-        flex: 1,
-        alignItems: 'center',
-        paddingVertical: 12,
-    },
-    scheduleTabLabel: {
-        fontSize: 14,
-        fontFamily: Fonts.medium,
-        color: '#757575',
-    },
-    scheduleTabLabelActive: {
-        color: actingDriverColors.secondary,
-        fontFamily: Fonts.bold,
-    },
-    scheduleActiveBar: {
+    backButton: {
         position: 'absolute',
-        bottom: -1,
-        left: 0,
-        right: 0,
-        height: 3,
-        backgroundColor: actingDriverColors.primary,
+        left: 20,
+        padding: 4,
+        zIndex: 1,
     },
-    datePickerContainer: {
+    headerTitleContainer: {
         alignItems: 'center',
-        justifyContent: 'center',
-        marginVertical: 10,
     },
-    scheduleConfirmButton: {
-        backgroundColor: colors.blue_xxdark,
-        borderRadius: 14,
-        paddingVertical: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 16,
+    stepText: {
+        fontFamily: Fonts.semi_bold,
+        fontSize: 14,
+        color: colors.black,
     },
-    scheduleConfirmText: {
-        color: '#FFFFFF',
-        fontSize: 16,
+    titleText: {
         fontFamily: Fonts.bold,
+        fontSize: 18,
+        color: colors.black,
     },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(15, 23, 42, 0.65)',
-        justifyContent: 'flex-end',
-    },
-    modalContent: {
-        backgroundColor: '#FFFFFF',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        padding: 24,
-        minHeight: 450,
-        shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: -10 },
-        shadowOpacity: 0.15,
-        shadowRadius: 20,
-        elevation: 10,
-    },
-    modalHeader: {
+    progressBar: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
+        justifyContent: 'center',
         marginBottom: 20,
     },
-    modalTitle: {
-        fontSize: 18,
-        fontFamily: Fonts.semi_bold,
-        color: actingDriverColors.secondary,
-    },
-    closeButton: {
-        padding: 4,
-    },
-    paymentSummaryCard: {
-        backgroundColor: '#F1F5F9',
-        borderRadius: 16,
-        padding: 16,
-        alignItems: 'center',
-        marginBottom: 24,
-    },
-    summaryLabel: {
-        fontSize: 13,
-        fontFamily: Fonts.medium,
-        color: '#64748B',
-        marginBottom: 4,
-    },
-    summaryAmount: {
-        fontSize: 32,
-        fontFamily: Fonts.bold,
-        color: actingDriverColors.secondary,
-    },
-    methodSectionTitle: {
-        fontSize: 14,
-        fontFamily: Fonts.semi_bold,
-        color: actingDriverColors.secondary,
-        marginBottom: 12,
-    },
-    methodList: {
-        gap: 12,
-        marginBottom: 24,
-    },
-    methodRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 14,
-        borderRadius: 12,
-        borderWidth: 1.5,
-        borderColor: '#E2E8F0',
-        backgroundColor: '#FFFFFF',
-    },
-    methodRowSelected: {
-        borderColor: actingDriverColors.primary,
-        backgroundColor: '#FFFBEB',
-    },
-    methodInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
-    },
-    methodText: {
-        fontSize: 14,
-        fontFamily: Fonts.medium,
-        color: actingDriverColors.secondary,
-    },
-    radioCircle: {
-        width: 18,
-        height: 18,
-        borderRadius: 9,
-        borderWidth: 2,
-        borderColor: '#94A3B8',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    radioCircleSelected: {
-        borderColor: actingDriverColors.primary,
-    },
-    radioDot: {
+    progressDot: {
         width: 10,
         height: 10,
         borderRadius: 5,
-        backgroundColor: actingDriverColors.primary,
+        backgroundColor: colors.grey_xdark,
     },
-    payNowButton: {
-        backgroundColor: actingDriverColors.success,
-        borderRadius: 16,
-        paddingVertical: 16,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: actingDriverColors.success,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 8,
-        elevation: 4,
+    progressLine: {
+        width: 40,
+        height: 2,
+        backgroundColor: colors.grey_xdark,
+        marginHorizontal: 4,
+        borderRadius: 1,
+        overflow: 'hidden',
     },
-    payNowText: {
-        color: '#FFFFFF',
-        fontSize: 16,
-        fontFamily: Fonts.semi_bold,
+    scrollContent: {
+        paddingHorizontal: 16,
+        paddingBottom: 120,
     },
-    successContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 40,
-    },
-    successCircle: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: '#DEF7EC',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 20,
-    },
-    successTitle: {
-        fontSize: 20,
-        fontFamily: Fonts.bold,
-        color: actingDriverColors.success,
-        marginBottom: 8,
-    },
-    successSubtitle: {
-        fontSize: 14,
-        fontFamily: Fonts.regular,
-        color: '#6B7280',
-        textAlign: 'center',
-        paddingHorizontal: 20,
-    },
-    successModalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(15, 23, 42, 0.7)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 24,
-    },
-    successModalContent: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 24,
-        padding: 30,
-        width: '100%',
-        alignItems: 'center',
-        shadowColor: '#0F172A',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.2,
-        shadowRadius: 20,
-        elevation: 10,
-    },
-    successIconCircle: {
-        marginBottom: 20,
-    },
-    successModalTitle: {
-        fontSize: 22,
-        fontFamily: Fonts.bold,
-        color: actingDriverColors.secondary,
+    reviewCard: {
+        backgroundColor: colors.white,
+        borderRadius: 12,
+        padding: 16,
         marginBottom: 12,
-        textAlign: 'center',
+        borderWidth: 1,
+        borderColor: colors.grey_xdark,
     },
-    successModalSubtitle: {
-        fontSize: 15,
-        fontFamily: Fonts.regular,
-        color: colors.grey_dark,
-        textAlign: 'center',
-        lineHeight: 22,
-        marginBottom: 28,
-        paddingHorizontal: 10,
-    },
-    doneButton: {
-        backgroundColor: actingDriverColors.secondary,
-        borderRadius: 16,
-        paddingVertical: 14,
-        paddingHorizontal: 32,
-        width: '100%',
+    vehicleReviewHeader: {
+        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
     },
-    doneButtonText: {
-        color: '#FFFFFF',
-        fontSize: 16,
+    vehicleReviewImage: {
+        width: 50,
+        height: 50,
+        resizeMode: 'contain',
+    },
+    vehicleReviewInfo: {
+        flex: 1,
+        marginLeft: 12,
+    },
+    vehicleReviewLabel: {
+        fontSize: 12,
+        fontFamily: Fonts.medium,
+        marginBottom: 2,
+    },
+    vehicleReviewName: {
+        fontSize: 15,
+        fontFamily: Fonts.bold,
+        color: colors.blue_xxdark,
+    },
+    editLinkText: {
+        fontSize: 13,
         fontFamily: Fonts.semi_bold,
     },
-    /* ── Itinerary Button ── */
-    itineraryButton: {
+    detailsContainer: {
+        backgroundColor: colors.white,
+        borderRadius: 12,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: colors.grey_xdark,
+    },
+    detailRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: '#FFFBEB',
-        borderWidth: 1.5,
-        borderColor: actingDriverColors.primary,
-        borderRadius: 14,
-        padding: 14,
-        marginTop: 16,
+        padding: 16,
     },
-    itineraryButtonLeft: {
+    detailLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
+        width: 130,
+    },
+    detailLabel: {
+        fontSize: 13,
+        fontFamily: Fonts.semi_bold,
+        color: colors.grey_xxdark,
+        marginLeft: 8,
+    },
+    detailValue: {
         flex: 1,
-    },
-    itineraryButtonIconWrap: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
-        backgroundColor: '#FEF3C7',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    itineraryButtonTitle: {
-        fontSize: 14,
-        fontFamily: Fonts.semi_bold || Fonts.medium,
-        color: actingDriverColors.secondary,
-    },
-    itineraryButtonSub: {
-        fontSize: 11,
-        fontFamily: Fonts.regular,
-        color: '#4B5563',
-        marginTop: 2,
-    },
-    itineraryButtonRight: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-    },
-    itineraryBadge: {
-        backgroundColor: actingDriverColors.primary,
-        borderRadius: 10,
-        paddingHorizontal: 7,
-        paddingVertical: 2,
-    },
-    itineraryBadgeText: {
-        fontSize: 11,
-        fontFamily: Fonts.semi_bold || Fonts.medium,
-        color: actingDriverColors.secondary,
-    },
-    vehicleScrollCard: {
-        width: 240,
-        backgroundColor: '#F8FAFC',
-        borderWidth: 1,
-        borderColor: '#E2E8F0',
-        borderRadius: 12,
-        padding: 12,
-        marginRight: 12,
-    },
-    vehicleScrollCardSelected: {
-        backgroundColor: '#F1F5F9',
-        borderColor: '#94A3B8',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 6,
-        elevation: 2,
-    },
-    addVehicleScrollCard: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderStyle: 'dashed',
-        backgroundColor: '#FFFFFF',
-        flexDirection: 'row',
-        gap: 8,
-    },
-    vehicleScrollIconBg: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#E2E8F0',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    vehicleScrollIconBgSelected: {
-        backgroundColor: '#475569',
-    },
-    vehicleScrollReg: {
-        fontSize: 14,
-        fontFamily: Fonts.bold,
-        color: '#1E293B',
-    },
-    vehicleScrollRegSelected: {
-        color: '#1E293B',
-    },
-    vehicleScrollMeta: {
-        fontSize: 12,
-        fontFamily: Fonts.medium,
-        color: '#64748B',
-        marginTop: 2,
-    },
-    vehicleScrollMetaSelected: {
-        color: '#64748B',
-    },
-    addVehicleScrollText: {
         fontSize: 13,
         fontFamily: Fonts.medium,
-        color: '#1E293B',
-        marginTop: 8,
+        color: colors.blue_xxdark,
+        textAlign: 'left',
+        marginHorizontal: 8,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#F1F5F9',
+        marginLeft: 44,
+        marginRight: 16,
+    },
+    fareReviewCard: {
+        backgroundColor: colors.yellow_xxlight,
+        borderColor: colors.yellow_light,
+    },
+    fareReviewRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    fareReviewLabel: {
+        fontSize: 14,
+        fontFamily: Fonts.bold,
+        marginLeft: 8,
+    },
+    fareReviewAmount: {
+        flex: 1,
+        fontSize: 16,
+        fontFamily: Fonts.bold,
+        color: colors.blue_xxdark,
+        textAlign: 'right',
+        marginRight: 12,
+    },
+    couponReviewLabel: {
+        fontSize: 14,
+        fontFamily: Fonts.semi_bold,
+        marginLeft: 8,
+    },
+    viewOffersText: {
+        fontSize: 13,
+        fontFamily: Fonts.medium,
+        color: colors.grey_xxdark,
+    },
+    paymentMethodText: {
+        fontSize: 13,
+        fontFamily: Fonts.semi_bold,
+        color: colors.blue_xxdark,
+    },
+    stickyFooter: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: colors.white,
+        padding: 16,
+        borderTopWidth: 1,
+        borderTopColor: colors.grey_xdark,
+        paddingBottom: 24,
+    },
+    confirmButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 16,
+        borderRadius: 12,
+        marginBottom: 12,
+    },
+    confirmButtonDisabled: {
+        opacity: 0.6,
+    },
+    confirmButtonText: {
+        fontSize: 16,
+        fontFamily: Fonts.bold,
+        color: colors.white,
+        marginRight: 8,
+    },
+    secureFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    secureFooterText: {
+        fontSize: 12,
+        fontFamily: Fonts.medium,
+        color: colors.grey_xxdark,
+        marginLeft: 6,
+    },
+    successModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    successModalContent: {
+        backgroundColor: colors.white,
+        borderRadius: 16,
+        padding: 24,
+        alignItems: 'center',
+        width: '85%',
+    },
+    successIconCircle: {
+        marginBottom: 16,
+    },
+    successModalTitle: {
+        fontSize: 18,
+        fontFamily: Fonts.bold,
+        color: colors.blue_xxdark,
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    successModalSubtitle: {
+        fontSize: 14,
+        fontFamily: Fonts.regular,
+        color: colors.grey_xxdark,
+        marginBottom: 24,
+        textAlign: 'center',
+    },
+    doneButton: {
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 8,
+    },
+    doneButtonText: {
+        fontSize: 14,
+        fontFamily: Fonts.bold,
+        color: colors.white,
     },
 });
