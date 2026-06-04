@@ -15,6 +15,7 @@ const GeneratePresignedUrl = require("../../Controllers/GeneratePresignedUrl");
 const FareConfigs = require("../../Models/FareConfigs");    
 // const { getFareAlert } = require("../../Services/PushNotification/Messages");
 const FareService = require("../../fareEngine/services/FareService");
+const ActingDriverFareService = require("../../fareEngine/services/ActingDriverFareService");
 const Exotel = require("../../Services/exotel");
 const OTP_LENGTH = 4;
 
@@ -195,6 +196,82 @@ module.exports = function (CLASS) {
             currentTrip.maxDistanceLimit = getMaxDistanceLimit || null;
 
             return res.status(200).json({ success: true, message: 'Trip accepted successfully', currentTrip: currentTrip });
+
+        } catch (error) {
+            return this.handleError(error, res)
+        }
+    }
+
+    CLASS.prototype.acceptActingDriverRide = async function (req, res) {
+        const driverId = req.driver.id;
+        try {
+            const tripId = req.body?.tripId;
+            if (!tripId) return res.status(400).json({ success: false, message: 'Trip ID is required' });
+
+            const driver = await Driver.getDriverWithId(driverId);
+            if (!driver) return res.status(400).json({ success: false, message: 'Driver not found' });
+
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
+
+            if (!trip.isActingDriverTrip) return res.status(400).json({ success: false, message: 'Not an acting driver trip' });
+            if (trip.status === RideStatus.CANCELLED ) return res.status(400).json({ success: true, message: 'Trip is already cancelled', isCancelled: true });
+
+            const passangerId = trip.passangerId;
+            const otp = OTP.generateOTP(OTP_LENGTH);
+            const passanger = await Passanger.getPassangerWithId(passangerId);
+            if (!passanger) return res.status(400).json({ success: false, message: 'Passanger not found' });
+
+            const tripTimeline = {
+                state: 'ACCEPTED',
+                timestamp: new Date().getTime(),
+            };
+            
+            await Trip.assignDriverToTripwithTimeline(tripId, driverId, otp, tripTimeline);
+
+            const tempFareInfo = await ActingDriverFareService.getTempFareModel(trip);
+            trip.actingDriverFareModel = tempFareInfo.data;
+
+            const driverInfo = {
+                driverName: driver.name,
+                driverPhone: driver.phone,
+                driverRating: driver.rating || null,
+                vehicleType: driver.ownVehicleInfo?.type || null,
+                vehicleModel: driver.ownVehicleInfo?.model || null,
+                vehicleBrand: driver.ownVehicleInfo?.make || null,
+                vehicleColor: driver.ownVehicleInfo?.color || null,
+                vehicleNumber: driver.ownVehicleInfo?.regNo || null,
+                otp: otp,
+                upiid: driver.bankDetails?.UPIID || null,
+                driverLocaiton: driver.location
+            };
+   
+            if(driver?.documents?.driverPhoto){
+                const ImagePath = driver.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
+                const rjvw = new GeneratePresignedUrl()
+                driverInfo.driverPhoto = await rjvw.generatePresignedImg(ImagePath)
+                driverInfo.driverPhotoImg = ImagePath
+            }
+           
+            sendPassangerSocketEvents("driverAllocated", passangerId, req.socketService, driverInfo, trip, otp).catch(err => {
+                console.log(err, "Error sending socket events to passanger")
+            })
+            
+            if (passanger?.fcmToken) {
+                const notifParams = { tripId: String(trip._id), "trip_status": 'ACCEPTED', isActingDriverTrip: 'true' };
+                if(req.useNotPushNotification){
+                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessageWithOTP(driver.name, otp), null, "high", notifParams);
+                }else{
+                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessageWithOTP(driver.name, otp), null, "high", notifParams);
+                }
+            }
+
+            const currentTrip = await Trip.getTripById(tripId);
+            if(!currentTrip) return res.status(400).json({ success: false, message: 'Trip not found' });
+            
+            currentTrip.actingDriverFareModel = tempFareInfo.data;
+
+            return res.status(200).json({ success: true, message: 'Acting Driver Trip accepted successfully', currentTrip: currentTrip });
 
         } catch (error) {
             return this.handleError(error, res)

@@ -9,6 +9,7 @@ class TripController extends Controller {
         super();
 
         this.acceptRidePublicRides = this.acceptRidePublicRides.bind(this);
+        this.acceptActingDriverRide = this.acceptActingDriverRide.bind(this);
         // this.cancelTripPublicRides = this.cancelTripPublicRides.bind(this);
         this.TripStopsChange = this.TripStopsChange.bind(this);
         this.getpublicRidesTripStatus = this.getpublicRidesTripStatus.bind(this);

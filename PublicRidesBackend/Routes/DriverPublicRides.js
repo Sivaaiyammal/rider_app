@@ -32,6 +32,7 @@ Router.post('/updateDriverDetails', CheckDriverAuthenticated, withTiming(driverC
 Router.get('/getTrip', CheckDriverAuthenticated, withTiming(driverController, driverController.getTrip))
 Router.get('/getActiveTrip', CheckDriverAuthenticated, withTiming(driverController, driverController.getActiveTrip))
 Router.post('/acceptRide', CheckDriverAuthenticated, withTiming(tripController, tripController.acceptRidePublicRides))
+Router.post('/acceptActingDriverRide', CheckDriverAuthenticated, withTiming(tripController, tripController.acceptActingDriverRide))
 Router.post('/getTotalFare', CheckDriverAuthenticated, withTiming(driverController, driverController.getTotalFare))
 Router.post('/verifyTripOtp', CheckDriverAuthenticated, withTiming(driverController, driverController.verifyTripOtp))
 Router.post('/updatePublicRidesDriverStatus', CheckDriverAuthenticated, withTiming(driverController, driverController.updatePublicRidesDriverStatus))
