@@ -29,11 +29,13 @@ const parseEndpoint = (rawEndpoint) => {
     if (!rawEndpoint) return { host: 'unknown', port: 'unknown', useSSL: 'unknown' };
     
     let url = rawEndpoint.trim();
-    let useSSL = true;
+    const isLocal = url.includes('localhost') || url.includes('127.0.0.1') || url.includes('192.168.') || url.includes('10.');
+    let useSSL = process.env.E2E_USE_SSL
+        ? String(process.env.E2E_USE_SSL).toLowerCase() === 'true'
+        : !isLocal;
     let port = 9000;
 
-    if (url.includes('localhost') || url.includes('127.0.0.1')) {
-        useSSL = false;
+    if (isLocal) {
         port = 9000;
         if (url.startsWith('http://')) {
             url = url.replace('http://', '');

@@ -6,11 +6,18 @@ require("dotenv").config();
 
 class RazorPayLinking {
     constructor() {
-        // Validate environment variables
-        if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+        const disableStrict = (process.env.RAZORPAY_DISABLE_STRICT || '').toLowerCase() === 'true';
+        const hasKeys = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET;
+
+        if (!hasKeys) {
+            if (disableStrict) {
+                console.warn('[Razorpay] Keys missing, running in STUB/MOCK mode.');
+                this.isStub = true;
+                return;
+            }
             throw new Error('RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables are required');
         }
-        
+
         this.RZP = axios.create({
             baseURL: 'https://api.razorpay.com',
             auth: {
@@ -62,6 +69,9 @@ class RazorPayLinking {
     }
 
     async testApiCredentials() {
+        if (this.isStub) {
+            return { success: true, data: { stub: true } };
+        }
         try {
             // Test API credentials by making a simple request
             const response = await this.RZP.get('/v1/account');
@@ -102,6 +112,27 @@ class RazorPayLinking {
     }
 
     async linkRazorpayAccount(driverid, driverId, name, email, phone, address, bank, pan) {
+        if (this.isStub) {
+            console.log('[Razorpay STUB] Mocking linkRazorpayAccount for driver:', driverid);
+            return {
+                success: true,
+                data: {
+                    linkedAccountId: 'acc_stub_' + driverid,
+                    productId: 'prod_stub_' + driverid,
+                    accountDetails: {
+                        id: 'acc_stub_' + driverid,
+                        active_configuration: {
+                            settlements: {
+                                account_number: bank.accountNumber,
+                                ifsc_code: bank.ifsc,
+                                beneficiary_name: bank.beneficiaryName
+                            }
+                        }
+                    }
+                },
+                message: 'Razorpay account linked successfully (STUB)'
+            };
+        }
         console.log("productId -- >> 1", bank);
         try {
             // Validate inputs
@@ -349,6 +380,27 @@ class RazorPayLinking {
     }
 
     async updateRazorpayAccount(accountId, productId, accountNumber, ifscCode, beneficiaryName) {
+        if (this.isStub) {
+            console.log('[Razorpay STUB] Mocking updateRazorpayAccount for account:', accountId);
+            return {
+                success: true,
+                data: {
+                    accountId,
+                    productId,
+                    accountDetails: {
+                        id: accountId,
+                        active_configuration: {
+                            settlements: {
+                                account_number: accountNumber,
+                                ifsc_code: ifscCode,
+                                beneficiary_name: beneficiaryName
+                            }
+                        }
+                    }
+                },
+                message: 'Razorpay account updated successfully (STUB)'
+            };
+        }
         try {
             const payload = {
                 "settlements": {
@@ -392,6 +444,12 @@ class RazorPayLinking {
     }
 
     async getPaymentDetails(paymentId) { 
+        if (this.isStub) {
+            return {
+                success: true,
+                data: { id: paymentId, status: 'captured' }
+            };
+        }
         try {
             const accountDetailsResponse = await this.RZP.get(`v1/payments/${paymentId}`);
             return {
@@ -407,6 +465,12 @@ class RazorPayLinking {
     }
 
     async verifyVpa(upiId) {
+        if (this.isStub) {
+            return {
+                success: true,
+                data: { vpa: upiId, success: true, customer_name: 'Stub Account Holder' }
+            };
+        }
         const payload = {"vpa": upiId}
         try {
             const accountDetailsResponse = await this.RZP.post(`v1/validations/upi`, payload);

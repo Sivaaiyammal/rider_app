@@ -39,6 +39,12 @@ class OCRAPI {
     }
 
     async scanDocument(invoiceSource = DEFAULT_INVOICE_URL) {
+        if (!this.key) {
+            console.warn('[OCR] Running in MOCK mode due to missing OCR_KEY.');
+            return {
+                fields: {}
+            };
+        }
         const base64Payload = await this.ensureBase64(invoiceSource, DEFAULT_INVOICE_URL);
 
         const analyzeResult = await this.analyzeModel('prebuilt-invoice', { base64Source: base64Payload }, (state) => {
@@ -55,6 +61,37 @@ class OCRAPI {
     }
 
     async scanIdDocument(idDocumentSource = DEFAULT_ID_DOCUMENT_URL) {
+        if (!this.key) {
+            console.warn('[OCR] Running in MOCK mode due to missing OCR_KEY.');
+            const isPassport = String(idDocumentSource).toLowerCase().includes('passport');
+            if (isPassport) {
+                return {
+                    docType: 'idDocument.passport',
+                    rawFields: {},
+                    parsed: {
+                        firstName: 'Mock',
+                        lastName: 'Driver',
+                        dateOfBirth: '1990-01-01',
+                        nationality: 'IND',
+                        passportNumber: 'Z1234567',
+                        issuer: 'IND',
+                        expirationDate: '2035-12-31',
+                    }
+                };
+            }
+            return {
+                docType: 'idDocument.driverLicense',
+                rawFields: {},
+                parsed: {
+                    firstName: 'Mock',
+                    lastName: 'Driver',
+                    licenseNumber: 'DL1234567890123',
+                    dateOfBirth: '1990-01-01',
+                    expirationDate: '2035-12-31',
+                }
+            };
+        }
+
         const base64Payload = await this.ensureBase64(idDocumentSource, DEFAULT_ID_DOCUMENT_URL);
 
         const analyzeResult = await this.analyzeModel('prebuilt-idDocument', { base64Source: base64Payload }, (state) => {
