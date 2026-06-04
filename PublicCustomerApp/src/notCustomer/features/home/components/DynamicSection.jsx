@@ -872,10 +872,10 @@ const DynamicSection = ({title = 'Dynamic Section', onSelect = () => {}}) => {
         return (
           <React.Fragment key={section.key}>
             {renderer(section)}
-            {section.key === 'services' && renderActingDriverBanner()}
           </React.Fragment>
         );
       })}
+      {renderActingDriverBanner()}
     </View>
   );
 };

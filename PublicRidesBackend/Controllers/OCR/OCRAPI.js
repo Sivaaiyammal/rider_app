@@ -60,10 +60,10 @@ class OCRAPI {
         return invoice;
     }
 
-    async scanIdDocument(idDocumentSource = DEFAULT_ID_DOCUMENT_URL) {
+    async scanIdDocument(idDocumentSource = DEFAULT_ID_DOCUMENT_URL, docType) {
         if (!this.key) {
             console.warn('[OCR] Running in MOCK mode due to missing OCR_KEY.');
-            const isPassport = String(idDocumentSource).toLowerCase().includes('passport');
+            const isPassport = String(idDocumentSource).toLowerCase().includes('passport') || docType === 'PASSPORT';
             if (isPassport) {
                 return {
                     docType: 'idDocument.passport',
@@ -76,6 +76,19 @@ class OCRAPI {
                         passportNumber: 'Z1234567',
                         issuer: 'IND',
                         expirationDate: '2035-12-31',
+                    }
+                };
+            }
+            if (docType === 'VEHICLE_RC') {
+                return {
+                    docType: 'VEHICLE_RC',
+                    rawFields: {},
+                    parsed: {
+                        registrationNumber: 'TN01AB1234',
+                        chassisNumber: 'CHASSIS12345678',
+                        engineNumber: 'ENGINE12345678',
+                        ownerName: 'Mock Owner',
+                        registrationDate: '2020-01-01',
                     }
                 };
             }

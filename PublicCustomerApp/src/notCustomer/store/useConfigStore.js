@@ -29,7 +29,9 @@ const defaultConfig = {
     twitter: 'https://twitter.com/nammaoorutaxi',
     instagram: 'https://www.instagram.com/nammaoorutaxi',
     linkedin: 'https://www.linkedin.com/company/nammaoorutaxi',
-  }
+  },
+  // eslint-disable-next-line prettier/prettier
+  actingDriverEnabled: true,
 };
 
 const useConfigStore = create((set, get) => ({

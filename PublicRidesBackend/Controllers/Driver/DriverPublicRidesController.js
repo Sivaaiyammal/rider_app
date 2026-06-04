@@ -725,9 +725,9 @@ module.exports = function (CLASS) {
         if (!tripId || !otp) return res.status(400).json({ success: false, message: 'Trip ID and OTP are required' });
         try {
             const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
             if (trip.status === RideStatus.CANCELLED ) return res.status(400).json({ success: true, message: 'Trip is already cancelled', isCancelled: true });
             const passangerId = trip.passangerId;
-            if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
             console.log(`[DEBUG verifyTripOtp] tripId: ${tripId}`);
             console.log(`[DEBUG verifyTripOtp] trip.otp (type ${typeof trip.otp}): '${trip.otp}'`);
             console.log(`[DEBUG verifyTripOtp] req otp (type ${typeof otp}): '${otp}'`);
@@ -738,11 +738,13 @@ module.exports = function (CLASS) {
                 timestamp: new Date().getTime(),
             };
             await Trip.updateTripStatusandStopswithTimeline(tripId, 'PICKEDUP', timeline);
-            trip.stops[0].isReached = true;
-            trip.stops[0].arrivalTime = new Date().getTime();
-            trip.stops[0].driverWaitTime = 0;
-            trip.stops[0].stopUpdated = true;
-            trip.status = RideStatus.PICKEDUP 
+            if (trip.stops?.[0]) {
+                trip.stops[0].isReached = true;
+                trip.stops[0].arrivalTime = new Date().getTime();
+                trip.stops[0].driverWaitTime = 0;
+                trip.stops[0].stopUpdated = true;
+            }
+            trip.status = RideStatus.PICKEDUP;
             sendPassangerSocketEvents(passangerId, req.socketService, trip).catch(err => {  
                 console.log(err, "Error sending socket events to passanger")
             })

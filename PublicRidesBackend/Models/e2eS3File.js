@@ -38,7 +38,7 @@ const e2eS3File = async (method = 'upload', file, fileName, filePath, oldFilePat
         '.pdf': 'application/pdf',
     };
 
-    let ext; // default
+    let ext = ''; // default to empty string — avoids 'undefined' in object key
 
     if (preferExt) {
         ext = preferExt.startsWith('.') ? preferExt : `.${preferExt}`;

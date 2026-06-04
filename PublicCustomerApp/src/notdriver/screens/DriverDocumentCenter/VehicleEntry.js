@@ -433,7 +433,7 @@ const VehicleEntry = ({ onNext }) => {
           regNo: regNo.trim(),
           vehicleRcDoc,
           insuranceDoc,
-          permitNumber: permitNumber.trim(),
+          permitNumber: permitNumber?.trim() || '',
           permitDoc,
         });
         showNotification(response?.message, '', 'success');
@@ -444,7 +444,7 @@ const VehicleEntry = ({ onNext }) => {
         return;
       }
 
-      // showNotification(response?.message, '', 'danger');
+      showNotification(response?.message || 'Update failed', '', 'danger');
     } catch (error) {
       console.error('Error updating vehicle details: --- >>>', error);
       showNotification(
@@ -487,7 +487,7 @@ const VehicleEntry = ({ onNext }) => {
     const formData = new FormData();
     formData.append('type', selectedType);
     formData.append('regNo', regNo.trim());
-    formData.append('permitNumber', permitNumber.trim());
+    formData.append('permitNumber', permitNumber?.trim() || '');
     if (vehicleRcDoc?.uri?.includes('file://')) {
       formData.append('vehicleRcDoc', {
         uri: Platform.OS === 'android' ? vehicleRcDoc?.uri : vehicleRcDoc?.uri?.replace('file://', ''),

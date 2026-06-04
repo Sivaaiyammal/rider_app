@@ -11,8 +11,15 @@ const parseS3Endpoint = (rawEndpoint) => {
     let useSSL = true;
     let port = 9000; // Default MinIO port
 
-    // Handle localhost/127.0.0.1 specially - no SSL, port 9000
-    if (url.includes('localhost') || url.includes('127.0.0.1')) {
+    // Detect local addresses — no SSL, port 9000
+    // Matches: localhost, 127.0.0.1, any 192.168.x.x, any 10.x.x.x
+    const isLocal = (h) =>
+        h.includes('localhost') ||
+        h.includes('127.0.0.1') ||
+        /^192\.168\./.test(h) ||
+        /^10\./.test(h);
+
+    if (isLocal(url)) {
         useSSL = false;
         port = 9000;
         // Remove protocol if present

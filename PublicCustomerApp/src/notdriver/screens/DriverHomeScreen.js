@@ -97,7 +97,7 @@ import DriverMapScreenV3 from './DriverMapScreenV3';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
-  const requiredKeys = ['name', 'phone', 'gender', 'location', 'dob'];
+  const requiredKeys = ['name', 'phone', 'gender', 'homeLocation', 'dob'];
   const isParivahanFailed = response.driver?.ownVehicleInfo?.isParivahanFailed === true;
   const infoKeys = ['type', 'regNo'];
   const documentKeys = isParivahanFailed ? ['vehicleRcDoc', 'insurance', 'permitDoc'] : ['vehicleRcDoc'];
@@ -112,7 +112,7 @@ const checkDriverDetails = (response) => {
   
   const {setLocationCompleteStatus,setDriverDetailsCompleteStatus, setVehicleDetailsCompleteStatus, setBankDetailsCompleteStatus,setDocumentsCompleteStatus} = usePublicDriverStore.getState();
   
-  if (['location'].every(key => key in response.driver)) {
+  if (['homeLocation'].every(key => key in response.driver)) {
   setLocationCompleteStatus(true)
   }
 

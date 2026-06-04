@@ -65,5 +65,14 @@ export const useTripAcceptStore = create((set) => ({
   setDataFromSocket: (dataFromSocket) => set({ dataFromSocket: dataFromSocket }),
   
   // Action to reset the store
-  reset: () => set({ error: null, escalationDetails: null}),
+  reset: () => set({ 
+    tripId: null,
+    tripDetails: null,
+    currentFare: null,
+    loading: false,
+    error: null,
+    requestId: null,
+    timeOutSeconds: 0,
+    escalationDetails: null,
+  }),
 }));

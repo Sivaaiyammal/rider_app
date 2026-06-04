@@ -125,8 +125,13 @@ module.exports = function (CLASS) {
             const trip = await Trip.getTripById(tripId);
             if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
 
-            if (!trip.publicRidesTrip) return res.status(400).json({ success: false, message: 'Trip is not a public rides trip' });
+            if (!trip.publicRidesTrip && !trip.isActingDriverTrip) return res.status(400).json({ success: false, message: 'Trip is not a public rides trip' });
             if (trip.status === RideStatus.CANCELLED ) return res.status(400).json({ success: true, message: 'Trip is already cancelled', isCancelled: true });
+            if (trip.status === 'ASSIGNED' && trip.driverId?.toString() === driverId) {
+                // Already accepted by this driver — return current trip data so app can proceed
+                const currentTrip = await Trip.getTripById(tripId);
+                return res.status(200).json({ success: true, message: 'Trip already accepted', currentTrip: currentTrip || trip });
+            }
             
             // if (trip.status !== RideStatus.MATCHED && trip.driverId?.toString() === driverId){
             //     console.log("Driver already assigned to this trip, proceeding to accept");
@@ -154,13 +159,13 @@ module.exports = function (CLASS) {
                 driverName: driver.name,
                 driverPhone: driver.phone,
                 driverRating: driver.rating || null,
-                vehicleType: driver.ownVehicleInfo.type,
-                vehicleModel: driver.ownVehicleInfo.model,
-                vehicleBrand: driver.ownVehicleInfo.make,
-                vehicleColor: driver.ownVehicleInfo.color,
-                vehicleNumber: driver.ownVehicleInfo.regNo,
+                vehicleType: driver.ownVehicleInfo?.type || null,
+                vehicleModel: driver.ownVehicleInfo?.model || null,
+                vehicleBrand: driver.ownVehicleInfo?.make || null,
+                vehicleColor: driver.ownVehicleInfo?.color || null,
+                vehicleNumber: driver.ownVehicleInfo?.regNo || null,
                 otp: otp,
-                upiid: driver.bankDetails.UPIID,
+                upiid: driver.bankDetails?.UPIID || null,
                 driverLocaiton: driver.location
             };
    
@@ -282,7 +287,8 @@ module.exports = function (CLASS) {
         try {
             const driverId = req.driver.id
             const {tripId, reason, totalDistance, totalDuration, encodedPolyline, droppedAtLoc, isBeforePickup} = req.body
-            const trip =await Trip.getTripById(tripId)
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(400).json({success: false, message: 'Trip not Found'});
             const TripPassenger = await Passanger.getPassangerWithId(trip.passangerId);
             const TripDriver = await Driver.getDriverWithId(trip.driverId);
             let farecalculationDistance = totalDistance || 0;
@@ -312,7 +318,7 @@ module.exports = function (CLASS) {
             const driverWaitingTime = trip?.stops?.reduce((sum, stop) => {
                 return sum + (stop.driverWaitTime || 0);
             }, 0);
-            if (!trip) return res.status(400).json({success: false, message: 'Trip not Found'})
+            if (!trip) return res.status(400).json({success: false, message: 'Trip not Found'}) // guard (kept for safety)
             const isAccepted = trip.status === RideStatus.ACCEPTED;
 
          
@@ -342,7 +348,7 @@ module.exports = function (CLASS) {
                 }
                 sendPassangerSocketEvents(
                     "tripCancelledByDriver",
-                    String(TripPassenger._id),
+                    TripPassenger ? String(TripPassenger._id) : String(trip.passangerId || ''),
                     req.socketService,
                     null,
                     trip,
@@ -932,13 +938,13 @@ module.exports = function (CLASS) {
                 driverName: driver.name,
                 driverPhone: driver.phone,
                 driverRating: driver.rating || null,
-                vehicleType: driver.ownVehicleInfo.type,
-                vehicleModel: driver.ownVehicleInfo.model,
-                vehicleBrand: driver.ownVehicleInfo.make,
-                vehicleColor: driver.ownVehicleInfo.color,
-                vehicleNumber: driver.ownVehicleInfo.regNo,
+                vehicleType: driver.ownVehicleInfo?.type || null,
+                vehicleModel: driver.ownVehicleInfo?.model || null,
+                vehicleBrand: driver.ownVehicleInfo?.make || null,
+                vehicleColor: driver.ownVehicleInfo?.color || null,
+                vehicleNumber: driver.ownVehicleInfo?.regNo || null,
                 otp: otp,
-                upiid: driver.bankDetails.UPIID,
+                upiid: driver.bankDetails?.UPIID || null,
                 driverLocaiton: driver.location
             };
    
@@ -1009,13 +1015,13 @@ module.exports = function (CLASS) {
                 driverName: driver.name,
                 driverPhone: driver.phone,
                 driverRating: driver.rating || null,
-                vehicleType: driver.ownVehicleInfo.type,
-                vehicleModel: driver.ownVehicleInfo.model,
-                vehicleBrand: driver.ownVehicleInfo.make,
-                vehicleColor: driver.ownVehicleInfo.color,
-                vehicleNumber: driver.ownVehicleInfo.regNo,
+                vehicleType: driver.ownVehicleInfo?.type || null,
+                vehicleModel: driver.ownVehicleInfo?.model || null,
+                vehicleBrand: driver.ownVehicleInfo?.make || null,
+                vehicleColor: driver.ownVehicleInfo?.color || null,
+                vehicleNumber: driver.ownVehicleInfo?.regNo || null,
                 otp: otp,
-                upiid: driver.bankDetails.UPIID,
+                upiid: driver.bankDetails?.UPIID || null,
                 driverLocaiton: driver.location
             };
    
@@ -1115,6 +1121,7 @@ module.exports = function (CLASS) {
      *   bill_receipt_<idx>   – receipt image for bill[idx] (post phase, optional)
      */
     CLASS.prototype.uploadTripMedia = async function (req, res) {
+        const self = this; // capture context — multer callback loses 'this'
         const storage = multer.memoryStorage();
         // multer.any() accepts all field names — supports unlimited bill receipts
         const mediaUpload = multer({ storage }).any();
@@ -1146,6 +1153,9 @@ module.exports = function (CLASS) {
                     const file = fileMap[fieldName];
                     if (!file) return null;
                     const result = await e2eS3File('upload', file, s3Key, `trips/${tripId}/media/`);
+                    if (!result?.completed) {
+                        console.error(`[uploadTripMedia] S3 upload failed for field '${fieldName}':`, result?.message || 'unknown error');
+                    }
                     return result?.completed ? result.url : null;
                 };
 
@@ -1372,7 +1382,7 @@ module.exports = function (CLASS) {
                 return res.json({ success: true, message: `Trip ${phase} media uploaded successfully` });
 
             } catch (err) {
-                return this.handleError(err, res);
+                return self.handleError(err, res);
             }
         });
     }
