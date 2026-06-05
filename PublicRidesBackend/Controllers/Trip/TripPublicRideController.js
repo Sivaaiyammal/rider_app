@@ -917,8 +917,17 @@ module.exports = function (CLASS) {
             if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
 
             if (!trip.publicRidesTrip) return res.status(400).json({ success: false, message: 'Trip is not a public rides trip' });
-         
-            if (trip.status !== RideStatus.MATCHED && trip.driverId === driverId) return res.status(400).json({ success: false, message: 'Trip is already accepted by another driver' });
+
+            // Block a different driver from claiming an already-assigned trip
+            if (trip.status !== RideStatus.MATCHED && String(trip.driverId) !== String(driverId)) {
+                return res.status(400).json({ success: false, message: 'Trip is already accepted by another driver' });
+            }
+
+            // Trip is already ACCEPTED and assigned to THIS driver (e.g. pre-assigned acting driver trip)
+            // Skip re-assignment — return the trip so the driver can proceed to tracking
+            if (trip.status === RideStatus.ACCEPTED && String(trip.driverId) === String(driverId)) {
+                return res.status(200).json({ success: true, message: 'Trip already accepted', currentTrip: trip });
+            }
 
             const passangerId = trip.passangerId;
             const otp = OTP.generateOTP(OTP_LENGTH);
@@ -994,8 +1003,17 @@ module.exports = function (CLASS) {
             if (!trip) return res.status(400).json({ success: false, message: 'Trip not found' });
 
             if (!trip.publicRidesTrip) return res.status(400).json({ success: false, message: 'Trip is not a public rides trip' });
-         
-            if (trip.status !== RideStatus.MATCHED && trip.driverId === driverId) return res.status(400).json({ success: false, message: 'Trip is already accepted by another driver' });
+
+            // Block a different driver from claiming an already-assigned trip
+            if (trip.status !== RideStatus.MATCHED && String(trip.driverId) !== String(driverId)) {
+                return res.status(400).json({ success: false, message: 'Trip is already accepted by another driver' });
+            }
+
+            // Trip is already ACCEPTED and assigned to THIS driver (e.g. pre-assigned acting driver trip)
+            // Skip re-assignment — return the trip so the driver can proceed to tracking
+            if (trip.status === RideStatus.ACCEPTED && String(trip.driverId) === String(driverId)) {
+                return res.status(200).json({ success: true, message: 'Trip already accepted', currentTrip: trip });
+            }
 
             const passangerId = trip.passangerId;
             const otp = OTP.generateOTP(OTP_LENGTH);

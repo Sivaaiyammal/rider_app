@@ -22,6 +22,7 @@ import CustomeBottomSheet from '../../../common/components/CustomeBottomSheet';
 import AddressComponent from '../../components/AddressComponent';
 import CancelRideModal from '../../components/CancelModel';
 import {firebaselog_tripBooking} from '../../../common/utils/FirebaseAnalytics';
+import {showNotification} from '../../../common/components/Alerts/showNotification';
 import useTripsStore from '../../store/useTripsStore';
 import { DateTimeFormatter } from '../../../common/utils/DateTimeFormatter';
 import NavBar from '../../../common/components/NavBar';
@@ -203,32 +204,28 @@ const UpComingTripsView = () => {
       if (response?.success) {
         const tripData = response.currentTrip || upComingTripDetails;
 
-        // Update current trip in stores
         setTripId(tripId);
-        setActiveTripData([{...tripData, status: 'ACCEPTED'}]);
-
-        // Remove this trip from the upcoming trips list
+        setActiveTripData([{...tripData, status: tripData.status || 'ACCEPTED'}]);
         setUpComingTrips(
           (upComingTrips || []).filter(
             t => String(t._id) !== String(tripId),
           ),
         );
-
-        // Notify backend socket layer that driver has started the trip
-        // NOTWSService.emit('upComingTripStarted', {
-        //   tripId,
-        //   passangerId: upComingTripDetails?.passangerId,
-        //   driverId: userInfo?._id,
-        // });
-
         firebaselog_tripBooking(
           'TB_Driver_Allocation(TB_DA)',
           'TB_DA:trip_accepted_inapp',
         );
         setStackScreen('PublicDriverTrackingScreen');
+      } else {
+        showNotification(
+          'Cannot start trip',
+          response?.message || 'Something went wrong. Please try again.',
+          'danger',
+        );
       }
     } catch (error) {
       console.error('Error starting upcoming ride:', error);
+      showNotification('Error', 'Failed to start trip. Please try again.', 'danger');
     } finally {
       setLoading(false);
     }

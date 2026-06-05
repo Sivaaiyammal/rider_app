@@ -16,6 +16,7 @@ import { DataStore } from '../../common/controllers/DataStore';
 import { showNotification } from '../../common/components/Alerts/showNotification';
 import { RouteScreenStyles } from '../styles/RouteScreenStyles';
 import DriverOnRide from './DriverOnRide';
+import ActingDriverOnRide from './ActingDriverOnRide';
 import { Colors, colors, Fonts } from '../../common/constants/constants';
 import PublicDriverTripPaymentScreen from './PublicDriverTripPaymentScreen';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
@@ -230,7 +231,8 @@ const PublicDriverTrackingScreen = () => {
       return setStackScreen('StopChangeRequest');
      }
      if (tripsStatus === 'ACCEPTED' || tripsStatus === 'PICKEDUP') {
-      return <DriverOnRide />
+      const isActingDriverTrip = activeTripData?.[0]?.isActingDriverTrip ?? false;
+      return isActingDriverTrip ? <ActingDriverOnRide /> : <DriverOnRide />;
      }
       if (tripsStatus === 'DROPPED' || tripsStatus === 'PAYMENT_COMPLETED' || isOnGoing) {
       return <PublicDriverTripPaymentScreen onPaymentReceive={(fareDetails, paymentMethod)=>onPaymentReceive(fareDetails, paymentMethod)} tripDetials={activeTripData[0]} isLoading={isLoading}/>
