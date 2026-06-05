@@ -32,6 +32,7 @@ class WSService {
     this.passangerLocationChange = this.passangerLocationChange.bind(this)
     this.passangerAccount = this.passangerAccount.bind(this)
     this.newBillRequest = this.newBillRequest.bind(this)
+    this.actingDriverStarted = this.actingDriverStarted.bind(this)
     this.useWayPointReorderStore = useWayPointReorderStore
     // this.driverFareUpdate = this.driverFareUpdate.bind(this)
     this.useStackScreenStore = useStackScreenStore
@@ -48,30 +49,37 @@ class WSService {
 
   async driverAllocated(data){
     if(data?.driver && data?.otp){
-      console.log("driverAllocateddddddddddddddddddddddddddddddd",JSON.stringify(data))
-      if(data?.tripData){
-         if(data?.tripData?._id){
-          const currentTrip = await this.DataStore.loadData(PREF.CURRENT_TRIP);
-          if(currentTrip?.data){
-              console.log("currentTrip?.data?._id",currentTrip?.data)
-              console.log("data?._id",data?.tripData._id)
-              if(currentTrip?.data !== data?.tripData._id){
-                return;
-              }
-          }
+      const tripData = data?.tripData;
+      const tripId = data?._id || tripData?._id;
 
+      if(tripData?._id){
+        const currentTrip = await this.DataStore.loadData(PREF.CURRENT_TRIP);
+        if(currentTrip?.data && currentTrip?.data !== String(tripData._id)){
+          // This event is for a different trip — ignore it
+          return;
         }
-        this.useCurrentRideInfoStore.getState().setCurrentRideInfo(data?.tripData);
       }
-      if(data?._id){
-        await this.DataStore.storeData(PREF.CURRENT_TRIP,data?._id);
+
+      if(tripData){
+        this.useCurrentRideInfoStore.getState().setCurrentRideInfo(tripData);
       }
-    
+      if(tripId){
+        await this.DataStore.storeData(PREF.CURRENT_TRIP, String(tripId));
+        this.useUserInfoStore.getState().setActiveTripId(String(tripId));
+      }
+
       this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
       this.useAssignedDriverInfoStore.getState().setAllocatedDriverInfo(data?.driver);
       this.useCurrentRideInfoStore.getState().setOtp(data?.otp);
-      this.useCurrentRideInfoStore.getState().setEstimatedFare(data?.tripData?.estimatedFare);
-      this.useStackScreenStore.getState().setStackScreen('RideStatus',{});  console.log("driverAllocatedooooooo",JSON.stringify(this.useCurrentRideInfoStore.getState()))
+      this.useCurrentRideInfoStore.getState().setEstimatedFare(tripData?.estimatedFare);
+
+      // Acting driver trips stay on the Home screen — the ActingDriverStartedBanner shows automatically.
+      // Normal rides navigate to the RideStatus tracking screen.
+      if(tripData?.isActingDriverTrip){
+        this.useStackScreenStore.getState().reset();
+      } else {
+        this.useStackScreenStore.getState().setStackScreen('RideStatus', {});
+      }
     }
   }
   async onRideStatus(data){
@@ -162,14 +170,22 @@ class WSService {
         return;
       }
       else{
-
-      
+      // Hydrate full trip info if available (ensures isActingDriverTrip stays set
+      // even when the app was closed during driver start and only receives PICKEDUP now)
+      if(data?.tripData){
+        this.useCurrentRideInfoStore.getState().setCurrentRideInfo(data.tripData);
+      }
       if(data?.tripData?.stops){
         this.useCurrentRideInfoStore.getState().setStops(data?.tripData?.stops)
       }
       this.useCurrentRideInfoStore.getState().setTripStatus(data?.tripStatus);
       if(data?.tripData?.estimatedFare){
         this.useCurrentRideInfoStore.getState().setEstimatedFare(data?.tripData?.estimatedFare);
+      }
+      // Persist tripId for acting driver trips so banner survives app restart
+      if(data?.tripData?.isActingDriverTrip && data?._id){
+        this.useUserInfoStore.getState().setActiveTripId(String(data._id));
+        this.DataStore.storeData(PREF.CURRENT_TRIP, String(data._id)).catch(()=>{});
       }
     }
       
@@ -208,6 +224,43 @@ class WSService {
       console.error('Error resetting app:', error);
     }
   
+  }
+
+  async actingDriverStarted(data) {
+    try {
+      console.log('actingDriverStarted', JSON.stringify(data));
+      const trip = data?.tripData;
+      const driver = data?.driver;
+      const tripId = data?._id || trip?._id;
+      if (!tripId) return;
+
+      // Hydrate ride info store so customer live tracking works.
+      // Merge isActingDriverTrip from the socket envelope in case the trip document
+      // was created before the backend stored this field explicitly.
+      if (trip) {
+        const mergedTrip = {
+          ...trip,
+          isActingDriverTrip: trip.isActingDriverTrip || data.isActingDriverTrip || true,
+        };
+        this.useCurrentRideInfoStore.getState().setCurrentRideInfo(mergedTrip);
+        this.useCurrentRideInfoStore.getState().setTripStatus('ACCEPTED');
+      }
+      if (driver) {
+        this.useAssignedDriverInfoStore.getState().setAllocatedDriverInfo(driver);
+      }
+      if (data?.otp) {
+        this.useCurrentRideInfoStore.getState().setOtp(data.otp);
+      }
+
+      // Persist tripId so the home screen banner survives app restart
+      this.useUserInfoStore.getState().setActiveTripId(tripId);
+      await this.DataStore.storeData(PREF.CURRENT_TRIP, tripId);
+
+      // Navigate to Home so the ActingDriverStartedBanner is visible
+      this.useStackScreenStore.getState().reset();
+    } catch (error) {
+      console.error('Error handling actingDriverStarted:', error);
+    }
   }
 
   newBillRequest(data) {
@@ -320,7 +373,7 @@ class WSService {
           resolve(true);
         });
 
-        // this.socket.on('driverAllocated', this.driverAllocated);
+        this.socket.on('driverAllocated', this.driverAllocated);
 
         this.socket.on('driverLocationUpdate', this.driverLocationUpdate);
 
@@ -333,6 +386,8 @@ class WSService {
         this.socket.on('passangerAccount', this.passangerAccount);
 
         this.socket.on('newBillRequest', this.newBillRequest);
+
+        this.socket.on('actingDriverStarted', this.actingDriverStarted);
 
         // this.socket.on('passangerTripFareUpdate', this.driverFareUpdate);
 

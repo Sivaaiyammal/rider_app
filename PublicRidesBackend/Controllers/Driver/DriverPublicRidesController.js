@@ -601,9 +601,20 @@ module.exports = function (CLASS) {
             const totalWatingTime = trip.stops.reduce((sum, stop) => {
                 return sum + (stop.driverWaitTime || 0);
             }, 0);
-            // Continue only if trip status is PICKEDUP
-            if (trip.status !== RideStatus.PICKEDUP) {
-                return res.status(400).json({ success: false, message: 'Trip is not in PICKEDUP status' });
+            // For acting driver trips, also allow ending from ACCEPTED status
+            // (handles edge case where OTP was verified but DB status sync was missed)
+            const allowedStatuses = trip.isActingDriverTrip
+                ? [RideStatus.PICKEDUP, RideStatus.ACCEPTED]
+                : [RideStatus.PICKEDUP];
+
+            if (!allowedStatuses.includes(trip.status)) {
+                return res.status(400).json({ success: false, message: `Trip must be in PICKEDUP status to end. Current status: ${trip.status}` });
+            }
+
+            // If acting driver trip is still ACCEPTED, force-update to PICKEDUP before calculating fare
+            if (trip.isActingDriverTrip && trip.status === RideStatus.ACCEPTED) {
+                await Trip.updateTripStatus(tripId, RideStatus.PICKEDUP);
+                trip.status = RideStatus.PICKEDUP;
             }
 
             if (trip?.estimatedDistance && trip?.estimatedDuration) {
@@ -659,7 +670,7 @@ module.exports = function (CLASS) {
             trip.status = RideStatus.DROPPED;
             let supplierInfo = null;
             // let adminInfo = null;
-            if (finalFare.supplier.type === "vendor"){
+            if (finalFare?.supplier?.type === "vendor"){
                 const vendor = await Vendors.getVendorWithId(finalFare.supplier.id);
                 if(vendor){
                     supplierInfo = {

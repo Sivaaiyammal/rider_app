@@ -103,6 +103,20 @@ class CustomerRideAssignHandler {
         }
     }
 
+    emitActingDriverStarted(socketIds, data) {
+        try {
+            socketIds.forEach(socketId => {
+                const socket = this.publicRidesCustomerNamespace.sockets.get(socketId);
+                if (socket && socket.connected) {
+                    console.log("Emitting actingDriverStarted to passenger", socketId);
+                    socket.emit('actingDriverStarted', data);
+                }
+            });
+        } catch (err) {
+            console.log(err, "err");
+        }
+    }
+
 }
 
 module.exports = CustomerRideAssignHandler

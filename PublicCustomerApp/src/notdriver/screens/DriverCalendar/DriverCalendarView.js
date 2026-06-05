@@ -266,7 +266,7 @@ const DriverCalendarView = ({
           activeOpacity={0.8}
         >
           <MaterialIcons name="play-arrow" size={20} color={Colors.white} />
-          <Text style={styles.startButtonText}>Start Trip</Text>
+          <Text style={styles.startButtonText}>Continue</Text>
         </TouchableOpacity>
       )}
     </View>

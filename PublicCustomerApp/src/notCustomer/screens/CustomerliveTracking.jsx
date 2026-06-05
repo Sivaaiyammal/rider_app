@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, Linking } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import BottomSheetWrapper from '../components/BottomSheetWrapper';
 import { useStackScreenStore } from '../store/useStackScreenStore';
@@ -7,13 +7,64 @@ import locationTask from '../controllers/GetCurrentLocation';
 import useMapStore from '../features/map/store/useMapStore';
 import useLocationStore from '../store/useLocationStore';
 import Marker from '../controllers/NEMap/Marker';
+import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
+import useAssignedDriverInfoStore from '../features/rideStatus/store/useAssignedDriverInfoStore';
 
 const CustomerLiveTracking = () => {
   const { goBack } = useStackScreenStore();
   const [isItineraryExpanded, setIsItineraryExpanded] = useState(true);
   const [isCompletedStopsExpanded, setIsCompletedStopsExpanded] = useState(true);
   const [isUpcomingStopsExpanded, setIsUpcomingStopsExpanded] = useState(false);
-  
+
+  const {
+    tripId,
+    stops,
+    estimatedFare,
+    totalDistance,
+    duration,
+    finalDistance,
+    finalDuration,
+    otp,
+    bills,
+    finalFare
+  } = useCurrentRideInfoStore();
+
+  const {
+    driverName,
+    driverPhoto,
+    rating: driverRating,
+    phone,
+    vehicleNumber,
+    model: vehicleModel,
+    brand: vehicleBrand,
+    color: vehicleColor,
+    driverMaxSpeed
+  } = useAssignedDriverInfoStore();
+
+  const getInitials = (name) => {
+    if (!name) return 'D';
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
+  const handleCallDriver = () => {
+    if (phone) {
+      Linking.openURL(`tel:${phone}`).catch(err => console.warn('Could not place call', err));
+    }
+  };
+
+  const totalStops = stops?.length || 0;
+  const completedStops = stops?.filter(s => s.isReached || s.status === 'COMPLETED' || s.status === 'REACHED' || s.reachedTime) || [];
+  const pendingStops = stops?.filter(s => !s.isReached && s.status !== 'COMPLETED' && s.status !== 'REACHED' && !s.reachedTime) || [];
+  const completedPercent = totalStops > 0 ? Math.round((completedStops.length / totalStops) * 100) : 0;
+  const completedStopsText = completedStops.map(s => s.name || s.address).slice(0, 3).join(', ');
+
+  const nextStop = pendingStops[0];
+
+  const billsArray = Array.isArray(bills) ? bills : [];
+  const totalBillsAmount = billsArray.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+
   return (
     <SafeAreaView style={styles.container} pointerEvents="box-none">
       {/* Header */}
@@ -29,7 +80,7 @@ const CustomerLiveTracking = () => {
               <Text style={styles.liveText}>LIVE</Text>
             </View>
           </View>
-          <Text style={styles.headerSubtitle}>Ride ID: NT45892</Text>
+          <Text style={styles.headerSubtitle}>Ride ID: {tripId || 'N/A'}</Text>
         </View>
         <TouchableOpacity style={styles.helpButton}>
           <Icon name="help-circle-outline" size={16} color="#333" />
@@ -42,14 +93,14 @@ const CustomerLiveTracking = () => {
         <View style={styles.compactOverlayPill}>
           <Icon name="clock-outline" size={18} color="#5E35B1" />
           <View style={styles.compactOverlayTextGroup}>
-            <Text style={styles.compactOverlayValue}>18 min</Text>
-            <Text style={styles.compactOverlayLabel}>to next stop</Text>
+            <Text style={styles.compactOverlayValue}>{duration ? `${duration} min` : 'N/A'}</Text>
+            <Text style={styles.compactOverlayLabel}>est. duration</Text>
           </View>
         </View>
         <View style={styles.compactOverlayPill}>
           <Icon name="map-marker-distance" size={18} color="#00C853" />
           <View style={styles.compactOverlayTextGroup}>
-            <Text style={styles.compactOverlayValue}>42%</Text>
+            <Text style={styles.compactOverlayValue}>{completedPercent}%</Text>
             <Text style={styles.compactOverlayLabel}>completed</Text>
           </View>
         </View>
@@ -100,7 +151,7 @@ const CustomerLiveTracking = () => {
            <Icon name="speedometer" size={16} color="#00C853" />
            <View style={{marginLeft: 6}}>
               <Text style={styles.speedLabel}>Live Speed</Text>
-              <Text style={styles.speedValueMap}>62 km/h</Text>
+              <Text style={styles.speedValueMap}>{driverMaxSpeed != null ? `${Math.round(driverMaxSpeed)} km/h` : '0 km/h'}</Text>
            </View>
         </View>
       </View>
@@ -119,15 +170,19 @@ const CustomerLiveTracking = () => {
             {/* Driver Profile */}
             <View style={styles.driverProfileSection}>
               <View style={styles.driverAvatar}>
-                <Text style={styles.driverInitials}>RK</Text>
+                {driverPhoto ? (
+                  <Image source={{ uri: driverPhoto }} style={{ width: 48, height: 48, borderRadius: 16 }} />
+                ) : (
+                  <Text style={styles.driverInitials}>{getInitials(driverName)}</Text>
+                )}
               </View>
               <View style={styles.driverInfo}>
                 <View style={styles.driverNameRow}>
-                  <Text style={styles.driverName}>Ramesh Kumar</Text>
+                  <Text style={styles.driverName}>{driverName || 'Your Driver'}</Text>
                 </View>
                 <View style={{flexDirection:'row', alignItems:'center', gap:4}}>
                   <Icon name="star" size={12} color="#7E1CFC" />
-                  <Text style={styles.driverRatingText}>4.8</Text>
+                  <Text style={styles.driverRatingText}>{driverRating || '4.8'}</Text>
                 </View>
               </View>
             </View>
@@ -141,8 +196,8 @@ const CustomerLiveTracking = () => {
                 style={styles.vehicleImage}
                 resizeMode="contain"
               />
-              <Text style={styles.vehiclePlateText}>TN09CR3540</Text>
-              <Text style={styles.vehicleModelText}> • Audi Q2</Text>
+              <Text style={styles.vehiclePlateText}>{vehicleNumber || 'N/A'}</Text>
+              <Text style={styles.vehicleModelText}> • {vehicleBrand || ''} {vehicleModel || 'Vehicle'}</Text>
             </View>
           </View>
 
@@ -161,7 +216,7 @@ const CustomerLiveTracking = () => {
               </View>
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <View style={styles.stopsBadge}>
-                  <Text style={styles.stopsBadgeText}>5 stops</Text>
+                  <Text style={styles.stopsBadgeText}>{stops?.length || 0} stops</Text>
                 </View>
                 <Icon name={isItineraryExpanded ? "chevron-up" : "chevron-down"} size={24} color="#333" style={{marginLeft: 8}}/>
               </View>
@@ -169,158 +224,89 @@ const CustomerLiveTracking = () => {
 
             {isItineraryExpanded && (
               <View>
-                <View style={styles.itineraryDriving}>
-                  <Icon name="bus" size={20} color="#7E1CFC" />
-                  <View style={styles.itineraryDrivingInfo}>
-                    <Text style={styles.itineraryDrivingTitle}>Driving to next stop</Text>
-                    <Text style={styles.itineraryDrivingSub}>Avinashi Road Shopping • ETA 18 min</Text>
+                {nextStop ? (
+                  <View style={styles.itineraryDriving}>
+                    <Icon name="bus" size={20} color="#7E1CFC" />
+                    <View style={styles.itineraryDrivingInfo}>
+                      <Text style={styles.itineraryDrivingTitle}>Driving to next stop</Text>
+                      <Text style={styles.itineraryDrivingSub}>{nextStop.name || nextStop.address || 'Next Stop'}</Text>
+                    </View>
                   </View>
-                </View>
+                ) : (
+                  <View style={styles.itineraryDriving}>
+                    <Icon name="check-circle-outline" size={20} color="#00C853" />
+                    <View style={styles.itineraryDrivingInfo}>
+                      <Text style={[styles.itineraryDrivingTitle, { color: '#00C853' }]}>All stops reached</Text>
+                      <Text style={styles.itineraryDrivingSub}>Trip completed</Text>
+                    </View>
+                  </View>
+                )}
 
-                <TouchableOpacity 
-                  style={styles.completedStops}
-                  onPress={() => setIsCompletedStopsExpanded(!isCompletedStopsExpanded)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.completedCheckIcon}>
-                     <Icon name="check" size={14} color="#00C853" />
-                  </View>
-                  <View style={styles.completedStopsInfo}>
-                    <Text style={styles.completedStopsTitle}>2 stops completed <Text style={styles.completedStopsSub}>• Nehru Park, Race Course</Text></Text>
-                  </View>
-                  <Icon name={isCompletedStopsExpanded ? "chevron-up" : "chevron-down"} size={20} color="#666" />
-                </TouchableOpacity>
+                {completedStops.length > 0 && (
+                  <TouchableOpacity 
+                    style={styles.completedStops}
+                    onPress={() => setIsCompletedStopsExpanded(!isCompletedStopsExpanded)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.completedCheckIcon}>
+                       <Icon name="check" size={14} color="#00C853" />
+                    </View>
+                    <View style={styles.completedStopsInfo}>
+                      <Text style={styles.completedStopsTitle}>
+                        {completedStops.length} {completedStops.length === 1 ? 'stop' : 'stops'} completed{' '}
+                        {completedStopsText ? <Text style={styles.completedStopsSub}>• {completedStopsText}</Text> : null}
+                      </Text>
+                    </View>
+                    <Icon name={isCompletedStopsExpanded ? "chevron-up" : "chevron-down"} size={20} color="#666" />
+                  </TouchableOpacity>
+                )}
 
-                {isCompletedStopsExpanded && (
+                {isCompletedStopsExpanded && completedStops.length > 0 && (
                   <View style={styles.completedStopsList}>
-                    {/* Completed Stop 1 */}
-                    <View style={styles.stopItem}>
-                      <View style={styles.stopIconContainer}>
-                         <View style={styles.stopNumberCompleted}>
-                           <Icon name="check" size={16} color="#00C853" />
-                         </View>
-                         <View style={styles.stopLineCompleted} />
+                    {completedStops.map((stop, idx) => (
+                      <View key={`completed-${idx}`} style={styles.stopItem}>
+                        <View style={styles.stopIconContainer}>
+                           <View style={styles.stopNumberCompleted}>
+                             <Icon name="check" size={16} color="#00C853" />
+                           </View>
+                           <View style={styles.stopLineCompleted} />
+                        </View>
+                        <View style={styles.stopDetailsCompleted}>
+                           <View style={styles.stopTitleRow}>
+                              <Text style={styles.stopNameCompleted}>{stop.name || 'Stop'}</Text>
+                              <View style={styles.visitBadge}><Text style={styles.visitText}>VISIT</Text></View>
+                           </View>
+                           {stop.arrivalTime ? <Text style={styles.stopTimeCompleted}>{stop.arrivalTime}</Text> : null}
+                           <Text style={styles.stopAddressCompleted}>{stop.address || ''}</Text>
+                        </View>
                       </View>
-                      <View style={styles.stopDetailsCompleted}>
-                         <View style={styles.stopTitleRow}>
-                            <Text style={styles.stopNameCompleted}>Nehru Park</Text>
-                            <View style={styles.visitBadge}><Text style={styles.visitText}>VISIT</Text></View>
-                         </View>
-                         <Text style={styles.stopTimeCompleted}>04:00 PM - 04:30 PM</Text>
-                         <Text style={styles.stopAddressCompleted}>Race Course, Coimbatore, Tamil Nadu 641018</Text>
-                      </View>
-                    </View>
-
-                    {/* Completed Stop 2 */}
-                    <View style={styles.stopItem}>
-                      <View style={styles.stopIconContainer}>
-                         <View style={styles.stopNumberCompleted}>
-                           <Icon name="check" size={16} color="#00C853" />
-                         </View>
-                         <View style={styles.stopLineCompleted} />
-                      </View>
-                      <View style={styles.stopDetailsCompleted}>
-                         <View style={styles.stopTitleRow}>
-                            <Text style={styles.stopNameCompleted}>Race Course</Text>
-                            <View style={styles.visitBadge}><Text style={styles.visitText}>VISIT</Text></View>
-                         </View>
-                         <Text style={styles.stopTimeCompleted}>04:30 PM - 04:45 PM</Text>
-                         <Text style={styles.stopAddressCompleted}>Race Course Rd, Coimbatore, Tamil Nadu 641018</Text>
-                      </View>
-                    </View>
+                    ))}
                   </View>
                 )}
 
-                {/* Stop 3 */}
-                <View style={styles.stopItem}>
-                  <View style={styles.stopIconContainer}>
-                     <View style={styles.stopNumberActive}><Text style={styles.stopNumberTextWhite}>3</Text></View>
-                     <View style={styles.stopLine} />
-                  </View>
-                  <View style={styles.stopDetails}>
-                     <View style={styles.stopTitleRow}>
-                        <Text style={styles.stopName}>Avinashi Road Shopping</Text>
-                        <View style={styles.visitBadge}><Text style={styles.visitText}>VISIT</Text></View>
-                        <View style={{flex: 1}}/>
-                        <TouchableOpacity style={styles.editIconBtn}>
-                          <Icon name="pencil-outline" size={16} color="#7E1CFC" />
-                        </TouchableOpacity>
-                     </View>
-                     <Text style={styles.stopTime}>05:00 PM - 05:30 PM</Text>
-                     <Text style={styles.stopAddress}>Avinashi Road, Peelamedu, Coimbatore, Tamil Nadu 641004</Text>
-                  </View>
-                </View>
-
-                {/* Stop 4 */}
-                <View style={styles.stopItem}>
-                  <View style={styles.stopIconContainer}>
-                     <View style={styles.stopNumberUpcoming}><Text style={styles.stopNumberTextWhite}>4</Text></View>
-                     {isUpcomingStopsExpanded && <View style={styles.stopLine} />}
-                  </View>
-                  <View style={styles.stopDetails}>
-                     <View style={styles.stopTitleRow}>
-                        <Text style={styles.stopName}>Brookfields Mall</Text>
-                        <View style={styles.visitBadge}><Text style={styles.visitText}>VISIT</Text></View>
-                        <View style={{flex: 1}}/>
-                        <TouchableOpacity style={styles.editIconBtn}>
-                          <Icon name="pencil-outline" size={16} color="#7E1CFC" />
-                        </TouchableOpacity>
-                     </View>
-                     <Text style={styles.stopTime}>05:45 PM - 06:00 PM</Text>
-                     <Text style={styles.stopAddress}>Brookfields, Coimbatore, Tamil Nadu 641001</Text>
-                  </View>
-                </View>
-
-                {isUpcomingStopsExpanded && (
-                  <>
-                    {/* Stop 5 */}
-                    <View style={styles.stopItem}>
+                {pendingStops.map((stop, idx) => {
+                  const stopNumber = completedStops.length + idx + 1;
+                  const isFirstPending = idx === 0;
+                  const isLastPending = idx === pendingStops.length - 1;
+                  return (
+                    <View key={`pending-${idx}`} style={styles.stopItem}>
                       <View style={styles.stopIconContainer}>
-                         <View style={styles.stopNumberUpcoming}><Text style={styles.stopNumberTextWhite}>5</Text></View>
-                         <View style={styles.stopLine} />
+                         <View style={isFirstPending ? styles.stopNumberActive : styles.stopNumberUpcoming}>
+                           <Text style={styles.stopNumberTextWhite}>{stopNumber}</Text>
+                         </View>
+                         {!isLastPending && <View style={styles.stopLine} />}
                       </View>
                       <View style={styles.stopDetails}>
                          <View style={styles.stopTitleRow}>
-                            <Text style={styles.stopName}>Gandhipuram Market</Text>
+                            <Text style={styles.stopName}>{stop.name || 'Stop'}</Text>
                             <View style={styles.visitBadge}><Text style={styles.visitText}>VISIT</Text></View>
-                            <View style={{flex: 1}}/>
-                            <TouchableOpacity style={styles.editIconBtn}>
-                              <Icon name="pencil-outline" size={16} color="#7E1CFC" />
-                            </TouchableOpacity>
                          </View>
-                         <Text style={styles.stopTime}>06:15 PM - 06:35 PM</Text>
-                         <Text style={styles.stopAddress}>Gandhipuram, Coimbatore, Tamil Nadu 641012</Text>
+                         {stop.waitingTime ? <Text style={styles.stopTime}>Waiting: {stop.waitingTime} mins</Text> : null}
+                         <Text style={styles.stopAddress}>{stop.address || ''}</Text>
                       </View>
                     </View>
-
-                    {/* Stop 6 */}
-                    <View style={styles.stopItem}>
-                      <View style={styles.stopIconContainer}>
-                         <View style={styles.stopNumberUpcoming}><Text style={styles.stopNumberTextWhite}>6</Text></View>
-                      </View>
-                      <View style={styles.stopDetails}>
-                         <View style={styles.stopTitleRow}>
-                            <Text style={styles.stopName}>Hotel Blue Diamond</Text>
-                            <View style={styles.dropBadge}><Text style={styles.dropText}>DROP</Text></View>
-                            <View style={{flex: 1}}/>
-                            <TouchableOpacity style={styles.editIconBtn}>
-                              <Icon name="pencil-outline" size={16} color="#7E1CFC" />
-                            </TouchableOpacity>
-                         </View>
-                         <Text style={styles.stopTime}>06:55 PM</Text>
-                         <Text style={styles.stopAddress}>Avinashi Road, Coimbatore, Tamil Nadu 641018</Text>
-                      </View>
-                    </View>
-                  </>
-                )}
-                
-                <TouchableOpacity 
-                  style={styles.showMoreStops}
-                  onPress={() => setIsUpcomingStopsExpanded(!isUpcomingStopsExpanded)}
-                >
-                  <Text style={styles.showMoreText}>{isUpcomingStopsExpanded ? "Show fewer stops" : "Show 2 more stops"}</Text>
-                  <Icon name={isUpcomingStopsExpanded ? "chevron-up" : "chevron-down"} size={18} color="#7E1CFC" />
-                </TouchableOpacity>
+                  );
+                })}
               </View>
             )}
           </View>
@@ -336,17 +322,13 @@ const CustomerLiveTracking = () => {
                </View>
             </View>
             <View style={styles.summaryGrid}>
-               <View style={[styles.summaryItem, {backgroundColor: '#F5F9FF'}]}>
-                  <Text style={styles.summaryLabel}>Distance Covered</Text>
-                  <Text style={[styles.summaryValue, {color: '#1565C0'}]}>48.3 km</Text>
+               <View style={[styles.summaryItem, {backgroundColor: '#F5F9FF', flex: 1}]}>
+                  <Text style={styles.summaryLabel}>Total Distance</Text>
+                  <Text style={[styles.summaryValue, {color: '#1565C0'}]}>{totalDistance ? `${totalDistance} km` : 'N/A'}</Text>
                </View>
-               <View style={[styles.summaryItem, {backgroundColor: '#F9F9F9'}]}>
-                  <Text style={styles.summaryLabel}>Remaining</Text>
-                  <Text style={styles.summaryValue}>62.9 km</Text>
-               </View>
-               <View style={[styles.summaryItem, {backgroundColor: '#F9F9F9'}]}>
+               <View style={[styles.summaryItem, {backgroundColor: '#F9F9F9', flex: 1}]}>
                   <Text style={styles.summaryLabel}>Total Duration</Text>
-                  <Text style={styles.summaryValue}>1h 14m</Text>
+                  <Text style={styles.summaryValue}>{duration ? `${duration} mins` : 'N/A'}</Text>
                </View>
             </View>
             <View style={styles.summaryFooter}>
@@ -369,22 +351,11 @@ const CustomerLiveTracking = () => {
                   </View>
                   <Text style={styles.cardTitle}>Fare Summary</Text>
                </View>
-               <TouchableOpacity style={styles.viewDetailsLinkBtn}>
-                  <Text style={styles.viewDetailsLinkText}>View Details <Icon name="arrow-right" size={12} color="#F57C00"/></Text>
-               </TouchableOpacity>
              </View>
              <View style={styles.earningsGrid}>
-                <View style={[styles.earningBox, {backgroundColor: '#FFF8E1'}]}>
+                <View style={[styles.earningBox, {backgroundColor: '#FFF8E1', flex: 1}]}>
                    <Text style={styles.earningLabel}>Current Fare</Text>
-                   <Text style={[styles.earningValue, {color: '#F57C00'}]}>₹1,810</Text>
-                </View>
-                <View style={[styles.earningBox, {backgroundColor: '#F9F9F9'}]}>
-                   <Text style={styles.earningLabel}>Est. Range</Text>
-                   <Text style={styles.earningValue}>₹1,713-2,094</Text>
-                </View>
-                <View style={[styles.earningBox, {backgroundColor: '#F9F9F9'}]}>
-                   <Text style={styles.earningLabel}>Add. Charges</Text>
-                   <Text style={styles.earningValue}>₹120</Text>
+                   <Text style={[styles.earningValue, {color: '#F57C00'}]}>₹{finalFare || estimatedFare || 'N/A'}</Text>
                 </View>
              </View>
           </View>
@@ -404,11 +375,13 @@ const CustomerLiveTracking = () => {
              
              <View style={styles.speedInfoRow}>
                 <View style={styles.speedCircleLarge}>
-                   <Text style={styles.speedCircleValue}>62</Text>
+                   <Text style={styles.speedCircleValue}>{driverMaxSpeed != null ? Math.round(driverMaxSpeed) : '0'}</Text>
                    <Text style={styles.speedCircleUnit}>km/h</Text>
                 </View>
                 <View style={styles.speedDetails}>
-                   <Text style={styles.speedDetailsTitle}>Driving within safe limits</Text>
+                   <Text style={styles.speedDetailsTitle}>
+                     {driverMaxSpeed > 60 ? 'Exceeding Speed Limit' : 'Driving within safe limits'}
+                   </Text>
                    <Text style={styles.speedDetailsDesc}>Live speed is being monitored against road limits in real-time.</Text>
                    <View style={styles.speedLimitBox}>
                       <Icon name="alert-octagon" size={16} color="#D32F2F" />
@@ -419,71 +392,45 @@ const CustomerLiveTracking = () => {
                    </View>
                 </View>
              </View>
-             
-             <View style={styles.safetyStatsGrid}>
-                <View style={styles.safetyStatBox}>
-                   <Text style={styles.safetyStatLabel}>Alerts</Text>
-                   <Text style={[styles.safetyStatValue, {color: '#F57C00'}]}><Icon name="alert-triangle" size={14}/> 3 times</Text>
-                </View>
-                <View style={styles.safetyStatBox}>
-                   <Text style={styles.safetyStatLabel}>Trip Started</Text>
-                   <Text style={styles.safetyStatValue}>03:15 PM</Text>
-                </View>
-                <View style={styles.safetyStatBox}>
-                   <Text style={styles.safetyStatLabel}>Avg Speed</Text>
-                   <Text style={styles.safetyStatValue}>54 km/h</Text>
-                </View>
-             </View>
           </View>
 
           {/* Added Bills */}
-          <View style={styles.card}>
-             <View style={styles.cardHeader}>
-               <View style={styles.cardTitleRow}>
-                  <Icon name="receipt" size={20} color="#00C853" />
-                  <Text style={styles.cardTitle}>Added Bills</Text>
+          {billsArray.length > 0 && (
+            <View style={styles.card}>
+               <View style={styles.cardHeader}>
+                 <View style={styles.cardTitleRow}>
+                    <Icon name="receipt" size={20} color="#00C853" />
+                    <Text style={styles.cardTitle}>Added Bills</Text>
+                 </View>
+                 <View style={styles.totalBillsBadge}>
+                    <Text style={styles.totalBillsText}>Total ₹{totalBillsAmount}</Text>
+                 </View>
                </View>
-               <View style={styles.totalBillsBadge}>
-                  <Text style={styles.totalBillsText}>Total ₹250</Text>
-               </View>
-               <Icon name="chevron-up" size={20} color="#666" />
-             </View>
 
-             <View style={styles.billItem}>
-                <View style={styles.billIcon}><Icon name="boom-gate" size={20} color="#666"/></View>
-                <View style={styles.billDetails}>
-                   <Text style={styles.billTitle}>Toll Fee</Text>
-                   <Text style={styles.billSub}>Today, 03:40 PM • Krishnagiri Toll Plaza</Text>
-                </View>
-                <View style={styles.billRight}>
-                   <Icon name="receipt" size={20} color="#E0E0E0" />
-                   <Text style={styles.billAmount}>₹120</Text>
-                </View>
-             </View>
-
-             <View style={styles.billItem}>
-                <View style={styles.billIcon}><Icon name="parking" size={20} color="#666"/></View>
-                <View style={styles.billDetails}>
-                   <Text style={styles.billTitle}>Parking</Text>
-                   <Text style={styles.billSub}>Today, 04:10 PM • Brookfields Mall Parking</Text>
-                </View>
-                <View style={styles.billRight}>
-                   <Icon name="receipt" size={20} color="#E0E0E0" />
-                   <Text style={styles.billAmount}>₹50</Text>
-                </View>
-             </View>
-             
-             <TouchableOpacity style={styles.addBillLink}>
-                <Text style={styles.addBillLinkText}>View All Bills</Text>
-             </TouchableOpacity>
-          </View>
+               {billsArray.map((bill, idx) => (
+                 <View key={`bill-${idx}`} style={styles.billItem}>
+                    <View style={styles.billIcon}><Icon name="receipt" size={20} color="#666"/></View>
+                    <View style={styles.billDetails}>
+                       <Text style={styles.billTitle}>{bill.name || 'Expense'}</Text>
+                       {bill.remarks ? <Text style={styles.billSub}>{bill.remarks}</Text> : null}
+                    </View>
+                    <View style={styles.billRight}>
+                       <Text style={styles.billAmount}>₹{bill.amount}</Text>
+                    </View>
+                 </View>
+               ))}
+            </View>
+          )}
 
         </View>
       </BottomSheetWrapper>
 
       {/* Floating Bottom Bar */}
       <View style={styles.floatingBottomBar}>
-        <TouchableOpacity style={[styles.floatingActionBtn, {backgroundColor: '#F3E5F5', borderColor: '#E1BEE7'}]}>
+        <TouchableOpacity 
+          style={[styles.floatingActionBtn, {backgroundColor: '#F3E5F5', borderColor: '#E1BEE7'}]}
+          onPress={handleCallDriver}
+        >
           <Icon name="phone-outline" size={20} color="#7E1CFC" />
           <Text style={[styles.floatingActionBtnText, {color: '#7E1CFC'}]}>Call Driver</Text>
         </TouchableOpacity>

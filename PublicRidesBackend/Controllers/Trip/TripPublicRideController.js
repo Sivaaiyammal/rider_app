@@ -10,7 +10,7 @@ const OTP = require("../../Controllers/OTP");
 const PushNotifiationService = require("../../Services/PushNotification/PushNotifiationService");
 const NOTPushNotifiationService = require("../../Services/PushNotification/NOTPushNotifiationService");
 const { sendTripCancelledByPassangerMessage,sendTripCancelledByPassangerMessageafterPickup,sendTripCancelledByDriverMessageafterPickup, sendTripCancelledByDriverMessage, sendPickupLocationChangeAlert, AcceptedLocationChangeAlert, RejectedLocationChangeAlert, sendNewBillRequestMessage } = require("../../Services/PushNotification/Messages");
-const { sendTripDriverAssignedMessage, sendAlertPassangerPickupMessagewithOTP, sendTripDriverAssignedMessageWithOTP } = require("../../Services/PushNotification/publicRideCustomerNotification");
+const { sendTripDriverAssignedMessage, sendAlertPassangerPickupMessagewithOTP, sendTripDriverAssignedMessageWithOTP, sendDriverOntheWayMessage } = require("../../Services/PushNotification/publicRideCustomerNotification");
 const GeneratePresignedUrl = require("../../Controllers/GeneratePresignedUrl");
 const FareConfigs = require("../../Models/FareConfigs");    
 // const { getFareAlert } = require("../../Services/PushNotification/Messages");
@@ -18,6 +18,25 @@ const FareService = require("../../fareEngine/services/FareService");
 const ActingDriverFareService = require("../../fareEngine/services/ActingDriverFareService");
 const Exotel = require("../../Services/exotel");
 const OTP_LENGTH = 4;
+
+async function populateActingDriverVehicleInfo(trip, driverInfo) {
+    if (trip && trip.isActingDriverTrip && trip.passangerVehicleId) {
+        try {
+            const Mongo = require("../DB/Mongo");
+            const { ObjectId } = require("mongodb");
+            const userVehicle = await Mongo.findOne('vehicles', { _id: new ObjectId(trip.passangerVehicleId) });
+            if (userVehicle) {
+                driverInfo.vehicleType = userVehicle.type || null;
+                driverInfo.vehicleModel = userVehicle.model || null;
+                driverInfo.vehicleBrand = userVehicle.make || null;
+                driverInfo.vehicleColor = userVehicle.color || null;
+                driverInfo.vehicleNumber = userVehicle.regNo || null;
+            }
+        } catch (e) {
+            console.error("Error populating acting driver vehicle info:", e);
+        }
+    }
+}
 
 async function sendPassangerSocketEvents(type, passangerId, socketService, driver, trip, otp, action) {
 
@@ -81,6 +100,18 @@ async function sendPassangerSocketEvents(type, passangerId, socketService, drive
             tripStatus: trip.status,
         }
         socketService.customerRideAssignHandler.emitNewBillRequest(passangerSocketIds, socketData)
+    }
+    if(type === 'upComingTripStarted'){
+        const socketData = {
+            _id: trip._id,
+            driver,
+            otp,
+            tripStatus: 'ACCEPTED',
+            tripData: trip,
+            isActingDriverTrip: true,
+            message: 'actingDriverStarted'
+        }
+        socketService.customerRideAssignHandler.emitActingDriverStarted(passangerSocketIds, socketData)
     }
 
 }
@@ -169,6 +200,8 @@ module.exports = function (CLASS) {
                 driverLocaiton: driver.location
             };
    
+            await populateActingDriverVehicleInfo(trip, driverInfo);
+
             if(driver?.documents?.driverPhoto){
                 const ImagePath = driver.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
                 const rjvw = new GeneratePresignedUrl()
@@ -251,6 +284,8 @@ module.exports = function (CLASS) {
                 driverLocaiton: driver.location
             };
    
+            await populateActingDriverVehicleInfo(trip, driverInfo);
+
             if(driver?.documents?.driverPhoto){
                 const ImagePath = driver.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
                 const rjvw = new GeneratePresignedUrl()
@@ -957,6 +992,8 @@ module.exports = function (CLASS) {
                 driverLocaiton: driver.location
             };
    
+            await populateActingDriverVehicleInfo(trip, driverInfo);
+
             if(driver?.documents?.driverPhoto){
                 const ImagePath = driver.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
                 const rjvw = new GeneratePresignedUrl()
@@ -1009,26 +1046,11 @@ module.exports = function (CLASS) {
                 return res.status(400).json({ success: false, message: 'Trip is already accepted by another driver' });
             }
 
-            // Trip is already ACCEPTED and assigned to THIS driver (e.g. pre-assigned acting driver trip)
-            // Skip re-assignment — return the trip so the driver can proceed to tracking
-            if (trip.status === RideStatus.ACCEPTED && String(trip.driverId) === String(driverId)) {
-                return res.status(200).json({ success: true, message: 'Trip already accepted', currentTrip: trip });
-            }
-
             const passangerId = trip.passangerId;
-            const otp = OTP.generateOTP(OTP_LENGTH);
-            /* get Passanger FCM tokens and socketIDS */
             const passanger = await Passanger.getPassangerWithId(passangerId);
             if (!passanger) return res.status(400).json({ success: false, message: 'Passanger not found' });
-            await Trip.assignDriverToTrip(tripId, driverId, otp);
 
-            const getMaxDistanceLimit = await FareConfigs.getMaxDistanceLimit(trip?.regionCode || 'default', trip?.vehicleType);
-             
-            trip.maxDistanceLimit = getMaxDistanceLimit || null;
-
-            // console.log(getMaxDistanceLimit, "Max Distance Limit for the trip");
-          
-            // await Driver.updateDriver(driverId, { tripStatus: "ONGOING" })
+            // Build driver info (shared between both paths below)
             const driverInfo = {
                 driverName: driver.name,
                 driverPhone: driver.phone,
@@ -1038,32 +1060,69 @@ module.exports = function (CLASS) {
                 vehicleBrand: driver.ownVehicleInfo?.make || null,
                 vehicleColor: driver.ownVehicleInfo?.color || null,
                 vehicleNumber: driver.ownVehicleInfo?.regNo || null,
-                otp: otp,
                 upiid: driver.bankDetails?.UPIID || null,
                 driverLocaiton: driver.location
             };
-   
-            if(driver?.documents?.driverPhoto){
+
+            await populateActingDriverVehicleInfo(trip, driverInfo);
+
+            if (driver?.documents?.driverPhoto) {
                 const ImagePath = driver.documents.driverPhoto.replace(/^https:\/\/[^/]+\/?/, '');
-                const rjvw = new GeneratePresignedUrl()
-                driverInfo.driverPhoto = await rjvw.generatePresignedImg(ImagePath)
+                const rjvw = new GeneratePresignedUrl();
+                driverInfo.driverPhoto = await rjvw.generatePresignedImg(ImagePath);
             }
 
-            const updateUpComingTripToDriver = await Driver.updateCurrentTripId(driverId, tripId)
-            console.log(updateUpComingTripToDriver)
-           
-            sendPassangerSocketEvents("upComingTripStarted", passangerId, req.socketService, driverInfo, trip, otp).catch(err => {
-                console.log(err, "Error sending socket events to passanger")
-            })
+            let otp;
 
-            
+            // Trip is already ACCEPTED by this driver (e.g. pre-assigned acting driver trip)
+            // Skip re-assignment but still notify the customer that driver is on the way
+            if (trip.status === RideStatus.ACCEPTED && String(trip.driverId) === String(driverId)) {
+                otp = trip.otp || null;
+                driverInfo.otp = otp;
+
+                sendPassangerSocketEvents("upComingTripStarted", passangerId, req.socketService, driverInfo, trip, otp).catch(err => {
+                    console.log(err, "Error sending actingDriverStarted socket event");
+                });
+
+                if (passanger?.fcmToken) {
+                    const notifParams = { tripId: String(trip._id), isActingDriverTrip: 'true', screen: 'CustomerliveTracking' };
+                    const pushMsg = sendDriverOntheWayMessage(driver.name);
+                    if (req.useNotPushNotification) {
+                        await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, pushMsg, null, "high", notifParams);
+                    } else {
+                        await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, pushMsg, null, "high", notifParams);
+                    }
+                }
+
+                const getMaxDistanceLimitEarly = await FareConfigs.getMaxDistanceLimit(trip?.regionCode || 'default', trip?.vehicleType);
+                trip.maxDistanceLimit = getMaxDistanceLimitEarly || null;
+                return res.status(200).json({ success: true, message: 'Trip already accepted', currentTrip: trip });
+            }
+
+            // Fresh acceptance: generate OTP and assign driver
+            otp = OTP.generateOTP(OTP_LENGTH);
+            driverInfo.otp = otp;
+
+            await Trip.assignDriverToTrip(tripId, driverId, otp);
+
+            const getMaxDistanceLimit = await FareConfigs.getMaxDistanceLimit(trip?.regionCode || 'default', trip?.vehicleType);
+
+            trip.maxDistanceLimit = getMaxDistanceLimit || null;
+
+            const updateUpComingTripToDriver = await Driver.updateCurrentTripId(driverId, tripId);
+            console.log(updateUpComingTripToDriver);
+
+            sendPassangerSocketEvents("upComingTripStarted", passangerId, req.socketService, driverInfo, trip, otp).catch(err => {
+                console.log(err, "Error sending socket events to passanger");
+            });
+
             if (passanger?.fcmToken) {
-                const notifParamsSup = { tripId: String(trip._id) };
-                if (trip.isActingDriverTrip) notifParamsSup.isActingDriverTrip = 'true';
+                const notifParamsSup = { tripId: String(trip._id), isActingDriverTrip: 'true', screen: 'CustomerliveTracking' };
+                const pushMsg = sendDriverOntheWayMessage(driver.name);
                 if(req.useNotPushNotification){
-                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", notifParamsSup);
+                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, pushMsg, null, "high", notifParamsSup);
                 }else{
-                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", notifParamsSup);
+                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, pushMsg, null, "high", notifParamsSup);
                 }
             }
 

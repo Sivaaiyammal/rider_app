@@ -198,7 +198,8 @@ class Passanger {
     static updatePassangerCompletedTripsandTspends = async (passangerId, tripFare, status) => {
         console.log({ passangerId, tripFare, status }, "Updating passanger completed trips and total spends")
         // Update completedTrips if status is 'completed', else update divergedTrips
-        let updateQuery = { $inc: { 'stats.totalSpends': tripFare }, $set: { 'stats.cancelTripOccurance': 0 } };
+        const safeSpend = typeof tripFare === 'number' && isFinite(tripFare) ? tripFare : 0;
+        let updateQuery = { $inc: { 'stats.totalSpends': safeSpend }, $set: { 'stats.cancelTripOccurance': 0 } };
         if (status === 'COMPLETED') {
             updateQuery.$inc['stats.completedTrips'] = 1;
         } else {

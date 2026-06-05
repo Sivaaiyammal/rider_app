@@ -853,23 +853,28 @@ const BookActingDriverScreen = () => {
                 visible={bookingSuccess}
                 animationType="fade"
                 transparent={true}
+                onRequestClose={() => {
+                    setBookingSuccess(false);
+                    useStackScreenStore.getState().reset();
+                }}
             >
                 <View style={styles.successModalOverlay}>
                     <View style={styles.successModalContent}>
                         <View style={styles.successIconCircle}>
                             <Icon name="check-circle" size={80} color={actingDriverColors.success} />
                         </View>
-                        
+
                         <AdaptiveText style={styles.successModalTitle}>
                             {t('acting_driver_booked', 'Acting Driver Booked!')}
                         </AdaptiveText>
-                        
+
                         <AdaptiveText style={styles.successModalSubtitle}>
-                            {t('booking_success_info', 'Acting driver booked. We will let you know once driver approved.')}
+                            {t('booking_success_info', 'Acting driver booked. We will let you know once a driver is assigned.')}
                         </AdaptiveText>
 
                         <TouchableOpacity
                             style={styles.doneButton}
+                            activeOpacity={0.8}
                             onPress={() => {
                                 setBookingSuccess(false);
                                 useStackScreenStore.getState().reset();
@@ -1107,12 +1112,15 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     doneButton: {
-        paddingVertical: 12,
-        paddingHorizontal: 32,
-        borderRadius: 8,
+        marginTop: 16,
+        paddingVertical: 14,
+        paddingHorizontal: 48,
+        borderRadius: 10,
+        backgroundColor: actingDriverColors.secondary || '#1a3a5c',
+        alignItems: 'center',
     },
     doneButtonText: {
-        fontSize: 14,
+        fontSize: 15,
         fontFamily: Fonts.bold,
         color: colors.white,
     },

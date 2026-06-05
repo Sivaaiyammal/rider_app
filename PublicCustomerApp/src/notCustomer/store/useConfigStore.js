@@ -32,6 +32,30 @@ const defaultConfig = {
   },
   // eslint-disable-next-line prettier/prettier
   actingDriverEnabled: true,
+  HOME_SCREEN_CONFIG: [
+    {
+      key: 'services',
+      sectionTitle: 'Choose Your Ride',
+      showSectionTitle: false,
+      items: [
+        { key: 'auto',          label: 'Auto',           bgColor: '#f3f3f3ff', textColor: '#858585ff', borderColor: '#ffffffff' },
+        { key: 'electric_auto', label: 'Electric Auto',  bgColor: '#f3f3f3ff', textColor: '#858585ff', borderColor: '#ffffffff' },
+        { key: 'schedule_trip', label: 'Schedule',       bgColor: '#f3f3f3ff', textColor: '#858585ff', borderColor: '#ffffffff' },
+        { key: 'female_driver', label: 'Female Driver',  bgColor: '#f3f3f3ff', textColor: '#858585ff', borderColor: '#ffffffff' },
+        { key: 'night_trip',    label: 'Night Ride',     bgColor: '#f3f3f3ff', textColor: '#858585ff', borderColor: '#ffffffff' },
+      ],
+    },
+    {
+      key: 'horizontal_banners',
+      sectionTitle: 'Offers',
+      showSectionTitle: false,
+      items: [
+        { id: 'bannerStops',  key: 'bannerStops',  label: 'Multi Stop' },
+        { id: 'bannerFamily', key: 'bannerFamily', label: 'Family Ride' },
+        { id: 'bannerAuto',   key: 'bannerAuto',   label: 'Female Driver' },
+      ],
+    },
+  ],
 };
 
 const useConfigStore = create((set, get) => ({

@@ -9,7 +9,9 @@ const DefaultPostHeaders = {
 };
 
 const DefaultFormDataHeaders = {
-  'Content-Type': 'multipart/form-data',
+  // Do NOT set Content-Type for FormData — fetch/RN must set it automatically
+  // so it includes the multipart boundary (e.g. multipart/form-data; boundary=xxx).
+  // Manually setting Content-Type strips the boundary and breaks multer on the server.
   Accept: 'application/json',
 };
 

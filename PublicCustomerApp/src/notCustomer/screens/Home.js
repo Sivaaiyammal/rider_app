@@ -170,7 +170,7 @@ const Home = () => {
   
   const { setHomelocation, setWorklocation, setIsPreferenceShow} = useUserInfoStore();
   const { setStackScreen } = useStackScreenStore();
-  const { setCurrentRideInfo , setFareDetails ,tripId,resetCurrentRideInfo} = useCurrentRideInfoStore();
+  const { setCurrentRideInfo , setFareDetails ,tripId, resetCurrentRideInfo, setTripStatus } = useCurrentRideInfoStore();
   const { setAllocatedDriverInfo ,clearDriverInfo} = useAssignedDriverInfoStore();
   const { setUserdetails ,setID,setUserFavPlaces,setRatingData,setTotalSpend,setCancelledTrips,setCompletedTrips,setTotalTrips,id,resetUserInfo,setCancelledTripsOccurance} = useUserInfoStore();
   const { setMapShown , mapShown, setUserLocation} = useMapStore();
@@ -454,7 +454,20 @@ const Home = () => {
           }
           setFareDetails(fareData)
         }
-        setStackScreen('RideStatus', { });
+
+        // Acting driver trips stay on the Home screen — ActingDriverStartedBanner
+        // shows automatically and lets the customer track from there.
+        if(response?.trip?.isActingDriverTrip){
+          // Dashboard socket sets status to 'ASSIGNED'; normalize to 'ACCEPTED'
+          // so the ActingDriverStartedBanner visibility check passes.
+          const rawStatus = response?.trip?.status;
+          if (rawStatus === 'ASSIGNED') {
+            setTripStatus('ACCEPTED');
+          }
+          reset();
+        } else {
+          setStackScreen('RideStatus', { });
+        }
 
 
         // Check if trip has exceeded estimated duration by 10 minutes from pickup context

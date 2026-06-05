@@ -42,6 +42,7 @@ import PropTypes from 'prop-types';
 import { checkNotificationPermissions, RequestNotificationPermission } from '../../../controllers/PermissionHandler';
 import useScheduleTripStore from '../../../store/useScheduleTripStore';
 import ScheduledTripBanner from '../components/ScheduledTripBanner';
+import ActingDriverStartedBanner from '../components/ActingDriverStartedBanner';
 import DynamicSection from '../components/DynamicSection';
 import useNearbyDrivers from '../../../store/useNearByDrivers';
 import useConfigStore from '../../../store/useConfigStore'; 
@@ -635,9 +636,12 @@ const MapScreen = () => {
        }}>
         
         <View style={{marginTop:60}}>
-        
+
+          <ActingDriverStartedBanner />
           {<ScheduledTripBanner/>}
-        
+
+          
+
           <DynamicSection onSelect={handleServiceVehicleSelect}/>
           <FavLabelItems onLabelPress={handleFavouriteLocationPress}/>
           <HistoryCard selectCallback={onHistoryPress} header={true} bottomborder={false}  fromHomeScreen={true}/>

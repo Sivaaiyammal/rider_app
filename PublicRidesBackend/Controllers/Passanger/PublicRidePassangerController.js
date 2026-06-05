@@ -44,6 +44,25 @@ function mapParivahanVehicleClass(vehicleClassDesc = '') {
     return 'sedan';
 }
 
+async function populateActingDriverVehicleInfo(trip, driverInfo) {
+    if (trip && trip.isActingDriverTrip && trip.passangerVehicleId) {
+        try {
+            const Mongo = require("../DB/Mongo");
+            const { ObjectId } = require("mongodb");
+            const userVehicle = await Mongo.findOne('vehicles', { _id: new ObjectId(trip.passangerVehicleId) });
+            if (userVehicle) {
+                driverInfo.vehicleType = userVehicle.type || null;
+                driverInfo.vehicleModel = userVehicle.model || null;
+                driverInfo.vehicleBrand = userVehicle.make || null;
+                driverInfo.vehicleColor = userVehicle.color || null;
+                driverInfo.vehicleNumber = userVehicle.regNo || null;
+            }
+        } catch (e) {
+            console.error("Error populating acting driver vehicle info:", e);
+        }
+    }
+}
+
 module.exports = function (CLASS) {
     /**
      * @api {post} /publicrides/signup Customer Signup
@@ -483,6 +502,7 @@ module.exports = function (CLASS) {
                 payload.status = RideStatus.SCHEDULED;
             }
             payload.publicRidesTrip = true;
+            payload.isActingDriverTrip = true;
             payload.passangerId = new ObjectId(passangerId);
             payload.createdBy = passangerId;
             payload.userId = passangerId;
@@ -573,14 +593,16 @@ module.exports = function (CLASS) {
                         driverName: driver.name,
                         driverPhone: driver.phone,
                         driverRating: null,
-                        vehicleType: driver.ownVehicleInfo.type,
-                        vehicleModel: driver.ownVehicleInfo.model,
-                        vehicleBrand: driver.ownVehicleInfo.make,
-                        vehicleColor: driver.ownVehicleInfo.color,
-                        vehicleNumber: driver.ownVehicleInfo.regNo,
-                        upiid: driver.bankDetails.UPIID,
+                        vehicleType: driver.ownVehicleInfo?.type || null,
+                        vehicleModel: driver.ownVehicleInfo?.model || null,
+                        vehicleBrand: driver.ownVehicleInfo?.make || null,
+                        vehicleColor: driver.ownVehicleInfo?.color || null,
+                        vehicleNumber: driver.ownVehicleInfo?.regNo || null,
+                        upiid: driver.bankDetails?.UPIID || null,
                         driverLocation: driver.location
                     };
+
+                    await populateActingDriverVehicleInfo(trip, driverInfo);
 
                     if (driver?.documents?.driverPhoto) {
                        
@@ -711,6 +733,8 @@ module.exports = function (CLASS) {
                             driverLocation: driver.location
                         };
                         
+                        await populateActingDriverVehicleInfo(trip, driverInfo);
+
                         if (driver?.documents?.driverPhoto) {
                             driverInfo.driverPhoto = driver.documents.driverPhoto;
                         }
@@ -952,16 +976,18 @@ module.exports = function (CLASS) {
                 driverName: driver.name,
                 driverPhone: driver.phone,
                 driverRating: null,
-                vehicleType: driver.ownVehicleInfo.type,
-                vehicleModel: driver.ownVehicleInfo.model,
-                vehicleBrand: driver.ownVehicleInfo.make,
-                vehicleColor: driver.ownVehicleInfo.color,
-                vehicleNumber: driver.ownVehicleInfo.regNo,
-                upiid: driver.bankDetails.UPIID,
+                vehicleType: driver.ownVehicleInfo?.type || null,
+                vehicleModel: driver.ownVehicleInfo?.model || null,
+                vehicleBrand: driver.ownVehicleInfo?.make || null,
+                vehicleColor: driver.ownVehicleInfo?.color || null,
+                vehicleNumber: driver.ownVehicleInfo?.regNo || null,
+                upiid: driver.bankDetails?.UPIID || null,
                 driverLocation: driver.location
 
             };
              
+            await populateActingDriverVehicleInfo(trip, driverInfo);
+
             if(driver?.documents?.driverPhoto){
                 
                 driverInfo.driverPhoto = driver?.documents?.driverPhoto;
@@ -1364,6 +1390,8 @@ module.exports = function (CLASS) {
                     
                     driverLocation: driver.location
                 };
+
+                await populateActingDriverVehicleInfo(trip, driverInfo);
                 // if(driver?.razorpayLinkedAccountDetails?.linkedAccountId && driver.razorpayLinkedAccountDetails.accountDetails?.activation_status === "activated"){
                 //     driverInfo.razorPayId = driver.razorpayLinkedAccountDetails.linkedAccountId;
                 // }else{

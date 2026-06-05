@@ -17,7 +17,7 @@ import { showNotification } from '../../common/components/Alerts/showNotificatio
 import { DataStore } from '../../common/controllers/DataStore';
 import APIRequest from '../../common/APIRequest';
 import { height } from '../../common/utils/scalingutils';
-import { Colors, colors, Fonts } from '../../common/constants/constants';
+import { Colors, Fonts } from '../../common/constants/constants';
 import { RouteScreenStyles } from '../styles/RouteScreenStyles';
 import TrackingMapIcons from '../../common/components/Alerts/TrackingMapIcons';
 import FullScreenLoader from '../../common/loaders/FullScreenLoader';
@@ -40,7 +40,6 @@ import { firebaselog_onRide } from '../../common/utils/FirebaseAnalytics';
 import ArrivedPickUpLocation from '../components/ArrivedPickUpLocation';
 import ModalFooter from '../components/ModalFooter';
 import useActingDriverMediaStore from '../store/useActingDriverMediaStore';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import ActingDriverMediaButtons from '../components/ActingDriverMediaButtons';
 import ActingDriverTripInfo from '../components/ActingDriverTripInfo';
 
@@ -49,7 +48,7 @@ const {NeNativeModule} = NativeModules;
 const ActingDriverOnRide = () => {
   const {t} = useTranslation()
   const[cancelRideModalVisible, setCancelRideModalVisible] = useState(false);
-  const {userInfo, userRole} = useUserStore();
+  const {userInfo} = useUserStore();
   const {
     setStartNavigation,
     setDirectionPoints,
@@ -58,9 +57,6 @@ const ActingDriverOnRide = () => {
     userLocation,
     directionReadyCallback,
     directionPoints,
-    setUserLocation,
-    nativeError,
-    navigationError,
     setMapMarkers,
     startNavigation,
     routeLoading,
@@ -75,8 +71,8 @@ const ActingDriverOnRide = () => {
     hasNotificationPermission,
   } = useDeviceTokenStore();
   const {loading, setLoading, tripDetails, setTripDetails} = useTripAcceptStore()
-  const {tripId, requestId, fetchLocationDate, setFetchLocationDate, isGetFare, setIsOnGoing, setIsGetFare } = useTripAcceptStore()
-  const {fareBreakDown, setFareBreakDown} = useTripsStore()
+  const {fetchLocationDate, setFetchLocationDate, isGetFare, setIsOnGoing, setIsGetFare } = useTripAcceptStore()
+  const {setFareBreakDown} = useTripsStore()
 
   const setStackScreen = useStackScreenStore(state => state.setStackScreen);
 
@@ -84,17 +80,11 @@ const ActingDriverOnRide = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isReachedPickup, setIsReachedPickup] = useState(false);
   const [isReachedDropoff, setIsReachedDropoff] = useState(false);
-  const [showEndTripModal, setShowEndTripModal] = useState(false);
-  const [locationData, setLocationData] = useState(null);
-  const [error, setError] = useState(null)
-  const [totalDistance, setTotalDistance] = useState('')
-  const [totalDuration, setTotalDuration] = useState('')
+  const [_error, setError] = useState(null)
 
-  const [currentWaypointDetails, setCurrentWaypointDetails] = useState(null);
   const [currentWaypointIndex, setCurrentWaypointIndex] = useState(0);
-  const [tempStopData, setTempStopData] = useState(null);
+  const [tempStopData] = useState(null);
   const [showWaypointReached,setShowWaypointReached] = useState(false)
-  const [showTimeStartModal, setShowTimerStartModal] = useState(false)
   const [newLegIndex, setNewLegIndex] = useState(0)
   const prevNavLegIndex = useRef(null);
   const [openNavChoiceModal, setOpenNavChoiceModal] = useState(false)
@@ -109,12 +99,26 @@ const ActingDriverOnRide = () => {
 
   const tripsStatus = activeTripData && activeTripData[0]?.status ? activeTripData[0]?.status : "";
 
-  const { preTripDone, postTripDone, pendingNavOpen, setPendingNavOpen, reset: resetDriverMedia } = useActingDriverMediaStore();
-  const _prePhotos = activeTripData?.[0]?.bills?.preTripVehiclePhotos;
+  const {
+    preTripDone, dentPhotosDone, odometerPhotoDone,
+    postTripDone, pendingNavOpen, setPendingNavOpen, reset: resetDriverMedia,
+  } = useActingDriverMediaStore();
+
+  // Server-side upload checks (fallback if store was cleared)
+  const _bills = activeTripData?.[0]?.bills || {};
+  const _prePhotos = _bills.preTripVehiclePhotos;
   const preTripUploadedOnServer = !!(_prePhotos?.front && _prePhotos?.rear && _prePhotos?.leftSide && _prePhotos?.rightSide);
-  const _postPhotos = activeTripData?.[0]?.bills?.postTripVehiclePhotos;
+  const dentUploadedOnServer = Array.isArray(_bills.dentPhotos) && _bills.dentPhotos.length > 0;
+  const odometerUploadedOnServer = !!_bills.odometerPhoto;
+  const _postPhotos = _bills.postTripVehiclePhotos;
   const postTripUploadedOnServer = !!(_postPhotos?.front && _postPhotos?.rear && _postPhotos?.leftSide && _postPhotos?.rightSide);
   const postTripReady = postTripDone || postTripUploadedOnServer;
+
+  // All three must be uploaded before OTP entry is allowed
+  const preMediaReady =
+    (preTripDone || preTripUploadedOnServer) &&
+    (dentPhotosDone || dentUploadedOnServer) &&
+    (odometerPhotoDone || odometerUploadedOnServer);
 
   const [showPreTripWarning, setShowPreTripWarning] = useState(false);
   const [showPostTripWarning, setShowPostTripWarning] = useState(false);
@@ -153,11 +157,6 @@ const ActingDriverOnRide = () => {
   }, []);
 
   const onStartNavigationPress = async () => {
-    if (!preTripDone && !preTripUploadedOnServer) {
-      setPendingNavOpen(true);
-      setStackScreen('DriverVehiclePhotosScreen');
-      return;
-    }
     setOpenNavChoiceModal(true);
   };
 
@@ -285,6 +284,14 @@ const ActingDriverOnRide = () => {
       showNotification('Fetching Current Location', '', 'info');
       return;
     }
+    if (tripsStatus !== 'PICKEDUP') {
+      showNotification(
+        t('otp_required', 'OTP verification required'),
+        t('please_verify_otp_before_ending', 'Please verify the customer OTP before ending the trip.'),
+        'warning',
+      );
+      return;
+    }
     if (!postTripReady) {
       setShowPostTripWarning(true);
       return;
@@ -294,7 +301,7 @@ const ActingDriverOnRide = () => {
   }
 
   const onReachedPickup = () => {
-    if (!preTripDone && !preTripUploadedOnServer) {
+    if (!preMediaReady) {
       setShowPreTripWarning(true);
       return;
     }
@@ -323,6 +330,14 @@ const ActingDriverOnRide = () => {
       setPickUpAlertLoading(false)
      }
   }
+
+  // Auto-send "Driver Arrived" push notification when driver reaches pickup location
+  useEffect(() => {
+    if (isReachedPickup && !isAlertSent && tripsStatus === 'ACCEPTED') {
+      onReachedPickupAlert();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReachedPickup]);
 
   const handleWaypointsConfirm = async () => {
     setIsLoading(true);
@@ -511,15 +526,15 @@ const ActingDriverOnRide = () => {
     }
 
     const [
-      lat,
-      lon,
-      remainingDistance,
-      remainingDuration,
-      speed,
+      _lat,
+      _lon,
+      _remainingDistance,
+      _remainingDuration,
+      _speed,
       ldistance,
-      lduration,
+      _lduration,
       navLegIndex,
-      bearing,
+      _bearing,
     ] = disduration?.location;
 
     if (prevNavLegIndex.current === null || prevNavLegIndex.current === 0) {
@@ -951,10 +966,42 @@ const ActingDriverOnRide = () => {
         <Modal transparent animationType="fade" visible={showPreTripWarning} onRequestClose={() => setShowPreTripWarning(false)}>
           <View style={styles.preTripOverlay}>
             <View style={styles.preTripWarningBox}>
-              <Text style={styles.preTripWarningTitle}>{t('vehicle_photos_required')}</Text>
+              <Text style={styles.preTripWarningTitle}>Uploads Required Before OTP</Text>
               <Text style={styles.preTripWarningMsg}>
-                {t('please_upload_pre_trip_photos_before_entering_otp', { defaultValue: 'Please upload the 4 pre-trip vehicle condition photos before entering the OTP. This helps record the vehicle\'s condition at trip start.' })}
+                Please complete all required uploads before entering the OTP:
               </Text>
+              <View style={styles.preTripCheckList}>
+                <View style={styles.preTripCheckRow}>
+                  <MaterialCommunityIcons
+                    name={(preTripDone || preTripUploadedOnServer) ? 'check-circle' : 'circle-outline'}
+                    size={18}
+                    color={(preTripDone || preTripUploadedOnServer) ? '#4CAF50' : '#E65100'}
+                  />
+                  <Text style={[styles.preTripCheckTxt, (preTripDone || preTripUploadedOnServer) && styles.preTripCheckDone]}>
+                    Vehicle condition photos (Front, Rear, Left, Right)
+                  </Text>
+                </View>
+                <View style={styles.preTripCheckRow}>
+                  <MaterialCommunityIcons
+                    name={(dentPhotosDone || dentUploadedOnServer) ? 'check-circle' : 'circle-outline'}
+                    size={18}
+                    color={(dentPhotosDone || dentUploadedOnServer) ? '#4CAF50' : '#E65100'}
+                  />
+                  <Text style={[styles.preTripCheckTxt, (dentPhotosDone || dentUploadedOnServer) && styles.preTripCheckDone]}>
+                    Dent / damage photos
+                  </Text>
+                </View>
+                <View style={styles.preTripCheckRow}>
+                  <MaterialCommunityIcons
+                    name={(odometerPhotoDone || odometerUploadedOnServer) ? 'check-circle' : 'circle-outline'}
+                    size={18}
+                    color={(odometerPhotoDone || odometerUploadedOnServer) ? '#4CAF50' : '#E65100'}
+                  />
+                  <Text style={[styles.preTripCheckTxt, (odometerPhotoDone || odometerUploadedOnServer) && styles.preTripCheckDone]}>
+                    Odometer reading photo
+                  </Text>
+                </View>
+              </View>
               <TouchableOpacity
                 style={styles.preTripUploadBtn}
                 activeOpacity={0.8}
@@ -963,7 +1010,7 @@ const ActingDriverOnRide = () => {
                   setStackScreen('DriverVehiclePhotosScreen');
                 }}>
                 <MaterialCommunityIcons name="camera-plus-outline" size={18} color={Colors.white} />
-                <Text style={styles.preTripUploadBtnTxt}>{t('upload_photos_now')}</Text>
+                <Text style={styles.preTripUploadBtnTxt}>Upload Now</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1042,6 +1089,26 @@ const styles = StyleSheet.create({
       paddingVertical: 10,
     },
     preTripSkipTxt: { fontSize: 13, fontFamily: Fonts.medium, color: '#999' },
+    preTripCheckList: {
+      gap: 10,
+      marginVertical: 8,
+      width: '100%',
+    },
+    preTripCheckRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    preTripCheckTxt: {
+      fontSize: 13,
+      fontFamily: Fonts.medium,
+      color: '#E65100',
+      flex: 1,
+    },
+    preTripCheckDone: {
+      color: '#4CAF50',
+      textDecorationLine: 'line-through',
+    },
     navBtn:{
       flexDirection:'row',
       alignItems:'center',
@@ -1230,7 +1297,7 @@ const styles = StyleSheet.create({
     navCloseBtn:{
       padding:6,
       borderRadius:20,
-      backgroundColor:Colors.grey_xlight
+      backgroundColor:Colors.grey_light
     },
     navOptionsRow:{
       flexDirection:'row',
@@ -1248,7 +1315,7 @@ const styles = StyleSheet.create({
       shadowOpacity:0.15,
       shadowRadius:2,
       borderWidth:1,
-      borderColor:Colors.grey_xlight,
+      borderColor:Colors.grey_light,
       gap:6
     },
     navOptionPressed:{

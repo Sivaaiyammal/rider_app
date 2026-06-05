@@ -17,6 +17,8 @@ import { Colors, colors, Fonts } from '../../common/constants/constants';
 import { DateTimeFormatter } from '../../common/utils/DateTimeFormatter';
 import AddressComponent from '../components/AddressComponent';
 import { useTranslation } from 'react-i18next';
+import publicrideDriverApi from '../api/publicrideDriverApi';
+import { firebaselog_tripBooking } from '../../common/utils/FirebaseAnalytics';
 
 
 
@@ -89,12 +91,12 @@ const getCountdownMeta = scheduleDateTime => {
 };
 
 const UpComingTripsList = () => {
-  const {upComingTrips} = useDriverStatusStore();
+  const {upComingTrips, setUpComingTrips} = useDriverStatusStore();
   const {userInfo} = useUserStore();
   const [trips, setTrips] = useState([]);
   const {goBack, setStackScreen} = useStackScreenStore();
   const {t} = useTranslation()
-  const {setUpComingTripDetails} = useTripAcceptStore();
+  const {setUpComingTripDetails, setTripId} = useTripAcceptStore();
   const [loading, setLoading] = useState(false);
   const {setActiveTripData} = useTripsStore();
 
@@ -130,12 +132,44 @@ const UpComingTripsList = () => {
     }
   }, [upComingTrips]);
 
-  const onStartRide = trip => {
-    const tripData = [trip];
-    setActiveTripData(tripData);
-    console.log('tripData', tripData);
-    setStackScreen('PublicDriverTrackingScreen');
-  }
+  const onStartRide = async trip => {
+    setLoading(true);
+    try {
+      const tripId = trip?._id;
+      const response = await publicrideDriverApi.startUpComingRide(
+        { tripId },
+        userInfo?.token,
+      );
+
+      if (response?.success) {
+        const tripData = response.currentTrip || trip;
+
+        setTripId(tripId);
+        setActiveTripData([{ ...tripData, status: tripData.status || 'ACCEPTED' }]);
+        setUpComingTrips(
+          (upComingTrips || []).filter(
+            t => String(t._id) !== String(tripId),
+          ),
+        );
+        firebaselog_tripBooking(
+          'TB_Driver_Allocation(TB_DA)',
+          'TB_DA:trip_accepted_inapp',
+        );
+        setStackScreen('PublicDriverTrackingScreen');
+      } else {
+        showNotification(
+          'Cannot start trip',
+          response?.message || 'Something went wrong. Please try again.',
+          'danger',
+        );
+      }
+    } catch (error) {
+      console.error('Error starting upcoming ride:', error);
+      showNotification('Error', 'Failed to start trip. Please try again.', 'danger');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.screen}>
