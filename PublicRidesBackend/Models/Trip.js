@@ -753,7 +753,56 @@ class Trip {
                 }
             },
           
-            { $unwind: { path: '$vehicleData', preserveNullAndEmptyArrays: true } }
+            { $unwind: { path: '$vehicleData', preserveNullAndEmptyArrays: true } },
+
+            // Passenger vehicle lookup (for acting driver trips)
+            {
+                $lookup: {
+                    from: 'vehicles',
+                    let: { pvId: '$passangerVehicleId' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $cond: [
+                                        { $ifNull: ['$$pvId', false] },
+                                        {
+                                            $eq: [
+                                                '$_id',
+                                                {
+                                                    $cond: [
+                                                        { $eq: [{ $type: '$$pvId' }, 'objectId'] },
+                                                        '$$pvId',
+                                                        { $toObjectId: '$$pvId' }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        false
+                                    ]
+                                }
+                            }
+                        },
+                        { $project: { _id: 1, regNo: 1, color: 1, type: 1, make: 1, model: 1 } }
+                    ],
+                    as: 'passengerVehicleData'
+                }
+            },
+
+            { $unwind: { path: '$passengerVehicleData', preserveNullAndEmptyArrays: true } },
+
+            // For acting driver trips, use passenger vehicle as vehicleData
+            {
+                $addFields: {
+                    vehicleData: {
+                        $cond: [
+                            { $eq: ['$isActingDriverTrip', true] },
+                            { $ifNull: ['$passengerVehicleData', '$vehicleData'] },
+                            '$vehicleData'
+                        ]
+                    }
+                }
+            }
         ];
         const result = await Mongo.aggregate(COLLECTION_NAME, pipeline);
         return result || [];

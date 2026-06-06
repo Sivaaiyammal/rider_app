@@ -1,13 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, useWindowDimensions } from 'react-native';
 import CircleTick from '../../common/assets/icons/CircleTick.svg';
 import usePublicDriverStore from '../store/usePublicDriverStore';
 import { Colors, colors, Fonts } from '../../common/constants/constants';
 
-
-const { width, height } = Dimensions.get('window');
-
 const PaymentCompletionScreen = () => {
+  const { width } = useWindowDimensions();
   const { showPaymentCompletion, setShowPaymentCompletion } = usePublicDriverStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -60,6 +58,7 @@ const PaymentCompletionScreen = () => {
       <Animated.View 
         style={[
           styles.container,
+          { width: width * 0.8 },
           {
             opacity: fadeAnim,
             transform: [{ scale: scaleAnim }],
@@ -111,7 +110,6 @@ const styles = StyleSheet.create({
     padding: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    width: width * 0.8,
     maxWidth: 350,
     shadowColor: '#000',
     shadowOffset: {

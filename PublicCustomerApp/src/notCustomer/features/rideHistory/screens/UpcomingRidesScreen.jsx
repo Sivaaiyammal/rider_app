@@ -1,8 +1,6 @@
-import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-const { width: windowWidth } = Dimensions.get('window');
-
 import { RecyclerListView, DataProvider, LayoutProvider } from 'recyclerlistview';
 import { yourRidesStyles } from '../../../styles/YourRidesStyles';
 import { utils } from '../../../utils/Utils';
@@ -17,6 +15,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import PropTypes from 'prop-types';
 
 const UpcomingRidesScreen = () => {
+    const { width: windowWidth } = useWindowDimensions();
     const { t } = useTranslation();
     const { setStackScreen } = useStackScreenStore();
     const { scheduledTrips } = useScheduleTripStore();

@@ -28,6 +28,7 @@ const ActingDriverPlanCard = ({
     actingDriverOtherRequests,
     updateBookingInfo,
     actingDriverItinerary,
+    bookingTab,
   } = useRideBookingInfo();
 
   const togglePref = (key, value) => {

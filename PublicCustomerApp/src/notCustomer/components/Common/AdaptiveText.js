@@ -1,13 +1,12 @@
 // LangText.js
 import React from 'react';
-import { Text, Dimensions } from 'react-native';
+import { Text, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { languageFontRatio } from '../../constants/constants';
 import { colors } from '../../constants/constants';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-
 const AdaptiveText = ({ style, color, children, ...props }) => {
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
   const { i18n } = useTranslation();
   const lang = i18n.language || 'en';
   const ratio = languageFontRatio[lang] || 1;

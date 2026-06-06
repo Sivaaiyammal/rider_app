@@ -228,6 +228,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
           formatCalendarDate(addDays(today, 2)),
         ];
       }
+      return [formatCalendarDate(today)];
     } else if (bookingTab === 'TOMORROW') {
       const tomorrow = addDays(today, 1);
       if (tomorrowDurationOption === '2_DAYS') {
@@ -242,12 +243,13 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
           formatCalendarDate(addDays(tomorrow, 2)),
         ];
       }
+      return [formatCalendarDate(tomorrow)];
     } else if (bookingTab === 'CUSTOM') {
       if (durationRangeStart) {
         return getDatesInRange(durationRangeStart, durationRangeEnd);
       }
     }
-    return [];
+    return [formatCalendarDate(today)];
   };
 
   const handleAddDay = () => {
@@ -288,8 +290,18 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     const props = {
       onPickLocationResultCallback: (pickedLocation) => {
         if (pickedLocation) {
-          const newItinerary = { ...(actingDriverItinerary || {}), [dateStr]: pickedLocation };
-          setActingDriverItinerary(newItinerary);
+          const freshItinerary = useRideBookingInfo.getState().actingDriverItinerary || {};
+          const currentDayItin = freshItinerary[dateStr] || {};
+          const currentLocations = currentDayItin.locations || [];
+          
+          const newItinerary = { 
+            ...freshItinerary, 
+            [dateStr]: {
+              ...currentDayItin,
+              locations: [...currentLocations, pickedLocation]
+            } 
+          };
+          useRideBookingInfo.getState().setActingDriverItinerary(newItinerary);
         }
         goBack();
       },
@@ -301,6 +313,24 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
       buttonLabel: t('select_location', 'Select Location'),
     };
     setStackScreen('PickLocationScreen', props);
+  };
+
+  const handleRemoveItineraryLocation = (dateStr, locIndex) => {
+    const freshItinerary = useRideBookingInfo.getState().actingDriverItinerary || {};
+    const currentDayItin = freshItinerary[dateStr] || {};
+    const currentLocations = currentDayItin.locations || [];
+    
+    const newLocations = [...currentLocations];
+    newLocations.splice(locIndex, 1);
+    
+    const newItinerary = {
+      ...freshItinerary,
+      [dateStr]: {
+        ...currentDayItin,
+        locations: newLocations
+      }
+    };
+    useRideBookingInfo.getState().setActingDriverItinerary(newItinerary);
   };
 
   useEffect(() => {
@@ -360,10 +390,13 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                 setActingDriverMaxSpeed(String(newVehicle.maxSpeed));
               }
             }
-          } else if (list.length > 0 && !actingDriverVehicle) {
-            setActingDriverVehicle(list[0]);
-            if (list[0].maxSpeed) {
-              setActingDriverMaxSpeed(String(list[0].maxSpeed));
+          } else {
+            const currentVehicle = useRideBookingInfo.getState().actingDriverVehicle;
+            if (list.length > 0 && !currentVehicle) {
+              setActingDriverVehicle(list[0]);
+              if (list[0].maxSpeed) {
+                setActingDriverMaxSpeed(String(list[0].maxSpeed));
+              }
             }
           }
           setVehiclesList(list);
@@ -429,7 +462,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
       tomorrow.setDate(tomorrow.getDate() + 1);
       
       setScheduleDateTime({
-        date: tomorrow.toISOString(),
+        date: tomorrow,
         time: tomorrowStartTime
       });
 
@@ -456,10 +489,10 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
         today.setHours(0, 0, 0, 0);
         startDate.setHours(0, 0, 0, 0);
         
-        if (startDate > today) {
+        if (startDate >= today) {
           setIsScheduledTrip(true);
           setScheduleDateTime({
-            date: startDate.toISOString(),
+            date: durationRangeStart,
             time: customStartTime
           });
         } else {
@@ -479,10 +512,10 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
         today.setHours(0, 0, 0, 0);
         startDate.setHours(0, 0, 0, 0);
         
-        if (startDate > today) {
+        if (startDate >= today) {
           setIsScheduledTrip(true);
           setScheduleDateTime({
-            date: startDate.toISOString(),
+            date: durationRangeStart,
             time: customStartTime
           });
         } else {
@@ -603,13 +636,14 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
  
 
   useEffect(() => {
-    if (mode === 'ACTING_DRIVER' && vehicle) {
+    if (mode === 'ACTING_DRIVER' && vehicle && !actingDriverVehicle) {
       setActingDriverVehicle(vehicle);
       if (vehicle.maxSpeed) {
         setActingDriverMaxSpeed(String(vehicle.maxSpeed));
       }
     }
-  }, [mode, vehicle]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if(mode == 'SCHEDULE_TRIP'){
@@ -710,15 +744,10 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
     const nextStartLocation = isStart ? item : rideStartLocation;
     const nextEndLocation = isStart ? rideEndLocation : item;
     console.log("nextStartLocation,nextEndLocation",nextStartLocation,nextEndLocation)
-    // // If we have both start & end after this selection and it's not a start selection, go straight to booking
-    if ( nextStartLocation && nextEndLocation && isTripDurationSelected && !nextStartLocation?.currentLocation) {
-      goBack()
-      setStackScreen(mode === 'ACTING_DRIVER' ? 'BookActingDriverScreen' : 'BookRideScreen', {});
-      return; // Skip going back, we are moving forward
-    }
-
-    // Otherwise just go back to the previous screen
+    // Automatically return to the Plan Ride screen after picking a location
     goBack();
+    return;
+
   };
 
   const onPickLocationResultCallback = (item,type, dateStr) =>{
@@ -769,12 +798,6 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
 
   const handleHistoryLocationClick=(item)=>{
     debouncedHistoryCallback(item)
-    const nextEndLocation = item;
-    const canOpenBooking = rideStartLocation && nextEndLocation && isTripDurationSelected;
-    if(canOpenBooking){
-    setStackScreen(mode === 'ACTING_DRIVER' ? 'BookActingDriverScreen' : 'BookRideScreen',{})
-    }
-
   }
 
    useEffect(() => {
@@ -1055,7 +1078,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
                      itineraryDates,
                      themeColor: currentTheme,
                      onAddItineraryLocation: handleItineraryLocationClick,
-                     onAddDay: handleAddDay,
+                     onRemoveItineraryLocation: handleRemoveItineraryLocation,
+                     onAddDay: bookingTab === 'CUSTOM' ? handleAddDay : null,
                    });
                  }}
                  themeColor={currentTheme}

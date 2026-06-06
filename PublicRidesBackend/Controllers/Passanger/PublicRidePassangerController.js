@@ -512,6 +512,11 @@ module.exports = function (CLASS) {
                 payload.regionalOffice = new ObjectId(payload.regionalOffice);
             }
 
+            // Convert passangerVehicleId to ObjectId so it can be used in $lookup aggregations
+            if (payload.passangerVehicleId && ObjectId.isValid(payload.passangerVehicleId)) {
+                payload.passangerVehicleId = new ObjectId(payload.passangerVehicleId);
+            }
+
             const passanger = await Passanger.getPassangerWithId(passangerId);
             if (!passanger) return res.status(400).json({ success: false, message: 'Passanger does not exists' });
 
@@ -747,6 +752,31 @@ module.exports = function (CLASS) {
                             state: driver.state,
                             address: driver.homeLocation?.addressName,
                         }
+                    }
+                }
+
+                // For acting driver trips: attach passenger vehicle details directly on the trip
+                if (trip.isActingDriverTrip && trip.passangerVehicleId) {
+                    try {
+                        const { ObjectId: OId } = require('mongodb');
+                        const Mongo = require('../DB/Mongo');
+                        const vehicleIdStr = trip.passangerVehicleId.toString();
+                        if (OId.isValid(vehicleIdStr)) {
+                            const pVehicle = await Mongo.findOne('vehicles', { _id: new OId(vehicleIdStr) });
+                            if (pVehicle) {
+                                trip.vehicleData = {
+                                    _id: pVehicle._id,
+                                    type: pVehicle.type || null,
+                                    make: pVehicle.make || null,
+                                    model: pVehicle.model || null,
+                                    regNo: pVehicle.regNo || null,
+                                    color: pVehicle.color || null,
+                                    photo: pVehicle.photo || null,
+                                };
+                            }
+                        }
+                    } catch (vErr) {
+                        console.error('Error fetching passenger vehicle for trip list:', vErr);
                     }
                 }
 

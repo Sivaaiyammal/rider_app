@@ -1,8 +1,6 @@
-import { Dimensions, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { Text, TouchableOpacity, View, ActivityIndicator, useWindowDimensions } from 'react-native';
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-const { width: windowWidth } = Dimensions.get('window');
-
 import { RecyclerListView, DataProvider, LayoutProvider } from 'recyclerlistview';
 import { yourRidesStyles } from '../../../styles/YourRidesStyles';
 import { showNotification } from '../../../components/NotificationManger';
@@ -40,6 +38,7 @@ const extractDriverPhotoKey = value => {
 };
 
 const YourRidesScreen = () => {
+    const { width: windowWidth } = useWindowDimensions();
     const { t } = useTranslation();
     const { setStackScreen } = useStackScreenStore();
     const { Rides, setRides } = useRideHistoryStore();

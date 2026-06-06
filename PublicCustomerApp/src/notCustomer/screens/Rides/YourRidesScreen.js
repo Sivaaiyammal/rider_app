@@ -1,7 +1,5 @@
-import { Dimensions, ScrollView, Text, Image, TextInput, TouchableOpacity, View, ActivityIndicator, FlatList } from 'react-native';
+import { ScrollView, Text, Image, TextInput, TouchableOpacity, View, ActivityIndicator, FlatList, useWindowDimensions } from 'react-native';
 import React, { useRef, useState, useCallback, useEffect } from 'react';
-const { width: windowWidth } = Dimensions.get('window');
-
 import { RecyclerListView, DataProvider, LayoutProvider } from 'recyclerlistview';
 import { yourRidesStyles } from '../../styles/YourRidesStyles';
 import { CommonActions, useNavigation } from '@react-navigation/native';
@@ -19,6 +17,7 @@ import NoTripsFound from '../../components/NoTripsFound';
 import ProfileImage from '../../assets/image/account/Profile.webp';
 
 const YourRidesScreen = () => {
+    const { width: windowWidth } = useWindowDimensions();
     const navigation = useNavigation();
 
     const { userdetails, setUserdetails } = useUserInfoStore();

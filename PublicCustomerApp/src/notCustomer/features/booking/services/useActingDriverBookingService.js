@@ -12,6 +12,20 @@ import { TripStatus } from '../../rideStatus/types/TripStatus';
 import { utils } from '../../../utils/Utils';
 import { firebaselog_tripBooking } from '../../../../common/utils/FirebaseAnalytics';
 
+const parseLocalDate = (dateVal) => {
+  if (dateVal instanceof Date) return dateVal;
+  if (typeof dateVal === 'string') {
+    const match = dateVal.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1; // 0-indexed
+      const day = parseInt(match[3], 10);
+      return new Date(year, month, day);
+    }
+  }
+  return new Date(dateVal);
+};
+
 const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
   const { t } = useTranslation();
 
@@ -191,13 +205,20 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
     if (isScheduledTrip) {
       payload.isScheduledTrip = true;
       if (scheduleDateTime?.date && scheduleDateTime?.time) {
-        const dateObj = new Date(scheduleDateTime.date);
+        const dateObj = parseLocalDate(scheduleDateTime.date);
         const timeObj = new Date(scheduleDateTime.time);
-        dateObj.setHours(timeObj.getHours());
-        dateObj.setMinutes(timeObj.getMinutes());
-        dateObj.setSeconds(timeObj.getSeconds());
-        dateObj.setMilliseconds(timeObj.getMilliseconds());
-        payload.scheduleDateTime = dateObj.getTime();
+        if (!isNaN(dateObj.getTime()) && !isNaN(timeObj.getTime())) {
+          const mergedDate = new Date(
+            dateObj.getFullYear(),
+            dateObj.getMonth(),
+            dateObj.getDate(),
+            timeObj.getHours(),
+            timeObj.getMinutes(),
+            timeObj.getSeconds(),
+            timeObj.getMilliseconds()
+          );
+          payload.scheduleDateTime = mergedDate.getTime();
+        }
       }
     }
 

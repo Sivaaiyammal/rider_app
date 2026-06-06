@@ -375,7 +375,7 @@ module.exports = function (CLASS) {
                     state: 'CANCELLED_BY_DRIVER_BEFORE_PICKUP',
                     timestamp: new Date().getTime(),
                 };
-                await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true });
+                await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true, "driverStatus.status": "online", currentTripId: null });
             
                 await Trip.cancelTripwithTimeline(tripId, reason, 'DRIVER', timeline);
                 if (cancelMeta) {
@@ -442,9 +442,7 @@ module.exports = function (CLASS) {
             if (cancelMeta) {
                 await Trip.updateCancelledMeta(tripId, cancelMeta);
             }
-            // const updatePaymentsToTrip = await PublicRidesPayment.updatePaymentToTrip(tripId, driverId, passangerId, finalFare)
-            // await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true });
-            // if (!updatePaymentsToTrip.success) return res.json({ success: true, message: "Error updating fare details"});
+            await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true, "driverStatus.status": "online", currentTripId: null });
             sendPassangerSocketEvents(
                 "tripCancelledByDriver",
                 String(TripPassenger._id),
@@ -486,11 +484,12 @@ module.exports = function (CLASS) {
             const {tripId, reason, totalDistance, totalDuration, isNotyetPickedUp} = req.body
             const trip =await Trip.getTripById(tripId)
             console.log(trip, "Trip in cancel by passenger");
+            if (!trip) return res.status(400).json({success: false, message: 'Trip not Found'});
             const TripPassenger = await Passanger.getPassangerWithId(passengerId);
             
-            const TripDriver = await Driver.getDriverWithId(trip.driverId);
-            const driverId = trip.driverId;
-            const driverLocation = await Driver.getDriverLocation(driverId);
+            const driverId = trip.driverId || null;
+            const TripDriver = driverId ? await Driver.getDriverWithId(driverId) : null;
+            const driverLocation = driverId ? await Driver.getDriverLocation(driverId) : null;
 
 
             let farecalculationDistance = totalDistance || 0;
@@ -520,10 +519,10 @@ module.exports = function (CLASS) {
             const driverWaitingTime = trip?.stops?.reduce((sum, stop) => {
                 return sum + (stop.driverWaitTime || 0);
             }, 0);
-            if (!trip) return res.status(400).json({success: false, message: 'Trip not Found'})
             const isAccepted = trip.status === RideStatus.ACCEPTED;
             const isPickedUp = trip.status === RideStatus.PICKEDUP;
             const isScheduled = trip.status === RideStatus.SCHEDULED;
+            const isPending = trip.status === RideStatus.PENDING;
 
           
 
@@ -548,7 +547,7 @@ module.exports = function (CLASS) {
                     cancelMeta = { cancelledLoc: loc, cancelledAt: Date.now() };
                 }
             }
-            if (isAccepted || isScheduled || isNotyetPickedUp) {
+            if (isAccepted || isScheduled || isPending || isNotyetPickedUp) {
                 const timeline = {
                     state: 'CANCELLED_BY_PASSENGER_BEFORE_PICKUP',
                     timestamp: new Date().getTime(),

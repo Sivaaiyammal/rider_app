@@ -3,7 +3,7 @@ import {
   Animated,
   View,
   StyleSheet,
-  Dimensions,
+  useWindowDimensions,
   TouchableOpacity,
   Pressable,
   Modal,
@@ -12,9 +12,8 @@ import Icons from 'react-native-vector-icons/MaterialIcons';
 import PropTypes from 'prop-types';
 import { colors } from '../../../constants/constants';
 
-const { height } = Dimensions.get('window');
-
 export default function AnimatedBottomSheetWrapper({ children, onClose, zIndex = false, visible = true }) {
+    const { height } = useWindowDimensions();
     const bounceValue = useRef(new Animated.Value(height)).current;
     const overlayOpacity = useRef(new Animated.Value(0)).current;
   

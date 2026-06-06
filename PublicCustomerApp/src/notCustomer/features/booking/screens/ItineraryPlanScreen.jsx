@@ -88,7 +88,24 @@ const ItineraryPlanScreen = ({
   };
 
   // Fallback to at least 1 day if empty
-  const datesToRender = itineraryDates?.length > 0 ? itineraryDates : [new Date().toISOString()];
+  const [localDatesToRender, setLocalDatesToRender] = useState(itineraryDates?.length > 0 ? itineraryDates : [new Date().toISOString()]);
+
+  const handleLocalAddDay = () => {
+    if (onAddDay) {
+      onAddDay(); // trigger parent update (e.g. updating the global store)
+    }
+    
+    const lastDateStr = localDatesToRender[localDatesToRender.length - 1];
+    const d = new Date(lastDateStr);
+    d.setDate(d.getDate() + 1);
+    
+    const year = d.getFullYear();
+    const month = `${d.getMonth() + 1}`.padStart(2, '0');
+    const day = `${d.getDate()}`.padStart(2, '0');
+    const newDateStr = `${year}-${month}-${day}`;
+    
+    setLocalDatesToRender([...localDatesToRender, newDateStr]);
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: '#F4F7FA' }}>
@@ -125,7 +142,7 @@ const ItineraryPlanScreen = ({
           {/* Timeline Cards */}
           <View style={styles.timelineContainer}>
             <View style={styles.timelineAxis} />
-            {datesToRender.map((dateStr, index) => {
+            {localDatesToRender.map((dateStr, index) => {
               const dayItinerary = actingDriverItinerary?.[dateStr] || {};
               const dayDateFormatted = formatDateDisplay(dateStr);
 
@@ -204,7 +221,7 @@ const ItineraryPlanScreen = ({
             {onAddDay && (
               <TouchableOpacity 
                 style={styles.addDayButton} 
-                onPress={onAddDay}
+                onPress={handleLocalAddDay}
                 activeOpacity={0.7}
               >
                 <Ionicons name="add-circle" size={20} color={themeColor.primary} />

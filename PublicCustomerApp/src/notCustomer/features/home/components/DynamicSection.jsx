@@ -810,38 +810,39 @@ const DynamicSection = ({title = 'Dynamic Section', onSelect = () => {}}) => {
 
   const renderUpcomingActingDriverCard = () => {
     return (
-      <View style={styles.upcomingDriverCard}>
-        {/* Header Row */}
-        <View style={styles.upcomingDriverHeader}>
-          <View style={styles.upcomingDriverTitleRow}>
-            <Icon name="calendar-month-outline" size={18} color="#5E35B1" />
-            <Text style={styles.upcomingDriverTitle}>Upcoming Acting Driver</Text>
-          </View>
-          <View style={styles.upcomingDriverDateBox}>
-            <Text style={styles.upcomingDriverDateText}>13 Jun 2025</Text>
-            <Text style={styles.upcomingDriverTimeText}>09:00 AM</Text>
-          </View>
-        </View>
+      <></>
+      // <View style={styles.upcomingDriverCard}>
+      //   {/* Header Row */}
+      //   <View style={styles.upcomingDriverHeader}>
+      //     <View style={styles.upcomingDriverTitleRow}>
+      //       <Icon name="calendar-month-outline" size={18} color="#5E35B1" />
+      //       <Text style={styles.upcomingDriverTitle}>Upcoming Acting Driver</Text>
+      //     </View>
+      //     <View style={styles.upcomingDriverDateBox}>
+      //       <Text style={styles.upcomingDriverDateText}>13 Jun 2025</Text>
+      //       <Text style={styles.upcomingDriverTimeText}>09:00 AM</Text>
+      //     </View>
+      //   </View>
 
-        {/* Content Row */}
-        <View style={styles.upcomingDriverContent}>
-          <Text style={styles.upcomingDriverVehicleText}>Audi Q2 • TN09CR3540</Text>
+      //   {/* Content Row */}
+      //   <View style={styles.upcomingDriverContent}>
+      //     <Text style={styles.upcomingDriverVehicleText}>Audi Q2 • TN09CR3540</Text>
           
-          <View style={styles.upcomingDriverFooter}>
-            <View style={styles.upcomingDriverBadge}>
-              <Text style={styles.upcomingDriverBadgeText}>Scheduled</Text>
-            </View>
-            <TouchableOpacity 
-              style={styles.upcomingDriverViewDetails}
-              activeOpacity={0.8}
-              onPress={() => onSelect({ key: 'my_acting_driver_bookings' })}
-            >
-              <Text style={styles.upcomingDriverViewDetailsText}>View Details</Text>
-              <Icon name="chevron-right" size={16} color="#5E35B1" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+      //     <View style={styles.upcomingDriverFooter}>
+      //       <View style={styles.upcomingDriverBadge}>
+      //         <Text style={styles.upcomingDriverBadgeText}>Scheduled</Text>
+      //       </View>
+      //       <TouchableOpacity 
+      //         style={styles.upcomingDriverViewDetails}
+      //         activeOpacity={0.8}
+      //         onPress={() => onSelect({ key: 'my_acting_driver_bookings' })}
+      //       >
+      //         <Text style={styles.upcomingDriverViewDetailsText}>View Details</Text>
+      //         <Icon name="chevron-right" size={16} color="#5E35B1" />
+      //       </TouchableOpacity>
+      //     </View>
+      //   </View>
+      // </View>
     );
   };
 

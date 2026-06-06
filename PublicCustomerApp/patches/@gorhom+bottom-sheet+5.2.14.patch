@@ -1,0 +1,57 @@
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/commonjs/hooks/useAnimatedLayout.js b/node_modules/@gorhom/bottom-sheet/lib/commonjs/hooks/useAnimatedLayout.js
+index 973d05c..814f003 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/commonjs/hooks/useAnimatedLayout.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/commonjs/hooks/useAnimatedLayout.js
+@@ -86,13 +86,11 @@ function useAnimatedLayout(containerLayoutState, topInset, bottomInset, modal, s
+     });
+   }, [state, verticalInset, modal]);
+   (0, _react.useEffect)(() => {
+-    _reactNative.Dimensions.addEventListener('change', ({
+-      window
+-    }) => {
++    _reactNative.Dimensions.addEventListener('change', ({ window: nextWindow }) => {
+       state.modify(_state => {
+         'worklet';
+ 
+-        _state.window = window;
++        _state.window = nextWindow;
+         return _state;
+       });
+     });
+diff --git a/node_modules/@gorhom/bottom-sheet/lib/module/hooks/useAnimatedLayout.js b/node_modules/@gorhom/bottom-sheet/lib/module/hooks/useAnimatedLayout.js
+index b0eec93..a7953ea 100644
+--- a/node_modules/@gorhom/bottom-sheet/lib/module/hooks/useAnimatedLayout.js
++++ b/node_modules/@gorhom/bottom-sheet/lib/module/hooks/useAnimatedLayout.js
+@@ -82,13 +82,11 @@ export function useAnimatedLayout(containerLayoutState, topInset, bottomInset, m
+     });
+   }, [state, verticalInset, modal]);
+   useEffect(() => {
+-    Dimensions.addEventListener('change', ({
+-      window
+-    }) => {
++    Dimensions.addEventListener('change', ({ window: nextWindow }) => {
+       state.modify(_state => {
+         'worklet';
+ 
+-        _state.window = window;
++        _state.window = nextWindow;
+         return _state;
+       });
+     });
+diff --git a/node_modules/@gorhom/bottom-sheet/src/hooks/useAnimatedLayout.ts b/node_modules/@gorhom/bottom-sheet/src/hooks/useAnimatedLayout.ts
+index 68c674d..10ea92d 100644
+--- a/node_modules/@gorhom/bottom-sheet/src/hooks/useAnimatedLayout.ts
++++ b/node_modules/@gorhom/bottom-sheet/src/hooks/useAnimatedLayout.ts
+@@ -106,10 +106,10 @@ export function useAnimatedLayout(
+     [state, verticalInset, modal]
+   );
+   useEffect(() => {
+-    Dimensions.addEventListener('change', ({ window }) => {
++    Dimensions.addEventListener('change', ({ window: nextWindow }) => {
+       state.modify(_state => {
+         'worklet';
+-        _state.window = window;
++        _state.window = nextWindow;
+         return _state;
+       });
+     });

@@ -20,6 +20,20 @@ import { firebaselog_tripBooking } from '../../../../common/utils/FirebaseAnalyt
  * @param {Function} options.onError - Error callback
  * @returns {Object} Booking mutation and state
  */
+const parseLocalDate = (dateVal) => {
+  if (dateVal instanceof Date) return dateVal;
+  if (typeof dateVal === 'string') {
+    const match = dateVal.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1; // 0-indexed
+      const day = parseInt(match[3], 10);
+      return new Date(year, month, day);
+    }
+  }
+  return new Date(dateVal);
+};
+
 const useBookingService = ({ onSuccess, onError } = {}) => {
   const { t } = useTranslation();
   const { 
@@ -216,14 +230,19 @@ const useBookingService = ({ onSuccess, onError } = {}) => {
 
     if (isScheduledTrip) {
       if (scheduleDateTime?.date && scheduleDateTime?.time) {
-        const dateObj = new Date(scheduleDateTime.date);
+        const dateObj = parseLocalDate(scheduleDateTime.date);
         const timeObj = new Date(scheduleDateTime.time);
-        if (!isNaN(dateObj) && !isNaN(timeObj)) {
-          dateObj.setHours(timeObj.getHours());
-          dateObj.setMinutes(timeObj.getMinutes());
-          dateObj.setSeconds(0);
-          dateObj.setMilliseconds(0);
-          payload.scheduleDateTime = dateObj.getTime();
+        if (!isNaN(dateObj.getTime()) && !isNaN(timeObj.getTime())) {
+          const mergedDate = new Date(
+            dateObj.getFullYear(),
+            dateObj.getMonth(),
+            dateObj.getDate(),
+            timeObj.getHours(),
+            timeObj.getMinutes(),
+            0,
+            0
+          );
+          payload.scheduleDateTime = mergedDate.getTime();
         }
       }
     }

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Animated, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Animated, StyleSheet, useWindowDimensions } from 'react-native';
 
 import MyRidesScreen from './screens/MyRidesScreen';
 import UpcomingRidesScreen from './screens/UpcomingRidesScreen';
@@ -8,9 +8,8 @@ import NavBar from '../../components/NavBar';
 import { useStackScreenStore } from '../../store/useStackScreenStore';
 import { Fonts ,colors} from '../../constants/constants';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
 const RideHistory = ({setScreen=false}) => {
+    const { width: SCREEN_WIDTH } = useWindowDimensions();
     const { t } = useTranslation();
     const {setStackScreen} = useStackScreenStore();
 	const [activeIndex, setActiveIndex] = useState(setScreen==='upcoming' ? 1 : 0);

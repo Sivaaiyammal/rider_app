@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, FlatList, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { colors, Fonts } from '../../../constants/constants';
-
-const { height } = Dimensions.get('window');
-
 const MOCK_CARS = [
   { id: '1', name: 'Mini', type: 'Hatchback', capacity: 4, price: 150 },
   { id: '2', name: 'Sedan', type: 'Sedan', capacity: 4, price: 200 },
@@ -14,6 +11,7 @@ const MOCK_CARS = [
 ];
 
 const CarSelectionBottomSheet = ({ visible, onClose }) => {
+  const { height } = useWindowDimensions();
   const { t } = useTranslation();
   const [selectedCar, setSelectedCar] = useState(null);
 
@@ -33,7 +31,7 @@ const CarSelectionBottomSheet = ({ visible, onClose }) => {
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} onPress={onClose} activeOpacity={1} />
         
-        <View style={styles.sheetContainer}>
+        <View style={[styles.sheetContainer, { maxHeight: height * 0.8 }]}>
           <View style={styles.handleContainer}>
             <View style={styles.handle} />
           </View>
@@ -105,7 +103,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: height * 0.8,
     paddingHorizontal: 16,
     paddingBottom: 20,
   },
