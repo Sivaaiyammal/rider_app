@@ -91,7 +91,7 @@ const CustomerLiveTracking = () => {
       {/* Map Overlays (Floats over the global map and Bottom Sheet) */}
       <View style={styles.mapOverlayTop} pointerEvents="box-none">
         <View style={styles.compactOverlayPill}>
-          <Icon name="clock-outline" size={18} color="#5E35B1" />
+          <Icon name="clock-outline" size={18} color="#4b48ab" />
           <View style={styles.compactOverlayTextGroup}>
             <Text style={styles.compactOverlayValue}>{duration ? `${duration} min` : 'N/A'}</Text>
             <Text style={styles.compactOverlayLabel}>est. duration</Text>
@@ -165,39 +165,39 @@ const CustomerLiveTracking = () => {
       >
         <View style={styles.sheetContent}>
           
-          {/* Combined Driver & Vehicle Info */}
-          <View style={styles.combinedInfoCard}>
-            {/* Driver Profile */}
-            <View style={styles.driverProfileSection}>
+          {/* Driver Info Card */}
+          <View style={styles.card}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
               <View style={styles.driverAvatar}>
                 {driverPhoto ? (
-                  <Image source={{ uri: driverPhoto }} style={{ width: 48, height: 48, borderRadius: 16 }} />
+                  <Image source={{ uri: driverPhoto }} style={{ width: 48, height: 48, borderRadius: 24 }} />
                 ) : (
                   <Text style={styles.driverInitials}>{getInitials(driverName)}</Text>
                 )}
               </View>
               <View style={styles.driverInfo}>
-                <View style={styles.driverNameRow}>
-                  <Text style={styles.driverName}>{driverName || 'Your Driver'}</Text>
-                </View>
-                <View style={{flexDirection:'row', alignItems:'center', gap:4}}>
-                  <Icon name="star" size={12} color="#7E1CFC" />
+                <Text style={styles.driverName} numberOfLines={1}>{driverName || 'Your Driver'}</Text>
+                <View style={{flexDirection:'row', alignItems:'center', gap:4, marginTop: 4}}>
+                  <Icon name="star" size={14} color="#FFD100" />
                   <Text style={styles.driverRatingText}>{driverRating || '4.8'}</Text>
                 </View>
               </View>
+              <TouchableOpacity style={styles.callDriverBtn} onPress={handleCallDriver}>
+                <Icon name="phone" size={20} color="#FFF" />
+              </TouchableOpacity>
             </View>
+          </View>
 
-            <View style={styles.divider} />
-
-            {/* Vehicle Info */}
-            <View style={styles.vehicleInfoSection}>
-              <Image 
-                source={{uri: 'https://pngimg.com/uploads/audi/audi_PNG1768.png'}} 
-                style={styles.vehicleImage}
-                resizeMode="contain"
-              />
-              <Text style={styles.vehiclePlateText}>{vehicleNumber || 'N/A'}</Text>
-              <Text style={styles.vehicleModelText}> • {vehicleBrand || ''} {vehicleModel || 'Vehicle'}</Text>
+          {/* Vehicle Info Card */}
+          <View style={styles.card}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View style={{width: 48, height: 48, borderRadius: 24, backgroundColor: '#f0f0fa', alignItems: 'center', justifyContent: 'center'}}>
+                <Icon name="car-side" size={24} color="#4b48ab" />
+              </View>
+              <View style={{marginLeft: 12, flex: 1}}>
+                <Text style={styles.vehiclePlateText}>{vehicleNumber || 'N/A'}</Text>
+                <Text style={{fontSize: 14, color: '#666', marginTop: 2, fontWeight: '500'}}>{vehicleBrand ? `${vehicleBrand} ${vehicleModel || ''}` : vehicleModel || 'Vehicle'}</Text>
+              </View>
             </View>
           </View>
 
@@ -210,7 +210,7 @@ const CustomerLiveTracking = () => {
             >
               <View style={styles.cardTitleRow}>
                 <View style={styles.itineraryTitleIconWrapper}>
-                   <Icon name="format-list-bulleted" size={16} color="#7E1CFC" />
+                   <Icon name="format-list-bulleted" size={16} color="#4b48ab" />
                 </View>
                 <Text style={styles.cardTitle}>Trip Itinerary</Text>
               </View>
@@ -226,7 +226,7 @@ const CustomerLiveTracking = () => {
               <View>
                 {nextStop ? (
                   <View style={styles.itineraryDriving}>
-                    <Icon name="bus" size={20} color="#7E1CFC" />
+                    <Icon name="bus" size={20} color="#4b48ab" />
                     <View style={styles.itineraryDrivingInfo}>
                       <Text style={styles.itineraryDrivingTitle}>Driving to next stop</Text>
                       <Text style={styles.itineraryDrivingSub}>{nextStop.name || nextStop.address || 'Next Stop'}</Text>
@@ -428,22 +428,22 @@ const CustomerLiveTracking = () => {
       {/* Floating Bottom Bar */}
       <View style={styles.floatingBottomBar}>
         <TouchableOpacity 
-          style={[styles.floatingActionBtn, {backgroundColor: '#F3E5F5', borderColor: '#E1BEE7'}]}
+          style={[styles.floatingActionBtn, {backgroundColor: '#e8e8f8', borderColor: '#c0c0e8'}]}
           onPress={handleCallDriver}
         >
-          <Icon name="phone-outline" size={20} color="#7E1CFC" />
-          <Text style={[styles.floatingActionBtnText, {color: '#7E1CFC'}]}>Call Driver</Text>
+          <Icon name="phone-outline" size={20} color="#4b48ab" />
+          <Text style={[styles.floatingActionBtnText, {color: '#4b48ab'}]}>Call Driver</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.floatingActionBtn, {backgroundColor: '#E8F5E9', borderColor: '#C8E6C9'}]}>
-          <Icon name="message-outline" size={20} color="#00C853" />
-          <Text style={[styles.floatingActionBtnText, {color: '#00C853'}]}>Chat</Text>
+        <TouchableOpacity style={[styles.floatingActionBtn, {backgroundColor: '#f5f5f5', borderColor: '#e0e0e0'}]}>
+          <Icon name="message-outline" size={20} color="#333" />
+          <Text style={[styles.floatingActionBtnText, {color: '#333'}]}>Chat</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.floatingActionBtn, {backgroundColor: '#FFF3E0', borderColor: '#FFE0B2'}]}>
-          <Icon name="headset" size={20} color="#F57C00" />
-          <Text style={[styles.floatingActionBtnText, {color: '#F57C00'}]}>Support</Text>
+        <TouchableOpacity style={[styles.floatingActionBtn, {backgroundColor: '#f5f5f5', borderColor: '#e0e0e0'}]}>
+          <Icon name="headset" size={20} color="#333" />
+          <Text style={[styles.floatingActionBtnText, {color: '#333'}]}>Support</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.floatingActionBtn, {backgroundColor: '#FFEBEE', borderColor: '#FFCDD2'}]}>
-          <Icon name="star-outline" size={20} color="#D32F2F" />
+          <Icon name="alert-circle-outline" size={20} color="#D32F2F" />
           <Text style={[styles.floatingActionBtnText, {color: '#D32F2F'}]}>SOS</Text>
         </TouchableOpacity>
       </View>
@@ -634,8 +634,8 @@ const styles = StyleSheet.create({
   driverAvatar: {
     width: 48,
     height: 48,
-    borderRadius: 16,
-    backgroundColor: '#7E1CFC',
+    borderRadius: 24,
+    backgroundColor: '#4b48ab',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -674,19 +674,19 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginRight: 8,
     borderWidth: 1,
-    borderColor: '#E6D3FF',
+    borderColor: '#c0c0e8',
     borderRadius: 16,
   },
   viewDetailsText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#7E1CFC',
+    color: '#4b48ab',
   },
   callDriverBtn: {
     width: 44,
     height: 44,
     borderRadius: 16,
-    backgroundColor: '#7E1CFC',
+    backgroundColor: '#4b48ab',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -708,7 +708,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   itineraryTitleIconWrapper: {
-    backgroundColor: '#F3E5F5',
+    backgroundColor: '#e8e8f8',
     padding: 6,
     borderRadius: 10,
   },
@@ -719,19 +719,19 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   stopsBadge: {
-    backgroundColor: '#F3E5F5',
+    backgroundColor: '#e8e8f8',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   stopsBadgeText: {
-    color: '#7E1CFC',
+    color: '#4b48ab',
     fontSize: 12,
     fontWeight: '700',
   },
   itineraryDriving: {
     flexDirection: 'row',
-    backgroundColor: '#F8F4FF',
+    backgroundColor: '#f0f0fa',
     padding: 16,
     borderRadius: 16,
     marginBottom: 12,
@@ -743,7 +743,7 @@ const styles = StyleSheet.create({
   itineraryDrivingTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#7E1CFC',
+    color: '#4b48ab',
   },
   itineraryDrivingSub: {
     fontSize: 12,
@@ -832,21 +832,21 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#7E1CFC',
+    backgroundColor: '#4b48ab',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 4,
-    borderColor: '#F3E5F5',
+    borderColor: '#e8e8f8',
   },
   stopNumberUpcoming: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#7E1CFC',
+    backgroundColor: '#4b48ab',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 4,
-    borderColor: '#F3E5F5',
+    borderColor: '#e8e8f8',
   },
   stopNumberTextWhite: {
     color: '#FFF',
@@ -896,7 +896,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   editIconBtn: {
-    backgroundColor: '#F8F4FF',
+    backgroundColor: '#f0f0fa',
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -906,7 +906,7 @@ const styles = StyleSheet.create({
   stopTime: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#7E1CFC',
+    color: '#4b48ab',
     marginTop: 4,
   },
   stopAddress: {
@@ -921,13 +921,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: '#E6D3FF',
+    borderColor: '#c0c0e8',
     borderStyle: 'dashed',
     borderRadius: 12,
     marginTop: 16,
   },
   showMoreText: {
-    color: '#7E1CFC',
+    color: '#4b48ab',
     fontSize: 14,
     fontWeight: '700',
     marginRight: 4,
@@ -1161,7 +1161,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#F0F0F0',
   },
   addBillLinkText: {
-    color: '#5E35B1',
+    color: '#4b48ab',
     fontSize: 14,
     fontWeight: '600',
   },

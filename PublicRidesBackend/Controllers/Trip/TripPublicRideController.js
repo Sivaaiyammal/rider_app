@@ -161,6 +161,10 @@ module.exports = function (CLASS) {
             if (trip.status === 'ASSIGNED' && trip.driverId?.toString() === driverId) {
                 // Already accepted by this driver — return current trip data so app can proceed
                 const currentTrip = await Trip.getTripById(tripId);
+                if (currentTrip && currentTrip.isActingDriverTrip) {
+                    const tempFareInfo = await ActingDriverFareService.getTempFareModel(currentTrip);
+                    currentTrip.actingDriverFareModel = tempFareInfo.data;
+                }
                 return res.status(200).json({ success: true, message: 'Trip already accepted', currentTrip: currentTrip || trip });
             }
             
@@ -229,7 +233,10 @@ module.exports = function (CLASS) {
             const currentTrip = await Trip.getTripById(tripId);
             if(!currentTrip) return res.status(400).json({ success: false, message: 'Trip not found' });
 
-
+            if (currentTrip.isActingDriverTrip) {
+                const tempFareInfo = await ActingDriverFareService.getTempFareModel(currentTrip);
+                currentTrip.actingDriverFareModel = tempFareInfo.data;
+            }
             
             currentTrip.maxDistanceLimit = getMaxDistanceLimit || null;
 
@@ -652,6 +659,105 @@ module.exports = function (CLASS) {
             return res.json({ success: false, message: "Not OnGoing Trip"});
         } catch (e) {
             return this.handleError(e, res)
+        }
+    }
+
+    CLASS.prototype.rejectAssignedDriver = async function (req, res) {
+        try {
+            const passengerId = req.passanger.id;
+            const {tripId, reason} = req.body;
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(400).json({success: false, message: 'Trip not Found'});
+            const TripPassenger = await Passanger.getPassangerWithId(passengerId);
+            
+            const driverId = trip.driverId || null;
+            const TripDriver = driverId ? await Driver.getDriverWithId(driverId) : null;
+
+            const newStatus = trip.scheduleDateTime ? RideStatus.SCHEDULED : RideStatus.PENDING;
+
+            const timeline = {
+                status: "DRIVER_REJECTED",
+                reason: reason || "Passenger rejected assigned driver",
+                timestamp: new Date().getTime(),
+            };
+            
+            await Trip.rejectAssignedDriverWithTimeline(tripId, newStatus, timeline);
+
+            if(driverId && TripDriver){
+                await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true });
+            
+                sendDriverSocketEvents(
+                    "tripCancelledByPassenger",
+                    String(TripDriver._id),
+                    req.socketService,
+                    null,
+                    trip,
+                    null
+                ).catch(err => console.error("Error sending socket to driver", err));
+            }   
+            
+            sendPassangerSocketEvents(
+                "tripUpdated",
+                String(passengerId),
+                req.socketService,
+                null,
+                trip,
+                null
+            ).catch(err => console.error("Error sending socket to passenger", err));
+            
+            return res.json({ success: true, message: "Driver Rejected Successfully" });
+        } catch (error) {
+            return res.status(500).json({ success: false, message: error.message });
+        }
+    }
+
+    CLASS.prototype.approveTripPhotos = async function (req, res) {
+        try {
+            const {tripId, approvalStatus} = req.body;
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(400).json({success: false, message: 'Trip not Found'});
+            
+            if (approvalStatus === 'approved') {
+                const otp = Math.floor(1000 + Math.random() * 9000).toString();
+                const setPayload = {
+                    'bills.vehiclePhotosApproved': true,
+                    otp: otp
+                };
+                await Trip.updateTripMediaData(tripId, setPayload);
+                
+                const updatedTrip = { ...trip, otp: otp };
+                if(updatedTrip.bills) updatedTrip.bills.vehiclePhotosApproved = true;
+
+                if (trip.driverId) {
+                    sendDriverSocketEvents(
+                        "photosApproved",
+                        String(trip.driverId),
+                        req.socketService,
+                        null,
+                        updatedTrip,
+                        null
+                    ).catch(err => console.log(err));
+                }
+                return res.json({ success: true, message: "Photos Approved", otp: otp });
+            } else {
+                const setPayload = {
+                    'bills.vehiclePhotosApproved': false
+                };
+                await Trip.updateTripMediaData(tripId, setPayload);
+                if (trip.driverId) {
+                    sendDriverSocketEvents(
+                        "photosRejected",
+                        String(trip.driverId),
+                        req.socketService,
+                        null,
+                        trip,
+                        null
+                    ).catch(err => console.log(err));
+                }
+                return res.json({ success: true, message: "Photos Rejected" });
+            }
+        } catch (error) {
+            return res.status(500).json({ success: false, message: error.message });
         }
     }
 

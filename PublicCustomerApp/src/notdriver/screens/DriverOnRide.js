@@ -100,6 +100,7 @@ const DriverOnRide = () => {
   const prevNavLegIndex = useRef(null); // store last navLegIndex
   const [openNavChoiceModal, setOpenNavChoiceModal] = useState(false)
   const [openRouteRetryModal, setOpenRouteRetryModal] = useState(false)
+  const [hasAutoStartedNav, setHasAutoStartedNav] = useState(false);
 
   const [pickUpAlertLoading, setPickUpAlertLoading] = useState(false)
 
@@ -453,37 +454,44 @@ const DriverOnRide = () => {
         tripId: activeTripData[0]?._id,
       }
       const res = await api.request(url, 'POST', payload, userInfo?.token);
+      setOTPLoading(false)
       if(res?.success){
-        // showNotification(res?.message, res?.message, 'success');
-        setModalVisible(!modalVisible);
-        setDirectionPoints(null);
-        setDirectionResponse(null);
-        setDisduration(null);
-        setStartNavigation(false);
-        updateStopData(nonreachedStops[0]?.name, true, 'PICKEDUP', 0, true)
-        setIsReachedPickup(false);
-        setCurrentTripAcceptedTime(new Date().getTime());
-        firebaselog_onRide('OR_Status(OR_S)', 'OR_S:pickedup')
-        setTripDetails(null)
-        // updateDirectionsPoints();
+        return true;
       }else{
         showNotification(res?.message, res?.message, 'danger');
+        return false;
       }
-      setOTPLoading(false)
     }catch(error){
       showNotification('Something went wrong', '', 'danger');
       setOTPLoading(false)
+      return false;
     }
   }
+
+  const handleStartTripAfterOTP = () => {
+    setModalVisible(false);
+    setDirectionPoints(null);
+    setDirectionResponse(null);
+    setDisduration(null);
+    setStartNavigation(false);
+    updateStopData(nonreachedStops[0]?.name, true, 'PICKEDUP', 0, true)
+    setIsReachedPickup(false);
+    setCurrentTripAcceptedTime(new Date().getTime());
+    firebaselog_onRide('OR_Status(OR_S)', 'OR_S:pickedup')
+    setTripDetails(null)
+  };
       
-  const handlePickupConfirm = (otp) => {
+  const handlePickupConfirm = async (otp) => {
     if (otp.length !== 4) {
       showNotification('Please enter the correct OTP', '', 'danger');
-      return;
+      return false;
     }
-    verifyOTP(otp)
-    setDisduration(null);
-    NeNativeModule.endNavigation();
+    const success = await verifyOTP(otp)
+    if (success) {
+      setDisduration(null);
+      NeNativeModule.endNavigation();
+    }
+    return success;
   }
 
   const updateDirectionsPoints = () => {
@@ -677,6 +685,13 @@ const DriverOnRide = () => {
 
   }
 
+  useEffect(() => {
+    if (directionReadyCallback && !startNavigation && !hasAutoStartedNav) {
+      setHasAutoStartedNav(true);
+      handleNavMode('vm');
+    }
+  }, [directionReadyCallback, startNavigation, hasAutoStartedNav]);
+
   const renderOpenNavChoiceModal = () => {
     return (
       <BottomSheetPopup
@@ -785,6 +800,7 @@ const DriverOnRide = () => {
               isPublicRide={true}
               stopsDetails={activeTripData && activeTripData.length > 0 && activeTripData[0]}
               onConfirmPress={handlePickupConfirm}
+              onStartTrip={handleStartTripAfterOTP}
               isLoading={isLoading}
               otpLoading={otpLoading}
             />

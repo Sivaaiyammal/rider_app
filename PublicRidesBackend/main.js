@@ -65,8 +65,8 @@ RouteManager(app);
 app.use(checkUserIsAuthenticated)
 
 // Start the Cron Job when Server is Activated to Create a Trips
-if (process.env.RUNAUTOTRIPCREATOR === 'true' || process.env.NODE_ENV !== 'production') {
-    console.log("Starting Auto Driver Assigner Cron Job for Local Testing");
+if (process.env.RUNAUTOTRIPCREATOR === 'true') {
+  
     assignDriversCronJob.start();
 }
 
@@ -87,28 +87,3 @@ app.all('/graphql/location', createHandler({
 Server.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
-
-// Mock RideMatch Server for local testing (Port 5000)
-if (process.env.NODE_ENV !== "production") {
-    const { Server: MockServer } = require("socket.io");
-    const http = require("http");
-    const mockServer = http.createServer();
-    const mockIo = new MockServer(mockServer, {
-        cors: { origin: "*" }
-    });
-
-    mockIo.on("connection", (socket) => {
-        console.log("[Mock RideMatch] Driver connected:", socket.id, socket.handshake.query);
-        
-        // Expose a way to trigger trip requests via an internal event or just broadcast all new trips.
-        // For now, we will store the socket so we can emit to it later.
-        socket.join('all_drivers');
-    });
-
-    // We can export mockIo to be used in controllers to trigger mock ride requests
-    global.mockRideMatchIo = mockIo;
-
-    mockServer.listen(5000, '0.0.0.0', () => {
-        console.log(`[Mock RideMatch] Server is running at http://0.0.0.0:5000`);
-    });
-}

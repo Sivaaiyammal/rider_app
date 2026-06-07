@@ -4,97 +4,122 @@ import {
   View,
   TouchableOpacity,
   ActivityIndicator,
-  ScrollView,
   TextInput,
+  Image,
 } from 'react-native';
-import React, {useRef, useState} from 'react'
-import {  width } from '../../common/utils/scalingutils';
-import { Colors, colors, Fonts } from '../../common/constants/constants';
-import Locgrey from '../../notdriver/assets/icons/loc_grey.svg'
+import React, { useRef, useState, useEffect } from 'react';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Colors, Fonts } from '../../common/constants/constants';
 import { useTranslation } from 'react-i18next';
 
 const PickUpModal = ({
   stopsDetails,
   onConfirmPress,
-  isLoading,
+  onStartTrip,
   isPublicRide,
   otpLoading,
+  onCancelPress,
 }) => {
-  const {t} = useTranslation()
-  const [otpCode, setOtpCode] = useState(0);
+  const { t } = useTranslation();
+  const [otpCode, setOtpCode] = useState('');
   const [otpError, setOtpError] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
+  const inputRef = useRef(null);
 
-  const handleValueChange = value => {
-    setOtpCode(value);
-  };
-
-  const _onConfirmPress = (otp) => {
-    if (!isPublicRide) {
-      onConfirmPress();
-      return
-    }
-    if (otp.length !== 4) {
-      setOtpError(t('please_enter_otp'));
-    }
-    else{
+  const handleValueChange = async (value) => {
+    const numericValue = value.replace(/[^0-9]/g, '').slice(0, 4);
+    setOtpCode(numericValue);
+    
+    if (numericValue.length === 4) {
+      if (!isPublicRide) {
+        onConfirmPress();
+        return;
+      }
       setOtpError('');
-      onConfirmPress(otp);
+      const success = await onConfirmPress(numericValue);
+      if (success) {
+        setIsVerified(true);
+      } else {
+        setOtpError(t('invalid_otp', {defaultValue: 'Invalid OTP'}));
+      }
     }
   };
+
+  const handleBoxPress = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
+
+  if (isVerified) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.successIconContainer}>
+          <MaterialCommunityIcons name="check" size={40} color={Colors.white} />
+        </View>
+        <Text style={styles.titleBold}>{t('otp_verified', {defaultValue: 'OTP Verified'})}</Text>
+        <Text style={styles.subtitle}>{t('you_can_now_start_trip', {defaultValue: 'You can now start the trip.'})}</Text>
+        <Text style={[styles.subtitle, {marginTop: 16}]}>{t('trip_will_start_now', {defaultValue: 'Trip will start now.'})}</Text>
+        
+        <View style={styles.carImageContainer}>
+           <MaterialCommunityIcons name="car-side" size={80} color={Colors.periwinkle} />
+        </View>
+
+        <TouchableOpacity 
+          style={styles.primaryBtn} 
+          onPress={onStartTrip}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.primaryBtnTxt}>{t('start_trip', {defaultValue: 'Start Trip'})}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-     
-      {isPublicRide ?  
-      <>
-      <Text style={styles.title}>{t('you_have_reached_your_pickup_location')} </Text>
-      </>
-      : 
-      <Text style={styles.title}>
-      {t('you_have_reached_your_next_stop_location')}
-      </Text>}
-      {/* <Text style={styles.stop}>{isPublicRide ? stopsDetails?.bookingForName : stopsDetails?.name}</Text> */}
-      <View style={styles.addressContainer}>
-        <View style={styles.locBgImg}>
-          <Locgrey />
-        </View>
-        <Text style={styles.address}>{isPublicRide ?  stopsDetails?.stops?.[0]?.address : stopsDetails?.address}</Text>
+      <View style={styles.successIconContainer}>
+        <MaterialCommunityIcons name="check" size={40} color={Colors.white} />
       </View>
-      <Text style={[styles.title,{marginVertical:10, fontSize:14}]}>{t('please_enter_the_otp')} </Text>
+      <Text style={styles.titleBold}>{t('otp_sent', {defaultValue: 'OTP Sent'})}</Text>
+      <Text style={styles.subtitle}>{t('ask_otp_from_customer', {defaultValue: 'Ask OTP from your customer'})}</Text>
 
-        <View style={{width: '80%', alignSelf: 'center', marginVertical: 10}}>
-          <TextInput
-            value={otpCode}
-            onChangeText={value => handleValueChange(value.replace(/[^0-9]/g, '').slice(0, 4))}
-            maxLength={4}
-            keyboardType="numeric"
-            style={{
-              width: 160,
-              height: 50,
-              // borderWidth: 1,
-              borderRadius: 5,
-              fontSize: 24,
-              letterSpacing: 16,
-              textAlign: 'center',
-              alignSelf: 'center',
-              backgroundColor: '#fff',
-              borderBottomWidth:1,
-              color:Colors.black
-            }}
-            placeholder="----"
-            autoFocus
-          />
-        {(otpCode.length !== 4 && otpError) && <Text style={styles.otpError}>{otpError}</Text>}
-        </View>
-    
-
-      <TouchableOpacity disabled={otpLoading} style={styles.pickUpBtn} onPress={()=>_onConfirmPress(otpCode)}>
-        {otpLoading ? (
-          <ActivityIndicator size="small" color={Colors.white} />
-        ) : (
-          <Text style={styles.pickUpBtnTxt}>{t('confirm')}</Text>
-        )}
+      <TouchableOpacity activeOpacity={1} onPress={handleBoxPress} style={styles.otpBoxesContainer}>
+        {[0, 1, 2, 3].map((index) => (
+          <View key={index} style={[styles.otpBox, otpCode.length === index && styles.otpBoxActive]}>
+            <Text style={styles.otpBoxText}>{otpCode[index] || ''}</Text>
+          </View>
+        ))}
       </TouchableOpacity>
+
+      <TextInput
+        ref={inputRef}
+        value={otpCode}
+        onChangeText={handleValueChange}
+        maxLength={4}
+        keyboardType="numeric"
+        style={styles.hiddenInput}
+        autoFocus
+      />
+      
+      {otpLoading && <ActivityIndicator size="small" color={Colors.periwinkle} style={{marginVertical: 10}}/>}
+      {(otpCode.length === 4 && otpError !== '') && <Text style={styles.otpError}>{otpError}</Text>}
+
+      <Text style={styles.timerText}>{t('otp_valid_for', {defaultValue: 'OTP is valid for 5:00 minutes'})}</Text>
+      
+      <Text style={styles.footerText}>
+        {t('once_otp_verified_trip_starts', {defaultValue: 'Once OTP is verified, the trip will start automatically.'})}
+      </Text>
+
+      {onCancelPress && (
+        <TouchableOpacity 
+          style={styles.cancelBtn} 
+          onPress={onCancelPress}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.cancelBtnTxt}>{t('cancel_ride', {defaultValue: 'Cancel Ride'})}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -104,106 +129,122 @@ export default PickUpModal;
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    alignItems: 'center',
   },
-  title: {
-    fontSize: 16,
-    fontFamily: Fonts.regular,
+  successIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#4CAF50',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  titleBold: {
+    fontSize: 20,
+    fontFamily: Fonts.semi_bold,
     color: Colors.black,
     textAlign: 'center',
+    marginBottom: 8,
   },
-  stop: {
-    fontSize: 18,
+  subtitle: {
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: '#666',
+    textAlign: 'center',
+  },
+  otpBoxesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginVertical: 30,
+  },
+  otpBox: {
+    width: 50,
+    height: 60,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 1},
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  otpBoxActive: {
+    borderColor: Colors.periwinkle,
+    borderWidth: 2,
+  },
+  otpBoxText: {
+    fontSize: 24,
+    fontFamily: Fonts.semi_bold,
+    color: '#4CAF50',
+  },
+  hiddenInput: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    opacity: 0,
+  },
+  otpError: {
+    color: '#E53935',
+    fontSize: 13,
     fontFamily: Fonts.medium,
-    color: Colors.black,
+    marginTop: -10,
+    marginBottom: 10,
+    textAlign: 'center',
   },
-  address: {
+  timerText: {
+    fontSize: 13,
+    fontFamily: Fonts.medium,
+    color: '#666',
+    marginBottom: 30,
+  },
+  footerText: {
     fontSize: 12,
     fontFamily: Fonts.regular,
-    color: Colors.black,
-    width: width * 0.6,
+    color: '#999',
+    textAlign: 'center',
+    lineHeight: 18,
+    paddingHorizontal: 20,
   },
-  locBgImg: {
-    width: 40,
-    aspectRatio: 1,
-    borderRadius: 100,
-    backgroundColor: '#eeeeee',
+  carImageContainer: {
+    marginVertical: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addressContainer: {
-    flexDirection: 'row',
+  primaryBtn: {
+    width: '100%',
+    backgroundColor: '#352166',
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    gap: 10,
-    marginVertical: 15,
-    borderBottomWidth: 0.3,
-    paddingBottom: 10,
-    width: width * 0.8,
+    justifyContent: 'center',
   },
-  pickUpBtn: {
-    width: 200,
-    alignSelf: 'center',
-    backgroundColor: Colors.periwinkle,
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  pickUpBtnTxt: {
+  primaryBtnTxt: {
     color: Colors.white,
     fontSize: 16,
-    fontFamily: Fonts.regular,
+    fontFamily: Fonts.semi_bold,
   },
-  passangerContainer: {
-    width: width * 0.75,
-    borderWidth: 0.3,
+  cancelBtn: {
+    marginTop: 15,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#e53935',
+    backgroundColor: '#fff',
+    alignItems: 'center',
     alignSelf: 'center',
-    marginVertical: 10,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 10,
   },
-  passangerName: {
+  cancelBtnTxt: {
     fontSize: 14,
-    fontFamily: Fonts.regular,
-    color: Colors.black,
-  },
-  passangerStatus: {
-    fontSize: 10,
     fontFamily: Fonts.medium,
-    backgroundColor: '#fff0e5',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    marginVertical: 5,
-    borderRadius: 3,
-    color: '#ff7700',
+    color: '#e53935',
   },
-  passangerDetailsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    width: '90%',
-    marginVertical: 5,
-    paddingBottom: 10,
-  },
-  passangerDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  passangerCount: {
-    fontSize: 12,
-    fontFamily: Fonts.regular,
-    color: Colors.black,
-  },
-  otpError:{
-    color: 'red',
-    fontSize: 12,
-    fontFamily: Fonts.regular,
-    marginVertical: 5,
-    alignSelf: 'center',
-  }
 });
-
-

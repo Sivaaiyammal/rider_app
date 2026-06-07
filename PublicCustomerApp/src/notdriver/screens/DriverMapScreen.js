@@ -23,6 +23,7 @@ import usePublicDriverStore from '../store/usePublicDriverStore';
 import useCurrentScreenStore from '../../common/store/useCurrentScreenStore';
 import DueAlert from '../components/DueAlert';
 import UpComingTrips from './UpComingTrips/UpComingTrips';
+import useTripsStore from '../store/useTripsStore';
 
 const {NeNativeModule} = NativeModules;
 
@@ -36,6 +37,7 @@ const DriverMapScreen = props => {
     driverDueDate: state.driverDueDate,
     driverDue: state.driverDue,
   }));
+  const {activeTripData} = useTripsStore();
   const setCurrentScreen = useCurrentScreenStore(state => state.setCurrentScreen);
 
   const currentTimeMs = new Date().getTime();
@@ -170,6 +172,21 @@ const DriverMapScreen = props => {
               onPressPayNow={() => setCurrentScreen('Earnings')}
             />
           ) : null}
+
+          {activeTripData && activeTripData.length > 0 && (
+            <TouchableOpacity 
+              style={styles.activeTripBanner}
+              onPress={() => setStackScreen('PublicDriverTrackingScreen')}
+            >
+              <Text style={styles.activeTripBannerTitle}>
+                {activeTripData[0]?.status === 'ACCEPTED' ? t('customer_waiting_for_you', {defaultValue: 'Customer waiting for you'}) : t('trip_in_progress', {defaultValue: 'Active trip in progress'})}
+              </Text>
+              <Text style={styles.activeTripBannerSub}>
+                {t('tap_to_view_trip_details', {defaultValue: 'Tap to view trip details'})}
+              </Text>
+            </TouchableOpacity>
+          )}
+
           <View style={RouteScreenStyles.mapIconContainer}>
             <TrackingMapIcons markersData={[]} ishomeDriver modes={modes} role={role}/>
           </View>
@@ -255,6 +272,32 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 2,
+  },
+  activeTripBanner: {
+    backgroundColor: Colors.green_online,
+    padding: 12,
+    marginHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  activeTripBannerTitle: {
+    color: Colors.white,
+    fontFamily: Fonts.semi_bold,
+    fontSize: 16,
+  },
+  activeTripBannerSub: {
+    color: Colors.white,
+    fontFamily: Fonts.medium,
+    fontSize: 12,
+    marginTop: 4,
+    opacity: 0.9,
   },
   searchcontainer: {
     flexDirection: 'row',

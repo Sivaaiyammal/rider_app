@@ -119,6 +119,11 @@ export const cancelRide = async (payload)=> {
   return data
 }
 
+export const rejectAssignedDriver = async (payload)=> {
+  const {data} = await apiClient.post('publicrides/customer/v2/rejectAssignedDriver', payload)
+  return data
+}
+
 export const updatePaymentInServer = async (payload) => {
   const { data } = await apiClient.post('publicrides/customer/v2/paymentStatusUpdate', payload)
   return data

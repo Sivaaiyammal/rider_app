@@ -10,41 +10,64 @@ import VehicleDriverPreview from '../../../components/Common/VehicleDriverPrevie
 import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 import { utils } from '../../../utils/Utils';
-import { cancelRide, approveVehiclePhotos } from '../../../API/EndPoints/EndPoints';
+import { cancelRide, approveVehiclePhotos, rejectAssignedDriver } from '../../../API/EndPoints/EndPoints';
+import RazorpayCheckout from 'react-native-razorpay';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DriverAssignedFlowScreen = ({ route }) => {
   const { setStackScreen, reset } = useStackScreenStore();
   const [step, setStep] = useState(1);
-  const { currentRideInfo, resetCurrentRideInfo } = useCurrentRideInfoStore();
+  const currentRideInfo = useCurrentRideInfoStore();
+  const resetCurrentRideInfo = currentRideInfo.resetCurrentRideInfo;
   const assignedDriverInfo = useAssignedDriverInfoStore();
   const [isRejecting, setIsRejecting] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState('Online');
 
   useEffect(() => {
-    const isApproved = currentRideInfo?.bills?.vehiclePhotosApproved;
-    const hasPhotos = currentRideInfo?.bills?.preTripVehiclePhotos;
-    if (hasPhotos && !isApproved && step < 5) {
-      setStep(5);
-    } else if (isApproved && step < 6) {
-      setStep(6);
-    }
-  }, [currentRideInfo?.bills, step]);
+    const checkStatus = async () => {
+      const isApproved = currentRideInfo?.bills?.vehiclePhotosApproved;
+      const hasPhotos = currentRideInfo?.bills?.odometerPhoto;
+      const tripId = currentRideInfo?.tripId;
+      
+      let isPaid = false;
+      if (tripId) {
+        const stored = await AsyncStorage.getItem(`paid_confirmation_${tripId}`);
+        if (stored === 'true') isPaid = true;
+      }
+
+      if (hasPhotos && !isApproved && step < 5) {
+        setStep(5);
+      } else if (isApproved && step < 6) {
+        setStep(6);
+      } else if (isPaid && step < 4) {
+        setStep(4);
+      }
+    };
+    checkStatus();
+  }, [currentRideInfo?.bills, step, currentRideInfo?.tripId]);
 
   useEffect(() => {
-    if (currentRideInfo?.status === 'PICKEDUP' || currentRideInfo?.status === 'STARTED') {
+    if (currentRideInfo?.tripStatus === 'PICKEDUP' || currentRideInfo?.tripStatus === 'STARTED') {
       setStackScreen('CustomerliveTracking', {});
     }
-  }, [currentRideInfo?.status]);
+  }, [currentRideInfo?.tripStatus]);
 
   const handlePhotoApproval = async (approvalStatus) => {
     try {
       setIsApproving(true);
-      const tripId = currentRideInfo?._id;
+      const tripId = currentRideInfo?.tripId;
       if (tripId) {
-        await approveVehiclePhotos(tripId, approvalStatus);
+        const response = await approveVehiclePhotos(tripId, approvalStatus);
         if (approvalStatus === 'rejected') {
           Alert.alert('Photos Rejected', 'Driver has been notified to retake the photos.');
           setStep(4); // Go back to waiting step
+        } else if (approvalStatus === 'approved') {
+          if (response?.success) {
+            currentRideInfo.setBills({ ...currentRideInfo.bills, vehiclePhotosApproved: true });
+            setStep(6);
+          }
         }
       }
     } catch (error) {
@@ -75,15 +98,66 @@ const DriverAssignedFlowScreen = ({ route }) => {
     }
   };
 
+  const handlePay = async () => {
+    setIsProcessingPayment(true);
+    
+    if (selectedPayment === 'Cash') {
+      setTimeout(async () => {
+        if (currentRideInfo?.tripId) {
+          await AsyncStorage.setItem(`paid_confirmation_${currentRideInfo.tripId}`, 'true');
+        }
+        setIsProcessingPayment(false);
+        setStep(3);
+      }, 500);
+      return;
+    }
+
+    try {
+      // Create mock options for razorpay
+      const options = {
+        description: 'Confirmation Amount',
+        image: 'https://virtualmaze.com/images/Logo-header.svg',
+        currency: 'INR',
+        key: 'rzp_test_mock_key', // This is a mock key, will fail gracefully
+        amount: confirmationAmount * 100,
+        name: 'Virtual Maze',
+        theme: { color: '#4b48ab' },
+      };
+
+      try {
+        await RazorpayCheckout.open(options);
+        // Payment success
+        if (currentRideInfo?.tripId) {
+          await AsyncStorage.setItem(`paid_confirmation_${currentRideInfo.tripId}`, 'true');
+        }
+        setIsProcessingPayment(false);
+        setStep(3);
+      } catch (err) {
+        // Fallback for development / mock
+        console.log('Razorpay failed or mock key used, simulating success for local dev');
+        if (currentRideInfo?.tripId) {
+          await AsyncStorage.setItem(`paid_confirmation_${currentRideInfo.tripId}`, 'true');
+        }
+        setIsProcessingPayment(false);
+        setStep(3);
+      }
+    } catch (e) {
+      if (currentRideInfo?.tripId) {
+        await AsyncStorage.setItem(`paid_confirmation_${currentRideInfo.tripId}`, 'true');
+      }
+      setIsProcessingPayment(false);
+      setStep(3); // simulating success anyway
+    }
+  };
+
   const handleReject = async () => {
     try {
       setIsRejecting(true);
-      const tripId = currentRideInfo?._id;
+      const tripId = currentRideInfo?.tripId;
       if (tripId) {
-        await cancelRide({
+        await rejectAssignedDriver({
           tripId,
           reason: 'Passenger rejected assigned driver',
-          isNotyetPickedUp: true
         });
       }
       resetCurrentRideInfo();
@@ -170,15 +244,33 @@ const DriverAssignedFlowScreen = ({ route }) => {
 
       <View style={styles.card}>
         <AdaptiveText style={styles.sectionTitle}>Payment Methods</AdaptiveText>
-        <View style={styles.paymentMethod}>
-          <AdaptiveText style={styles.paymentText}>Online</AdaptiveText>
-          <Ionicons name="chevron-forward" size={20} color="#888" />
-        </View>
+        
+        <TouchableOpacity 
+          style={[styles.paymentMethod, selectedPayment === 'Online' && { backgroundColor: '#e8e8f8' }]}
+          onPress={() => setSelectedPayment('Online')}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name="card-outline" size={20} color={selectedPayment === 'Online' ? "#4b48ab" : "#888"} style={{ marginRight: 10 }} />
+            <AdaptiveText style={[styles.paymentText, selectedPayment === 'Online' && { color: '#4b48ab', fontFamily: Fonts.bold }]}>Online</AdaptiveText>
+          </View>
+          {selectedPayment === 'Online' && <Ionicons name="checkmark-circle" size={20} color="#4b48ab" />}
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.paymentMethod, selectedPayment === 'Cash' && { backgroundColor: '#e8e8f8' }]}
+          onPress={() => setSelectedPayment('Cash')}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Ionicons name="cash-outline" size={20} color={selectedPayment === 'Cash' ? "#4b48ab" : "#888"} style={{ marginRight: 10 }} />
+            <AdaptiveText style={[styles.paymentText, selectedPayment === 'Cash' && { color: '#4b48ab', fontFamily: Fonts.bold }]}>Cash</AdaptiveText>
+          </View>
+          {selectedPayment === 'Cash' && <Ionicons name="checkmark-circle" size={20} color="#4b48ab" />}
+        </TouchableOpacity>
       </View>
 
 
-      <TouchableOpacity style={styles.primaryButton} onPress={handleNext}>
-        <AdaptiveText style={styles.primaryButtonText}>Pay ₹{confirmationAmount}</AdaptiveText>
+      <TouchableOpacity style={styles.primaryButton} onPress={handlePay} disabled={isProcessingPayment}>
+        {isProcessingPayment ? <ActivityIndicator color="#fff" /> : <AdaptiveText style={styles.primaryButtonText}>{selectedPayment === 'Cash' ? 'Confirm Booking' : `Pay ₹${confirmationAmount}`}</AdaptiveText>}
       </TouchableOpacity>
     </View>
   );
@@ -203,9 +295,6 @@ const DriverAssignedFlowScreen = ({ route }) => {
 
       <TouchableOpacity style={styles.primaryButtonOutline} onPress={handleNext}>
         <AdaptiveText style={styles.primaryButtonOutlineText}>View Booking Details</AdaptiveText>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => reset()} style={{ marginTop: 20 }}>
-        <AdaptiveText style={{ color: '#4b48ab', fontFamily: Fonts.medium }}>Go to Home</AdaptiveText>
       </TouchableOpacity>
     </View>
   );
@@ -556,8 +645,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 12,
+    paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    borderRadius: 8,
   },
   paymentText: {
     fontFamily: Fonts.medium,

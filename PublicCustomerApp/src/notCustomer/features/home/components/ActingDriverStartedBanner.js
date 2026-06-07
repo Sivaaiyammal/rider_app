@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
@@ -6,11 +6,13 @@ import useCurrentRideInfoStore from '../../rideStatus/store/useCurrentRideInfoSt
 import useAssignedDriverInfoStore from '../../rideStatus/store/useAssignedDriverInfoStore';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import { Fonts } from '../../../constants/constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ActingDriverStartedBanner = () => {
   const { tripStatus, isActingDriverTrip, tripId } = useCurrentRideInfoStore();
   const assignedDriverInfo = useAssignedDriverInfoStore();
   const { setStackScreen } = useStackScreenStore();
+  const [isPaidLocally, setIsPaidLocally] = useState(false);
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -22,8 +24,17 @@ const ActingDriverStartedBanner = () => {
       ])
     );
     pulse.start();
+
+    const checkPayment = async () => {
+      if (tripId) {
+        const stored = await AsyncStorage.getItem(`paid_confirmation_${tripId}`);
+        if (stored === 'true') setIsPaidLocally(true);
+      }
+    };
+    checkPayment();
+
     return () => pulse.stop();
-  }, []);
+  }, [tripId]);
 
   const isVisible =
     isActingDriverTrip &&
@@ -41,15 +52,15 @@ const ActingDriverStartedBanner = () => {
     : ['#1a3a5c', '#0f223c'];  // dark blue — driver on the way
 
   const statusLine = isAccepted 
-    ? 'Tap to confirm.'
+    ? (isPaidLocally ? 'Tap to view details.' : 'Tap to confirm.')
     : (isPickedUp ? 'Trip is in progress' : `${driverName} is on the way to you`);
 
   const iconName = isPickedUp ? 'steering' : 'car-arrow-right';
   const accentColor = isPickedUp ? '#4CAF50' : '#FFD700';
   
   const titleText = isAccepted ? 'Driver Assigned' : (isPickedUp ? 'Trip in Progress' : 'Acting Driver');
-  const buttonText = isAccepted ? 'Confirm' : 'Track';
-  const buttonIcon = isAccepted ? 'check-circle-outline' : 'map-marker-radius';
+  const buttonText = isAccepted ? (isPaidLocally ? 'View' : 'Confirm') : 'Track';
+  const buttonIcon = isAccepted ? (isPaidLocally ? 'eye-outline' : 'check-circle-outline') : 'map-marker-radius';
 
   const handleAction = () => {
     if (isAccepted) {

@@ -251,11 +251,9 @@ const DriverVehiclePhotosScreen = () => {
   };
 
   const onPickOdometer = (key, img) => { setOdometerPhoto(img); setOdometerUploaded(false); };
-
   const uploadPre = async () => {
-    if (!preAllDone) { Alert.alert(t('photos_required'), t('please_capture_all_4_pre_trip_photos')); return; }
+    if (!preAllDone) return false;
     try {
-      setUploadingPre(true);
       const formData = new FormData();
       formData.append('tripId', activeTripData[0]._id);
       formData.append('phase', 'pre');
@@ -265,10 +263,9 @@ const DriverVehiclePhotosScreen = () => {
       formData.append('preRightSide', { uri: preTripPhotos.rightSide.uri, type: preTripPhotos.rightSide.type, name: preTripPhotos.rightSide.name });
       const api = new APIRequest();
       const res = await api.request('/publicrides/driver/v2/uploadTripMedia', 'POST', formData, userInfo?.token);
-      if (res.success) { setPreUploaded(true); setPreTripDone(true);goBack(); }
-      else Alert.alert('Upload Failed', res?.message || 'Could not upload pre-trip photos.');
-    } catch { Alert.alert('Error', 'Something went wrong.'); }
-    finally { setUploadingPre(false); }
+      if (res.success) { setPreUploaded(true); setPreTripDone(true); return true; }
+      return false;
+    } catch { return false; }
   };
 
   const uploadPost = async () => {
@@ -291,9 +288,8 @@ const DriverVehiclePhotosScreen = () => {
   };
 
   const uploadDent = async () => {
-    if (dentPhotos.length === 0) return;
+    if (dentPhotos.length === 0) return true;
     try {
-      setUploadingDent(true);
       const formData = new FormData();
       formData.append('tripId', activeTripData[0]._id);
       formData.append('phase', 'dent');
@@ -302,26 +298,47 @@ const DriverVehiclePhotosScreen = () => {
       });
       const api = new APIRequest();
       const res = await api.request('/publicrides/driver/v2/uploadTripMedia', 'POST', formData, userInfo?.token);
-      if (res.success) { setDentUploaded(true); setDentPhotosDone(true); }
-      else Alert.alert('Upload Failed', res?.message || 'Could not upload dent photos.');
-    } catch { Alert.alert('Error', 'Something went wrong.'); }
-    finally { setUploadingDent(false); }
+      if (res.success) { setDentUploaded(true); setDentPhotosDone(true); return true; }
+      return false;
+    } catch { return false; }
   };
 
   const uploadOdometer = async () => {
-    if (!odometerPhoto) return;
+    if (!odometerPhoto) return false;
     try {
-      setUploadingOdometer(true);
       const formData = new FormData();
       formData.append('tripId', activeTripData[0]._id);
       formData.append('phase', 'odometer');
       formData.append('odometerPhoto', { uri: odometerPhoto.uri, type: odometerPhoto.type, name: odometerPhoto.name || 'odometer.jpg' });
       const api = new APIRequest();
       const res = await api.request('/publicrides/driver/v2/uploadTripMedia', 'POST', formData, userInfo?.token);
-      if (res.success) { setOdometerUploaded(true); setOdometerPhotoDone(true); }
-      else Alert.alert('Upload Failed', res?.message || 'Could not upload odometer photo.');
-    } catch { Alert.alert('Error', 'Something went wrong.'); }
-    finally { setUploadingOdometer(false); }
+      if (res.success) { setOdometerUploaded(true); setOdometerPhotoDone(true); return true; }
+      return false;
+    } catch { return false; }
+  };
+
+  const [submittingPhotos, setSubmittingPhotos] = useState(false);
+
+  const submitToCustomer = async () => {
+    if (!preAllDone) { Alert.alert(t('photos_required'), t('please_capture_all_4_pre_trip_photos')); return; }
+    if (!odometerPhoto) { Alert.alert(t('photos_required'), t('please_capture_odometer_photo')); return; }
+
+    setSubmittingPhotos(true);
+    
+    // Upload sequentially
+    const preSuccess = await uploadPre();
+    if (!preSuccess) { Alert.alert('Upload Failed', 'Could not upload pre-trip photos.'); setSubmittingPhotos(false); return; }
+    
+    const dentSuccess = await uploadDent();
+    if (!dentSuccess) { Alert.alert('Upload Failed', 'Could not upload dent photos.'); setSubmittingPhotos(false); return; }
+    
+    const odometerSuccess = await uploadOdometer();
+    if (!odometerSuccess) { Alert.alert('Upload Failed', 'Could not upload odometer photo.'); setSubmittingPhotos(false); return; }
+
+    // Notify Customer API logic will go here
+    // For now, we assume successful upload transitions state.
+    setSubmittingPhotos(false);
+    goBack();
   };
 
   return (
@@ -363,16 +380,6 @@ const DriverVehiclePhotosScreen = () => {
                     image={preTripPhotos[s.key]} onPick={onPickPre} loading={loadingFromServer} />
                 ))}
               </View>
-              <TouchableOpacity
-                style={[styles.uploadBtn, (!preAllDone || uploadingPre) && styles.uploadBtnDisabled]}
-                onPress={uploadPre}
-                disabled={!preAllDone || uploadingPre}
-                activeOpacity={0.8}>
-                {uploadingPre
-                  ? <ActivityIndicator size="small" color={Colors.white} />
-                  : <MaterialCommunityIcons name="cloud-upload-outline" size={16} color={Colors.white} />}
-                <Text style={styles.uploadBtnTxt}>{uploadingPre ? t('uploading') : preUploaded ? t('reupload_pre_trip') : t('upload_pre_trip_photos')}</Text>
-              </TouchableOpacity>
             </>
           )}
         </View>
@@ -426,16 +433,6 @@ const DriverVehiclePhotosScreen = () => {
                   </View>
                 </View>
               </View>
-              <TouchableOpacity
-                style={[styles.uploadBtn, (dentPhotos.length === 0 || uploadingDent) && styles.uploadBtnDisabled]}
-                onPress={uploadDent}
-                disabled={dentPhotos.length === 0 || uploadingDent}
-                activeOpacity={0.8}>
-                {uploadingDent
-                  ? <ActivityIndicator size="small" color={Colors.white} />
-                  : <MaterialCommunityIcons name="cloud-upload-outline" size={16} color={Colors.white} />}
-                <Text style={styles.uploadBtnTxt}>{uploadingDent ? t('uploading') : dentUploaded ? t('reupload', 'Re-upload') : t('upload', 'Upload')}</Text>
-              </TouchableOpacity>
             </>
           )}
         </View>
@@ -470,16 +467,6 @@ const DriverVehiclePhotosScreen = () => {
                   loading={loadingFromServer}
                 />
               </View>
-              <TouchableOpacity
-                style={[styles.uploadBtn, (!odometerPhoto || uploadingOdometer) && styles.uploadBtnDisabled]}
-                onPress={uploadOdometer}
-                disabled={!odometerPhoto || uploadingOdometer}
-                activeOpacity={0.8}>
-                {uploadingOdometer
-                  ? <ActivityIndicator size="small" color={Colors.white} />
-                  : <MaterialCommunityIcons name="cloud-upload-outline" size={16} color={Colors.white} />}
-                <Text style={styles.uploadBtnTxt}>{uploadingOdometer ? t('uploading') : odometerUploaded ? t('reupload', 'Re-upload') : t('upload', 'Upload')}</Text>
-              </TouchableOpacity>
             </>
           )}
         </View>
@@ -525,6 +512,22 @@ const DriverVehiclePhotosScreen = () => {
         </View>
         )}
       </ScrollView>
+
+      {/* Continue / Submit Button for Pre-Trip (Only show if ACCEPTED and not post trip) */}
+      {isAccepted && (
+        <View style={styles.footerWrap}>
+          <TouchableOpacity 
+            style={[styles.submitBtn, (!preAllDone || !odometerPhoto || submittingPhotos) && styles.uploadBtnDisabled]}
+            onPress={submitToCustomer}
+            disabled={!preAllDone || !odometerPhoto || submittingPhotos}
+            activeOpacity={0.8}>
+            {submittingPhotos
+              ? <ActivityIndicator size="small" color={Colors.white} />
+              : <Text style={styles.submitBtnTxt}>{t('continue_and_send', {defaultValue: 'Continue'})}</Text>}
+          </TouchableOpacity>
+        </View>
+      )}
+
     </View>
   );
 };
@@ -559,6 +562,9 @@ const styles = StyleSheet.create({
   },
   uploadBtnDisabled: { backgroundColor: '#BDBDBD' },
   uploadBtnTxt: { fontSize: 13, fontFamily: Fonts.medium, color: Colors.white },
+  footerWrap: { padding: 16, backgroundColor: Colors.white, borderTopWidth: 1, borderColor: '#F0F0F0' },
+  submitBtn: { backgroundColor: '#352166', borderRadius: 12, paddingVertical: 16, alignItems: 'center', justifyContent: 'center' },
+  submitBtnTxt: { fontSize: 16, fontFamily: Fonts.semi_bold, color: Colors.white },
 });
 
 

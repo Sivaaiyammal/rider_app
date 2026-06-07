@@ -421,7 +421,7 @@ const ActingDriverOnRide = () => {
   };
 
   const verifyOTP = async (otp) => {
-    setOTPLoading(true)
+    setOTPLoading(true);
     try{
       const api = new APIRequest();
       const url = `/publicrides/driver/v2/verifyTripOtp`;
@@ -430,35 +430,44 @@ const ActingDriverOnRide = () => {
         tripId: activeTripData[0]?._id,
       }
       const res = await api.request(url, 'POST', payload, userInfo?.token);
+      setOTPLoading(false);
       if(res?.success){
-        setModalVisible(!modalVisible);
-        setDirectionPoints(null);
-        setDirectionResponse(null);
-        setDisduration(null);
-        setStartNavigation(false);
-        updateStopData(nonreachedStops[0]?.name, true, 'PICKEDUP', 0, true)
-        setIsReachedPickup(false);
-        setCurrentTripAcceptedTime(new Date().getTime());
-        firebaselog_onRide('OR_Status(OR_S)', 'OR_S:pickedup')
-        setTripDetails(null)
+        return true;
       }else{
         showNotification(res?.message, res?.message, 'danger');
+        return false;
       }
-      setOTPLoading(false)
     }catch(error){
       showNotification('Something went wrong', '', 'danger');
-      setOTPLoading(false)
+      setOTPLoading(false);
+      return false;
     }
-  }
+  };
 
-  const handlePickupConfirm = (otp) => {
+  const handleStartTripAfterOTP = () => {
+    setModalVisible(false);
+    setDirectionPoints(null);
+    setDirectionResponse(null);
+    setDisduration(null);
+    setStartNavigation(false);
+    updateStopData(nonreachedStops[0]?.name, true, 'PICKEDUP', 0, true)
+    setIsReachedPickup(false);
+    setCurrentTripAcceptedTime(new Date().getTime());
+    firebaselog_onRide('OR_Status(OR_S)', 'OR_S:pickedup')
+    setTripDetails(null)
+  };
+
+  const handlePickupConfirm = async (otp) => {
     if (otp.length !== 4) {
       showNotification('Please enter the correct OTP', '', 'danger');
-      return;
+      return false;
     }
-    verifyOTP(otp)
-    setDisduration(null);
-    NeNativeModule.endNavigation();
+    const success = await verifyOTP(otp);
+    if (success) {
+      setDisduration(null);
+      NeNativeModule.endNavigation();
+    }
+    return success;
   }
 
   const updateDirectionsPoints = () => {
@@ -618,6 +627,8 @@ const ActingDriverOnRide = () => {
     await BGLocationTask.runDriverBgTask();
   }
 
+
+
   const renderOpenNavChoiceModal = () => {
     return (
       <BottomSheetPopup
@@ -719,8 +730,10 @@ const ActingDriverOnRide = () => {
               isPublicRide={true}
               stopsDetails={activeTripData && activeTripData.length > 0 && activeTripData[0]}
               onConfirmPress={handlePickupConfirm}
+              onStartTrip={handleStartTripAfterOTP}
               isLoading={isLoading}
               otpLoading={otpLoading}
+              onCancelPress={() => setCancelRideModalVisible(true)}
             />
           </View>
         </KeyboardAvoidingView>
@@ -771,8 +784,14 @@ const ActingDriverOnRide = () => {
         }}
         />
         )}
+      {tripsStatus === 'ACCEPTED' && (
+        <View style={styles.topBanner}>
+          <Text style={styles.topBannerTitle}>{t('navigate_to_pickup', {defaultValue: 'Navigate to Pickup'})}</Text>
+          <Text style={styles.topBannerSub}>{nonreachedStops[0]?.address || nonreachedStops[0]?.name || ''}</Text>
+        </View>
+      )}
       {disduration ? null : (
-        <View style={RouteScreenStyles.mapIconContainer}>
+        <View style={[RouteScreenStyles.mapIconContainer, tripsStatus === 'ACCEPTED' && {top: 100}]}>
           <TrackingMapIcons markersData={directionPoints} refreshDirections={()=>refreshDirections()} />
         </View>
       )}
@@ -784,7 +803,52 @@ const ActingDriverOnRide = () => {
         </View>
       ) : (
         <CustomeBottomSheet useScrollView={true}>
-        {loading && <FullScreenLoader />}
+          {tripsStatus === 'ACCEPTED' && (
+            <View style={styles.actingDriverPickupSheet}>
+              {!isReachedPickup ? (
+                <View style={styles.pickupSheet}>
+                  <Text style={styles.pickupSheetTitle}>Pickup</Text>
+                  <Text style={styles.pickupSheetAddress}>{nonreachedStops[0]?.address || nonreachedStops[0]?.name || ''}</Text>
+                  
+                  {disduration && (
+                    <Text style={styles.pickupSheetStats}>
+                      {DateTimeFormatter.convertSecondsToReadable(disduration?.location[3], true)} • {disduration?.location[2] < 1000 ? Math.round(disduration?.location[2]) + ' m' : utils.metersToKilometers(disduration?.location[2])?.toFixed(2) + ' km'}
+                    </Text>
+                  )}
+                  <View style={styles.pickupSheetDivider} />
+                  <TouchableOpacity 
+                    style={styles.pickupSheetBtn}
+                    onPress={() => onStartNavigationPress()}
+                  >
+                    <Text style={styles.pickupSheetBtnTxt}>{t('start_navigate', {defaultValue: 'Start Navigate'})}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.pickupSheetBtn, {backgroundColor: 'transparent', borderWidth: 1, borderColor: '#E53935', marginTop: 10}]}
+                    onPress={() => setCancelRideModalVisible(true)}
+                  >
+                    <Text style={[styles.pickupSheetBtnTxt, {color: '#E53935'}]}>{t('cancel_ride', {defaultValue: 'Cancel Ride'})}</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.arrivedSheet}>
+                  <Text style={styles.arrivedSheetTitle}>Arrived at Pickup Location?</Text>
+                  <Text style={styles.arrivedSheetSub}>Verify with customer before starting.</Text>
+                  <View style={styles.arrivedBtnRow}>
+                    <TouchableOpacity style={styles.callBtn} onPress={() => Linking.openURL(`tel:${activeTripData[0]?.passangers?.[0]?.phone || activeTripData[0]?.passangerPhone}`)}>
+                      <Text style={styles.callBtnTxt}>Call Customer</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.imHereBtn} onPress={onReachedPickup}>
+                      <Text style={styles.imHereBtnTxt}>I'm Here</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
+
+          {tripsStatus !== 'ACCEPTED' && (
+            <>
+              {loading && <FullScreenLoader />}
          {
             !disduration && tripsStatus !== "COMPLETED" ?
                 (hasLocationPermission && (Platform.OS === 'android' && Platform.Version <= 28 ? true : hasBackgroundLocationPermission) &&
@@ -958,11 +1022,13 @@ const ActingDriverOnRide = () => {
             ):(
             <ModalFooter setCancelRideModalVisible={setCancelRideModalVisible} activeTripData={activeTripData} />
             )}
+            </>
+          )}
 
         </CustomeBottomSheet>
       )}
-      {cancelRideModalVisible && <CancelRideModal modalVisible={cancelRideModalVisible} setModalVisible={setCancelRideModalVisible} callCancelRide={handleEndTrip} loading={loading} tripData={activeTripData?.[0]}/>}
-        {modalVisible && renderPickUpModal()}
+        {(modalVisible && !cancelRideModalVisible) && renderPickUpModal()}
+        {cancelRideModalVisible && <CancelRideModal modalVisible={cancelRideModalVisible} setModalVisible={setCancelRideModalVisible} callCancelRide={handleEndTrip} loading={loading} tripData={activeTripData?.[0]}/>}
         <Modal transparent animationType="fade" visible={showPreTripWarning} onRequestClose={() => setShowPreTripWarning(false)}>
           <View style={styles.preTripOverlay}>
             <View style={styles.preTripWarningBox}>
@@ -1412,4 +1478,114 @@ const styles = StyleSheet.create({
       fontSize: 14,
       fontFamily:Fonts.semi_bold
     },
+  topBanner: {
+    position: 'absolute',
+    top: 40,
+    left: 16,
+    right: 16,
+    backgroundColor: '#352166',
+    borderRadius: 16,
+    padding: 16,
+    zIndex: 10,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  topBannerTitle: {
+    color: '#FFFFFF',
+    fontFamily: Fonts.semi_bold,
+    fontSize: 16,
+  },
+  topBannerSub: {
+    color: '#FFFFFF',
+    fontFamily: Fonts.regular,
+    fontSize: 13,
+    marginTop: 4,
+  },
+  actingDriverPickupSheet: {
+    padding: 16,
+  },
+  pickupSheetTitle: {
+    fontFamily: Fonts.semi_bold,
+    fontSize: 14,
+    color: Colors.black,
+  },
+  pickupSheetAddress: {
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+    color: Colors.black,
+    marginTop: 4,
+  },
+  pickupSheetStats: {
+    fontFamily: Fonts.semi_bold,
+    fontSize: 14,
+    color: Colors.black,
+    marginTop: 16,
+  },
+  pickupSheetDivider: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 16,
+  },
+  pickupSheetBtn: {
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pickupSheetBtnTxt: {
+    fontFamily: Fonts.medium,
+    fontSize: 16,
+    color: Colors.black,
+  },
+  arrivedSheetTitle: {
+    fontFamily: Fonts.semi_bold,
+    fontSize: 18,
+    color: Colors.black,
+    textAlign: 'center',
+  },
+  arrivedSheetSub: {
+    fontFamily: Fonts.regular,
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 24,
+  },
+  arrivedBtnRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  callBtn: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#352166',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  callBtnTxt: {
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: '#352166',
+  },
+  imHereBtn: {
+    flex: 1,
+    backgroundColor: '#352166',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imHereBtnTxt: {
+    fontFamily: Fonts.medium,
+    fontSize: 14,
+    color: '#FFFFFF',
+  },
 })

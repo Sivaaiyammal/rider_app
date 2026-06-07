@@ -122,6 +122,26 @@ class Trip {
         return result;
     }
 
+    static rejectAssignedDriverWithTimeline = async (tripId, status, tripTimelineObj) => {
+        const result = await Mongo.updateOneRaw(
+            COLLECTION_NAME,
+            { _id: new ObjectId(tripId) },
+            {
+                $set: {
+                    status: status,
+                    driverId: null,
+                    vehicleId: null,
+                    driverAcceptedTime: null,
+                    otp: null
+                },
+                $push: {
+                    timeline: tripTimelineObj
+                }
+            }
+        );
+        return result;
+    }
+
     static getTripsForPassanger = async (filter, page = 1, limit = 10) => {
         const queryFilter = { ...filter };
         if (queryFilter.status === 'ALL') {
