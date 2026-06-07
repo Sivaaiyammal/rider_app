@@ -442,16 +442,26 @@ const TripSetupScreen = ({ isEditMode }) => {
                 })() : new Date()}
                  onConfirm={(selectedDate) => {
                   setShowDatePicker(false);
-                  setDate(selectedDate);
+                  
+                  let finalDate = selectedDate;
+                  if (pickerMode === 'time') {
+                    finalDate = new Date(date);
+                    finalDate.setHours(selectedDate.getHours());
+                    finalDate.setMinutes(selectedDate.getMinutes());
+                    finalDate.setSeconds(0);
+                    finalDate.setMilliseconds(0);
+                  }
+                  
+                  setDate(finalDate);
                   
                   // Auto-update pill based on selected date
                   const today = new Date();
                   const tomorrow = new Date();
                   tomorrow.setDate(tomorrow.getDate() + 1);
                   
-                  if (selectedDate.toDateString() === today.toDateString()) {
+                  if (finalDate.toDateString() === today.toDateString()) {
                     setWhenNeed('Today');
-                  } else if (selectedDate.toDateString() === tomorrow.toDateString()) {
+                  } else if (finalDate.toDateString() === tomorrow.toDateString()) {
                     setWhenNeed('Tomorrow');
                   } else {
                     setWhenNeed('Later');

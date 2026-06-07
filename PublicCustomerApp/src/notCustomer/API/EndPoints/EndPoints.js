@@ -101,11 +101,11 @@ export const getUserStats = async (currentTripId) => {
   return data;
 }
 
-export  const getCurrentTrip = async () =>{
-  console.log("Fetching current trip from server")
-  const {data} = await apiClient.get('/publicrides/customer/v2/getTrip')
-  
-  return data
+export const getCurrentTrip = async (tripId) => {
+  console.log("Fetching current trip from server", tripId);
+  const url = tripId ? `/publicrides/customer/v2/getTrip?tripId=${tripId}` : '/publicrides/customer/v2/getTrip';
+  const { data } = await apiClient.get(url);
+  return data;
 }
 
 export const getAvalibaleVehiclesType = async (lat,lon) => {
@@ -263,6 +263,11 @@ export const deleteAccount = async (payload) => {
     });
     return data;
   }
+
+export const approveVehiclePhotos = async (tripId, approval) => {
+  const { data } = await apiClient.post('/publicrides/customer/v2/approveVehiclePhotos', { tripId, approval });
+  return data;
+}
 
 export const approveBill = async (tripId, billIndex, approval) => {
   const { data } = await apiClient.post('/publicrides/customer/v2/approveBill', { tripId, billIndex, approval });

@@ -579,25 +579,29 @@ module.exports = function (CLASS) {
     CLASS.prototype.publicridesGetTrip = async function (req, res) {
         
         const passangerId = req.passanger.id;
+        const tripIdQuery = req.query.tripId;
         try {
             const PassengerDetails = await Passanger.getPassangerWithId(passangerId);
             let trip = null;
-            if (PassengerDetails?.latestTripId) {
+            if (tripIdQuery) {
+                trip = await Trip.getTripById(tripIdQuery);
+            } else if (PassengerDetails?.latestTripId) {
                 trip = await Trip.getTripById(PassengerDetails?.latestTripId);
+            }
 
-                if (!trip) return res.json({ success: true, trip: null, message: "No ongoing trip found" });
+            if (!trip) return res.json({ success: true, trip: null, message: "No ongoing trip found" });
 
                 if (trip.status === RideStatus.PENDING) {
                     return res.json({ success: true, trip, assignDriver: null });
                 }
 
-                if (trip.status === RideStatus.ACCEPTED || trip.status === RideStatus.PICKEDUP || trip.status === RideStatus.COMPLETED || trip.status === RideStatus.DROPPED || trip.status === RideStatus.DIVERGED || (trip.status === RideStatus.CANCELLED)) {
+                if (trip.status === 'ASSIGNED' || trip.status === RideStatus.ACCEPTED || trip.status === RideStatus.PICKEDUP || trip.status === RideStatus.COMPLETED || trip.status === RideStatus.DROPPED || trip.status === RideStatus.DIVERGED || (trip.status === RideStatus.CANCELLED)) {
                     const driver = await Driver.getDriverWithId(trip.driverId);
                     if (!driver) return res.json({ success: true, trip, assignDriver: null });
                     const driverInfo = {
                         driverName: driver.name,
                         driverPhone: driver.phone,
-                        driverRating: null,
+                        driverRating: driver.ratingData?.rating || 4.8,
                         vehicleType: driver.ownVehicleInfo?.type || null,
                         vehicleModel: driver.ownVehicleInfo?.model || null,
                         vehicleBrand: driver.ownVehicleInfo?.make || null,
@@ -629,7 +633,6 @@ module.exports = function (CLASS) {
 
                     return res.json({ success: true, trip, assignDriver: driverInfo });
                 }
-            }
             return res.json({ success: true, trip: null, message: "No ongoing trip found" });
         } catch (err) {
             return this.handleError(err, res);
@@ -998,14 +1001,14 @@ module.exports = function (CLASS) {
             return res.json({ success: true, userStats, appConfig, trip, assignDriver: null, scheduleTrips });
         }
     
-        if (trip.status === RideStatus.ACCEPTED || trip.status === RideStatus.PICKEDUP || trip.status === RideStatus.COMPLETED || trip.status === RideStatus.DROPPED || trip.status === RideStatus.DIVERGED ||(trip.status === RideStatus.CANCELLED)) {
+        if (trip.status === 'ASSIGNED' || trip.status === RideStatus.ACCEPTED || trip.status === RideStatus.PICKEDUP || trip.status === RideStatus.COMPLETED || trip.status === RideStatus.DROPPED || trip.status === RideStatus.DIVERGED ||(trip.status === RideStatus.CANCELLED)) {
             
             const driver = await Driver.getDriverWithId(trip.driverId);
             if(!driver) return res.json({ success: true, userStats, appConfig, trip, assignDriver: null, scheduleTrips });
             const driverInfo = {
                 driverName: driver.name,
                 driverPhone: driver.phone,
-                driverRating: null,
+                driverRating: driver.ratingData?.rating || 4.8,
                 vehicleType: driver.ownVehicleInfo?.type || null,
                 vehicleModel: driver.ownVehicleInfo?.model || null,
                 vehicleBrand: driver.ownVehicleInfo?.make || null,
@@ -1899,6 +1902,50 @@ module.exports = function (CLASS) {
             if (!config) return res.status(404).json({ success: false, message: 'Onboarding config not found' });
             const { VEHICLE_TYPE_OPTIONS, FUEL_TYPE_OPTIONS, MAKES_IN_INDIA, MODELS_BY_MAKE, ADVANCED_FEATURES, TRANSMISSION_OPTIONS } = config;
             return res.json({ success: true, data: { VEHICLE_TYPE_OPTIONS, FUEL_TYPE_OPTIONS, MAKES_IN_INDIA, MODELS_BY_MAKE, ADVANCED_FEATURES, TRANSMISSION_OPTIONS } });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
+    CLASS.prototype.approveVehiclePhotos = async function (req, res) {
+        try {
+            const { tripId, approval } = req.body;
+            const passangerId = req.passanger.id;
+
+            if (!tripId || !approval) {
+                return res.status(400).json({ success: false, message: 'tripId and approval are required' });
+            }
+            if (!['approved', 'rejected'].includes(approval)) {
+                return res.status(400).json({ success: false, message: "approval must be 'approved' or 'rejected'" });
+            }
+
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
+            if (trip.passangerId?.toString() !== passangerId.toString()) {
+                return res.status(403).json({ success: false, message: 'Not authorised to approve photos for this trip' });
+            }
+
+            const Mongo = require("../DB/Mongo");
+            const { ObjectId } = require("mongodb");
+            
+            // Update the trip with photo approval status
+            const updateStatus = approval === 'approved';
+            await Mongo.updateOne('trips', { _id: new ObjectId(tripId) }, {
+                $set: { "bills.vehiclePhotosApproved": updateStatus }
+            });
+
+            // Emit socket to driver
+            if (trip.driverId) {
+                getUserSocketIds(String(trip.driverId)).then(driverSocketIds => {
+                    if (driverSocketIds && driverSocketIds.length > 0) {
+                        req.socketService.publicRideDriverHandler.emitVehiclePhotosApprovalStatus(driverSocketIds, {
+                            _id: tripId,
+                            approval: approval,
+                        });
+                    }
+                }).catch(err => console.error('Error emitting vehiclePhotosApprovalStatus to driver:', err));
+            }
+
+            return res.status(200).json({ success: true, message: `Vehicle photos ${approval}` });
         } catch (err) {
             return this.handleError(err, res);
         }

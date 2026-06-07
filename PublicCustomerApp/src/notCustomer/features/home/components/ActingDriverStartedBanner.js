@@ -9,7 +9,7 @@ import { Fonts } from '../../../constants/constants';
 
 const ActingDriverStartedBanner = () => {
   const { tripStatus, isActingDriverTrip, tripId } = useCurrentRideInfoStore();
-  const { allocatedDriverInfo } = useAssignedDriverInfoStore();
+  const assignedDriverInfo = useAssignedDriverInfoStore();
   const { setStackScreen } = useStackScreenStore();
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -28,31 +28,40 @@ const ActingDriverStartedBanner = () => {
   const isVisible =
     isActingDriverTrip &&
     tripId &&
-    (tripStatus === 'ACCEPTED' || tripStatus === 'ASSIGNED' || tripStatus === 'PICKEDUP' || tripStatus === 'STARTED');
+    ['ACCEPTED', 'ASSIGNED', 'DRIVER_ASSIGNED', 'PICKEDUP', 'STARTED'].includes(tripStatus);
 
   if (!isVisible) return null;
 
-  const driverName = allocatedDriverInfo?.driverName || 'Your Driver';
+  const driverName = assignedDriverInfo?.driverName || 'Your Driver';
   const isPickedUp = tripStatus === 'PICKEDUP' || tripStatus === 'STARTED';
+  const isAccepted = tripStatus === 'ACCEPTED' || tripStatus === 'ASSIGNED' || tripStatus === 'DRIVER_ASSIGNED';
 
   const gradientColors = isPickedUp
     ? ['#1a5c2a', '#0f3c18']   // green — trip in progress
     : ['#1a3a5c', '#0f223c'];  // dark blue — driver on the way
 
-  const statusLine = isPickedUp
-    ? 'Trip is in progress'
-    : `${driverName} is on the way to you`;
+  const statusLine = isAccepted 
+    ? 'Tap to confirm.'
+    : (isPickedUp ? 'Trip is in progress' : `${driverName} is on the way to you`);
 
   const iconName = isPickedUp ? 'steering' : 'car-arrow-right';
   const accentColor = isPickedUp ? '#4CAF50' : '#FFD700';
+  
+  const titleText = isAccepted ? 'Driver Assigned' : (isPickedUp ? 'Trip in Progress' : 'Acting Driver');
+  const buttonText = isAccepted ? 'Confirm' : 'Track';
+  const buttonIcon = isAccepted ? 'check-circle-outline' : 'map-marker-radius';
 
-  const handleTrack = () => {
-    setStackScreen('CustomerliveTracking', {});
+  const handleAction = () => {
+    if (isAccepted) {
+      setStackScreen('DriverAssignedFlowScreen', {});
+    } else {
+      setStackScreen('CustomerliveTracking', {});
+    }
   };
 
   return (
     <Animated.View style={[styles.wrapper, { transform: [{ scale: pulseAnim }] }]}>
-      <TouchableOpacity activeOpacity={0.88} onPress={handleTrack}>
+      <TouchableOpacity activeOpacity={0.88} onPress={handleAction}>
         <LinearGradient
           colors={gradientColors}
           start={{ x: 0, y: 0 }}
@@ -65,7 +74,7 @@ const ActingDriverStartedBanner = () => {
             </View>
             <View style={styles.textCol}>
               <Text style={[styles.title, { color: accentColor }]}>
-                {isPickedUp ? 'Trip in Progress' : 'Acting Driver'}
+                {titleText}
               </Text>
               <Text style={styles.subtitle} numberOfLines={1}>{statusLine}</Text>
             </View>
@@ -75,8 +84,8 @@ const ActingDriverStartedBanner = () => {
           <View style={styles.right}>
             <View style={[styles.liveDot, { backgroundColor: accentColor }]} />
             <View style={styles.trackBtn}>
-              <MaterialCommunityIcons name="map-marker-radius" size={14} color="#fff" />
-              <Text style={styles.trackTxt}>Track</Text>
+              <MaterialCommunityIcons name={buttonIcon} size={14} color="#fff" />
+              <Text style={styles.trackTxt}>{buttonText}</Text>
             </View>
           </View>
         </LinearGradient>

@@ -24,6 +24,7 @@ import useAssignedDriverInfoStore  from '../features/rideStatus/store/useAssigne
 import TripFeedbackScreen from '../features/rating/screens/TripFeedbackScreen';
 import { DataStore } from '../controllers/DataStore';
 import TripSetupScreen from '../features/booking/screens/TripSetupScreen';
+import DriverAssignedFlowScreen from '../features/booking/screens/DriverAssignedFlowScreen';
 import ItineraryPlanScreen from '../features/booking/screens/ItineraryPlanScreen';
 import useMapStore from '../features/map/store/useMapStore';
 import { useNearbyPollingControl } from '../store/useNearByDriverPollingControl';
@@ -683,7 +684,7 @@ const Home = () => {
       const currentTrip = await DataStore.loadData(PREF.CURRENT_TRIP);
       const currentTripId = currentTrip?.data || null;
 
-      const response = tripOnly ? await getCurrentTrip() : await getUserStats(currentTripId);
+      const response = tripOnly ? await getCurrentTrip(currentTripId) : await getUserStats(currentTripId);
       console.log('Ongoing ride response:', response);
 
       if (!tripOnly) {
@@ -718,11 +719,12 @@ const Home = () => {
   // When the customer taps an acting-driver-assigned push notification, Android emits
   // this event. We poll the API and navigate to RideStatus (same path as socket events).
   useEffect(() => {
-    const sub = DeviceEventEmitter.addListener('onActingDriverTripAssigned', () => {
-      checkOnGoingRideAndLog(true);
+    const sub = DeviceEventEmitter.addListener('onActingDriverTripAssigned', async () => {
+      await checkOnGoingRideAndLog(true);
+      setStackScreen('DriverAssignedFlowScreen', {});
     });
     return () => sub.remove();
-  }, [checkOnGoingRideAndLog]);
+  }, [checkOnGoingRideAndLog, setStackScreen]);
 
 
 
@@ -926,6 +928,8 @@ const Home = () => {
         return <PickLocationScreen {...params} />;
       case 'TripSetupScreen':
         return <TripSetupScreen {...params} />;
+      case 'DriverAssignedFlowScreen':
+        return <DriverAssignedFlowScreen {...params} />;
       case 'ItineraryPlanScreen':
         return <ItineraryPlanScreen {...params} />;
       case 'PaymentScreen':

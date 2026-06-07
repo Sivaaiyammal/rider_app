@@ -89,6 +89,20 @@ class PublicRideDriverHandler {
         }
     }
 
+    emitVehiclePhotosApprovalStatus(socketIds, data) {
+        try {
+            socketIds.forEach(socketId => {
+                const socket = this.publicRidesDriverNamespace.sockets.get(socketId);
+                if (socket && socket.connected) {
+                    console.log("Emitting vehicle photos approval status to driver", socketId);
+                    socket.emit('vehiclePhotosApprovalStatus', data);
+                }
+            });
+        } catch (err) {
+            console.log(err, "err");
+        }
+    }
+
 }
 
 module.exports = PublicRideDriverHandler

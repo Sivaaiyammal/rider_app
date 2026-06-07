@@ -233,7 +233,16 @@ class Driver {
             },
             {
                 $addFields: {
-                    vehicleObjectId: { $toObjectId: "$vehicleId" }
+                    vehicleObjectId: {
+                        $cond: [
+                            { $and: [
+                                { $ne: ["$vehicleId", null] },
+                                { $ne: ["$vehicleId", ""] }
+                            ] },
+                            { $toObjectId: "$vehicleId" },
+                            null
+                        ]
+                    }
                 }
             },
             {
