@@ -99,6 +99,23 @@ async function assignDrivers() {
                 PushNotifiationService.sendPushNotification(token.token, sendTripRequestMessage(trip), token.deviceId, "high", { tripId: String(trip._id), currentFare: String(incrementedFare?incrementedFare:estimatedFare) })
             })
 
+            // Simulate RideMatch socket event for local testing
+            if (global.mockRideMatchIo) {
+                const tripData = {
+                    type: 'trip_request',
+                    request_id: 'mock_req_' + Date.now(),
+                    data: {
+                        trip_id: String(trip._id),
+                        fare: incrementedFare ? incrementedFare : estimatedFare,
+                        timeout_seconds: 30,
+                        alerted_at: new Date().toISOString(),
+                        escalation_details: {}
+                    }
+                };
+                console.log(`[Mock RideMatch] Emitting trip_request to all_drivers for trip ${trip._id}`);
+                global.mockRideMatchIo.to('all_drivers').emit('trip_request', tripData);
+            }
+
         })
 
     } catch (error) {
