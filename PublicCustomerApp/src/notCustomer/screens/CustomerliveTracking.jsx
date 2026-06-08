@@ -9,9 +9,12 @@ import useLocationStore from '../store/useLocationStore';
 import Marker from '../controllers/NEMap/Marker';
 import useCurrentRideInfoStore from '../features/rideStatus/store/useCurrentRideInfoStore';
 import useAssignedDriverInfoStore from '../features/rideStatus/store/useAssignedDriverInfoStore';
+import useTrackHook from '../features/rideStatus/hooks/useTrackHook';
 
 const CustomerLiveTracking = () => {
-  const { goBack } = useStackScreenStore();
+  useTrackHook('on-ride');
+  const { goBackToScreen } = useStackScreenStore();
+  const goBack = () => goBackToScreen('Home');
   const [isItineraryExpanded, setIsItineraryExpanded] = useState(true);
   const [isCompletedStopsExpanded, setIsCompletedStopsExpanded] = useState(true);
   const [isUpcomingStopsExpanded, setIsUpcomingStopsExpanded] = useState(false);

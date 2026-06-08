@@ -34,7 +34,8 @@ const TripStats = ({
         <Text style={styles.label}>{!isNotCompleted ? t('duration') : t('estimated_duration')}</Text>
         <Text style={styles.value}>{utils.formatMinutesToReadable(totalDuration)}</Text>
       </View>
-     {totalFare && <View style={[styles.statBox, { backgroundColor: '#E6F7F1',borderColor:colors.green }]}>
+     {totalFare != null && totalFare !== '' ? (
+      <View style={[styles.statBox, { backgroundColor: '#E6F7F1',borderColor:colors.green }]}>
         <FareIcon width={24} height={24} style={styles.icon} />
         <Text style={styles.label}>{t('fare')}</Text>
        {totalFare != null && (
@@ -47,7 +48,7 @@ const TripStats = ({
          </Text>
        )}
       </View>
-}
+     ) : null}
     </View>
   );
 };

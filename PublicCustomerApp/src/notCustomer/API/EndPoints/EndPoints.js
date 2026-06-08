@@ -129,6 +129,11 @@ export const updatePaymentInServer = async (payload) => {
   return data
 }
 
+export const updateConfirmationPaymentStatus = async (payload) => {
+  const { data } = await apiClient.post('publicrides/customer/v2/updateConfirmationPaymentStatus', payload)
+  return data
+}
+
 // get nearby drivers
 export const getNearByDrivers = async (lat,lon,radius,vehicleTypes) => {
   const { data } = await apiClient.get(`/publicrides/customer/v2/getNearByDrivers?latitude=${lat}&longitude=${lon}&radius=${radius}&vehicleTypes=${vehicleTypes.join(',')}`)

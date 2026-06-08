@@ -1366,6 +1366,9 @@ module.exports = function (CLASS) {
         try {
             const driverTripId = await Driver.getDriverWithId(driverId);
             const tripId = driverTripId?.currentTripId;
+            if (!tripId) {
+                return res.json({ success: true, trip: [] });
+            }
             const result = await Driver.getActiveTrip(tripId);
             const paymentDetails = await PublicRidesPayment.getPaymentDetailsByTripId(tripId);
             const tripWithPaymentDetails = { ...result, paymentDetails };

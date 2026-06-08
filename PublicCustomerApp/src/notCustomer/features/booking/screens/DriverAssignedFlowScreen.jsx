@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, Animated, Image, ActivityIndicator, Alert } from 'react-native';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
@@ -10,7 +10,7 @@ import VehicleDriverPreview from '../../../components/Common/VehicleDriverPrevie
 import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 import { utils } from '../../../utils/Utils';
-import { cancelRide, approveVehiclePhotos, rejectAssignedDriver } from '../../../API/EndPoints/EndPoints';
+import { cancelRide, approveVehiclePhotos, rejectAssignedDriver, updateConfirmationPaymentStatus } from '../../../API/EndPoints/EndPoints';
 import RazorpayCheckout from 'react-native-razorpay';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -28,7 +28,8 @@ const DriverAssignedFlowScreen = ({ route }) => {
   useEffect(() => {
     const checkStatus = async () => {
       const isApproved = currentRideInfo?.bills?.vehiclePhotosApproved;
-      const hasPhotos = currentRideInfo?.bills?.odometerPhoto;
+      const preTripPhotos = currentRideInfo?.bills?.preTripVehiclePhotos;
+      const hasPhotos = preTripPhotos && (preTripPhotos.front || preTripPhotos.rear || preTripPhotos.leftSide || preTripPhotos.rightSide);
       const tripId = currentRideInfo?.tripId;
       
       let isPaid = false;
@@ -48,8 +49,17 @@ const DriverAssignedFlowScreen = ({ route }) => {
     checkStatus();
   }, [currentRideInfo?.bills, step, currentRideInfo?.tripId]);
 
+  // Only auto-open the live tracking screen once per trip — otherwise, when the
+  // customer presses back from CustomerliveTracking (landing here again), this
+  // effect would immediately re-fire and push them straight back, making the
+  // back button look broken.
+  const hasOpenedLiveTrackingRef = useRef(false);
   useEffect(() => {
-    if (currentRideInfo?.tripStatus === 'PICKEDUP' || currentRideInfo?.tripStatus === 'STARTED') {
+    if (
+      !hasOpenedLiveTrackingRef.current &&
+      (currentRideInfo?.tripStatus === 'PICKEDUP' || currentRideInfo?.tripStatus === 'STARTED')
+    ) {
+      hasOpenedLiveTrackingRef.current = true;
       setStackScreen('CustomerliveTracking', {});
     }
   }, [currentRideInfo?.tripStatus]);
@@ -98,16 +108,25 @@ const DriverAssignedFlowScreen = ({ route }) => {
     }
   };
 
+  const recordPaymentSuccess = async () => {
+    if (currentRideInfo?.tripId) {
+      await AsyncStorage.setItem(`paid_confirmation_${currentRideInfo.tripId}`, 'true');
+      try {
+        await updateConfirmationPaymentStatus({ tripId: currentRideInfo.tripId });
+      } catch (err) {
+        console.log('Failed to update confirmation payment in backend', err);
+      }
+    }
+    setIsProcessingPayment(false);
+    setStep(3);
+  };
+
   const handlePay = async () => {
     setIsProcessingPayment(true);
     
     if (selectedPayment === 'Cash') {
       setTimeout(async () => {
-        if (currentRideInfo?.tripId) {
-          await AsyncStorage.setItem(`paid_confirmation_${currentRideInfo.tripId}`, 'true');
-        }
-        setIsProcessingPayment(false);
-        setStep(3);
+        await recordPaymentSuccess();
       }, 500);
       return;
     }
@@ -127,26 +146,14 @@ const DriverAssignedFlowScreen = ({ route }) => {
       try {
         await RazorpayCheckout.open(options);
         // Payment success
-        if (currentRideInfo?.tripId) {
-          await AsyncStorage.setItem(`paid_confirmation_${currentRideInfo.tripId}`, 'true');
-        }
-        setIsProcessingPayment(false);
-        setStep(3);
+        await recordPaymentSuccess();
       } catch (err) {
         // Fallback for development / mock
         console.log('Razorpay failed or mock key used, simulating success for local dev');
-        if (currentRideInfo?.tripId) {
-          await AsyncStorage.setItem(`paid_confirmation_${currentRideInfo.tripId}`, 'true');
-        }
-        setIsProcessingPayment(false);
-        setStep(3);
+        await recordPaymentSuccess();
       }
     } catch (e) {
-      if (currentRideInfo?.tripId) {
-        await AsyncStorage.setItem(`paid_confirmation_${currentRideInfo.tripId}`, 'true');
-      }
-      setIsProcessingPayment(false);
-      setStep(3); // simulating success anyway
+      await recordPaymentSuccess();
     }
   };
 
@@ -183,9 +190,9 @@ const DriverAssignedFlowScreen = ({ route }) => {
             <AdaptiveText style={styles.driverName}>{driverName}</AdaptiveText>
             <AdaptiveText style={styles.driverMeta}>⭐ {driverRating} • Experienced</AdaptiveText>
           </View>
-          <TouchableOpacity style={styles.callButton}>
+          {/* <TouchableOpacity style={styles.callButton}>
             <Ionicons name="call" size={20} color="#4b48ab" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* <View style={styles.vehicleRow}>

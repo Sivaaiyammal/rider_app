@@ -18,6 +18,18 @@ class Trip {
         return result;
     }
 
+    static setConfirmationFeePaid = async (tripId, tripTimelineObj) => {
+        const result = await Mongo.updateOneRaw(
+            COLLECTION_NAME,
+            { _id: new ObjectId(tripId) },
+            {
+                $set: { "bills.isConfirmationFeePaid": true },
+                $push: { tripTimeline: tripTimelineObj }
+            }
+        );
+        return result;
+    }
+
     static updateTripStatusandPaymentMethodwithTimeline = async (tripId, status, paymentMethod, tripTimelineObj) => {
         const result = await Mongo.updateOneRaw(
             COLLECTION_NAME,

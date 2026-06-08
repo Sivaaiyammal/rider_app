@@ -10,7 +10,7 @@ const OTP = require("../../Controllers/OTP");
 const PushNotifiationService = require("../../Services/PushNotification/PushNotifiationService");
 const NOTPushNotifiationService = require("../../Services/PushNotification/NOTPushNotifiationService");
 const { sendTripCancelledByPassangerMessage,sendTripCancelledByPassangerMessageafterPickup,sendTripCancelledByDriverMessageafterPickup, sendTripCancelledByDriverMessage, sendPickupLocationChangeAlert, AcceptedLocationChangeAlert, RejectedLocationChangeAlert, sendNewBillRequestMessage } = require("../../Services/PushNotification/Messages");
-const { sendTripDriverAssignedMessage, sendAlertPassangerPickupMessagewithOTP, sendTripDriverAssignedMessageWithOTP, sendDriverOntheWayMessage } = require("../../Services/PushNotification/publicRideCustomerNotification");
+const { sendTripDriverAssignedMessage, sendAlertPassangerPickupMessagewithOTP, sendDriverOntheWayMessage } = require("../../Services/PushNotification/publicRideCustomerNotification");
 const GeneratePresignedUrl = require("../../Controllers/GeneratePresignedUrl");
 const FareConfigs = require("../../Models/FareConfigs");    
 // const { getFareAlert } = require("../../Services/PushNotification/Messages");
@@ -67,7 +67,7 @@ async function sendPassangerSocketEvents(type, passangerId, socketService, drive
     }
     if(type === "tripCancelledByDriver"){
         const socketData = {
-            _id: trip._id,
+            _id: String(trip._id),
             tripStatus: "CANCELLED",
             fareDetails: trip?.fareDetails || null,
             isOnGoingTrip: trip?.fareDetails ? true : false
@@ -224,9 +224,9 @@ module.exports = function (CLASS) {
                 const notifParams = { tripId: String(trip._id), "trip_status": 'ACCEPTED' };
                 if (trip.isActingDriverTrip) notifParams.isActingDriverTrip = 'true';
                 if(req.useNotPushNotification){
-                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessageWithOTP(driver.name, otp), null, "high", notifParams);
+                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", notifParams);
                 }else{
-                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessageWithOTP(driver.name, otp), null, "high", notifParams);
+                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", notifParams);
                 }
             }
 
@@ -307,9 +307,9 @@ module.exports = function (CLASS) {
             if (passanger?.fcmToken) {
                 const notifParams = { tripId: String(trip._id), "trip_status": 'ACCEPTED', isActingDriverTrip: 'true' };
                 if(req.useNotPushNotification){
-                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessageWithOTP(driver.name, otp), null, "high", notifParams);
+                    await NOTPushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", notifParams);
                 }else{
-                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessageWithOTP(driver.name, otp), null, "high", notifParams);
+                    await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", notifParams);
                 }
             }
 
@@ -331,6 +331,13 @@ module.exports = function (CLASS) {
             const {tripId, reason, totalDistance, totalDuration, encodedPolyline, droppedAtLoc, isBeforePickup} = req.body
             const trip = await Trip.getTripById(tripId);
             if (!trip) return res.status(400).json({success: false, message: 'Trip not Found'});
+
+            // Free up the driver immediately so a failure later (e.g. fare calculation)
+            // can never leave them stuck as "busy"/unavailable after a cancellation.
+            await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true, "driverStatus.status": "online", currentTripId: null }).catch(err => {
+                console.error("Error resetting driver status on cancel", err);
+            });
+
             const TripPassenger = await Passanger.getPassangerWithId(trip.passangerId);
             const TripDriver = await Driver.getDriverWithId(trip.driverId);
             let farecalculationDistance = totalDistance || 0;
@@ -382,8 +389,7 @@ module.exports = function (CLASS) {
                     state: 'CANCELLED_BY_DRIVER_BEFORE_PICKUP',
                     timestamp: new Date().getTime(),
                 };
-                await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true, "driverStatus.status": "online", currentTripId: null });
-            
+
                 await Trip.cancelTripwithTimeline(tripId, reason, 'DRIVER', timeline);
                 if (cancelMeta) {
                     await Trip.updateCancelledMeta(tripId, cancelMeta);
@@ -400,7 +406,7 @@ module.exports = function (CLASS) {
                     if(req.useNotPushNotification){
                         await NOTPushNotifiationService.sendPushNotification(
                             TripPassenger.fcmToken?.token,
-                            sendTripCancelledByDriverMessage(TripDriver.name),
+                            sendTripCancelledByDriverMessage(TripDriver?.name || 'Driver'),
                             null,
                             "high",
                             { tripId: String(trip._id), "trip_status": 'CANCELLED' }
@@ -410,7 +416,7 @@ module.exports = function (CLASS) {
                         if(req.useNotPushNotification){ 
                             await PushNotifiationService.sendPushNotification(
                                 TripPassenger.fcmToken?.token,
-                                sendTripCancelledByDriverMessage(TripDriver.name),
+                                sendTripCancelledByDriverMessage(TripDriver?.name || 'Driver'),
                                 null,
                                 "high",
                                 { tripId: String(trip._id), "trip_status": 'CANCELLED' }
@@ -418,7 +424,7 @@ module.exports = function (CLASS) {
                         }else{
                             await PushNotifiationService.sendPushNotification(  
                                 TripPassenger.fcmToken?.token,
-                                sendTripCancelledByDriverMessage(TripDriver.name),
+                                sendTripCancelledByDriverMessage(TripDriver?.name || 'Driver'),
                                 null,
                                 "high",
                                 { tripId: String(trip._id), "trip_status": 'CANCELLED' }
@@ -449,7 +455,6 @@ module.exports = function (CLASS) {
             if (cancelMeta) {
                 await Trip.updateCancelledMeta(tripId, cancelMeta);
             }
-            await Driver.updateDriver(driverId, { tripStatus: "NOTRIP", isAvailable: true, "driverStatus.status": "online", currentTripId: null });
             sendPassangerSocketEvents(
                 "tripCancelledByDriver",
                 String(TripPassenger._id),
@@ -463,7 +468,7 @@ module.exports = function (CLASS) {
                 if(req.useNotPushNotification){
                     await NOTPushNotifiationService.sendPushNotification(
                         TripPassenger.fcmToken?.token,
-                        sendTripCancelledByDriverMessageafterPickup(TripDriver.name),
+                        sendTripCancelledByDriverMessageafterPickup(TripDriver?.name || 'Driver'),
                         null,
                         "high",
                         { tripId: String(trip._id), "trip_status": 'CANCELLED' }
@@ -472,7 +477,7 @@ module.exports = function (CLASS) {
                 }else{
                     await PushNotifiationService.sendPushNotification(
                         TripPassenger.fcmToken?.token,
-                        sendTripCancelledByDriverMessageafterPickup(TripDriver.name),
+                        sendTripCancelledByDriverMessageafterPickup(TripDriver?.name || 'Driver'),
                         null,
                         "high",
                         { tripId: String(trip._id), "trip_status": 'CANCELLED' }
@@ -756,6 +761,40 @@ module.exports = function (CLASS) {
                 }
                 return res.json({ success: true, message: "Photos Rejected" });
             }
+        } catch (error) {
+            return res.status(500).json({ success: false, message: error.message });
+        }
+    }
+
+    CLASS.prototype.updateConfirmationPaymentStatus = async function (req, res) {
+        try {
+            const { tripId } = req.body;
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(400).json({success: false, message: 'Trip not Found'});
+            
+            const timeline = {
+                state: 'CONFIRMATION_FEE_PAID_BY_PASSENGER',
+                timestamp: new Date().getTime()
+            };
+            
+            await Trip.setConfirmationFeePaid(tripId, timeline);
+            
+            const updatedTrip = { ...trip };
+            if (!updatedTrip.bills) updatedTrip.bills = {};
+            updatedTrip.bills.isConfirmationFeePaid = true;
+            
+            if (trip.driverId) {
+                sendDriverSocketEvents(
+                    "passengerPaidConfirmation",
+                    String(trip.driverId),
+                    req.socketService,
+                    null,
+                    updatedTrip,
+                    null
+                ).catch(err => console.log(err));
+            }
+            
+            return res.json({success: true, message: "Confirmation fee status updated successfully"});
         } catch (error) {
             return res.status(500).json({ success: false, message: error.message });
         }

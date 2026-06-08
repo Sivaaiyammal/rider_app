@@ -96,9 +96,9 @@ class WSService {
       if(data?.tripStatus === 'CANCELLED'){
         try {
           if(data?.isOnGoingTrip && data?.fareDetails){
-            this.useCurrentRideInfoStore.getState().setFareDetails(data?.tripFare);
-            this.useCurrentRideInfoStore.getState().setFinalDistance(data?.tripFare?.distance);
-            this.useCurrentRideInfoStore.getState().setFinalDuration(data?.tripFare?.duration);
+            this.useCurrentRideInfoStore.getState().setFareDetails(data?.fareDetails);
+            this.useCurrentRideInfoStore.getState().setFinalDistance(data?.fareDetails?.distance);
+            this.useCurrentRideInfoStore.getState().setFinalDuration(data?.fareDetails?.duration);
             this.useCurrentRideInfoStore.getState().setOngoingingTripCancelled(true);
             this.useStackScreenStore.getState().setStackScreen('PaymentScreen',{});
           }else{
@@ -112,9 +112,10 @@ class WSService {
           
             this.useWayPointReorderStore.getState().setWaitingForDriverApproval(null);
             
+            const isActingDriver = this.useCurrentRideInfoStore.getState().isActingDriverTrip;
             const directIonsData = this.useRideBookingLocationStore.getState().rideStartLocation && this.useRideBookingLocationStore.getState().rideEndLocation 
-            if(directIonsData){
-               this.useStackScreenStore.getState().goBackToScreen('BookRideScreen',{});
+            if(isActingDriver){
+              this.useStackScreenStore.getState().reset();
             }else{
               this.useStackScreenStore.getState().reset();
             }

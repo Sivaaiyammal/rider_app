@@ -73,6 +73,7 @@ Router.post('/deletePassangerVehicle', CheckPassangerAuthenticated, withTiming(p
 Router.get('/getOnboardingConfig', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.getOnboardingConfig))
 Router.post('/approveBill', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.approveBill))
 Router.post('/approveVehiclePhotos', CheckPassangerAuthenticated, withTiming(tripController, tripController.approveTripPhotos))
+Router.post('/updateConfirmationPaymentStatus', CheckPassangerAuthenticated, withTiming(tripController, tripController.updateConfirmationPaymentStatus))
 Router.post('/markBillAsPaid', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.markBillAsPaid))
 Router.post('/uploadPaymentReceipt', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.uploadPaymentReceipt))
 Router.post('/uploadPassangerVehiclePhoto', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.uploadPassangerVehiclePhoto))

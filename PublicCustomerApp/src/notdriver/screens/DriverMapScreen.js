@@ -178,12 +178,32 @@ const DriverMapScreen = props => {
               style={styles.activeTripBanner}
               onPress={() => setStackScreen('PublicDriverTrackingScreen')}
             >
-              <Text style={styles.activeTripBannerTitle}>
-                {activeTripData[0]?.status === 'ACCEPTED' ? t('customer_waiting_for_you', {defaultValue: 'Customer waiting for you'}) : t('trip_in_progress', {defaultValue: 'Active trip in progress'})}
-              </Text>
-              <Text style={styles.activeTripBannerSub}>
-                {t('tap_to_view_trip_details', {defaultValue: 'Tap to view trip details'})}
-              </Text>
+              {activeTripData[0]?.isActingDriverTrip && activeTripData[0]?.status === 'ACCEPTED' ? (
+                !activeTripData[0]?.bills?.isConfirmationFeePaid ? (
+                  <>
+                    <Text style={styles.activeTripBannerTitle}>Waiting for Passenger Approval</Text>
+                    <Text style={styles.activeTripBannerSub}>Passenger is completing advance payment...</Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.activeTripBannerTitle}>
+                       {activeTripData[0]?.rideType === 'now' || activeTripData[0]?.rideType === 'today_now' 
+                         ? 'Passenger Accepted - You can start the ride' 
+                         : 'Passenger Accepted - Upcoming Ride'}
+                    </Text>
+                    <Text style={styles.activeTripBannerSub}>Tap to view trip details</Text>
+                  </>
+                )
+              ) : (
+                <>
+                  <Text style={styles.activeTripBannerTitle}>
+                    {activeTripData[0]?.status === 'ACCEPTED' ? t('customer_waiting_for_you', {defaultValue: 'Customer waiting for you'}) : t('trip_in_progress', {defaultValue: 'Active trip in progress'})}
+                  </Text>
+                  <Text style={styles.activeTripBannerSub}>
+                    {t('tap_to_view_trip_details', {defaultValue: 'Tap to view trip details'})}
+                  </Text>
+                </>
+              )}
             </TouchableOpacity>
           )}
 
