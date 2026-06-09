@@ -172,10 +172,10 @@ module.exports = function (CLASS) {
             //     console.log("Driver already assigned to this trip, proceeding to accept");
             //     return res.status(200).json({ success: true, message: 'Trip is already accepted by another driver' });
             // }
-            const passangerId = trip.passangerId;
+            const passangerId = trip.passangerId || trip.userId;
             const otp = OTP.generateOTP(OTP_LENGTH);
             /* get Passanger FCM tokens and socketIDS */
-            const passanger = await Passanger.getPassangerWithId(passangerId);
+            const passanger = passangerId ? await Passanger.getPassangerWithId(passangerId) : null;
             if (!passanger) return res.status(400).json({ success: false, message: 'Passanger not found' });
             const tripTimeline = {
                 state: 'ACCEPTED',
@@ -262,9 +262,9 @@ module.exports = function (CLASS) {
             if (!trip.isActingDriverTrip) return res.status(400).json({ success: false, message: 'Not an acting driver trip' });
             if (trip.status === RideStatus.CANCELLED ) return res.status(400).json({ success: true, message: 'Trip is already cancelled', isCancelled: true });
 
-            const passangerId = trip.passangerId;
+            const passangerId = trip.passangerId || trip.userId;
             const otp = OTP.generateOTP(OTP_LENGTH);
-            const passanger = await Passanger.getPassangerWithId(passangerId);
+            const passanger = passangerId ? await Passanger.getPassangerWithId(passangerId) : null;
             if (!passanger) return res.status(400).json({ success: false, message: 'Passanger not found' });
 
             const tripTimeline = {

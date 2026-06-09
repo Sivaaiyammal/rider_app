@@ -1,5 +1,5 @@
 import {Text, TouchableOpacity, View, StyleSheet, ScrollView, ActivityIndicator, BackHandler, Modal, TextInput, Alert, FlatList, StatusBar, Image} from 'react-native';
-import React, {useCallback, useState,useEffect} from 'react';
+import React, {useCallback, useState, useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
 import { Calendar } from 'react-native-calendars';
 import NavBar from '../../../components/NavBar';
@@ -37,6 +37,10 @@ import { Fonts } from '../../../constants/constants';
 import AdaptiveText from '../../../components/Common/AdaptiveText';
 import { openFeedback } from '../../../utils/feedback';
 import { getCustomerTrips, getPassangerVehicles } from '../../../API/EndPoints/EndPoints';
+
+let _prefsModalShown = false;
+let _returningFromSubScreen = false;
+const PLAN_SUB_SCREENS = ['PickLocationScreen', 'WaypointScreen', 'ItineraryPlanScreen', 'SavedPlacesScreen', 'MyVehiclesScreen'];
 
 const formatCalendarDate = (date) => {
   const year = date.getFullYear();
@@ -120,7 +124,13 @@ const isOutsideTirupur = (item) => {
 const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mode,vehicle}) => {
   const { t } = useTranslation();
   const {userdetails,userFavPlaces} = useUserInfoStore();
-  const {goBack,setStackScreen,goBackToScreen,getCurrentScreen} = useStackScreenStore();
+  const {goBack,setStackScreen: _setStackScreen,goBackToScreen,getCurrentScreen} = useStackScreenStore();
+  const setStackScreen = useCallback((screen, params) => {
+    if (PLAN_SUB_SCREENS.includes(screen)) {
+      _returningFromSubScreen = true;
+    }
+    _setStackScreen(screen, params);
+  }, [_setStackScreen]);
   const {setRideStartLocation,setRideEndLocation,addRideWayPoint,resetRideBookingLocation,rideStartLocation,rideEndLocation} = useRideBookingLocationStore()
 
   const {
@@ -275,6 +285,13 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
   const [lastRidePrefs, setLastRidePrefs] = useState(null);
   const [showApplyPrefsModal, setShowApplyPrefsModal] = useState(false);
 
+  useEffect(() => {
+    if (!_returningFromSubScreen) {
+      _prefsModalShown = false;
+    }
+    _returningFromSubScreen = false;
+  }, []);
+
   const applyLastRidePreferences = () => {
     if (!lastRidePrefs) return;
     if (lastRidePrefs.maxSpeed) setActingDriverMaxSpeed(String(lastRidePrefs.maxSpeed));
@@ -349,7 +366,8 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             (t.kidsOnBoard || t.elderlyOnBoard || t.maxSpeed || t.accommodation || t.food || t.notifyEvents)
           );
 
-          if (lastActingDriverTrip) {
+          if (lastActingDriverTrip && !_prefsModalShown) {
+            _prefsModalShown = true;
             setLastRidePrefs({
               maxSpeed: lastActingDriverTrip.maxSpeed,
               kidsOnBoard: lastActingDriverTrip.kidsOnBoard,
@@ -1363,7 +1381,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
               <View style={styles.alertActionsRow}>
                 <TouchableOpacity
                   style={styles.alertCancelBtn}
-                  onPress={() => setShowApplyPrefsModal(false)}
+                  onPress={() => { _prefsModalShown = true; setShowApplyPrefsModal(false); }}
                   activeOpacity={0.7}
                 >
                   <Text style={styles.alertCancelText}>{t('no_thanks', 'No, thanks')}</Text>

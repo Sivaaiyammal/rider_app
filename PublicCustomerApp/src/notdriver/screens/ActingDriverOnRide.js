@@ -841,6 +841,12 @@ const ActingDriverOnRide = () => {
                       <Text style={styles.imHereBtnTxt}>I'm Here</Text>
                     </TouchableOpacity>
                   </View>
+                  <TouchableOpacity
+                    style={[styles.pickupSheetBtn, {backgroundColor: 'transparent', borderWidth: 1, borderColor: '#E53935', marginTop: 10}]}
+                    onPress={() => setCancelRideModalVisible(true)}
+                  >
+                    <Text style={[styles.pickupSheetBtnTxt, {color: '#E53935'}]}>{t('cancel_ride', {defaultValue: 'Cancel Ride'})}</Text>
+                  </TouchableOpacity>
                 </View>
               )}
             </View>

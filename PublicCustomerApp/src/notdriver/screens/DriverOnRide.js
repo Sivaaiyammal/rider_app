@@ -973,11 +973,12 @@ const DriverOnRide = () => {
               </View>
             )}
           {tripsStatus === 'ACCEPTED' && 
-          <ArrivedPickUpLocation  
+          <ArrivedPickUpLocation
           pickUpAlertLoading={pickUpAlertLoading}
           isAlertSent={isAlertSent}
           onReachedPickupAlert={onReachedPickupAlert}
-           onReachedPickup={onReachedPickup}/>
+           onReachedPickup={onReachedPickup}
+           onCancelPress={() => setCancelRideModalVisible(true)}/>
           }
           
           {

@@ -861,15 +861,16 @@ const BookActingDriverScreen = () => {
                 <View style={styles.successModalOverlay}>
                     <View style={styles.successModalContent}>
                         <View style={styles.successIconCircle}>
-                            <Icon name="check-circle" size={80} color={actingDriverColors.success} />
+                            {/* <Icon name="check-circle" size={80} color={actingDriverColors.success} /> */}
+                            <Image source={require('../../../assets/image/acting/acting_driver_success.png')} style={styles.successBackgroundImage} />
                         </View>
 
                         <AdaptiveText style={styles.successModalTitle}>
-                            {t('acting_driver_booked', 'Acting Driver Booked!')}
+                            {t('acting_driver_booked', 'Finding Suitable Drivers!')}
                         </AdaptiveText>
 
                         <AdaptiveText style={styles.successModalSubtitle}>
-                            {t('booking_success_info', 'Acting driver booked. We will let you know once a driver is assigned.')}
+                            {t('booking_success_info', 'We\'re searching for suitable drivers for your trip. We\'ll notify you as soon as a driver accepts.')}
                         </AdaptiveText>
 
                         <TouchableOpacity
@@ -1096,6 +1097,12 @@ const styles = StyleSheet.create({
     },
     successIconCircle: {
         marginBottom: 16,
+        alignItems: 'center',
+    },
+    successBackgroundImage: {
+        width: 160,
+        height: 160,
+        resizeMode: 'contain',
     },
     successModalTitle: {
         fontSize: 18,

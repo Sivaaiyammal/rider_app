@@ -7,6 +7,8 @@ import useCurrentScreenStore from '../../common/store/useCurrentScreenStore';
 import { DataStore } from '../../common/controllers/DataStore';
 import BGLocationTask from '../../common/controllers/BGLocationTask';
 import { showNotification } from '../../common/components/Alerts/showNotification';
+import useUserStore from '../../common/store/useUserStore';
+import tripQueryClient from '../controllers/tripQueryClient';
 
 
 const {NeNativeModule} = NativeModules;
@@ -37,6 +39,10 @@ export const cancelTrip = res => {
   setStartNavigation(false);
   setDisduration(null);
   setDirectionResponse(null)
+  // Clear stale React Query cache so the polling useEffect doesn't
+  // re-navigate back to the tracking screen with old trip data.
+  const token = useUserStore.getState().userInfo?.token;
+  tripQueryClient.setQueryData(['fetchTrips', token], []);
   // BGLocationTask.stopDriverBgTask();
   showNotification(res?.message, '', 'success');
 };

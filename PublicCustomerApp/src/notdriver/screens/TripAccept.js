@@ -28,6 +28,7 @@ import CustomeBottomSheet from '../../common/components/CustomeBottomSheet';
 import Rupee from '../../notdriver/assets/icons/rupee.svg';
 import AddressComponent from '../components/AddressComponent';
 import RideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
+import publicrideDriverApi from '../api/publicrideDriverApi';
 import PushNotifications from '../../common/core/PushNotifications';
 import { useTranslation } from 'react-i18next';
 import APIRequest from '../../common/APIRequest';
@@ -314,21 +315,30 @@ const TripAccept = () => {
     setLoading(true);
     setShowRatingModal(false)
     setShowPaymentInitiatedLoader(false)
-    driverWaitingTime.stopWaitingTime();
-    BGLocationTask.hideOverlay();
     try {
-      const acceptData = {
-        driver_id: userInfo?._id,
-        trip_id: tripId,
-        response: 'accept',
-        request_id: requestId,
-      };
-      RideMatchWSService.emit('driver_trip_response', acceptData);
-      PushNotifications.onClearAllNotifications();
-      tripAlert.stopAlertSound();
-      setTimerPaused(true);
-      setNewStopData(null)
-      reset();
+      driverWaitingTime.stopWaitingTime();
+      BGLocationTask.hideOverlay();
+      console.log('[TripAccept] Calling acceptRide API for tripId:', tripId);
+      const response = await publicrideDriverApi.acceptTrip({ tripId }, userInfo?.token);
+      console.log('[TripAccept] acceptRide response:', JSON.stringify(response));
+      if (response?.success) {
+        const tripData = response?.currentTrip;
+        if (tripData) {
+          tripData.status = 'ACCEPTED';
+          setActiveTripData([tripData]);
+          DataStore.storeData('activeTripId', tripId);
+        }
+        PushNotifications.onClearAllNotifications();
+        tripAlert.stopAlertSound();
+        setTimerPaused(true);
+        setNewStopData(null);
+        reset();
+        setStackScreen('PublicDriverTrackingScreen');
+      } else {
+        console.log('[TripAccept] acceptRide failed:', response?.message);
+        showNotification(response?.message || 'Failed to accept trip', '', 'error');
+        setLoading(false);
+      }
     } catch (err) {
       console.log('hari-->>accept-->>err-->>', err);
       setLoading(false);

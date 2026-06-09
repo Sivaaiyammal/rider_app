@@ -16,6 +16,7 @@ const ArrivedPickUpLocation = props => {
     isAlertSent,
     onReachedPickupAlert,
     onReachedPickup,
+    onCancelPress,
   } = props;
 
   const {t} = useTranslation();
@@ -31,6 +32,16 @@ const ArrivedPickUpLocation = props => {
       <Text style={styles.subtitle}>
         {t('verify_customer_to_start_trip')}
       </Text>
+
+      {/* Cancel */}
+      {onCancelPress && (
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={onCancelPress}
+          style={styles.cancelTripBtn}>
+          <Text style={styles.cancelTripBtnTxt}>{t('cancel_trip')}</Text>
+        </TouchableOpacity>
+      )}
 
       {/* Buttons */}
       <View style={styles.buttonRow}>
@@ -99,6 +110,25 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     gap: 12,
+  },
+
+  cancelTripBtn: {
+    alignSelf: 'flex-start',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#b74645',
+    backgroundColor: '#fff',
+    elevation: 2,
+    marginBottom: 12,
+  },
+
+  cancelTripBtnTxt: {
+    fontFamily: Fonts.regular,
+    fontSize: 13,
+    color: '#b74645',
   },
 
   primaryButton: {
