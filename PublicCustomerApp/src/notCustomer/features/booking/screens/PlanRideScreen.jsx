@@ -28,7 +28,6 @@ import FavPlacesItem from '../components/planride/FavPlacesItem';
 
 import ActingDriverPlanCard from '../components/planride/ActingDriverPlanCard';
 import VehicleSelectionModal from '../components/planride/VehicleSelectionModal';
-import HistoryContainer from '../../shared/component/HistoryCard';
 import useRideBookingLocationStore from '../store/useRideBookingLocationStore';
 import LocationTypes from '../types/LocationTypes.json';
 import { useDebouncedAPICall } from '../../../hooks/useDebounce';
@@ -40,7 +39,7 @@ import { getCustomerTrips, getPassangerVehicles } from '../../../API/EndPoints/E
 
 let _prefsModalShown = false;
 let _returningFromSubScreen = false;
-const PLAN_SUB_SCREENS = ['PickLocationScreen', 'WaypointScreen', 'ItineraryPlanScreen', 'SavedPlacesScreen', 'MyVehiclesScreen'];
+const PLAN_SUB_SCREENS = ['PickLocationScreen', 'WaypointScreen', 'ItineraryPlanScreen', 'SavedPlacesScreen', 'MyVehiclesScreen', 'BookActingDriverScreen', 'BookRideScreen'];
 
 const formatCalendarDate = (date) => {
   const year = date.getFullYear();
@@ -1145,7 +1144,7 @@ const PlanRideScreen = ({selectedDestination,showScheduleTime,fromSavedPlaces,mo
             </>
           )}
 
-        <HistoryContainer selectCallback={handleHistoryLocationClick} bottomborder = {false} fromSearchScreen={true}/>
+        {/* Recent searches removed */}
         </ScrollView>
         </View>
 

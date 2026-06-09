@@ -32,17 +32,28 @@ const defaultConfig = {
   },
   // eslint-disable-next-line prettier/prettier
   actingDriverEnabled: true,
+  ACTING_DRIVER_ARRANGEMENTS: [
+    { key: 'accommodation', label: 'Driver Accommodation', desc: 'Driver stay arrangements will be borne by the customer.', icon: 'bed',        iconLib: 'Ionicons',                 enabled: true },
+    { key: 'food',          label: 'Driver Food Allowance', desc: 'Food allowance for driver',                               icon: 'restaurant', iconLib: 'Ionicons',                 enabled: true },
+  ],
+  ACTING_DRIVER_SPECIAL_REQUIREMENTS: [
+    { key: 'kids',          label: 'Children on Board',    desc: '',                             icon: 'baby-carriage', iconLib: 'MaterialCommunityIcons', type: 'toggle', enabled: true },
+    { key: 'elderly',       label: 'Elderly Passengers',   desc: '',                             icon: 'human-cane',    iconLib: 'MaterialCommunityIcons', type: 'toggle', enabled: true },
+    { key: 'maxSpeed',      label: 'Comfort Speed',        desc: 'Auto speed for driver',        icon: 'speedometer',   iconLib: 'Ionicons',               type: 'number', enabled: true },
+    { key: 'otherRequests', label: 'Custom Request / Notes', desc: '',                           icon: 'document-text', iconLib: 'Ionicons',               type: 'text',   enabled: true },
+  ],
   HOME_SCREEN_CONFIG: [
     {
       key: 'services',
       sectionTitle: 'Choose Your Ride',
       showSectionTitle: false,
       items: [
-        { key: 'auto',          label: 'Auto',           bgColor: '#f3f3f3ff', textColor: '#858585ff', borderColor: '#ffffffff' },
+        { key: 'auto',           label: 'Auto',           bgColor: '#f3f3f3ff', textColor: '#858585ff', borderColor: '#ffffffff' },
         { key: 'electric_auto', label: 'Electric Auto',  bgColor: '#f3f3f3ff', textColor: '#858585ff', borderColor: '#ffffffff' },
         { key: 'schedule_trip', label: 'Schedule',       bgColor: '#f3f3f3ff', textColor: '#858585ff', borderColor: '#ffffffff' },
         { key: 'female_driver', label: 'Female Driver',  bgColor: '#f3f3f3ff', textColor: '#858585ff', borderColor: '#ffffffff' },
         { key: 'night_trip',    label: 'Night Ride',     bgColor: '#f3f3f3ff', textColor: '#858585ff', borderColor: '#ffffffff' },
+        { key: 'acting_driver', label: 'Acting Driver',  bgColor: '#f3f3f3ff', textColor: '#858585ff', borderColor: '#ffffffff' },
       ],
     },
     {

@@ -55,6 +55,9 @@ const useRideBookingInfo = create(set => ({
   actingDriverNotifyEvents: false,
   setActingDriverNotifyEvents: (actingDriverNotifyEvents) => set({ actingDriverNotifyEvents }),
 
+  actingDriverOtherRequests: '',
+  setActingDriverOtherRequests: (actingDriverOtherRequests) => set({ actingDriverOtherRequests }),
+
   actingDriverAccommodation: false,
   setActingDriverAccommodation: (actingDriverAccommodation) => set({ actingDriverAccommodation }),
 
@@ -148,6 +151,7 @@ const useRideBookingInfo = create(set => ({
       return time;
     })(),
     showItineraryModal: false,
+    actingDriverOtherRequests: '',
   }),
 
   showItineraryModal: false,

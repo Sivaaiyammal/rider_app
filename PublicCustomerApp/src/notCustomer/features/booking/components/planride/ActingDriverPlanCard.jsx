@@ -6,11 +6,28 @@ import { Fonts, colors } from '../../../../constants/constants';
 import LocationTypes from '../../types/LocationTypes.json';
 import useRideBookingLocationStore from '../../store/useRideBookingLocationStore';
 import useRideBookingInfo from '../../store/useRideBookingInfo';
+import useConfigStore from '../../../../store/useConfigStore';
 import { utils } from '../../../../utils/Utils';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import DashedLine from '../../../../components/Common/DashedLine';
+
+// Maps config key → booking info store field name
+const STORE_KEY_MAP = {
+  accommodation: 'actingDriverAccommodation',
+  food:          'actingDriverFood',
+  kids:          'actingDriverKidsOnBoard',
+  elderly:       'actingDriverElderlyOnBoard',
+  maxSpeed:      'actingDriverMaxSpeed',
+  otherRequests: 'actingDriverOtherRequests',
+};
+
+const ConfigIcon = ({ iconLib, icon, size, color }) => {
+  if (iconLib === 'MaterialCommunityIcons') return <MaterialCommunityIcons name={icon} size={size} color={color} />;
+  if (iconLib === 'Ionicons') return <Ionicons name={icon} size={size} color={color} />;
+  return <Icon name={icon} size={size} color={color} />;
+};
 
 const ActingDriverPlanCard = ({
   onLocationClick,
@@ -30,6 +47,16 @@ const ActingDriverPlanCard = ({
     actingDriverItinerary,
     bookingTab,
   } = useRideBookingInfo();
+  const { appConfig } = useConfigStore();
+
+  const bookingValues = {
+    actingDriverAccommodation,
+    actingDriverFood,
+    actingDriverKidsOnBoard,
+    actingDriverElderlyOnBoard,
+    actingDriverMaxSpeed,
+    actingDriverOtherRequests,
+  };
 
   const togglePref = (key, value) => {
     updateBookingInfo({ [key]: !value });
@@ -104,140 +131,143 @@ const ActingDriverPlanCard = ({
       </View>
 
       {/* 2. Driver Arrangements Section */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Driver Arrangements</Text>
-      </View>
-      <View style={styles.preferencesCard}>
-        <View style={styles.prefRow}>
-          <View style={styles.prefIconBox}>
-            <Ionicons name="bed" size={22} color={themeColor.primary} />
+      {(appConfig?.ACTING_DRIVER_ARRANGEMENTS || []).filter(a => a.enabled).length > 0 && (
+        <>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Driver Arrangements</Text>
           </View>
-          <View style={styles.prefTextContainer}>
-            <Text style={styles.prefTitle}>Driver Accommodation</Text>
-            <Text style={styles.prefDesc}>Driver stay arrangements will be borne by the customer.</Text>
+          <View style={styles.preferencesCard}>
+            {(appConfig?.ACTING_DRIVER_ARRANGEMENTS || [])
+              .filter(item => item.enabled)
+              .map((item, idx, arr) => {
+                const storeKey = STORE_KEY_MAP[item.key];
+                const value = bookingValues[storeKey];
+                return (
+                  <React.Fragment key={item.key}>
+                    <View style={styles.prefRow}>
+                      <View style={styles.prefIconBox}>
+                        <ConfigIcon iconLib={item.iconLib} icon={item.icon} size={22} color={themeColor.primary} />
+                      </View>
+                      <View style={styles.prefTextContainer}>
+                        <Text style={styles.prefTitle}>{item.label}</Text>
+                        {!!item.desc && <Text style={styles.prefDesc}>{item.desc}</Text>}
+                      </View>
+                      <Switch
+                        trackColor={{ false: '#E2E8F0', true: themeColor.primary }}
+                        thumbColor={'#ffffff'}
+                        ios_backgroundColor="#E2E8F0"
+                        onValueChange={() => togglePref(storeKey, value)}
+                        value={!!value}
+                      />
+                    </View>
+                    {idx < arr.length - 1 && <View style={styles.divider} />}
+                  </React.Fragment>
+                );
+              })}
           </View>
-          <Switch
-            trackColor={{ false: '#E2E8F0', true: themeColor.primary }}
-            thumbColor={'#ffffff'}
-            ios_backgroundColor="#E2E8F0"
-            onValueChange={() => togglePref('actingDriverAccommodation', actingDriverAccommodation)}
-            value={actingDriverAccommodation}
-          />
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.prefRow}>
-          <View style={styles.prefIconBox}>
-            <Ionicons name="restaurant" size={22} color={themeColor.primary} />
-          </View>
-          <View style={styles.prefTextContainer}>
-            <Text style={styles.prefTitle}>Driver Food Allowance</Text>
-            <Text style={styles.prefDesc}>Food allowance for driver</Text>
-          </View>
-          <Switch
-            trackColor={{ false: '#E2E8F0', true: themeColor.primary }}
-            thumbColor={'#ffffff'}
-            ios_backgroundColor="#E2E8F0"
-            onValueChange={() => togglePref('actingDriverFood', actingDriverFood)}
-            value={actingDriverFood}
-          />
-        </View>
-      </View>
+        </>
+      )}
 
       {/* 3. Special Requirements Section */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Special Requirements</Text>
-      </View>
-      <View style={styles.preferencesCard}>
-        <View style={styles.prefRow}>
-          <View style={styles.prefIconBox}>
-            <MaterialCommunityIcons name="baby-carriage" size={22} color={themeColor.primary} />
+      {(appConfig?.ACTING_DRIVER_SPECIAL_REQUIREMENTS || []).filter(r => r.enabled).length > 0 && (
+        <>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Special Requirements</Text>
           </View>
-          <View style={styles.prefTextContainer}>
-            <Text style={styles.prefTitle}>Children on Board</Text>
+          <View style={styles.preferencesCard}>
+            {(appConfig?.ACTING_DRIVER_SPECIAL_REQUIREMENTS || [])
+              .filter(item => item.enabled)
+              .map((item, idx, arr) => {
+                const storeKey = STORE_KEY_MAP[item.key];
+                const value = bookingValues[storeKey];
+                const isLast = idx === arr.length - 1;
+                if (item.type === 'number') {
+                  return (
+                    <React.Fragment key={item.key}>
+                      <View style={styles.prefRow}>
+                        <View style={styles.prefIconBox}>
+                          <ConfigIcon iconLib={item.iconLib} icon={item.icon} size={22} color={themeColor.primary} />
+                        </View>
+                        <View style={styles.prefTextContainer}>
+                          <Text style={styles.prefTitle}>{item.label}</Text>
+                          {!!item.desc && <Text style={styles.prefDesc}>{item.desc}</Text>}
+                        </View>
+                        <View style={[styles.speedControl, { borderColor: themeColor.primary }]}>
+                          <TouchableOpacity
+                            onPress={() => updateBookingInfo({ [storeKey]: Math.max(0, Number(value || 80) - 10).toString() })}
+                            style={styles.speedBtn}>
+                            <Text style={[styles.speedBtnText, { color: themeColor.primary }]}>-</Text>
+                          </TouchableOpacity>
+                          <TextInput
+                            style={[styles.speedInput, { color: themeColor.primary }]}
+                            value={value ? String(value) : '80'}
+                            onChangeText={text => updateBookingInfo({ [storeKey]: text.replace(/[^0-9]/g, '') })}
+                            keyboardType="numeric"
+                            maxLength={3}
+                          />
+                          <Text style={[styles.speedUnit, { color: themeColor.primary }]}>/h</Text>
+                          <TouchableOpacity
+                            onPress={() => updateBookingInfo({ [storeKey]: (Number(value || 80) + 10).toString() })}
+                            style={styles.speedBtn}>
+                            <Text style={[styles.speedBtnText, { color: themeColor.primary }]}>+</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                      {!isLast && <View style={styles.divider} />}
+                    </React.Fragment>
+                  );
+                }
+                if (item.type === 'text') {
+                  return (
+                    <React.Fragment key={item.key}>
+                      <View style={styles.notesRow}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                          <ConfigIcon iconLib={item.iconLib} icon={item.icon} size={18} color={themeColor.primary} />
+                          <Text style={[styles.prefTitle, { marginLeft: 8 }]}>{item.label}</Text>
+                        </View>
+                        <View style={styles.textAreaContainer}>
+                          <TextInput
+                            style={styles.textArea}
+                            multiline={true}
+                            numberOfLines={3}
+                            placeholder="Type your requests or notes here..."
+                            placeholderTextColor="#94A3B8"
+                            value={value || ''}
+                            onChangeText={text => updateBookingInfo({ [storeKey]: text })}
+                            maxLength={200}
+                          />
+                          <Text style={styles.charCount}>{(value || '').length} / 200</Text>
+                        </View>
+                      </View>
+                      {!isLast && <View style={styles.divider} />}
+                    </React.Fragment>
+                  );
+                }
+                return (
+                  <React.Fragment key={item.key}>
+                    <View style={styles.prefRow}>
+                      <View style={styles.prefIconBox}>
+                        <ConfigIcon iconLib={item.iconLib} icon={item.icon} size={22} color={themeColor.primary} />
+                      </View>
+                      <View style={styles.prefTextContainer}>
+                        <Text style={styles.prefTitle}>{item.label}</Text>
+                        {!!item.desc && <Text style={styles.prefDesc}>{item.desc}</Text>}
+                      </View>
+                      <Switch
+                        trackColor={{ false: '#E2E8F0', true: themeColor.primary }}
+                        thumbColor={'#ffffff'}
+                        ios_backgroundColor="#E2E8F0"
+                        onValueChange={() => togglePref(storeKey, value)}
+                        value={!!value}
+                      />
+                    </View>
+                    {!isLast && <View style={styles.divider} />}
+                  </React.Fragment>
+                );
+              })}
           </View>
-          <Switch
-            trackColor={{ false: '#E2E8F0', true: themeColor.primary }}
-            thumbColor={'#ffffff'}
-            ios_backgroundColor="#E2E8F0"
-            onValueChange={() => togglePref('actingDriverKidsOnBoard', actingDriverKidsOnBoard)}
-            value={actingDriverKidsOnBoard}
-          />
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.prefRow}>
-          <View style={styles.prefIconBox}>
-            <MaterialCommunityIcons name="human-cane" size={22} color={themeColor.primary} />
-          </View>
-          <View style={styles.prefTextContainer}>
-            <Text style={styles.prefTitle}>Elderly Passengers</Text>
-          </View>
-          <Switch
-            trackColor={{ false: '#E2E8F0', true: themeColor.primary }}
-            thumbColor={'#ffffff'}
-            ios_backgroundColor="#E2E8F0"
-            onValueChange={() => togglePref('actingDriverElderlyOnBoard', actingDriverElderlyOnBoard)}
-            value={actingDriverElderlyOnBoard}
-          />
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.prefRow}>
-          <View style={styles.prefIconBox}>
-            <Ionicons name="speedometer" size={22} color={themeColor.primary} />
-          </View>
-          <View style={styles.prefTextContainer}>
-            <Text style={styles.prefTitle}>Comfort Speed</Text>
-            <Text style={styles.prefDesc}>Auto speed for driver</Text>
-          </View>
-          <View style={[styles.speedControl, { borderColor: themeColor.primary }]}>
-            <TouchableOpacity
-              onPress={() => {
-                 const val = Number(actingDriverMaxSpeed || 80);
-                 updateBookingInfo({ actingDriverMaxSpeed: Math.max(0, val - 10).toString() });
-              }}
-              style={styles.speedBtn}
-            >
-              <Text style={[styles.speedBtnText, { color: themeColor.primary }]}>-</Text>
-            </TouchableOpacity>
-            <TextInput
-              style={[styles.speedInput, { color: themeColor.primary }]}
-              value={actingDriverMaxSpeed ? String(actingDriverMaxSpeed) : '80'}
-              onChangeText={(text) => updateBookingInfo({ actingDriverMaxSpeed: text.replace(/[^0-9]/g, '') })}
-              keyboardType="numeric"
-              maxLength={3}
-            />
-            <Text style={[styles.speedUnit, { color: themeColor.primary }]}>/h</Text>
-            <TouchableOpacity
-              onPress={() => {
-                 const val = Number(actingDriverMaxSpeed || 80);
-                 updateBookingInfo({ actingDriverMaxSpeed: (val + 10).toString() });
-              }}
-              style={styles.speedBtn}
-            >
-              <Text style={[styles.speedBtnText, { color: themeColor.primary }]}>+</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.notesRow}>
-          <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 12}}>
-             <Ionicons name="document-text" size={18} color={themeColor.primary} />
-             <Text style={[styles.prefTitle, {marginLeft: 8}]}>Custom Request / Notes</Text>
-          </View>
-          <View style={styles.textAreaContainer}>
-            <TextInput
-              style={styles.textArea}
-              multiline={true}
-              numberOfLines={3}
-              placeholder="Type your requests or notes here..."
-              placeholderTextColor="#94A3B8"
-              value={actingDriverOtherRequests || ''}
-              onChangeText={(text) => updateBookingInfo({ actingDriverOtherRequests: text })}
-              maxLength={200}
-            />
-            <Text style={styles.charCount}>{(actingDriverOtherRequests || '').length} / 200</Text>
-          </View>
-        </View>
-      </View>
+        </>
+      )}
     </View>
   );
 };

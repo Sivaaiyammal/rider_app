@@ -8,6 +8,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import DraggableFlatList, { ScaleDecorator } from 'react-native-draggable-flatlist';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
 import LinearGradient from 'react-native-linear-gradient';
@@ -40,26 +41,30 @@ const ItineraryPlanScreen = ({
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [activeTimeDateStr, setActiveTimeDateStr] = useState(null);
   const [activeLocationIndex, setActiveLocationIndex] = useState(null);
+  const [activeTimeType, setActiveTimeType] = useState('pickup'); // 'pickup' or 'drop'
   const [tempTime, setTempTime] = useState(new Date());
+
+  const openTimePicker = (dateStr, locIndex, timeType, existingTime) => {
+    setActiveTimeDateStr(dateStr);
+    setActiveLocationIndex(locIndex);
+    setActiveTimeType(timeType);
+    setTempTime(existingTime ? new Date(existingTime) : new Date());
+    setShowTimePicker(true);
+  };
 
   const handleTimeConfirm = (date) => {
     if (activeTimeDateStr && activeLocationIndex !== null) {
       const currentDayItin = actingDriverItinerary?.[activeTimeDateStr] || {};
       const locations = [...(currentDayItin.locations || [])];
-      
       if (locations[activeLocationIndex]) {
         locations[activeLocationIndex] = {
           ...locations[activeLocationIndex],
-          time: date.toISOString(),
+          [activeTimeType === 'pickup' ? 'pickupTime' : 'dropTime']: date.toISOString(),
         };
-        
         updateBookingInfo({
           actingDriverItinerary: {
             ...actingDriverItinerary,
-            [activeTimeDateStr]: {
-              ...currentDayItin,
-              locations: locations,
-            }
+            [activeTimeDateStr]: { ...currentDayItin, locations },
           }
         });
       }
@@ -67,6 +72,21 @@ const ItineraryPlanScreen = ({
     setShowTimePicker(false);
     setActiveTimeDateStr(null);
     setActiveLocationIndex(null);
+  };
+
+  const toggleLocStatus = (dateStr, locIndex) => {
+    const currentDayItin = actingDriverItinerary?.[dateStr] || {};
+    const locations = [...(currentDayItin.locations || [])];
+    if (locations[locIndex]) {
+      const current = locations[locIndex].status || 'Visit';
+      locations[locIndex] = { ...locations[locIndex], status: current === 'Visit' ? 'Drop' : 'Visit' };
+      updateBookingInfo({
+        actingDriverItinerary: {
+          ...actingDriverItinerary,
+          [dateStr]: { ...currentDayItin, locations },
+        }
+      });
+    }
   };
 
   const formatTime = (dateString) => {
@@ -165,43 +185,100 @@ const ItineraryPlanScreen = ({
                     <View style={styles.cardBodyRow}>
 
                     <View style={styles.cardContent}>
-                      <View style={{ gap: 8 }}>
-                        {(dayItinerary.locations || []).map((loc, locIndex) => (
-                          <View key={locIndex} style={styles.itineraryLocationRow}>
-                            <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
-                              <Ionicons name="location" size={16} color={themeColor.secondary} />
-                              <Text style={styles.itineraryLocationText} numberOfLines={1}>
-                                {loc.name || loc.address}
-                              </Text>
-                            </View>
-                            
-                            <TouchableOpacity 
-                              style={styles.locTimeButton}
-                              onPress={() => {
-                                setActiveTimeDateStr(dateStr);
-                                setActiveLocationIndex(locIndex);
-                                setTempTime(loc.time ? new Date(loc.time) : new Date());
-                                setShowTimePicker(true);
-                              }}
-                              activeOpacity={0.7}
-                            >
-                              <Text style={[styles.locTimeText, { color: themeColor.primary }]}>{loc.time ? formatTime(loc.time) : "Any time"}</Text>
-                              <Ionicons name="time-outline" size={14} color={themeColor.primary} style={{marginLeft: 2}} />
-                            </TouchableOpacity>
+                      <DraggableFlatList
+                        data={dayItinerary.locations || []}
+                        keyExtractor={(_, i) => `loc-${dateStr}-${i}`}
+                        onDragEnd={({ data: reordered }) => {
+                          const currentDayItin = actingDriverItinerary?.[dateStr] || {};
+                          updateBookingInfo({
+                            actingDriverItinerary: {
+                              ...actingDriverItinerary,
+                              [dateStr]: { ...currentDayItin, locations: reordered },
+                            }
+                          });
+                        }}
+                        scrollEnabled={false}
+                        containerStyle={{ gap: 8 }}
+                        renderItem={({ item: loc, getIndex, drag, isActive }) => {
+                          const locIndex = getIndex();
+                          return (
+                            <ScaleDecorator>
+                              <View style={[styles.itineraryLocationRow, isActive && { elevation: 8, opacity: 0.95 }]}>
+                                {/* Drag handle strip on the left */}
+                                <TouchableOpacity onLongPress={drag} delayLongPress={100} style={styles.dragHandle}>
+                                  <Ionicons name="reorder-four-outline" size={22} color="#94A3B8" style={{ marginTop: -10 }} />
+                                </TouchableOpacity>
 
-                            {onRemoveItineraryLocation && (
-                              <TouchableOpacity 
-                                style={{marginLeft: 4, padding: 4}}
-                                onPress={() => onRemoveItineraryLocation(dateStr, locIndex)}
-                                activeOpacity={0.7}
-                              >
-                                <Ionicons name="close-circle" size={20} color="#999" />
-                              </TouchableOpacity>
-                            )}
-                          </View>
-                        ))}
+                                {/* Card content */}
+                                <View style={{ flex: 1, gap: 8 }}>
+                                {/* Location name row */}
+                                <View style={styles.locNameRow}>
+                                  <Ionicons name="location" size={16} color={themeColor.secondary} />
+                                  <Text style={styles.itineraryLocationText} numberOfLines={1}>
+                                    {loc.name || loc.address}
+                                  </Text>
+                                  {onRemoveItineraryLocation && (
+                                    <TouchableOpacity
+                                      style={{ padding: 4 }}
+                                      onPress={() => onRemoveItineraryLocation(dateStr, locIndex)}
+                                      activeOpacity={0.7}
+                                    >
+                                      <Ionicons name="close-circle" size={18} color="#999" />
+                                    </TouchableOpacity>
+                                  )}
+                                </View>
+
+                                {/* Time + Status row */}
+                                <View style={styles.locMetaRow}>
+                                  <TouchableOpacity
+                                    style={styles.locTimeButton}
+                                    onPress={() => openTimePicker(dateStr, locIndex, 'pickup', loc.pickupTime)}
+                                    activeOpacity={0.7}
+                                  >
+                                    <Ionicons name="arrow-up-circle-outline" size={12} color={themeColor.primary} />
+                                    <Text style={[styles.locTimeText, { color: themeColor.primary }]}>
+                                      {loc.pickupTime ? formatTime(loc.pickupTime) : 'Pickup'}
+                                    </Text>
+                                  </TouchableOpacity>
+
+                                  <TouchableOpacity
+                                    style={styles.locTimeButton}
+                                    onPress={() => openTimePicker(dateStr, locIndex, 'drop', loc.dropTime)}
+                                    activeOpacity={0.7}
+                                  >
+                                    <Ionicons name="arrow-down-circle-outline" size={12} color="#E53935" />
+                                    <Text style={[styles.locTimeText, { color: '#E53935' }]}>
+                                      {loc.dropTime ? formatTime(loc.dropTime) : 'Drop'}
+                                    </Text>
+                                  </TouchableOpacity>
+
+                                  <TouchableOpacity
+                                    style={[
+                                      styles.locStatusBadge,
+                                      { backgroundColor: (loc.status || 'Visit') === 'Visit' ? '#E8F5E9' : '#FFF3E0',
+                                        borderColor: (loc.status || 'Visit') === 'Visit' ? '#4CAF50' : '#FF9800' }
+                                    ]}
+                                    onPress={() => toggleLocStatus(dateStr, locIndex)}
+                                    activeOpacity={0.8}
+                                  >
+                                    <Ionicons
+                                      name={(loc.status || 'Visit') === 'Visit' ? 'eye-outline' : 'flag-outline'}
+                                      size={12}
+                                      color={(loc.status || 'Visit') === 'Visit' ? '#4CAF50' : '#FF9800'}
+                                    />
+                                    <Text style={[styles.locStatusText, { color: (loc.status || 'Visit') === 'Visit' ? '#4CAF50' : '#FF9800' }]}>
+                                      {loc.status || 'Visit'}
+                                    </Text>
+                                  </TouchableOpacity>
+                                </View>
+                                </View>{/* end flex:1 content */}
+                              </View>
+                            </ScaleDecorator>
+                          );
+                        }}
+                      />
                         
-                        <TouchableOpacity 
+                        <TouchableOpacity
                           style={styles.addItineraryLocBtn}
                           onPress={() => onAddItineraryLocation(dateStr)}
                           activeOpacity={0.8}
@@ -209,7 +286,6 @@ const ItineraryPlanScreen = ({
                           <Ionicons name="add" size={18} color={themeColor.secondary} />
                           <Text style={[styles.addItineraryLocText, { color: themeColor.secondary }]}>Add Location</Text>
                         </TouchableOpacity>
-                      </View>
                     </View>
                     </View>
                   </View>
@@ -462,10 +538,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.white_dirt,
-    padding: 12,
+    paddingVertical: 10,
+    paddingRight: 10,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    marginBottom: 10,
+  },
+  locNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dragHandle: {
+    alignSelf: 'stretch',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    borderRightWidth: 1,
+    borderRightColor: '#E2E8F0',
+    marginRight: 8,
   },
   itineraryLocationText: {
     flex: 1,
@@ -474,21 +565,39 @@ const styles = StyleSheet.create({
     color: colors.black,
     marginLeft: 8,
   },
+  locMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
+  },
   locTimeButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 5,
     backgroundColor: '#F0F7FF',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E0F2FE',
-    marginLeft: 4,
   },
   locTimeText: {
-    fontSize: 10,
+    fontSize: 11,
     fontFamily: Fonts.bold,
-    color: '#0F4A75',
+  },
+  locStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  locStatusText: {
+    fontSize: 11,
+    fontFamily: Fonts.bold,
   },
   addItineraryLocBtn: {
     flexDirection: 'row',

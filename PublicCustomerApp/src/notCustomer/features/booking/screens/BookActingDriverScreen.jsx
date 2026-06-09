@@ -9,6 +9,8 @@ import {
     FlatList,
     Text,
     Image,
+    Switch,
+    TextInput,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -41,6 +43,8 @@ import { getFareEngineRange, getRideEstimation, getPassangerVehicles } from '../
 import { useDebouncedAPICall } from '../../../hooks/useDebounce';
 import { showNotification } from '../../../components/NotificationManger';
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
+import DatePicker from 'react-native-date-picker';
+import { Calendar } from 'react-native-calendars';
 // import ActingDriverPreferences from '../components/bookRide/ActingDriverPreferences';
 import PaymentType from '../components/bookRide/PaymentType';
 import CouponContainer from '../components/bookRide/CouponConatiner';
@@ -261,6 +265,7 @@ const BookActingDriverScreen = () => {
             } else if (locType === LocationTypes.WAYPOINT_LOCATION) {
                 addRideWayPoint(item);
             }
+            goBack();
         };
 
         const props = {
@@ -281,6 +286,54 @@ const BookActingDriverScreen = () => {
         }
 
         setStackScreen('PickLocationScreen', props);
+    };
+
+    const handleAddItineraryLocation = (dateStr) => {
+        const props = {
+            onPickLocationResultCallback: (pickedLocation) => {
+                if (pickedLocation) {
+                    const freshItinerary = useRideBookingInfo.getState().actingDriverItinerary || {};
+                    const currentDayItin = freshItinerary[dateStr] || {};
+                    const currentLocations = currentDayItin.locations || [];
+                    const newItinerary = {
+                        ...freshItinerary,
+                        [dateStr]: { ...currentDayItin, locations: [...currentLocations, pickedLocation] }
+                    };
+                    useRideBookingInfo.getState().setActingDriverItinerary(newItinerary);
+                }
+                goBack();
+            },
+            locationType: LocationTypes.WAYPOINT_LOCATION,
+            isFromRidePointsSelection: false,
+            searchBar: true,
+            focusSearchOnMount: true,
+            label: 'Select Location',
+            buttonLabel: 'Select Location',
+        };
+        setStackScreen('PickLocationScreen', props);
+    };
+
+    const handleRemoveItineraryLocation = (dateStr, locIndex) => {
+        const freshItinerary = useRideBookingInfo.getState().actingDriverItinerary || {};
+        const currentDayItin = freshItinerary[dateStr] || {};
+        const newLocations = [...(currentDayItin.locations || [])];
+        newLocations.splice(locIndex, 1);
+        useRideBookingInfo.getState().setActingDriverItinerary({
+            ...freshItinerary,
+            [dateStr]: { ...currentDayItin, locations: newLocations }
+        });
+    };
+
+    const handleItineraryClick = () => {
+        setShowItineraryModal(false);
+        const dates = itineraryDates.length > 0 ? itineraryDates : [new Date().toISOString().split('T')[0]];
+        setStackScreen('ItineraryPlanScreen', {
+            itineraryDates: dates,
+            onAddItineraryLocation: handleAddItineraryLocation,
+            onRemoveItineraryLocation: handleRemoveItineraryLocation,
+            onAddDay: null,
+            themeColor,
+        });
     };
 
     const currentScreen = useStackScreenStore(state => state.stackScreen[state.stackScreen.length - 1]);
@@ -312,15 +365,29 @@ const BookActingDriverScreen = () => {
         setActingDriverItinerary,
         setActingDriverMaxSpeed,
         actingDriverAccommodation,
+        setActingDriverAccommodation,
         actingDriverFood,
+        setActingDriverFood,
         actingDriverKidsOnBoard,
+        setActingDriverKidsOnBoard,
+        actingDriverElderlyOnBoard,
+        setActingDriverElderlyOnBoard,
+        actingDriverNotifyEvents,
+        setActingDriverNotifyEvents,
+        actingDriverOtherRequests,
+        setActingDriverOtherRequests,
         actingDriverMaxSpeed,
         bookingTab,
         durationRangeStart,
+        setDurationRangeStart,
         durationRangeEnd,
+        setDurationRangeEnd,
         actingDriverHours,
+        setActingDriverHours,
         customStartTime,
         tomorrowStartTime,
+        setCustomStartTime,
+        setTomorrowStartTime,
         tripType,
         setTripType,
         showItineraryModal,
@@ -362,6 +429,20 @@ const BookActingDriverScreen = () => {
     } = useActingDriverBookTrip();
 
     const [isPaymentTypeOpen, setIsPaymentTypeOpen] = useState(false);
+    const [showTripTypeModal, setShowTripTypeModal] = useState(false);
+    const [showDateTimeModal, setShowDateTimeModal] = useState(false);
+    const [showTimePickerInModal, setShowTimePickerInModal] = useState(false);
+    const [pendingDateTime, setPendingDateTime] = useState(null);
+    const [showSpecialReqModal, setShowSpecialReqModal] = useState(false);
+    const [pendingMaxSpeed, setPendingMaxSpeed] = useState('');
+    const [showDriverArrangementsModal, setShowDriverArrangementsModal] = useState(false);
+    const [showDurationModal, setShowDurationModal] = useState(false);
+    const [pendingDurationType, setPendingDurationType] = useState('HOURLY');
+    const [pendingHours, setPendingHours] = useState(4);
+    const [pendingRangeStart, setPendingRangeStart] = useState(null);
+    const [pendingRangeEnd, setPendingRangeEnd] = useState(null);
+    const [showRangeDatePicker, setShowRangeDatePicker] = useState(null);
+    const [showCustomNotesModal, setShowCustomNotesModal] = useState(false);
     const [, setShowPreference] = useState(false);
     const [showCoupon, setShowCoupon] = useState(false);
     const [isEstimationLoading, setIsEstimationLoading] = useState(false);
@@ -634,7 +715,7 @@ const BookActingDriverScreen = () => {
                         <AdaptiveText style={styles.detailValue}>
                             {tripType === 'ONE_WAY' ? 'One Way (Drop Off)' : 'Round Trip'}
                         </AdaptiveText>
-                        <TouchableOpacity onPress={() => useStackScreenStore.getState().goBack()}>
+                        <TouchableOpacity onPress={() => setShowTripTypeModal(true)}>
                             <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
                         </TouchableOpacity>
                     </View>
@@ -648,22 +729,50 @@ const BookActingDriverScreen = () => {
                         <AdaptiveText style={styles.detailValue}>
                             {utils.formatDate(bookingTab === 'TODAY' ? customStartTime : tomorrowStartTime, 'ddd, D MMM YYYY, hh:mm A')}
                         </AdaptiveText>
-                        <TouchableOpacity onPress={() => useStackScreenStore.getState().goBack()}>
+                        <TouchableOpacity onPress={() => {
+                            const current = bookingTab === 'TODAY' ? customStartTime : tomorrowStartTime;
+                            setPendingDateTime(current ? new Date(current) : new Date());
+                            setShowDateTimeModal(true);
+                        }}>
                             <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.divider} />
 
-                    <View style={styles.detailRow}>
+                    <TouchableOpacity style={styles.detailRow} onPress={() => {
+                        const assignedDate = bookingTab === 'TODAY' ? customStartTime : tomorrowStartTime;
+                        if (durationRangeStart && durationRangeEnd) {
+                            setPendingDurationType('MULTI_DAY');
+                            setPendingRangeStart(new Date(durationRangeStart));
+                            setPendingRangeEnd(new Date(durationRangeEnd));
+                        } else if (actingDriverHours) {
+                            setPendingDurationType('HOURLY');
+                            setPendingHours(actingDriverHours);
+                            setPendingRangeStart(assignedDate ? new Date(assignedDate) : null);
+                            setPendingRangeEnd(null);
+                        } else {
+                            setPendingDurationType('FULL_DAY');
+                            setPendingRangeStart(assignedDate ? new Date(assignedDate) : null);
+                            setPendingRangeEnd(null);
+                        }
+                        setShowDurationModal(true);
+                    }}>
                         <View style={styles.detailLeft}>
                             <Ionicons name="time-outline" size={18} color="#4B5563" />
                             <AdaptiveText style={styles.detailLabel}>{t('duration', 'Duration')}</AdaptiveText>
                         </View>
-                        <AdaptiveText style={styles.detailValue}>{actingDriverHours} Hours (Hourly)</AdaptiveText>
-                        <TouchableOpacity onPress={() => useStackScreenStore.getState().goBack()}>
-                            <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
-                        </TouchableOpacity>
-                    </View>
+                        <AdaptiveText style={styles.detailValue}>
+                            {durationRangeStart && durationRangeEnd
+                                ? (() => {
+                                    const days = Math.round((new Date(durationRangeEnd) - new Date(durationRangeStart)) / (1000 * 60 * 60 * 24)) + 1;
+                                    return `${days} ${days === 1 ? 'Day' : 'Days'} (Multi-Day)`;
+                                })()
+                                : actingDriverHours
+                                ? `${actingDriverHours} ${actingDriverHours === 1 ? 'Hour' : 'Hours'} (Hourly)`
+                                : t('full_day', 'Full Day')}
+                        </AdaptiveText>
+                        <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                    </TouchableOpacity>
                     <View style={styles.divider} />
 
                     <View style={styles.detailRow}>
@@ -674,7 +783,7 @@ const BookActingDriverScreen = () => {
                         <AdaptiveText style={styles.detailValue} numberOfLines={1}>
                             {rideStartLocation ? utils.formatAddressName(rideStartLocation) : ''}
                         </AdaptiveText>
-                        <TouchableOpacity onPress={() => useStackScreenStore.getState().goBack()}>
+                        <TouchableOpacity onPress={() => handleLocationClick(LocationTypes.START_LOCATION)}>
                             <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
                         </TouchableOpacity>
                     </View>
@@ -688,7 +797,7 @@ const BookActingDriverScreen = () => {
                         <AdaptiveText style={styles.detailValue} numberOfLines={1}>
                             {rideEndLocation ? utils.formatAddressName(rideEndLocation) : ''}
                         </AdaptiveText>
-                        <TouchableOpacity onPress={() => useStackScreenStore.getState().goBack()}>
+                        <TouchableOpacity onPress={() => handleLocationClick(LocationTypes.DESTINATION_LOCATION)}>
                             <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
                         </TouchableOpacity>
                     </View>
@@ -702,44 +811,49 @@ const BookActingDriverScreen = () => {
                         <AdaptiveText style={styles.detailValue}>
                             {actingDriverItinerary ? `${Object.keys(actingDriverItinerary).length} Days` : '0 Days'}
                         </AdaptiveText>
-                        <TouchableOpacity onPress={() => {}}>
+                        <TouchableOpacity onPress={() => handleItineraryClick()}>
                             <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.divider} />
 
-                    <View style={styles.detailRow}>
+                    <TouchableOpacity style={styles.detailRow} onPress={() => setShowDriverArrangementsModal(true)}>
                         <View style={styles.detailLeft}>
                             <Ionicons name="bed-outline" size={18} color="#4B5563" />
                             <AdaptiveText style={styles.detailLabel}>{t('driver_arrangements', 'Driver Arrangements')}</AdaptiveText>
                         </View>
                         <AdaptiveText style={styles.detailValue}>
-                            {[actingDriverAccommodation ? 'Accommodation' : null, actingDriverFood ? 'Food Allowance' : null].filter(Boolean).join(' • ') || 'None'}
+                            {[actingDriverAccommodation ? 'Accommodation' : null, actingDriverFood ? 'Food' : null].filter(Boolean).join(' • ') || 'None'}
                         </AdaptiveText>
-                    </View>
+                        <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                    </TouchableOpacity>
                     <View style={styles.divider} />
 
-                    <View style={styles.detailRow}>
+                    <TouchableOpacity style={styles.detailRow} onPress={() => {
+                        setPendingMaxSpeed(actingDriverMaxSpeed || '');
+                        setShowSpecialReqModal(true);
+                    }}>
                         <View style={styles.detailLeft}>
                             <Ionicons name="build-outline" size={18} color="#4B5563" />
                             <AdaptiveText style={styles.detailLabel}>{t('special_requirements', 'Special Requirements')}</AdaptiveText>
                         </View>
                         <AdaptiveText style={styles.detailValue}>
-                            {[actingDriverKidsOnBoard ? 'Children On Board' : null, actingDriverMaxSpeed ? `Comfort ${actingDriverMaxSpeed} km/h` : null].filter(Boolean).join(' • ') || 'None'}
+                            {[actingDriverKidsOnBoard ? 'Kids' : null, actingDriverElderlyOnBoard ? 'Elderly' : null, actingDriverNotifyEvents ? 'Notify' : null, actingDriverMaxSpeed ? `${actingDriverMaxSpeed} km/h` : null].filter(Boolean).join(' • ') || 'None'}
                         </AdaptiveText>
-                        <TouchableOpacity onPress={() => {}}>
-                            <Ionicons name="chevron-forward" size={16} color="#4B5563" />
-                        </TouchableOpacity>
-                    </View>
+                        <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                    </TouchableOpacity>
                     <View style={styles.divider} />
 
-                    <View style={styles.detailRow}>
+                    <TouchableOpacity style={styles.detailRow} onPress={() => setShowCustomNotesModal(true)}>
                         <View style={styles.detailLeft}>
                             <Ionicons name="create-outline" size={18} color="#4B5563" />
                             <AdaptiveText style={styles.detailLabel}>{t('custom_notes', 'Custom Notes')}</AdaptiveText>
                         </View>
-                        <AdaptiveText style={styles.detailValue}>Driver familiar with hill roads</AdaptiveText>
-                    </View>
+                        <AdaptiveText style={styles.detailValue} numberOfLines={1}>
+                            {actingDriverOtherRequests || t('add_note', 'Add a note...')}
+                        </AdaptiveText>
+                        <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
+                    </TouchableOpacity>
                 </View>
 
                 
@@ -888,6 +1002,561 @@ const BookActingDriverScreen = () => {
                     </View>
                 </View>
             </Modal>
+
+            {/* Trip Type Picker Modal */}
+            <Modal
+                visible={showTripTypeModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowTripTypeModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.tripTypeOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowTripTypeModal(false)}
+                >
+                    <TouchableOpacity activeOpacity={1} style={styles.tripTypeCard}>
+                        <View style={[styles.tripTypeHeaderBar, { backgroundColor: themeColor.primary }]} />
+                        <Text style={styles.tripTypeTitle}>{t('select_trip_type', 'Select Trip Type')}</Text>
+
+                        <View style={styles.tripTypeGrid}>
+                        {[
+                            { value: 'ONE_WAY', label: 'One Way', sub: 'Drop Off', icon: 'arrow-forward-outline' },
+                            { value: 'ROUND_TRIP', label: 'Round Trip', sub: 'Up & Down', icon: 'sync-outline' },
+                        ].map((option) => {
+                            const selected = tripType === option.value;
+                            return (
+                                <TouchableOpacity
+                                    key={option.value}
+                                    style={[
+                                        styles.tripTypeOption,
+                                        selected && { borderColor: themeColor.primary, backgroundColor: themeColor.primary + '12' },
+                                    ]}
+                                    onPress={() => { setTripType(option.value); setShowTripTypeModal(false); }}
+                                    activeOpacity={0.8}
+                                >
+                                    <View style={[styles.tripTypeIconCircle, selected && { backgroundColor: themeColor.primary + '25' }]}>
+                                        <Ionicons name={option.icon} size={24} color={selected ? themeColor.primary : '#6B7280'} />
+                                    </View>
+                                    <Text style={[styles.tripTypeOptionLabel, selected && { color: themeColor.primary }]}>{option.label}</Text>
+                                    <Text style={styles.tripTypeOptionSub}>{option.sub}</Text>
+                                    {selected && (
+                                        <Ionicons name="checkmark-circle" size={18} color={themeColor.primary} style={{ marginTop: 6 }} />
+                                    )}
+                                </TouchableOpacity>
+                            );
+                        })}
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
+
+            {/* Date & Time Picker Modal */}
+            <Modal
+                visible={showDateTimeModal}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setShowDateTimeModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.tripTypeOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowDateTimeModal(false)}
+                >
+                    <TouchableOpacity activeOpacity={1} style={styles.dateTimeCard}>
+                        <View style={[styles.tripTypeHeaderBar, { backgroundColor: themeColor.primary }]} />
+                        <Text style={styles.tripTypeTitle}>{t('select_date_time', 'Select Date & Time')}</Text>
+
+                        <Calendar
+                            current={pendingDateTime ? pendingDateTime.toISOString().split('T')[0] : undefined}
+                            minDate={new Date().toISOString().split('T')[0]}
+                            onDayPress={(day) => {
+                                const updated = pendingDateTime ? new Date(pendingDateTime) : new Date();
+                                const [year, month, date] = day.dateString.split('-').map(Number);
+                                updated.setFullYear(year, month - 1, date);
+                                setPendingDateTime(updated);
+                            }}
+                            markedDates={pendingDateTime ? {
+                                [pendingDateTime.toISOString().split('T')[0]]: {
+                                    selected: true,
+                                    selectedColor: themeColor.primary,
+                                },
+                            } : {}}
+                            theme={{
+                                selectedDayBackgroundColor: themeColor.primary,
+                                todayTextColor: themeColor.primary,
+                                arrowColor: themeColor.primary,
+                                dotColor: themeColor.primary,
+                            }}
+                        />
+
+                        <TouchableOpacity
+                            style={[styles.dateTimeTimeRow, { borderColor: themeColor.primary + '40' }]}
+                            onPress={() => setShowTimePickerInModal(true)}
+                        >
+                            <Ionicons name="time-outline" size={20} color={themeColor.primary} />
+                            <Text style={[styles.dateTimeTimeText, { color: themeColor.primary }]}>
+                                {pendingDateTime
+                                    ? pendingDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                    : t('select_time', 'Select Time')}
+                            </Text>
+                            <Ionicons name="chevron-forward" size={16} color={themeColor.primary} style={{ marginLeft: 'auto' }} />
+                        </TouchableOpacity>
+
+                        <View style={styles.dateTimeActions}>
+                            <TouchableOpacity
+                                style={[styles.dateTimeCancelBtn]}
+                                onPress={() => setShowDateTimeModal(false)}
+                            >
+                                <Text style={styles.dateTimeCancelText}>{t('cancel', 'Cancel')}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.dateTimeConfirmBtn, { backgroundColor: themeColor.primary }]}
+                                onPress={() => {
+                                    if (pendingDateTime) {
+                                        if (bookingTab === 'TODAY') {
+                                            setCustomStartTime(pendingDateTime);
+                                        } else {
+                                            setTomorrowStartTime(pendingDateTime);
+                                        }
+                                    }
+                                    setShowDateTimeModal(false);
+                                }}
+                            >
+                                <Text style={styles.dateTimeConfirmText}>{t('confirm', 'Confirm')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+
+                <DatePicker
+                    modal
+                    open={showTimePickerInModal}
+                    date={pendingDateTime || new Date()}
+                    mode="time"
+                    onConfirm={(d) => {
+                        const updated = pendingDateTime ? new Date(pendingDateTime) : new Date();
+                        updated.setHours(d.getHours(), d.getMinutes(), 0, 0);
+                        setPendingDateTime(updated);
+                        setShowTimePickerInModal(false);
+                    }}
+                    onCancel={() => setShowTimePickerInModal(false)}
+                />
+            </Modal>
+
+            {/* Duration Modal */}
+            <Modal
+                visible={showDurationModal}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setShowDurationModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.tripTypeOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowDurationModal(false)}
+                >
+                    <TouchableOpacity activeOpacity={1} style={styles.dateTimeCard}>
+                        <View style={[styles.tripTypeHeaderBar, { backgroundColor: themeColor.primary }]} />
+                        <Text style={styles.tripTypeTitle}>{t('select_duration', 'Select Duration')}</Text>
+
+                        {/* Type selector */}
+                        <View style={styles.durationTypeRow}>
+                            {[
+                                { value: 'HOURLY',    label: 'Hourly',    icon: 'time-outline' },
+                                { value: 'FULL_DAY',  label: 'Full Day',  icon: 'sunny-outline' },
+                                { value: 'MULTI_DAY', label: 'Multi-Day', icon: 'calendar-outline' },
+                            ].map((opt) => {
+                                const sel = pendingDurationType === opt.value;
+                                return (
+                                    <TouchableOpacity
+                                        key={opt.value}
+                                        style={[styles.durationTypeCard, sel && { borderColor: themeColor.primary, backgroundColor: themeColor.primary + '12' }]}
+                                        onPress={() => {
+                                            setPendingDurationType(opt.value);
+                                            if (opt.value === 'MULTI_DAY' && !pendingRangeStart) {
+                                                const assigned = bookingTab === 'TODAY' ? customStartTime : tomorrowStartTime;
+                                                if (assigned) setPendingRangeStart(new Date(assigned));
+                                            }
+                                        }}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Ionicons name={opt.icon} size={22} color={sel ? themeColor.primary : '#6B7280'} />
+                                        <Text style={[styles.durationTypeLabel, sel && { color: themeColor.primary }]}>{opt.label}</Text>
+                                        {sel && <Ionicons name="checkmark-circle" size={16} color={themeColor.primary} style={{ marginTop: 4 }} />}
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+
+                        {/* Hourly: quick chips + custom input */}
+                        {pendingDurationType === 'HOURLY' && (
+                            <View style={styles.durationSubSection}>
+                                <Text style={styles.durationSubLabel}>{t('number_of_hours', 'Number of Hours')}</Text>
+                                <View style={styles.hourChipsRow}>
+                                    {[2, 4, 6, 8, 10, 12].map((h) => (
+                                        <TouchableOpacity
+                                            key={h}
+                                            style={[styles.hourChip, pendingHours === h && { backgroundColor: themeColor.primary, borderColor: themeColor.primary }]}
+                                            onPress={() => setPendingHours(h)}
+                                        >
+                                            <Text style={[styles.hourChipText, pendingHours === h && { color: '#fff' }]}>{h}h</Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                                <View style={styles.hourStepperRow}>
+                                    <TouchableOpacity
+                                        style={[styles.hourStepBtn, { borderColor: themeColor.primary }]}
+                                        onPress={() => setPendingHours(h => Math.max(1, h - 1))}
+                                    >
+                                        <Ionicons name="remove" size={20} color={themeColor.primary} />
+                                    </TouchableOpacity>
+                                    <Text style={[styles.hourStepValue, { color: themeColor.primary }]}>{pendingHours} {pendingHours === 1 ? 'Hour' : 'Hours'}</Text>
+                                    <TouchableOpacity
+                                        style={[styles.hourStepBtn, { borderColor: themeColor.primary }]}
+                                        onPress={() => setPendingHours(h => Math.min(24, h + 1))}
+                                    >
+                                        <Ionicons name="add" size={20} color={themeColor.primary} />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+
+                        {/* Full Day: info */}
+                        {pendingDurationType === 'FULL_DAY' && (
+                            <View style={styles.durationSubSection}>
+                                <View style={[styles.durationInfoBox, { borderColor: themeColor.primary + '40', backgroundColor: themeColor.primary + '08' }]}>
+                                    <Ionicons name="information-circle-outline" size={18} color={themeColor.primary} />
+                                    <Text style={[styles.durationInfoText, { color: themeColor.primary }]}>
+                                        {t('full_day_info', 'Driver will be booked for the entire day (~8-10 hrs)')}
+                                    </Text>
+                                </View>
+                            </View>
+                        )}
+
+                        {/* Multi-Day: start and end date */}
+                        {pendingDurationType === 'MULTI_DAY' && (
+                            <View style={styles.durationSubSection}>
+                                <Text style={styles.durationSubLabel}>{t('select_date_range', 'Select Date Range')}</Text>
+                                <View style={styles.durationRangeRow}>
+                                    <TouchableOpacity
+                                        style={[styles.durationDateBtn, { borderColor: themeColor.primary }]}
+                                        onPress={() => setShowRangeDatePicker('start')}
+                                    >
+                                        <Ionicons name="calendar-outline" size={16} color={themeColor.primary} />
+                                        <Text style={[styles.durationDateText, { color: themeColor.primary }]}>
+                                            {pendingRangeStart ? pendingRangeStart.toLocaleDateString([], { day: '2-digit', month: 'short' }) : t('start_date', 'Start')}
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <Ionicons name="arrow-forward" size={16} color="#9CA3AF" />
+                                    <TouchableOpacity
+                                        style={[styles.durationDateBtn, { borderColor: themeColor.primary }]}
+                                        onPress={() => setShowRangeDatePicker('end')}
+                                    >
+                                        <Ionicons name="calendar-outline" size={16} color={themeColor.primary} />
+                                        <Text style={[styles.durationDateText, { color: themeColor.primary }]}>
+                                            {pendingRangeEnd ? pendingRangeEnd.toLocaleDateString([], { day: '2-digit', month: 'short' }) : t('end_date', 'End')}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                                {pendingRangeStart && pendingRangeEnd && (
+                                    <Text style={[styles.durationRangeSummary, { color: themeColor.primary }]}>
+                                        {Math.round((pendingRangeEnd - pendingRangeStart) / (1000 * 60 * 60 * 24)) + 1} days selected
+                                    </Text>
+                                )}
+                            </View>
+                        )}
+
+                        <View style={styles.dateTimeActions}>
+                            <TouchableOpacity style={styles.dateTimeCancelBtn} onPress={() => setShowDurationModal(false)}>
+                                <Text style={styles.dateTimeCancelText}>{t('cancel', 'Cancel')}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.dateTimeConfirmBtn, { backgroundColor: themeColor.primary }]}
+                                onPress={() => {
+                                    if (pendingDurationType === 'HOURLY') {
+                                        setActingDriverHours(pendingHours);
+                                        setDurationRangeStart(null);
+                                        setDurationRangeEnd(null);
+                                    } else if (pendingDurationType === 'FULL_DAY') {
+                                        setActingDriverHours(null);
+                                        setDurationRangeStart(null);
+                                        setDurationRangeEnd(null);
+                                    } else if (pendingDurationType === 'MULTI_DAY' && pendingRangeStart && pendingRangeEnd) {
+                                        setActingDriverHours(null);
+                                        setDurationRangeStart(pendingRangeStart);
+                                        setDurationRangeEnd(pendingRangeEnd);
+                                    }
+                                    setShowDurationModal(false);
+                                }}
+                            >
+                                <Text style={styles.dateTimeConfirmText}>{t('confirm', 'Confirm')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+
+                <DatePicker
+                    modal
+                    open={showRangeDatePicker !== null}
+                    date={showRangeDatePicker === 'end' && pendingRangeEnd ? pendingRangeEnd : (pendingRangeStart || new Date())}
+                    mode="date"
+                    minimumDate={showRangeDatePicker === 'end' && pendingRangeStart ? pendingRangeStart : new Date()}
+                    onConfirm={(d) => {
+                        if (showRangeDatePicker === 'start') {
+                            setPendingRangeStart(d);
+                            if (pendingRangeEnd && d > pendingRangeEnd) setPendingRangeEnd(null);
+                        } else {
+                            setPendingRangeEnd(d);
+                        }
+                        setShowRangeDatePicker(null);
+                    }}
+                    onCancel={() => setShowRangeDatePicker(null)}
+                />
+            </Modal>
+
+            {/* Custom Notes Modal */}
+            <Modal
+                visible={showCustomNotesModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowCustomNotesModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.tripTypeOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowCustomNotesModal(false)}
+                >
+                    <TouchableOpacity activeOpacity={1} style={styles.customNotesCard}>
+                        <View style={[styles.tripTypeHeaderBar, { backgroundColor: themeColor.primary }]} />
+                        <Text style={styles.tripTypeTitle}>{t('custom_notes', 'Custom Notes')}</Text>
+
+                        <TextInput
+                            style={[styles.customNotesInput, { borderColor: themeColor.primary + '50' }]}
+                            value={actingDriverOtherRequests}
+                            onChangeText={setActingDriverOtherRequests}
+                            placeholder={t('custom_notes_placeholder', 'Add any special instructions for the driver...')}
+                            placeholderTextColor="#9CA3AF"
+                            multiline
+                            numberOfLines={5}
+                            textAlignVertical="top"
+                            autoFocus
+                            maxLength={300}
+                        />
+                        <Text style={styles.customNotesCount}>{actingDriverOtherRequests.length}/300</Text>
+
+                        <View style={styles.dateTimeActions}>
+                            <TouchableOpacity
+                                style={styles.dateTimeCancelBtn}
+                                onPress={() => { setActingDriverOtherRequests(''); setShowCustomNotesModal(false); }}
+                            >
+                                <Text style={styles.dateTimeCancelText}>{t('clear', 'Clear')}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.dateTimeConfirmBtn, { backgroundColor: themeColor.primary }]}
+                                onPress={() => setShowCustomNotesModal(false)}
+                            >
+                                <Text style={styles.dateTimeConfirmText}>{t('done', 'Done')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
+
+            {/* Driver Arrangements Modal */}
+            <Modal
+                visible={showDriverArrangementsModal}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setShowDriverArrangementsModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.tripTypeOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowDriverArrangementsModal(false)}
+                >
+                    <TouchableOpacity activeOpacity={1} style={styles.specialReqCard}>
+                        <View style={[styles.tripTypeHeaderBar, { backgroundColor: themeColor.primary }]} />
+                        <Text style={styles.tripTypeTitle}>{t('driver_arrangements', 'Driver Arrangements')}</Text>
+
+                        {/* Accommodation */}
+                        <View style={styles.specialReqRow}>
+                            <View style={styles.specialReqLeft}>
+                                <Ionicons name="bed-outline" size={20} color="#4B5563" />
+                                <View style={{ marginLeft: 12 }}>
+                                    <Text style={styles.specialReqLabel}>{t('accommodation', 'Accommodation')}</Text>
+                                    <Text style={styles.specialReqSub}>{t('accommodation_sub', 'Provide stay for driver')}</Text>
+                                </View>
+                            </View>
+                            <Switch
+                                value={actingDriverAccommodation}
+                                onValueChange={setActingDriverAccommodation}
+                                trackColor={{ false: '#E5E7EB', true: themeColor.primary + '60' }}
+                                thumbColor={actingDriverAccommodation ? themeColor.primary : '#9CA3AF'}
+                            />
+                        </View>
+
+                        <View style={styles.specialReqDivider} />
+
+                        {/* Food Allowance */}
+                        <View style={styles.specialReqRow}>
+                            <View style={styles.specialReqLeft}>
+                                <Ionicons name="restaurant-outline" size={20} color="#4B5563" />
+                                <View style={{ marginLeft: 12 }}>
+                                    <Text style={styles.specialReqLabel}>{t('food_allowance', 'Food Allowance')}</Text>
+                                    <Text style={styles.specialReqSub}>{t('food_allowance_sub', 'Cover meals during trip')}</Text>
+                                </View>
+                            </View>
+                            <Switch
+                                value={actingDriverFood}
+                                onValueChange={setActingDriverFood}
+                                trackColor={{ false: '#E5E7EB', true: themeColor.primary + '60' }}
+                                thumbColor={actingDriverFood ? themeColor.primary : '#9CA3AF'}
+                            />
+                        </View>
+
+                        <View style={styles.dateTimeActions}>
+                            <TouchableOpacity
+                                style={styles.dateTimeCancelBtn}
+                                onPress={() => {
+                                    setActingDriverAccommodation(false);
+                                    setActingDriverFood(false);
+                                    setShowDriverArrangementsModal(false);
+                                }}
+                            >
+                                <Text style={styles.dateTimeCancelText}>{t('remove_all', 'Remove All')}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.dateTimeConfirmBtn, { backgroundColor: themeColor.primary }]}
+                                onPress={() => setShowDriverArrangementsModal(false)}
+                            >
+                                <Text style={styles.dateTimeConfirmText}>{t('done', 'Done')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
+
+            {/* Special Requirements Modal */}
+            <Modal
+                visible={showSpecialReqModal}
+                transparent
+                animationType="slide"
+                onRequestClose={() => setShowSpecialReqModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.tripTypeOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowSpecialReqModal(false)}
+                >
+                    <TouchableOpacity activeOpacity={1} style={styles.specialReqCard}>
+                        <View style={[styles.tripTypeHeaderBar, { backgroundColor: themeColor.primary }]} />
+                        <Text style={styles.tripTypeTitle}>{t('special_requirements', 'Special Requirements')}</Text>
+
+                        {/* Kids On Board */}
+                        <View style={styles.specialReqRow}>
+                            <View style={styles.specialReqLeft}>
+                                <Ionicons name="people-outline" size={20} color="#4B5563" />
+                                <View style={{ marginLeft: 12 }}>
+                                    <Text style={styles.specialReqLabel}>{t('children_on_board', 'Children On Board')}</Text>
+                                    <Text style={styles.specialReqSub}>{t('children_on_board_sub', 'Driver takes extra care')}</Text>
+                                </View>
+                            </View>
+                            <Switch
+                                value={actingDriverKidsOnBoard}
+                                onValueChange={setActingDriverKidsOnBoard}
+                                trackColor={{ false: '#E5E7EB', true: themeColor.primary + '60' }}
+                                thumbColor={actingDriverKidsOnBoard ? themeColor.primary : '#9CA3AF'}
+                            />
+                        </View>
+
+                        <View style={styles.specialReqDivider} />
+
+                        {/* Elderly On Board */}
+                        <View style={styles.specialReqRow}>
+                            <View style={styles.specialReqLeft}>
+                                <Ionicons name="accessibility-outline" size={20} color="#4B5563" />
+                                <View style={{ marginLeft: 12 }}>
+                                    <Text style={styles.specialReqLabel}>{t('elderly_on_board', 'Elderly On Board')}</Text>
+                                    <Text style={styles.specialReqSub}>{t('elderly_on_board_sub', 'Smooth, gentle driving')}</Text>
+                                </View>
+                            </View>
+                            <Switch
+                                value={actingDriverElderlyOnBoard}
+                                onValueChange={setActingDriverElderlyOnBoard}
+                                trackColor={{ false: '#E5E7EB', true: themeColor.primary + '60' }}
+                                thumbColor={actingDriverElderlyOnBoard ? themeColor.primary : '#9CA3AF'}
+                            />
+                        </View>
+
+                        <View style={styles.specialReqDivider} />
+
+                        {/* Notify Events */}
+                        <View style={styles.specialReqRow}>
+                            <View style={styles.specialReqLeft}>
+                                <Ionicons name="notifications-outline" size={20} color="#4B5563" />
+                                <View style={{ marginLeft: 12 }}>
+                                    <Text style={styles.specialReqLabel}>{t('notify_events', 'Notify for Events')}</Text>
+                                    <Text style={styles.specialReqSub}>{t('notify_events_sub', 'Alerts for stops & delays')}</Text>
+                                </View>
+                            </View>
+                            <Switch
+                                value={actingDriverNotifyEvents}
+                                onValueChange={setActingDriverNotifyEvents}
+                                trackColor={{ false: '#E5E7EB', true: themeColor.primary + '60' }}
+                                thumbColor={actingDriverNotifyEvents ? themeColor.primary : '#9CA3AF'}
+                            />
+                        </View>
+
+                        <View style={styles.specialReqDivider} />
+
+                        {/* Max Speed */}
+                        <View style={[styles.specialReqRow, { alignItems: 'flex-start', paddingTop: 14 }]}>
+                            <View style={styles.specialReqLeft}>
+                                <Ionicons name="speedometer-outline" size={20} color="#4B5563" />
+                                <View style={{ marginLeft: 12 }}>
+                                    <Text style={styles.specialReqLabel}>{t('comfort_speed', 'Comfort Speed')}</Text>
+                                    <Text style={styles.specialReqSub}>{t('comfort_speed_sub', 'Max km/h preferred')}</Text>
+                                </View>
+                            </View>
+                            <TextInput
+                                style={[styles.specialReqSpeedInput, { borderColor: themeColor.primary + '60' }]}
+                                value={pendingMaxSpeed}
+                                onChangeText={setPendingMaxSpeed}
+                                keyboardType="number-pad"
+                                maxLength={3}
+                                placeholder="—"
+                                placeholderTextColor="#9CA3AF"
+                            />
+                        </View>
+
+                        <View style={styles.dateTimeActions}>
+                            <TouchableOpacity
+                                style={styles.dateTimeCancelBtn}
+                                onPress={() => {
+                                    setActingDriverKidsOnBoard(false);
+                                    setActingDriverElderlyOnBoard(false);
+                                    setActingDriverNotifyEvents(false);
+                                    setActingDriverMaxSpeed(null);
+                                    setPendingMaxSpeed('');
+                                    setShowSpecialReqModal(false);
+                                }}
+                            >
+                                <Text style={styles.dateTimeCancelText}>{t('remove_all', 'Remove All')}</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.dateTimeConfirmBtn, { backgroundColor: themeColor.primary }]}
+                                onPress={() => {
+                                    setActingDriverMaxSpeed(pendingMaxSpeed.trim() || null);
+                                    setShowSpecialReqModal(false);
+                                }}
+                            >
+                                <Text style={styles.dateTimeConfirmText}>{t('done', 'Done')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
         </View>
     );
 };
@@ -967,6 +1636,319 @@ const styles = StyleSheet.create({
     editLinkText: {
         fontSize: 13,
         fontFamily: Fonts.semi_bold,
+    },
+    tripTypeOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.45)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    tripTypeCard: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        width: '85%',
+        overflow: 'hidden',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+    },
+    tripTypeHeaderBar: {
+        height: 5,
+        width: '100%',
+    },
+    tripTypeTitle: {
+        fontFamily: Fonts.bold,
+        fontSize: 16,
+        color: '#111',
+        textAlign: 'center',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+    },
+    tripTypeGrid: {
+        flexDirection: 'row',
+        paddingHorizontal: 16,
+        paddingBottom: 20,
+        gap: 12,
+    },
+    tripTypeOption: {
+        flex: 1,
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 20,
+        paddingHorizontal: 12,
+        borderRadius: 14,
+        borderWidth: 1.5,
+        borderColor: '#E5E7EB',
+        gap: 6,
+    },
+    tripTypeIconCircle: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: '#F3F4F6',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    tripTypeOptionLabel: {
+        fontFamily: Fonts.semi_bold,
+        fontSize: 14,
+        color: '#111',
+        textAlign: 'center',
+    },
+    tripTypeOptionSub: {
+        fontFamily: Fonts.regular,
+        fontSize: 12,
+        color: '#6B7280',
+        textAlign: 'center',
+    },
+    dateTimeCard: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        width: '92%',
+        overflow: 'hidden',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+    },
+    dateTimeTimeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginHorizontal: 16,
+        marginTop: 8,
+        marginBottom: 4,
+        padding: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        gap: 10,
+    },
+    dateTimeTimeText: {
+        fontFamily: Fonts.semi_bold,
+        fontSize: 15,
+    },
+    dateTimeActions: {
+        flexDirection: 'row',
+        gap: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+    },
+    dateTimeCancelBtn: {
+        flex: 1,
+        paddingVertical: 13,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        alignItems: 'center',
+    },
+    dateTimeCancelText: {
+        fontFamily: Fonts.semi_bold,
+        fontSize: 14,
+        color: '#6B7280',
+    },
+    dateTimeConfirmBtn: {
+        flex: 2,
+        paddingVertical: 13,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    dateTimeConfirmText: {
+        fontFamily: Fonts.bold,
+        fontSize: 14,
+        color: '#fff',
+    },
+    durationTypeRow: {
+        flexDirection: 'row',
+        paddingHorizontal: 16,
+        gap: 10,
+        marginBottom: 4,
+    },
+    durationTypeCard: {
+        flex: 1,
+        alignItems: 'center',
+        paddingVertical: 14,
+        borderRadius: 14,
+        borderWidth: 1.5,
+        borderColor: '#E5E7EB',
+        gap: 4,
+    },
+    durationTypeLabel: {
+        fontFamily: Fonts.semi_bold,
+        fontSize: 12,
+        color: '#374151',
+        textAlign: 'center',
+    },
+    durationSubSection: {
+        paddingHorizontal: 16,
+        paddingTop: 14,
+        paddingBottom: 4,
+    },
+    durationSubLabel: {
+        fontFamily: Fonts.semi_bold,
+        fontSize: 13,
+        color: '#374151',
+        marginBottom: 10,
+    },
+    hourChipsRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginBottom: 14,
+    },
+    hourChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        borderWidth: 1.5,
+        borderColor: '#E5E7EB',
+    },
+    hourChipText: {
+        fontFamily: Fonts.semi_bold,
+        fontSize: 13,
+        color: '#374151',
+    },
+    hourStepperRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 20,
+    },
+    hourStepBtn: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        borderWidth: 1.5,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    hourStepValue: {
+        fontFamily: Fonts.bold,
+        fontSize: 18,
+        minWidth: 90,
+        textAlign: 'center',
+    },
+    durationInfoBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        padding: 12,
+        borderRadius: 12,
+        borderWidth: 1,
+    },
+    durationInfoText: {
+        fontFamily: Fonts.regular,
+        fontSize: 13,
+        flex: 1,
+    },
+    durationRangeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+    durationDateBtn: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        padding: 12,
+        borderRadius: 12,
+        borderWidth: 1.5,
+    },
+    durationDateText: {
+        fontFamily: Fonts.semi_bold,
+        fontSize: 14,
+    },
+    durationRangeSummary: {
+        fontFamily: Fonts.medium,
+        fontSize: 12,
+        textAlign: 'center',
+        marginTop: 10,
+    },
+    customNotesCard: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        width: '92%',
+        overflow: 'hidden',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+    },
+    customNotesInput: {
+        marginHorizontal: 16,
+        marginBottom: 4,
+        borderWidth: 1.5,
+        borderRadius: 12,
+        padding: 14,
+        fontFamily: Fonts.regular,
+        fontSize: 14,
+        color: '#111',
+        minHeight: 120,
+    },
+    customNotesCount: {
+        textAlign: 'right',
+        marginHorizontal: 16,
+        marginBottom: 4,
+        fontFamily: Fonts.regular,
+        fontSize: 12,
+        color: '#9CA3AF',
+    },
+    specialReqCard: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        width: '92%',
+        overflow: 'hidden',
+        elevation: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+    },
+    specialReqRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+    },
+    specialReqLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+        marginRight: 12,
+    },
+    specialReqLabel: {
+        fontFamily: Fonts.semi_bold,
+        fontSize: 14,
+        color: '#111',
+    },
+    specialReqSub: {
+        fontFamily: Fonts.regular,
+        fontSize: 12,
+        color: '#6B7280',
+        marginTop: 2,
+    },
+    specialReqDivider: {
+        height: 1,
+        backgroundColor: '#F1F5F9',
+        marginHorizontal: 16,
+    },
+    specialReqSpeedInput: {
+        borderWidth: 1.5,
+        borderRadius: 10,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        fontFamily: Fonts.semi_bold,
+        fontSize: 15,
+        color: '#111',
+        width: 70,
+        textAlign: 'center',
     },
     detailsContainer: {
         backgroundColor: colors.white,

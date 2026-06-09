@@ -85,10 +85,7 @@ const TripSetupScreen = ({ isEditMode }) => {
   };
 
   const todayDate = formatCalendarDate(new Date());
-  
-  const minCalendarDateObj = new Date();
-  minCalendarDateObj.setDate(minCalendarDateObj.getDate() + 2);
-  const minCalendarDateString = formatCalendarDate(minCalendarDateObj);
+  const minCalendarDateString = todayDate;
   
   const maxCustomDate = formatCalendarDate(addMonths(new Date(), 2));
 
@@ -203,7 +200,7 @@ const TripSetupScreen = ({ isEditMode }) => {
              setTomorrowCustomHours(12);
              setActingDriverHours(12);
           }
-        } else if (whenNeed === 'Later') {
+        } else if (whenNeed === 'Custom') {
           setBookingTab('SCHEDULE');
           const year = date.getFullYear();
           const month = `${date.getMonth() + 1}`.padStart(2, '0');
@@ -313,7 +310,7 @@ const TripSetupScreen = ({ isEditMode }) => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>When do you need the driver?</Text>
             <View style={styles.pillContainer}>
-              {['Today', 'Tomorrow', 'Later'].map((option) => (
+              {['Today', 'Tomorrow', 'Custom Date'].map((option) => (
                 <TouchableOpacity
                   key={option}
                   style={[
@@ -486,12 +483,17 @@ const TripSetupScreen = ({ isEditMode }) => {
                   onPress={() => {
                     setDuration(option);
                     if (option === 'Multiple Days') {
-                      setWhenNeed('Later');
-                      if (!startDate) {
-                        setPendingRangeStart(null);
-                        setPendingRangeEnd(null);
-                        setShowCalendarModal(true);
-                      }
+                      // Pre-select today or tomorrow in the calendar based on current whenNeed
+                      const preselect = whenNeed === 'Today'
+                        ? todayDate
+                        : whenNeed === 'Tomorrow'
+                        ? formatCalendarDate((() => { const d = new Date(); d.setDate(d.getDate() + 1); return d; })())
+                        : whenNeed === 'Later' && date
+                        ? formatCalendarDate(date)
+                        : null;
+                      setPendingRangeStart(preselect);
+                      setPendingRangeEnd(null);
+                      setShowCalendarModal(true);
                     } else if (option === 'Hourly') {
                       setShowHoursModal(true);
                     }

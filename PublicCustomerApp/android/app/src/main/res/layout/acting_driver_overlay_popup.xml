@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/acting_driver_overlay_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="4dp"
+        android:background="@drawable/driver_overlay_card_bg"
+        android:clipToOutline="true"
+        android:elevation="6dp"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- ── Title ── -->
+        <ImageView
+            android:id="@+id/imageView2"
+            android:layout_width="348dp"
+            android:layout_height="29dp"
+            app:srcCompat="@mipmap/ic_launcher_round" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="New Acting Trip Request"
+                android:textColor="#0F223C"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- ── Title countdown progress bar ── -->
+        <ProgressBar
+            android:id="@+id/acting_overlay_title_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_marginBottom="16dp"
+            android:indeterminate="false"
+            android:max="1000"
+            android:progress="1000"
+            android:progressDrawable="@drawable/driver_overlay_progress" />
+
+        <!-- ── Header: Avatar + Name + Rating + Distance ── -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Circular initials avatar -->
+            <TextView
+                android:id="@+id/acting_overlay_avatar"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/acting_overlay_avatar_bg"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="SK" />
+
+            <!-- Name + Rating + Distance -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- Name + star rating row -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/acting_overlay_customer_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="#111"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        tools:text="Sivakumar" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="★"
+                        android:textColor="#FFC107"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/acting_overlay_customer_rating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="2dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="#444"
+                        android:textSize="14sp"
+                        tools:text="4.8" />
+                </LinearLayout>
+
+                <!-- Distance from driver -->
+                <TextView
+                    android:id="@+id/acting_overlay_customer_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="sans-serif"
+                    android:textColor="#777"
+                    android:textSize="13sp"
+                    tools:text="2.4 km away from you" />
+            </LinearLayout>
+
+            <!-- Timer countdown -->
+            <TextView
+                android:id="@+id/acting_overlay_timer_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="#888"
+                android:textSize="13sp"
+                tools:text="15s" />
+        </LinearLayout>
+
+        <!-- ── Route Card: Pickup + Drop ── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/acting_overlay_route_card_bg"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <!-- Pickup row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="@drawable/acting_overlay_dot_green" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Pickup"
+                        android:textColor="#4CAF50"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/acting_overlay_pickup_address"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:ellipsize="end"
+                        android:fontFamily="sans-serif"
+                        android:maxLines="2"
+                        android:textColor="#222"
+                        android:textSize="13sp"
+                        tools:text="135, Avinashi Main Rd, Peelamedu, Coimbatore" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Divider line between stops -->
+            <View
+                android:layout_width="1dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginBottom="2dp"
+                android:background="#CCCCCC" />
+
+            <!-- Drop row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:background="#F44336"
+                    android:gravity="center"
+                    android:text=""
+                    tools:ignore="HardcodedText" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Drop"
+                        android:textColor="#F44336"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/acting_overlay_drop_address"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:ellipsize="end"
+                        android:fontFamily="sans-serif"
+                        android:maxLines="2"
+                        android:textColor="#222"
+                        android:textSize="13sp"
+                        tools:text="48QJ+27M, AVP Public School Rd, Peelamedu, Coimbatore" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ── Stats Row: Type | Date &amp; Time | Est. Earnings ── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <!-- Type -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/acting_overlay_stat_bg"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif"
+                    android:text="⏱ Type"
+                    android:textColor="#888"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/acting_overlay_trip_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="#111"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="Full Day" />
+            </LinearLayout>
+
+            <!-- Date & Time -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/acting_overlay_stat_bg"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif"
+                    android:text="📅 Date &amp; Time"
+                    android:textColor="#888"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/acting_overlay_datetime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="#111"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="Today, 10:00 AM" />
+            </LinearLayout>
+
+            <!-- Est. Earnings -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/acting_overlay_stat_bg"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif"
+                    android:text="₹ Est. Earnings"
+                    android:textColor="#888"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/acting_overlay_fare"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="#111"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="₹1,800" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ── Vehicle Footer ── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/acting_overlay_route_card_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/acting_overlay_vehicle_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="#222"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="Audi Q2  •  TN09CR3540  •  White" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/acting_overlay_vehicle_image"
+                    android:layout_width="90dp"
+                    android:layout_height="54dp"
+                    android:contentDescription="vehicle"
+                    android:scaleType="centerInside"
+                    android:src="@mipmap/ic_launcher"
+                    tools:src="@drawable/sedan" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ── Countdown progress bar ── -->
+        <ProgressBar
+            android:id="@+id/acting_overlay_timer_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_marginTop="12dp"
+            android:indeterminate="false"
+            android:max="1000"
+            android:progress="1000"
+            android:progressDrawable="@drawable/driver_overlay_progress" />
+
+        <!-- ── View Details button ── -->
+        <Button
+            android:id="@+id/acting_overlay_accept_btn"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="#0F223C"
+            android:fontFamily="sans-serif-medium"
+            android:text="View Details"
+            android:textColor="@android:color/white"
+            android:textSize="15sp" />
+
+    </LinearLayout>
+</LinearLayout>

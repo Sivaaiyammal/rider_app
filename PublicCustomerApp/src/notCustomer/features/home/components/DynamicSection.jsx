@@ -33,6 +33,7 @@ const SERVICE_IMAGES = {
   female_driver: require('../../../assets/vehicle/FEMALE_DRIVER.webp'),
   rental_trip: require('../../../assets/vehicle/AUTO.webp'),
   night_trip: require('../../../assets/vehicle/nightRide.webp'),
+  acting_driver: require('../../../assets/vehicle/actingDriver.png'),
   default: require('../../../assets/vehicle/AUTO.webp'),
 };
 

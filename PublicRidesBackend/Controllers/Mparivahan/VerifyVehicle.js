@@ -4,20 +4,16 @@ class VehicleVerifierMParivahan {
 
     constructor() {
         this.MPARIVAHAN_RC_STAGING = 'https://vendorstest.vmmaps.com/appbackend/api/admin/rc-verification_other';
-        this.MPARIVAHAN_RC = 'https://vendors.vmmaps.com/vmvendorsServer/api/admin/rc-verification_other'
+        this.MPARIVAHAN_RC = 'https://vendors.vmmaps.com/vmvendorsServer/api/admin/rc-verification_other';
     }
 
-    async verfiyRC( vehicleId ) {
-        const requestPayload = {
-            "vehicleId": vehicleId
-        }
+    async verfiyRC(regNo) {
         if (!process.env.PARIVAHAN_KEY) {
             console.log('PARIVAHAN_KEY is not configured. Returning mock vehicle details for local testing.');
             return {
                 valid: true,
                 data: {
                     status: 'success',
-                    // Keys for PublicRidePassangerController
                     maker_desc: 'TATA MOTORS LTD',
                     maker: 'TATA',
                     model: 'INDICA',
@@ -26,8 +22,6 @@ class VehicleVerifierMParivahan {
                     fuel_desc: 'DIESEL',
                     color: 'WHITE',
                     owner_name: 'TEST OWNER',
-                    
-                    // Keys for VerifiedForm.jsx and Driver app
                     class: 'THREE WHEELER (PASSENGER)',
                     brand_name: 'TATA',
                     brand_model: 'INDICA',
@@ -35,33 +29,44 @@ class VehicleVerifierMParivahan {
                     fuel_type: 'DIESEL',
                     seating_capacity: '4',
                     cubic_capacity: '1400 cc',
-                    
                     message: 'Mock verification success'
                 }
             };
         }
 
-        try { 
-            const response = await axios.post(this.MPARIVAHAN_RC, requestPayload, {
+        const isProduction = process.env.NODE_ENV === 'production';
+        const url = isProduction ? this.MPARIVAHAN_RC : this.MPARIVAHAN_RC_STAGING;
+        const requestPayload = { regNo };
+
+        console.log(`[Parivahan] Calling ${isProduction ? 'production' : 'staging'} API for regNo: ${regNo}`);
+
+        try {
+            const response = await axios.post(url, requestPayload, {
                 headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.PARIVAHAN_KEY },
-                timeout: 10000,
+                timeout: 15000,
             });
 
-            console.log('MParivahan RC verification response:', response.data.data);
+            const responseData = response.data;
+            console.log('[Parivahan] Raw response:', JSON.stringify(responseData));
 
-            if (response?.data?.data?.status === 'success') {
-                return {valid: true, data: response?.data?.data}
+            // Support both { data: { status, ... } } and { status, ... } response shapes
+            const d = responseData?.data || responseData;
+
+            if (d?.status === 'success') {
+                return { valid: true, data: d };
             } else {
+                console.warn('[Parivahan] Verification not successful:', d?.status, d?.message);
                 return {
                     valid: false,
-                    status: response?.data?.data?.status,
-                    message: response?.data?.data?.message || "MParivahan verification failed",
-                }
+                    status: d?.status,
+                    message: d?.message || 'MParivahan verification failed',
+                };
             }
         } catch (error) {
             const status = error?.response?.status;
-            const responseMessage = error?.response?.data?.message || error?.message || 'MParivahan request failed';
-            console.error('RC verification failed:', status || 'no-status', responseMessage);
+            const responseBody = error?.response?.data;
+            const responseMessage = responseBody?.message || error?.message || 'MParivahan request failed';
+            console.error('[Parivahan] RC verification failed:', status || 'no-status', responseMessage, responseBody ? JSON.stringify(responseBody) : '');
             return {
                 valid: false,
                 status: 'error',
