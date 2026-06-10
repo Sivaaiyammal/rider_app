@@ -152,6 +152,10 @@ const useRideBookingInfo = create(set => ({
     })(),
     showItineraryModal: false,
     actingDriverOtherRequests: '',
+    actingDriverAccommodation: false,
+    actingDriverFood: false,
+    actingDriverMaxSpeed: null,
+    actingDriverNotifyEvents: false,
   }),
 
   showItineraryModal: false,

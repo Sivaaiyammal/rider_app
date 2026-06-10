@@ -41,15 +41,16 @@ const TripSetupScreen = ({ isEditMode }) => {
     setTomorrowCustomHours,
     setTomorrowStartTime,
     setCustomStartTime,
+    tripType,
+    setTripType,
   } = useRideBookingInfo();
 
   const vehicle = actingDriverVehicle;
   const currentTheme = vehicle?.type ? (ACTING_DRIVER_THEMES[vehicle.type.toLowerCase()] || ACTING_DRIVER_THEMES.hatchback) : ACTING_DRIVER_THEMES.hatchback;
-  const [whenNeed, setWhenNeed] = useState('Today'); // Today, Tomorrow, Later
+  const [whenNeed, setWhenNeed] = useState('Today'); // Today, Tomorrow, Custom Date
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [pickerMode, setPickerMode] = useState('date');
-  const [tripType, setTripType] = useState('One Way'); // One Way, Round Trip
   const [duration, setDuration] = useState('Hourly'); // Hourly, Full Day, Multiple Days
   const [hours, setHours] = useState(4);
   const [showCalendarModal, setShowCalendarModal] = useState(false);
@@ -200,7 +201,7 @@ const TripSetupScreen = ({ isEditMode }) => {
              setTomorrowCustomHours(12);
              setActingDriverHours(12);
           }
-        } else if (whenNeed === 'Custom') {
+        } else if (whenNeed === 'Custom Date') {
           setBookingTab('SCHEDULE');
           const year = date.getFullYear();
           const month = `${date.getMonth() + 1}`.padStart(2, '0');
@@ -331,18 +332,19 @@ const TripSetupScreen = ({ isEditMode }) => {
                       if (duration === 'Multiple Days') {
                         setDuration('Hourly');
                       }
-                    } else if (option === 'Later') {
+                    } else if (option === 'Custom Date') {
+                      const dayAfterTmrw = new Date();
+                      dayAfterTmrw.setDate(dayAfterTmrw.getDate() + 2);
+                      dayAfterTmrw.setHours(0, 0, 0, 0);
+                      if (date < dayAfterTmrw) {
+                        setDate(dayAfterTmrw);
+                      }
                       if (duration === 'Multiple Days') {
-                        setPendingRangeStart(startDate);
+                        const defaultStart = formatCalendarDate(dayAfterTmrw);
+                        setPendingRangeStart(startDate || defaultStart);
                         setPendingRangeEnd(endDate);
                         setShowCalendarModal(true);
                       } else {
-                        const minDate = new Date();
-                        minDate.setDate(minDate.getDate() + 2);
-                        minDate.setHours(0, 0, 0, 0);
-                        if (date < minDate) {
-                          setDate(minDate);
-                        }
                         setPickerMode('date');
                         setShowDatePicker(true);
                       }
@@ -350,7 +352,7 @@ const TripSetupScreen = ({ isEditMode }) => {
                   }}
                 >
                   <Ionicons
-                    name={option === 'Later' ? 'time-outline' : 'calendar-outline'}
+                    name={option === 'Custom Date' ? 'time-outline' : 'calendar-outline'}
                     size={20}
                     color={whenNeed === option ? themeColor : colors.black}
                     style={styles.pillIcon}
@@ -370,7 +372,8 @@ const TripSetupScreen = ({ isEditMode }) => {
                   <TouchableOpacity
                     style={styles.datePickerButton}
                     onPress={() => {
-                      setPendingRangeStart(startDate);
+                      const defaultStart = (() => { const d = new Date(); d.setDate(d.getDate() + 2); return formatCalendarDate(d); })();
+                      setPendingRangeStart(startDate || defaultStart);
                       setPendingRangeEnd(endDate);
                       setShowCalendarModal(true);
                     }}
@@ -461,7 +464,7 @@ const TripSetupScreen = ({ isEditMode }) => {
                   } else if (finalDate.toDateString() === tomorrow.toDateString()) {
                     setWhenNeed('Tomorrow');
                   } else {
-                    setWhenNeed('Later');
+                    setWhenNeed('Custom Date');
                   }
                 }}
                 onCancel={() => {
@@ -482,15 +485,24 @@ const TripSetupScreen = ({ isEditMode }) => {
                   ]}
                   onPress={() => {
                     setDuration(option);
+                    if (whenNeed === 'Custom Date') {
+                      const dayAfterTmrw = new Date();
+                      dayAfterTmrw.setDate(dayAfterTmrw.getDate() + 2);
+                      dayAfterTmrw.setHours(0, 0, 0, 0);
+                      if (date < dayAfterTmrw) setDate(dayAfterTmrw);
+                    }
                     if (option === 'Multiple Days') {
-                      // Pre-select today or tomorrow in the calendar based on current whenNeed
+                      // Auto-switch to Custom Date when Multiple Days is selected
+                      setWhenNeed('Custom Date');
+                      // Pre-select based on current whenNeed; Later defaults to day after tomorrow
+                      const dayAfterTomorrow = formatCalendarDate((() => { const d = new Date(); d.setDate(d.getDate() + 2); return d; })());
                       const preselect = whenNeed === 'Today'
                         ? todayDate
                         : whenNeed === 'Tomorrow'
                         ? formatCalendarDate((() => { const d = new Date(); d.setDate(d.getDate() + 1); return d; })())
-                        : whenNeed === 'Later' && date
-                        ? formatCalendarDate(date)
-                        : null;
+                        : startDate
+                        ? formatCalendarDate(new Date(startDate))
+                        : dayAfterTomorrow;
                       setPendingRangeStart(preselect);
                       setPendingRangeEnd(null);
                       setShowCalendarModal(true);
@@ -526,26 +538,26 @@ const TripSetupScreen = ({ isEditMode }) => {
             <Text style={styles.sectionTitle}>What type of trip?</Text>
             <View style={styles.pillContainer}>
               {[
-                { label: 'One Way', sub: '(Drop Off)', icon: 'arrow-forward-outline' },
-                { label: 'Round Trip', sub: '(Up & Down)', icon: 'sync-outline' },
+                { label: 'One Way', value: 'ONE_WAY', sub: '(Drop Off)', icon: 'arrow-forward-outline' },
+                { label: 'Round Trip', value: 'ROUND_TRIP', sub: '(Up & Down)', icon: 'sync-outline' },
               ].map((option) => (
                 <TouchableOpacity
-                  key={option.label}
+                  key={option.value}
                   style={[
                     styles.largePill,
-                    tripType === option.label && { borderColor: themeColor, backgroundColor: themeColor + '10' },
+                    tripType === option.value && { borderColor: themeColor, backgroundColor: themeColor + '10' },
                   ]}
-                  onPress={() => setTripType(option.label)}
+                  onPress={() => setTripType(option.value)}
                 >
-                  <View style={[styles.iconCircle, tripType === option.label && { backgroundColor: themeColor + '20' }]}>
+                  <View style={[styles.iconCircle, tripType === option.value && { backgroundColor: themeColor + '20' }]}>
                     <Ionicons
                         name={option.icon}
                         size={20}
-                        color={tripType === option.label ? themeColor : colors.black}
+                        color={tripType === option.value ? themeColor : colors.black}
                     />
                   </View>
                   <View>
-                    <Text style={[styles.largePillText, tripType === option.label && { color: themeColor }]}>
+                    <Text style={[styles.largePillText, tripType === option.value && { color: themeColor }]}>
                         {option.label}
                     </Text>
                     <Text style={styles.largePillSub}>{option.sub}</Text>

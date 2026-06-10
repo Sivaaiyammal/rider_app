@@ -153,26 +153,31 @@ const useActingDriverBookingService = ({ onSuccess, onError } = {}) => {
       vehicleType: actingDriverVehicle.type || 'AUTO',
       passangerCount: 1,
 
-       // Distance / fare
+       // Distance / fare  (acting driver: ₹1500/day, ₹125/hr for hourly, +₹200 for round trip)
       estimatedDistance: rideDistance || 0,
       estimatedDuration: estimatedDuration || (actingDriverHours ? actingDriverHours * 60 : 0),
       minFare: (() => {
-        const type = actingDriverVehicle?.type || 'AUTO';
-        const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
-        const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
-        return Math.max(15, Math.round(((Number(rideDistance || 0) * basePerKm) + (Number(estimatedDuration || (actingDriverHours ? actingDriverHours * 60 : 0)) * basePerMin)) * 0.9));
+        const ratePerDay = 1500;
+        const ratePerHour = ratePerDay / 12;
+        const roundTripExtra = tripType === 'ROUND_TRIP' ? 200 : 0;
+        const hours = Number(actingDriverHours || 0);
+        const base = (hours > 0 ? Math.round(hours * ratePerHour) : ratePerDay) + roundTripExtra;
+        return Math.round(base * 0.9);
       })(),
       maxFare: (() => {
-        const type = actingDriverVehicle?.type || 'AUTO';
-        const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
-        const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
-        return Math.max(20, Math.round(((Number(rideDistance || 0) * basePerKm) + (Number(estimatedDuration || (actingDriverHours ? actingDriverHours * 60 : 0)) * basePerMin)) * 1.1));
+        const ratePerDay = 1500;
+        const ratePerHour = ratePerDay / 12;
+        const roundTripExtra = tripType === 'ROUND_TRIP' ? 200 : 0;
+        const hours = Number(actingDriverHours || 0);
+        const base = (hours > 0 ? Math.round(hours * ratePerHour) : ratePerDay) + roundTripExtra;
+        return Math.round(base * 1.1);
       })(),
       estimatedFare: (() => {
-        const type = actingDriverVehicle?.type || 'AUTO';
-        const basePerKm = type === 'CAR' ? 15 : type === 'AUTO' ? 12 : type === 'BIKE' ? 6 : type === 'ELECTRIC_AUTO' ? 10 : type === 'SUV' ? 22 : 13;
-        const basePerMin = type === 'CAR' ? 1.2 : type === 'AUTO' ? 1.0 : type === 'BIKE' ? 0.5 : type === 'ELECTRIC_AUTO' ? 1.0 : type === 'SUV' ? 1.5 : 1.0;
-        return Math.round((Number(rideDistance || 0) * basePerKm) + (Number(estimatedDuration || (actingDriverHours ? actingDriverHours * 60 : 0)) * basePerMin));
+        const ratePerDay = 1500;
+        const ratePerHour = ratePerDay / 12;
+        const roundTripExtra = tripType === 'ROUND_TRIP' ? 200 : 0;
+        const hours = Number(actingDriverHours || 0);
+        return (hours > 0 ? Math.round(hours * ratePerHour) : ratePerDay) + roundTripExtra;
       })(),
 
       // Booking details

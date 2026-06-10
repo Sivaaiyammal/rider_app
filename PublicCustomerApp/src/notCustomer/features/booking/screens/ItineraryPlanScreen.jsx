@@ -74,21 +74,6 @@ const ItineraryPlanScreen = ({
     setActiveLocationIndex(null);
   };
 
-  const toggleLocStatus = (dateStr, locIndex) => {
-    const currentDayItin = actingDriverItinerary?.[dateStr] || {};
-    const locations = [...(currentDayItin.locations || [])];
-    if (locations[locIndex]) {
-      const current = locations[locIndex].status || 'Visit';
-      locations[locIndex] = { ...locations[locIndex], status: current === 'Visit' ? 'Drop' : 'Visit' };
-      updateBookingInfo({
-        actingDriverItinerary: {
-          ...actingDriverItinerary,
-          [dateStr]: { ...currentDayItin, locations },
-        }
-      });
-    }
-  };
-
   const formatTime = (dateString) => {
     if (!dateString) return '09:00 AM';
     const d = new Date(dateString);
@@ -252,24 +237,6 @@ const ItineraryPlanScreen = ({
                                     </Text>
                                   </TouchableOpacity>
 
-                                  <TouchableOpacity
-                                    style={[
-                                      styles.locStatusBadge,
-                                      { backgroundColor: (loc.status || 'Visit') === 'Visit' ? '#E8F5E9' : '#FFF3E0',
-                                        borderColor: (loc.status || 'Visit') === 'Visit' ? '#4CAF50' : '#FF9800' }
-                                    ]}
-                                    onPress={() => toggleLocStatus(dateStr, locIndex)}
-                                    activeOpacity={0.8}
-                                  >
-                                    <Ionicons
-                                      name={(loc.status || 'Visit') === 'Visit' ? 'eye-outline' : 'flag-outline'}
-                                      size={12}
-                                      color={(loc.status || 'Visit') === 'Visit' ? '#4CAF50' : '#FF9800'}
-                                    />
-                                    <Text style={[styles.locStatusText, { color: (loc.status || 'Visit') === 'Visit' ? '#4CAF50' : '#FF9800' }]}>
-                                      {loc.status || 'Visit'}
-                                    </Text>
-                                  </TouchableOpacity>
                                 </View>
                                 </View>{/* end flex:1 content */}
                               </View>

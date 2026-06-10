@@ -459,6 +459,11 @@ const BookActingDriverScreen = () => {
 
     // ── Route ──────────────────────────────────────────────────────────────────
     const loadRoute = async () => {
+        if (!rideEndLocation) {
+            // Destination is optional for acting driver — skip route fetch
+            updateBookingInfo({ rideDistance: null, estimatedDuration: null });
+            return;
+        }
         const result = await transformRideLocationsToDirectionPoints({
             clearMarkers: true,
             vehicleType: 'car',
@@ -626,6 +631,21 @@ const BookActingDriverScreen = () => {
 
     const handleCouponPress = () => setShowCoupon(true);
 
+    const actingDriverFareDisplay = (() => {
+        const ratePerDay = 1500;
+        const ratePerHour = ratePerDay / 12;
+        const roundTripExtra = tripType === 'ROUND_TRIP' ? 200 : 0;
+        const hours = Number(actingDriverHours || 0);
+        if (hours > 0) {
+            return `₹${Math.round(hours * ratePerHour) + roundTripExtra}`;
+        }
+        if (durationRangeStart && durationRangeEnd) {
+            const days = Math.round((new Date(durationRangeEnd) - new Date(durationRangeStart)) / (1000 * 60 * 60 * 24)) + 1;
+            return `₹${days * ratePerDay + roundTripExtra}`;
+        }
+        return `₹${ratePerDay + roundTripExtra}`;
+    })();
+
     const vehicleType = actingDriverVehicle?.type?.toLowerCase() || 'sedan';
     const themeColor = ACTING_DRIVER_THEMES[vehicleType] || actingDriverColors;
 
@@ -698,7 +718,10 @@ const BookActingDriverScreen = () => {
                             <Ionicons name="car-outline" size={18} color={themeColor.primary} />
                             <AdaptiveText style={[styles.fareReviewLabel, {color: themeColor.primary}]}>{t('fare_details', 'Fare Details')}</AdaptiveText>
                         </View>
-                        <AdaptiveText style={styles.fareReviewAmount}>{fareDisplay}</AdaptiveText>
+                        <View style={{ alignItems: 'flex-end' }}>
+                            <AdaptiveText style={styles.fareReviewAmount}>{actingDriverFareDisplay}</AdaptiveText>
+                            <AdaptiveText style={styles.fareReviewEstLabel}>{t('estimated', 'Estimated')}</AdaptiveText>
+                        </View>
                         {/* <TouchableOpacity onPress={() => {}}>
                             <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
                         </TouchableOpacity> */}
@@ -792,10 +815,13 @@ const BookActingDriverScreen = () => {
                     <View style={styles.detailRow}>
                         <View style={styles.detailLeft}>
                             <Ionicons name="location-outline" size={18} color="#4B5563" />
-                            <AdaptiveText style={styles.detailLabel}>{t('drop_location', 'Drop Location')}</AdaptiveText>
+                            <View>
+                                <AdaptiveText style={styles.detailLabel}>{t('drop_location', 'Drop Location')}</AdaptiveText>
+                                <AdaptiveText style={styles.optionalLabel}>{t('optional', 'Optional')}</AdaptiveText>
+                            </View>
                         </View>
                         <AdaptiveText style={styles.detailValue} numberOfLines={1}>
-                            {rideEndLocation ? utils.formatAddressName(rideEndLocation) : ''}
+                            {rideEndLocation ? utils.formatAddressName(rideEndLocation) : t('not_set', 'Not Set')}
                         </AdaptiveText>
                         <TouchableOpacity onPress={() => handleLocationClick(LocationTypes.DESTINATION_LOCATION)}>
                             <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
@@ -1974,6 +2000,12 @@ const styles = StyleSheet.create({
         color: colors.grey_xxdark,
         marginLeft: 8,
     },
+    optionalLabel: {
+        fontSize: 10,
+        fontFamily: Fonts.regular,
+        color: '#9CA3AF',
+        marginLeft: 8,
+    },
     detailValue: {
         flex: 1,
         fontSize: 13,
@@ -2003,10 +2035,16 @@ const styles = StyleSheet.create({
         marginLeft: 8,
     },
     fareReviewAmount: {
-        flex: 1,
         fontSize: 16,
         fontFamily: Fonts.bold,
         color: colors.blue_xxdark,
+        textAlign: 'right',
+        marginRight: 12,
+    },
+    fareReviewEstLabel: {
+        fontSize: 11,
+        fontFamily: Fonts.regular,
+        color: colors.grey_dark,
         textAlign: 'right',
         marginRight: 12,
     },
