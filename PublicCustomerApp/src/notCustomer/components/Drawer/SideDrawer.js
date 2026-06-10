@@ -91,6 +91,12 @@ const SideDrawerV2 = ({ handleMenu }) => {
     //   screen: 'HireDriversScreen',
     //   icon: <Ionicons name="car-sport" size={20} color="black" />,
     // },
+    {
+      id: 'my_acting_driver_bookings',
+      name: t('hire_drivers', 'Acting Drivers'),
+      screen: 'MyActingDriverBookings',
+      icon: <Ionicons name="car-sport" size={20} color="black" />,
+    },
     appConfig?.actingDriverEnabled
       ? {
         id: 'my-vehicles',

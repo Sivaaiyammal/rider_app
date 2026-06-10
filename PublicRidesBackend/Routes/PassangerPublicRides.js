@@ -21,6 +21,7 @@ Router.post('/verifyOTP', withTiming(passangerController, passangerController.pu
 Router.post('/resendOTP', withTiming(passangerController, passangerController.publicridesResendOTP))
 Router.post('/bookTrip', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.publicridesBookTrip))
 Router.post('/bookActingDriverTrip', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.publicridesBookActingDriverTrip))
+Router.patch('/editActingDriverTrip', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.publicridesEditActingDriverTrip))
 Router.get('/getTrip', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.publicridesGetTrip))
 Router.get('/getTrips', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.publicridesGetTrips))
 Router.post('/getRideEstimation', CheckPassangerAuthenticated, withTiming(passangerController, passangerController.publicridesGetRideEstimations))

@@ -221,6 +221,15 @@ class Trip {
         return result;
     }
 
+    static updateActingDriverTripFields = async (tripId, fields) => {
+        const result = await Mongo.updateOneRaw(
+            COLLECTION_NAME,
+            { _id: new ObjectId(tripId) },
+            { $set: fields }
+        );
+        return result;
+    }
+
     static updateBillApproval = async (tripId, billIndex, approval) => {
         const result = await Mongo.updateOneRaw(
             COLLECTION_NAME,
@@ -740,7 +749,7 @@ class Trip {
     }
     static getScheduleTrips = async () => {
         const pipeline = [
-            { $match: { isScheduledTrip: true, status: 'SCHEDULED' } },
+            { $match: { isScheduledTrip: true, status: 'SCHEDULED', isActingDriverTrip: { $ne: true } } },
           
             {
                 $lookup: {

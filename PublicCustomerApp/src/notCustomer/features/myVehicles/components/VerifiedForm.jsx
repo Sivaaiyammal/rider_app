@@ -45,13 +45,15 @@ const hasValidTransmission = transmission =>
 const VerifiedForm = ({vehicleId, regNo, verifiedData, onSave, onCancel}) => {
   const {t} = useTranslation();
   const [fields, setFields] = useState({
-    vehicleType: verifiedData?.class || '',
-    make: verifiedData?.brand_name || '',
-    model: verifiedData?.brand_model || '',
-    year: verifiedData?.registration_date
+    vehicleType: verifiedData?._mappedType || '',
+    make: verifiedData?.brand_name || verifiedData?.maker_desc || verifiedData?.maker || '',
+    model: verifiedData?.brand_model || verifiedData?.model || '',
+    year: verifiedData?.manufacturing_date_formatted
+      ? verifiedData.manufacturing_date_formatted.split('-')[0]
+      : verifiedData?.registration_date
       ? new Date(verifiedData.registration_date).getFullYear().toString()
       : '',
-    fuelType: verifiedData?.fuel_type || '',
+    fuelType: (verifiedData?._mappedFuelType || verifiedData?.fuel_type || verifiedData?.fuel_desc || '').toLowerCase(),
     transmission: [],
     features: [],
     additionalInfo: '',

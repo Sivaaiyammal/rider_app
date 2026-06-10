@@ -7,7 +7,7 @@ class VehicleVerifierMParivahan {
         this.MPARIVAHAN_RC = 'https://vendors.vmmaps.com/vmvendorsServer/api/admin/rc-verification_other';
     }
 
-    async verfiyRC(regNo) {
+    async verfiyRC(vehicleId) {
         if (!process.env.PARIVAHAN_KEY) {
             console.log('PARIVAHAN_KEY is not configured. Returning mock vehicle details for local testing.');
             return {
@@ -36,9 +36,9 @@ class VehicleVerifierMParivahan {
 
         const isProduction = process.env.NODE_ENV === 'production';
         const url = isProduction ? this.MPARIVAHAN_RC : this.MPARIVAHAN_RC_STAGING;
-        const requestPayload = { regNo };
+        const requestPayload = { vehicleId };
 
-        console.log(`[Parivahan] Calling ${isProduction ? 'production' : 'staging'} API for regNo: ${regNo}`);
+        console.log(`[Parivahan] Calling ${isProduction ? 'production' : 'staging'} API for vehicleId: ${vehicleId}`);
 
         try {
             const response = await axios.post(url, requestPayload, {
@@ -53,7 +53,9 @@ class VehicleVerifierMParivahan {
             const d = responseData?.data || responseData;
 
             if (d?.status === 'success') {
-                return { valid: true, data: d };
+                // Unwrap nested response if present (new API shape: { status, response: {...} })
+                const vehicleData = d.response || d;
+                return { valid: true, data: vehicleData };
             } else {
                 console.warn('[Parivahan] Verification not successful:', d?.status, d?.message);
                 return {

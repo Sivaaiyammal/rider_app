@@ -83,6 +83,11 @@ export const bookActingDriverTrip = async (payload) => {
   return data
 }
 
+export const editActingDriverTrip = async (tripId, payload) => {
+  const { data } = await apiClient.patch('/publicrides/customer/v2/editActingDriverTrip', { tripId, ...payload })
+  return data
+}
+
 export const bookRide = async (payload)=> {
   const {data} = await apiClient.post('/publicrides/customer/v2/bookTrip', payload)
   return data

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useStackScreenStore } from '../../../store/useStackScreenStore';
 import NavBar from '../../../components/NavBar';
 import UseBackButton from '../../../../common/hooks/UseBackButton';
 import DropdownField from '../../../../common/components/DropdownField';
 import { colors, Fonts } from '../../../constants/constants';
+import { updatePassangerVehicle } from '../../../API/EndPoints/EndPoints';
 
 const GENDER_OPTIONS = [
   { label: 'Male', value: 'male' },
@@ -66,12 +67,9 @@ const DRIVER_ROLE_OPTIONS = [
 const GarageScreen = () => {
   const { t } = useTranslation();
   const { goBack } = useStackScreenStore();
-  
+  const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
-    userName: "",
-    phoneNumber: "",
-    userEmail: "",
-    userGender: "",
     regNo: "",
     vehicleType: "",
     make: "",
@@ -81,20 +79,55 @@ const GarageScreen = () => {
     maxSpeed: "50",
     model: "",
     year: "",
-    fuelType: "hybrid",
+    fuelType: "",
     color: "",
-    status: "active",
-    driverRole: "self"
   });
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    // API logic to save to garage
-    console.log("Saving garage data:", formData);
-    goBack();
+  const handleSave = async () => {
+    const normalized = formData.regNo.trim().toUpperCase();
+    if (!normalized) {
+      Alert.alert(t('error'), t('reg_no_required', 'Registration number is required'));
+      return;
+    }
+    if (!formData.vehicleType) {
+      Alert.alert(t('error'), t('vehicle_type_required', 'Please select a vehicle type'));
+      return;
+    }
+    if (!formData.make?.trim()) {
+      Alert.alert(t('error'), t('make_required', 'Please enter vehicle make/brand'));
+      return;
+    }
+    try {
+      setLoading(true);
+      const response = await updatePassangerVehicle({
+        regNo: normalized,
+        isManualSubmit: true,
+        type: formData.vehicleType,
+        make: formData.make.trim(),
+        model: formData.model.trim(),
+        year: formData.year,
+        fuelType: formData.fuelType,
+        color: formData.color,
+        maxSpeed: formData.maxSpeed ? Number(formData.maxSpeed) : undefined,
+        features: formData.features,
+        transmission: formData.transmission,
+      });
+      if (response?.success) {
+        Alert.alert(t('success', 'Success'), t('vehicle_added', 'Vehicle added successfully'), [
+          { text: t('ok', 'OK'), onPress: goBack },
+        ]);
+      } else {
+        Alert.alert(t('error'), response?.message || t('something_went_wrong', 'Something went wrong'));
+      }
+    } catch (err) {
+      Alert.alert(t('error'), err?.message || t('something_went_wrong', 'Something went wrong'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderInput = (field, label, placeholder, keyboardType = 'default') => (
@@ -197,8 +230,11 @@ const GarageScreen = () => {
           placeholder="Select Driver Role" 
         />
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>{t('save_vehicle', 'Save Vehicle')}</Text>
+        <TouchableOpacity style={[styles.saveButton, loading && { opacity: 0.7 }]} onPress={handleSave} disabled={loading}>
+          {loading
+            ? <ActivityIndicator color={colors.white} />
+            : <Text style={styles.saveButtonText}>{t('save_vehicle', 'Save Vehicle')}</Text>
+          }
         </TouchableOpacity>
       </ScrollView>
     </View>

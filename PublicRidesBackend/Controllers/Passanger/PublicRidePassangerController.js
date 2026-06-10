@@ -576,6 +576,46 @@ module.exports = function (CLASS) {
     }
 
 
+    CLASS.prototype.publicridesEditActingDriverTrip = async function (req, res) {
+        const { tripId, ...updateData } = req.body;
+        if (!tripId) return res.status(400).json({ success: false, message: 'tripId is required' });
+
+        try {
+            const passangerId = req.passanger.id;
+            const trip = await Trip.getTripById(tripId);
+            if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
+            if (trip.passangerId?.toString() !== passangerId) return res.status(403).json({ success: false, message: 'Unauthorized' });
+            if (!['SCHEDULED', 'PENDING'].includes(trip.status)) {
+                return res.status(400).json({ success: false, message: 'Only scheduled or pending trips can be edited' });
+            }
+
+            const ALLOWED = [
+                'startLocation', 'endLocation', 'stops',
+                'actingDriverItinerary', 'actingDriverAccommodation', 'actingDriverFood',
+                'actingDriverMaxSpeed', 'kidsOnBoard', 'elderlyOnBoard', 'actingDriverOtherRequests',
+                'tripType', 'isRoundTrip', 'actingDriverHours', 'scheduleDateTime',
+                'passangerVehicleId', 'passangerVehicleType', 'paymentMethod',
+                'minFare', 'maxFare', 'estimatedFare', 'estimatedDistance', 'estimatedDuration',
+            ];
+
+            const fields = {};
+            for (const key of ALLOWED) {
+                if (key in updateData) fields[key] = updateData[key];
+            }
+
+            if (fields.passangerVehicleId && ObjectId.isValid(fields.passangerVehicleId)) {
+                fields.passangerVehicleId = new ObjectId(fields.passangerVehicleId);
+            }
+
+            await Trip.updateActingDriverTripFields(tripId, fields);
+            const updatedTrip = await Trip.getTripById(tripId);
+            return res.json({ success: true, message: 'Trip updated successfully', trip: updatedTrip });
+        } catch (err) {
+            return this.handleError(err, res);
+        }
+    }
+
+
     CLASS.prototype.publicridesGetTrip = async function (req, res) {
         
         const passangerId = req.passanger.id;
@@ -1787,13 +1827,20 @@ module.exports = function (CLASS) {
                     const parivahanResult = await VehicleVerifierMParivahan.verfiyRC(normalizedRegNo);
                     if (parivahanResult.valid && parivahanResult.data) {
                         const d = parivahanResult.data;
-                        vehicleDoc.make = d.maker_desc || d.maker || '';
-                        vehicleDoc.model = d.model || d.vehicle_class_desc || '';
-                        vehicleDoc.type = mapParivahanVehicleClass(d.vehicle_class_desc || '');
-                        vehicleDoc.year = d.manufacturing_yr || d.reg_yr || '';
-                        vehicleDoc.fuelType = d.fuel_desc || '';
+                        // Support both old field names and new API field names
+                        vehicleDoc.make = d.brand_name || d.maker_desc || d.maker || '';
+                        vehicleDoc.model = d.brand_model || d.model || d.vehicle_class_desc || '';
+                        vehicleDoc.type = mapParivahanVehicleClass(d.body_type || d.vehicle_class_desc || d.class || '');
+                        vehicleDoc.year = d.manufacturing_date_formatted || d.manufacturing_yr || d.reg_yr || '';
+                        vehicleDoc.fuelType = d.fuel_type || d.fuel_desc || '';
                         vehicleDoc.color = d.color || '';
                         vehicleDoc.ownerName = d.owner_name || '';
+                        vehicleDoc.chassisNumber = d.chassis_number || '';
+                        vehicleDoc.engineNumber = d.engine_number || '';
+                        vehicleDoc.seatingCapacity = d.seating_capacity || '';
+                        vehicleDoc.insuranceExpiry = d.insurance_expiry || '';
+                        vehicleDoc.insuranceCompany = d.insurance_company || '';
+                        vehicleDoc.registrationDate = d.registration_date || '';
                         vehicleDoc.verified = true;
                         vehicleDoc.parivahanData = d;
                     } else {
@@ -1821,14 +1868,18 @@ module.exports = function (CLASS) {
                 if (vehicleInfo.photo !== undefined) {
                     vehicleDoc.photo = vehicleInfo.photo;
                 }
+                if (Array.isArray(vehicleInfo.features)) vehicleDoc.features = vehicleInfo.features;
+                if (Array.isArray(vehicleInfo.transmission)) vehicleDoc.transmission = vehicleInfo.transmission;
+                if (vehicleInfo.additionalInfo !== undefined) vehicleDoc.additionalInfo = vehicleInfo.additionalInfo;
                 vehicleDoc.verified = false;
             }
 
             // Save to vehicles collection (upsert by regNo + passangerId)
+            // Skip existing fleet/deleted vehicles so passenger gets a clean record
             const existingVehicle = await Vehicle.getVehicleByVehicleNumber(normalizedRegNo);
             let vehicleId;
 
-            if (existingVehicle) {
+            if (existingVehicle && !existingVehicle.isDeleted && existingVehicle.passangerId?.toString() === passangerId) {
                 vehicleId = existingVehicle._id.toString();
                 await Vehicle.updatePassangerVehicleById(vehicleId, vehicleDoc);
             } else {

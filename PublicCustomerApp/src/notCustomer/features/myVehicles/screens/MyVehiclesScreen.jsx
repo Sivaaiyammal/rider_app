@@ -568,6 +568,7 @@ const MyVehiclesScreen = () => {
   const {t} = useTranslation();
   const {goBack} = useStackScreenStore();
   const currentScreen = useStackScreenStore(state => state.getCurrentScreen());
+  const currentScreenName = useStackScreenStore(state => state.getCurrentScreenName());
   const params = currentScreen?.params;
 
   // 'list' | 'regNo' | 'manual' | 'verified' | 'edit'
@@ -634,6 +635,18 @@ const MyVehiclesScreen = () => {
     fetchVehicles();
   }, [fetchVehicles]);
 
+  // Re-fetch vehicles when screen comes back into focus (e.g. after GarageScreen save)
+  const isFirstMount = useRef(true);
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    if (currentScreenName === 'MyVehiclesScreen') {
+      fetchVehicles();
+    }
+  }, [currentScreenName, fetchVehicles]);
+
   const handleVerifyResult = useCallback(
     (regNo, response) => {
       if (response.isParivahanFailed) {
@@ -643,7 +656,11 @@ const MyVehiclesScreen = () => {
         // Navigate to verified form with verified data from MParivahan
         setPendingRegNo(regNo);
         setPendingVehicleId(response?.vehicle?._id);
-        setPendingVerifiedData(response?.vehicle?.parivahanData || {});
+        setPendingVerifiedData({
+          ...(response?.vehicle?.parivahanData || {}),
+          _mappedType: response?.vehicle?.type || '',
+          _mappedFuelType: response?.vehicle?.fuelType || '',
+        });
         setView('verified');
       } else {
         Alert.alert(

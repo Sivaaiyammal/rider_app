@@ -39,7 +39,7 @@ import useDirectionLoad from '../hooks/useDirectionLoad';
 import LocationTypes from '../types/LocationTypes.json';
 import useMapStore from '../../map/store/useMapStore';
 import useActingDriverBookTrip from '../hooks/useActingDriverBookTrip';
-import { getFareEngineRange, getRideEstimation, getPassangerVehicles } from '../../../API/EndPoints/EndPoints';
+import { getFareEngineRange, getRideEstimation, getPassangerVehicles, editActingDriverTrip } from '../../../API/EndPoints/EndPoints';
 import { useDebouncedAPICall } from '../../../hooks/useDebounce';
 import { showNotification } from '../../../components/NotificationManger';
 import AnimatedBottomSheetWrapper from '../../shared/component/AnimatedBottomSheetWrapper';
@@ -343,6 +343,7 @@ const BookActingDriverScreen = () => {
 
     const currentScreen = useStackScreenStore(state => state.stackScreen[state.stackScreen.length - 1]);
     const params = currentScreen?.params;
+    const editTripId = params?.editTripId || null;
 
     useEffect(() => {
         if (params?.RideMatchDriverNotFound) {
@@ -616,7 +617,11 @@ const BookActingDriverScreen = () => {
             console.log('Acting driver booking validation errors:', errors);
             return;
         }
-        proceedWithBooking();
+        if (editTripId) {
+            proceedWithUpdate();
+        } else {
+            proceedWithBooking();
+        }
     };
 
     const proceedWithBooking = async () => {
@@ -627,6 +632,60 @@ const BookActingDriverScreen = () => {
             }
         } catch (error) {
             console.error('Acting driver booking failed:', error);
+        }
+    };
+
+    const proceedWithUpdate = async () => {
+        try {
+            const state = useRideBookingInfo.getState();
+            const locState = useRideBookingLocationStore.getState();
+            const { rideStartLocation, rideEndLocation, rideWayPoints } = locState;
+
+            const stops = [];
+            if (rideStartLocation) {
+                stops.push({ name: 'Pickup Point', address: rideStartLocation.address || '', location: [rideStartLocation.longitude, rideStartLocation.latitude], waitingTime: 0, isReached: false });
+            }
+            (rideWayPoints || []).forEach((wp, i) => {
+                stops.push({ name: `Stop ${i + 1}`, address: wp.address || '', location: [wp.longitude, wp.latitude], waitingTime: wp.waitingTime || 0, isReached: false });
+            });
+            if (rideEndLocation) {
+                stops.push({ name: state.tripType === 'ROUND_TRIP' ? 'Turnaround Point' : 'Drop Point', address: rideEndLocation.address || '', location: [rideEndLocation.longitude, rideEndLocation.latitude], waitingTime: 0, isReached: false });
+            }
+            if (state.tripType === 'ROUND_TRIP' && rideStartLocation) {
+                stops.push({ name: 'Drop Point', address: rideStartLocation.address || '', location: [rideStartLocation.longitude, rideStartLocation.latitude], waitingTime: 0, isReached: false });
+            }
+
+            const payload = {
+                startLocation: rideStartLocation ? [rideStartLocation.longitude, rideStartLocation.latitude] : undefined,
+                endLocation: rideEndLocation ? [rideEndLocation.longitude, rideEndLocation.latitude] : null,
+                stops,
+                tripType: state.tripType,
+                isRoundTrip: state.tripType === 'ROUND_TRIP',
+                actingDriverHours: state.actingDriverHours,
+                durationRangeStart: state.durationRangeStart,
+                durationRangeEnd:   state.durationRangeEnd,
+                scheduleDateTime: (state.bookingTab === 'TODAY' ? state.customStartTime : state.tomorrowStartTime)?.getTime?.() || null,
+                passangerVehicleId:   state.actingDriverVehicle?._id,
+                passangerVehicleType: state.actingDriverVehicle?.type,
+                actingDriverItinerary:      state.actingDriverItinerary,
+                actingDriverAccommodation:  state.actingDriverAccommodation,
+                actingDriverFood:           state.actingDriverFood,
+                actingDriverMaxSpeed:       state.actingDriverMaxSpeed,
+                kidsOnBoard:     state.actingDriverKidsOnBoard,
+                elderlyOnBoard:  state.actingDriverElderlyOnBoard,
+                actingDriverOtherRequests: state.actingDriverOtherRequests,
+                paymentMethod: state.paymentType,
+            };
+
+            const res = await editActingDriverTrip(editTripId, payload);
+            if (res?.success) {
+                setBookingSuccess(true);
+            } else {
+                showNotification(t('update_failed', 'Update Failed'), res?.message || t('request_failed', 'Something went wrong'), 'danger');
+            }
+        } catch (error) {
+            console.error('Acting driver trip update failed:', error);
+            showNotification(t('update_failed', 'Update Failed'), t('request_failed', 'Something went wrong'), 'danger');
         }
     };
 
@@ -675,8 +734,8 @@ const BookActingDriverScreen = () => {
                 
                     <View style={styles.sheetContent}>
                     <View style={styles.headerTitleContainer}>
-                        <AdaptiveText style={styles.stepText}>{t('step_3_of_3', 'Step 3 of 3')}</AdaptiveText>
-                        <AdaptiveText style={styles.titleText}>{t('review_confirm', 'Review & Confirm')}</AdaptiveText>
+                        <AdaptiveText style={styles.stepText}>{editTripId ? t('edit_trip', 'Edit Trip') : t('step_3_of_3', 'Step 3 of 3')}</AdaptiveText>
+                        <AdaptiveText style={styles.titleText}>{editTripId ? t('update_booking', 'Update Booking') : t('review_confirm', 'Review & Confirm')}</AdaptiveText>
                     </View>
 
                     <View style={styles.progressBar}>
@@ -948,7 +1007,7 @@ const BookActingDriverScreen = () => {
                             ) : (
                                 <>
                                     <AdaptiveText style={styles.confirmButtonText}>
-                                        {t('confirm_and_book', 'Confirm & Book')}
+                                        {editTripId ? t('save_changes', 'Save Changes') : t('confirm_and_book', 'Confirm & Book')}
                                     </AdaptiveText>
                                     <Ionicons name="arrow-forward" size={20} color={colors.white} />
                                 </>
@@ -1009,11 +1068,13 @@ const BookActingDriverScreen = () => {
                         </View>
 
                         <AdaptiveText style={styles.successModalTitle}>
-                            {t('acting_driver_booked', 'Finding Suitable Drivers!')}
+                            {editTripId ? t('trip_updated', 'Trip Updated!') : t('acting_driver_booked', 'Finding Suitable Drivers!')}
                         </AdaptiveText>
 
                         <AdaptiveText style={styles.successModalSubtitle}>
-                            {t('booking_success_info', 'We\'re searching for suitable drivers for your trip. We\'ll notify you as soon as a driver accepts.')}
+                            {editTripId
+                                ? t('trip_updated_info', 'Your trip details have been updated successfully.')
+                                : t('booking_success_info', 'We\'re searching for suitable drivers for your trip. We\'ll notify you as soon as a driver accepts.')}
                         </AdaptiveText>
 
                         <TouchableOpacity
@@ -1021,7 +1082,11 @@ const BookActingDriverScreen = () => {
                             activeOpacity={0.8}
                             onPress={() => {
                                 setBookingSuccess(false);
-                                useStackScreenStore.getState().reset();
+                                if (editTripId) {
+                                    goBack();
+                                } else {
+                                    useStackScreenStore.getState().reset();
+                                }
                             }}
                         >
                             <AdaptiveText style={styles.doneButtonText}>

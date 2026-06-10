@@ -90,6 +90,7 @@ import GlobalContext from '../../context/GlobalContext.js';
 import useUserStore from '../../common/store/useUserStore.js';
 import CustomerLiveTracking from './CustomerliveTracking';
 import MyActingDriverBookings from './MyActingDriverBookings';
+import ActingDriverTripDetailScreen from './ActingDriverTripDetailScreen';
 
 const BootLoaderOverlay = React.memo(function BootLoaderOverlay() {
   return (
@@ -629,8 +630,9 @@ const Home = () => {
           );
         }
 
-        if (Response?.scheduleTrips && Response?.scheduleTrips?.length > 0) {
-          setScheduledTrips(Response?.scheduleTrips);
+        if (Response?.scheduleTrips) {
+          const normalScheduledTrips = Response.scheduleTrips.filter(t => !t.isActingDriverTrip);
+          setScheduledTrips(normalScheduledTrips);
         }
 
         if (Response?.appConfig) {
@@ -998,6 +1000,8 @@ const Home = () => {
         return <CustomerLiveTracking {...params} />;
       case 'MyActingDriverBookings':
         return <MyActingDriverBookings {...params} />;
+      case 'ActingDriverTripDetail':
+        return <ActingDriverTripDetailScreen {...params} />;
       default:
         return null;
     }

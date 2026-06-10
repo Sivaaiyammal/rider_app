@@ -88,11 +88,23 @@ const MyActingDriverBookings = () => {
     fetchTrips();
   }, [fetchTrips]);
 
-  const filteredData = trips.filter((trip) => {
-    const status = getTripDisplayStatus(trip.status);
-    if (activeTab === 'All') return true;
-    return status === activeTab;
-  });
+  const STATUS_ORDER = { 'In Progress': 0, 'Upcoming': 1, 'Completed': 2, 'Cancelled': 3 };
+
+  const filteredData = trips
+    .filter((trip) => {
+      const status = getTripDisplayStatus(trip.status);
+      if (activeTab === 'All') return true;
+      return status === activeTab;
+    })
+    .sort((a, b) => {
+      const sA = getTripDisplayStatus(a.status);
+      const sB = getTripDisplayStatus(b.status);
+      if (activeTab === 'All') {
+        const orderDiff = (STATUS_ORDER[sA] ?? 4) - (STATUS_ORDER[sB] ?? 4);
+        if (orderDiff !== 0) return orderDiff;
+      }
+      return (a.scheduleDateTime || 0) - (b.scheduleDateTime || 0);
+    });
 
   const getStatusStyles = (displayStatus) => {
     switch (displayStatus) {
@@ -183,24 +195,37 @@ const MyActingDriverBookings = () => {
     return m.format('hh:mm A');
   };
 
-  const getLocationText = (trip) => {
-    const stops = trip.stops || [];
-    if (stops.length >= 2) {
-      const from = stops[0]?.name || stops[0]?.address || 'Start';
-      const to = stops[stops.length - 1]?.name || stops[stops.length - 1]?.address || 'End';
-      return `${from}  →  ${to}`;
-    }
-    if (stops.length === 1) return stops[0]?.name || stops[0]?.address || '';
-    return '';
-  };
 
   const getDateParts = (trip) => {
     const dt = trip.scheduleDateTime;
-    if (!dt) return { day: '--', month: '---' };
+    if (!dt) return { day: '--', month: '---', isMultiDay: false };
     let ms = dt;
     if (typeof ms === 'number' && ms < 1e12) ms = ms * 1000;
-    const m = moment(ms);
-    return { day: m.format('DD'), month: m.format('MMM').toUpperCase() };
+    const start = moment(ms);
+    const hours = Number(trip.actingDriverHours || 0);
+    const isMultiDay = hours >= 24;
+    if (isMultiDay) {
+      const end = moment(ms).add(hours, 'hours');
+      return {
+        day: start.format('DD'),
+        month: start.format('MMM').toUpperCase(),
+        endDay: end.format('DD'),
+        endMonth: end.format('MMM').toUpperCase(),
+        isMultiDay: true,
+      };
+    }
+    return { day: start.format('DD'), month: start.format('MMM').toUpperCase(), isMultiDay: false };
+  };
+
+  const getPickupAddress = (trip) => {
+    const stops = trip.stops || [];
+    return stops[0]?.address || stops[0]?.name || '';
+  };
+
+  const getEstimatedEarnings = (trip) => {
+    const fare = trip.estimatedFare || trip.minFare || trip.maxFare;
+    if (fare) return `₹${fare}`;
+    return null;
   };
 
   const renderItem = ({ item: trip, index }) => {
@@ -208,14 +233,15 @@ const MyActingDriverBookings = () => {
     const sStyles = getStatusStyles(displayStatus);
     const vehicleImg = getVehicleImage(trip);
     const vehicleLabel = getVehicleLabel(trip);
-    const { day, month } = getDateParts(trip);
+    const dateParts = getDateParts(trip);
+    const pickupAddress = getPickupAddress(trip);
+    const estimatedEarnings = getEstimatedEarnings(trip);
     const isFirstOfStatus =
       activeTab === 'All' &&
-      (index === 0 || getTripDisplayStatus(trips[index - 1]?.status) !== displayStatus);
+      (index === 0 || getTripDisplayStatus(filteredData[index - 1]?.status) !== displayStatus);
 
     const handlePress = () => {
-      // Navigate to ScheduleScreen with the trip data
-      setStackScreen('ScheduleScreen', { trip });
+      setStackScreen('ActingDriverTripDetail', { trip });
     };
 
     return (
@@ -230,21 +256,23 @@ const MyActingDriverBookings = () => {
         >
           {/* Left Date Column */}
           <View style={styles.dateColumn}>
-            <Text style={[styles.dateText, { color: sStyles.dateColor }]}>{day}</Text>
-            <Text style={[styles.monthText, { color: sStyles.dateColor }]}>{month}</Text>
+            <Text style={[styles.dateText, { color: sStyles.dateColor }]}>{dateParts.day}</Text>
+            <Text style={[styles.monthText, { color: sStyles.dateColor }]}>{dateParts.month}</Text>
+            {dateParts.isMultiDay && (
+              <>
+                <Text style={[styles.dateRangeSep, { color: sStyles.dateColor }]}>—</Text>
+                <Text style={[styles.dateText, { color: sStyles.dateColor }]}>{dateParts.endDay}</Text>
+                <Text style={[styles.monthText, { color: sStyles.dateColor }]}>{dateParts.endMonth}</Text>
+              </>
+            )}
           </View>
 
           {/* Right Content Column */}
           <View style={styles.contentColumn}>
             {/* Top Row: Vehicle Image & Badge */}
             <View style={styles.contentTopRow}>
-              {/* Vehicle image / stock image */}
               <View style={styles.vehicleImageWrap}>
-                <Image
-                  source={vehicleImg}
-                  style={styles.vehicleImage}
-                  resizeMode="contain"
-                />
+                <Image source={vehicleImg} style={styles.vehicleImage} resizeMode="contain" />
               </View>
               <View style={styles.topRightInfo}>
                 <Text style={styles.vehicleNameText} numberOfLines={1}>{vehicleLabel}</Text>
@@ -260,16 +288,22 @@ const MyActingDriverBookings = () => {
                 <Icon name="clock-outline" size={14} color="#616161" style={styles.detailIcon} />
                 <Text style={styles.detailText}>{getTimeLabel(trip)}</Text>
               </View>
-              {getLocationText(trip) ? (
+              {pickupAddress ? (
                 <View style={styles.detailRow}>
                   <Icon name="map-marker-outline" size={14} color="#616161" style={styles.detailIcon} />
-                  <Text style={styles.detailText} numberOfLines={1}>{getLocationText(trip)}</Text>
+                  <Text style={styles.detailText} numberOfLines={1}>{pickupAddress}</Text>
                 </View>
               ) : null}
               <View style={styles.detailRow}>
                 <Icon name="clipboard-text-outline" size={14} color="#616161" style={styles.detailIcon} />
                 <Text style={styles.detailText}>{getTripTypeLabel(trip)}</Text>
               </View>
+              {estimatedEarnings ? (
+                <View style={styles.detailRow}>
+                  <Icon name="currency-inr" size={14} color="#2E7D32" style={styles.detailIcon} />
+                  <Text style={[styles.detailText, styles.earningsText]}>{estimatedEarnings} Estimated</Text>
+                </View>
+              ) : null}
             </View>
           </View>
         </TouchableOpacity>
@@ -316,6 +350,7 @@ const MyActingDriverBookings = () => {
               onPress={() => setActiveTab(tab)}
             >
               <Text style={[styles.tabText, isActive && styles.tabTextActive]}>{tab}</Text>
+              
             </TouchableOpacity>
           );
         })}
@@ -432,7 +467,7 @@ const styles = StyleSheet.create({
   },
   monthText: {
     fontSize: 11,
-    fontFamily: Fonts.semiBold || Fonts.bold,
+    fontFamily: Fonts.semi_bold,
     textTransform: 'uppercase',
   },
   contentColumn: {
@@ -492,6 +527,15 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.medium,
     color: '#424242',
     flex: 1,
+  },
+  dateRangeSep: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    marginVertical: 2,
+  },
+  earningsText: {
+    color: '#2E7D32',
+    fontFamily: Fonts.bold,
   },
   loadingContainer: {
     flex: 1,

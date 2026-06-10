@@ -367,6 +367,7 @@ const getHorizontalTextAlignment = (
 const DynamicSection = ({title = 'Dynamic Section', onSelect = () => {}}) => {
   const {appConfig} = useConfigStore();
   const {i18n, t} = useTranslation();
+
   const rawSectionConfig = Array.isArray(appConfig?.HOME_SCREEN_CONFIG)
     ? appConfig.HOME_SCREEN_CONFIG
     : [];
@@ -809,49 +810,9 @@ const DynamicSection = ({title = 'Dynamic Section', onSelect = () => {}}) => {
     local_events: renderBanner,
   };
 
-  const renderUpcomingActingDriverCard = () => {
-    return (
-      <></>
-      // <View style={styles.upcomingDriverCard}>
-      //   {/* Header Row */}
-      //   <View style={styles.upcomingDriverHeader}>
-      //     <View style={styles.upcomingDriverTitleRow}>
-      //       <Icon name="calendar-month-outline" size={18} color="#5E35B1" />
-      //       <Text style={styles.upcomingDriverTitle}>Upcoming Acting Driver</Text>
-      //     </View>
-      //     <View style={styles.upcomingDriverDateBox}>
-      //       <Text style={styles.upcomingDriverDateText}>13 Jun 2025</Text>
-      //       <Text style={styles.upcomingDriverTimeText}>09:00 AM</Text>
-      //     </View>
-      //   </View>
-
-      //   {/* Content Row */}
-      //   <View style={styles.upcomingDriverContent}>
-      //     <Text style={styles.upcomingDriverVehicleText}>Audi Q2 • TN09CR3540</Text>
-          
-      //     <View style={styles.upcomingDriverFooter}>
-      //       <View style={styles.upcomingDriverBadge}>
-      //         <Text style={styles.upcomingDriverBadgeText}>Scheduled</Text>
-      //       </View>
-      //       <TouchableOpacity 
-      //         style={styles.upcomingDriverViewDetails}
-      //         activeOpacity={0.8}
-      //         onPress={() => onSelect({ key: 'my_acting_driver_bookings' })}
-      //       >
-      //         <Text style={styles.upcomingDriverViewDetailsText}>View Details</Text>
-      //         <Icon name="chevron-right" size={16} color="#5E35B1" />
-      //       </TouchableOpacity>
-      //     </View>
-      //   </View>
-      // </View>
-    );
-  };
-
   const renderActingDriverBanner = () =>
     appConfig.actingDriverEnabled ? (
-      <>
-        {renderUpcomingActingDriverCard()}
-        <TouchableOpacity
+      <TouchableOpacity
           style={styles.actingDriverBanner}
           activeOpacity={0.85}
           onPress={() => onSelect({key: 'acting_driver'})}>
@@ -861,7 +822,6 @@ const DynamicSection = ({title = 'Dynamic Section', onSelect = () => {}}) => {
             resizeMode="cover"
           />
         </TouchableOpacity>
-      </>
     ) : null;
 
   return (
@@ -1083,80 +1043,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 180,
     resizeMode: 'cover',
-  },
-  upcomingDriverCard: {
-    backgroundColor: '#F8F9FE',
-    borderWidth: 1,
-    borderColor: '#E8EAF6',
-    borderRadius: 16,
-    marginHorizontal: 12,
-    marginVertical: 10,
-    padding: 14,
-  },
-  upcomingDriverHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  upcomingDriverTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  upcomingDriverTitle: {
-    fontSize: 14,
-    fontFamily: Fonts.semiBold,
-    color: '#1F1F1F',
-  },
-  upcomingDriverDateBox: {
-    alignItems: 'flex-end',
-  },
-  upcomingDriverDateText: {
-    fontSize: 12,
-    fontFamily: Fonts.medium,
-    color: '#1F1F1F',
-  },
-  upcomingDriverTimeText: {
-    fontSize: 12,
-    fontFamily: Fonts.semiBold,
-    color: '#1F1F1F',
-  },
-  upcomingDriverContent: {
-    marginTop: 8,
-  },
-  upcomingDriverVehicleText: {
-    fontSize: 13,
-    fontFamily: Fonts.medium,
-    color: '#424242',
-    marginLeft: 24, // aligns with title text
-  },
-  upcomingDriverFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 12,
-    marginLeft: 24,
-  },
-  upcomingDriverBadge: {
-    backgroundColor: '#5E35B1',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  upcomingDriverBadgeText: {
-    color: '#FFF',
-    fontSize: 11,
-    fontFamily: Fonts.medium,
-  },
-  upcomingDriverViewDetails: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  upcomingDriverViewDetailsText: {
-    color: '#5E35B1',
-    fontSize: 13,
-    fontFamily: Fonts.medium,
-    marginRight: 2,
   },
 });
 
