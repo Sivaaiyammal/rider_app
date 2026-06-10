@@ -193,6 +193,50 @@ class Trip {
             { $sort: { bookingTime: -1 } },
             { $skip: (page - 1) * limit },
             { $limit: limit },
+            {
+                $lookup: {
+                    from: 'vehicles',
+                    let: { pvId: '$passangerVehicleId' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $cond: [
+                                        { $ifNull: ['$$pvId', false] },
+                                        {
+                                            $eq: [
+                                                '$_id',
+                                                {
+                                                    $cond: [
+                                                        { $eq: [{ $type: '$$pvId' }, 'objectId'] },
+                                                        '$$pvId',
+                                                        { $toObjectId: '$$pvId' }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        false
+                                    ]
+                                }
+                            }
+                        },
+                        { $project: { _id: 1, regNo: 1, color: 1, type: 1, make: 1, model: 1, transmission: 1, fuelType: 1 } }
+                    ],
+                    as: 'passengerVehicleData'
+                }
+            },
+            { $unwind: { path: '$passengerVehicleData', preserveNullAndEmptyArrays: true } },
+            {
+                $addFields: {
+                    vehicleNumber: { $ifNull: ['$passengerVehicleData.regNo', null] },
+                    vehicleColor: { $ifNull: ['$passengerVehicleData.color', null] },
+                    vehicleBrand: { $ifNull: ['$passengerVehicleData.make', null] },
+                    vehicleModel: { $ifNull: ['$passengerVehicleData.model', null] },
+                    passangerVehicleType: { $ifNull: ['$passengerVehicleData.type', null] },
+                    transmission: { $ifNull: ['$passengerVehicleData.transmission', null] },
+                    fuelType: { $ifNull: ['$passengerVehicleData.fuelType', null] }
+                }
+            }
         ];
 
         console.log("Query filter for getTripsForPassanger", pipeline);
@@ -788,7 +832,7 @@ class Trip {
                                 }
                             }
                         },
-                        { $project: { _id: 1, regNo: 1, color: 1, type: 1, make: 1, model: 1 } }
+                        { $project: { _id: 1, regNo: 1, color: 1, type: 1, make: 1, model: 1, transmission: 1, fuelType: 1 } }
                     ],
                     as: 'vehicleData'
                 }
@@ -824,7 +868,7 @@ class Trip {
                                 }
                             }
                         },
-                        { $project: { _id: 1, regNo: 1, color: 1, type: 1, make: 1, model: 1 } }
+                        { $project: { _id: 1, regNo: 1, color: 1, type: 1, make: 1, model: 1, transmission: 1, fuelType: 1 } }
                     ],
                     as: 'passengerVehicleData'
                 }

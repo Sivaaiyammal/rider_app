@@ -68,6 +68,13 @@ export default function PublicDriverSettingsScreen() {
       title: 'my_account',
     },
     {
+      id: 99,
+      name: 'Pre-Trip Overview (Demo)',
+      icon: <DriverDetails width={30} height={30} />,
+      screen: 'DriverPreTripOverview',
+      title: 'pre_trip_overview_demo',
+    },
+    {
       id: 22,
       name: "Language",
       icon: <Language />,

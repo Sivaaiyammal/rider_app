@@ -3,6 +3,7 @@
     "Routes",
     "Controllers",
     "MiddleWares",
+    "Models",
     "Utils",
     "graphql"
   ],

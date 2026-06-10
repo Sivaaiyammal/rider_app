@@ -16,6 +16,7 @@ const BottomSheetWrapper = forwardRef(({
   backdropComponent,
   backdrop = false,
   style,
+  backgroundStyle,
   isLoading = false,
   ...props
 }, ref) => {
@@ -61,6 +62,7 @@ const BottomSheetWrapper = forwardRef(({
         />
       ))) : undefined}
       style={[styles.bottomSheet, style]}
+      backgroundStyle={[styles.bottomSheetBackground, backgroundStyle]}
       {...props}
     >
       {shouldRenderScrollView ? (
@@ -82,14 +84,15 @@ const BottomSheetWrapper = forwardRef(({
 const styles = StyleSheet.create({
   bottomSheet: {
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
+    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  bottomSheetBackground: {
     backgroundColor: 'white',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
   contentContainer: {
     flex: 1,

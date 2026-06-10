@@ -113,9 +113,24 @@ const DriverCalendarScreen = () => {
     setStackScreen('TripDetailScreen');
   };
 
-  const handleStartTrip = trip => {
+  const handleStartTrip = async (trip) => {
     setUpComingTripDetails(trip);
-    setStackScreen('UpComingTripsView');
+    setStackScreen('DriverPreTripOverview');
+
+    try {
+      const api = new APIRequest();
+      const response = await api.request(
+        `/publicrides/driver/v2/getTrips?page=1&limit=1&tripId=${trip._id}`,
+        'POST',
+        {},
+        userInfo?.token
+      );
+      if (response && response.success && response.trips && response.trips.length > 0) {
+        setUpComingTripDetails(response.trips[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching dynamic trip details:', error);
+    }
   };
 
   const handleViewLocation = (location) => {

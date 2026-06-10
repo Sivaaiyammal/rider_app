@@ -258,75 +258,90 @@ const ActingDriverTripDetailScreen = ({trip: initialTrip}) => {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}>
 
-        {/* ── Driver / Assigned Card ────────────────────────── */}
-        <View style={[styles.heroCard, {borderTopColor: sStyle.primary}]}>
-          {driverInfo ? (
-            <View style={styles.heroInner}>
-              <View style={styles.heroLeft}>
-                {driverPhoto ? (
-                  <Image
-                    source={{uri: typeof driverPhoto === 'string' ? driverPhoto : undefined}}
-                    style={[styles.driverPhoto, {borderColor: sStyle.primary}]}
-                  />
-                ) : (
-                  <View style={[styles.avatarWrap, {backgroundColor: sStyle.primary}]}>
-                    <Text style={styles.avatarText}>{driverInitials}</Text>
+        {displayStatus === 'In Progress' ? (
+          <LiveTripCard
+            trip={trip}
+            sStyle={sStyle}
+            driverInfo={driverInfo}
+            driverName={driverName}
+            driverPhone={driverPhone}
+            driverRating={driverRating}
+            driverPhoto={driverPhoto}
+            driverInitials={driverInitials}
+          />
+        ) : (
+          <>
+            {/* ── Driver / Assigned Card ────────────────────────── */}
+            <View style={[styles.heroCard, {borderTopColor: sStyle.primary}]}>
+              {driverInfo ? (
+                <View style={styles.heroInner}>
+                  <View style={styles.heroLeft}>
+                    {driverPhoto ? (
+                      <Image
+                        source={{uri: typeof driverPhoto === 'string' ? driverPhoto : undefined}}
+                        style={[styles.driverPhoto, {borderColor: sStyle.primary}]}
+                      />
+                    ) : (
+                      <View style={[styles.avatarWrap, {backgroundColor: sStyle.primary}]}>
+                        <Text style={styles.avatarText}>{driverInitials}</Text>
+                      </View>
+                    )}
+                    <View style={[styles.assignedBadge, {backgroundColor: sStyle.light}]}>
+                      <Text style={[styles.assignedBadgeText, {color: sStyle.primary}]}>Assigned</Text>
+                    </View>
                   </View>
-                )}
-                <View style={[styles.assignedBadge, {backgroundColor: sStyle.light}]}>
-                  <Text style={[styles.assignedBadgeText, {color: sStyle.primary}]}>Assigned</Text>
+                  <View style={styles.heroInfo}>
+                    <Text style={styles.driverName}>{driverName}</Text>
+                    {driverRating ? (
+                      <View style={styles.ratingRow}>
+                        <Icon name="star" size={14} color="#FFB300" />
+                        <Text style={styles.ratingText}>{Number(driverRating).toFixed(1)}</Text>
+                        <Text style={styles.ratingLabel}>Rating</Text>
+                      </View>
+                    ) : null}
+                    {driverPhone ? (
+                      <Text style={styles.driverPhone}>{driverPhone}</Text>
+                    ) : null}
+                  </View>
+                  {driverPhone ? (
+                    <TouchableOpacity
+                      style={[styles.callBtn, {backgroundColor: sStyle.primary}]}
+                      onPress={() => Linking.openURL(`tel:${driverPhone}`)}
+                      activeOpacity={0.8}>
+                      <Icon name="phone" size={20} color="#fff" />
+                      <Text style={styles.callText}>Call</Text>
+                    </TouchableOpacity>
+                  ) : null}
                 </View>
-              </View>
-              <View style={styles.heroInfo}>
-                <Text style={styles.driverName}>{driverName}</Text>
-                {driverRating ? (
-                  <View style={styles.ratingRow}>
-                    <Icon name="star" size={14} color="#FFB300" />
-                    <Text style={styles.ratingText}>{Number(driverRating).toFixed(1)}</Text>
-                    <Text style={styles.ratingLabel}>Rating</Text>
+              ) : (
+                <View style={styles.searchingInner}>
+                  <LottieView
+                    source={require('../assets/lottie/search_2.json')}
+                    autoPlay
+                    loop
+                    renderMode="HARDWARE"
+                    style={styles.searchingLottie}
+                  />
+                  <View style={styles.searchingTextWrap}>
+                    <Text style={styles.searchingTitle}>Searching for Driver</Text>
+                    <Text style={styles.searchingSub}>We'll notify you once a driver is assigned</Text>
                   </View>
-                ) : null}
-                {driverPhone ? (
-                  <Text style={styles.driverPhone}>{driverPhone}</Text>
-                ) : null}
-              </View>
-              {driverPhone ? (
-                <TouchableOpacity
-                  style={[styles.callBtn, {backgroundColor: sStyle.primary}]}
-                  onPress={() => Linking.openURL(`tel:${driverPhone}`)}
-                  activeOpacity={0.8}>
-                  <Icon name="phone" size={20} color="#fff" />
-                  <Text style={styles.callText}>Call</Text>
-                </TouchableOpacity>
-              ) : null}
+                </View>
+              )}
             </View>
-          ) : (
-            <View style={styles.searchingInner}>
-              <LottieView
-                source={require('../assets/lottie/search_2.json')}
-                autoPlay
-                loop
-                renderMode="HARDWARE"
-                style={styles.searchingLottie}
-              />
-              <View style={styles.searchingTextWrap}>
-                <Text style={styles.searchingTitle}>Searching for Driver</Text>
-                <Text style={styles.searchingSub}>We'll notify you once a driver is assigned</Text>
-              </View>
-            </View>
-          )}
-        </View>
 
-        {/* ── Status Chip ────────────────────────────────────── */}
-        <View style={styles.statusRow}>
-          <View style={[styles.statusChip, {backgroundColor: sStyle.light, borderColor: sStyle.border}]}>
-            <Icon name={sStyle.icon} size={15} color={sStyle.primary} />
-            <Text style={[styles.statusChipText, {color: sStyle.primary}]}>{displayStatus}</Text>
-          </View>
-          <Text style={styles.tripId} numberOfLines={1}>
-            {trip.rideId ? `#${trip.rideId}` : ''}
-          </Text>
-        </View>
+            {/* ── Status Chip ────────────────────────────────────── */}
+            <View style={styles.statusRow}>
+              <View style={[styles.statusChip, {backgroundColor: sStyle.light, borderColor: sStyle.border}]}>
+                <Icon name={sStyle.icon} size={15} color={sStyle.primary} />
+                <Text style={[styles.statusChipText, {color: sStyle.primary}]}>{displayStatus}</Text>
+              </View>
+              <Text style={styles.tripId} numberOfLines={1}>
+                {trip.rideId ? `#${trip.rideId}` : ''}
+              </Text>
+            </View>
+          </>
+        )}
 
         {/* ── Trip Info Card ──────────────────────────────────── */}
         <InfoCard>
@@ -666,6 +681,98 @@ const EmptyNote = ({text}) => (
   </View>
 );
 
+const TRIP_STEPS = [
+  {label: 'On the Way',  icon: 'car-arrow-right', key: 'ACCEPTED'},
+  {label: 'Picked Up',   icon: 'account-check',   key: 'PICKEDUP'},
+  {label: 'Completed',   icon: 'flag-checkered',  key: 'DROPPED'},
+];
+
+const LiveTripCard = ({trip, sStyle, driverInfo, driverName, driverPhone, driverRating, driverPhoto, driverInitials}) => {
+  const stepIndex = trip.status === 'PICKEDUP' ? 1 : trip.status === 'DROPPED' ? 2 : 0;
+  const subStatus = trip.status === 'PICKEDUP'
+    ? 'En route to destination'
+    : 'Driver is on the way to you';
+
+  return (
+    <View style={styles.liveTripCard}>
+      {/* Green header */}
+      <View style={[styles.liveTripHeader, {backgroundColor: sStyle.primary}]}>
+        <View style={styles.livePulseDot} />
+        <View style={{flex: 1}}>
+          <Text style={styles.liveTripTitle}>Trip In Progress</Text>
+          <Text style={styles.liveTripSubStatus}>{subStatus}</Text>
+        </View>
+        {trip.rideId ? (
+          <Text style={styles.liveTripId}>#{trip.rideId}</Text>
+        ) : null}
+      </View>
+
+      {/* Step progress */}
+      <View style={styles.stepRow}>
+        {TRIP_STEPS.map((step, i) => (
+          <React.Fragment key={step.key}>
+            <View style={styles.stepItem}>
+              <View style={[
+                styles.stepDot,
+                {backgroundColor: i <= stepIndex ? sStyle.primary : '#EEEEEE'},
+              ]}>
+                <Icon name={step.icon} size={14} color={i <= stepIndex ? '#fff' : '#BDBDBD'} />
+              </View>
+              <Text style={[styles.stepLabel, {color: i <= stepIndex ? sStyle.primary : '#BDBDBD'}]}>
+                {step.label}
+              </Text>
+            </View>
+            {i < TRIP_STEPS.length - 1 ? (
+              <View style={[styles.stepLine, {backgroundColor: i < stepIndex ? sStyle.primary : '#EEEEEE'}]} />
+            ) : null}
+          </React.Fragment>
+        ))}
+      </View>
+
+      {/* Divider */}
+      <View style={styles.liveCardDivider} />
+
+      {/* Driver row */}
+      {driverInfo ? (
+        <View style={styles.liveDriverRow}>
+          {driverPhoto ? (
+            <Image
+              source={{uri: typeof driverPhoto === 'string' ? driverPhoto : undefined}}
+              style={styles.liveDriverPhoto}
+            />
+          ) : (
+            <View style={[styles.liveAvatarWrap, {backgroundColor: sStyle.primary}]}>
+              <Text style={styles.liveAvatarText}>{driverInitials}</Text>
+            </View>
+          )}
+          <View style={{flex: 1}}>
+            <Text style={styles.liveDriverName}>{driverName}</Text>
+            {driverRating ? (
+              <View style={styles.liveRatingRow}>
+                <Icon name="star" size={13} color="#FFB300" />
+                <Text style={styles.liveRatingText}>{Number(driverRating).toFixed(1)}</Text>
+                <Text style={styles.liveRatingLabel}>Rating</Text>
+              </View>
+            ) : null}
+            {driverPhone ? (
+              <Text style={styles.liveDriverPhone}>{driverPhone}</Text>
+            ) : null}
+          </View>
+          {driverPhone ? (
+            <TouchableOpacity
+              style={[styles.liveCallBtn, {backgroundColor: sStyle.primary}]}
+              onPress={() => Linking.openURL(`tel:${driverPhone}`)}
+              activeOpacity={0.8}>
+              <Icon name="phone" size={22} color="#fff" />
+              <Text style={styles.liveCallText}>Call Driver</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      ) : null}
+    </View>
+  );
+};
+
 // ── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: {flex: 1, backgroundColor: '#F4F5FA'},
@@ -888,6 +995,62 @@ const styles = StyleSheet.create({
   breakupRow: {flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 2},
   breakupKey: {fontFamily: Fonts.regular, fontSize: 13, color: '#616161'},
   breakupVal: {fontFamily: Fonts.semi_bold, fontSize: 13},
+
+  // Live Trip Card (In Progress)
+  liveTripCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginBottom: 10,
+    overflow: 'hidden',
+  },
+  liveTripHeader: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 16, paddingVertical: 14, gap: 10,
+  },
+  livePulseDot: {
+    width: 10, height: 10, borderRadius: 5,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+  },
+  liveTripTitle:     {fontFamily: Fonts.bold, fontSize: 16, color: '#fff'},
+  liveTripSubStatus: {fontFamily: Fonts.regular, fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 2},
+  liveTripId:        {fontFamily: Fonts.medium, fontSize: 12, color: 'rgba(255,255,255,0.6)'},
+
+  stepRow: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 20, paddingVertical: 18,
+  },
+  stepItem:  {alignItems: 'center', gap: 6},
+  stepDot: {
+    width: 36, height: 36, borderRadius: 18,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  stepLabel: {fontFamily: Fonts.medium, fontSize: 10, textAlign: 'center', maxWidth: 64},
+  stepLine:  {flex: 1, height: 2, marginBottom: 22, marginHorizontal: 4},
+
+  liveCardDivider: {height: 1, backgroundColor: '#F5F5F5', marginHorizontal: 16},
+
+  liveDriverRow: {
+    flexDirection: 'row', alignItems: 'center',
+    padding: 16, gap: 14,
+  },
+  liveDriverPhoto: {
+    width: 58, height: 58, borderRadius: 29, backgroundColor: '#EEE',
+  },
+  liveAvatarWrap: {
+    width: 58, height: 58, borderRadius: 29,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  liveAvatarText:  {fontFamily: Fonts.bold, fontSize: 20, color: '#fff'},
+  liveDriverName:  {fontFamily: Fonts.bold, fontSize: 16, color: '#1A1A2E'},
+  liveRatingRow:   {flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4},
+  liveRatingText:  {fontFamily: Fonts.bold, fontSize: 13, color: '#F57F17'},
+  liveRatingLabel: {fontFamily: Fonts.regular, fontSize: 12, color: '#9E9E9E'},
+  liveDriverPhone: {fontFamily: Fonts.medium, fontSize: 13, color: '#616161', marginTop: 4},
+  liveCallBtn: {
+    alignItems: 'center', justifyContent: 'center',
+    borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10, gap: 4,
+  },
+  liveCallText: {fontFamily: Fonts.semi_bold, fontSize: 11, color: '#fff'},
 
   // Cancel button
   cancelBtn: {

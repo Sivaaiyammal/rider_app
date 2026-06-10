@@ -1018,6 +1018,12 @@ module.exports = function (CLASS) {
                 filter.driverId = driverId;
             }
 
+            if (req.query.tripId && ObjectId.isValid(req.query.tripId)) {
+                filter._id = new ObjectId(req.query.tripId);
+            } else if (req.body.tripId && ObjectId.isValid(req.body.tripId)) {
+                filter._id = new ObjectId(req.body.tripId);
+            }
+
             // Only add bookingTime filter if startTime or endTime is provided
             if (startTime || endTime) {
                 filter.bookingTime = {};

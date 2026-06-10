@@ -94,6 +94,7 @@ import rideMatchWSService from '../../common/controllers/socketServices/RideMatc
 import messaging from '@react-native-firebase/messaging';
 import DriverMapScreenV2 from './DriverMapScreenV2';
 import DriverMapScreenV3 from './DriverMapScreenV3';
+import DriverPreTripOverviewScreen from './DriverPreTripOverviewScreen';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -659,7 +660,11 @@ const PublicRidesDriverHomeScreen = () => {
 
 
   const renderContent = () => {
-    switch (stackScreen[stackScreen.length - 1]) {
+    let activeScreen = stackScreen[stackScreen.length - 1];
+    if (activeScreen === 'DriverPreTripOverview' && stackScreen.length > 1) {
+      activeScreen = stackScreen[stackScreen.length - 2];
+    }
+    switch (activeScreen) {
       case 'Home':
         return (
           <DriverTabBar
@@ -761,6 +766,8 @@ const PublicRidesDriverHomeScreen = () => {
               return <DriverVehiclePhotosScreen />;
       case 'DriverBillsExpensesScreen':
               return <DriverBillsExpensesScreen />;
+      case 'DriverPreTripOverview':
+              return <DriverPreTripOverviewScreen />;
       default:
         return <Text>Home</Text>;
     }
@@ -806,6 +813,9 @@ const PublicRidesDriverHomeScreen = () => {
       {!hasNotificationPermission && renderNotificationPermission()}
       {!hasLocationPermission && renderLocationPermission()}
       {renderContent()}
+      {stackScreen[stackScreen.length - 1] === 'DriverPreTripOverview' && (
+        <DriverPreTripOverviewScreen isVisible={true} />
+      )}
       {approved ? memoizedDriverLocationHandler : null}
       <PaymentCompletionScreen />
       <AppUpdateChecker />

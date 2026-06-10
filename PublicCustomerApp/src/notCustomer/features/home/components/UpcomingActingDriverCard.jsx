@@ -22,6 +22,20 @@ const formatDate = scheduleDateTime => {
   return {date: `${day} ${month} ${year}`, time: `${h12}:${minutes} ${ampm}`};
 };
 
+const getDateLabel = scheduleDateTime => {
+  if (!scheduleDateTime) return 'Scheduled';
+  let ms = scheduleDateTime;
+  if (typeof ms === 'number' && ms < 1e12) ms = ms * 1000;
+  const d = new Date(ms);
+  const now = new Date();
+  const todayStr    = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toDateString();
+  const tomorrowStr = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).toDateString();
+  const tripStr     = new Date(d.getFullYear(), d.getMonth(), d.getDate()).toDateString();
+  if (tripStr === todayStr)    return 'Today';
+  if (tripStr === tomorrowStr) return 'Tomorrow';
+  return `${d.getDate().toString().padStart(2, '0')} ${d.toLocaleString('en-US', {month: 'short'})}`;
+};
+
 const getVehicleLabel = trip => {
   const v = trip.vehicleData || trip.passangerVehicle;
   if (v) {
@@ -38,6 +52,7 @@ const UpcomingActingDriverCard = () => {
   const {setStackScreen} = useStackScreenStore();
   const [trip, setTrip] = useState(null);
   const [upcomingCount, setUpcomingCount] = useState(0);
+  const [allTrips, setAllTrips] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +63,7 @@ const UpcomingActingDriverCard = () => {
           .filter(tr => UPCOMING_STATUSES.has(tr.status))
           .sort((a, b) => (a.scheduleDateTime || 0) - (b.scheduleDateTime || 0));
         setUpcomingCount(upcomingTrips.length);
+        setAllTrips(upcomingTrips);
         setTrip(upcomingTrips[0] || null);
       })
       .catch(() => {});
@@ -61,6 +77,11 @@ const UpcomingActingDriverCard = () => {
   const isMultiple = upcomingCount > 1;
   const {date, time} = formatDate(trip.scheduleDateTime);
   const vehicleLabel = getVehicleLabel(trip);
+
+  // Unique date labels across all upcoming trips (preserves order, deduplicates)
+  const uniqueDateLabels = isMultiple
+    ? [...new Set(allTrips.map(t => getDateLabel(t.scheduleDateTime)))]
+    : [getDateLabel(trip.scheduleDateTime)];
 
   const handleViewDetails = () => {
     if (isMultiple) {
@@ -94,8 +115,18 @@ const UpcomingActingDriverCard = () => {
         )}
 
         <View style={[styles.footer, isMultiple && styles.footerMultiple]}>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>Scheduled</Text>
+          <View style={styles.badgeRow}>
+            {uniqueDateLabels.map(label => (
+              <View
+                key={label}
+                style={[
+                  styles.badge,
+                  label === 'Today'    && styles.badgeToday,
+                  label === 'Tomorrow' && styles.badgeTomorrow,
+                ]}>
+                <Text style={styles.badgeText}>{label}</Text>
+              </View>
+            ))}
           </View>
           <TouchableOpacity
             style={styles.viewDetails}
@@ -168,11 +199,23 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginLeft: 0,
   },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
   badge: {
     backgroundColor: '#5E35B1',
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+  },
+  badgeToday: {
+    backgroundColor: '#2E7D32',
+  },
+  badgeTomorrow: {
+    backgroundColor: '#E65100',
   },
   badgeText: {
     color: '#FFF',

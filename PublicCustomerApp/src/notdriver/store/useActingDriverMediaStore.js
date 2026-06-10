@@ -8,6 +8,12 @@ const useActingDriverMediaStore = create(set => ({
   setPreTripDone: done => set({ preTripDone: done }),
   pendingNavOpen: false,
   setPendingNavOpen: v => set({ pendingNavOpen: v }),
+  
+  // pre-trip flow milestone states
+  currentStage: 1,
+  setCurrentStage: stage => set({ currentStage: stage }),
+  isArrived: false,
+  setIsArrived: arrived => set({ isArrived: arrived }),
 
   // dent photos (dynamic array — driver can add multiple)
   dentPhotos: [],
@@ -34,6 +40,8 @@ const useActingDriverMediaStore = create(set => ({
     preTripPhotos: { front: null, rear: null, leftSide: null, rightSide: null },
     preTripDone: false,
     pendingNavOpen: false,
+    currentStage: 1,
+    isArrived: false,
     dentPhotos: [],
     dentPhotosDone: false,
     odometerPhoto: null,
