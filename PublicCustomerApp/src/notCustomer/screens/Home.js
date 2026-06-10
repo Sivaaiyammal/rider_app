@@ -179,7 +179,7 @@ const Home = () => {
   const { setConfig } = useConfigStore();
   const { initializeSocket,resetSocket} = useRideMatching();
   const { isConnected } = useNetwork();
-  const { setScheduledTrips } = useScheduleTripStore();
+  const { setScheduledTrips, clearScheduledTrips } = useScheduleTripStore();
   const prevIsConnectedRef = useRef(isConnected);
   const [showemergencyOverlay, setShowEmergencyOverlay] = useState(false);
   const [updateMode, setUpdateMode] = useState('none');
@@ -362,8 +362,9 @@ const Home = () => {
     await DataStore.storeData('access_token', null);
     await DataStore.storeData('refresh_token', null);
     await DataStore.storeData('userdetails', null);
-    reset()
+    reset();
     resetUserInfo();
+    clearScheduledTrips();
     navigation.reset({
       index: 0,
       routes: [{ name: 'LoginScreen' }],

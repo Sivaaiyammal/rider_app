@@ -215,31 +215,36 @@ const BookActingDriverScreen = () => {
 
     const [vehiclesList, setVehiclesList] = useState([]);
     const [loadingVehicles, setLoadingVehicles] = useState(false);
+    const currentScreenName = useStackScreenStore(state => state.stackScreen[state.stackScreen.length - 1]?.name);
 
-    useEffect(() => {
-        const fetchUserVehicles = async () => {
-            setLoadingVehicles(true);
-            try {
-                const response = await getPassangerVehicles();
-                if (response.success) {
-                    const list = response.vehicles || [];
-                    setVehiclesList(list);
-                    if (list.length > 0 && !actingDriverVehicle) {
-                        setActingDriverVehicle(list[0]);
-                        if (list[0].maxSpeed) {
-                            setActingDriverMaxSpeed(String(list[0].maxSpeed));
-                        }
-                    }
+    const fetchUserVehicles = useCallback(async () => {
+        setLoadingVehicles(true);
+        try {
+            const response = await getPassangerVehicles();
+            if (response.success) {
+                const list = response.vehicles || [];
+                setVehiclesList(list);
+                const stillExists = actingDriverVehicle?._id && list.some(v => v._id?.toString() === actingDriverVehicle._id?.toString());
+                if (!stillExists) {
+                    const first = list.length > 0 ? list[0] : null;
+                    setActingDriverVehicle(first);
+                    // Auto-fill speed only when vehicle changes — never overwrite user's manual entry
+                    if (first?.maxSpeed) setActingDriverMaxSpeed(String(first.maxSpeed));
                 }
-            } catch (err) {
-                console.log('Failed to fetch user vehicles', err);
-            } finally {
-                setLoadingVehicles(false);
             }
-        };
+        } catch (err) {
+            console.log('Failed to fetch user vehicles', err);
+        } finally {
+            setLoadingVehicles(false);
+        }
+    }, [actingDriverVehicle, setActingDriverVehicle, setActingDriverMaxSpeed]);
 
-        fetchUserVehicles();
-    }, []);
+    // Re-fetch vehicles whenever this screen becomes the top screen (e.g. returning from MyVehiclesScreen)
+    useEffect(() => {
+        if (currentScreenName === 'BookActingDriverScreen') {
+            fetchUserVehicles();
+        }
+    }, [currentScreenName]);
 
 
 
@@ -372,8 +377,6 @@ const BookActingDriverScreen = () => {
         setActingDriverKidsOnBoard,
         actingDriverElderlyOnBoard,
         setActingDriverElderlyOnBoard,
-        actingDriverNotifyEvents,
-        setActingDriverNotifyEvents,
         actingDriverOtherRequests,
         setActingDriverOtherRequests,
         actingDriverMaxSpeed,
@@ -864,7 +867,7 @@ const BookActingDriverScreen = () => {
                             <AdaptiveText style={styles.detailLabel}>{t('special_requirements', 'Special Requirements')}</AdaptiveText>
                         </View>
                         <AdaptiveText style={styles.detailValue}>
-                            {[actingDriverKidsOnBoard ? 'Kids' : null, actingDriverElderlyOnBoard ? 'Elderly' : null, actingDriverNotifyEvents ? 'Notify' : null, actingDriverMaxSpeed ? `${actingDriverMaxSpeed} km/h` : null].filter(Boolean).join(' • ') || 'None'}
+                            {[actingDriverKidsOnBoard ? 'Kids' : null, actingDriverElderlyOnBoard ? 'Elderly' : null, actingDriverMaxSpeed ? `${actingDriverMaxSpeed} km/h` : null].filter(Boolean).join(' • ') || 'None'}
                         </AdaptiveText>
                         <AdaptiveText style={[styles.editLinkText, {color: themeColor.primary}]}>{t('edit', 'Edit')} &gt;</AdaptiveText>
                     </TouchableOpacity>
@@ -1517,25 +1520,6 @@ const BookActingDriverScreen = () => {
 
                         <View style={styles.specialReqDivider} />
 
-                        {/* Notify Events */}
-                        <View style={styles.specialReqRow}>
-                            <View style={styles.specialReqLeft}>
-                                <Ionicons name="notifications-outline" size={20} color="#4B5563" />
-                                <View style={{ marginLeft: 12 }}>
-                                    <Text style={styles.specialReqLabel}>{t('notify_events', 'Notify for Events')}</Text>
-                                    <Text style={styles.specialReqSub}>{t('notify_events_sub', 'Alerts for stops & delays')}</Text>
-                                </View>
-                            </View>
-                            <Switch
-                                value={actingDriverNotifyEvents}
-                                onValueChange={setActingDriverNotifyEvents}
-                                trackColor={{ false: '#E5E7EB', true: themeColor.primary + '60' }}
-                                thumbColor={actingDriverNotifyEvents ? themeColor.primary : '#9CA3AF'}
-                            />
-                        </View>
-
-                        <View style={styles.specialReqDivider} />
-
                         {/* Max Speed */}
                         <View style={[styles.specialReqRow, { alignItems: 'flex-start', paddingTop: 14 }]}>
                             <View style={styles.specialReqLeft}>
@@ -1562,7 +1546,6 @@ const BookActingDriverScreen = () => {
                                 onPress={() => {
                                     setActingDriverKidsOnBoard(false);
                                     setActingDriverElderlyOnBoard(false);
-                                    setActingDriverNotifyEvents(false);
                                     setActingDriverMaxSpeed(null);
                                     setPendingMaxSpeed('');
                                     setShowSpecialReqModal(false);

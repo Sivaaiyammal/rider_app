@@ -83,7 +83,7 @@ const VehicleItem = ({ vehicle, selected, onPress, isDefault }) => {
 const ActingDriverVehicleSelectScreen = () => {
   const { t } = useTranslation();
   const { goBack, setStackScreen, goBackToScreen } = useStackScreenStore();
-  const { actingDriverVehicle, setActingDriverVehicle } = useRideBookingInfo();
+  const { actingDriverVehicle, setActingDriverVehicle, setActingDriverMaxSpeed } = useRideBookingInfo();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(actingDriverVehicle?._id?.toString() || null);
@@ -102,8 +102,12 @@ const ActingDriverVehicleSelectScreen = () => {
             setDefaultVehicleId(defaultV._id?.toString());
           }
 
-          // Auto-select: prefer current actingDriverVehicle, else default, else nothing
-          if (!actingDriverVehicle?._id && defaultV) {
+          // If the previously selected vehicle no longer exists in the list, clear it
+          const stillExists = actingDriverVehicle?._id && list.some(v => v._id?.toString() === actingDriverVehicle._id?.toString());
+          if (!stillExists) {
+            setActingDriverVehicle(null);
+            setSelectedId(defaultV ? defaultV._id?.toString() : null);
+          } else if (!actingDriverVehicle?._id && defaultV) {
             setSelectedId(defaultV._id?.toString());
           }
         }
@@ -122,11 +126,14 @@ const ActingDriverVehicleSelectScreen = () => {
   const handleContinue = () => {
     if (!selectedVehicle) return;
     setActingDriverVehicle(selectedVehicle);
+    if (selectedVehicle.maxSpeed) {
+      setActingDriverMaxSpeed(String(selectedVehicle.maxSpeed));
+    }
     goBack();
   };
 
   const handleAddVehicle = () => {
-    setStackScreen('MyVehiclesScreen', {});
+    setStackScreen('MyVehiclesScreen', { action: 'add' });
   };
 
   return (
