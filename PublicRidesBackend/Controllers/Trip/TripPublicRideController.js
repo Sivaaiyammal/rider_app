@@ -734,14 +734,12 @@ module.exports = function (CLASS) {
                 if(updatedTrip.bills) updatedTrip.bills.vehiclePhotosApproved = true;
 
                 if (trip.driverId) {
-                    sendDriverSocketEvents(
-                        "photosApproved",
-                        String(trip.driverId),
-                        req.socketService,
-                        null,
-                        updatedTrip,
-                        null
-                    ).catch(err => console.log(err));
+                    getUserSocketIds(String(trip.driverId)).then(driverSocketIds => {
+                        req.socketService.publicRideDriverHandler.emitVehiclePhotosApprovalStatus(
+                            driverSocketIds,
+                            { tripId, status: 'approved', otp, bills: updatedTrip.bills }
+                        );
+                    }).catch(err => console.log(err));
                 }
                 return res.json({ success: true, message: "Photos Approved", otp: otp });
             } else {
@@ -750,14 +748,12 @@ module.exports = function (CLASS) {
                 };
                 await Trip.updateTripMediaData(tripId, setPayload);
                 if (trip.driverId) {
-                    sendDriverSocketEvents(
-                        "photosRejected",
-                        String(trip.driverId),
-                        req.socketService,
-                        null,
-                        trip,
-                        null
-                    ).catch(err => console.log(err));
+                    getUserSocketIds(String(trip.driverId)).then(driverSocketIds => {
+                        req.socketService.publicRideDriverHandler.emitVehiclePhotosApprovalStatus(
+                            driverSocketIds,
+                            { tripId, status: 'rejected', bills: { ...trip.bills, vehiclePhotosApproved: false } }
+                        );
+                    }).catch(err => console.log(err));
                 }
                 return res.json({ success: true, message: "Photos Rejected" });
             }
@@ -784,14 +780,12 @@ module.exports = function (CLASS) {
             updatedTrip.bills.isConfirmationFeePaid = true;
             
             if (trip.driverId) {
-                sendDriverSocketEvents(
-                    "passengerPaidConfirmation",
-                    String(trip.driverId),
-                    req.socketService,
-                    null,
-                    updatedTrip,
-                    null
-                ).catch(err => console.log(err));
+                getUserSocketIds(String(trip.driverId)).then(driverSocketIds => {
+                    req.socketService.publicRideDriverHandler.emitpassangerPaymentInitiated(
+                        driverSocketIds,
+                        { data: { passangerPaymentInitiated: true }, trip: updatedTrip }
+                    );
+                }).catch(err => console.log(err));
             }
             
             return res.json({success: true, message: "Confirmation fee status updated successfully"});

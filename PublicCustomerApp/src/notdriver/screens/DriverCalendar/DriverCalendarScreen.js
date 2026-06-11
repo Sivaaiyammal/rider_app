@@ -115,6 +115,8 @@ const DriverCalendarScreen = () => {
 
   const handleStartTrip = async (trip) => {
     setUpComingTripDetails(trip);
+    // setStackScreen('UpComingTripsView');
+
     setStackScreen('DriverPreTripOverview');
 
     try {

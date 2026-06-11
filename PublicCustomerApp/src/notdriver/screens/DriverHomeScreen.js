@@ -813,9 +813,6 @@ const PublicRidesDriverHomeScreen = () => {
       {!hasNotificationPermission && renderNotificationPermission()}
       {!hasLocationPermission && renderLocationPermission()}
       {renderContent()}
-      {stackScreen[stackScreen.length - 1] === 'DriverPreTripOverview' && (
-        <DriverPreTripOverviewScreen isVisible={true} />
-      )}
       {approved ? memoizedDriverLocationHandler : null}
       <PaymentCompletionScreen />
       <AppUpdateChecker />

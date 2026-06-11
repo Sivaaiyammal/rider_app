@@ -1989,8 +1989,9 @@ module.exports = function (CLASS) {
                 getUserSocketIds(String(trip.driverId)).then(driverSocketIds => {
                     if (driverSocketIds && driverSocketIds.length > 0) {
                         req.socketService.publicRideDriverHandler.emitVehiclePhotosApprovalStatus(driverSocketIds, {
-                            _id: tripId,
-                            approval: approval,
+                            tripId,
+                            status: approval,
+                            bills: { vehiclePhotosApproved: updateStatus },
                         });
                     }
                 }).catch(err => console.error('Error emitting vehiclePhotosApprovalStatus to driver:', err));

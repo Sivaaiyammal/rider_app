@@ -97,6 +97,16 @@ onDriverTripStatus(data) {
     }
   }
 
+  vehiclePhotosApprovalStatus(data) {
+    const { upComingTripDetails, setUpComingTripDetails } = useTripAcceptStore.getState();
+    if (!data || !upComingTripDetails) return;
+    const billsFromData = { ...(data.bills || {}) };
+    if (data.status === 'approved') billsFromData.vehiclePhotosApproved = true;
+    else if (data.status === 'rejected') billsFromData.vehiclePhotosApproved = false;
+    const updatedBills = { ...(upComingTripDetails.bills || {}), ...billsFromData };
+    setUpComingTripDetails({ ...upComingTripDetails, bills: updatedBills, otp: data.otp || upComingTripDetails.otp });
+  }
+
   billApprovalStatus(data) {
     console.log("billApprovalStatus", JSON.stringify(data))
     const idx = data?.billIndex;
@@ -226,6 +236,7 @@ onDriverTripStatus(data) {
         this.socket.on('passangerPaymentInitiated', this.paymentInitiated);
         this.socket.on('billApprovalStatus', data => this.billApprovalStatus(data));
         this.socket.on('passengerReceiptUploaded', data => this.passengerReceiptUploaded(data));
+        this.socket.on('vehiclePhotosApprovalStatus', data => this.vehiclePhotosApprovalStatus(data));
       
         this.socket.on('connect_error', error => {
           console.error(

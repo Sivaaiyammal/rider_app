@@ -10,7 +10,7 @@ import VehicleDriverPreview from '../../../components/Common/VehicleDriverPrevie
 import BottomSheetWrapper from '../../../components/BottomSheetWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 import { utils } from '../../../utils/Utils';
-import { cancelRide, approveVehiclePhotos, rejectAssignedDriver, updateConfirmationPaymentStatus } from '../../../API/EndPoints/EndPoints';
+import { cancelRide, approveVehiclePhotos, rejectAssignedDriver, updateConfirmationPaymentStatus, getCurrentTrip } from '../../../API/EndPoints/EndPoints';
 import RazorpayCheckout from 'react-native-razorpay';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -24,6 +24,7 @@ const DriverAssignedFlowScreen = ({ route }) => {
   const [isApproving, setIsApproving] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState('Online');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -99,6 +100,21 @@ const DriverAssignedFlowScreen = ({ route }) => {
   const bookingType = currentRideInfo?.duration === 'Multiple Days' ? 'Multiple Days' : (currentRideInfo?.actingDriverHours ? `Hourly (${currentRideInfo?.actingDriverHours} hrs)` : 'Full Day');
 
   const confirmationAmount = 30; // Dummy
+
+  const handleRefresh = async () => {
+    if (!currentRideInfo?.tripId) return;
+    setIsRefreshing(true);
+    try {
+      const data = await getCurrentTrip(currentRideInfo.tripId);
+      if (data?.success && data?.trip?.bills) {
+        currentRideInfo.setBills(data.trip.bills);
+      }
+    } catch (e) {
+      console.log('refresh error', e);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleNext = () => {
     if (step < 4) {
@@ -363,6 +379,15 @@ const DriverAssignedFlowScreen = ({ route }) => {
           <AdaptiveText style={[styles.summaryText, { color: '#4b48ab', fontFamily: Fonts.semi_bold, flex: 1 }]}>
             Waiting for driver to arrive and upload vehicle condition photos...
           </AdaptiveText>
+          <TouchableOpacity
+            onPress={handleRefresh}
+            disabled={isRefreshing}
+            style={{ padding: 8, borderRadius: 20, backgroundColor: '#e8e8f8', marginLeft: 8 }}
+          >
+            {isRefreshing
+              ? <ActivityIndicator size="small" color="#4b48ab" />
+              : <Ionicons name="refresh" size={18} color="#4b48ab" />}
+          </TouchableOpacity>
         </View>
       </View>
 
