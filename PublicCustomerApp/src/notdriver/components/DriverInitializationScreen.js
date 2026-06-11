@@ -211,7 +211,7 @@ export default function DriverInitializationScreen() {
           // Camera/gallery return triggers an appState change that re-fires this effect.
           const _currentStack = useStackScreenStore.getState().stackScreen;
           const _topScreen = _currentStack[_currentStack.length - 1];
-          const _actingScreens = ['ActingDriverPreTripScreen', 'ActingDriverPostTripScreen', 'DriverVehiclePhotosScreen', 'DriverBillsExpensesScreen'];
+          const _actingScreens = ['ActingDriverPreTripScreen', 'ActingDriverPostTripScreen', 'DriverVehiclePhotosScreen', 'DriverBillsExpensesScreen', 'DriverPreTripOverview'];
           if (!_actingScreens.includes(_topScreen) && _topScreen !== 'PublicDriverTrackingScreen') {
             setStackScreen('PublicDriverTrackingScreen')
           }

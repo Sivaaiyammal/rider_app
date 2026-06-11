@@ -9,6 +9,7 @@ import DriverCalendarView from './DriverCalendarView';
 import { useMapMarkerStore } from '../../../common/store/useMapMarkerStore';
 import useCurrentScreenStore from '../../../common/store/useCurrentScreenStore';
 import Marker from '../../../common/map/Marker';
+import publicrideDriverApi from '../../api/publicrideDriverApi';
 
 const DriverCalendarScreen = () => {
   const { t } = useTranslation();
@@ -115,11 +116,13 @@ const DriverCalendarScreen = () => {
 
   const handleStartTrip = async (trip) => {
     setUpComingTripDetails(trip);
-    // setStackScreen('UpComingTripsView');
-
     setStackScreen('DriverPreTripOverview');
 
     try {
+      // Accept the trip — backend emits actingDriverStarted to the customer,
+      // which shows the Driver Assigned banner on their home screen.
+      await publicrideDriverApi.acceptTrip({ tripId: trip._id }, userInfo?.token);
+
       const api = new APIRequest();
       const response = await api.request(
         `/publicrides/driver/v2/getTrips?page=1&limit=1&tripId=${trip._id}`,
@@ -131,7 +134,7 @@ const DriverCalendarScreen = () => {
         setUpComingTripDetails(response.trips[0]);
       }
     } catch (error) {
-      console.error('Error fetching dynamic trip details:', error);
+      console.error('Error in handleStartTrip:', error);
     }
   };
 

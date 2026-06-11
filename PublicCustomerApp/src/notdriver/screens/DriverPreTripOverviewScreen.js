@@ -8,9 +8,12 @@ import {
   Alert,
   Linking,
   Modal,
-  TextInput,
+  KeyboardAvoidingView,
+  Platform,
   NativeModules,
   ScrollView,
+  TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Feather from 'react-native-vector-icons/Feather';
@@ -72,6 +75,7 @@ export default function DriverPreTripOverviewScreen() {
 
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpValue, setOtpValue] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
   const [itinExpanded, setItinExpanded] = useState(false);
   const [showNavModal, setShowNavModal] = useState(false);
 
@@ -93,6 +97,8 @@ export default function DriverPreTripOverviewScreen() {
     setCurrentStage,
     isArrived,
     setIsArrived,
+    preTripDone,
+    odometerPhotoDone,
   } = useActingDriverMediaStore();
 
   const { upComingTripDetails, setUpComingTripDetails } = useTripAcceptStore();
@@ -103,6 +109,8 @@ export default function DriverPreTripOverviewScreen() {
   const isPhotosApproved = !!(
     upComingTripDetails?.bills?.vehiclePhotosApproved === true
   );
+
+  const isPhotosSent = !isPhotosApproved && (preTripDone && odometerPhotoDone);
 
   const isCustomerPaid = !!(
     upComingTripDetails?.bills?.isConfirmationFeePaid === true ||
@@ -196,14 +204,35 @@ export default function DriverPreTripOverviewScreen() {
     setStackScreen('DriverVehiclePhotosScreen');
   };
 
-  const handleVerifyOtp = () => {
-    if (otpValue === '1234') {
-      setShowOtpModal(false);
-      setCurrentStage(4);
-      Alert.alert('Verification Success', 'Customer verified successfully. You can now start the ride!');
-    } else {
-      Alert.alert('Invalid OTP', 'Please enter the correct OTP.');
+  const verifyOTP = async (otp) => {
+    setOtpLoading(true);
+    try {
+      const api = new APIRequest();
+      const tripId = upComingTripDetails?._id;
+      const res = await api.request('/publicrides/driver/v2/verifyTripOtp', 'POST', { otp, tripId }, userInfo?.token);
+      setOtpLoading(false);
+      if (res?.success) return true;
+      return false;
+    } catch {
+      setOtpLoading(false);
+      return false;
     }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otpValue.length !== 4) return;
+    const success = await verifyOTP(otpValue);
+    if (success) {
+      setShowOtpModal(false);
+      setOtpValue('');
+      setCurrentStage(4);
+    } else {
+      Alert.alert('Invalid OTP', 'The OTP you entered is incorrect. Please try again.');
+    }
+  };
+
+  const handleStartTripAfterOTP = () => {
+    setStackScreen('ActingDriverOnRideScreen');
   };
 
   const handleNavMode = async (mode) => {
@@ -388,7 +417,7 @@ export default function DriverPreTripOverviewScreen() {
                 <Text style={styles.markArrivalText}>Mark Arrival</Text>
               </TouchableOpacity>
             )}
-            {isArrived && currentStage === 3 && (
+            {isArrived && currentStage === 3 && isPhotosApproved && (
               <TouchableOpacity style={[styles.markArrivalBtn, { backgroundColor: '#FF9800' }]} onPress={() => setShowOtpModal(true)}>
                 <Text style={styles.markArrivalText}>Verify OTP</Text>
               </TouchableOpacity>
@@ -642,13 +671,18 @@ export default function DriverPreTripOverviewScreen() {
                 <MaterialCommunityIcons name="shield-check" size={12} color="#fff" />
                 <Text style={styles.photosApprovedBadgeText}>Approved</Text>
               </View>
+            ) : isPhotosSent ? (
+              <View style={styles.photosWaitingBadge}>
+                <MaterialCommunityIcons name="clock-outline" size={12} color="#E65100" />
+                <Text style={styles.photosWaitingBadgeText}>Pending</Text>
+              </View>
             ) : (
               <Text style={styles.checklistStatusText}>{completedCount}/{CHECKLIST_ITEMS.length} Completed</Text>
             )}
           </View>
 
           {isPhotosApproved ? (
-            /* Approved state — tap to view photos read-only */
+            /* Approved — tap to view read-only */
             <TouchableOpacity style={styles.approvedChecklistRow} onPress={() => setStackScreen('DriverVehiclePhotosScreen')} activeOpacity={0.8}>
               <View style={styles.approvedChecklistIcon}>
                 <MaterialCommunityIcons name="image-multiple-outline" size={22} color="#43A047" />
@@ -658,6 +692,18 @@ export default function DriverPreTripOverviewScreen() {
                 <Text style={styles.approvedChecklistSub}>Tap to view uploaded photos</Text>
               </View>
               <MaterialCommunityIcons name="chevron-right" size={20} color="#43A047" />
+            </TouchableOpacity>
+          ) : isPhotosSent ? (
+            /* Waiting for customer approval */
+            <TouchableOpacity style={styles.waitingChecklistRow} onPress={() => setStackScreen('DriverVehiclePhotosScreen')} activeOpacity={0.8}>
+              <View style={styles.waitingChecklistIcon}>
+                <MaterialCommunityIcons name="clock-outline" size={22} color="#E65100" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.waitingChecklistTitle}>Waiting for customer approval</Text>
+                <Text style={styles.waitingChecklistSub}>Photos sent — customer is reviewing</Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={20} color="#E65100" />
             </TouchableOpacity>
           ) : (
             /* Normal upload checklist */
@@ -717,7 +763,7 @@ export default function DriverPreTripOverviewScreen() {
         {currentStage === 4 ? (
           <TouchableOpacity
             style={[styles.floatingNavBtn, { backgroundColor: '#4CAF50' }]}
-            onPress={() => handleAction('start_trip')}
+            onPress={handleStartTripAfterOTP}
             activeOpacity={0.85}
           >
             <MaterialCommunityIcons name="play-circle-outline" size={20} color="#FFF" />
@@ -744,30 +790,33 @@ export default function DriverPreTripOverviewScreen() {
         )}
       </View>
 
-      {/* OTP Verification Modal */}
-      <Modal visible={showOtpModal} transparent animationType="fade" onRequestClose={() => setShowOtpModal(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Customer Verification</Text>
-            <Text style={styles.modalSubtitle}>Ask the passenger for the OTP to start the trip.</Text>
-            <TextInput
-              style={styles.otpInput}
-              keyboardType="number-pad"
-              maxLength={4}
-              placeholder="0000"
-              placeholderTextColor="#9E9E9E"
-              value={otpValue}
-              onChangeText={setOtpValue}
-            />
-            <View style={styles.modalBtnRow}>
-              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setShowOtpModal(false)}>
-                <Text style={styles.modalCancelBtnTxt}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalVerifyBtn} onPress={handleVerifyOtp}>
-                <Text style={styles.modalVerifyBtnTxt}>Verify</Text>
-              </TouchableOpacity>
+      {/* OTP Verification */}
+      <Modal visible={showOtpModal} transparent animationType="slide" onRequestClose={() => setShowOtpModal(false)}>
+        <View style={styles.otpOverlay}>
+          <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <View style={styles.otpSheet}>
+              <View style={styles.otpHandle} />
+              <Text style={styles.otpTitle}>Verify OTP</Text>
+              <Text style={styles.otpSub}>Enter the 4-digit OTP provided by the customer</Text>
+              <TextInput
+                style={styles.otpInput}
+                value={otpValue}
+                onChangeText={setOtpValue}
+                keyboardType="number-pad"
+                maxLength={4}
+                placeholder="0000"
+                placeholderTextColor="#BDBDBD"
+              />
+              <View style={styles.otpBtnRow}>
+                <TouchableOpacity style={styles.otpCancelBtn} onPress={() => { setShowOtpModal(false); setOtpValue(''); }}>
+                  <Text style={styles.otpCancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={[styles.otpVerifyBtn, otpLoading && { opacity: 0.7 }]} onPress={handleVerifyOtp} disabled={otpLoading}>
+                  {otpLoading ? <ActivityIndicator size="small" color="#FFF" /> : <Text style={styles.otpVerifyBtnText}>Verify</Text>}
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
 
@@ -1142,11 +1191,21 @@ const styles = StyleSheet.create({
   photosApprovedBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#43A047', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, gap: 3 },
   photosApprovedBadgeText: { fontSize: 11, fontFamily: Fonts.bold, color: '#fff' },
 
+  // Photos waiting badge (checklist header)
+  photosWaitingBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF3E0', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3, gap: 3 },
+  photosWaitingBadgeText: { fontSize: 11, fontFamily: Fonts.bold, color: '#E65100' },
+
   // Approved checklist row
   approvedChecklistRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, paddingHorizontal: 4 },
   approvedChecklistIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8F5E9', alignItems: 'center', justifyContent: 'center' },
   approvedChecklistTitle: { fontSize: 14, fontFamily: Fonts.bold, color: '#2E7D32' },
   approvedChecklistSub: { fontSize: 12, fontFamily: Fonts.regular, color: '#757575', marginTop: 1 },
+
+  // Waiting checklist row
+  waitingChecklistRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, paddingHorizontal: 4 },
+  waitingChecklistIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF3E0', alignItems: 'center', justifyContent: 'center' },
+  waitingChecklistTitle: { fontSize: 14, fontFamily: Fonts.bold, color: '#E65100' },
+  waitingChecklistSub: { fontSize: 12, fontFamily: Fonts.regular, color: '#757575', marginTop: 1 },
 
   // Floating Action Bar
   floatingBar: {
@@ -1215,28 +1274,17 @@ const styles = StyleSheet.create({
   floatingSosBtnText: { fontSize: 9, fontFamily: Fonts.bold, color: '#FFF', letterSpacing: 0.5 },
 
   // OTP Modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
-  modalContent: { width: '80%', backgroundColor: '#FFF', borderRadius: 14, padding: 24, alignItems: 'center' },
-  modalTitle: { fontSize: 18, fontFamily: Fonts.bold, color: '#0F223C', marginBottom: 8 },
-  modalSubtitle: { fontSize: 13, fontFamily: Fonts.regular, color: '#666', textAlign: 'center', marginBottom: 16 },
-  otpInput: {
-    borderWidth: 1,
-    borderColor: '#BDBDBD',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    fontSize: 20,
-    fontFamily: Fonts.bold,
-    color: '#0F223C',
-    textAlign: 'center',
-    width: 120,
-    marginBottom: 20,
-  },
-  modalBtnRow: { flexDirection: 'row', width: '100%', gap: 12 },
-  modalCancelBtn: { flex: 1, borderWidth: 1, borderColor: '#E0E0E0', borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
-  modalCancelBtnTxt: { fontSize: 14, fontFamily: Fonts.medium, color: '#666' },
-  modalVerifyBtn: { flex: 1, backgroundColor: '#299865', borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
-  modalVerifyBtnTxt: { fontSize: 14, fontFamily: Fonts.semi_bold, color: '#FFF' },
+  otpOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  otpSheet: { backgroundColor: '#FFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 24, paddingTop: 12, paddingBottom: 32 },
+  otpHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: '#E0E0E0', alignSelf: 'center', marginBottom: 16 },
+  otpTitle: { fontSize: 18, fontFamily: Fonts.bold, color: '#0F223C', marginBottom: 6 },
+  otpSub: { fontSize: 13, fontFamily: Fonts.regular, color: '#757575', marginBottom: 20 },
+  otpInput: { borderWidth: 1.5, borderColor: '#E0E0E0', borderRadius: 12, fontSize: 24, fontFamily: Fonts.bold, color: '#0F223C', textAlign: 'center', letterSpacing: 12, paddingVertical: 14, marginBottom: 24 },
+  otpBtnRow: { flexDirection: 'row', gap: 12 },
+  otpCancelBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, borderWidth: 1.5, borderColor: '#E0E0E0', alignItems: 'center' },
+  otpCancelBtnText: { fontSize: 15, fontFamily: Fonts.semi_bold, color: '#757575' },
+  otpVerifyBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: '#0F223C', alignItems: 'center' },
+  otpVerifyBtnText: { fontSize: 15, fontFamily: Fonts.bold, color: '#FFF' },
 
   // Nav Choice Modal
   navModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },

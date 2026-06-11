@@ -77,6 +77,7 @@ const DriverAssignedFlowScreen = ({ route }) => {
         } else if (approvalStatus === 'approved') {
           if (response?.success) {
             currentRideInfo.setBills({ ...currentRideInfo.bills, vehiclePhotosApproved: true });
+            if (response?.otp) currentRideInfo.setOtp(response.otp);
             setStep(6);
           }
         }

@@ -718,11 +718,12 @@ module.exports = function (CLASS) {
 
     CLASS.prototype.approveTripPhotos = async function (req, res) {
         try {
-            const {tripId, approvalStatus} = req.body;
+            const {tripId, approvalStatus, approval} = req.body;
+            const photoStatus = approvalStatus || approval;
             const trip = await Trip.getTripById(tripId);
             if (!trip) return res.status(400).json({success: false, message: 'Trip not Found'});
-            
-            if (approvalStatus === 'approved') {
+
+            if (photoStatus === 'approved') {
                 const otp = Math.floor(1000 + Math.random() * 9000).toString();
                 const setPayload = {
                     'bills.vehiclePhotosApproved': true,

@@ -95,6 +95,7 @@ import messaging from '@react-native-firebase/messaging';
 import DriverMapScreenV2 from './DriverMapScreenV2';
 import DriverMapScreenV3 from './DriverMapScreenV3';
 import DriverPreTripOverviewScreen from './DriverPreTripOverviewScreen';
+import ActingDriverOnRideScreen from './ActingDriverOnRideScreen';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;
@@ -768,6 +769,8 @@ const PublicRidesDriverHomeScreen = () => {
               return <DriverBillsExpensesScreen />;
       case 'DriverPreTripOverview':
               return <DriverPreTripOverviewScreen />;
+      case 'ActingDriverOnRideScreen':
+              return <ActingDriverOnRideScreen />;
       default:
         return <Text>Home</Text>;
     }
