@@ -1,1597 +1,1403 @@
-import {ActivityIndicator, AppState, Linking, KeyboardAvoidingView, Modal, NativeModules, Platform, Pressable, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  Linking,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import 'moment-timezone';
 import Feather from 'react-native-vector-icons/Feather';
-import useUserStore from '../../common/store/useUserStore';
-import { useMapMarkerStore } from '../../common/store/useMapMarkerStore';
-import useDeviceTokenStore from '../../common/store/useDeviceTokenStore';
-import { useTripAcceptStore } from '../store/useTripAcceptStore';
+import { Colors, Fonts } from '../../common/constants/constants';
 import { useStackScreenStore } from '../../common/store/useStackScreenStore';
-import usePublicDriverStore from '../store/usePublicDriverStore';
-import { checkBackgroundLocationPermissions, checkFineLocationPermissions, RequestBackgroundLocationPermission, RequestFineLocationPermission } from '../../common/controllers/PermissionHandler';
-import locationTask from '../../common/controllers/GetCurrentLocation';
+import { useMapMarkerStore } from '../../common/store/useMapMarkerStore';
+import useTripsStore from '../store/useTripsStore';
+import useActingDriverMediaStore from '../store/useActingDriverMediaStore';
+import { useTripAcceptStore } from '../store/useTripAcceptStore';
+import CustomeBottomSheet from '../../common/components/CustomeBottomSheet';
+import CancelRideModal from '../components/CancelModel';
 import BGLocationTask from '../../common/controllers/BGLocationTask';
-import driverWaitingTime from '../Controller/DriverWaitingTime';
+import locationTask from '../../common/controllers/GetCurrentLocation';
+import {
+  checkBackgroundLocationPermissions,
+  checkFineLocationPermissions,
+} from '../../common/controllers/PermissionHandler';
+import useUserStore from '../../common/store/useUserStore';
+import { useTranslation } from 'react-i18next';
+import { AddBillModal } from './DriverBillsExpensesScreen';
+import { ScrollView as GHScrollView } from 'react-native-gesture-handler';
+import APIRequest from '../../common/APIRequest';
+import { cancelTrip } from '../components/CancelTripUpdate';
 import { showNotification } from '../../common/components/Alerts/showNotification';
 import { DataStore } from '../../common/controllers/DataStore';
-import APIRequest from '../../common/APIRequest';
-import { height } from '../../common/utils/scalingutils';
-import { Colors, Fonts } from '../../common/constants/constants';
-import { RouteScreenStyles } from '../styles/RouteScreenStyles';
-import TrackingMapIcons from '../../common/components/Alerts/TrackingMapIcons';
-import FullScreenLoader from '../../common/loaders/FullScreenLoader';
-import { DateTimeFormatter } from '../../common/utils/DateTimeFormatter';
-import { utils } from '../../common/utils/utils';
-import AddressComponent from '../components/AddressComponent';
-import CustomeBottomSheet from '../../common/components/CustomeBottomSheet';
-import BottomSheetPopup from '../../common/components/BottomSheetPopup';
-import { findDistanceInMeters } from '../../common/core/FindDistance';
-import PickUpModal from '../components/PickUpModal';
-import WaitingTime from '../components/WaitingTime';
-import TripFareCalculator from '../../common/core/TripFareCalculator';
-import useTripsStore from '../store/useTripsStore';
-import { cancelTrip } from '../components/CancelTripUpdate';
-import RideMatchWSService from '../../common/controllers/socketServices/RideMatchSocketService';
-import CancelRideModal from '../components/CancelModel';
-import TripDetails from '../components/TripDetailCom';
-import { useTranslation } from 'react-i18next';
-import { firebaselog_onRide } from '../../common/utils/FirebaseAnalytics';
-import ArrivedPickUpLocation from '../components/ArrivedPickUpLocation';
-import ModalFooter from '../components/ModalFooter';
-import useActingDriverMediaStore from '../store/useActingDriverMediaStore';
-import ActingDriverMediaButtons from '../components/ActingDriverMediaButtons';
-import ActingDriverTripInfo from '../components/ActingDriverTripInfo';
 
-const {NeNativeModule} = NativeModules;
+const VEHICLE_IMAGES = {
+  suv: require('../../notCustomer/assets/vehicle/SUV.webp'),
+  sedan: require('../../notCustomer/assets/vehicle/SEDAN.webp'),
+  hatchback: require('../../notCustomer/assets/vehicle/HATCHBACK.webp'),
+  exsedan: require('../../notCustomer/assets/vehicle/ExSEDAN.webp'),
+  executive_sedan: require('../../notCustomer/assets/vehicle/ExSEDAN.webp'),
+  auto: require('../../notCustomer/assets/vehicle/AUTO.webp'),
+  bike: require('../../notCustomer/assets/vehicle/BIKE.webp'),
+  electric_auto: require('../../notCustomer/assets/vehicle/ELECTRIC_AUTO.webp'),
+};
 
-const ActingDriverOnRide = () => {
-  const {t} = useTranslation()
-  const[cancelRideModalVisible, setCancelRideModalVisible] = useState(false);
-  const {userInfo} = useUserStore();
+const getVehicleImage = (type) => {
+  if (!type) return require('../assets/images/audi_q2_white.png');
+  const key = type.toLowerCase().trim().replace(/[\s-]/g, '_');
+  return VEHICLE_IMAGES[key] || require('../assets/images/audi_q2_white.png');
+};
+
+const TABS = ['Trip', 'Earnings & Bills', 'Safety'];
+
+const APPROVAL_CONFIG = {
+  pending:  { color: '#FF9800', bg: '#FFF3E0', icon: 'clock-outline',  label: 'Pending' },
+  approved: { color: '#43A047', bg: '#E8F5E9', icon: 'check-circle',   label: 'Approved' },
+  rejected: { color: '#E53935', bg: '#FFEBEE', icon: 'close-circle',   label: 'Rejected' },
+};
+
+const isSameDay = (a, b) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
+
+const getDayLabel = (dateStr) => {
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  const parts = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const date = parts
+    ? new Date(parseInt(parts[1]), parseInt(parts[2]) - 1, parseInt(parts[3]))
+    : new Date(dateStr);
+  if (isSameDay(date, today)) return 'Today';
+  if (isSameDay(date, tomorrow)) return 'Tomorrow';
+  return date.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+};
+
+const getDurationLabel = (hours) => {
+  if (!hours || Number(hours) === 0) return 'Full Day';
+  const h = Number(hours);
+  return h === 1 ? '1 Hour' : `${h} Hours`;
+};
+
+const formatTime = (ts) => {
+  if (!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+};
+
+const ActingDriverOnRideScreen = () => {
+  const { setStackScreen } = useStackScreenStore();
+
   const {
+    disduration,
+    userLocation,
     setStartNavigation,
     setDirectionPoints,
-    disduration,
-    setDisduration,
-    userLocation,
-    directionReadyCallback,
-    directionPoints,
-    setMapMarkers,
-    startNavigation,
     routeLoading,
-    routeNotFound,
+    setMapMarkers,
     setRouteNotFound,
-    setDirectionResponse
   } = useMapMarkerStore();
-  const {activeTripData, setActiveTripData, updateStopData, setCurrentTripAcceptedTime} = useTripsStore();
-  const {
-    hasLocationPermission,
-    hasBackgroundLocationPermission,
-    hasNotificationPermission,
-  } = useDeviceTokenStore();
-  const {loading, setLoading, tripDetails, setTripDetails} = useTripAcceptStore()
-  const {fetchLocationDate, setFetchLocationDate, isGetFare, setIsOnGoing, setIsGetFare } = useTripAcceptStore()
-  const {setFareBreakDown} = useTripsStore()
+  
 
-  const setStackScreen = useStackScreenStore(state => state.setStackScreen);
+  const { activeTripData, fareBreakDown } = useTripsStore();
+  const { loading, setLoading, setFetchLocationDate, upComingTripDetails, setIsGetFare, setIsOnGoing, setHasActiveTrip } = useTripAcceptStore();
+  const { postTripDone, bills, setBills, reset: resetDriverMedia } = useActingDriverMediaStore();
+  const { userInfo } = useUserStore();
+  const token = userInfo?.token;
+  const { t } = useTranslation();
 
-  const [modalVisible, setModalVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isReachedPickup, setIsReachedPickup] = useState(false);
-  const [isReachedDropoff, setIsReachedDropoff] = useState(false);
-  const [_error, setError] = useState(null)
+  const [cancelRideModalVisible, setCancelRideModalVisible] = useState(false);
+  const [openNavChoiceModal, setOpenNavChoiceModal] = useState(false);
+  const [itinNavTarget, setItinNavTarget] = useState(null);
+  const [showPostTripWarning, setShowPostTripWarning] = useState(false);
+  const [activeTab, setActiveTab] = useState(0);
+  const [showAddBillModal, setShowAddBillModal] = useState(false);
+  const [arrivedStopInfo, setArrivedStopInfo] = useState(null);
+  const [localReachedStops, setLocalReachedStops] = useState(new Set());
+  const [markingDone, setMarkingDone] = useState(false);
+  const [itinOpen, setItinOpen] = useState(true);
 
-  const [currentWaypointIndex, setCurrentWaypointIndex] = useState(0);
-  const [tempStopData] = useState(null);
-  const [showWaypointReached,setShowWaypointReached] = useState(false)
-  const [newLegIndex, setNewLegIndex] = useState(0)
-  const prevNavLegIndex = useRef(null);
-  const [openNavChoiceModal, setOpenNavChoiceModal] = useState(false)
-  const [openRouteRetryModal, setOpenRouteRetryModal] = useState(false)
+  const onBillAdded = (bill) => {
+    const existing = bills?.length > 0 ? bills : (trip?.bills?.bills || []).map((b, idx) => ({ ...b, id: `server_${idx}` }));
+    setBills([...existing, bill]);
+    setShowAddBillModal(false);
+  };
 
-  const [pickUpAlertLoading, setPickUpAlertLoading] = useState(false)
+  // upComingTripDetails is guaranteed to be set on entry; activeTripData may arrive later via socket
+  const trip = activeTripData?.[0] || upComingTripDetails;
+  const tripsStatus = activeTripData?.[0]?.status || upComingTripDetails?.status || '';
 
-  const [watingTime, setWaitingTime] = useState(0)
-  const [isAlertSent, setIsAlertSent] = useState(false)
+  // console.log('[ActingDriverOnRide] activeTripData:', JSON.stringify(activeTripData?.[0], null, 2));
+  // console.log('[ActingDriverOnRide] upComingTripDetails:', JSON.stringify(upComingTripDetails, null, 2));
+  // console.log('[ActingDriverOnRide] trip (resolved):', JSON.stringify(trip, null, 2));
+  // console.log('[ActingDriverOnRide] vehicle fields => number:', trip?.vehicleNumber, '| model:', trip?.vehicleModel, '| color:', trip?.vehicleColor, '| type:', trip?.vehicleType, '| fuelType:', trip?.fuelType);
+  // console.log('[ActingDriverOnRide] passengerVehicleData:', JSON.stringify(trip?.passengerVehicleData, null, 2));
+  // console.log('[ActingDriverOnRide] vehicleData:', JSON.stringify(trip?.vehicleData, null, 2));
+  // console.log('[ActingDriverOnRide] tripsStatus:', tripsStatus);
+  // console.log('[ActingDriverOnRide] userLocation:', userLocation);
 
-  const {driverInfo} = usePublicDriverStore();
-
-  const tripsStatus = activeTripData && activeTripData[0]?.status ? activeTripData[0]?.status : "";
-
-  const {
-    preTripDone, dentPhotosDone, odometerPhotoDone,
-    postTripDone, pendingNavOpen, setPendingNavOpen, reset: resetDriverMedia,
-  } = useActingDriverMediaStore();
-
-  // Server-side upload checks (fallback if store was cleared)
-  const _bills = activeTripData?.[0]?.bills || {};
-  const _prePhotos = _bills.preTripVehiclePhotos;
-  const preTripUploadedOnServer = !!(_prePhotos?.front && _prePhotos?.rear && _prePhotos?.leftSide && _prePhotos?.rightSide);
-  const dentUploadedOnServer = Array.isArray(_bills.dentPhotos) && _bills.dentPhotos.length > 0;
-  const odometerUploadedOnServer = !!_bills.odometerPhoto;
-  const _postPhotos = _bills.postTripVehiclePhotos;
-  const postTripUploadedOnServer = !!(_postPhotos?.front && _postPhotos?.rear && _postPhotos?.leftSide && _postPhotos?.rightSide);
+  const _postPhotos = trip?.bills?.postTripVehiclePhotos;
+  const postTripUploadedOnServer = !!(
+    _postPhotos?.front && _postPhotos?.rear && _postPhotos?.leftSide && _postPhotos?.rightSide
+  );
   const postTripReady = postTripDone || postTripUploadedOnServer;
 
-  // All three must be uploaded before OTP entry is allowed
-  const preMediaReady =
-    (preTripDone || preTripUploadedOnServer) &&
-    (dentPhotosDone || dentUploadedOnServer) &&
-    (odometerPhotoDone || odometerUploadedOnServer);
+  const stops = trip?.stops || [];
 
-  const [showPreTripWarning, setShowPreTripWarning] = useState(false);
-  const [showPostTripWarning, setShowPostTripWarning] = useState(false);
+  const customerName = trip?.bookingForName || '-';
+  const customerPhone = trip?.bookingForPhone || '-';
+  const vehicleNumber = trip?.vehicleNumber || upComingTripDetails?.vehicleNumber || '-';
+  const vehicleModel = trip?.vehicleModel || upComingTripDetails?.vehicleModel || trip?.vehicleType?.replace(/_/g, ' ') || upComingTripDetails?.vehicleType?.replace(/_/g, ' ') || '-';
+  const vehicleColor = trip?.vehicleColor || upComingTripDetails?.vehicleColor || '';
+  const tripId = trip?.rideId || '-';
+  const estimatedFare = trip?.minFare || trip?.estimatedFare || 0;
+  // Use media store bills (includes newly added bills); fall back to server bills when store is empty
+  const displayBills = bills?.length > 0 ? bills : (trip?.bills?.bills || []);
+  const expenseTotal = displayBills.reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
+  const driverEarnings = fareBreakDown?.breakdown?.driverEarnings || estimatedFare;
 
-  useEffect(() => {
-    if (pendingNavOpen && preTripDone) {
-      setPendingNavOpen(false);
-      setOpenNavChoiceModal(true);
-    }
-  }, [preTripDone, pendingNavOpen]);
+  const specialRequests = [];
+  if (trip?.femaleOnly) specialRequests.push({ icon: 'gender-female', label: 'Female Driver Only' });
+  if (trip?.kidsOnBoard) specialRequests.push({ icon: 'baby-carriage', label: 'Kids On Board' });
+  if (trip?.elderlyOnBoard) specialRequests.push({ icon: 'human-cane', label: 'Elderly On Board' });
+  if (trip?.nightRide) specialRequests.push({ icon: 'weather-night', label: 'Night Ride' });
+  if (trip?.actingDriverMaxSpeed) specialRequests.push({ icon: 'speedometer-medium', label: `Max Speed: ${trip.actingDriverMaxSpeed} km/h` });
+  const customerNotes = trip?.actingDriverOtherRequests || null;
 
-  const getNonreachedStops = useTripsStore.getState().getNonreachedStops;
-  const nonreachedStops = getNonreachedStops();
+  const arrangements = [];
+  if (trip?.actingDriverAccommodation) arrangements.push({ icon: 'bed-outline', label: 'Accommodation Provided' });
+  if (trip?.actingDriverFood) arrangements.push({ icon: 'food-outline', label: 'Food Provided' });
 
-  const appState = useRef(AppState.currentState);
-  const [appStateVisible, setAppStateVisible] = useState(appState.current);
+  const itinerary = trip?.actingDriverItinerary || {};
+  const itineraryDates = Object.keys(itinerary).sort();
+  const isMultiDay = itineraryDates.length > 1;
+  const durationLabel = getDurationLabel(trip?.actingDriverHours);
 
-  const [otpLoading, setOTPLoading] = useState(false);
+  const preTripPhotos = trip?.bills?.preTripVehiclePhotos || {};
+  const dentPhotos = Array.isArray(trip?.bills?.dentPhotos) ? trip.bills.dentPhotos : [];
+  const vehiclePhotoEntries = [
+    preTripPhotos?.front    && { key: 'front',    label: 'Front',    uri: preTripPhotos.front },
+    preTripPhotos?.rear     && { key: 'rear',     label: 'Rear',     uri: preTripPhotos.rear },
+    preTripPhotos?.leftSide && { key: 'leftSide', label: 'Left',     uri: preTripPhotos.leftSide },
+    preTripPhotos?.rightSide&& { key: 'rightSide',label: 'Right',    uri: preTripPhotos.rightSide },
+    trip?.bills?.odometerPhoto && { key: 'odometer', label: 'Odometer', uri: trip.bills.odometerPhoto },
+    ...dentPhotos.map((uri, i) => ({ key: `dent_${i}`, label: `Dent ${i + 1}`, uri })),
+  ].filter(Boolean);
 
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === 'active'
-      ) {
-        console.log('App has come to the foreground!');
-      }
-
-      appState.current = nextAppState;
-      setAppStateVisible(appState.current);
+  // ─── Geofence: detect arrival at current itinerary stop ──────────────────
+  React.useEffect(() => {
+    if (!userLocation || !itinerary || arrivedStopInfo) return;
+    const allLocs = itineraryDates.flatMap(dateStr => {
+      const dl = Array.isArray(itinerary[dateStr]) ? itinerary[dateStr] : (itinerary[dateStr]?.locations || []);
+      return dl.map(l => ({ ...l, dateStr }));
     });
+    const globalIdx = allLocs.findIndex((l, gi) => !l.isReached && !localReachedStops.has(gi));
+    if (globalIdx < 0) return;
+    const loc = allLocs[globalIdx];
+    const tLat = loc.lat ?? loc.location?.[1];
+    const tLon = loc.lon ?? loc.lng ?? loc.location?.[0];
+    if (!tLat || !tLon) return;
+    const dLat = userLocation[0];
+    const dLon = userLocation[1];
+    const R = 6371;
+    const toRad = v => (v * Math.PI) / 180;
+    const sinA = Math.sin(toRad(tLat - dLat) / 2) ** 2;
+    const sinB = Math.cos(toRad(dLat)) * Math.cos(toRad(tLat)) * Math.sin(toRad(tLon - dLon) / 2) ** 2;
+    const dist = R * 2 * Math.atan2(Math.sqrt(sinA + sinB), Math.sqrt(1 - sinA - sinB));
+    if (dist < 0.15) {
+      setArrivedStopInfo({ loc, globalIdx });
+    }
+  }, [userLocation]);
 
-    return () => {
-      subscription.remove();
-    };
-  }, []);
+  const handleMarkStopDone = async () => {
+    if (!arrivedStopInfo) return;
+    setMarkingDone(true);
+    try {
+      const api = new APIRequest();
+      await api.request('/publicrides/driver/v2/markStopReached', 'POST', {
+        tripId: trip?._id,
+        stopIndex: arrivedStopInfo.globalIdx,
+        stopName: arrivedStopInfo.loc.name,
+      }, token);
+      setLocalReachedStops(prev => new Set([...prev, arrivedStopInfo.globalIdx]));
+      setArrivedStopInfo(null);
+    } catch {
+      showNotification('Error', 'Could not mark stop as done', 'danger');
+    } finally {
+      setMarkingDone(false);
+    }
+  };
 
-  const onStartNavigationPress = async () => {
+  // ─── Start Navigation ──────────────────────────────────────────────────────
+  const onStartNavigationPress = () => setOpenNavChoiceModal(true);
+
+  const openNavForItinLoc = (loc) => {
+    setItinNavTarget(loc);
     setOpenNavChoiceModal(true);
   };
 
-  const onNavigationClick = async () => {
-    const haslocationPression = await checkFineLocationPermissions();
-    const hasbackgroundPression = Platform.OS === 'android' && Platform.Version <= 28 ? true : await checkBackgroundLocationPermissions();
-    if (!haslocationPression) {
-      await RequestFineLocationPermission();
-      return;
-    }
-    if (!hasbackgroundPression) {
-      await RequestBackgroundLocationPermission();
-      return;
-    }
-    if (!userLocation) {
-      await locationTask.getCurrentLocation();
-      return;
-    }
-  };
-
-  const onStartWating = () => {
-    if (BGLocationTask.isRunning()) {
-        driverWaitingTime.startWatingTime()
-        setShowWaypointReached(false)
-        setShowTimerStartModal(false)
-    } else {
-       showNotification('Background service Not Enabled','Please Enable Foregorund Service before Starting','danger')
-    }
-  }
-
-  const onStopTimer =()=> {
-    driverWaitingTime.stopWaitingTime()
-  }
-
-  const handleEndTrip = async (reason, translatedReason) => {
-    const _translatedReason = translatedReason || reason;
-
-    if (!userLocation) {
-      await locationTask.getCurrentLocation();
-      showNotification('Fetching Current Location', '', 'info');
-      return;
-    }
-      setLoading(true);
-      if (tripsStatus === 'ACCEPTED') {
-        const api = new APIRequest();
-        const response = await api.request(`/publicrides/driver/v2/cancelTrip`, 'POST', {tripId:activeTripData[0]?._id, reason: _translatedReason, isBeforePickup: true,  droppedAtLoc: {
-          lat: userLocation?.[0],
-          lon: userLocation?.[1]
-        }}, userInfo.token);
-        if (response.success) {
-          resetDriverMedia();
-          cancelTrip(response)
-          firebaselog_onRide('OR_Status(OR_S)', 'OR_S:cancelled_by_driver_before_pickup')
-        } else {
-          showNotification(`Failed to Cancel Trip`, response?.message, 'danger')
-        }
-        setLoading(false);
-      } else if (tripsStatus === 'PICKEDUP' && reason !== 'reached_destination') {
-        setIsGetFare(false)
-        setFetchLocationDate(true)
-        DataStore.storeData('isOngoingTrip', true)
-        setIsOnGoing(true)
-      } else if (tripsStatus === 'PICKEDUP' && reason === 'reached_destination')  {
-        if (!postTripReady) {
-          setLoading(false);
-          setShowPostTripWarning(true);
-          return;
-        }
-        endTrip();
-      } else {
-        setLoading(true);
-        try {
-          const cancelData = {driver_id:userInfo?._id, trip_id:activeTripData?.[0]?._id, response: 'reject'}
-          RideMatchWSService.emit('driver_trip_response', cancelData)
-          setCancelRideModalVisible(false)
-          DataStore.storeData('activeTripId', null);
-          setLoading(false);
-        }catch (err) {
-          console.log('hari-->>accept-->>err-->>', err)
-        }
-      }
-  }
-
-  const onFairDetails = async (res, encodedPolyline) => {
-    if (res.success) {
-      if(res?.isOnGoingTrip) {
-        DataStore.storeData('isOngoingTrip', true)
-        setIsOnGoing(true)
-    }
-    const finalDistance = res?.totalFare?.distance || 0
-    const finalDuration = res?.totalFare?.duration || 0
-    setFareBreakDown(res?.totalFare)
-    const updatedRideGroup = {
-      ...activeTripData[0],
-      status:isGetFare?  'DROPPED' : 'CANCELLED',
-      finalDistance: finalDistance,
-      finalDuration: finalDuration,
-      encodedPolyline: encodedPolyline,
-    };
-    setActiveTripData([updatedRideGroup]);
-    NeNativeModule.endNavigation();
-    setStartNavigation(false);
-    setDisduration(null);
-    driverWaitingTime.stopWaitingTime()
-    resetDriverMedia();
-    firebaselog_onRide('OR_Status(OR_S)', isGetFare ? 'OR_S:dropped' : 'OR_S:cancelled_by_driver_after_pickup')
-    } else {
-    showNotification(res?.message || 'Something went wrong', res?.message || 'Error Fetching Fare', 'danger');
-    }
-
-    setFetchLocationDate(false);
-    setIsLoading(false);
-    setLoading(false);
-  }
-
-  const endTrip = async () => {
-    const haslocationPression = await checkFineLocationPermissions();
-    const hasbackgroundPression = Platform.OS === 'android' && Platform.Version <= 28 ? true : await checkBackgroundLocationPermissions();
-    if (!hasbackgroundPression || !haslocationPression) {
-      onNavigationClick()
-      return;
-    }
-    if (!userLocation) {
-      await locationTask.getCurrentLocation();
-      showNotification('Fetching Current Location', '', 'info');
-      return;
-    }
-    if (tripsStatus !== 'PICKEDUP') {
-      showNotification(
-        t('otp_required', 'OTP verification required'),
-        t('please_verify_otp_before_ending', 'Please verify the customer OTP before ending the trip.'),
-        'warning',
-      );
-      return;
-    }
-    if (!postTripReady) {
-      setShowPostTripWarning(true);
-      return;
-    }
-    setFetchLocationDate(true)
-    setLoading(true)
-  }
-
-  const onReachedPickup = () => {
-    if (!preMediaReady) {
-      setShowPreTripWarning(true);
-      return;
-    }
-    setModalVisible(true);
-  }
-
-  const onReachedPickupAlert = async () => {
-     setPickUpAlertLoading(true)
-     try {
-        const api = new APIRequest();
-        const url = `/publicrides/driver/v2/alertPassangerPickup`;
-        const payload = {
-           driverName: driverInfo?.name,
-           tripId: activeTripData[0]?._id,
-        };
-        const res = await api.request(url, 'POST', payload, userInfo.token);
-        if(res.success) {
-          setIsAlertSent(true)
-        } else {
-          showNotification('Something went wrong', res.message, 'danger');
-        }
-        setPickUpAlertLoading(false)
-     }
-     catch (error) {
-      showNotification('Something went wrong', '', 'danger');
-      setPickUpAlertLoading(false)
-     }
-  }
-
-  // Auto-send "Driver Arrived" push notification when driver reaches pickup location
-  useEffect(() => {
-    if (isReachedPickup && !isAlertSent && tripsStatus === 'ACCEPTED') {
-      onReachedPickupAlert();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isReachedPickup]);
-
-  const handleWaypointsConfirm = async () => {
-    setIsLoading(true);
-    const filterStopNumber = tempStopData ? tempStopData[0] : activeTripData[0];
-    const nextStopNumber = filterStopNumber?.stops?.filter(stop => stop.stopUpdated === true).length;
-    try {
-      const api = new APIRequest();
-      const url = `/publicrides/driver/v2/updateWaypointsDriverReached`;
-      const payload = {
-        tripId: activeTripData[0]?._id,
-        stopNumber: nextStopNumber,
-        isReached:true,
-      };
-      const res = await api.request(
-        url,
-        'POST',
-        payload,
-        userInfo?.token,
-      );
-      if (res?.success) {
-          NeNativeModule.endNavigation();
-          setStartNavigation(false);
-          setDisduration(null);
-        setShowWaypointReached(false);
-        setModalVisible(false);
-        if (nonreachedStops[0]?.waitingTime && nonreachedStops[0]?.waitingTime !== 0) {
-           updateStopData(nonreachedStops[0].name, true, 'PICKEDUP', 0, false)
-           onStartWating()
-        } else {
-          setCurrentWaypointIndex(prevIndex => prevIndex + 1);
-          updateStopData(nonreachedStops[0].name, true, 'PICKEDUP', 0, true)
-        }
-      } else {
-        showNotification(res?.message, res?.message, 'danger');
-        setModalVisible(false);
-      }
-      setIsLoading(false);
-    } catch (error) {
-      showNotification('Something went wrong', '', 'danger');
-      setIsLoading(false);
-      setModalVisible(false);
-    }
-  };
-
-  const handleWaypointsWaitTime = async (finalFinalTime, sotp, nextStopNumber) => {
-    setIsLoading(true);
-    try {
-      const api = new APIRequest();
-      const url = `/publicrides/driver/v2/updateWaypointsDriverWaitTime`;
-      const payload = {
-        tripId: activeTripData[0]?._id,
-        stopNumber: nextStopNumber,
-        driverWaitTime: finalFinalTime,
-        stopUpdated: true
-      };
-      const res = await api.request(
-        url,
-        'POST',
-        payload,
-        userInfo?.token,
-      );
-      if (res?.success) {
-        updateStopData(sotp[0].name, true, 'PICKEDUP', finalFinalTime, true)
-        setWaitingTime(0)
-        setShowWaypointReached(false)
-        setShowTimerStartModal(false)
-        NeNativeModule.endNavigation();
-        setStartNavigation(false);
-        setDisduration(null);
-        setCurrentWaypointIndex(prevIndex => prevIndex + 1);
-      } else {
-        showNotification(res?.message, res?.message, 'danger');
-        setModalVisible(false);
-      }
-      setIsLoading(false);
-    } catch (error) {
-      showNotification('Something went wrong', '', 'danger');
-      setIsLoading(false);
-      setModalVisible(false);
-    }
-  };
-
-  const verifyOTP = async (otp) => {
-    setOTPLoading(true);
-    try{
-      const api = new APIRequest();
-      const url = `/publicrides/driver/v2/verifyTripOtp`;
-      const payload = {
-        otp: otp,
-        tripId: activeTripData[0]?._id,
-      }
-      const res = await api.request(url, 'POST', payload, userInfo?.token);
-      setOTPLoading(false);
-      if(res?.success){
-        return true;
-      }else{
-        showNotification(res?.message, res?.message, 'danger');
-        return false;
-      }
-    }catch(error){
-      showNotification('Something went wrong', '', 'danger');
-      setOTPLoading(false);
-      return false;
-    }
-  };
-
-  const handleStartTripAfterOTP = () => {
-    setModalVisible(false);
-    setDirectionPoints(null);
-    setDirectionResponse(null);
-    setDisduration(null);
-    setStartNavigation(false);
-    updateStopData(nonreachedStops[0]?.name, true, 'PICKEDUP', 0, true)
-    setIsReachedPickup(false);
-    setCurrentTripAcceptedTime(new Date().getTime());
-    firebaselog_onRide('OR_Status(OR_S)', 'OR_S:pickedup')
-    setTripDetails(null)
-  };
-
-  const handlePickupConfirm = async (otp) => {
-    if (otp.length !== 4) {
-      showNotification('Please enter the correct OTP', '', 'danger');
-      return false;
-    }
-    const success = await verifyOTP(otp);
-    if (success) {
-      setDisduration(null);
-      NeNativeModule.endNavigation();
-    }
-    return success;
-  }
-
-  const updateDirectionsPoints = () => {
-    if (!userLocation) return;
-    if (tripsStatus === 'ACCEPTED') {
-      const directions = [
-        {
-          lat: activeTripData[0]?.stops[0]?.location[1],
-          lon: activeTripData[0]?.stops[0]?.location[0],
-        },
-      ];
-      directions.unshift({
-        lat: userLocation[0] || 0,
-        lon: userLocation[1] || 0,
-      });
-       const padding = [50, 50, 50, height*0.3]
-      setDirectionPoints({
-        locations: directions,
-        type: 'car',
-        padding: padding.map(v => parseInt(v, 10))
-      });
-    }
-
-    if (tripsStatus === 'PICKEDUP'){
-      nonreachedStops.unshift({
-        lat: userLocation[0] || 0,
-        lon: userLocation[1] || 0,
-      });
-       const padding = [50, 50, 50, height*0.3]
-      setDirectionPoints({
-        locations: nonreachedStops,
-        type: 'car',
-        padding: padding.map(v => parseInt(v, 10))
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (!activeTripData || activeTripData?.length === 0) return;
-    if (startNavigation) return;
-    updateDirectionsPoints();
-  }, [tripsStatus, activeTripData, appStateVisible, tripDetails]);
-
-  useEffect(() => {
-    if (!disduration?.location) {
-      if (userLocation && nonreachedStops?.[0]?.location) {
-        const distance = findDistanceInMeters(userLocation, nonreachedStops[0].location);
-        if (distance < 200 && distance >= 0) {
-          if (tripsStatus === 'ACCEPTED') {
-            setIsReachedPickup(true);
-            return;
-          }
-          if (tripsStatus === 'PICKEDUP') {
-              if (!nonreachedStops[0]?.stopUpdated && nonreachedStops?.length !== 1) {
-                setShowWaypointReached(true);
-              }
-              if (nonreachedStops?.length === 1) {
-                setShowWaypointReached(false);
-                setIsReachedDropoff(true);
-              }
-          }
-        }
-      }
-      return;
-    }
-
-    const [
-      _lat,
-      _lon,
-      _remainingDistance,
-      _remainingDuration,
-      _speed,
-      ldistance,
-      _lduration,
-      navLegIndex,
-      _bearing,
-    ] = disduration?.location;
-
-    if (prevNavLegIndex.current === null || prevNavLegIndex.current === 0) {
-      prevNavLegIndex.current = navLegIndex;
-      setCurrentWaypointIndex(navLegIndex)
-    } else {
-      if (navLegIndex > prevNavLegIndex.current) {
-        setNewLegIndex(prev => prev + 1);
-        prevNavLegIndex.current = navLegIndex;
-      } else if (navLegIndex !== prevNavLegIndex.current) {
-        prevNavLegIndex.current = navLegIndex;
-      }
-    }
-
-    const distanceInMeters = ldistance;
-
-    if (distanceInMeters < 500 && distanceInMeters >= 0) {
-      if (tripsStatus === 'PICKEDUP') {
-        if (newLegIndex === currentWaypointIndex) {
-          if (!nonreachedStops[0]?.stopUpdated && nonreachedStops?.length !== 1) {
-            setShowWaypointReached(true);
-          }
-          if (nonreachedStops?.length === 1) {
-            setShowWaypointReached(false);
-            setIsReachedDropoff(true);
-          }
-        }
-      }
-    }
-  }, [disduration, userLocation, nonreachedStops]);
-
-  const onReachedStop = () => {
-    handleWaypointsConfirm()
-  }
-
-  const openGoogleMaps = () => {
-    const stops = nonreachedStops.map(stop => `${stop.location?.[1]},${stop.location?.[0]}`);
-    const destination = stops?.[0]
-    if (!destination) {
-      showNotification('No destination found', 'No destination found', 'danger');
-      return;
-    }
-    let url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&dir_action=navigate&destination=${destination}`;
-
-    Linking.canOpenURL(url)
-      .then(supported => {
-        setOpenNavChoiceModal(false)
-        if (!supported) {
-          console.log("Can't handle url: " + url);
-        }
-        return Linking.openURL(url), setDirectionPoints(null);
-      })
-      .catch(err => console.error('An error occurred', err));
-  };
-
   const handleNavMode = async (mode) => {
+    setOpenNavChoiceModal(false);
+    const target = itinNavTarget || stops[0];
+    setItinNavTarget(null);
+    const targetLat = target?.lat ?? target?.location?.[1];
+    const targetLon = target?.lng ?? target?.lon ?? target?.location?.[0];
+    const targetAddr = target?.address || target?.name || '';
     if (mode === 'google') {
-      firebaselog_onRide('OR_Navigation(OR_N)', 'OR_N:navigation_mode_google')
-      openGoogleMaps()
-    } else {
-       if (!directionReadyCallback) {
-      showNotification(
-        'Please wait for the direction to be ready',
-        '',
-        'danger',
-      );
-      updateDirectionsPoints();
+      const url = targetLat && targetLon
+        ? `https://www.google.com/maps/dir/?api=1&travelmode=driving&dir_action=navigate&destination=${targetLat},${targetLon}`
+        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(targetAddr)}`;
+      Linking.openURL(url).catch(() => {});
       return;
     }
-     if (routeLoading?.error) {
-      setOpenNavChoiceModal(false);
-      setOpenRouteRetryModal(true);
-      return;
+    const hasFine = await checkFineLocationPermissions();
+    const hasBg = Platform.OS === 'android' && Platform.Version <= 28
+      ? true
+      : await checkBackgroundLocationPermissions();
+    if (!hasFine || !hasBg) return;
+    if (!userLocation) { await locationTask.getCurrentLocation(); return; }
+    if (targetLat && targetLon) {
+      setDirectionPoints({
+        locations: [
+          { lat: userLocation[0], lon: userLocation[1] },
+          { lat: targetLat, lon: targetLon },
+        ],
+        type: 'car',
+        padding: [50, 50, 50, 200],
+      });
     }
-    firebaselog_onRide('OR_Navigation(OR_N)', 'OR_N:navigation_mode_vm')
     setStartNavigation(true);
     setMapMarkers([]);
-    setOpenNavChoiceModal(false)
     setRouteNotFound(null);
-    }
     await BGLocationTask.runDriverBgTask();
-  }
-
-
-
-  const renderOpenNavChoiceModal = () => {
-    return (
-      <BottomSheetPopup
-        visible={openNavChoiceModal}
-        driverStyles
-        onClose={() => {
-          setOpenNavChoiceModal(!openNavChoiceModal);
-        }}>
-        <View style={styles.navSheetContainer}>
-          <View style={styles.navHeaderRow}>
-            <Text style={[styles.navHeader, {width:'90%'}]}>{t('choose_navigation_mode')}</Text>
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('cancel_trip')} onPress={() => setOpenNavChoiceModal(false)} style={styles.navCloseBtn}>
-              <MaterialCommunityIcons name="close" size={20} color={Colors.grey_dark} />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.navSubHeader}>{t('start_navigation')} – {t('choose_navigation_mode')}</Text>
-          <View style={styles.navOptionsRow}>
-            <Pressable
-              onPress={() => handleNavMode('google')}
-              style={({pressed}) => [
-                styles.navOptionCard,
-                pressed && styles.navOptionPressed,
-              ]}
-            >
-              <Text style={styles.navOptionLabel}>{t('google')}</Text>
-              <Text style={styles.navOptionDesc}>{t('start_navigation')}</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => handleNavMode('vm')}
-              style={({pressed}) => [
-                styles.navOptionCard,
-                pressed && styles.navOptionPressed,
-              ]}
-            >
-              <Text style={styles.navOptionLabel}>{t('vm')}</Text>
-              <Text style={styles.navOptionDesc}>{t('start_navigation')}</Text>
-            </Pressable>
-          </View>
-          <View style={styles.navFooterHintWrapper}>
-            <MaterialCommunityIcons name="information" size={16} color={Colors.grey_dark} />
-            <Text style={styles.navFooterHint}>{t('press_to_update_status')}</Text>
-          </View>
-        </View>
-      </BottomSheetPopup>
-    );
   };
 
-  const renderRouteRetryModal = () => {
-    return (
-      <>
-        <View style={styles.routeOverlay} pointerEvents="auto">
-          <View style={styles.routeErrorBox}>
-            <View style={styles.routeIconWrapper}>
-              <MaterialCommunityIcons name="alert-circle-outline" size={44} color={Colors.red} />
-            </View>
-            <Text style={styles.routeErrorText} numberOfLines={2}>
-              {t('routeStatus_errorTitle', { defaultValue: 'Failed to fetch route' })}
-            </Text>
-            <Text style={styles.routeHelperText}>
-              {t('routeStatus_helper', { defaultValue: 'Ensure your internet is stable and try again.' })}
-            </Text>
-            <View style={{flexDirection:'row', gap:8, marginTop:6}}>
-              <TouchableOpacity
-                style={styles.routeRetryBtn}
-                onPress={() => {
-                  updateDirectionsPoints();
-                  setOpenRouteRetryModal(false);
-                }}
-              >
-                <Text style={styles.routeRetryText}>{t('routeStatus_retry', { defaultValue: 'Try Again' })}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.routeBackBtn}
-                onPress={() => setOpenRouteRetryModal(false)}
-              >
-                <Text style={styles.routeBackText}>{t('routeStatus_back', { defaultValue: 'Back' })}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </>
-    );
-  };
+  // ─── Cancel / End Trip ────────────────────────────────────────────────────
+  const handleCancelRide = async (reason, translatedReason) => {
+    const _reason = translatedReason || reason;
 
-  const renderPickUpModal = () => {
-    return (
-      <BottomSheetPopup
-        visible={modalVisible}
-        onClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-        driverStyles
-        >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1, width: '100%', bottom: 0, position: 'absolute' }}>
-          <View style={RouteScreenStyles.modalView}>
-            <PickUpModal
-              isPublicRide={true}
-              stopsDetails={activeTripData && activeTripData.length > 0 && activeTripData[0]}
-              onConfirmPress={handlePickupConfirm}
-              onStartTrip={handleStartTripAfterOTP}
-              isLoading={isLoading}
-              otpLoading={otpLoading}
-              onCancelPress={() => setCancelRideModalVisible(true)}
-            />
-          </View>
-        </KeyboardAvoidingView>
-      </BottomSheetPopup>
-    );
-  };
-
-  const refreshDirections = () => {
-    setTripDetails(null);
-    updateDirectionsPoints();
-  }
-
-  const onRecenter = () => {
-    NeNativeModule.recenterNavigation();
-  }
-
-  useEffect(() => {
-    if (routeNotFound) {
-      if (routeNotFound == "ROUTENOTFOUND") {
-        setStartNavigation(false);
-        updateDirectionsPoints();
+    if (!userLocation) {
+      await locationTask.getCurrentLocation();
+      showNotification('Fetching Current Location', '', 'info');
+      return;
     }
-  }
-  }, [routeNotFound]);
 
-  return (
+    setLoading(true);
+
+    if (tripsStatus === 'ACCEPTED') {
+      try {
+        const api = new APIRequest();
+        const response = await api.request(
+          '/publicrides/driver/v2/cancelTrip',
+          'POST',
+          {
+            tripId: trip?._id,
+            reason: _reason,
+            isBeforePickup: true,
+            droppedAtLoc: { lat: userLocation?.[0], lon: userLocation?.[1] },
+          },
+          token,
+        );
+        if (response.success) {
+          resetDriverMedia();
+          cancelTrip(response);
+        } else {
+          showNotification('Failed to Cancel Trip', response?.message, 'danger');
+        }
+      } catch {
+        showNotification('Error', 'Could not cancel trip', 'danger');
+      }
+      setLoading(false);
+
+    } else {
+      // PICKEDUP or any other in-progress status (acting driver trip may stay ACCEPTED throughout)
+      if (reason === 'reached_destination') {
+        if (!postTripReady) { setLoading(false); setShowPostTripWarning(true); return; }
+        setFetchLocationDate(true);
+      } else {
+        setIsGetFare(false);
+        setFetchLocationDate(true);
+        DataStore.storeData('isOngoingTrip', true);
+        setIsOnGoing(true);
+      }
+      setLoading(false);
+    }
+  };
+
+  // ─── Tabs ──────────────────────────────────────────────────────────────────
+  const renderTripTab = () => (
     <>
-    <View style={{flex: 1}}>
-      <WaitingTime setWaitingTime={setWaitingTime} onFinalTime={(finalTime, sotp, nextStopNumber)=>handleWaypointsWaitTime(finalTime, sotp, nextStopNumber)}/>
-     {fetchLocationDate && (
-        <TripFareCalculator
-        tripData={activeTripData[0]}
-        setLoading={setLoading}
-        setError={((err)=>{
-          console.log('Fare calculation error:', err);
-          if (err) {
-           setError(err)
-           setFetchLocationDate(false);
-           setLoading(false);
-           showNotification('Please Try Again', '', 'danger');
-          }
-        })}
-        isGetFare={isGetFare}
-        onDone={(finalData, encodedPolyline) => {
-        console.log('Fare calculated with', finalData);
-          onFairDetails(finalData, encodedPolyline)
-          setFetchLocationDate(false);
-        }}
+      {/* Vehicle Card */}
+      <View style={styles.vehicleCard}>
+        <View style={styles.vehicleCardLeft}>
+          <View style={styles.regBadge}>
+            <Text style={styles.regBadgeTxt}>{vehicleNumber}</Text>
+          </View>
+          <Text style={styles.vehicleModelTxt}>{vehicleModel}</Text>
+          <View style={styles.specChipsRow}>
+            {!!vehicleColor && (
+              <View style={styles.specChip}>
+                <MaterialCommunityIcons name="palette" size={11} color="#757575" />
+                <Text style={styles.specChipTxt}>{vehicleColor}</Text>
+              </View>
+            )}
+            {!!(trip?.fuelType || trip?.passengerVehicleData?.fuelType || trip?.vehicleData?.fuelType || upComingTripDetails?.fuelType || upComingTripDetails?.passengerVehicleData?.fuelType) && (
+              <View style={styles.specChip}>
+                <MaterialCommunityIcons name="gas-station" size={11} color="#757575" />
+                <Text style={styles.specChipTxt}>
+                  {(trip?.fuelType || trip?.passengerVehicleData?.fuelType || trip?.vehicleData?.fuelType || upComingTripDetails?.fuelType || upComingTripDetails?.passengerVehicleData?.fuelType)?.replace(/_/g, ' ')}
+                </Text>
+              </View>
+            )}
+            {!!(trip?.vehicleType || trip?.passangerVehicleType || upComingTripDetails?.vehicleType || upComingTripDetails?.passangerVehicleType) && (
+              <View style={styles.specChip}>
+                <MaterialCommunityIcons name="car" size={11} color="#757575" />
+                <Text style={styles.specChipTxt}>
+                  {(trip?.vehicleType || trip?.passangerVehicleType || upComingTripDetails?.vehicleType || upComingTripDetails?.passangerVehicleType)?.replace(/_/g, ' ')}
+                </Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.vehicleCardFooter}>
+            <View style={styles.liveBadge}>
+              <View style={styles.liveDot} />
+              <Text style={styles.liveTxt}>LIVE TRIP</Text>
+              
+            </View>
+            <Text style={styles.tripIdTxt}>Trip ID: {tripId}</Text>
+            
+          </View>
+        </View>
+        <Image
+          source={getVehicleImage(
+            trip?.vehicleType ||
+            trip?.passangerVehicleType ||
+            trip?.passengerVehicleData?.type ||
+            trip?.vehicleData?.type ||
+            upComingTripDetails?.vehicleType ||
+            upComingTripDetails?.passangerVehicleType ||
+            upComingTripDetails?.passengerVehicleData?.type ||
+            upComingTripDetails?.vehicleData?.type
+          )}
+          style={styles.vehicleCardImage}
+          resizeMode="contain"
         />
+      </View>
+
+      {/* Customer Card */}
+      <View style={styles.card}>
+        <View style={styles.customerRow}>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarInitial}>{customerName?.[0]?.toUpperCase() || 'P'}</Text>
+          </View>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <View style={styles.nameRatingRow}>
+              <Text style={styles.customerNameTxt}>{customerName}</Text>
+              <MaterialCommunityIcons name="star" size={13} color="#FFA000" />
+              <Text style={styles.ratingTxt}>4.9</Text>
+            </View>
+            <Text style={styles.pickupTimeTxt}>
+              Pickup • {formatTime(trip?.bookingTime)}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.callBtnGreen}
+            onPress={() => Linking.openURL(`tel:${customerPhone?.replace(/\s|-/g, '')}`)}>
+            <Feather name="phone" size={18} color={Colors.white} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.chatBtn}>
+            <Feather name="message-square" size={18} color="#0F223C" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Stats Row */}
+        {/* <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <MaterialCommunityIcons name="map-marker-distance" size={14} color="#42A5F5" />
+            <View>
+              <Text style={styles.statLabel}>Distance Left</Text>
+              <Text style={styles.statValue}>{trip?.estimatedDistance ? `${parseFloat(trip.estimatedDistance).toFixed(1)} km` : '-'}</Text>
+            </View>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <MaterialCommunityIcons name="clock-outline" size={14} color="#42A5F5" />
+            <View>
+              <Text style={styles.statLabel}>Time Left</Text>
+              <Text style={styles.statValue}>{trip?.estimatedDuration ? `${trip.estimatedDuration} min` : '-'}</Text>
+            </View>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <MaterialCommunityIcons name="currency-inr" size={14} color="#42A5F5" />
+            <View>
+              <Text style={styles.statLabel}>Est. Earnings</Text>
+              <Text style={styles.statValue}>₹{parseFloat(estimatedFare).toFixed(0)}</Text>
+            </View>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <MaterialCommunityIcons name="map-marker-multiple-outline" size={14} color="#42A5F5" />
+            <View>
+              <Text style={styles.statLabel}>Stops Left</Text>
+              <Text style={styles.statValue}>{stops.length > 1 ? stops.length - 1 : 0}</Text>
+            </View>
+          </View>
+        </View> */}
+      </View>
+
+      {/* Pickup & Drop */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <MaterialCommunityIcons name="map-marker-path" size={16} color="#0F223C" />
+          <Text style={styles.cardTitle}>Trip Details</Text>
+        </View>
+        <View style={styles.routeRow}>
+          <View style={styles.routeLineCol}>
+            <View style={styles.routeDotStart} />
+            <View style={styles.routeLine} />
+            <MaterialCommunityIcons name="map-marker" size={16} color="#E53935" style={{ marginLeft: -2 }} />
+          </View>
+          <View style={{ flex: 1, gap: 0 }}>
+            <View style={styles.routeStop}>
+              <View style={styles.routePickupBadge}>
+                <Text style={styles.routePickupBadgeTxt}>PICKUP</Text>
+              </View>
+              <Text style={styles.routeStopAddr} numberOfLines={2}>
+                {stops[0]?.address || '-'}
+              </Text>
+            </View>
+            <View style={styles.routeDivider} />
+            <View style={styles.routeStop}>
+              <View style={styles.routeDropBadge}>
+                <Text style={styles.routeDropBadgeTxt}>DROP</Text>
+              </View>
+              <Text style={styles.routeStopAddr} numberOfLines={2}>
+                {stops.length > 1 ? (stops[stops.length - 1]?.address || '-') : '-'}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Trip Duration */}
+      {(() => {
+        const fmtDate = (dateStr) => {
+          const parts = dateStr?.match(/^(\d{4})-(\d{2})-(\d{2})/);
+          if (!parts) return dateStr || '-';
+          const d = new Date(parseInt(parts[1]), parseInt(parts[2]) - 1, parseInt(parts[3]));
+          return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        };
+        const fmtDay = (dateStr) => {
+          const parts = dateStr?.match(/^(\d{4})-(\d{2})-(\d{2})/);
+          if (!parts) return '';
+          const d = new Date(parseInt(parts[1]), parseInt(parts[2]) - 1, parseInt(parts[3]));
+          return d.toLocaleDateString('en-IN', { weekday: 'long' });
+        };
+        const startDateStr = itineraryDates.length > 0
+          ? itineraryDates[0]
+          : trip?.scheduleDateTime
+          ? new Date(trip.scheduleDateTime).toISOString().split('T')[0]
+          : null;
+        const endDateStr = itineraryDates.length > 1 ? itineraryDates[itineraryDates.length - 1] : null;
+        const startTime = trip?.scheduleDateTime
+          ? new Date(trip.scheduleDateTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+          : trip?.bookingTime
+          ? new Date(trip.bookingTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+          : null;
+        const totalDays = itineraryDates.length;
+
+        return (
+          <View style={styles.card}>
+            <View style={styles.cardHeader}>
+              <MaterialCommunityIcons name="calendar-clock" size={16} color="#0F223C" />
+              <Text style={styles.cardTitle}>Trip Duration</Text>
+              <View style={{ flexDirection: 'row', gap: 6, marginLeft: 'auto' }}>
+                {totalDays > 0 && (
+                  <View style={styles.tripTypeBadge}>
+                    <Text style={styles.tripTypeTxt}>{totalDays} {totalDays === 1 ? 'Day' : 'Days'}</Text>
+                  </View>
+                )}
+                {trip?.tripType && (
+                  <View style={[styles.tripTypeBadge, { backgroundColor: '#E8F5E9' }]}>
+                    <Text style={[styles.tripTypeTxt, { color: '#2E7D32' }]}>
+                      {trip.tripType === 'ROUND_TRIP' ? 'Round Trip' : 'One Way'}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            <View style={styles.durationRangeRow}>
+              {/* Start */}
+              <View style={styles.durationRangeBlock}>
+                <Text style={styles.durationRangeLabel}>Start</Text>
+                <Text style={styles.durationRangeDate}>{startDateStr ? fmtDate(startDateStr) : '-'}</Text>
+                {!!startDateStr && <Text style={styles.durationRangeDay}>{fmtDay(startDateStr)}</Text>}
+                {!!startTime && (
+                  <View style={styles.durationTimeChip}>
+                    <MaterialCommunityIcons name="clock-outline" size={11} color="#352166" />
+                    <Text style={styles.durationTimeChipTxt}>{startTime}</Text>
+                  </View>
+                )}
+              </View>
+
+              {/* Arrow */}
+              <View style={styles.durationArrowCol}>
+                <View style={styles.durationArrowLine} />
+                <MaterialCommunityIcons name="arrow-right" size={16} color="#352166" />
+                <View style={styles.durationArrowLine} />
+              </View>
+
+              {/* End */}
+              <View style={[styles.durationRangeBlock, { alignItems: 'flex-end' }]}>
+                <Text style={styles.durationRangeLabel}>End</Text>
+                <Text style={styles.durationRangeDate}>{endDateStr ? fmtDate(endDateStr) : (startDateStr ? fmtDate(startDateStr) : '-')}</Text>
+                {!!(endDateStr || startDateStr) && <Text style={styles.durationRangeDay}>{fmtDay(endDateStr || startDateStr)}</Text>}
+                <View style={styles.durationTimeChip}>
+                  <MaterialCommunityIcons name="clock-outline" size={11} color="#352166" />
+                  <Text style={styles.durationTimeChipTxt}>{durationLabel}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        );
+      })()}
+
+      {/* Trip Itinerary */}
+      {(() => {
+        const allLocs = itineraryDates.flatMap(dateStr => {
+          const dl = Array.isArray(itinerary[dateStr]) ? itinerary[dateStr] : (itinerary[dateStr]?.locations || []);
+          return dl.map(l => ({ ...l, dateStr }));
+        });
+        const totalStops = allLocs.length;
+        const currentIdx = allLocs.findIndex(l => !l.isReached);
+        const currentLoc = currentIdx >= 0 ? allLocs[currentIdx] : null;
+
+
+        if (totalStops === 0) {
+          return (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <MaterialCommunityIcons name="format-list-bulleted" size={16} color="#0F223C" />
+                <Text style={styles.cardTitle}>Trip Itinerary</Text>
+              </View>
+              <Text style={styles.emptyBillsTxt}>No itinerary added for this trip</Text>
+            </View>
+          );
+        }
+
+        return (
+          <View style={styles.card}>
+            {/* Header */}
+            <TouchableOpacity style={styles.itinHeaderRow} onPress={() => setItinOpen(o => !o)} activeOpacity={0.8}>
+              <View style={styles.itinHeaderLeft}>
+                <View style={styles.itinHeaderIcon}>
+                  <MaterialCommunityIcons name="map-marker-path" size={16} color="#352166" />
+                </View>
+                <Text style={[styles.cardTitle, { flexShrink: 1 }]} numberOfLines={1}>Trip Itinerary</Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                <View style={styles.itinStopsBadge}>
+                  <Text style={styles.itinStopsBadgeTxt}>{totalStops} {totalStops === 1 ? 'Stop' : 'Stops'}</Text>
+                </View>
+                <MaterialCommunityIcons name={itinOpen ? 'chevron-up' : 'chevron-down'} size={20} color="#0F223C" />
+              </View>
+            </TouchableOpacity>
+
+            {itinOpen && (
+              <>
+                {/* Arrived confirmation banner */}
+                {arrivedStopInfo && (
+                  <View style={styles.arrivedBanner}>
+                    <View style={styles.arrivedBannerIcon}>
+                      <MaterialCommunityIcons name="map-marker-check" size={18} color="#43A047" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.arrivedBannerTitle}>You've arrived!</Text>
+                      <Text style={styles.arrivedBannerSub} numberOfLines={1}>{arrivedStopInfo.loc.name}</Text>
+                    </View>
+                    <TouchableOpacity style={styles.arrivedBannerBtn} onPress={handleMarkStopDone} disabled={markingDone} activeOpacity={0.8}>
+                      {markingDone
+                        ? <ActivityIndicator size="small" color="#FFF" />
+                        : <Text style={styles.arrivedBannerBtnTxt}>Mark Done</Text>
+                      }
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+                {/* Current navigation banner */}
+                {currentLoc && !arrivedStopInfo && (
+                  <View style={styles.itinNavBanner}>
+                    <View style={styles.itinNavBannerIcon}>
+                      <MaterialCommunityIcons name="navigation" size={16} color="#352166" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.itinNavBannerTitle}>Driving to next stop</Text>
+                      <Text style={styles.itinNavBannerSub} numberOfLines={1}>
+                        {currentLoc.name}
+                        {currentLoc.eta ? ` • ETA ${currentLoc.eta} min` : ''}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* Stop list */}
+                {allLocs.map((loc, idx) => {
+                  const isDone = !!loc.isReached || localReachedStops.has(idx);
+                  const isCurrent = idx === currentIdx;
+                  const isLast = idx === allLocs.length - 1;
+
+                  let circleStyle = styles.itinCircleUpcoming;
+                  let circleIcon = null;
+                  if (isDone) {
+                    circleStyle = styles.itinCircleDone;
+                    circleIcon = <MaterialCommunityIcons name="check" size={14} color="#FFF" />;
+                  } else if (isCurrent) {
+                    circleStyle = styles.itinCircleCurrent;
+                    circleIcon = <MaterialCommunityIcons name="navigation" size={13} color="#FFF" />;
+                  } else if (isLast) {
+                    circleStyle = styles.itinCircleDrop;
+                    circleIcon = <MaterialCommunityIcons name="flag" size={13} color="#FFF" />;
+                  } else {
+                    circleIcon = <View style={styles.itinCircleInnerDot} />;
+                  }
+
+                  return (
+                    <View key={idx} style={styles.itinStopRow}>
+                      {/* Left timeline */}
+                      <View style={styles.itinTimelineCol}>
+                        <View style={[styles.itinCircle, circleStyle]}>
+                          {circleIcon}
+                        </View>
+                        {!isLast && <View style={[styles.itinConnectLine, isDone && styles.itinConnectLineDone]} />}
+                      </View>
+
+                      {/* Content */}
+                      <View style={styles.itinStopContent}>
+                        <Text style={[styles.itinStopName, isDone && styles.itinStopNameDone]} numberOfLines={1}>
+                          {loc.name || `Stop ${idx + 1}`}
+                        </Text>
+                        {!!loc.address && (
+                          <Text style={styles.itinStopAddr} numberOfLines={isLast ? 2 : 1}>{loc.address}</Text>
+                        )}
+                        {(loc.arrivalTime || loc.departureTime || loc.waitingTime || loc.time) && (
+                          <View style={styles.itinTimeRow}>
+                            {(loc.arrivalTime || loc.time) && (
+                              <View style={styles.itinTimeChip}>
+                                <MaterialCommunityIcons name="clock-in" size={10} color="#352166" />
+                                <Text style={styles.itinTimeChipTxt}>{loc.arrivalTime || loc.time}</Text>
+                              </View>
+                            )}
+                            {!!loc.departureTime && (
+                              <View style={styles.itinTimeChip}>
+                                <MaterialCommunityIcons name="clock-out" size={10} color="#352166" />
+                                <Text style={styles.itinTimeChipTxt}>{loc.departureTime}</Text>
+                              </View>
+                            )}
+                            {!!loc.waitingTime && (
+                              <View style={[styles.itinTimeChip, styles.itinTimeChipWait]}>
+                                <MaterialCommunityIcons name="timer-sand" size={10} color="#E65100" />
+                                <Text style={[styles.itinTimeChipTxt, { color: '#E65100' }]}>{loc.waitingTime} min wait</Text>
+                              </View>
+                            )}
+                          </View>
+                        )}
+                        <View style={styles.itinBadgeRow}>
+                          {isDone && (
+                            <View style={styles.itinBadgeDone}><Text style={styles.itinBadgeDoneTxt}>DONE</Text></View>
+                          )}
+                          {!isDone && !isLast && (
+                            <View style={styles.itinBadgeVisit}><Text style={styles.itinBadgeVisitTxt}>VISIT</Text></View>
+                          )}
+                          {isCurrent && (
+                            <View style={styles.itinBadgeNav}><Text style={styles.itinBadgeNavTxt}>NAVIGATING</Text></View>
+                          )}
+                          {isLast && !isDone && (
+                            <View style={styles.itinBadgeDrop}><Text style={styles.itinBadgeDropTxt}>DROP</Text></View>
+                          )}
+                        </View>
+                      </View>
+
+                      {/* Nav button */}
+                      <TouchableOpacity style={styles.itinNavBtn} onPress={() => openNavForItinLoc(loc)} activeOpacity={0.7}>
+                        <MaterialCommunityIcons name="navigation-variant-outline" size={18} color="#352166" />
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </>
+            )}
+          </View>
+        );
+      })()}
+
+      {/* Special Requirements */}
+      {specialRequests.length > 0 && (
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <MaterialCommunityIcons name="shield-star-outline" size={16} color="#0F223C" />
+            <Text style={styles.cardTitle}>Special Requirements</Text>
+          </View>
+          {specialRequests.map((req, i) => (
+            <View key={i} style={styles.reqRow}>
+              <View style={styles.reqIcon}>
+                <MaterialCommunityIcons name={req.icon} size={16} color="#352166" />
+              </View>
+              <Text style={styles.reqLabel}>{req.label}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Driver Arrangements */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <MaterialCommunityIcons name="briefcase-outline" size={16} color="#0F223C" />
+          <Text style={styles.cardTitle}>Driver Arrangements</Text>
+        </View>
+        {arrangements.length === 0 ? (
+          <Text style={styles.reqLabel}>-</Text>
+        ) : arrangements.map((arr, i) => (
+          <View key={i} style={styles.reqRow}>
+            <View style={styles.reqIcon}>
+              <MaterialCommunityIcons name={arr.icon} size={16} color="#43A047" />
+            </View>
+            <Text style={styles.reqLabel}>{arr.label}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Customer Notes */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <MaterialCommunityIcons name="note-text-outline" size={16} color="#0F223C" />
+          <Text style={styles.cardTitle}>Customer Notes</Text>
+        </View>
+        {customerNotes ? (
+          <View style={styles.customerNotesBox}>
+            <Text style={styles.customerNotesTxt}>{customerNotes}</Text>
+          </View>
+        ) : (
+          <Text style={styles.reqLabel}>-</Text>
         )}
-      {tripsStatus === 'ACCEPTED' && (
-        <View style={styles.topBanner}>
-          <Text style={styles.topBannerTitle}>{t('navigate_to_pickup', {defaultValue: 'Navigate to Pickup'})}</Text>
-          <Text style={styles.topBannerSub}>{nonreachedStops[0]?.address || nonreachedStops[0]?.name || ''}</Text>
+      </View>
+    </>
+  );
+
+  const renderEarningsTab = () => (
+    <>
+      {/* Trip Earnings */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <MaterialCommunityIcons name="wallet-outline" size={16} color="#0F223C" />
+          <Text style={styles.cardTitle}>Trip Earnings</Text>
+          <TouchableOpacity style={styles.breakupBtn}>
+            <Text style={styles.breakupTxt}>Breakup</Text>
+            <MaterialCommunityIcons name="chevron-right" size={14} color="#352166" />
+          </TouchableOpacity>
         </View>
-      )}
-      {disduration ? null : (
-        <View style={[RouteScreenStyles.mapIconContainer, tripsStatus === 'ACCEPTED' && {top: 100}]}>
-          <TrackingMapIcons markersData={directionPoints} refreshDirections={()=>refreshDirections()} />
+        <View style={styles.earningsRow}>
+          <View style={styles.earningItem}>
+            <Text style={styles.earningLabel}>Your Earnings</Text>
+            <Text style={[styles.earningValue, { color: '#43A047' }]}>₹{parseFloat(driverEarnings || 0).toFixed(0)}</Text>
+          </View>
+          <View style={styles.earningDivider} />
+          <View style={styles.earningItem}>
+            <Text style={styles.earningLabel}>Trip Fare</Text>
+            <Text style={styles.earningValue}>₹{parseFloat(estimatedFare || 0).toFixed(0)}</Text>
+          </View>
+          <View style={styles.earningDivider} />
+          <View style={styles.earningItem}>
+            <Text style={styles.earningLabel}>Total Expenses</Text>
+            <Text style={[styles.earningValue, { color: '#E53935' }]}>₹{expenseTotal.toFixed(0)}</Text>
+          </View>
         </View>
-      )}
-      {!activeTripData || activeTripData?.length === 0 ? (
-        <View style={RouteScreenStyles.noActiveRouteContainer}>
-          <Text style={RouteScreenStyles.noActiveRouteTxt}>
-            {t('no_active_route')} !!
+        {/* Total Payable */}
+        <View style={styles.totalPayableRow}>
+          <View>
+            <Text style={styles.totalPayableLabel}>Total Payable by Customer</Text>
+            <Text style={styles.totalPayableSub}>Trip Fare + Expenses</Text>
+          </View>
+          <Text style={styles.totalPayableValue}>
+            ₹{(parseFloat(driverEarnings || 0) + expenseTotal).toFixed(0)}
           </Text>
         </View>
-      ) : (
-        <CustomeBottomSheet useScrollView={true}>
-          {tripsStatus === 'ACCEPTED' && (
-            <View style={styles.actingDriverPickupSheet}>
-              {!isReachedPickup ? (
-                <View style={styles.pickupSheet}>
-                  <Text style={styles.pickupSheetTitle}>Pickup</Text>
-                  <Text style={styles.pickupSheetAddress}>{nonreachedStops[0]?.address || nonreachedStops[0]?.name || ''}</Text>
-                  
-                  {disduration && (
-                    <Text style={styles.pickupSheetStats}>
-                      {DateTimeFormatter.convertSecondsToReadable(disduration?.location[3], true)} • {disduration?.location[2] < 1000 ? Math.round(disduration?.location[2]) + ' m' : utils.metersToKilometers(disduration?.location[2])?.toFixed(2) + ' km'}
-                    </Text>
-                  )}
-                  <View style={styles.pickupSheetDivider} />
-                  <TouchableOpacity 
-                    style={styles.pickupSheetBtn}
-                    onPress={() => onStartNavigationPress()}
-                  >
-                    <Text style={styles.pickupSheetBtnTxt}>{t('start_navigate', {defaultValue: 'Start Navigate'})}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.pickupSheetBtn, {backgroundColor: 'transparent', borderWidth: 1, borderColor: '#E53935', marginTop: 10}]}
-                    onPress={() => setCancelRideModalVisible(true)}
-                  >
-                    <Text style={[styles.pickupSheetBtnTxt, {color: '#E53935'}]}>{t('cancel_ride', {defaultValue: 'Cancel Ride'})}</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <View style={styles.arrivedSheet}>
-                  <Text style={styles.arrivedSheetTitle}>Arrived at Pickup Location?</Text>
-                  <Text style={styles.arrivedSheetSub}>Verify with customer before starting.</Text>
-                  <View style={styles.arrivedBtnRow}>
-                    <TouchableOpacity style={styles.callBtn} onPress={() => Linking.openURL(`tel:${activeTripData[0]?.passangers?.[0]?.phone || activeTripData[0]?.passangerPhone}`)}>
-                      <Text style={styles.callBtnTxt}>Call Customer</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.imHereBtn} onPress={onReachedPickup}>
-                      <Text style={styles.imHereBtnTxt}>I'm Here</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <TouchableOpacity
-                    style={[styles.pickupSheetBtn, {backgroundColor: 'transparent', borderWidth: 1, borderColor: '#E53935', marginTop: 10}]}
-                    onPress={() => setCancelRideModalVisible(true)}
-                  >
-                    <Text style={[styles.pickupSheetBtnTxt, {color: '#E53935'}]}>{t('cancel_ride', {defaultValue: 'Cancel Ride'})}</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-          )}
+      </View>
 
-          {tripsStatus !== 'ACCEPTED' && (
-            <>
-              {loading && <FullScreenLoader />}
-         {
-            !disduration && tripsStatus !== "COMPLETED" ?
-                (hasLocationPermission && (Platform.OS === 'android' && Platform.Version <= 28 ? true : hasBackgroundLocationPermission) &&
-                hasNotificationPermission)&& (
-                  <TouchableOpacity disabled={routeLoading?.loading && routeLoading?.message !== 'initialState'} style={styles.navBtn} onPress={() => onStartNavigationPress()}>
-                    {routeLoading?.loading && routeLoading?.message !== 'initialState'? <ActivityIndicator size="small" color={Colors.white} /> :
-                    <>
-                    <MaterialCommunityIcons name="navigation-variant-outline" size={20} color={Colors.white} />
-                    <Text style={styles.navBtnTxt}>{t('start_navigation')}</Text>
-                    </>}
-
-                  </TouchableOpacity>
-                )
-              : null
-          }
-          {watingTime > 0 &&
-          <View style={styles.waitingCard}>
-            <View style={styles.waitingTopRow}>
-              <View style={styles.waitingIconCircle}>
-                <MaterialCommunityIcons name="timer-sand" size={18} color={Colors.white} />
+      {/* Trip Bills */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <MaterialCommunityIcons name="receipt" size={16} color="#0F223C" />
+          <Text style={styles.cardTitle}>Trip Bills</Text>
+          <TouchableOpacity style={styles.addBillBtn} onPress={() => {
+            if (!bills?.length) {
+              const serverBills = trip?.bills?.bills || [];
+              if (serverBills.length > 0) {
+                setBills(serverBills.map((b, idx) => ({ ...b, id: `server_${idx}`, serverIndex: idx, approval: b.approval || 'pending' })));
+              }
+            }
+            setStackScreen('DriverBillsExpensesScreen');
+          }}>
+            <Text style={styles.addBillTxt}>View Bills</Text>
+            <MaterialCommunityIcons name="chevron-right" size={14} color="#352166" />
+          </TouchableOpacity>
+        </View>
+        {displayBills.length === 0 ? (
+          <Text style={styles.emptyBillsTxt}>No bills added yet</Text>
+        ) : (
+          displayBills.map((bill, i) => (
+            <View key={i} style={styles.billRow}>
+              <MaterialCommunityIcons name="receipt" size={16} color="#757575" />
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={styles.billName}>{bill.description || bill.type || bill.name || `Bill ${i + 1}`}</Text>
+                {!!bill.time && <Text style={styles.billTime}>{bill.time}</Text>}
               </View>
-              <View>
-                <Text style={styles.waitingLabel}>{t('waiting_time')}</Text>
-                <Text style={styles.waitingTimer}>{DateTimeFormatter.formatSecondsToDuration(watingTime)}</Text>
+              <View style={styles.billRowRight}>
+                <Text style={styles.billAmt}>₹{parseFloat(bill.amount || 0).toFixed(0)}</Text>
+                {(() => {
+                  const cfg = APPROVAL_CONFIG[bill.approval || 'pending'];
+                  return (
+                    <View style={[styles.billApprovalBadge, { backgroundColor: cfg.bg }]}>
+                      <MaterialCommunityIcons name={cfg.icon} size={10} color={cfg.color} />
+                      <Text style={[styles.billApprovalTxt, { color: cfg.color }]}>{cfg.label}</Text>
+                    </View>
+                  );
+                })()}
               </View>
             </View>
-            <TouchableOpacity style={styles.stopTimerBtn} onPress={()=>onStopTimer()}>
-              <Feather name="square" size={14} color={Colors.white} />
-              <Text style={styles.stopTimerBtnTxt}>{t('stop_timer')}</Text>
-            </TouchableOpacity>
-          </View>
-          }
-          {tripsStatus !== 'ACCEPTED' && showWaypointReached && watingTime <= 0 &&
-          <View style={styles.reachedBtnWrap}>
-            <TouchableOpacity style={styles.reachedBtn} onPress={()=>onReachedStop()}>
-              <MaterialCommunityIcons name="map-marker-check" size={22} color={Colors.white} />
-              <View>
-                <Text style={styles.reachedBtnTitle}>{t('reached')} {nonreachedStops[0]?.name}</Text>
-                <Text style={styles.reachedBtnSub}>{t('press_to_update_status')}</Text>
-              </View>
-            </TouchableOpacity>
-            </View>
-           }
-             {disduration && (
-              <View style={styles.durationBar}>
-                <View style={styles.durationInfoWrap}>
-                  <View style={styles.durationChip}>
-                    <Feather name="map-pin" size={13} color={Colors.periwinkle} />
-                    <Text style={styles.durationChipTxt}>
-                      {disduration?.location[2] < 1000 ? Math.round(disduration?.location[2]) + ' m' : utils.metersToKilometers(disduration?.location[2])?.toFixed(2) + ' km'}
-                    </Text>
-                  </View>
-                  <View style={styles.durationChip}>
-                    <Feather name="clock" size={13} color={Colors.periwinkle} />
-                    <Text style={styles.durationChipTxt}>
-                      {DateTimeFormatter.convertSecondsToReadable(disduration?.location[3], true)}
-                    </Text>
-                  </View>
+          ))
+        )}
+        <TouchableOpacity style={styles.addBillFullBtn} onPress={() => setShowAddBillModal(true)} activeOpacity={0.8}>
+          <MaterialCommunityIcons name="plus-circle-outline" size={16} color="#352166" />
+          <Text style={styles.addBillFullTxt}>Add Bill / Expense</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Vehicle Photos */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <MaterialCommunityIcons name="camera-outline" size={16} color="#0F223C" />
+          <Text style={styles.cardTitle}>Vehicle Photos</Text>
+          <Text style={styles.photoCountTxt}>
+            {vehiclePhotoEntries.length} added
+          </Text>
+        </View>
+        {vehiclePhotoEntries.length === 0 ? (
+          <Text style={styles.emptyBillsTxt}>No photos uploaded yet</Text>
+        ) : (
+          <GHScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.photoGrid}>
+            {vehiclePhotoEntries.map((p, i) => (
+              <TouchableOpacity key={i} style={styles.photoThumb} onPress={() => setStackScreen('DriverVehiclePhotosScreen')} activeOpacity={0.8}>
+                <Image source={{ uri: p.uri }} style={styles.photoImg} />
+                <View style={styles.photoApprovedDot}>
+                  <MaterialCommunityIcons name="check" size={8} color={Colors.white} />
                 </View>
-                <TouchableOpacity style={styles.recenterBtn} onPress={()=>onRecenter()}>
-                  <Feather name="navigation-2" size={16} color={Colors.white} />
-                  <Text style={styles.recenterBtnText}>Re-center</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          {tripsStatus === 'ACCEPTED' &&
-          <ArrivedPickUpLocation
-          pickUpAlertLoading={pickUpAlertLoading}
-          isAlertSent={isAlertSent}
-          onReachedPickupAlert={onReachedPickupAlert}
-           onReachedPickup={onReachedPickup}/>
-          }
-
-          {
-            isReachedDropoff &&
-            <>
-            <View
-              style={[
-                RouteScreenStyles.headerContainer,
-                {backgroundColor: Colors.green},
-              ]}>
-              <View style={RouteScreenStyles.stopContainer}>
-                <Text
-                  style={[RouteScreenStyles.addressTxt, {color: '#ffffff'}]}>
-                  {t('you_have_successfully_reached_your_destination')}
-                </Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              style={RouteScreenStyles.endTripBtn}
-              onPress={() => endTrip()}>
-              <Text style={RouteScreenStyles.endTripTxt}>{t('end_trip')}</Text>
-            </TouchableOpacity>
-          </>
-          }
-
-          {(!hasLocationPermission ||
-            (!hasBackgroundLocationPermission && (Platform.OS === 'android' && Platform.Version > 28)) ||
-            !hasNotificationPermission) ? (
-              <View
-                style={[
-                  RouteScreenStyles.headerContainer,
-                  {
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  },
-                ]}>
-                <Text
-                  style={[
-                    RouteScreenStyles.stopTxt,
-                    {fontSize: 12, width: '60%'},
-                  ]}>
-                  {t('please_enable_required_permissions')}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setStackScreen('DriverPermissionScreen')}
-                  style={RouteScreenStyles.enableNowBtn}>
-                  <Text
-                    style={[
-                      RouteScreenStyles.stopTxt,
-                      {fontSize: 12, color: Colors.black},
-                    ]}>
-                    {t('enable_now')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ) : !userLocation ? (
-              <View
-                style={[
-                  RouteScreenStyles.headerContainer,
-                  {
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  },
-                ]}>
-                <Text
-                  style={[
-                    RouteScreenStyles.stopTxt,
-                    {fontSize: 12, width: '60%'},
-                  ]}>
-                  {t('location_not_found')}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => onNavigationClick()}
-                  style={RouteScreenStyles.enableNowBtn}>
-                  <Text
-                    style={[
-                      RouteScreenStyles.stopTxt,
-                      {fontSize: 12, color: Colors.black},
-                    ]}>
-                    {t('try_again')}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ):null}
-          <ActingDriverMediaButtons />
-          <TripDetails activeTripData={activeTripData} setModalVisible={setCancelRideModalVisible} />
-          <ActingDriverTripInfo trip={activeTripData?.[0]} />
-
-          <AddressComponent
-              percentage={0}
-              waypoints={activeTripData[0]?.stops}
-              deviceLocation={null}
-              isPublicRides={true}
-            />
-
-            {isReachedDropoff? (
-             <></>
-            ):(
-            <ModalFooter setCancelRideModalVisible={setCancelRideModalVisible} activeTripData={activeTripData} />
-            )}
-            </>
-          )}
-
-        </CustomeBottomSheet>
-      )}
-        {(modalVisible && !cancelRideModalVisible) && renderPickUpModal()}
-        {cancelRideModalVisible && <CancelRideModal modalVisible={cancelRideModalVisible} setModalVisible={setCancelRideModalVisible} callCancelRide={handleEndTrip} loading={loading} tripData={activeTripData?.[0]}/>}
-        <Modal transparent animationType="fade" visible={showPreTripWarning} onRequestClose={() => setShowPreTripWarning(false)}>
-          <View style={styles.preTripOverlay}>
-            <View style={styles.preTripWarningBox}>
-              <Text style={styles.preTripWarningTitle}>Uploads Required Before OTP</Text>
-              <Text style={styles.preTripWarningMsg}>
-                Please complete all required uploads before entering the OTP:
-              </Text>
-              <View style={styles.preTripCheckList}>
-                <View style={styles.preTripCheckRow}>
-                  <MaterialCommunityIcons
-                    name={(preTripDone || preTripUploadedOnServer) ? 'check-circle' : 'circle-outline'}
-                    size={18}
-                    color={(preTripDone || preTripUploadedOnServer) ? '#4CAF50' : '#E65100'}
-                  />
-                  <Text style={[styles.preTripCheckTxt, (preTripDone || preTripUploadedOnServer) && styles.preTripCheckDone]}>
-                    Vehicle condition photos (Front, Rear, Left, Right)
-                  </Text>
-                </View>
-                <View style={styles.preTripCheckRow}>
-                  <MaterialCommunityIcons
-                    name={(dentPhotosDone || dentUploadedOnServer) ? 'check-circle' : 'circle-outline'}
-                    size={18}
-                    color={(dentPhotosDone || dentUploadedOnServer) ? '#4CAF50' : '#E65100'}
-                  />
-                  <Text style={[styles.preTripCheckTxt, (dentPhotosDone || dentUploadedOnServer) && styles.preTripCheckDone]}>
-                    Dent / damage photos
-                  </Text>
-                </View>
-                <View style={styles.preTripCheckRow}>
-                  <MaterialCommunityIcons
-                    name={(odometerPhotoDone || odometerUploadedOnServer) ? 'check-circle' : 'circle-outline'}
-                    size={18}
-                    color={(odometerPhotoDone || odometerUploadedOnServer) ? '#4CAF50' : '#E65100'}
-                  />
-                  <Text style={[styles.preTripCheckTxt, (odometerPhotoDone || odometerUploadedOnServer) && styles.preTripCheckDone]}>
-                    Odometer reading photo
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                style={styles.preTripUploadBtn}
-                activeOpacity={0.8}
-                onPress={() => {
-                  setShowPreTripWarning(false);
-                  setStackScreen('DriverVehiclePhotosScreen');
-                }}>
-                <MaterialCommunityIcons name="camera-plus-outline" size={18} color={Colors.white} />
-                <Text style={styles.preTripUploadBtnTxt}>Upload Now</Text>
+                <Text style={styles.photoLabel}>{p.label}</Text>
               </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-        <Modal transparent animationType="fade" visible={showPostTripWarning} onRequestClose={() => setShowPostTripWarning(false)}>
-          <View style={styles.preTripOverlay}>
-            <View style={styles.preTripWarningBox}>
-              <Text style={styles.preTripWarningTitle}>{t('post_trip_photos_required')}</Text>
-              <Text style={styles.preTripWarningMsg}>
-                {t('please_upload_post_trip_photos_before_ending_ride', { defaultValue: 'Please upload the 4 post-trip vehicle condition photos before ending the ride. This helps record the vehicle\'s condition at trip end.' })}
-              </Text>
-              <TouchableOpacity
-                style={styles.preTripUploadBtn}
-                activeOpacity={0.8}
-                onPress={() => {
-                  setShowPostTripWarning(false);
-                  setStackScreen('DriverVehiclePhotosScreen');
-                }}>
-                <MaterialCommunityIcons name="camera-plus-outline" size={18} color={Colors.white} />
-                <Text style={styles.preTripUploadBtnTxt}>{t('upload_photos_now')}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-        {openNavChoiceModal && renderOpenNavChoiceModal()}
-        {openRouteRetryModal && renderRouteRetryModal()}
-    </View>
+            ))}
+          </GHScrollView>
+        )}
+        <Text style={styles.photoHint}>Tap a tile to capture or upload • Helps verify vehicle condition</Text>
+      </View>
     </>
+  );
+
+  const renderSafetyTab = () => (
+    <>
+      {/* Speed & Safety */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <MaterialCommunityIcons name="shield-check-outline" size={16} color="#0F223C" />
+          <Text style={styles.cardTitle}>Speed & Safety</Text>
+          <View style={styles.monitoringBadge}>
+            <View style={styles.monitoringDot} />
+            <Text style={styles.monitoringTxt}>Monitoring</Text>
+          </View>
+        </View>
+        <View style={styles.speedRow}>
+          <View style={styles.speedGaugeWrap}>
+            <Text style={styles.speedValue}>—</Text>
+            <Text style={styles.speedUnit}>km/h</Text>
+          </View>
+          <View style={{ flex: 1, marginLeft: 16 }}>
+            <Text style={styles.safetyStatusTxt}>Driving within safe limits</Text>
+            <Text style={styles.safetySubTxt}>Live speed is being monitored against road speed limits in real time.</Text>
+            <View style={styles.speedLimitBadge}>
+              <MaterialCommunityIcons name="speedometer" size={12} color="#E53935" />
+              <Text style={styles.speedLimitTxt}>Speed Limit: {trip?.actingDriverMaxSpeed || 80} km/h</Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.safetyStatsRow}>
+          <View style={styles.safetyStatItem}>
+            <MaterialCommunityIcons name="alert-circle-outline" size={14} color="#E53935" />
+            <Text style={styles.safetyStatLabel}>Alerts</Text>
+            <Text style={[styles.safetyStatValue, { color: '#E53935' }]}>0 times</Text>
+          </View>
+          <View style={styles.safetyStatItem}>
+            <MaterialCommunityIcons name="play-circle-outline" size={14} color="#42A5F5" />
+            <Text style={styles.safetyStatLabel}>Trip Started</Text>
+            <Text style={styles.safetyStatValue}>{formatTime(trip?.tripStartTime) || '—'}</Text>
+          </View>
+          <View style={styles.safetyStatItem}>
+            <MaterialCommunityIcons name="speedometer-medium" size={14} color="#43A047" />
+            <Text style={styles.safetyStatLabel}>Avg Speed</Text>
+            <Text style={styles.safetyStatValue}>— km/h</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Upload Photos */}
+      {/* <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <MaterialCommunityIcons name="car-outline" size={16} color="#0F223C" />
+          <Text style={styles.cardTitle}>Upload Photos</Text>
+        </View>
+        <TouchableOpacity style={styles.uploadRow} onPress={() => setStackScreen('DriverVehiclePhotosScreen')} activeOpacity={0.8}>
+          <View style={styles.uploadIconWrap}>
+            <MaterialCommunityIcons name="car-outline" size={20} color={Colors.white} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.uploadRowTitle}>Vehicle Photos</Text>
+            <Text style={styles.uploadRowSub}>Pre-trip & post-trip condition</Text>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={18} color="#BDBDBD" />
+        </TouchableOpacity>
+        <View style={styles.rowDivider} />
+        <TouchableOpacity style={styles.uploadRow} onPress={() => setShowAddBillModal(true)} activeOpacity={0.8}>
+          <View style={[styles.uploadIconWrap, { backgroundColor: '#E8EAF6' }]}>
+            <MaterialCommunityIcons name="receipt" size={20} color="#3949AB" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.uploadRowTitle}>Bills & Expenses</Text>
+            <Text style={styles.uploadRowSub}>Toll, parking, interstate tax</Text>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={18} color="#BDBDBD" />
+        </TouchableOpacity>
+      </View> */}
+    </>
+  );
+
+  // ─── Nav choice modal ──────────────────────────────────────────────────────
+  const renderNavChoiceModal = () => (
+    <Modal visible={openNavChoiceModal} transparent animationType="fade" onRequestClose={() => setOpenNavChoiceModal(false)}>
+      <View style={styles.navOverlay}>
+        <TouchableOpacity style={StyleSheet.absoluteFillObject} onPress={() => setOpenNavChoiceModal(false)} activeOpacity={1} />
+        <View style={styles.navSheet}>
+          <View style={styles.navHandle} />
+          <Text style={styles.navTitle}>Choose Navigation</Text>
+          <Text style={styles.navSub}>Select your preferred navigation app</Text>
+          <View style={styles.navOptionsRow}>
+            <TouchableOpacity style={styles.navOptionCard} onPress={() => handleNavMode('google')} activeOpacity={0.8}>
+              <MaterialCommunityIcons name="google-maps" size={32} color="#4285F4" />
+              <Text style={styles.navOptionLabel}>Google Maps</Text>
+              <Text style={styles.navOptionDesc}>Open in Google Maps</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.navOptionCard} onPress={() => handleNavMode('vm')} activeOpacity={0.8}>
+              <MaterialCommunityIcons name="map-outline" size={32} color="#352166" />
+              <Text style={styles.navOptionLabel}>VirtualMaze</Text>
+              <Text style={styles.navOptionDesc}>In-app navigation</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  // ─── Post-trip warning modal ───────────────────────────────────────────────
+  const renderPostTripWarning = () => (
+    <Modal visible={showPostTripWarning} transparent animationType="fade" onRequestClose={() => setShowPostTripWarning(false)}>
+      <View style={styles.warnOverlay}>
+        <View style={styles.warnBox}>
+          <MaterialCommunityIcons name="camera-off-outline" size={40} color="#E53935" style={{ alignSelf: 'center', marginBottom: 10 }} />
+          <Text style={styles.warnTitle}>Post-Trip Photos Required</Text>
+          <Text style={styles.warnMsg}>
+            Please upload the 4 post-trip vehicle condition photos before ending the ride.
+          </Text>
+          <TouchableOpacity
+            style={styles.warnBtn}
+            onPress={() => { setShowPostTripWarning(false); setStackScreen('ActingDriverPostTripScreen'); }}
+            activeOpacity={0.8}>
+            <MaterialCommunityIcons name="camera-plus-outline" size={18} color={Colors.white} />
+            <Text style={styles.warnBtnTxt}>Upload Photos Now</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.warnCancelBtn} onPress={() => setShowPostTripWarning(false)}>
+            <Text style={styles.warnCancelTxt}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  return (
+    <View style={{ flex: 1 }}>
+      <CustomeBottomSheet useScrollView={true}>
+
+        {/* ── Start Navigation button ── */}
+        {!disduration && tripsStatus !== 'COMPLETED' && (
+          <TouchableOpacity
+            style={[styles.navBtn, (routeLoading?.loading && routeLoading?.message !== 'initialState') && { opacity: 0.7 }]}
+            onPress={onStartNavigationPress}
+            disabled={routeLoading?.loading && routeLoading?.message !== 'initialState'}
+            activeOpacity={0.85}>
+            {routeLoading?.loading && routeLoading?.message !== 'initialState'
+              ? <ActivityIndicator size="small" color={Colors.white} />
+              : <MaterialCommunityIcons name="navigation-variant-outline" size={20} color={Colors.white} />}
+            <Text style={styles.navBtnTxt}>Start Navigation</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* ── Tab Bar ── */}
+        <View style={styles.tabBar}>
+          {TABS.map((tab, i) => (
+            <TouchableOpacity key={i} style={[styles.tabItem, activeTab === i && styles.tabItemActive]} onPress={() => setActiveTab(i)} activeOpacity={0.8}>
+              <Text style={[styles.tabTxt, activeTab === i && styles.tabTxtActive]}>{tab}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* ── Tab Content ── */}
+        {activeTab === 0 && renderTripTab()}
+        {activeTab === 1 && renderEarningsTab()}
+        {activeTab === 2 && renderSafetyTab()}
+
+        <View style={{ height: 120 }} />
+      </CustomeBottomSheet>
+
+      {/* ── Footer: SOS + Call + End Trip ── */}
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.sosBtn} onPress={() => Linking.openURL('tel:112')} activeOpacity={0.8}>
+          <View style={styles.sosDot}>
+            <Text style={styles.sosDotTxt}>SOS</Text>
+          </View>
+          <Text style={styles.sosTxt}>SOS</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.callFooterBtn}
+          onPress={() => Linking.openURL(`tel:${customerPhone?.replace(/\s|-/g, '')}`)}>
+          <Feather name="phone" size={18} color="#0F223C" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.endTripBtn} onPress={() => setCancelRideModalVisible(true)} activeOpacity={0.85}>
+          <Text style={styles.endTripTxt}>
+            {tripsStatus === 'ACCEPTED' ? 'Cancel Trip' : 'End Trip'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {renderNavChoiceModal()}
+      {renderPostTripWarning()}
+      <AddBillModal
+        visible={showAddBillModal}
+        onClose={() => setShowAddBillModal(false)}
+        onAdd={onBillAdded}
+        tripId={trip?._id}
+        token={token}
+        t={t}
+      />
+      {cancelRideModalVisible && (
+        <CancelRideModal
+          modalVisible={cancelRideModalVisible}
+          setModalVisible={setCancelRideModalVisible}
+          callCancelRide={(reason, translatedReason) => {
+            setCancelRideModalVisible(false);
+            handleCancelRide(reason, translatedReason);
+          }}
+          loading={loading}
+          tripData={trip}
+        />
+      )}
+    </View>
   );
 };
 
-export default ActingDriverOnRide;
+export default ActingDriverOnRideScreen;
 
 const styles = StyleSheet.create({
-    preTripOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.55)',
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingHorizontal: 24,
-    },
-    preTripWarningBox: {
-      backgroundColor: Colors.white,
-      borderRadius: 16,
-      padding: 24,
-      width: '100%',
-      maxWidth: 360,
-      gap: 10,
-    },
-    preTripWarningTitle: {
-      fontSize: 17,
-      fontFamily: Fonts.semi_bold,
-      color: '#BF360C',
-      textAlign: 'center',
-    },
-    preTripWarningMsg: {
-      fontSize: 13,
-      fontFamily: Fonts.regular,
-      color: '#555',
-      textAlign: 'center',
-      lineHeight: 20,
-    },
-    preTripUploadBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 8,
-      backgroundColor: Colors.periwinkle,
-      paddingVertical: 13,
-      borderRadius: 10,
-      marginTop: 6,
-    },
-    preTripUploadBtnTxt: { fontSize: 14, fontFamily: Fonts.semi_bold, color: Colors.white },
-    preTripSkipBtn: {
-      alignItems: 'center',
-      paddingVertical: 10,
-    },
-    preTripSkipTxt: { fontSize: 13, fontFamily: Fonts.medium, color: '#999' },
-    preTripCheckList: {
-      gap: 10,
-      marginVertical: 8,
-      width: '100%',
-    },
-    preTripCheckRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-    },
-    preTripCheckTxt: {
-      fontSize: 13,
-      fontFamily: Fonts.medium,
-      color: '#E65100',
-      flex: 1,
-    },
-    preTripCheckDone: {
-      color: '#4CAF50',
-      textDecorationLine: 'line-through',
-    },
-    navBtn:{
-      flexDirection:'row',
-      alignItems:'center',
-      justifyContent:'center',
-      alignSelf:'center',
-      gap:8,
-      backgroundColor:Colors.periwinkle,
-      paddingVertical:12,
-      paddingHorizontal:28,
-      borderRadius:28,
-      marginVertical:10,
-      elevation:4,
-      shadowColor:Colors.periwinkle,
-      shadowOffset:{width:0,height:3},
-      shadowOpacity:0.35,
-      shadowRadius:6,
-    },
-    navBtnTxt:{
-      fontFamily:Fonts.semi_bold,
-      fontSize:14,
-      color:Colors.white,
-    },
-    waitingCard:{
-      width:'90%',
-      alignSelf:'center',
-      backgroundColor:'#FFF8E1',
-      borderRadius:14,
-      padding:14,
-      marginVertical:10,
-      elevation:3,
-      shadowColor:'#000',
-      shadowOffset:{width:0,height:1},
-      shadowOpacity:0.1,
-      shadowRadius:4,
-      borderLeftWidth:4,
-      borderLeftColor:'#FFC107',
-    },
-    waitingTopRow:{
-      flexDirection:'row',
-      alignItems:'center',
-      gap:12,
-      marginBottom:12,
-    },
-    waitingIconCircle:{
-      width:36,
-      height:36,
-      borderRadius:18,
-      backgroundColor:'#FFC107',
-      alignItems:'center',
-      justifyContent:'center',
-    },
-    waitingLabel:{
-      fontFamily:Fonts.regular,
-      fontSize:11,
-      color:'#9E8600',
-    },
-    waitingTimer:{
-      fontFamily:Fonts.semi_bold,
-      fontSize:20,
-      color:Colors.black,
-    },
-    stopTimerBtn:{
-      flexDirection:'row',
-      alignItems:'center',
-      justifyContent:'center',
-      gap:6,
-      backgroundColor:'#E53935',
-      paddingVertical:8,
-      borderRadius:8,
-    },
-    stopTimerBtnTxt:{
-      fontFamily:Fonts.medium,
-      fontSize:13,
-      color:Colors.white,
-    },
-    reachedBtnWrap:{
-      paddingHorizontal:16,
-      marginVertical:8,
-    },
-    reachedBtn:{
-      flexDirection:'row',
-      alignItems:'center',
-      gap:12,
-      backgroundColor:Colors.periwinkle,
-      paddingVertical:14,
-      paddingHorizontal:18,
-      borderRadius:14,
-      elevation:4,
-      shadowColor:Colors.periwinkle,
-      shadowOffset:{width:0,height:2},
-      shadowOpacity:0.3,
-      shadowRadius:5,
-    },
-    reachedBtnTitle:{
-      fontFamily:Fonts.semi_bold,
-      fontSize:14,
-      color:Colors.white,
-    },
-    reachedBtnSub:{
-      fontFamily:Fonts.regular,
-      fontSize:11,
-      color:'rgba(255,255,255,0.8)',
-      marginTop:2,
-    },
-    durationBar:{
-      flexDirection:'row',
-      alignItems:'center',
-      justifyContent:'space-between',
-      width:'92%',
-      alignSelf:'center',
-      backgroundColor:'#F5F5FF',
-      borderRadius:14,
-      paddingVertical:10,
-      paddingHorizontal:14,
-      marginVertical:10,
-      elevation:2,
-      shadowColor:'#000',
-      shadowOffset:{width:0,height:1},
-      shadowOpacity:0.06,
-      shadowRadius:3,
-      borderWidth:1,
-      borderColor:'#E8E8F0',
-    },
-    durationInfoWrap:{
-      flexDirection:'row',
-      backgroundColor:Colors.yellow_xlight,
-      elevation:2,
-      borderRadius:20,
-      gap:5,
-    },
-    durationChip:{
-      flexDirection:'row',
-      alignItems:'center',
-      gap:3,
-      borderColor:Colors.black,
-      paddingVertical:2,
-      paddingHorizontal:6,
-      borderRadius:20,
-      borderLeftWidth:1
-    },
-    durationChipTxt:{
-      fontFamily:Fonts.medium,
-      fontSize:13,
-      color:Colors.black,
-    },
-    recenterBtn:{
-      borderRadius:18,
-      backgroundColor:Colors.periwinkle,
-      alignItems:'center',
-      justifyContent:'center',
-      elevation:2,
-      flexDirection:'row',
-      paddingVertical:5,
-      paddingHorizontal:14,
-      gap:4
-    },
-    recenterBtnText:{
-      fontSize:12,
-      fontFamily:Fonts.medium,
-      color:Colors.white,
-    },
-    navSheetContainer:{
-      paddingHorizontal:18,
-      paddingTop:12,
-      paddingBottom:28,
-      gap:14,
-      backgroundColor:Colors.white,
-      borderRadius:10,
-      width:'90%'
-    },
-    navHeaderRow:{
-      flexDirection:'row',
-      alignItems:'center',
-      justifyContent:'space-between'
-    },
-    navHeader:{
-      fontFamily:Fonts.semi_bold,
-      fontSize:16,
-      color:Colors.black
-    },
-    navSubHeader:{
-      fontFamily:Fonts.light,
-      fontSize:12,
-      color:Colors.grey_dark
-    },
-    navCloseBtn:{
-      padding:6,
-      borderRadius:20,
-      backgroundColor:Colors.grey_light
-    },
-    navOptionsRow:{
-      flexDirection:'row',
-      gap:12
-    },
-    navOptionCard:{
-      flex:1,
-      backgroundColor:Colors.white,
-      borderRadius:12,
-      paddingVertical:14,
-      paddingHorizontal:12,
-      elevation:3,
-      shadowColor:'#000',
-      shadowOffset:{width:0,height:1},
-      shadowOpacity:0.15,
-      shadowRadius:2,
-      borderWidth:1,
-      borderColor:Colors.grey_light,
-      gap:6
-    },
-    navOptionPressed:{
-      opacity:0.8,
-      transform:[{scale:0.98}]
-    },
-    navIconCircle:{
-      width:40,
-      height:40,
-      borderRadius:20,
-      backgroundColor:Colors.periwinkle,
-      alignItems:'center',
-      justifyContent:'center'
-    },
-    navOptionLabel:{
-      fontFamily:Fonts.medium,
-      fontSize:14,
-      color:Colors.black
-    },
-    navOptionDesc:{
-      fontFamily:Fonts.light,
-      fontSize:11,
-      color:Colors.grey_dark
-    },
-    navFooterHintWrapper:{
-      flexDirection:'row',
-      alignItems:'center',
-      gap:6,
-      marginTop:4
-    },
-    navFooterHint:{
-      fontFamily:Fonts.light,
-      fontSize:11,
-      color:Colors.grey_dark,
-      flex:1
-    },
-    routeOverlay: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: 'rgba(0,0,0,0.35)',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 9999,
-    },
-    routeErrorBox: {
-      width: '75%',
-      backgroundColor: 'white',
-      justifyContent: 'center',
-      alignItems: 'center',
-      alignSelf: 'center',
-      borderRadius: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 12,
-      elevation: 4,
-    },
-    routeIconWrapper: {
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: 6,
-    },
-    routeErrorText: {
-      color: Colors.red,
-      fontSize: 14,
-      marginBottom: 8,
-      fontFamily:Fonts.regular
-    },
-    routeHelperText: {
-      color: Colors.grey_dark,
-      fontSize: 12,
-      textAlign: 'center',
-      marginBottom: 8,
-      fontFamily:Fonts.regular
-    },
-    routeRetryBtn: {
-      backgroundColor: Colors.grey_dark,
-      borderRadius: 8,
-      paddingVertical: 8,
-      paddingHorizontal: 12,
-    },
-    routeRetryText: {
-      color: 'white',
-      fontSize: 14,
-      fontFamily:Fonts.semi_bold
-    },
-    routeBackBtn: {
-      backgroundColor: 'transparent',
-      borderRadius: 8,
-      paddingVertical: 8,
-      paddingHorizontal: 12,
-      borderWidth: 1,
-      borderColor: Colors.grey_dark,
-    },
-    routeBackText: {
-      color: Colors.grey_dark,
-      fontSize: 14,
-      fontFamily:Fonts.semi_bold
-    },
-  topBanner: {
-    position: 'absolute',
-    top: 40,
-    left: 16,
-    right: 16,
-    backgroundColor: '#352166',
-    borderRadius: 16,
-    padding: 16,
-    zIndex: 10,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+  // Start Navigation
+  navBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: '#0F223C', marginHorizontal: 16, marginBottom: 12,
+    paddingVertical: 14, borderRadius: 30, elevation: 4,
   },
-  topBannerTitle: {
-    color: '#FFFFFF',
-    fontFamily: Fonts.semi_bold,
-    fontSize: 16,
+  navBtnTxt: { fontSize: 15, fontFamily: Fonts.bold, color: Colors.white, letterSpacing: 0.3 },
+
+  // Tab bar
+  tabBar: {
+    flexDirection: 'row', marginHorizontal: 16, marginBottom: 14,
+    backgroundColor: '#F0F4F8', borderRadius: 12, padding: 4,
   },
-  topBannerSub: {
-    color: '#FFFFFF',
-    fontFamily: Fonts.regular,
-    fontSize: 13,
-    marginTop: 4,
+  tabItem: { flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: 'center' },
+  tabItemActive: { backgroundColor: Colors.white, elevation: 2, shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 4, shadowOffset: { width: 0, height: 1 } },
+  tabTxt: { fontSize: 11, fontFamily: Fonts.medium, color: '#888' },
+  tabTxtActive: { color: '#0F223C', fontFamily: Fonts.semi_bold },
+
+  // Cards
+  card: {
+    backgroundColor: Colors.white, borderRadius: 14, padding: 14,
+    marginHorizontal: 16, marginBottom: 12, elevation: 1,
+    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
   },
-  actingDriverPickupSheet: {
-    padding: 16,
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 },
+  cardTitle: { flex: 1, fontSize: 13, fontFamily: Fonts.semi_bold, color: '#0F223C' },
+
+  // Vehicle card
+  vehicleCard: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: Colors.white, borderRadius: 14, padding: 14,
+    marginHorizontal: 16, marginBottom: 12,
+    elevation: 1, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
   },
-  pickupSheetTitle: {
-    fontFamily: Fonts.semi_bold,
-    fontSize: 14,
-    color: Colors.black,
+  vehicleCardLeft: { flex: 1, gap: 4 },
+  vehicleCardFooter: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' },
+  vehicleCardImage: { width: 110, height: 80 },
+  specChipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
+  specChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#F0F4F8', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20 },
+  specChipTxt: { fontSize: 11, fontFamily: Fonts.medium, color: '#555', textTransform: 'capitalize' },
+  regBadge: { alignSelf: 'flex-start', backgroundColor: '#0F223C', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, marginBottom: 2 },
+  regBadgeTxt: { fontSize: 13, fontFamily: Fonts.bold, color: Colors.white, letterSpacing: 1 },
+  vehicleModelTxt: { fontSize: 14, fontFamily: Fonts.bold, color: '#0F223C' },
+  colorTxt: { fontSize: 12, fontFamily: Fonts.regular, color: '#757575' },
+  liveBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#E8F5E9', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#43A047' },
+  liveTxt: { fontSize: 11, fontFamily: Fonts.bold, color: '#43A047' },
+  tripIdTxt: { fontSize: 11, fontFamily: Fonts.regular, color: '#757575' },
+
+  // Customer card
+  customerRow: { flexDirection: 'row', alignItems: 'center', gap: 0, marginBottom: 12 },
+  avatarCircle: { width: 46, height: 46, borderRadius: 23, backgroundColor: '#352166', alignItems: 'center', justifyContent: 'center' },
+  avatarInitial: { fontSize: 18, fontFamily: Fonts.bold, color: Colors.white },
+  nameRatingRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  customerNameTxt: { fontSize: 15, fontFamily: Fonts.semi_bold, color: '#0F223C', marginRight: 2 },
+  customerNotesBox: { backgroundColor: '#F7F8FA', borderRadius: 10, padding: 12, borderLeftWidth: 3, borderLeftColor: '#352166' },
+  customerNotesTxt: { fontSize: 13, fontFamily: Fonts.regular, color: '#333', lineHeight: 20 },
+  ratingTxt: { fontSize: 12, fontFamily: Fonts.semi_bold, color: '#0F223C' },
+  pickupTimeTxt: { fontSize: 12, fontFamily: Fonts.regular, color: '#757575', marginTop: 2 },
+  callBtnGreen: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#43A047', alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
+  chatBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F0F4F8', alignItems: 'center', justifyContent: 'center', marginLeft: 6 },
+
+  // Stats row
+  statsRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F7F8FA', borderRadius: 12, padding: 10 },
+  statItem: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  statDivider: { width: 1, height: 30, backgroundColor: '#E0E0E0' },
+  statLabel: { fontSize: 9, fontFamily: Fonts.regular, color: '#888' },
+  statValue: { fontSize: 12, fontFamily: Fonts.bold, color: '#0F223C' },
+
+  // Pickup & Drop route row
+  routeRow: { flexDirection: 'row', alignItems: 'stretch', gap: 12 },
+  routeLineCol: { width: 16, alignItems: 'center', paddingTop: 4, paddingBottom: 2 },
+  routeDotStart: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#42A5F5', borderWidth: 2, borderColor: '#fff', elevation: 1 },
+  routeLine: { flex: 1, width: 2, backgroundColor: '#E0E0E0', marginVertical: 2 },
+  routeStop: { paddingVertical: 8 },
+  routePickupBadge: { alignSelf: 'flex-start', backgroundColor: '#E3F2FD', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, marginBottom: 4 },
+  routePickupBadgeTxt: { fontSize: 10, fontFamily: Fonts.bold, color: '#1565C0' },
+  routeDropBadge: { alignSelf: 'flex-start', backgroundColor: '#FCE4EC', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10, marginBottom: 4 },
+  routeDropBadgeTxt: { fontSize: 10, fontFamily: Fonts.bold, color: '#C62828' },
+  routeStopAddr: { fontSize: 13, fontFamily: Fonts.regular, color: '#222', lineHeight: 18 },
+  routeDivider: { height: 1, backgroundColor: '#F0F0F0' },
+
+  // Itinerary stops
+  stopCountBadge: { backgroundColor: '#F0F4F8', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
+  stopCountTxt: { fontSize: 10, fontFamily: Fonts.medium, color: '#0F223C' },
+  stopRow: { flexDirection: 'row', marginBottom: 2, alignItems: 'flex-start' },
+  stopLineCol: { width: 20, alignItems: 'center', paddingTop: 3 },
+
+  // Redesigned itinerary styles
+  itinHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
+  itinHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 },
+  itinHeaderIcon: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#EDE9F8', alignItems: 'center', justifyContent: 'center' },
+  itinStopsBadge: { backgroundColor: '#EDE9F8', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  itinStopsBadgeTxt: { fontSize: 11, fontFamily: Fonts.semi_bold, color: '#352166' },
+  itinNavBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#EDE9F8', borderRadius: 12, padding: 12, marginBottom: 14, gap: 10 },
+  itinNavBannerIcon: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#D4CAEE', alignItems: 'center', justifyContent: 'center' },
+  itinNavBannerTitle: { fontSize: 13, fontFamily: Fonts.bold, color: '#352166' },
+  itinNavBannerSub: { fontSize: 11, fontFamily: Fonts.regular, color: '#666', marginTop: 1 },
+  itinStopRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 0 },
+  itinTimelineCol: { width: 36, alignItems: 'center' },
+  itinCircle: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  itinCircleDone: { backgroundColor: '#4CAF50' },
+  itinCircleCurrent: { backgroundColor: '#352166' },
+  itinCircleDrop: { backgroundColor: '#E53935' },
+  itinCircleUpcoming: { backgroundColor: '#E8EDF2', borderWidth: 2, borderColor: '#C5D0DA' },
+  itinCircleInnerDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#9BA8B4' },
+  itinConnectLine: { width: 2, flex: 1, minHeight: 20, backgroundColor: '#E0E0E0', marginTop: 2, marginBottom: 2 },
+  itinConnectLineDone: { backgroundColor: '#4CAF50' },
+  itinStopContent: { flex: 1, paddingLeft: 10, paddingBottom: 18, paddingTop: 5 },
+  itinStopName: { fontSize: 13, fontFamily: Fonts.semi_bold, color: '#0F223C' },
+  itinStopNameDone: { color: '#9E9E9E', textDecorationLine: 'line-through' },
+  itinStopAddr: { fontSize: 11, fontFamily: Fonts.regular, color: '#757575', marginTop: 2 },
+  itinStopTime: { fontSize: 10, fontFamily: Fonts.medium, color: '#FFA000', marginTop: 2 },
+  itinBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
+  itinTimeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
+  itinTimeChip: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#EDE9F8', paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8 },
+  itinTimeChipTxt: { fontSize: 9, fontFamily: Fonts.medium, color: '#352166' },
+  itinTimeChipWait: { backgroundColor: '#FFF3E0' },
+  arrivedBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#E8F5E9', borderRadius: 10, padding: 10, marginBottom: 10, borderWidth: 1, borderColor: '#C8E6C9' },
+  arrivedBannerIcon: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#C8E6C9', alignItems: 'center', justifyContent: 'center' },
+  arrivedBannerTitle: { fontSize: 13, fontFamily: Fonts.bold, color: '#2E7D32' },
+  arrivedBannerSub: { fontSize: 11, fontFamily: Fonts.regular, color: '#388E3C', marginTop: 1 },
+  arrivedBannerBtn: { backgroundColor: '#43A047', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, minWidth: 80, alignItems: 'center' },
+  arrivedBannerBtnTxt: { fontSize: 12, fontFamily: Fonts.bold, color: '#FFF' },
+  itinNavBtn: { padding: 4, paddingTop: 6 },
+  itinBadgeDone: { backgroundColor: '#E8F5E9', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, maxWidth: 74 },
+  itinBadgeDoneTxt: { fontSize: 8, fontFamily: Fonts.bold, color: '#2E7D32', letterSpacing: 0.3 },
+  itinBadgeVisit: { backgroundColor: '#E8F5E9', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, maxWidth: 74 },
+  itinBadgeVisitTxt: { fontSize: 8, fontFamily: Fonts.bold, color: '#2E7D32', letterSpacing: 0.3 },
+  itinBadgeNav: { backgroundColor: '#FFF3E0', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, maxWidth: 74 },
+  itinBadgeNavTxt: { fontSize: 8, fontFamily: Fonts.bold, color: '#E65100', letterSpacing: 0.3 },
+  itinBadgeDrop: { backgroundColor: '#FFEBEE', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, maxWidth: 74 },
+  itinBadgeDropTxt: { fontSize: 8, fontFamily: Fonts.bold, color: '#C62828', letterSpacing: 0.3 },
+  stopDot: { width: 10, height: 10, borderRadius: 5 },
+  stopDotStart: { backgroundColor: '#42A5F5' },
+  stopDotMid: { backgroundColor: '#FFA000' },
+  stopDotEnd: { backgroundColor: '#E53935' },
+  stopLine: { width: 2, flex: 1, backgroundColor: '#E0E0E0', marginTop: 3, marginBottom: 3 },
+  stopContent: { flex: 1, paddingLeft: 8, paddingBottom: 14 },
+  stopTopRow: { flexDirection: 'row', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginBottom: 2 },
+  stopTime: { fontSize: 11, fontFamily: Fonts.medium, color: '#FFA000' },
+  stopTagBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 7, paddingVertical: 2, borderRadius: 10 },
+  stopTagTxt: { fontSize: 9, fontFamily: Fonts.bold },
+  stopName: { fontSize: 13, fontFamily: Fonts.semi_bold, color: '#0F223C' },
+  stopAddr: { fontSize: 11, fontFamily: Fonts.regular, color: '#757575', marginTop: 1 },
+  showMoreBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#F0F0F0', marginTop: 4 },
+  showMoreTxt: { fontSize: 12, fontFamily: Fonts.semi_bold, color: '#352166' },
+
+  // Trip summary
+  tripSummaryRow: { flexDirection: 'row', borderTopWidth: 1, borderTopColor: '#F0F0F0', paddingTop: 12, marginTop: 4, gap: 0 },
+  summaryItem: { flex: 1, alignItems: 'center' },
+  summaryLabel: { fontSize: 10, fontFamily: Fonts.regular, color: '#888' },
+  summaryValue: { fontSize: 13, fontFamily: Fonts.bold, color: '#0F223C', marginTop: 2 },
+  routeStatusRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 10 },
+  routeStatusTxt: { fontSize: 11, fontFamily: Fonts.medium, color: '#43A047' },
+  updatedTxt: { fontSize: 11, fontFamily: Fonts.regular, color: '#BDBDBD' },
+
+  // Trip Duration card
+  tripTypeBadge: { backgroundColor: '#EDE7F6', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  tripTypeTxt: { fontSize: 10, fontFamily: Fonts.semi_bold, color: '#4527A0' },
+  durationRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingVertical: 4 },
+  durationDayCol: { width: 16, alignItems: 'center', paddingTop: 4 },
+  durationDayDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#42A5F5' },
+  durationDayLine: { width: 2, flex: 1, minHeight: 24, backgroundColor: '#E0E0E0', marginTop: 3 },
+  durationDayContent: { flex: 1, gap: 4 },
+  durationDayLabel: { fontSize: 14, fontFamily: Fonts.bold, color: '#0F223C' },
+  durationBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', backgroundColor: '#EDE7F6', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  durationBadgeTxt: { fontSize: 12, fontFamily: Fonts.semi_bold, color: '#352166' },
+  durationDateTxt: { fontSize: 11, fontFamily: Fonts.regular, color: '#757575' },
+  durationRangeRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
+  durationRangeBlock: { flex: 1, gap: 4 },
+  durationRangeLabel: { fontSize: 10, fontFamily: Fonts.medium, color: '#9E9E9E', textTransform: 'uppercase', letterSpacing: 0.5 },
+  durationRangeDate: { fontSize: 15, fontFamily: Fonts.bold, color: '#0F223C' },
+  durationRangeDay: { fontSize: 11, fontFamily: Fonts.regular, color: '#757575' },
+  durationArrowCol: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8 },
+  durationArrowLine: { width: 16, height: 1, backgroundColor: '#C5D0DA' },
+  durationTimeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#EDE9F8', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, alignSelf: 'flex-start', marginTop: 2 },
+  durationTimeChipTxt: { fontSize: 11, fontFamily: Fonts.medium, color: '#352166' },
+
+  // Requirements
+  reqRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 7, borderBottomWidth: 1, borderBottomColor: '#F5F5F5' },
+  reqIcon: { width: 32, height: 32, borderRadius: 8, backgroundColor: '#F0F4F8', alignItems: 'center', justifyContent: 'center' },
+  reqLabel: { fontSize: 13, fontFamily: Fonts.regular, color: '#333', flex: 1 },
+
+  // Earnings
+  earningsRow: { flexDirection: 'row', backgroundColor: '#F7F8FA', borderRadius: 12, padding: 12 },
+  earningItem: { flex: 1, alignItems: 'center', gap: 4 },
+  earningDivider: { width: 1, backgroundColor: '#E0E0E0' },
+  earningLabel: { fontSize: 10, fontFamily: Fonts.regular, color: '#888' },
+  earningValue: { fontSize: 16, fontFamily: Fonts.bold, color: '#0F223C' },
+  totalPayableRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F0F0F0' },
+  totalPayableLabel: { fontSize: 13, fontFamily: Fonts.semi_bold, color: '#0F223C' },
+  totalPayableSub: { fontSize: 10, fontFamily: Fonts.regular, color: '#888', marginTop: 2 },
+  totalPayableValue: { fontSize: 22, fontFamily: Fonts.bold, color: '#43A047' },
+  breakupBtn: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  breakupTxt: { fontSize: 12, fontFamily: Fonts.medium, color: '#352166' },
+
+  // Bills
+  addBillBtn: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  addBillTxt: { fontSize: 12, fontFamily: Fonts.medium, color: '#352166' },
+  billRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F5F5F5' },
+  billName: { fontSize: 13, fontFamily: Fonts.medium, color: '#333' },
+  billTime: { fontSize: 10, fontFamily: Fonts.regular, color: '#BDBDBD', marginTop: 1 },
+  billAmt: { fontSize: 14, fontFamily: Fonts.bold, color: '#0F223C' },
+  billRowRight: { alignItems: 'flex-end', gap: 4 },
+  billApprovalBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+  billApprovalTxt: { fontSize: 10, fontFamily: Fonts.medium },
+  emptyBillsTxt: { fontSize: 12, fontFamily: Fonts.regular, color: '#BDBDBD', textAlign: 'center', paddingVertical: 12 },
+  addBillFullBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#F0F0F0', marginTop: 4 },
+  addBillFullTxt: { fontSize: 13, fontFamily: Fonts.semi_bold, color: '#352166' },
+
+  // Photos
+  photoCountTxt: { fontSize: 11, fontFamily: Fonts.medium, color: '#757575' },
+  photoGrid: { flexDirection: 'row', gap: 10, paddingBottom: 4 },
+  photoThumb: { width: 80, height: 80, backgroundColor: '#F7F8FA', borderRadius: 10, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 1, borderColor: '#E8ECEF' },
+  photoImg: { width: 80, height: 80, position: 'absolute' },
+  photoApprovedDot: { position: 'absolute', bottom: 4, right: 4, width: 16, height: 16, borderRadius: 8, backgroundColor: '#43A047', alignItems: 'center', justifyContent: 'center' },
+  photoLabel: { fontSize: 9, fontFamily: Fonts.medium, color: '#0F223C', marginTop: 4, textAlign: 'center' },
+  photoHint: { fontSize: 10, fontFamily: Fonts.regular, color: '#BDBDBD', textAlign: 'center' },
+
+  // Upload rows
+  uploadRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 },
+  uploadIconWrap: { width: 38, height: 38, borderRadius: 10, backgroundColor: '#0F223C', alignItems: 'center', justifyContent: 'center' },
+  uploadRowTitle: { fontSize: 13, fontFamily: Fonts.medium, color: '#0F223C' },
+  uploadRowSub: { fontSize: 10, fontFamily: Fonts.regular, color: '#888', marginTop: 1 },
+  rowDivider: { height: 1, backgroundColor: '#F0F0F0', marginVertical: 2 },
+
+  // Safety
+  monitoringBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#E8F5E9', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 12 },
+  monitoringDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#43A047' },
+  monitoringTxt: { fontSize: 10, fontFamily: Fonts.medium, color: '#43A047' },
+  speedRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
+  speedGaugeWrap: { width: 72, height: 72, borderRadius: 36, borderWidth: 5, borderColor: '#43A047', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F7F8FA' },
+  speedValue: { fontSize: 22, fontFamily: Fonts.bold, color: '#0F223C' },
+  speedUnit: { fontSize: 9, fontFamily: Fonts.regular, color: '#888' },
+  safetyStatusTxt: { fontSize: 13, fontFamily: Fonts.semi_bold, color: '#0F223C', marginBottom: 4 },
+  safetySubTxt: { fontSize: 11, fontFamily: Fonts.regular, color: '#757575', lineHeight: 15, marginBottom: 6 },
+  speedLimitBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#FEEBE9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
+  speedLimitTxt: { fontSize: 10, fontFamily: Fonts.medium, color: '#E53935' },
+  safetyStatsRow: { flexDirection: 'row', backgroundColor: '#F7F8FA', borderRadius: 10, padding: 10, gap: 0 },
+  safetyStatItem: { flex: 1, alignItems: 'center', gap: 3 },
+  safetyStatLabel: { fontSize: 9, fontFamily: Fonts.regular, color: '#888' },
+  safetyStatValue: { fontSize: 12, fontFamily: Fonts.bold, color: '#0F223C' },
+
+  // Footer
+  footer: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24,
+    backgroundColor: Colors.white, borderTopWidth: 1, borderTopColor: '#F0F0F0', elevation: 10,
   },
-  pickupSheetAddress: {
-    fontFamily: Fonts.regular,
-    fontSize: 16,
-    color: Colors.black,
-    marginTop: 4,
-  },
-  pickupSheetStats: {
-    fontFamily: Fonts.semi_bold,
-    fontSize: 14,
-    color: Colors.black,
-    marginTop: 16,
-  },
-  pickupSheetDivider: {
-    height: 1,
-    backgroundColor: '#E0E0E0',
-    marginVertical: 16,
-  },
-  pickupSheetBtn: {
-    backgroundColor: Colors.white,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pickupSheetBtnTxt: {
-    fontFamily: Fonts.medium,
-    fontSize: 16,
-    color: Colors.black,
-  },
-  arrivedSheetTitle: {
-    fontFamily: Fonts.semi_bold,
-    fontSize: 18,
-    color: Colors.black,
-    textAlign: 'center',
-  },
-  arrivedSheetSub: {
-    fontFamily: Fonts.regular,
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 24,
-  },
-  arrivedBtnRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  callBtn: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#352166',
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  callBtnTxt: {
-    fontFamily: Fonts.medium,
-    fontSize: 14,
-    color: '#352166',
-  },
-  imHereBtn: {
-    flex: 1,
-    backgroundColor: '#352166',
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imHereBtnTxt: {
-    fontFamily: Fonts.medium,
-    fontSize: 14,
-    color: '#FFFFFF',
-  },
-})
+  sosBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, borderWidth: 1.5, borderColor: '#E53935' },
+  sosDot: { width: 26, height: 26, borderRadius: 13, backgroundColor: '#E53935', alignItems: 'center', justifyContent: 'center' },
+  sosDotTxt: { fontSize: 7, fontFamily: Fonts.bold, color: Colors.white },
+  sosTxt: { fontSize: 13, fontFamily: Fonts.semi_bold, color: '#E53935' },
+  callFooterBtn: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#F0F4F8', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E0E0E0' },
+  endTripBtn: { flex: 1, paddingVertical: 13, borderRadius: 12, backgroundColor: '#E53935', alignItems: 'center', elevation: 2 },
+  endTripTxt: { fontSize: 15, fontFamily: Fonts.semi_bold, color: Colors.white },
+
+  // Nav choice modal
+  navOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  navSheet: { backgroundColor: Colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 32, gap: 12 },
+  navHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: '#E0E0E0', alignSelf: 'center', marginBottom: 4 },
+  navTitle: { fontSize: 16, fontFamily: Fonts.semi_bold, color: '#0F223C' },
+  navSub: { fontSize: 12, fontFamily: Fonts.regular, color: '#757575' },
+  navOptionsRow: { flexDirection: 'row', gap: 12, marginTop: 4 },
+  navOptionCard: { flex: 1, alignItems: 'center', backgroundColor: '#F7F8FA', borderRadius: 14, paddingVertical: 18, paddingHorizontal: 12, borderWidth: 1, borderColor: '#E8ECEF', gap: 6 },
+  navOptionLabel: { fontSize: 14, fontFamily: Fonts.semi_bold, color: '#0F223C' },
+  navOptionDesc: { fontSize: 11, fontFamily: Fonts.regular, color: '#757575', textAlign: 'center' },
+
+  // Post-trip warning modal
+  warnOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
+  warnBox: { backgroundColor: Colors.white, borderRadius: 16, padding: 24, width: '100%', gap: 10 },
+  warnTitle: { fontSize: 16, fontFamily: Fonts.semi_bold, color: '#BF360C', textAlign: 'center' },
+  warnMsg: { fontSize: 13, fontFamily: Fonts.regular, color: '#555', textAlign: 'center', lineHeight: 18 },
+  warnBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#E53935', paddingVertical: 13, borderRadius: 10, marginTop: 4 },
+  warnBtnTxt: { fontSize: 14, fontFamily: Fonts.semi_bold, color: Colors.white },
+  warnCancelBtn: { alignItems: 'center', paddingVertical: 8 },
+  warnCancelTxt: { fontSize: 13, fontFamily: Fonts.medium, color: '#757575' },
+
+});

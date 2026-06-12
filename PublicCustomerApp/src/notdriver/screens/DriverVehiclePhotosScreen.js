@@ -141,8 +141,9 @@ const DriverVehiclePhotosScreen = () => {
   const { activeTripData } = useTripsStore();
   const { upComingTripDetails } = useTripAcceptStore();
   const tripId = upComingTripDetails?._id || activeTripData?.[0]?._id;
+  const activeMatchesCurrent = activeTripData?.[0]?._id === upComingTripDetails?._id;
   const isApproved = upComingTripDetails?.bills?.vehiclePhotosApproved === true ||
-    activeTripData?.[0]?.bills?.vehiclePhotosApproved === true;
+    (activeMatchesCurrent && activeTripData?.[0]?.bills?.vehiclePhotosApproved === true);
 
   const [loadingFromServer, setLoadingFromServer] = useState(false);
 
@@ -165,10 +166,10 @@ const DriverVehiclePhotosScreen = () => {
     return { uri: presigned || rawUrl, type: 'image/jpeg', name };
   };
 
-  // Seed from server
+  // Seed from server — only when activeTripData matches the current trip
   useEffect(() => {
     const serverBills = activeTripData?.[0]?.bills;
-    if (!serverBills) return;
+    if (!serverBills || activeTripData?.[0]?._id !== upComingTripDetails?._id) return;
 
     (async () => {
       setLoadingFromServer(true);

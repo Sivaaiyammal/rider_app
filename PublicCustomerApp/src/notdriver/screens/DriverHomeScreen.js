@@ -95,7 +95,7 @@ import messaging from '@react-native-firebase/messaging';
 import DriverMapScreenV2 from './DriverMapScreenV2';
 import DriverMapScreenV3 from './DriverMapScreenV3';
 import DriverPreTripOverviewScreen from './DriverPreTripOverviewScreen';
-import ActingDriverOnRideScreen from './ActingDriverOnRideScreen';
+import ActingDriverOnRideScreen from './ActingDriverOnRide';
 
 const checkDriverDetails = (response) => {
   if (!response?.driver) return false;

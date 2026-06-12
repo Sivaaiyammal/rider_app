@@ -10,6 +10,7 @@ import { useMapMarkerStore } from '../../../common/store/useMapMarkerStore';
 import useCurrentScreenStore from '../../../common/store/useCurrentScreenStore';
 import Marker from '../../../common/map/Marker';
 import publicrideDriverApi from '../../api/publicrideDriverApi';
+import useActingDriverMediaStore from '../../store/useActingDriverMediaStore';
 
 const DriverCalendarScreen = () => {
   const { t } = useTranslation();
@@ -19,6 +20,7 @@ const DriverCalendarScreen = () => {
   const { setMapLocation, setMapMarkers } = useMapMarkerStore();
   const { setCurrentScreen } = useCurrentScreenStore();
   const { setUpComingTripDetails } = useTripAcceptStore();
+  const resetDriverMedia = useActingDriverMediaStore(s => s.reset);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [trips, setTrips] = useState([]);
@@ -115,6 +117,7 @@ const DriverCalendarScreen = () => {
   };
 
   const handleStartTrip = async (trip) => {
+    resetDriverMedia();
     setUpComingTripDetails(trip);
     setStackScreen('DriverPreTripOverview');
 

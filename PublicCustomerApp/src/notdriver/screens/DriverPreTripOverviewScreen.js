@@ -595,17 +595,46 @@ export default function DriverPreTripOverviewScreen() {
                   <Text style={styles.itinDayLabel}>{formatDate(dateStr)}</Text>
                 </View>
                 {locations.map((loc, locIdx) => {
+                  const isFirst = locIdx === 0;
                   const isLast = locIdx === locations.length - 1;
                   return (
                     <View key={locIdx} style={styles.itinLocRow}>
                       <View style={styles.itinLineWrap}>
-                        <View style={styles.itinDot} />
+                        <View style={[styles.itinCircle, isFirst ? styles.itinCircleFirst : isLast ? styles.itinCircleLast : styles.itinCircleMid]}>
+                          {isFirst
+                            ? <MaterialCommunityIcons name="map-marker" size={12} color="#FFF" />
+                            : isLast
+                            ? <MaterialCommunityIcons name="flag" size={11} color="#FFF" />
+                            : <View style={styles.itinCircleInner} />
+                          }
+                        </View>
                         {!isLast && <View style={styles.itinLine} />}
                       </View>
                       <View style={styles.itinLocInfo}>
                         <Text style={styles.itinLocName}>{loc.name || '-'}</Text>
                         {loc.address ? <Text style={styles.itinLocAddr}>{loc.address}</Text> : null}
-                        {loc.time ? <Text style={styles.itinLocTime}>{loc.time}</Text> : null}
+                        {(loc.arrivalTime || loc.departureTime || loc.waitingTime || loc.time) && (
+                          <View style={styles.itinTimeRow}>
+                            {(loc.arrivalTime || loc.time) && (
+                              <View style={styles.itinTimeChip}>
+                                <MaterialCommunityIcons name="clock-in" size={10} color="#352166" />
+                                <Text style={styles.itinTimeChipTxt}>{loc.arrivalTime || loc.time}</Text>
+                              </View>
+                            )}
+                            {!!loc.departureTime && (
+                              <View style={styles.itinTimeChip}>
+                                <MaterialCommunityIcons name="clock-out" size={10} color="#352166" />
+                                <Text style={styles.itinTimeChipTxt}>{loc.departureTime}</Text>
+                              </View>
+                            )}
+                            {!!loc.waitingTime && (
+                              <View style={[styles.itinTimeChip, styles.itinTimeChipWait]}>
+                                <MaterialCommunityIcons name="timer-sand" size={10} color="#E65100" />
+                                <Text style={[styles.itinTimeChipTxt, { color: '#E65100' }]}>{loc.waitingTime} min wait</Text>
+                              </View>
+                            )}
+                          </View>
+                        )}
                       </View>
                       <TouchableOpacity
                         style={styles.itinNavBtn}
@@ -1185,15 +1214,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   itinDayLabel: { fontSize: 12, fontFamily: Fonts.semi_bold, color: '#0F223C' },
-  itinLocRow: { flexDirection: 'row', marginBottom: 10, alignItems: 'flex-start' },
-  itinNavBtn: { padding: 4, marginLeft: 4, alignSelf: 'center' },
-  itinLineWrap: { alignItems: 'center', marginRight: 12, width: 12, paddingVertical: 4 },
-  itinDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#0F223C' },
-  itinLine: { width: 1, flex: 1, backgroundColor: '#E0E0E0', marginTop: 4 },
-  itinLocInfo: { flex: 1 },
+  itinLocRow: { flexDirection: 'row', marginBottom: 0, alignItems: 'flex-start' },
+  itinNavBtn: { padding: 4, marginLeft: 4, paddingTop: 6 },
+  itinLineWrap: { alignItems: 'center', marginRight: 10, width: 28, paddingTop: 2 },
+  itinCircle: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  itinCircleFirst: { backgroundColor: '#352166' },
+  itinCircleMid: { backgroundColor: '#E8EDF2', borderWidth: 2, borderColor: '#C5D0DA' },
+  itinCircleLast: { backgroundColor: '#E53935' },
+  itinCircleInner: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#9BA8B4' },
+  itinLine: { width: 2, flex: 1, minHeight: 18, backgroundColor: '#E0E0E0', marginTop: 2, marginBottom: 2 },
+  itinLocInfo: { flex: 1, paddingBottom: 16, paddingTop: 3 },
   itinLocName: { fontSize: 13, fontFamily: Fonts.semi_bold, color: '#333' },
   itinLocAddr: { fontSize: 11, fontFamily: Fonts.regular, color: '#757575', marginTop: 2 },
   itinLocTime: { fontSize: 10, fontFamily: Fonts.bold, color: '#0F223C', marginTop: 2 },
+  itinTimeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 5 },
+  itinTimeChip: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#EDE9F8', paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8 },
+  itinTimeChipTxt: { fontSize: 9, fontFamily: Fonts.medium, color: '#352166' },
+  itinTimeChipWait: { backgroundColor: '#FFF3E0' },
 
   // Arrangements & Special Req
   arrangementsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
