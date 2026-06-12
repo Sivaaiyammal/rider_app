@@ -80,6 +80,7 @@ Router.get('/checkDriverToken', CheckDriverAuthenticated, withTiming(driverContr
 Router.post('/updateFCMToken', CheckDriverAuthenticated, withTiming(driverController, driverController.updateFCMToken))
 // OCR
 Router.post('/scanDoc', CheckDriverAuthenticated, withTiming(driverController, ocrController.scanDocument))
+Router.post('/scanReceipt', CheckDriverAuthenticated, withTiming(driverController, ocrController.scanReceipt))
 
 Router.post('/wakeUpBGService', CheckDriverAuthenticated, withTiming(driverController, driverController.wakeUpBGService))
 

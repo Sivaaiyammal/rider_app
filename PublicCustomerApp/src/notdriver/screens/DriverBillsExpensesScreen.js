@@ -30,18 +30,19 @@ import useActingDriverMediaStore from '../store/useActingDriverMediaStore';
 import useUserStore from '../../common/store/useUserStore';
 import APIRequest from '../../common/APIRequest';
 import useTripsStore from '../store/useTripsStore';
+import { useTripAcceptStore } from '../store/useTripAcceptStore';
 import { getPresignedImageUrl } from '../../common/utils/getPresignedImageUrl';
 import UseBackButton from '../../common/hooks/UseBackButton';
 import { useTranslation } from 'react-i18next';
 
 const uid = () => `${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
-const pickImage = async (source, callback) => {
-  const options = { mediaType: 'photo', maxWidth: 1200, maxHeight: 1200, quality: 0.85 };
+const pickImage = async (source, callback, includeBase64 = false) => {
+  const options = { mediaType: 'photo', maxWidth: 1200, maxHeight: 1200, quality: 0.85, includeBase64 };
   const handler = res => {
     if (res.didCancel || !res.assets?.[0]) return;
     const a = res.assets[0];
-    callback({ uri: a.uri, type: a.type || 'image/jpeg', name: a.fileName || `photo_${Date.now()}.jpg` });
+    callback({ uri: a.uri, type: a.type || 'image/jpeg', name: a.fileName || `photo_${Date.now()}.jpg`, base64: a.base64 || null });
   };
   if (source === 'camera') {
     const hasPerm = await checkCameraPermission();
@@ -337,13 +338,15 @@ const EditBillModal = ({ visible, bill, onClose, onSave, tripId, token }) => {
 };
 
 /* ─── add bill modal ──────────────────────────────────────── */
-const AddBillModal = ({ visible, onClose, onAdd, tripId, token, t }) => {
+export const AddBillModal = ({ visible, onClose, onAdd, tripId, token, t }) => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [receipt, setReceipt] = useState(null);
   const [errors, setErrors] = useState({});
   const [receiptBusy, setReceiptBusy] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [autoFilled, setAutoFilled] = useState(false);
   const amountRef = useRef(null);
 
   const reset = () => {
@@ -351,13 +354,33 @@ const AddBillModal = ({ visible, onClose, onAdd, tripId, token, t }) => {
     setAmount('');
     setReceipt(null);
     setErrors({});
+    setAutoFilled(false);
   };
 
   const handleClose = () => { reset(); onClose(); };
 
   const handlePickReceipt = async src => {
     setReceiptBusy(true);
-    await pickImage(src, img => setReceipt(img));
+    await pickImage(src, async img => {
+      setReceipt(img);
+      if (img.base64) {
+        try {
+          setScanning(true);
+          const api = new APIRequest();
+          const res = await api.request('/publicrides/driver/v2/scanReceipt', 'POST', { image: img.base64 }, token);
+          if (res.success && res.data) {
+            if (res.data.description && !description.trim()) {
+              setDescription(res.data.description);
+            }
+            if (res.data.amount && !amount.trim()) {
+              setAmount(String(res.data.amount));
+            }
+            if (res.data.description || res.data.amount) setAutoFilled(true);
+          }
+        } catch { /* silent — driver can fill manually */ }
+        finally { setScanning(false); }
+      }
+    }, true);
     setReceiptBusy(false);
   };
 
@@ -444,15 +467,28 @@ const AddBillModal = ({ visible, onClose, onAdd, tripId, token, t }) => {
 
             {/* Receipt photo */}
             <View style={ms.fieldWrap}>
-              <Text style={ms.label}>{t('receipt_photo')} <Text style={ms.optional}>({t('optional')})</Text></Text>
-              {receipt ? (
+              <View style={ms.receiptLabelRow}>
+                <Text style={ms.label}>{t('receipt_photo')} <Text style={ms.optional}>({t('optional')})</Text></Text>
+                {autoFilled && (
+                  <View style={ms.autoFilledBadge}>
+                    <MaterialCommunityIcons name="auto-fix" size={11} color="#43A047" />
+                    <Text style={ms.autoFilledTxt}>Auto-filled</Text>
+                  </View>
+                )}
+              </View>
+              {scanning ? (
+                <View style={ms.scanningRow}>
+                  <ActivityIndicator size="small" color={Colors.periwinkle} />
+                  <Text style={ms.scanningTxt}>Scanning receipt...</Text>
+                </View>
+              ) : receipt ? (
                 <View style={ms.receiptPreviewRow}>
                   <Image source={{ uri: receipt.uri }} style={ms.receiptPreview} resizeMode="cover" />
                   <TouchableOpacity style={ms.changeBtn} onPress={() => handlePickReceipt('gallery')} activeOpacity={0.8}>
                     <Feather name="refresh-cw" size={12} color={Colors.white} />
                     <Text style={ms.changeTxt}>{t('change')}</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={ms.removeReceiptBtn} onPress={() => setReceipt(null)} activeOpacity={0.8}>
+                  <TouchableOpacity style={ms.removeReceiptBtn} onPress={() => { setReceipt(null); setAutoFilled(false); }} activeOpacity={0.8}>
                     <MaterialCommunityIcons name="close" size={16} color="#E53935" />
                   </TouchableOpacity>
                 </View>
@@ -491,6 +527,8 @@ const DriverBillsExpensesScreen = () => {
   const { bills: storedBills, setBills, } = useActingDriverMediaStore();
   const { userInfo } = useUserStore();
   const { activeTripData, setActiveTripData } = useTripsStore();
+  const { upComingTripDetails } = useTripAcceptStore();
+  const tripId = activeTripData?.[0]?._id || upComingTripDetails?._id;
 
   const {t} = useTranslation();
 
@@ -522,7 +560,7 @@ const DriverBillsExpensesScreen = () => {
 
   // Seed bills from server
   useEffect(() => {
-    const serverBills = activeTripData?.[0]?.bills?.bills;
+    const serverBills = activeTripData?.[0]?.bills?.bills || upComingTripDetails?.bills?.bills;
     if (!serverBills?.length || bills.length > 0) return;
 
     const toObjectKey = url => {
@@ -546,7 +584,7 @@ const DriverBillsExpensesScreen = () => {
       setBillsLocal(resolved);
       setBills(resolved);
     })();
-  }, [activeTripData?.[0]?.bills]);
+  }, [activeTripData?.[0]?.bills, upComingTripDetails?.bills]);
 
   const totalAmount = bills.reduce((s, b) => s + (parseFloat(b.amount) || 0), 0);
 
@@ -582,7 +620,7 @@ const DriverBillsExpensesScreen = () => {
       const hasBillId = !!deleteTarget.serverId;
       const hasBillIndex = deleteTarget.serverIndex !== undefined && deleteTarget.serverIndex !== null;
       if (hasBillId || hasBillIndex) {
-        const body = { tripId: activeTripData?.[0]?._id };
+        const body = { tripId };
         if (hasBillId) body.billId = deleteTarget.serverId;
         else body.billIndex = deleteTarget.serverIndex;
         const api = new APIRequest();
@@ -670,7 +708,7 @@ const DriverBillsExpensesScreen = () => {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         onAdd={handleAddBill}
-        tripId={activeTripData?.[0]?._id}
+        tripId={tripId}
         token={userInfo?.token}
         t={t}
       />
@@ -691,7 +729,7 @@ const DriverBillsExpensesScreen = () => {
         bill={editTarget}
         onClose={() => setEditTarget(null)}
         onSave={handleEditBill}
-        tripId={activeTripData?.[0]?._id}
+        tripId={tripId}
         token={userInfo?.token}
          t={t}
       />
@@ -797,6 +835,11 @@ const ms = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.periwinkle + '44', backgroundColor: '#F0F0FF',
   },
   pickerTxt: { fontSize: 12, fontFamily: Fonts.medium, color: Colors.periwinkle },
+  receiptLabelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
+  autoFilledBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#E8F5E9', paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8 },
+  autoFilledTxt: { fontSize: 10, fontFamily: Fonts.medium, color: '#43A047' },
+  scanningRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 4 },
+  scanningTxt: { fontSize: 13, fontFamily: Fonts.medium, color: Colors.periwinkle },
   addBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     backgroundColor: Colors.periwinkle, paddingVertical: 14, borderRadius: 12, marginTop: 4,

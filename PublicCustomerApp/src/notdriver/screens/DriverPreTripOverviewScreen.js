@@ -78,6 +78,7 @@ export default function DriverPreTripOverviewScreen() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [itinExpanded, setItinExpanded] = useState(false);
   const [showNavModal, setShowNavModal] = useState(false);
+  const [navTarget, setNavTarget] = useState(null);
 
   const {
     userLocation,
@@ -182,6 +183,12 @@ export default function DriverPreTripOverviewScreen() {
     }
   }, [completedCount, isArrived, currentStage]);
 
+  useEffect(() => {
+    if (isPhotosApproved && isArrived && currentStage < 3) {
+      setCurrentStage(3);
+    }
+  }, [isPhotosApproved, isArrived]);
+
   const onGoBack = () => {
     NeNativeModule.clearDirectionPoints();
     goBack();
@@ -235,18 +242,23 @@ export default function DriverPreTripOverviewScreen() {
     setStackScreen('ActingDriverOnRideScreen');
   };
 
+  const openNavForLocation = (stop) => {
+    setNavTarget(stop);
+    setShowNavModal(true);
+  };
+
   const handleNavMode = async (mode) => {
-    const pickupStop = upComingTripDetails?.stops?.[0];
+    const target = navTarget || upComingTripDetails?.pickupLocation || upComingTripDetails?.stops?.[0];
     setShowNavModal(false);
 
     if (mode === 'google') {
-      const lat = pickupStop?.location?.[1];
-      const lng = pickupStop?.location?.[0];
+      const lat = target?.lat ?? target?.location?.[1];
+      const lng = target?.lng ?? target?.lon ?? target?.location?.[0];
       let url = '';
       if (lat && lng) {
         url = `https://www.google.com/maps/dir/?api=1&travelmode=driving&dir_action=navigate&destination=${lat},${lng}`;
-      } else if (pickupStop?.address) {
-        url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(pickupStop.address)}`;
+      } else if (target?.address) {
+        url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(target.address)}`;
       }
       if (url) {
         Linking.openURL(url).catch(() => Alert.alert('Error', 'Could not open Google Maps.'));
@@ -263,11 +275,13 @@ export default function DriverPreTripOverviewScreen() {
       Alert.alert('Please wait', 'Route is still loading, try again in a moment.');
       return;
     }
-    if (userLocation && pickupStop?.location) {
+    const lat = target?.lat ?? target?.location?.[1];
+    const lng = target?.lng ?? target?.lon ?? target?.location?.[0];
+    if (userLocation && lat && lng) {
       setDirectionPoints({
         locations: [
           { lat: userLocation[0], lon: userLocation[1] },
-          { lat: pickupStop.location[1], lon: pickupStop.location[0] },
+          { lat, lon: lng },
         ],
         type: 'car',
         padding: [50, 50, 50, 200],
@@ -290,7 +304,7 @@ export default function DriverPreTripOverviewScreen() {
         if (cleanPhone) Linking.openURL(`tel:${cleanPhone}`);
         break;
       case 'navigate':
-        setShowNavModal(true);
+        openNavForLocation(upComingTripDetails?.pickupLocation || upComingTripDetails?.stops?.[0]);
         break;
       case 'sos':
         Alert.alert('SOS Emergency', 'Emergency SOS signal sent to dispatch and emergency services.');
@@ -530,14 +544,38 @@ export default function DriverPreTripOverviewScreen() {
               <View style={styles.routeDotRed} />
             </View>
             <View style={styles.routeDetails}>
-              <View style={{ flex: 1, marginRight: 8 }}>
-                <Text style={styles.routeLabel}>Pickup Location</Text>
-                <Text style={styles.routeVal}>{upComingTripDetails?.stops?.[0]?.address || '-'}</Text>
-              </View>
-              <View style={{ marginTop: 12, flex: 1, marginRight: 8 }}>
-                <Text style={styles.routeLabel}>Drop Location</Text>
-                <Text style={styles.routeVal}>{upComingTripDetails?.stops?.[upComingTripDetails?.stops?.length - 1]?.address || '-'}</Text>
-              </View>
+              <TouchableOpacity
+                style={styles.routeLocRow}
+                onPress={() => isCustomerPaid && openNavForLocation(upComingTripDetails?.stops?.[0])}
+                activeOpacity={isCustomerPaid ? 0.7 : 1}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.routeLabel}>Pickup Location</Text>
+                  <Text style={styles.routeVal}>{upComingTripDetails?.stops?.[0]?.address || '-'}</Text>
+                </View>
+                <MaterialCommunityIcons
+                  name={isCustomerPaid ? 'navigation-variant-outline' : 'lock-outline'}
+                  size={18}
+                  color={isCustomerPaid ? '#299865' : '#B45309'}
+                  style={{ marginLeft: 6 }}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.routeLocRow, { marginTop: 12 }]}
+                onPress={() => isCustomerPaid && openNavForLocation(upComingTripDetails?.stops?.[upComingTripDetails?.stops?.length - 1])}
+                activeOpacity={isCustomerPaid ? 0.7 : 1}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.routeLabel}>Drop Location</Text>
+                  <Text style={styles.routeVal}>{upComingTripDetails?.stops?.[upComingTripDetails?.stops?.length - 1]?.address || '-'}</Text>
+                </View>
+                <MaterialCommunityIcons
+                  name={isCustomerPaid ? 'navigation-variant-outline' : 'lock-outline'}
+                  size={18}
+                  color={isCustomerPaid ? '#EF4444' : '#B45309'}
+                  style={{ marginLeft: 6 }}
+                />
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -569,6 +607,17 @@ export default function DriverPreTripOverviewScreen() {
                         {loc.address ? <Text style={styles.itinLocAddr}>{loc.address}</Text> : null}
                         {loc.time ? <Text style={styles.itinLocTime}>{loc.time}</Text> : null}
                       </View>
+                      <TouchableOpacity
+                        style={styles.itinNavBtn}
+                        onPress={() => isCustomerPaid && openNavForLocation({ address: loc.address || loc.name, lat: loc.lat, lon: loc.lon, location: loc.location })}
+                        activeOpacity={isCustomerPaid ? 0.7 : 1}
+                      >
+                        <MaterialCommunityIcons
+                          name={isCustomerPaid ? 'navigation-variant-outline' : 'lock-outline'}
+                          size={16}
+                          color={isCustomerPaid ? '#299865' : '#B45309'}
+                        />
+                      </TouchableOpacity>
                     </View>
                   );
                 })}
@@ -776,16 +825,36 @@ export default function DriverPreTripOverviewScreen() {
             activeOpacity={0.85}
           >
             <MaterialCommunityIcons name="navigation-variant" size={20} color="#FFF" />
-            <View>
-              <Text style={styles.floatingNavBtnText}>Navigate to Vehicle</Text>
-              {(upComingTripDetails?.estimatedDistance || upComingTripDetails?.estimatedDuration) && (
-                <Text style={styles.floatingNavBtnSub}>
-                  {upComingTripDetails?.estimatedDistance ? `${parseFloat(upComingTripDetails.estimatedDistance).toFixed(1)} km` : ''}
-                  {upComingTripDetails?.estimatedDistance && upComingTripDetails?.estimatedDuration ? ' • ' : ''}
-                  {upComingTripDetails?.estimatedDuration ? `ETA ${upComingTripDetails.estimatedDuration} mins` : ''}
-                </Text>
-              )}
-            </View>
+            {(() => {
+              const vLoc = upComingTripDetails?.pickupLocation || upComingTripDetails?.stops?.[0];
+              const vLat = vLoc?.lat ?? vLoc?.location?.[1];
+              const vLon = vLoc?.lng ?? vLoc?.lon ?? vLoc?.location?.[0];
+              const dLat = userLocation?.[0];
+              const dLon = userLocation?.[1];
+              let distKm = null;
+              if (dLat && dLon && vLat && vLon) {
+                const R = 6371;
+                const toRad = v => (v * Math.PI) / 180;
+                const a =
+                  Math.sin(toRad(vLat - dLat) / 2) ** 2 +
+                  Math.cos(toRad(dLat)) * Math.cos(toRad(vLat)) *
+                  Math.sin(toRad(vLon - dLon) / 2) ** 2;
+                distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+              }
+              const etaMins = distKm ? Math.ceil((distKm / 30) * 60) : null;
+              return (
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={[styles.floatingNavBtnText, { textAlign: 'center' }]}>Navigate to Vehicle</Text>
+                  {(distKm || etaMins) ? (
+                    <Text style={[styles.floatingNavBtnSub, { textAlign: 'center' }]}>
+                      {distKm ? `${distKm.toFixed(1)} km away` : ''}
+                      {distKm && etaMins ? ' • ' : ''}
+                      {etaMins ? `~${etaMins} min to reach` : ''}
+                    </Text>
+                  ) : null}
+                </View>
+              );
+            })()}
           </TouchableOpacity>
         )}
       </View>
@@ -832,7 +901,9 @@ export default function DriverPreTripOverviewScreen() {
                 <MaterialCommunityIcons name="close" size={20} color={Colors.grey_dark} />
               </TouchableOpacity>
             </View>
-            <Text style={styles.navSheetSub}>Navigate to vehicle pickup location</Text>
+            <Text style={styles.navSheetSub} numberOfLines={2}>
+              {navTarget?.address || navTarget?.name || 'Navigate to location'}
+            </Text>
             <View style={styles.navOptionsRow}>
               <TouchableOpacity style={styles.navOptionCard} onPress={() => handleNavMode('google')} activeOpacity={0.8}>
                 <MaterialCommunityIcons name="google-maps" size={32} color="#4285F4" />
@@ -1078,6 +1149,7 @@ const styles = StyleSheet.create({
   routeLine: { width: 1, flex: 1, backgroundColor: '#BDBDBD', marginVertical: 4 },
   routeDotRed: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FF6060' },
   routeDetails: { flex: 1 },
+  routeLocRow: { flexDirection: 'row', alignItems: 'center' },
   routeLabel: { fontSize: 10, fontFamily: Fonts.medium, color: '#42A5F5' },
   routeVal: { fontSize: 13, fontFamily: Fonts.regular, color: '#333', marginTop: 2 },
 
@@ -1113,7 +1185,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   itinDayLabel: { fontSize: 12, fontFamily: Fonts.semi_bold, color: '#0F223C' },
-  itinLocRow: { flexDirection: 'row', marginBottom: 10 },
+  itinLocRow: { flexDirection: 'row', marginBottom: 10, alignItems: 'flex-start' },
+  itinNavBtn: { padding: 4, marginLeft: 4, alignSelf: 'center' },
   itinLineWrap: { alignItems: 'center', marginRight: 12, width: 12, paddingVertical: 4 },
   itinDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#0F223C' },
   itinLine: { width: 1, flex: 1, backgroundColor: '#E0E0E0', marginTop: 4 },

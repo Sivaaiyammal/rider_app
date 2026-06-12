@@ -173,14 +173,6 @@ const DriverMapScreen = props => {
             />
           ) : null}
 
-          {/* Demo Button to preview the new Pre-Trip Overview screen */}
-          <TouchableOpacity 
-            style={[styles.activeTripBanner, { backgroundColor: '#0F223C', marginTop: shouldShowDueAlert ? 220 : 80 }]}
-            onPress={() => setStackScreen('DriverPreTripOverview')}
-          >
-            <Text style={styles.activeTripBannerTitle}>View Pre-Trip Overview (Demo)</Text>
-            <Text style={styles.activeTripBannerSub}>Tap to open and test the new screen design</Text>
-          </TouchableOpacity>
 
           {activeTripData && activeTripData.length > 0 && (
             <TouchableOpacity 
