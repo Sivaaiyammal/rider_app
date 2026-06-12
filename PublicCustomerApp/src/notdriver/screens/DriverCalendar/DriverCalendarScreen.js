@@ -27,16 +27,6 @@ const DriverCalendarScreen = () => {
   const [loading, setLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // Get days in month
-  const getDaysInMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
-
-  // Get first day of month (0 = Sunday, 1 = Monday, etc.)
-  const getFirstDayOfMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
-
   // Fetch trips for the entire month from API
   const fetchMonthTrips = async (date) => {
     try {
@@ -87,7 +77,6 @@ const DriverCalendarScreen = () => {
 
   // Derived state: trips for the selected date
   const selectedTrips = getTripsForDate(selectedDate);
-  const monthActingTrips = trips.filter(trip => trip.isActingDriverTrip).length;
   const selectedActingTrips = selectedTrips.filter(trip => trip.isActingDriverTrip).length;
 
   // Check if a date has acting driver trips
@@ -95,19 +84,34 @@ const DriverCalendarScreen = () => {
     return getTripsForDate(date).some(trip => trip.isActingDriverTrip);
   };
 
-  // Handle date selection
-  const handleDateSelect = (day) => {
-    const selected = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+  // Handle date selection — accepts a full Date object from the week strip
+  const handleDateSelect = (date) => {
+    const selected = new Date(date);
     setSelectedDate(selected);
+    // If the selected date is in a different month, update currentDate to trigger a re-fetch
+    if (selected.getMonth() !== currentDate.getMonth() || selected.getFullYear() !== currentDate.getFullYear()) {
+      setCurrentDate(new Date(selected.getFullYear(), selected.getMonth(), 1));
+    }
   };
 
-  // Handle month navigation
+  // Navigate by week — prev week
   const handlePreviousMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+    const prev = new Date(selectedDate);
+    prev.setDate(prev.getDate() - 7);
+    setSelectedDate(prev);
+    if (prev.getMonth() !== currentDate.getMonth() || prev.getFullYear() !== currentDate.getFullYear()) {
+      setCurrentDate(new Date(prev.getFullYear(), prev.getMonth(), 1));
+    }
   };
 
+  // Navigate by week — next week
   const handleNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+    const next = new Date(selectedDate);
+    next.setDate(next.getDate() + 7);
+    setSelectedDate(next);
+    if (next.getMonth() !== currentDate.getMonth() || next.getFullYear() !== currentDate.getFullYear()) {
+      setCurrentDate(new Date(next.getFullYear(), next.getMonth(), 1));
+    }
   };
 
   // Handle trip selection
@@ -170,14 +174,10 @@ const DriverCalendarScreen = () => {
     <DriverCalendarView
       t={t}
       currentDate={currentDate}
-      trips={trips}
       loading={loading}
       selectedDate={selectedDate}
       selectedTrips={selectedTrips}
-      monthActingTrips={monthActingTrips}
       selectedActingTrips={selectedActingTrips}
-      getDaysInMonth={getDaysInMonth}
-      getFirstDayOfMonth={getFirstDayOfMonth}
       getTripsForDate={getTripsForDate}
       hasActingTrips={hasActingTrips}
       onDateSelect={handleDateSelect}
