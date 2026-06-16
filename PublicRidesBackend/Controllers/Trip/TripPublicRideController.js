@@ -176,7 +176,8 @@ module.exports = function (CLASS) {
             const otp = OTP.generateOTP(OTP_LENGTH);
             /* get Passanger FCM tokens and socketIDS */
             const passanger = passangerId ? await Passanger.getPassangerWithId(passangerId) : null;
-            if (!passanger) return res.status(400).json({ success: false, message: 'Passanger not found' });
+            // For acting driver trips dispatched from dashboard, passanger may not exist — that is OK
+            if (!passanger && !trip.isActingDriverTrip) return res.status(400).json({ success: false, message: 'Passanger not found' });
             const tripTimeline = {
                 state: 'ACCEPTED',
                 timestamp: new Date().getTime(),
@@ -184,11 +185,11 @@ module.exports = function (CLASS) {
             await Trip.assignDriverToTripwithTimeline(tripId, driverId, otp, tripTimeline);
 
             const getMaxDistanceLimit = await FareConfigs.getMaxDistanceLimit(trip?.regionCode || 'default', trip?.vehicleType);
-             
+
             trip.maxDistanceLimit = getMaxDistanceLimit || null;
 
             // console.log(getMaxDistanceLimit, "Max Distance Limit for the trip");
-          
+
             // await Driver.updateDriver(driverId, { tripStatus: "ONGOING" })
             const driverInfo = {
                 driverName: driver.name,
@@ -203,7 +204,7 @@ module.exports = function (CLASS) {
                 upiid: driver.bankDetails?.UPIID || null,
                 driverLocaiton: driver.location
             };
-   
+
             await populateActingDriverVehicleInfo(trip, driverInfo);
 
             if(driver?.documents?.driverPhoto){
@@ -212,14 +213,14 @@ module.exports = function (CLASS) {
                 driverInfo.driverPhoto = await rjvw.generatePresignedImg(ImagePath)
                 driverInfo.driverPhotoImg = ImagePath
             }
-           
 
-            
+
+            if (passanger) {
             sendPassangerSocketEvents("driverAllocated", passangerId, req.socketService, driverInfo, trip, otp).catch(err => {
                 console.log(err, "Error sending socket events to passanger")
             })
 
-            
+
             if (passanger?.fcmToken) {
                 const notifParams = { tripId: String(trip._id), "trip_status": 'ACCEPTED' };
                 if (trip.isActingDriverTrip) notifParams.isActingDriverTrip = 'true';
@@ -228,6 +229,7 @@ module.exports = function (CLASS) {
                 }else{
                     await PushNotifiationService.sendPushNotification(passanger.fcmToken.token, sendTripDriverAssignedMessage(driver.name), null, "high", notifParams);
                 }
+            }
             }
 
             const currentTrip = await Trip.getTripById(tripId);

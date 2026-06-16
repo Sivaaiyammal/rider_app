@@ -1012,10 +1012,17 @@ module.exports = function (CLASS) {
 
             // Fix: Convert driverId to ObjectId
             let filter = {};
+            // Include both regular trips (driverId) and acting driver trips (actingDriverId)
             if (ObjectId.isValid(driverId)) {
-                filter.driverId = new ObjectId(driverId);
+                filter.$or = [
+                    { driverId: new ObjectId(driverId) },
+                    { actingDriverId: new ObjectId(driverId) },
+                ];
             } else {
-                filter.driverId = driverId;
+                filter.$or = [
+                    { driverId: driverId },
+                    { actingDriverId: driverId },
+                ];
             }
 
             if (req.query.tripId && ObjectId.isValid(req.query.tripId)) {

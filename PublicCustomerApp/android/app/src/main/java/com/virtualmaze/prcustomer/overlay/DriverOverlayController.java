@@ -59,8 +59,10 @@ import io.socket.client.Socket;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
@@ -967,6 +969,7 @@ public class DriverOverlayController {
 
         btnAccept.setOnClickListener(v -> {
             emitDriverResponse(data, true);
+            callAcceptRideApi(data);
             clearNotificationTray();
             removeOverlay();
             openApp();
@@ -1141,6 +1144,64 @@ public class DriverOverlayController {
             Log.i(TAG, "Emitted driver_trip_response: " + responsePayload);
         } catch (Exception e) {
             Log.e(TAG, "emitDriverResponse error", e);
+        }
+    }
+
+    private void callAcceptRideApi(JSONObject data) {
+        JSONObject tripData = data != null ? data.optJSONObject("data") : null;
+        if (tripData == null) {
+            Log.w(TAG, "callAcceptRideApi: missing trip data");
+            return;
+        }
+        String tripId = tripData.optString("trip_id", "");
+        if (tripId.isEmpty()) tripId = tripData.optString("tripId", "");
+        if (tripId.isEmpty()) tripId = tripData.optString("_id", "");
+        if (tripId.isEmpty()) {
+            Log.w(TAG, "callAcceptRideApi: missing tripId in payload");
+            return;
+        }
+
+        final String authToken = loadDriverAuthToken();
+        if (authToken == null || authToken.isEmpty()) {
+            Log.w(TAG, "callAcceptRideApi: missing auth token");
+            return;
+        }
+
+        final String finalTripId = tripId;
+        try {
+            JSONObject body = new JSONObject();
+            body.put("tripId", finalTripId);
+
+            MediaType jsonType = MediaType.get("application/json; charset=utf-8");
+            RequestBody requestBody = RequestBody.create(body.toString(), jsonType);
+
+            Request request = new Request.Builder()
+                    .url(BuildConfig.ROOT_API_URL + "/publicrides/driver/v2/acceptRide")
+                    .post(requestBody)
+                    .addHeader("Authorization", "Bearer " + authToken)
+                    .addHeader("x-device-auth", "Bearer " + authToken)
+                    .build();
+
+            httpClient.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, java.io.IOException e) {
+                    Log.e(TAG, "acceptRide API failed for tripId=" + finalTripId, e);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) {
+                    try {
+                        String bodyStr = response.body() != null ? response.body().string() : null;
+                        Log.i(TAG, "acceptRide response tripId=" + finalTripId + " status=" + response.code() + " body=" + bodyStr);
+                    } catch (Exception e) {
+                        Log.w(TAG, "Error reading acceptRide response body", e);
+                    } finally {
+                        try { response.close(); } catch (Exception ignored) {}
+                    }
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "callAcceptRideApi error", e);
         }
     }
 
