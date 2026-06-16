@@ -166,7 +166,7 @@ const DriverCalendarScreen = () => {
     setCurrentScreen('Map');
   };
 
-  // Fetch trips when month changes
+  // Fetch trips on mount and whenever month changes
   useEffect(() => {
     fetchMonthTrips(currentDate);
   }, [currentDate]);
@@ -186,6 +186,7 @@ const DriverCalendarScreen = () => {
       onTripSelect={handleTripSelect}
       onStartTrip={handleStartTrip}
       onViewLocation={handleViewLocation}
+      onRefresh={() => fetchMonthTrips(currentDate)}
     />
   );
 };

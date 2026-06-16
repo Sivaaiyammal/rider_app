@@ -322,18 +322,29 @@ const TripAccept = () => {
       const response = await publicrideDriverApi.acceptTrip({ tripId }, userInfo?.token);
       console.log('[TripAccept] acceptRide response:', JSON.stringify(response));
       if (response?.success) {
-        const tripData = response?.currentTrip;
+        const tripData = response?.currentTrip || response?.trip;
+        const isActing = !!(tripData?.isActingDriverTrip || tripDetails?.isActingDriverTrip);
         if (tripData) {
           tripData.status = 'ACCEPTED';
           setActiveTripData([tripData]);
           DataStore.storeData('activeTripId', tripId);
+          if (isActing) {
+            // Store trip details so ActingDriverOnRide can access static fields
+            useTripAcceptStore.getState().setUpComingTripDetails(tripData);
+          }
+        } else if (isActing && tripDetails) {
+          // acceptRide may not return currentTrip for acting driver — use socket data
+          const fallback = { ...tripDetails, _id: tripId, status: 'ACCEPTED' };
+          setActiveTripData([fallback]);
+          DataStore.storeData('activeTripId', tripId);
+          useTripAcceptStore.getState().setUpComingTripDetails(fallback);
         }
         PushNotifications.onClearAllNotifications();
         tripAlert.stopAlertSound();
         setTimerPaused(true);
         setNewStopData(null);
         reset();
-        setStackScreen('PublicDriverTrackingScreen');
+        setStackScreen(isActing ? 'DriverPreTripOverview' : 'PublicDriverTrackingScreen');
       } else {
         console.log('[TripAccept] acceptRide failed:', response?.message);
         showNotification(response?.message || 'Failed to accept trip', '', 'error');

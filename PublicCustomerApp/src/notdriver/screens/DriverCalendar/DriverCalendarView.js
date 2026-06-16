@@ -67,6 +67,7 @@ const DriverCalendarView = ({
   onTripSelect,
   onStartTrip,
   onViewLocation,
+  onRefresh,
 }) => {
   const [calOpen, setCalOpen] = useState(false);
   const today = new Date();
@@ -205,7 +206,11 @@ const DriverCalendarView = ({
             {today.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </Text>
         </View>
-        
+        <TouchableOpacity style={styles.headerBadge} onPress={onRefresh} activeOpacity={0.7} disabled={loading}>
+          {loading
+            ? <ActivityIndicator size="small" color={P} />
+            : <MaterialCommunityIcons name="refresh" size={18} color={P} />}
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
